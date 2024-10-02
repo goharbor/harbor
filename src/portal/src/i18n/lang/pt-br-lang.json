@@ -245,6 +245,9 @@
         "TOGGLED_SUCCESS": "Projeto alterado com sucesso.",
         "FAILED_TO_DELETE_PROJECT": "Projeto não pode ser removido porque ainda possui recursos em repositórios, regras de replicação ou helm charts.",
         "INLINE_HELP_PUBLIC": "Quando o projeto é público, o acesso de leitura aos repositórios é liberado, incluindo usuários anônimos não autenticados. O usuário não precisa executar \"docker login\" para baixar imagens desse projeto.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "de",
         "COUNT_QUOTA": "Limite de quantidade",
         "STORAGE_QUOTA": "Project quota limits",
@@ -284,7 +287,10 @@
         "PREVENT_VULNERABLE_2": "e acima de serem utilizadas.",
         "SCAN": "Análise de vulnerabilidades",
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
-        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto."
+        "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Adicionar um usuário",
@@ -401,6 +407,7 @@
         "REPOSITORY": "Repository",
         "ARTIFACT": "Artifact",
         "SCAN": "Scan",
+        "SBOM": "SBOM",
         "TAG": "Tag",
         "ACCESSORY": "Accessory",
         "ARTIFACT_ADDITION": "Artifact Addition",
@@ -417,7 +424,12 @@
         "SELECT_PERMISSIONS": "Select Permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
         "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-        "SYSTEM_PERMISSIONS": "System Permissions"
+        "SYSTEM_PERMISSIONS": "System Permissions",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "GROUP": {
         "GROUP": "Grupo",
@@ -773,6 +785,7 @@
         "ARTIFACTS": "Artefatos",
         "SIZE": "Tamanho",
         "VULNERABILITY": "Vulnerabilidade",
+        "SBOM": "SBOM",
         "SIGNED": "Assinada",
         "AUTHOR": "Autor",
         "CREATED": "Data de criação",
@@ -799,6 +812,7 @@
         "FILTER_BY_LABEL": "Filtrar imagens por marcadores",
         "FILTER_ARTIFACT_BY_LABEL": "Filtrar por marcador",
         "ADD_LABELS": "Adicionar Marcadores",
+        "STOP": "Stop",
         "RETAG": "Copiar",
         "ACTION": "AÇÃO",
         "DEPLOY": "IMPLANTAR",
@@ -1021,6 +1035,42 @@
         "IN_PROGRESS": "Buscando...",
         "BACK": "Voltar"
     },
+    "SBOM": {
+        "CHART": {
+            "SCANNING_TIME": "Scan completed time:",
+            "SCANNING_PERCENT": "Scan progress:",
+            "SCANNING_PERCENT_EXPLAIN": "The scan completion progress is calculated as # of successfully scanned images / total number of images referenced within the image index.",
+            "TOOLTIPS_TITLE": "{{totalSbom}} of {{totalPackages}} {{package}} have known {{sbom}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalSbom}} of {{totalPackages}} {{package}} has known {{sbom}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
+        },
+        "GRID": {
+            "PLACEHOLDER": "No scan results found.",
+            "COLUMN_PACKAGE": "Package",
+            "COLUMN_PACKAGES": "Packages",
+            "COLUMN_VERSION": "Current version",
+            "COLUMN_LICENSE": "License",
+            "COLUMN_DESCRIPTION": "Description",
+            "FOOT_ITEMS": "Items",
+            "FOOT_OF": "of"
+        },
+        "STATE": {
+            "OTHER_STATUS": "No SBOM",
+            "QUEUED": "Queued",
+            "ERROR": "View Log",
+            "SCANNING": "Generating",
+            "STOPPED": "Generation stopped"
+        },
+        "NO_SBOM": "No SBOM",
+        "PACKAGES": "SBOM",
+        "COMPLETED": "Completed",
+        "REPORTED_BY": "Reported by {{scanner}}",
+        "GENERATE": "Generate SBOM",
+        "DOWNLOAD": "Download SBOM",
+        "Details": "SBOM details",
+        "STOP": "Stop Generate SBOM",
+        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+    },
     "VULNERABILITY": {
         "STATE": {
             "OTHER_STATUS": "Não analisado",
@@ -1065,12 +1115,12 @@
         "PLACEHOLDER": "Filtrar",
         "PACKAGE": "pacote",
         "PACKAGES": "pacotes",
-        "SCAN_NOW": "Examinar",
+        "SCAN_NOW": "Scan vulnerability",
         "SCAN_BY": "EXAMINAR COM {{scanner}}",
         "REPORTED_BY": "Encontrado com {{scanner}}",
         "NO_SCANNER": "NENHUM",
         "TRIGGER_STOP_SUCCESS": "Exame foi interrompido",
-        "STOP_NOW": "Interromper"
+        "STOP_NOW": "Stop Scan Vulnerability"
     },
     "PUSH_IMAGE": {
         "TITLE": "Comando Push",
@@ -1101,6 +1151,7 @@
         "ALL": "Todos",
         "PLACEHOLDER": "Nenhum artefato encontrado!",
         "SCAN_UNSUPPORTED": "Não pode ser examinada",
+        "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Resumo",
         "DEPENDENCIES": "Dependências",
         "VALUES": "Valores",
@@ -1427,6 +1478,10 @@
         "NAME_REQUIRED": "Nome é obrigatório",
         "NAME_REX": "O nome precisa ter no mínimo 2 caracteres. Pode conter apenas letras minúsculas, numeros, ou símbolos ._- e deve começar por uma letra ou número.",
         "DESCRIPTION": "Descrição",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "Vulnerability",
+        "SUPPORTED": "Supported",
+        "NOT_SUPPORTED": "Not Supported",
         "ENDPOINT": "Endereço",
         "ENDPOINT_EXISTS": "Endereço já usado por outro examinador",
         "ENDPOINT_REQUIRED": "Endereço é obrigatório",
@@ -1455,9 +1510,10 @@
         "NAME_COLON": "Nome:",
         "VENDOR_COLON": "Fornecedor:",
         "VERSION_COLON": "Versão:",
-        "CAPABILITIES": "Habilidades",
+        "CAPABILITIES": "Habilidades:",
         "CONSUMES_MIME_TYPES_COLON": "Consome estes Mime Types:",
         "PRODUCTS_MIME_TYPES_COLON": "Produz estes Mime Types:",
+        "CAPABILITIES_TYPE": "Type:",
         "PROPERTIES": "Propriedades",
         "NEW_SCANNER": "NOVO EXAMINADOR",
         "SET_AS_DEFAULT": "DEFINIR COMO PADRÃO",
@@ -1574,6 +1630,9 @@
         "TRIGGER": "Disparo",
         "CREATED": "Criado em",
         "DESCRIPTION": "Descrição",
+        "SCOPE": "Escopo",
+        "SCOPE_SINGLE_PEER": "Par único",
+        "SCOPE_ALL_PEERS": "Todos os pares",
         "NO_POLICY": "Nenhuma política",
         "ENABLED_POLICY_SUMMARY": "Gostaria de habilitar a política {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Gostaria de desabilitar a política {{name}}?",

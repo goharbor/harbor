@@ -29,6 +29,8 @@ import {
     PROJECT_SEVERITY_LEVEL_MAP,
     TRIGGER,
     TRIGGER_I18N_MAP,
+    SCOPE,
+    SCOPE_I18N_MAP,
 } from '../p2p-provider.service';
 import { ProviderUnderProject } from '../../../../../../ng-swagger-gen/models/provider-under-project';
 import { AppConfigService } from '../../../../services/app-config.service';
@@ -73,6 +75,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     severity: number;
     labels: string;
     triggerType: string = TRIGGER.MANUAL;
+    scope: string = SCOPE.SINGLE_PEER;
     cron: string;
     @ViewChild('policyForm', { static: true }) currentForm: NgForm;
     loading: boolean = false;
@@ -96,6 +99,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         TRIGGER.SCHEDULED,
         TRIGGER.EVENT_BASED,
     ];
+    scopes: string[] = [SCOPE.SINGLE_PEER, SCOPE.ALL_PEERS];
     enableContentTrust: boolean = false;
     private _nameSubject: Subject<string> = new Subject<string>();
     private _nameSubscription: Subscription;
@@ -198,6 +202,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         }
         this.currentForm.reset({
             triggerType: 'manual',
+            scope: 'single_peer',
             severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
             onlySignedImages: this.enableContentTrust,
             provider: this.policy.provider_id,
@@ -303,6 +308,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         policy.trigger = JSON.stringify(trigger);
         this.loading = true;
         this.buttonStatus = ClrLoadingState.LOADING;
+        policy.scope = this.scope ? this.scope : SCOPE.SINGLE_PEER;
         deleteEmptyKey(policy);
         if (isAdd) {
             policy.project_id = this.projectId;
@@ -404,6 +410,10 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
             return true;
         }
         // eslint-disable-next-line eqeqeq
+        if (this.policy.scope != this.scope) {
+            return true;
+        }
+        // eslint-disable-next-line eqeqeq
         return this.originCronForEdit != this.cron;
     }
     isSystemAdmin(): boolean {
@@ -417,6 +427,14 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         }
         return '';
     }
+
+    getScopeI18n(scope): string {
+        if (scope) {
+            return SCOPE_I18N_MAP[scope];
+        }
+        return '';
+    }
+
     showCron(): boolean {
         if (this.triggerType) {
             return this.triggerType === TRIGGER.SCHEDULED;

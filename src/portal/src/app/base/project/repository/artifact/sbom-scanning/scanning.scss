@@ -1,0 +1,42 @@
+.bar-wrapper {
+    width: 210px;
+}
+
+hbr-sbom-bar {
+    .label,.not-scan {
+        width: 90%;
+    }
+}
+
+.bar-state {
+    .unknow-text {
+        margin-left: -5px;
+    }
+
+    .label {
+        max-width: 60%;
+        min-width: 50%;
+    }
+}
+
+.bar-state-chart {
+    .loop-height {
+        height: 2px;
+        width: 100px;
+    }
+}
+
+.bar-state-error {
+    position: relative;
+}
+
+.error-text {
+    position: relative;
+    top: 1px;
+    margin-left: -5px;
+    cursor: pointer;
+}
+
+.stopped {
+    border-color: #cccc15;
+}

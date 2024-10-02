@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
+	eventModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -104,6 +105,9 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 				RepoFullName: event.Artifact.Repository,
 				RepoType:     repoType,
 			},
+			Scan: &eventModel.Scan{
+				ScanType: event.ScanType,
+			},
 		},
 		Operator: event.Operator,
 	}
@@ -138,17 +142,29 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	// Add scan overview
-	summaries, err := scan.DefaultController.GetSummary(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
-	if err != nil {
-		return nil, errors.Wrap(err, "construct scan payload")
+	scanSummaries := map[string]interface{}{}
+	if event.ScanType == v1.ScanTypeVulnerability {
+		scanSummaries, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
+		if err != nil {
+			return nil, errors.Wrap(err, "construct scan payload")
+		}
 	}
 
+	sbomOverview := map[string]interface{}{}
+	if event.ScanType == v1.ScanTypeSbom {
+		sbomOverview, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeSBOMReport})
+		if err != nil {
+			return nil, errors.Wrap(err, "construct scan payload")
+		}
+	}
+
+	// Add scan overview and sbom overview
 	resource := &model.Resource{
 		Tag:          event.Artifact.Tag,
 		Digest:       event.Artifact.Digest,
 		ResourceURL:  resURL,
-		ScanOverview: summaries,
+		ScanOverview: scanSummaries,
+		SBOMOverview: sbomOverview,
 	}
 	payload.EventData.Resources = append(payload.EventData.Resources, resource)
 

@@ -89,7 +89,7 @@ func GenerateRandomString() string {
 // TestTCPConn tests TCP connection
 // timeout: the total time before returning if something is wrong
 // with the connection, in second
-// interval: the interval time for retring after failure, in second
+// interval: the interval time for retrying after failure, in second
 func TestTCPConn(addr string, timeout, interval int) error {
 	success := make(chan int, 1)
 	cancel := make(chan int, 1)
@@ -176,7 +176,7 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 	return id, name, nil
 }
 
-// SafeCastString -- cast a object to string saftely
+// SafeCastString -- cast an object to string safely
 func SafeCastString(value interface{}) string {
 	if result, ok := value.(string); ok {
 		return result
@@ -313,11 +313,11 @@ func ValidateCronString(cron string) error {
 //	sort.Slice(input, func(i, j int) bool {
 //		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
 //	})
+//
 // a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
 // the return value is true if a is less than b
 // for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
 // it returns with this order {"user", "users", "admin_user", "harbor_user"}
-
 func MostMatchSorter(a, b string, matchWord string) bool {
 	// exact match always first
 	if a == matchWord {
@@ -333,7 +333,7 @@ func MostMatchSorter(a, b string, matchWord string) bool {
 	return len(a) < len(b)
 }
 
-// IsLocalPath checks if path is local
+// IsLocalPath checks if path is local, includes the empty path
 func IsLocalPath(path string) bool {
-	return strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//")
+	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
 }

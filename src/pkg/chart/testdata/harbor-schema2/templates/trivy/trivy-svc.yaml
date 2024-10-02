@@ -1,0 +1,16 @@
+{{ if .Values.trivy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.trivy" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - name: {{ ternary "https-trivy" "http-trivy" .Values.internalTLS.enabled }}
+      protocol: TCP
+      port: {{ template "harbor.trivy.servicePort" . }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: trivy
+{{ end }}

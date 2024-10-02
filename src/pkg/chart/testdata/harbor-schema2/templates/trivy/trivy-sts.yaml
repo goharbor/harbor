@@ -1,0 +1,230 @@
+{{- if .Values.trivy.enabled }}
+{{- $trivy := .Values.persistence.persistentVolumeClaim.trivy }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "harbor.trivy" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: trivy
+    app.kubernetes.io/component: trivy
+spec:
+  replicas: {{ .Values.trivy.replicas }}
+  serviceName: {{  template "harbor.trivy" . }}
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: trivy
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: trivy
+        app.kubernetes.io/component: trivy
+{{- if .Values.trivy.podLabels }}
+{{ toYaml .Values.trivy.podLabels | indent 8 }}
+{{- end }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/trivy/trivy-secret.yaml") . | sha256sum }}
+{{- if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "auto") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/internal/auto-tls.yaml") . | sha256sum }}
+{{- else if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "manual") }}
+        checksum/tls: {{ include (print $.Template.BasePath "/trivy/trivy-tls.yaml") . | sha256sum }}
+{{- end }}
+{{- if .Values.trivy.podAnnotations }}
+{{ toYaml .Values.trivy.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if .Values.trivy.serviceAccountName }}
+      serviceAccountName: {{ .Values.trivy.serviceAccountName }}
+{{- end }}
+      securityContext:
+        runAsUser: 10000
+        fsGroup: 10000
+      automountServiceAccountToken: {{ .Values.trivy.automountServiceAccountToken | default false }}
+{{- with .Values.trivy.topologySpreadConstraints}}
+      topologySpreadConstraints:
+{{- range . }}
+      - {{ . | toYaml | indent 8 | trim }}
+        labelSelector:
+          matchLabels:
+{{ include "harbor.matchLabels" $ | indent 12 }}
+            component: trivy
+{{- end }}
+{{- end }}
+      {{- with .Values.trivy.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: trivy
+          image: {{ .Values.trivy.image.repository }}:{{ .Values.trivy.image.tag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- if not (empty .Values.containerSecurityContext) }}
+          securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+          {{- if has "trivy" .Values.proxy.components }}
+            - name: HTTP_PROXY
+              value: "{{ .Values.proxy.httpProxy }}"
+            - name: HTTPS_PROXY
+              value: "{{ .Values.proxy.httpsProxy }}"
+            - name: NO_PROXY
+              value: "{{ template "harbor.noProxy" . }}"
+          {{- end }}
+            - name: "SCANNER_LOG_LEVEL"
+              value: {{ .Values.logLevel | quote }}
+            - name: "SCANNER_TRIVY_CACHE_DIR"
+              value: "/home/scanner/.cache/trivy"
+            - name: "SCANNER_TRIVY_REPORTS_DIR"
+              value: "/home/scanner/.cache/reports"
+            - name: "SCANNER_TRIVY_DEBUG_MODE"
+              value: {{ .Values.trivy.debugMode | quote }}
+            - name: "SCANNER_TRIVY_VULN_TYPE"
+              value: {{ .Values.trivy.vulnType | quote }}
+            - name: "SCANNER_TRIVY_TIMEOUT"
+              value: {{ .Values.trivy.timeout | quote }}
+            - name: "SCANNER_TRIVY_GITHUB_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "harbor.trivy" . }}
+                  key: gitHubToken
+            - name: "SCANNER_TRIVY_SEVERITY"
+              value: {{ .Values.trivy.severity | quote }}
+            - name: "SCANNER_TRIVY_IGNORE_UNFIXED"
+              value: {{ .Values.trivy.ignoreUnfixed | default false | quote }}
+            - name: "SCANNER_TRIVY_SKIP_UPDATE"
+              value: {{ .Values.trivy.skipUpdate | default false | quote }}
+            - name: "SCANNER_TRIVY_SKIP_JAVA_DB_UPDATE"
+              value: {{ .Values.trivy.skipJavaDBUpdate | default false | quote }}
+            - name: "SCANNER_TRIVY_OFFLINE_SCAN"
+              value: {{ .Values.trivy.offlineScan | default false | quote }}
+            - name: "SCANNER_TRIVY_SECURITY_CHECKS"
+              value: {{ .Values.trivy.securityCheck | quote }}
+            - name: "SCANNER_TRIVY_INSECURE"
+              value: {{ .Values.trivy.insecure | default false | quote }}
+            - name: SCANNER_API_SERVER_ADDR
+              value: ":{{ template "harbor.trivy.containerPort" . }}"
+            {{- if .Values.internalTLS.enabled }}
+            - name: INTERNAL_TLS_ENABLED
+              value: "true"
+            - name: SCANNER_API_SERVER_TLS_KEY
+              value: /etc/harbor/ssl/trivy/tls.key
+            - name: SCANNER_API_SERVER_TLS_CERTIFICATE
+              value: /etc/harbor/ssl/trivy/tls.crt
+            {{- end }}
+            - name: "SCANNER_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "harbor.trivy" . }}
+                  key: redisURL
+            - name: "SCANNER_STORE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "harbor.trivy" . }}
+                  key: redisURL
+            - name: "SCANNER_JOB_QUEUE_REDIS_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "harbor.trivy" . }}
+                  key: redisURL
+{{- with .Values.trivy.extraEnvVars }}
+{{- toYaml . | nindent 12 }}
+{{- end }}
+          ports:
+            - name: api-server
+              containerPort: {{ template "harbor.trivy.containerPort" . }}
+          volumeMounts:
+          - name: data
+            mountPath: /home/scanner/.cache
+            subPath: {{ .Values.persistence.persistentVolumeClaim.trivy.subPath }}
+            readOnly: false
+          {{- if .Values.internalTLS.enabled }}
+          - name: trivy-internal-certs
+            mountPath: /etc/harbor/ssl/trivy
+          {{- end }}
+          {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolumeMount" . | indent 10 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              scheme: {{ include "harbor.component.scheme" . | upper }}
+              path: /probe/healthy
+              port: api-server
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              scheme: {{ include "harbor.component.scheme" . | upper }}
+              path: /probe/ready
+              port: api-server
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+{{ toYaml .Values.trivy.resources | indent 12 }}
+      {{- if or (or .Values.internalTLS.enabled .Values.caBundleSecretName) (or (not .Values.persistence.enabled) $trivy.existingClaim) }}
+      volumes:
+      {{- if .Values.internalTLS.enabled }}
+      - name: trivy-internal-certs
+        secret:
+          secretName: {{ template "harbor.internalTLS.trivy.secretName" . }}
+      {{- end }}
+      {{- if .Values.caBundleSecretName }}
+{{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+      {{- if not .Values.persistence.enabled }}
+      - name: "data"
+        emptyDir: {}
+      {{- else if $trivy.existingClaim }}
+      - name: "data"
+        persistentVolumeClaim:
+          claimName: {{ $trivy.existingClaim }}
+      {{- end }}
+      {{- end }}
+    {{- with .Values.trivy.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.trivy.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.trivy.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.trivy.priorityClassName }}
+      priorityClassName: {{ .Values.trivy.priorityClassName }}
+    {{- end }}
+{{- if and .Values.persistence.enabled (not $trivy.existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+{{ include "harbor.legacy.labels" . | indent 8 }}
+      annotations:
+      {{- range $key, $value := $trivy.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+      accessModes: [{{ $trivy.accessMode | quote }}]
+      {{- if $trivy.storageClass }}
+      {{- if (eq "-" $trivy.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ $trivy.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ $trivy.size | quote }}
+{{- end }}
+{{- end }}

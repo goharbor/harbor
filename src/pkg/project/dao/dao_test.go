@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -336,6 +337,42 @@ func (suite *DaoTestSuite) TestListByMember() {
 				projects, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"member": memberQuery}))
 				suite.Nil(err)
 				suite.Len(projects, 2)
+			})
+		})
+	}
+}
+
+func (suite *DaoTestSuite) TestListAdminRolesOfUser() {
+	{
+		// projectAdmin and user groups
+		suite.WithUser(func(userID int64, username string) {
+			project := &models.Project{
+				Name:    utils.GenerateRandomString(),
+				OwnerID: int(userID),
+			}
+			projectID, err := suite.dao.Create(orm.Context(), project)
+			suite.Nil(err)
+
+			defer suite.dao.Delete(orm.Context(), projectID)
+
+			suite.WithUserGroup(func(groupID int64, groupName string) {
+
+				o, err := orm.FromContext(orm.Context())
+				if err != nil {
+					suite.Fail("got error %v", err)
+				}
+
+				var pid int64
+				suite.Nil(o.Raw("INSERT INTO project_member (project_id, entity_id, role, entity_type) values (?, ?, ?, ?) RETURNING id", projectID, groupID, common.RoleProjectAdmin, "g").QueryRow(&pid))
+				defer o.Raw("DELETE FROM project_member WHERE id = ?", pid)
+
+				userTest := commonmodels.User{
+					UserID:   int(userID),
+					GroupIDs: []int{int(groupID)},
+				}
+				roles, err := suite.dao.ListAdminRolesOfUser(orm.Context(), userTest)
+				suite.Nil(err)
+				suite.Len(roles, 2)
 			})
 		})
 	}

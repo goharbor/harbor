@@ -191,6 +191,11 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 				return preheatJobRunningError(errors.Errorf("preheat failed: %s", s))
 			case provider.PreheatingStatusSuccess:
 				// Finished
+				// log the message if received message from provider.
+				if s.Message != "" {
+					myLogger.Infof("Preheat job finished, message from provider: \n%s", s.Message)
+				}
+
 				return nil
 			default:
 				// do nothing, check again

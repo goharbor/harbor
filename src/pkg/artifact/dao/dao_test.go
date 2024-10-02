@@ -472,6 +472,75 @@ func (d *daoTestSuite) TestDeleteReferences() {
 	d.True(errors.IsErr(err, errors.NotFoundCode))
 }
 
+func (d *daoTestSuite) TestListWithLatest() {
+	now := time.Now()
+	art := &Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageIndex,
+		ProjectID:         1234,
+		RepositoryID:      1234,
+		RepositoryName:    "library2/hello-world1",
+		Digest:            "digest",
+		PushTime:          now,
+		PullTime:          now,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	id, err := d.dao.Create(d.ctx, art)
+	d.Require().Nil(err)
+
+	time.Sleep(1 * time.Second)
+	now = time.Now()
+
+	art2 := &Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageIndex,
+		ProjectID:         1234,
+		RepositoryID:      1235,
+		RepositoryName:    "library2/hello-world2",
+		Digest:            "digest",
+		PushTime:          now,
+		PullTime:          now,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	id1, err := d.dao.Create(d.ctx, art2)
+	d.Require().Nil(err)
+
+	time.Sleep(1 * time.Second)
+	now = time.Now()
+
+	art3 := &Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageIndex,
+		ProjectID:         1234,
+		RepositoryID:      1235,
+		RepositoryName:    "library2/hello-world2",
+		Digest:            "digest2",
+		PushTime:          now,
+		PullTime:          now,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	id2, err := d.dao.Create(d.ctx, art3)
+	d.Require().Nil(err)
+
+	latest, err := d.dao.ListWithLatest(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ProjectID":  1234,
+			"media_type": v1.MediaTypeImageConfig,
+		},
+	})
+
+	d.Require().Nil(err)
+	d.Require().Equal(2, len(latest))
+	d.Equal("library2/hello-world1", latest[0].RepositoryName)
+
+	defer d.dao.Delete(d.ctx, id)
+	defer d.dao.Delete(d.ctx, id1)
+	defer d.dao.Delete(d.ctx, id2)
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &daoTestSuite{})
 }

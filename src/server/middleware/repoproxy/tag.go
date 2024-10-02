@@ -35,7 +35,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		ctx := r.Context()
 
-		art, p, _, err := preCheck(ctx)
+		art, p, _, err := preCheck(ctx, false)
 		if err != nil {
 			libhttp.SendError(w, err)
 			return
@@ -69,7 +69,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 			util.SendListTagsResponse(w, r, tags)
 		}()
 
-		remote, err := proxy.NewRemoteHelper(ctx, p.RegistryID)
+		remote, err := proxy.NewRemoteHelper(ctx, p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 		if err != nil {
 			logger.Warningf("failed to get remote interface, error: %v, fallback to local tags", err)
 			return

@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strings"
 
+	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -47,7 +48,7 @@ type Manager interface {
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 
 	// ListAdminRolesOfUser returns the roles of user for the all projects
-	ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error)
+	ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error)
 }
 
 // New returns a default implementation of Manager
@@ -124,6 +125,6 @@ func (m *manager) ListRoles(ctx context.Context, projectID int64, userID int, gr
 }
 
 // ListAdminRolesOfUser returns the roles of user for the all projects
-func (m *manager) ListAdminRolesOfUser(ctx context.Context, userID int) ([]models.Member, error) {
-	return m.dao.ListAdminRolesOfUser(ctx, userID)
+func (m *manager) ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error) {
+	return m.dao.ListAdminRolesOfUser(ctx, user)
 }

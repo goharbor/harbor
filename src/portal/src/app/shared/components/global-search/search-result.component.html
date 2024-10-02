@@ -1,4 +1,4 @@
-<div class="search-overlay" *ngIf="state">
+<div [style.top.px]="getTopValue()" class="search-overlay" *ngIf="state">
     <div id="placeholder1"></div>
     <div class="search-header">
         <a href="javascript:void(0)" (click)="close()"

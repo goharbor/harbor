@@ -66,6 +66,38 @@ var (
 	]
 }
 */
+// cosign adopt oci-spec 1.1 will have request and manifest like below
+// It will skip this middleware since not using cosignRe for subject artifact reference
+// use Subject Middleware indtead
+/*
+PUT /v2/library/goharbor/harbor-db/manifests/sha256:aabea2bdd5a6fb79c13837b88c7b158f4aa57a621194ee21959d0b520eda412f
+{
+  "schemaVersion": 2,
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "config": {
+    "mediaType": "application/vnd.dev.cosign.artifact.sig.v1+json",
+    "size": 233,
+    "digest": "sha256:c025e9532dbc880534be96dbbb86a6bf63a272faced7f07bb8b4ceb45ca938d1"
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.dev.cosign.simplesigning.v1+json",
+      "size": 257,
+      "digest": "sha256:38d07d81bf1d026da6420295113115d999ad6da90073b5e67147f978626423e6",
+      "annotations": {
+        "dev.cosignproject.cosign/signature": "MEUCIDOQc6I4MSd4/s8Bc8S7LXHCOnm4MGimpQdeCInLzM0VAiEAhWWYxmwEmYrFJ8xYNE3ow7PS4zeGe1R4RUbXRIawKJ4=",
+        "dev.sigstore.cosign/bundle": "{\"SignedEntryTimestamp\":\"MEUCIC5DSFQx3nZhPFquF4NAdfetjqLR6qAa9i04cEtAg7VjAiEAzG2DUxqH+MdFSPih/EL/Vvsn3L1xCJUlOmRZeUYZaG0=\",\"Payload\":{\"body\":\"eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiIzOGQwN2Q4MWJmMWQwMjZkYTY0MjAyOTUxMTMxMTVkOTk5YWQ2ZGE5MDA3M2I1ZTY3MTQ3Zjk3ODYyNjQyM2U2In19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FVUNJRE9RYzZJNE1TZDQvczhCYzhTN0xYSENPbm00TUdpbXBRZGVDSW5Mek0wVkFpRUFoV1dZeG13RW1ZckZKOHhZTkUzb3c3UFM0emVHZTFSNFJVYlhSSWF3S0o0PSIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCUVZVSk1TVU1nUzBWWkxTMHRMUzBLVFVacmQwVjNXVWhMYjFwSmVtb3dRMEZSV1VsTGIxcEplbW93UkVGUlkwUlJaMEZGWVVoSk1DOTZiWEpIYW1VNE9FeFVTM0ZDU2tvNWJXZDNhWEprWkFwaVJrZGpNQzlRYWtWUUwxbFJNelJwZFZweWJGVnRhMGx3ZDBocFdVTmxSV3M0YWpoWE5rSnBaV3BxTHk5WmVVRnZZaXN5VTFCTGRqUkJQVDBLTFMwdExTMUZUa1FnVUZWQ1RFbERJRXRGV1MwdExTMHRDZz09In19fX0=\",\"integratedTime\":1712651102,\"logIndex\":84313668,\"logID\":\"c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d\"}}"
+      }
+    }
+  ],
+  "subject": {
+    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+    "size": 2621,
+    "digest": "sha256:e50f88df1b11f94627e35bed9f34214392363508a2b07146d0a94516da97e4c0"
+  }
+}
+
+*/
 func SignatureMiddleware() func(http.Handler) http.Handler {
 	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {

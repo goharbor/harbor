@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.portal" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- with .Values.portal.serviceAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+{{- if or  (eq .Values.expose.ingress.controller "gce") (eq .Values.expose.ingress.controller "alb") (eq .Values.expose.ingress.controller "f5-bigip") }}
+  type: NodePort
+{{- end }}
+  ports:
+    - port: {{ template "harbor.portal.servicePort" . }}
+      targetPort: {{ template "harbor.portal.containerPort" . }}
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: portal

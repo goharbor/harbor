@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "harbor.core" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  app.conf: |+
+    appname = Harbor
+    runmode = prod
+    enablegzip = true
+
+    [prod]
+    httpport = {{ ternary "8443" "8080" .Values.internalTLS.enabled }}
+  PORT: "{{ ternary "8443" "8080" .Values.internalTLS.enabled }}"
+  DATABASE_TYPE: "postgresql"
+  POSTGRESQL_HOST: "{{ template "harbor.database.host" . }}"
+  POSTGRESQL_PORT: "{{ template "harbor.database.port" . }}"
+  POSTGRESQL_USERNAME: "{{ template "harbor.database.username" . }}"
+  POSTGRESQL_DATABASE: "{{ template "harbor.database.coreDatabase" . }}"
+  POSTGRESQL_SSLMODE: "{{ template "harbor.database.sslmode" . }}"
+  POSTGRESQL_MAX_IDLE_CONNS: "{{ .Values.database.maxIdleConns }}"
+  POSTGRESQL_MAX_OPEN_CONNS: "{{ .Values.database.maxOpenConns }}"
+  EXT_ENDPOINT: "{{ .Values.externalURL }}"
+  CORE_URL: "{{ template "harbor.coreURL" . }}"
+  JOBSERVICE_URL: "{{ template "harbor.jobserviceURL" . }}"
+  REGISTRY_URL: "{{ template "harbor.registryURL" . }}"
+  TOKEN_SERVICE_URL: "{{ template "harbor.tokenServiceURL" . }}"
+  CORE_LOCAL_URL: "{{ ternary "https://127.0.0.1:8443" "http://127.0.0.1:8080" .Values.internalTLS.enabled }}"
+  WITH_TRIVY: {{ .Values.trivy.enabled | quote }}
+  TRIVY_ADAPTER_URL: "{{ template "harbor.trivyAdapterURL" . }}"
+  REGISTRY_STORAGE_PROVIDER_NAME: "{{ .Values.persistence.imageChartStorage.type }}"
+  LOG_LEVEL: "{{ .Values.logLevel }}"
+  CONFIG_PATH: "/etc/core/app.conf"
+  CHART_CACHE_DRIVER: "redis"
+  _REDIS_URL_CORE: "{{ template "harbor.redis.urlForCore" . }}"
+  _REDIS_URL_REG: "{{ template "harbor.redis.urlForRegistry" . }}"
+  {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.harborDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.harborDatabaseIndex) }}
+  _REDIS_URL_HARBOR: "{{ template "harbor.redis.urlForHarbor" . }}"
+  {{- end }}
+  {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.cacheLayerDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.cacheLayerDatabaseIndex) }}
+  _REDIS_URL_CACHE_LAYER: "{{ template "harbor.redis.urlForCache" . }}"
+  {{- end }}  
+  PORTAL_URL: "{{ template "harbor.portalURL" . }}"
+  REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
+  REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
+  {{- if .Values.uaaSecretName }}
+  UAA_CA_ROOT: "/etc/core/auth-ca/auth-ca.crt"
+  {{- end }}
+  {{- if has "core" .Values.proxy.components }}
+  HTTP_PROXY: "{{ .Values.proxy.httpProxy }}"
+  HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
+  NO_PROXY: "{{ template "harbor.noProxy" . }}"
+  {{- end }}
+  PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "docker-hub,harbor,azure-acr,aws-ecr,google-gcr,quay,docker-registry,github-ghcr,jfrog-artifactory"
+  {{- if .Values.metrics.enabled}}
+  METRIC_ENABLE: "true"
+  METRIC_PATH: "{{ .Values.metrics.core.path }}"
+  METRIC_PORT: "{{ .Values.metrics.core.port }}"
+  METRIC_NAMESPACE: harbor
+  METRIC_SUBSYSTEM: core
+  {{- end }}
+
+  {{- if hasKey .Values.core "gcTimeWindowHours" }}
+  #make the GC time window configurable for testing
+  GC_TIME_WINDOW_HOURS: "{{ .Values.core.gcTimeWindowHours }}"
+  {{- end }}
+  {{- template "harbor.traceEnvsForCore" . }}
+
+  {{- if .Values.core.artifactPullAsyncFlushDuration }}
+  ARTIFACT_PULL_ASYNC_FLUSH_DURATION: {{ .Values.core.artifactPullAsyncFlushDuration | quote }}
+  {{- end }}
+
+  {{- if .Values.core.gdpr}}
+  {{- if .Values.core.gdpr.deleteUser}}
+  GDPR_DELETE_USER: "true"
+  {{- end }}
+  {{- if .Values.core.gdpr.auditLogsCompliant}}
+  GDPR_AUDIT_LOGS: "true"
+  {{- end }}
+  {{- end }}
+
+  {{- if .Values.cache.enabled }}
+  CACHE_ENABLED: "true"
+  CACHE_EXPIRE_HOURS: "{{ .Values.cache.expireHours }}"
+  {{- end }}
+  
+  {{- if .Values.core.quotaUpdateProvider }}
+  QUOTA_UPDATE_PROVIDER: "{{ .Values.core.quotaUpdateProvider }}"
+  {{- end }}

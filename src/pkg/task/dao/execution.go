@@ -107,7 +107,7 @@ func (e *executionDAO) Count(ctx context.Context, query *q.Query) (int64, error)
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := e.querySetter(ctx, query)
+	qs, err := e.querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -343,8 +343,14 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 	return status != execution.Status, status, false, err
 }
 
-func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Execution{}, query)
+type jsonbStru struct {
+	keyPrefix string
+	key       string
+	value     interface{}
+}
+
+func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Execution{}, query, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -352,39 +358,32 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 	// append the filter for "extra attrs"
 	if query != nil && len(query.Keywords) > 0 {
 		var (
-			key       string
-			keyPrefix string
-			value     interface{}
+			jsonbStrus []jsonbStru
+			args       []interface{}
 		)
-		for key, value = range query.Keywords {
-			if strings.HasPrefix(key, "ExtraAttrs.") {
-				keyPrefix = "ExtraAttrs."
-				break
+
+		for key, value := range query.Keywords {
+			if strings.HasPrefix(key, "ExtraAttrs.") && key != "ExtraAttrs." {
+				jsonbStrus = append(jsonbStrus, jsonbStru{
+					keyPrefix: "ExtraAttrs.",
+					key:       key,
+					value:     value,
+				})
 			}
-			if strings.HasPrefix(key, "extra_attrs.") {
-				keyPrefix = "extra_attrs."
-				break
+			if strings.HasPrefix(key, "extra_attrs.") && key != "extra_attrs." {
+				jsonbStrus = append(jsonbStrus, jsonbStru{
+					keyPrefix: "extra_attrs.",
+					key:       key,
+					value:     value,
+				})
 			}
 		}
-		if len(keyPrefix) == 0 || keyPrefix == key {
+		if len(jsonbStrus) == 0 {
 			return qs, nil
 		}
 
-		// key with keyPrefix supports multi-level query operator on PostgreSQL JSON data
-		// examples:
-		// key = extra_attrs.id,
-		//  ==> sql = "select id from execution where extra_attrs->>?=?", args = {id, value}
-		// key = extra_attrs.artifact.digest
-		//  ==> sql = "select id from execution where extra_attrs->?->>?=?", args = {artifact, id, value}
-		// key = extra_attrs.a.b.c
-		//  ==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
-		keys := strings.Split(strings.TrimPrefix(key, keyPrefix), ".")
-		var args []interface{}
-		for _, item := range keys {
-			args = append(args, item)
-		}
-		args = append(args, value)
-		inClause, err := orm.CreateInClause(ctx, buildInClauseSQLForExtraAttrs(keys), args...)
+		idSQL, args := buildInClauseSQLForExtraAttrs(jsonbStrus)
+		inClause, err := orm.CreateInClause(ctx, idSQL, args...)
 		if err != nil {
 			return nil, err
 		}
@@ -395,23 +394,60 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query) (orm.Que
 }
 
 // Param keys is strings.Split() after trim "extra_attrs."/"ExtraAttrs." prefix
-func buildInClauseSQLForExtraAttrs(keys []string) string {
-	switch len(keys) {
-	case 0:
-		// won't fall into this case, as the if condition on "keyPrefix == key"
-		// act as a place holder to ensure "default" is equivalent to "len(keys) >= 2"
-		return ""
-	case 1:
-		return "select id from execution where extra_attrs->>?=?"
-	default:
-		// len(keys) >= 2
-		elements := make([]string, len(keys)-1)
-		for i := range elements {
-			elements[i] = "?"
-		}
-		s := strings.Join(elements, "->")
-		return fmt.Sprintf("select id from execution where extra_attrs->%s->>?=?", s)
+// key with keyPrefix supports multi-level query operator on PostgreSQL JSON data
+// examples:
+// key = extra_attrs.id,
+//
+//	==> sql = "select id from execution where extra_attrs->>?=?", args = {id, value}
+//
+// key = extra_attrs.artifact.digest
+//
+//	==> sql = "select id from execution where extra_attrs->?->>?=?", args = {artifact, id, value}
+//
+// key = extra_attrs.a.b.c
+//
+//	==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
+func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{}) {
+	if len(jsonbStrus) == 0 {
+		return "", nil
 	}
+
+	var cond string
+	var args []interface{}
+	sql := "select id from execution where"
+
+	for i, jsonbStr := range jsonbStrus {
+		if jsonbStr.key == "" || jsonbStr.value == "" {
+			return "", nil
+		}
+		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
+		if len(keys) == 1 {
+			if i == 0 {
+				cond += "extra_attrs->>?=?"
+			} else {
+				cond += " and extra_attrs->>?=?"
+			}
+		}
+		if len(keys) >= 2 {
+			elements := make([]string, len(keys)-1)
+			for i := range elements {
+				elements[i] = "?"
+			}
+			s := strings.Join(elements, "->")
+			if i == 0 {
+				cond += fmt.Sprintf("extra_attrs->%s->>?=?", s)
+			} else {
+				cond += fmt.Sprintf(" and extra_attrs->%s->>?=?", s)
+			}
+		}
+
+		for _, item := range keys {
+			args = append(args, item)
+		}
+		args = append(args, jsonbStr.value)
+	}
+
+	return fmt.Sprintf("%s %s", sql, cond), args
 }
 
 func buildExecStatusOutdateKey(id int64, vendor string) string {

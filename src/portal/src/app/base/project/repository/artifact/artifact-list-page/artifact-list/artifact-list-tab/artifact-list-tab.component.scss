@@ -157,8 +157,16 @@
   width: 7rem !important;
 }
 
+.size-column {
+  width: 6rem !important;
+}
+
 .vul-column {
   width: 11rem !important;
+}
+
+.sbom-column {
+  width: 7rem !important;
 }
 
 .annotations-column {
@@ -217,4 +225,10 @@
   color: unset;
   background-color: unset;
 
+}
+
+.clr-signpost-content-label-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: -10px;
 }

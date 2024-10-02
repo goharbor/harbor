@@ -11,15 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { AppConfigService } from '../../../../services/app-config.service';
 import { ConfigurationService } from '../../../../services/config.service';
 import { SystemInfoService } from '../../../../shared/services';
 import {
-    isEmpty,
     getChanges as getChangesFunc,
+    isEmpty,
 } from '../../../../shared/units/utils';
 import { CONFIG_AUTH_MODE } from '../../../../shared/entities/shared.const';
 import { errorHandler } from '../../../../shared/units/shared.utils';
@@ -132,6 +132,9 @@ export class ConfigurationAuthComponent implements OnInit {
         this.currentConfig.ldap_verify_cert.value = $event;
     }
 
+    setLdapGroupAttachParallelValue($event: any) {
+        this.currentConfig.ldap_group_attach_parallel.value = $event;
+    }
     public pingTestServer(): void {
         if (this.testingOnGoing) {
             return; // Should not come here

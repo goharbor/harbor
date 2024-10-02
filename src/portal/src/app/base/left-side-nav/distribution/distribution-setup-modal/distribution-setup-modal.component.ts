@@ -432,6 +432,11 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
         this.checkBtnState = ClrLoadingState.LOADING;
         const instance: Instance = clone(this.model);
         instance.id = 0;
+        if (instance.auth_mode !== AuthMode.NONE) {
+            instance.auth_info = this.authData;
+        } else {
+            delete instance.auth_info;
+        }
         this.distributionService
             .PingInstances({
                 instance: this.handleInstance(instance),

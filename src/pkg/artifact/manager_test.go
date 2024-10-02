@@ -80,6 +80,11 @@ func (f *fakeDao) DeleteReferences(ctx context.Context, parentID int64) error {
 	return args.Error(0)
 }
 
+func (f *fakeDao) ListWithLatest(ctx context.Context, query *q.Query) ([]*dao.Artifact, error) {
+	args := f.Called()
+	return args.Get(0).([]*dao.Artifact), args.Error(1)
+}
+
 type managerTestSuite struct {
 	suite.Suite
 	mgr *manager
@@ -133,6 +138,28 @@ func (m *managerTestSuite) TestAssemble() {
 	m.Require().NotNil(artifact)
 	m.Equal(art.ID, artifact.ID)
 	m.Equal(2, len(artifact.References))
+}
+
+func (m *managerTestSuite) TestListWithLatest() {
+	art := &dao.Artifact{
+		ID:                1,
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1,
+		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+		Size:              1024,
+		PushTime:          time.Now(),
+		PullTime:          time.Now(),
+		ExtraAttrs:        `{"attr1":"value1"}`,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	m.dao.On("ListWithLatest", mock.Anything).Return([]*dao.Artifact{art}, nil)
+	artifacts, err := m.mgr.ListWithLatest(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(1, len(artifacts))
+	m.Equal(art.ID, artifacts[0].ID)
 }
 
 func (m *managerTestSuite) TestList() {

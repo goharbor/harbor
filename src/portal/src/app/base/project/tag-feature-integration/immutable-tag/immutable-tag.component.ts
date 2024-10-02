@@ -58,6 +58,7 @@ export class ImmutableTagComponent implements OnInit {
         this.immutableService
             .ListImmuRules({
                 projectNameOrId: this.projectId.toString(),
+                pageSize: 15,
             })
             .subscribe({
                 next: res => {

@@ -151,7 +151,7 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	return stats.Stats.JobID, nil
 }
 
-// GetJobLog call jobserivce API to get the log of a job.  It only accepts the UUID of the job
+// GetJobLog call jobservice API to get the log of a job.  It only accepts the UUID of the job
 func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 	url := d.endpoint + "/api/v1/jobs/" + uuid + "/log"
 	req, err := http.NewRequest(http.MethodGet, url, nil)

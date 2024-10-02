@@ -81,7 +81,7 @@ func (suite *CheckerTestSuite) TestIsScannable() {
 			walkFn := args.Get(2).(func(*artifact.Artifact) error)
 			walkFn(art)
 		})
-
+		mock.OnAnything(c.artifactCtl, "HasUnscannableLayer").Return(false, nil).Once()
 		isScannable, err := c.IsScannable(context.TODO(), art)
 		suite.Nil(err)
 		suite.False(isScannable)
@@ -97,6 +97,7 @@ func (suite *CheckerTestSuite) TestIsScannable() {
 			walkFn := args.Get(2).(func(*artifact.Artifact) error)
 			walkFn(art)
 		})
+		mock.OnAnything(c.artifactCtl, "HasUnscannableLayer").Return(false, nil).Once()
 
 		isScannable, err := c.IsScannable(context.TODO(), art)
 		suite.Nil(err)

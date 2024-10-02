@@ -96,7 +96,7 @@ func main() {
 	)
 	prometheus.MustRegister(harborExporter)
 	if err := harborExporter.ListenAndServe(); err != nil {
-		log.Errorf("Error starting Harbor expoter %s", err)
+		log.Errorf("Error starting Harbor exporter %s", err)
 		os.Exit(1)
 	}
 }

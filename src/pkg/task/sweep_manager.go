@@ -176,7 +176,7 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 		return errors.Wrap(err, "failed to delete tasks")
 	}
 	// delete executions
-	sql = fmt.Sprintf("DELETE FROM execution WHERE id IN (%s)", orm.ParamPlaceholderForIn(len(params)))
+	sql = fmt.Sprintf("DELETE FROM execution WHERE id IN (%s) AND id NOT IN (SELECT DISTINCT execution_id FROM task)", orm.ParamPlaceholderForIn(len(params)))
 	_, err = ormer.Raw(sql, params...).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete executions")

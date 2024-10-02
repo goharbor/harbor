@@ -164,7 +164,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   2.7    |    1.19.4     |
 |   2.8    |    1.20.6     |
 |   2.9    |    1.21.3     |
-|   2.10    |   1.21.5     |
+|   2.10   |    1.21.8     |
+|   2.11   |    1.22.3     |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
@@ -275,7 +276,7 @@ To build the code, please refer to [build](https://goharbor.io/docs/edge/build-c
 
 **Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
 
-As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add `//go:generate mockery xxx` comment with mockery command in the subpackages of `src/testing`, then run `make gen_mocks` to generate mocks.
+As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add mock config in the `src/.mockery.yaml`, then run `make gen_mocks` to generate mocks.
 
 ###  Keep sync with upstream
 

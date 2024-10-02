@@ -46,8 +46,8 @@ var HashAlg = map[string]func() hash.Hash{
 }
 
 // Encrypt encrypts the content with salt
-func Encrypt(content string, salt string, encrptAlg string) string {
-	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, HashAlg[encrptAlg]))
+func Encrypt(content string, salt string, encryptAlg string) string {
+	return fmt.Sprintf("%x", pbkdf2.Key([]byte(content), []byte(salt), 4096, 16, HashAlg[encryptAlg]))
 }
 
 // ReversibleEncrypt encrypts the str with aes/base64

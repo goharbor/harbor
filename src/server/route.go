@@ -42,7 +42,7 @@ func registerRoutes() {
 	web.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	web.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	web.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
-	web.Router(common.AuthProxyRediretPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
+	web.Router(common.AuthProxyRedirectPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
 
 	web.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 	web.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")

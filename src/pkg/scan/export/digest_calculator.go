@@ -35,6 +35,7 @@ func (calc *SHA256ArtifactDigestCalculator) Calculate(fileName string) (digest.D
 	if err != nil {
 		return "", err
 	}
+	defer file.Close()
 	hash := sha256.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		return "", err

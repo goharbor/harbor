@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr\\.([\\w\\-]+)\\.amazonaws\\.com"
+	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr(\\-fips)?\\.([\\w\\-]+)\\.(amazonaws\\.com(\\.cn)?|sc2s\\.sgov\\.gov|c2s\\.ic\\.gov)"
 )
 
 var (
@@ -64,10 +64,10 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 func parseAccountRegion(url string) (string, string, error) {
 	rs := ecrRegexp.FindStringSubmatch(url)
-	if rs == nil {
+	if rs == nil || len(rs) < 4 {
 		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], rs[2], nil
+	return rs[1], rs[3], nil
 }
 
 type factory struct {

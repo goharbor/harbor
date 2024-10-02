@@ -24,6 +24,3 @@ type registryAdapter interface {
 	adapter.Adapter
 	adapter.ArtifactRegistry
 }
-
-//go:generate mockery --dir . --name registryAdapter --output . --outpkg flow --filename mock_adapter_test.go --structname mockAdapter
-//go:generate mockery --dir ../../../pkg/reg/adapter --name Factory --output . --outpkg flow --filename mock_adapter_factory_test.go --structname mockFactory

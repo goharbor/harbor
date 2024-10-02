@@ -1,0 +1,15 @@
+{{- if and .Values.trivy.enabled .Values.internalTLS.enabled  }}
+{{- if eq .Values.internalTLS.certSource "manual" }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.trivy.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ (required "The \"internalTLS.trustCa\" is required!" .Values.internalTLS.trustCa) | b64enc | quote }}
+  tls.crt: {{ (required "The \"internalTLS.trivy.crt\" is required!" .Values.internalTLS.trivy.crt) | b64enc | quote }}
+  tls.key: {{ (required "The \"internalTLS.trivy.key\" is required!" .Values.internalTLS.trivy.key) | b64enc | quote }}
+{{- end }}
+{{- end }}

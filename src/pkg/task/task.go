@@ -67,6 +67,10 @@ type Manager interface {
 	// ListScanTasksByReportUUID lists scan tasks by report uuid, although it's a specific case but it will be
 	// more suitable to support multi database in the future.
 	ListScanTasksByReportUUID(ctx context.Context, uuid string) (tasks []*Task, err error)
+	// RetrieveStatusFromTask retrieve status from task
+	RetrieveStatusFromTask(ctx context.Context, reportID string) string
+	// IsTaskFinished checks if the scan task is finished by report UUID
+	IsTaskFinished(ctx context.Context, reportID string) bool
 }
 
 // NewManager creates an instance of the default task manager
@@ -281,4 +285,27 @@ func (m *manager) ExecutionIDsByVendorAndStatus(ctx context.Context, vendorType,
 
 func (m *manager) GetLogByJobID(_ context.Context, jobID string) (log []byte, err error) {
 	return m.jsClient.GetJobLog(jobID)
+}
+
+func (m *manager) RetrieveStatusFromTask(ctx context.Context, reportID string) string {
+	if len(reportID) == 0 {
+		return ""
+	}
+	tasks, err := m.dao.ListScanTasksByReportUUID(ctx, reportID)
+	if err != nil {
+		log.Warningf("can not find the task with report UUID %v, error %v", reportID, err)
+		return ""
+	}
+	if len(tasks) > 0 {
+		return tasks[0].Status
+	}
+	return ""
+}
+
+func (m *manager) IsTaskFinished(ctx context.Context, reportID string) bool {
+	status := m.RetrieveStatusFromTask(ctx, reportID)
+	if len(status) == 0 {
+		return true
+	}
+	return job.Status(status).Final()
 }

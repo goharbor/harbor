@@ -1,0 +1,81 @@
+{{- if and .Values.internalTLS.enabled (eq .Values.internalTLS.certSource "auto") }}
+{{- $ca := genCA "harbor-internal-ca" 365 }}
+{{- $coreCN := (include "harbor.core" .) }}
+{{- $coreCrt := genSignedCert $coreCN (list "127.0.0.1") (list "localhost" $coreCN) 365 $ca }}
+{{- $jsCN := (include "harbor.jobservice" .) }}
+{{- $jsCrt := genSignedCert $jsCN nil (list $jsCN) 365 $ca }}
+{{- $regCN := (include "harbor.registry" .) }}
+{{- $regCrt := genSignedCert $regCN nil (list $regCN) 365 $ca }}
+{{- $portalCN := (include "harbor.portal" .) }}
+{{- $portalCrt := genSignedCert $portalCN nil (list $portalCN) 365 $ca }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.core.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
+  tls.crt: {{ $coreCrt.Cert | b64enc | quote }}
+  tls.key: {{ $coreCrt.Key | b64enc | quote }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.jobservice.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
+  tls.crt: {{ $jsCrt.Cert | b64enc | quote }}
+  tls.key: {{ $jsCrt.Key | b64enc | quote }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.registry.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
+  tls.crt: {{ $regCrt.Cert | b64enc | quote }}
+  tls.key: {{ $regCrt.Key | b64enc | quote }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.portal.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
+  tls.crt: {{ $portalCrt.Cert | b64enc | quote }}
+  tls.key: {{ $portalCrt.Key | b64enc | quote }}
+
+{{- if and .Values.trivy.enabled}}
+---
+{{- $trivyCN := (include "harbor.trivy" .) }}
+{{- $trivyCrt := genSignedCert $trivyCN nil (list $trivyCN) 365 $ca }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ template "harbor.internalTLS.trivy.secretName" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+type: kubernetes.io/tls
+data:
+  ca.crt: {{ $ca.Cert | b64enc | quote }}
+  tls.crt: {{ $trivyCrt.Cert | b64enc | quote }}
+  tls.key: {{ $trivyCrt.Key | b64enc | quote }}
+{{- end }}
+
+{{- end }}

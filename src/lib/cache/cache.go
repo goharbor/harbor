@@ -47,8 +47,6 @@ type Iterator interface {
 	Val() string
 }
 
-//go:generate mockery --name Cache --output . --outpkg cache --filename mock_cache_test.go --structname mockCache --inpackage
-
 // Cache cache interface
 type Cache interface {
 	// Contains returns true if key exists

@@ -498,6 +498,37 @@
                 </option>
             </select>
         </clr-select-container>
+        <clr-checkbox-container>
+            <label for="ldapGroupAttachParallel">
+                {{ 'CONFIG.LDAP.GROUP_ATTACH_PARALLEL' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        *clrIfOpen
+                        clrPosition="top-right"
+                        clrSize="lg">
+                        <span>{{
+                            'CONFIG.LDAP.GROUP_ATTACH_PARALLEL_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    (ngModelChange)="setLdapGroupAttachParallelValue($event)"
+                    [disabled]="
+                        disabled(currentConfig.ldap_group_attach_parallel)
+                    "
+                    [ngModel]="currentConfig.ldap_group_attach_parallel.value"
+                    clrCheckbox
+                    id="ldapGroupAttachParallel"
+                    name="ldapGroupAttachParallel"
+                    type="checkbox" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
     </section>
     <clr-checkbox-container *ngIf="showSelfReg">
         <label for="selfReg"

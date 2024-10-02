@@ -56,7 +56,7 @@ func (m *manager) Create(ctx context.Context, jobLog *models.JobLog) (id int64, 
 	return m.dao.Create(ctx, jobLog)
 }
 
-// DeleteJobLogsBefore ...
+// DeleteBefore ...
 func (m *manager) DeleteBefore(ctx context.Context, t time.Time) (id int64, err error) {
 	return m.dao.DeleteBefore(ctx, t)
 }

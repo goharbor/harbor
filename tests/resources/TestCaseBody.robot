@@ -417,6 +417,49 @@ Stop Scan All
     Stop Scan All Artifact
     Retry Action Keyword  Check Scan All Artifact Job Status Is Stopped
 
+Body Of Generate SBOM of An Image In The Repo
+    [Arguments]  ${image_argument}  ${tag_argument}
+    Init Chrome Driver
+
+    ${d}=  get current date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_argument}:${tag_argument}
+    Go Into Repo  project${d}  ${image_argument}
+    Generate Repo SBOM  ${tag_argument}  Succeed
+    Checkout And Review SBOM Details  ${tag_argument}
+    Close Browser
+
+Body Of Generate Image SBOM On Push
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Goto Project Config
+    Enable Generating SBOM On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
+    Go Into Repo  project${d}  memcached
+    Checkout And Review SBOM Details  latest
+    Close Browser
+
+Body Of Stop SBOM Manual Generation
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
+    ${tag}=    Set Variable    test-ui
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project And Go Into Project  project${d}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
+    # stop generate sbom of an artifact
+    Retry Action Keyword  Stop SBOM Generation  project${d}  ${repo}
+    Close Browser
+
+Stop SBOM Generation
+    [Arguments]  ${project_name}  ${repo}
+    Generate Artifact SBOM  ${project_name}  ${repo}
+    Stop Gen Artifact SBOM
+    Retry Action Keyword  Check Gen Artifact SBOM Job Status Is Stopped
+
 Prepare Image Package Test Files
     [Arguments]  ${files_path}
     ${rc}  ${output}=  Run And Return Rc And Output  bash tests/robot-cases/Group0-Util/prepare_imgpkg_test_files.sh ${files_path}

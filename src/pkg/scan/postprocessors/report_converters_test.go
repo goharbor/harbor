@@ -578,6 +578,8 @@ func Test_parseScoreFromVendorAttribute(t *testing.T) {
 		{"both", args{`{"CVSS":{"nvd":{"V3Score":5.5,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"},"redhat":{"V3Score":6.2,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}}`}, 5.5},
 		{"both2", args{`{"CVSS":{"nvd":{"V2Score":7.2,"V2Vector":"AV:L/AC:L/Au:N/C:C/I:C/A:C","V3Score":7.8,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"},"redhat":{"V3Score":7.8,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 7.8},
 		{"none", args{`{"CVSS":{"nvd":{"V2Score":7.2,"V2Vector":"AV:L/AC:L/Au:N/C:C/I:C/A:C","V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"},"redhat":{"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 0},
+		{"redhatonly", args{`{"CVSS":{"redhat":{"V3Score":8.8, "V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 8.8},
+		{"nvdnov3butredhat", args{`{"CVSS":{"nvd":{"V2Score":7.2,"V2Vector":"AV:L/AC:L/Au:N/C:C/I:C/A:C"},"redhat":{"V3Score":7.8,"V3Vector":"CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}}`}, 7.8},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

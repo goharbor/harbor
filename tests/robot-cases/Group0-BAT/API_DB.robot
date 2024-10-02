@@ -20,6 +20,10 @@ Test Case - Garbage Collection
     [Tags]  gc
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 
+Test Case - Quota Sorting
+    [Tags]  quota_sorting
+    Harbor API Test  ./tests/apitests/python/test_quota_sorting.py
+
 Test Case - Add Private Project Member and Check User Can See It
     [Tags]  private_member
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
@@ -116,6 +120,14 @@ Test Case - Stop Scan All Images
     [Tags]  stop_scan_all
     Harbor API Test  ./tests/apitests/python/test_system_level_stop_scan_all.py
 
+Test Case - Generate SBOM Of An Image
+    [Tags]  generate_sbom
+    Harbor API Test  ./tests/apitests/python/test_sbom_generation_of_image_artifact.py
+
+Test Case - Stop Generating SBOM Of An Image
+    [Tags]  stop_generating_sbom
+    Harbor API Test  ./tests/apitests/python/test_stop_sbom_generation_of_image_artifact.py
+
 Test Case - Registry API
     [Tags]  reg_api
     Harbor API Test  ./tests/apitests/python/test_registry_api.py
@@ -206,3 +218,7 @@ Test Case - Banner Message
 Test Case - User CRUD
     [Tags]  user_crud
     Harbor API Test  ./tests/apitests/python/test_user_crud.py
+
+Test Case - Limited Guest GetRepository
+    [Tags]  limited_guest_getrepository
+    Harbor API Test  ./tests/apitests/python/test_user_limited_guest_get_repository.py

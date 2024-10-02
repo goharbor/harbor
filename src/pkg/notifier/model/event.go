@@ -42,6 +42,7 @@ type EventData struct {
 	Repository  *Repository        `json:"repository,omitempty"`
 	Replication *model.Replication `json:"replication,omitempty"`
 	Retention   *model.Retention   `json:"retention,omitempty"`
+	Scan        *model.Scan        `json:"scan,omitempty"`
 	Custom      map[string]string  `json:"custom_attributes,omitempty"`
 }
 
@@ -51,6 +52,7 @@ type Resource struct {
 	Tag          string                 `json:"tag,omitempty"`
 	ResourceURL  string                 `json:"resource_url,omitempty"`
 	ScanOverview map[string]interface{} `json:"scan_overview,omitempty"`
+	SBOMOverview map[string]interface{} `json:"sbom_overview,omitempty"`
 }
 
 // Repository info of notification event

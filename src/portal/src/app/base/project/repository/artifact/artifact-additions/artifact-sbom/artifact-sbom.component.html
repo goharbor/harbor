@@ -1,0 +1,98 @@
+<div class="row result-row">
+    <div>
+        <div class="row flex-items-xs-right rightPos">
+            <div class="flex-xs-middle option-right">
+                <span class="refresh-btn" (click)="refresh()"
+                    ><clr-icon shape="refresh"></clr-icon
+                ></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-datagrid [clrDgLoading]="loading" (clrDgRefresh)="load($event)">
+            <clr-dg-action-bar>
+                <div class="clr-row center">
+                    <div class="ml-05">
+                        <button
+                            id="sbom-btn"
+                            (click)="downloadSbom()"
+                            type="button"
+                            class="btn btn-secondary"
+                            [clrLoading]="downloadSbomBtnState"
+                            [disabled]="!canDownloadSbom()">
+                            <clr-icon
+                                shape="download"
+                                size="16"
+                                *ngIf="!isRunningState()"></clr-icon
+                            >&nbsp;
+                            <span *ngIf="!isRunningState()">{{
+                                'SBOM.DOWNLOAD' | translate
+                            }}</span>
+                        </button>
+                    </div>
+                </div>
+            </clr-dg-action-bar>
+            <clr-dg-column
+                [clrDgSortBy]="'name'"
+                [clrDgField]="'name'"
+                class="package-medium"
+                >{{ 'SBOM.GRID.COLUMN_PACKAGE' | translate }}</clr-dg-column
+            >
+            <clr-dg-column
+                [clrDgSortBy]="'versionInfo'"
+                [clrDgField]="'versionInfo'"
+                class="version-medium"
+                >{{ 'SBOM.GRID.COLUMN_VERSION' | translate }}</clr-dg-column
+            >
+            <clr-dg-column>{{
+                'SBOM.GRID.COLUMN_LICENSE' | translate
+            }}</clr-dg-column>
+            <clr-dg-placeholder>
+                <span *ngIf="hasGeneratedSbom(); else elseBlock">{{
+                    'SBOM.STATE.OTHER_STATUS' | translate
+                }}</span>
+                <ng-template #elseBlock>
+                    {{ 'SBOM.CHART.TOOLTIPS_TITLE_ZERO' | translate }}
+                </ng-template>
+            </clr-dg-placeholder>
+            <clr-dg-row *clrDgItems="let res of artifactSbomPackages()">
+                <clr-dg-cell class="package-medium">{{
+                    res.name ?? ''
+                }}</clr-dg-cell>
+                <clr-dg-cell class="version-medium">{{
+                    res.versionInfo ?? ''
+                }}</clr-dg-cell>
+                <clr-dg-cell>{{ res.licenseConcluded ?? '' }}</clr-dg-cell>
+            </clr-dg-row>
+
+            <clr-dg-footer>
+                <div class="report">
+                    <i *ngIf="artifact?.sbom_overview">{{
+                        'SBOM.REPORTED_BY'
+                            | translate
+                                : {
+                                      scanner: getScannerInfo(
+                                          artifact?.sbom_overview?.scanner
+                                      )
+                                  }
+                    }}</i>
+                </div>
+                <clr-dg-pagination
+                    #pagination
+                    [clrDgPageSize]="pageSize"
+                    [clrDgTotalItems]="artifactSbomPackages().length">
+                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
+                        'PAGINATION.PAGE_SIZE' | translate
+                    }}</clr-dg-page-size>
+                    <span *ngIf="artifactSbomPackages().length"
+                        >{{ pagination.firstItem + 1 }} -
+                        {{ pagination.lastItem + 1 }}
+                        {{ 'SBOM.GRID.FOOT_OF' | translate }}</span
+                    >
+                    {{ artifactSbomPackages().length }}
+                    {{ 'SBOM.GRID.FOOT_ITEMS' | translate }}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>

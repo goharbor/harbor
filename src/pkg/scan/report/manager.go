@@ -104,6 +104,8 @@ type Manager interface {
 
 	// Update update report information
 	Update(ctx context.Context, r *scan.Report, cols ...string) error
+	// DeleteByExtraAttr delete scan_report by sbom_digest
+	DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrValue string) error
 }
 
 // basicManager is a default implementation of report manager.
@@ -225,4 +227,8 @@ func (bm *basicManager) List(ctx context.Context, query *q.Query) ([]*scan.Repor
 
 func (bm *basicManager) Update(ctx context.Context, r *scan.Report, cols ...string) error {
 	return bm.dao.Update(ctx, r, cols...)
+}
+
+func (bm *basicManager) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrValue string) error {
+	return bm.dao.DeleteByExtraAttr(ctx, mimeType, attrName, attrValue)
 }

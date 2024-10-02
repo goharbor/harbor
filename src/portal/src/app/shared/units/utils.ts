@@ -252,6 +252,18 @@ export const DEFAULT_PAGE_SIZE: number = 15;
  */
 export const DEFAULT_SUPPORTED_MIME_TYPES =
     'application/vnd.security.vulnerability.report; version=1.1, application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0';
+/**
+ *  The default supported mime type for SBOM
+ */
+export const DEFAULT_SBOM_SUPPORTED_MIME_TYPES =
+    'application/vnd.security.sbom.report+json; version=1.0';
+/**
+ *  The SBOM supported additional mime types
+ */
+export const SBOM_SUPPORTED_ADDITIONAL_MIME_TYPES = [
+    'application/spdx+json',
+    // 'application/vnd.cyclonedx+json', // feature release
+];
 
 /**
  *  the property name of vulnerability database updated time
@@ -267,6 +279,21 @@ export const DATABASE_NEXT_UPDATE_PROPERTY =
 export const VULNERABILITY_SCAN_STATUS = {
     // front-end status
     NOT_SCANNED: 'Not Scanned',
+    // back-end status
+    PENDING: 'Pending',
+    RUNNING: 'Running',
+    ERROR: 'Error',
+    STOPPED: 'Stopped',
+    SUCCESS: 'Success',
+    SCHEDULED: 'Scheduled',
+};
+
+/**
+ * The state of sbom generation
+ */
+export const SBOM_SCAN_STATUS = {
+    // front-end status
+    NOT_GENERATED_SBOM: 'No SBOM',
     // back-end status
     PENDING: 'Pending',
     RUNNING: 'Running',
@@ -463,6 +490,26 @@ export function downloadFile(fileData) {
     a.setAttribute('style', 'display: none');
     a.href = url;
     a.download = fileData.filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+}
+
+/**
+ * Download the Json Object as a Json file to local.
+ * @param data Json Object
+ * @param filename Json filename
+ */
+export function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data)], {
+        type: 'application/json;charset=utf-8',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.setAttribute('style', 'display: none');
+    a.href = url;
+    a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
     a.remove();
@@ -1015,6 +1062,7 @@ export enum PageSizeMapKeys {
     ARTIFACT_LIST_TAB_COMPONENT = 'ArtifactListTabComponent',
     ARTIFACT_TAGS_COMPONENT = 'ArtifactTagComponent',
     ARTIFACT_VUL_COMPONENT = 'ArtifactVulnerabilitiesComponent',
+    ARTIFACT_SBOM_COMPONENT = 'ArtifactSbomComponent',
     MEMBER_COMPONENT = 'MemberComponent',
     LABEL_COMPONENT = 'LabelComponent',
     P2P_POLICY_COMPONENT = 'P2pPolicyComponent',

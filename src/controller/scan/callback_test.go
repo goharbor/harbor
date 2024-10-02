@@ -51,7 +51,7 @@ type CallbackTestSuite struct {
 	scanCtl Controller
 
 	taskMgr         *tasktesting.Manager
-	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
+	reportConverter *postprocessorstesting.NativeScanReportConverter
 }
 
 func (suite *CallbackTestSuite) SetupSuite() {
@@ -69,7 +69,7 @@ func (suite *CallbackTestSuite) SetupSuite() {
 	suite.taskMgr = &tasktesting.Manager{}
 	taskMgr = suite.taskMgr
 
-	suite.reportConverter = &postprocessorstesting.ScanReportV1ToV2Converter{}
+	suite.reportConverter = &postprocessorstesting.NativeScanReportConverter{}
 
 	suite.scanCtl = &basicController{
 		makeCtx:         context.TODO,

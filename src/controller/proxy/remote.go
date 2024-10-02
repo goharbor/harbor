@@ -21,6 +21,7 @@ import (
 
 	"github.com/docker/distribution"
 
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -43,13 +44,16 @@ type remoteHelper struct {
 	regID       int64
 	registry    adapter.ArtifactRegistry
 	registryMgr reg.Manager
+	opts        *Options
 }
 
 // NewRemoteHelper create a remote interface
-func NewRemoteHelper(ctx context.Context, regID int64) (RemoteInterface, error) {
+func NewRemoteHelper(ctx context.Context, regID int64, opts ...Option) (RemoteInterface, error) {
 	r := &remoteHelper{
 		regID:       regID,
-		registryMgr: reg.Mgr}
+		registryMgr: reg.Mgr,
+		opts:        NewOptions(opts...),
+	}
 	if err := r.init(ctx); err != nil {
 		return nil, err
 	}
@@ -83,7 +87,14 @@ func (r *remoteHelper) init(ctx context.Context) error {
 }
 
 func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error) {
-	return r.registry.PullBlob(repo, dig)
+	sz, bReader, err := r.registry.PullBlob(repo, dig)
+	if err != nil {
+		return 0, nil, err
+	}
+	if r.opts != nil && r.opts.Speed > 0 {
+		bReader = lib.NewReader(bReader, r.opts.Speed)
+	}
+	return sz, bReader, err
 }
 
 func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {

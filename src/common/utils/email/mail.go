@@ -70,7 +70,7 @@ func Send(addr, identity, username, password string,
 
 // Ping tests the connection and authentication with email server
 // If tls is true, a secure connection is established, or Ping
-// trys to upgrate the insecure connection to a secure one if
+// trys to upgrade the insecure connection to a secure one if
 // email server supports it.
 // Ping doesn't verify the server's certificate and hostname when
 // needed if the parameter insecure is ture
@@ -119,7 +119,7 @@ func newClient(addr, identity, username, password string,
 		return nil, err
 	}
 
-	// try to swith to SSL/TLS
+	// try to switch to SSL/TLS
 	if !tls {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)

@@ -76,6 +76,7 @@ Resource  Harbor-Pages/Job_Service_Dashboard_Elements.robot
 Resource  Harbor-Pages/SecurityHub.robot
 Resource  Harbor-Pages/SecurityHub_Elements.robot
 Resource  Harbor-Pages/Verify.robot
+Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Docker-Util.robot
 Resource  CNAB_Util.robot
 Resource  Helm-Util.robot

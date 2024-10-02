@@ -48,6 +48,8 @@ type Manager interface {
 	ListReferences(ctx context.Context, query *q.Query) (references []*Reference, err error)
 	// DeleteReference specified by ID
 	DeleteReference(ctx context.Context, id int64) (err error)
+	// ListWithLatest list the artifacts when the latest_in_repository in the query was set
+	ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -145,6 +147,22 @@ func (m *manager) ListReferences(ctx context.Context, query *q.Query) ([]*Refere
 
 func (m *manager) DeleteReference(ctx context.Context, id int64) error {
 	return m.dao.DeleteReference(ctx, id)
+}
+
+func (m *manager) ListWithLatest(ctx context.Context, query *q.Query) ([]*Artifact, error) {
+	arts, err := m.dao.ListWithLatest(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var artifacts []*Artifact
+	for _, art := range arts {
+		artifact, err := m.assemble(ctx, art)
+		if err != nil {
+			return nil, err
+		}
+		artifacts = append(artifacts, artifact)
+	}
+	return artifacts, nil
 }
 
 // assemble the artifact with references populated

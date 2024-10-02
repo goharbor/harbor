@@ -22,6 +22,8 @@ const (
 
 	// ImageScanJobVendorType is name of scan job it will be used as key to register to job service.
 	ImageScanJobVendorType = "IMAGE_SCAN"
+	// SBOMJobVendorType key to create sbom generate execution.
+	SBOMJobVendorType = "SBOM"
 	// GarbageCollectionVendorType job name
 	GarbageCollectionVendorType = "GARBAGE_COLLECTION"
 	// ReplicationVendorType : the name of the replication job in job service
@@ -52,6 +54,7 @@ var (
 	// executionSweeperCount stores the count for execution retained
 	executionSweeperCount = map[string]int64{
 		ImageScanJobVendorType:          1,
+		SBOMJobVendorType:               1,
 		ScanAllVendorType:               1,
 		PurgeAuditVendorType:            10,
 		ExecSweepVendorType:             10,

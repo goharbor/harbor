@@ -116,9 +116,9 @@ func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) (bool, error) {
 }
 
 // Redirect does redirection to resource URI with http header status code.
-func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
+func (b *BaseAPI) Redirect(statusCode int, resourceID string) {
 	requestURI := b.Ctx.Request.RequestURI
-	resourceURI := requestURI + "/" + resouceID
+	resourceURI := requestURI + "/" + resourceID
 
 	b.Ctx.Redirect(statusCode, resourceURI)
 }
@@ -138,7 +138,7 @@ func (b *BaseAPI) GetIDFromURL() (int64, error) {
 	return id, nil
 }
 
-// SetPaginationHeader set"Link" and "X-Total-Count" header for pagination request
+// SetPaginationHeader set "Link" and "X-Total-Count" header for pagination request
 func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 	b.Ctx.ResponseWriter.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 

@@ -30,6 +30,7 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	trans "github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -380,7 +381,7 @@ func (t *transfer) copyBlobByMonolithic(srcRepo, dstRepo, digest string, sizeFro
 		return err
 	}
 	if speed > 0 {
-		data = trans.NewReader(data, speed)
+		data = lib.NewReader(data, speed)
 	}
 	defer data.Close()
 	// get size 0 from PullBlob, use size from distribution.Descriptor instead.
@@ -435,7 +436,7 @@ func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDesc
 		}
 
 		if speed > 0 {
-			data = trans.NewReader(data, speed)
+			data = lib.NewReader(data, speed)
 		}
 		// failureEnd will only be used for adjusting content range when issue happened during push the chunk.
 		var failureEnd int64

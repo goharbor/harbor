@@ -47,5 +47,8 @@ jobs:
     #   make bootstrap
     #   make release
 
+    # to make sure autobuild success, specifify golang version in go.mod
+    # https://github.com/github/codeql/issues/15647#issuecomment-2003768106
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

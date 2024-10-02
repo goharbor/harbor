@@ -113,8 +113,9 @@ func (t *taskDAOTestSuite) TestList() {
 }
 
 func (t *taskDAOTestSuite) TestListScanTasksByReportUUID() {
+	reportUUID := `7f20b1b9-6117-4a2e-820b-e4cc0401f15e`
 	// should not exist if non set
-	tasks, err := t.taskDAO.ListScanTasksByReportUUID(t.ctx, "fake-report-uuid")
+	tasks, err := t.taskDAO.ListScanTasksByReportUUID(t.ctx, reportUUID)
 	t.Require().Nil(err)
 	t.Require().Len(tasks, 0)
 	// create one with report uuid
@@ -122,12 +123,12 @@ func (t *taskDAOTestSuite) TestListScanTasksByReportUUID() {
 		ExecutionID: t.executionID,
 		Status:      "success",
 		StatusCode:  1,
-		ExtraAttrs:  `{"report_uuids": ["fake-report-uuid"]}`,
+		ExtraAttrs:  fmt.Sprintf(`{"report_uuids": ["%s"]}`, reportUUID),
 	})
 	t.Require().Nil(err)
 	defer t.taskDAO.Delete(t.ctx, taskID)
 	// should exist as created
-	tasks, err = t.taskDAO.ListScanTasksByReportUUID(t.ctx, "fake-report-uuid")
+	tasks, err = t.taskDAO.ListScanTasksByReportUUID(t.ctx, reportUUID)
 	t.Require().Nil(err)
 	t.Require().Len(tasks, 1)
 	t.Equal(taskID, tasks[0].ID)
@@ -297,6 +298,29 @@ func (t *taskDAOTestSuite) TestExecutionIDsByVendorAndStatus() {
 	t.Require().Nil(err)
 	t.Require().Len(exeIDs, 1)
 	defer t.taskDAO.Delete(t.ctx, tid)
+}
+
+func TestIsValidUUID(t *testing.T) {
+	tests := []struct {
+		name     string
+		uuid     string
+		expected bool
+	}{
+		{"Valid UUID", "7f20b1b9-6117-4a2e-820b-e4cc0401f15f", true},
+		{"Invalid UUID - Short", "7f20b1b9-6117-4a2e-820b", false},
+		{"Invalid UUID - Long", "7f20b1b9-6117-4a2e-820b-e4cc0401f15f-extra", false},
+		{"Invalid UUID - Invalid Characters", "7f20b1b9-6117-4z2e-820b-e4cc0401f15f", false},
+		{"Empty String", "", false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := isValidUUID(test.uuid)
+			if result != test.expected {
+				t.Errorf("Expected isValidUUID(%s) to be %t, got %t", test.uuid, test.expected, result)
+			}
+		})
+	}
 }
 
 func TestTaskDAOSuite(t *testing.T) {

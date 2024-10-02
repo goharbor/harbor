@@ -50,14 +50,13 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     @Input()
     digest: string;
     @Input() artifact: Artifact;
+    @Input() scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+    @Input() hasEnabledScanner: boolean = false;
     scan_overview: any;
     scanner: ScannerVo;
-    projectScanner: ScannerVo;
 
     scanningResults: VulnerabilityItem[] = [];
     loading: boolean = false;
-    hasEnabledScanner: boolean = false;
-    scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     severitySort: ClrDatagridComparatorInterface<VulnerabilityItem>;
     cvssSort: ClrDatagridComparatorInterface<VulnerabilityItem>;
     hasScanningPermission: boolean = false;
@@ -112,7 +111,6 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.getVulnerabilities();
         this.getScanningPermission();
-        this.getProjectScanner();
         if (!this.sub) {
             this.sub = this.eventService.subscribe(
                 HarborEvent.UPDATE_VULNERABILITY_INFO,
@@ -201,30 +199,6 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
                 },
                 error => this.errorHandler.error(error)
             );
-    }
-
-    getProjectScanner(): void {
-        this.hasEnabledScanner = false;
-        this.scanBtnState = ClrLoadingState.LOADING;
-        this.scanningService.getProjectScanner(this.projectId).subscribe(
-            response => {
-                if (
-                    response &&
-                    '{}' !== JSON.stringify(response) &&
-                    !response.disabled &&
-                    response.health === 'healthy'
-                ) {
-                    this.scanBtnState = ClrLoadingState.SUCCESS;
-                    this.hasEnabledScanner = true;
-                } else {
-                    this.scanBtnState = ClrLoadingState.ERROR;
-                }
-                this.projectScanner = response;
-            },
-            error => {
-                this.scanBtnState = ClrLoadingState.ERROR;
-            }
-        );
     }
 
     getLevel(v: VulnerabilityItem): number {

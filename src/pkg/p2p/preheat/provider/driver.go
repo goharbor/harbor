@@ -77,6 +77,7 @@ type DriverStatus struct {
 type PreheatingStatus struct {
 	TaskID     string `json:"task_id"`
 	Status     string `json:"status"`
+	Message    string `json:"message,omitempty"`
 	Error      string `json:"error,omitempty"`
 	StartTime  string `json:"start_time"`
 	FinishTime string `json:"finish_time"`

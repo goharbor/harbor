@@ -70,7 +70,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 	suite.server.StartTLS()
 
 	fakePolicies := mockPolicies()
-	fakePolicyManager := &policy.FakeManager{}
+	fakePolicyManager := &policy.Manager{}
 	fakePolicyManager.On("Get",
 		context.TODO(),
 		mock.AnythingOfType("int64")).
@@ -130,7 +130,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		},
 	}, nil)
 
-	fakeInstanceMgr := &instance.FakeManager{}
+	fakeInstanceMgr := &instance.Manager{}
 	fakeInstanceMgr.On("Get",
 		context.TODO(),
 		mock.AnythingOfType("int64"),
@@ -210,6 +210,7 @@ func mockPolicies() []*po.Schema {
 				Type: po.TriggerTypeManual,
 			},
 			Enabled:     true,
+			Scope:       "single_peer",
 			CreatedAt:   time.Now().UTC(),
 			UpdatedTime: time.Now().UTC(),
 		}, {
@@ -235,6 +236,7 @@ func mockPolicies() []*po.Schema {
 			Trigger: &po.Trigger{
 				Type: po.TriggerTypeEventBased,
 			},
+			Scope:       "all_peers",
 			Enabled:     true,
 			CreatedAt:   time.Now().UTC(),
 			UpdatedTime: time.Now().UTC(),

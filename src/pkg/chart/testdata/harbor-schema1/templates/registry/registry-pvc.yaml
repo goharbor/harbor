@@ -1,0 +1,33 @@
+{{- if .Values.persistence.enabled }}
+{{- $registry := .Values.persistence.persistentVolumeClaim.registry -}}
+{{- if and (not $registry.existingClaim) (eq .Values.persistence.imageChartStorage.type "filesystem") }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "harbor.registry" . }}
+  annotations:
+  {{- range $key, $value := $registry.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if eq .Values.persistence.resourcePolicy "keep" }}
+    helm.sh/resource-policy: keep
+  {{- end }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: registry
+    app.kubernetes.io/component: registry
+spec:
+  accessModes: 
+    - {{ $registry.accessMode }}
+  resources:
+    requests:
+      storage: {{ $registry.size }}
+  {{- if $registry.storageClass }}
+    {{- if eq "-" $registry.storageClass }}
+  storageClassName: ""
+    {{- else }}
+  storageClassName: {{ $registry.storageClass }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

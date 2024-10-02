@@ -1,0 +1,142 @@
+{{- if eq .Values.expose.type "ingress" }}
+{{- $ingress := .Values.expose.ingress -}}
+{{- $tls := .Values.expose.tls -}}
+{{- if eq .Values.expose.ingress.controller "gce" }}
+  {{- $_ := set . "portal_path" "/*" -}}
+  {{- $_ := set . "api_path" "/api/*" -}}
+  {{- $_ := set . "service_path" "/service/*" -}}
+  {{- $_ := set . "v2_path" "/v2/*" -}}
+  {{- $_ := set . "chartrepo_path" "/chartrepo/*" -}}
+  {{- $_ := set . "controller_path" "/c/*" -}}
+{{- else if eq .Values.expose.ingress.controller "ncp" }}
+  {{- $_ := set . "portal_path" "/.*" -}}
+  {{- $_ := set . "api_path" "/api/.*" -}}
+  {{- $_ := set . "service_path" "/service/.*" -}}
+  {{- $_ := set . "v2_path" "/v2/.*" -}}
+  {{- $_ := set . "chartrepo_path" "/chartrepo/.*" -}}
+  {{- $_ := set . "controller_path" "/c/.*" -}}
+{{- else }}
+  {{- $_ := set . "portal_path" "/" -}}
+  {{- $_ := set . "api_path" "/api/" -}}
+  {{- $_ := set . "service_path" "/service/" -}}
+  {{- $_ := set . "v2_path" "/v2/" -}}
+  {{- $_ := set . "chartrepo_path" "/chartrepo/" -}}
+  {{- $_ := set . "controller_path" "/c/" -}}
+{{- end }}
+
+---
+{{- if semverCompare "<1.14-0" (include "harbor.ingress.kubeVersion" .) }}
+apiVersion: extensions/v1beta1
+{{- else if semverCompare "<1.19-0" (include "harbor.ingress.kubeVersion" .) }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: networking.k8s.io/v1
+{{- end }}
+kind: Ingress
+metadata:
+  name: "{{ template "harbor.ingress" . }}"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+{{- if $ingress.labels }}
+{{ toYaml $ingress.labels | indent 4 }}
+{{- end }}
+  annotations:
+{{ toYaml $ingress.annotations | indent 4 }}
+{{- if .Values.internalTLS.enabled }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+{{- end }}
+{{- if eq .Values.expose.ingress.controller "ncp" }}
+    ncp/use-regex: "true"
+    {{- if $tls.enabled }}
+    ncp/http-redirect: "true"
+    {{- end }}
+{{- end }}
+spec:
+  {{- if $ingress.className }}
+  ingressClassName: {{ $ingress.className }}
+  {{- end }}
+  {{- if $tls.enabled }}
+  tls:
+  - secretName: {{ template "harbor.tlsCoreSecretForIngress" . }}
+    {{- if $ingress.hosts.core }}
+    hosts:
+    - {{ $ingress.hosts.core }}
+    {{- end }}
+  {{- end }}
+  rules:
+  - http:
+      paths:
+{{- if semverCompare "<1.19-0" (include "harbor.ingress.kubeVersion" .) }}
+      - path: {{ .api_path }}
+        backend:
+          serviceName: {{ template "harbor.core" . }}
+          servicePort: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .service_path }}
+        backend:
+          serviceName: {{ template "harbor.core" . }}
+          servicePort: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .v2_path }}
+        backend:
+          serviceName: {{ template "harbor.core" . }}
+          servicePort: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .chartrepo_path }}
+        backend:
+          serviceName: {{ template "harbor.core" . }}
+          servicePort: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .controller_path }}
+        backend:
+          serviceName: {{ template "harbor.core" . }}
+          servicePort: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .portal_path }}
+        backend:
+          serviceName: {{ template "harbor.portal" . }}
+          servicePort: {{ template "harbor.portal.servicePort" . }}
+{{- else }}
+      - path: {{ .api_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .service_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .v2_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .chartrepo_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .controller_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.core" . }}
+            port:
+              number: {{ template "harbor.core.servicePort" . }}
+      - path: {{ .portal_path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "harbor.portal" . }}
+            port:
+              number: {{ template "harbor.portal.servicePort" . }}
+{{- end }}
+    {{- if $ingress.hosts.core }}
+    host: {{ $ingress.hosts.core }}
+    {{- end }}
+
+{{- end }}
