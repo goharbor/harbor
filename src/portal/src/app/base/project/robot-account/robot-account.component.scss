@@ -1,37 +1,36 @@
-@import "../../../shared/mixin";
+@import '../../../shared/mixin';
 
 .robot-space {
-  margin-top: 28px;
-  position: relative;
+    margin-top: 28px;
+    position: relative;
 
-  clr-icon.red-position {
-    margin-left: 2px;
-  }
-  /* stylelint-disable */
-  .rightPos {
-    @include grid-right-top-pos;
-
-    .option-left {
-      padding-left: 16px;
-      position: relative;
-      top: 10px;
+    clr-icon.red-position {
+        margin-left: 2px;
     }
+    /* stylelint-disable */
+    .rightPos {
+        @include grid-right-top-pos;
 
-    .option-right {
-      padding-right: 16px;
+        .option-left {
+            padding-left: 16px;
+            position: relative;
+            top: 10px;
+        }
 
-      .refresh-btn {
-        cursor: pointer;
-      }
+        .option-right {
+            padding-right: 16px;
+
+            .refresh-btn {
+                cursor: pointer;
+            }
+        }
     }
-  }
 }
 
-
 .icon {
-  margin-top: 3px;
+    margin-top: 3px;
 }
 
 .permission-col {
-  min-width: 8rem !important;
+    min-width: 8rem !important;
 }

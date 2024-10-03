@@ -1,5 +1,5 @@
 // Variables for dark theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
+@import '../../node_modules/@clr/ui/clr-ui-dark.min.css';
 
 $mode-background-color: rgb(27 42 50);
 $mode-background-color1: $mode-background-color !important;
@@ -21,9 +21,9 @@ $light-color-green: #4cd400;
 $color-ddd: #21333b;
 $color-f2: transparent;
 $color-657b83: unset;
-$color-fdf6e3:  transparent;
-$header-color: hsl(198deg 100% 15%)!important;
-$color-yaml:  #253c46;
+$color-fdf6e3: transparent;
+$header-color: hsl(198deg 100% 15%) !important;
+$color-yaml: #253c46;
 $filter-divider-bg-color: #495865;
 /* stylelint-disable */
 $selectBox-option-hover-bg-color-start: #4aaed9;
@@ -37,15 +37,15 @@ $label-hover-bg-color: #28404d;
 $nav-divider-bg-color: #fafafa;
 $label-color-input: #ddd;
 $central-block-loading-bg-color: rgb(0 0 0 / 50%);
-$back-link-color: #4aaed9!important;
+$back-link-color: #4aaed9 !important;
 $radio-button-checked: #4aaed9;
 $input-autofill-bg-color: #1b2a32;
 $input-autofill-color: #eaedf0;
 $pull-command-icon-color: #4aaed9;
-$pull-command-icon-hover-color: #007CBB;
+$pull-command-icon-hover-color: #007cbb;
 $select-all-for-dropdown-color: #4aaed9;
 $normal-border-color: #acbac3;
 $text-color-job-service-dashboard: #49aeda;
 $datagrid-numeric-filter-input-bg-color: #21333b;
 $alert-info-bg-color: none;
-@import "./common.scss";
+@import './common.scss';

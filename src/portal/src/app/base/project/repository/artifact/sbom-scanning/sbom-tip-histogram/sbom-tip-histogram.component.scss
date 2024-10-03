@@ -2,7 +2,7 @@
     display: flex;
     align-items: left;
     text-align: left;
-    font-size: .65rem;
+    font-size: 0.65rem;
     height: 15px;
     line-height: 15px;
 }
@@ -14,7 +14,7 @@
 .bar-tooltip-font-larger {
     span {
         font-size: 16px;
-        vertical-align: middle
+        vertical-align: middle;
     }
 }
 
@@ -36,7 +36,7 @@ hr {
     width: 120px;
 }
 
-.level-border>div{
+.level-border > div {
     display: inline-flex;
     align-items: center;
     justify-items: center;
