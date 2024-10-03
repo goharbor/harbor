@@ -1,70 +1,70 @@
 .copy-token {
-  .success-icon {
-    color: #318700;
-  }
-
-  .show-info {
-    .robot-name {
-      margin: 30px 0;
-
-      label {
-        margin-right: 30px;
-      }
+    .success-icon {
+        color: #318700;
     }
 
-    .robot-token {
-      margin-bottom: 20px;
+    .show-info {
+        .robot-name {
+            margin: 30px 0;
 
-      label {
-        margin-right: 24px;
-      }
+            label {
+                margin-right: 30px;
+            }
+        }
 
-      .copy-input {
-        display: inline-block;
-      }
+        .robot-token {
+            margin-bottom: 20px;
+
+            label {
+                margin-right: 24px;
+            }
+
+            .copy-input {
+                display: inline-block;
+            }
+        }
     }
-  }
 }
 
 :host::ng-deep {
-  hbr-copy-input {
-    .command-input {
-      width: 32rem;
+    hbr-copy-input {
+        .command-input {
+            width: 32rem;
+        }
     }
-  }
 }
 
 .nav-divider {
-  display: inline-block;
-  width: 1px;
-  height: 30px;
-  position: relative;
-  top: 10px;
-  opacity: 0.15;
-  content: '';
-  margin-right: 1rem;
-  margin-left: 1rem;
+    display: inline-block;
+    width: 1px;
+    height: 30px;
+    position: relative;
+    top: 10px;
+    opacity: 0.15;
+    content: '';
+    margin-right: 1rem;
+    margin-left: 1rem;
 }
 
 .name {
-  font-size: 16px;
-  opacity: 0.9;
+    font-size: 16px;
+    opacity: 0.9;
 }
 
 .align-center {
-  align-items: center;
+    align-items: center;
 }
 
 .clr-form {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .pw-eye {
-  margin-left: -20px;
-  margin-right: 8px;
-  cursor: pointer;
+    margin-left: -20px;
+    margin-right: 8px;
+    cursor: pointer;
 }
 
 .pwd-input {
-  padding-right: 26px;
+    padding-right: 26px;
 }

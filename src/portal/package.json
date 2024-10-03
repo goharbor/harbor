@@ -4,6 +4,8 @@
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
+    "format": "prettier --write \"src/**/*.{ts,js,html,scss}\" && ng lint --fix",
+    "prettier:check": "prettier --check \"src/**/*.{ts,js,html,scss}\"",
     "postinstall": "node scripts/convert-yaml-to-json.js && ng-swagger-gen -i ng-swagger-gen/swagger.json -o ng-swagger-gen && node scripts/delete-swagger-json.js",
     "start": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0",
     "start:prod": "node --max_old_space_size=2048 ./node_modules/@angular/cli/bin/ng serve --ssl true --host 0.0.0.0 --configuration production",
@@ -62,6 +64,7 @@
     "@angular/cli": "^16.2.16",
     "@angular/compiler-cli": "^16.2.9",
     "@cypress/schematic": "^2.5.2",
+    "@types/eslint": "^9.6.1",
     "@types/express": "^4.17.21",
     "@types/jasmine": "~4.3.1",
     "@types/node": "^16.18.108",

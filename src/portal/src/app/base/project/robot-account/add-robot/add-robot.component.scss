@@ -1,59 +1,59 @@
 .padding-left-0 {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .no-margin {
-  margin: 0;
+    margin: 0;
 }
 
-.permission{
-  padding-top: 0.1rem;
-  color: #000;
+.permission {
+    padding-top: 0.1rem;
+    color: #000;
 }
 
-.padding-left-120{
-  padding-left: 126px;
+.padding-left-120 {
+    padding-left: 126px;
 }
 
-.w-90{
-  width: 90%;
+.w-90 {
+    width: 90%;
 }
 
 .date {
-  margin-top: -0.9rem;
+    margin-top: -0.9rem;
 }
 
 .input-width-date {
-  width: 265px;
+    width: 265px;
 }
 
 .flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .input-width {
-  width: 16rem;
+    width: 16rem;
 }
 
 .expiration {
-  margin-left: 1rem;
+    margin-left: 1rem;
 }
 
 /* stylelint-disable */
 .showWarning {
-  color: #b3a000;
+    color: #b3a000;
 }
 
 .icon {
-  margin-top: 3px;
+    margin-top: 3px;
 }
 
 .align-center {
-  align-items: center;
+    align-items: center;
 }
 
 :host::ng-deep.modal-dialog {
-  width: 46.2rem;
+    width: 46.2rem;
 }

@@ -1,4 +1,4 @@
-@import "../../../shared/mixin";
+@import '../../../shared/mixin';
 
 .header-title {
     margin-bottom: -34px;
@@ -8,7 +8,7 @@
     padding-left: 16px;
 }
 
-.display-flex{
+.display-flex {
     display: flex;
     align-items: baseline;
 }
@@ -18,7 +18,7 @@
 }
 
 .refresh-btn:hover {
-    color: #007CBB;
+    color: #007cbb;
 }
 /* stylelint-disable */
 .rightPos {
@@ -32,6 +32,6 @@
     padding-right: 15px;
 }
 
-.position-r{
+.position-r {
     position: relative;
 }

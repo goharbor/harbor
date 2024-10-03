@@ -1,84 +1,84 @@
 .color-97 {
-  color: #979797;
+    color: #979797;
 }
 
 .rule {
-  height: 24px;
-  line-height: 24px;
+    height: 24px;
+    line-height: 24px;
 }
 
 .rule-name {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: .5417rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.5417rem;
 }
 
 .ml-5 {
-  margin-left: 5px;
+    margin-left: 5px;
 }
 
 .width-60 {
-  width: 60px;
+    width: 60px;
 }
 
 .hand {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .datagrid-container {
-  padding: 0;
+    padding: 0;
 }
 
 .color-79b {
-  color: #0079b8;
+    color: #0079b8;
 }
 
 .backdrop-transparent {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  opacity: 0;
-  z-index: 999;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    opacity: 0;
+    z-index: 999;
 }
 
 .cron-selection {
-  margin-top: 30px;
-  display: flex;
-  align-items: center;
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .v-center {
-  height: 48px;
-  line-height: 48px;
+    height: 48px;
+    line-height: 48px;
 }
 
 .font-size-54 {
-  font-size: .5417rem;
+    font-size: 0.5417rem;
 }
 
 .flex-150 {
-  flex: 0 0 150px;
-  max-width: 150px;
+    flex: 0 0 150px;
+    max-width: 150px;
 }
 
 .padding-left-0 {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .flex-8p {
-  flex: 0 0 8.3%;
-  padding-left: 0.5rem;
+    flex: 0 0 8.3%;
+    padding-left: 0.5rem;
 }
 
 :host::ng-deep {
-  .datagrid-row-flex {
-    .datagrid-row-detail {
-      .datagrid-cell {
-        padding: 11px 12px;
-      }
+    .datagrid-row-flex {
+        .datagrid-row-detail {
+            .datagrid-cell {
+                padding: 11px 12px;
+            }
+        }
     }
-  }
 }

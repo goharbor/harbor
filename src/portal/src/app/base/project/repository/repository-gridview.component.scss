@@ -1,25 +1,23 @@
-@mixin text-overflow
-{
+@mixin text-overflow {
     overflow: hidden;
     text-overflow: ellipsis;
-    word-wrap:break-word;
-    white-space: nowrap
+    word-wrap: break-word;
+    white-space: nowrap;
 }
-
 
 @mixin text-overflow-param($width) {
     width: $width;
     @include text-overflow;
 }
 
-@mixin grid-right-top-pos{
+@mixin grid-right-top-pos {
     position: absolute;
     z-index: 100;
     right: 35px;
     margin-top: 4px;
 }
 
-@mixin absolute-center($width:108px) {
+@mixin absolute-center($width: 108px) {
     position: absolute;
     top: 0;
     left: 0;
@@ -37,10 +35,10 @@
 }
 
 @mixin dropdown-as-action-button {
-    margin: .25rem .5rem .25rem 0;
+    margin: 0.25rem 0.5rem 0.25rem 0;
 }
 /* stylelint-disable */
-.rightPos{
+.rightPos {
     @include grid-right-top-pos;
 
     top: 18px;
@@ -92,7 +90,7 @@
 
 .card-media-text {
     overflow: hidden;
-    height: 21px
+    height: 21px;
 }
 
 .card-media-description {
@@ -100,7 +98,7 @@
 }
 
 .card-media-description > p {
-    margin-top:  0;
+    margin-top: 0;
 }
 
 .card-text {

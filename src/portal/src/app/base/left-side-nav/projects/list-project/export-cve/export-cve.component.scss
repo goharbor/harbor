@@ -1,85 +1,85 @@
 @mixin cus-font {
-  font-size: .5417rem;
-  font-weight: 400;
+    font-size: 0.5417rem;
+    font-weight: 400;
 }
 
 .sub-label {
-  display: inline-block;
-  width: 90px;
-  @include cus-font;
+    display: inline-block;
+    width: 90px;
+    @include cus-font;
 }
 
 .width-220 {
-  width: 220px;
+    width: 220px;
 }
 
 .label-text {
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: 13px;
-  font-weight: 400;
-  color: #000;
-  height: 1.2rem;
-  margin: 0 !important;
-  line-height: 1rem;
-  text-align: left;
-  padding-left: 6px;
-  outline: none;
-  border-bottom: 1px solid rgb(154 154 154);
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 13px;
+    font-weight: 400;
+    color: #000;
+    height: 1.2rem;
+    margin: 0 !important;
+    line-height: 1rem;
+    text-align: left;
+    padding-left: 6px;
+    outline: none;
+    border-bottom: 1px solid rgb(154 154 154);
 }
 
 .dropdown-toggle {
-  height: 24px;
-  width: 212px;
+    height: 24px;
+    width: 212px;
 }
 
 .right-align {
-  min-width: 220px;
-  overflow-y: auto;
+    min-width: 220px;
+    overflow-y: auto;
 }
 
 .no-labels {
-  cursor: default;
-  padding: 0 0.5rem;
+    cursor: default;
+    padding: 0 0.5rem;
 }
 
 .dropdown-item {
-  min-height: 26px;
+    min-height: 26px;
 }
 
 .spinner {
-  margin: auto;
+    margin: auto;
 }
 
-.absolute{
-  position: absolute;
+.absolute {
+    position: absolute;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .clr-control-label {
-  width: 8rem !important;
+    width: 8rem !important;
 }
 
 .names {
-  text-overflow: ellipsis;
-  max-width: 270px;
-  display: inline-block;
-  overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 270px;
+    display: inline-block;
+    overflow: hidden;
 }
 
 .space-between {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 .input-width {
-  width: 310px;
+    width: 310px;
 }
 
 .labels {
-  display: flex;
-  justify-content: left;
+    display: flex;
+    justify-content: left;
 }

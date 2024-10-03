@@ -1,174 +1,174 @@
 .replication-tasks {
-  .overview-section {
-    .title-wrapper {
-      /* stylelint-disable */
-      .onBack{
-        color: #007cbb;
-        font-size: 14px;
-        cursor: pointer;
-      }
+    .overview-section {
+        .title-wrapper {
+            /* stylelint-disable */
+            .onBack {
+                color: #007cbb;
+                font-size: 14px;
+                cursor: pointer;
+            }
 
-      .title-block {
-        display: flex;
-        align-items: center;
+            .title-block {
+                display: flex;
+                align-items: center;
 
-        >div:first-child {
-          min-width: 384px;
-          margin-right: 5px;
+                > div:first-child {
+                    min-width: 384px;
+                    margin-right: 5px;
+                }
+
+                > div:nth-child(2) {
+                    width: 140px;
+
+                    span {
+                        color: #007cbb;
+                        font-size: 12px;
+                        margin-left: 10px;
+                    }
+                }
+
+                .id-divider {
+                    display: inline-block;
+                    height: 25px;
+                    width: 2px;
+                    background-color: #ccc;
+                    margin: 0 20px;
+                }
+
+                .h2-style {
+                    display: inline-block;
+                }
+            }
         }
 
-        >div:nth-child(2) {
-          width: 140px;
+        .execution-block {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
 
-          span {
-            color: #007cbb;
-            font-size: 12px;
-            margin-left: 10px;
-          }
-        }
+            .execution-detail-label {
+                margin-right: 10px;
+                text-align: left;
 
-        .id-divider {
-          display: inline-block;
-          height: 25px;
-          width: 2px;
-          background-color: #ccc;
-          margin: 0 20px;
-        }
+                .detail-row {
+                    display: flex;
+                    height: 27px;
 
-        .h2-style {
-          display: inline-block;
+                    .common-style {
+                        width: 12px;
+                        height: 12px;
+                        margin-top: 16px;
+                    }
+
+                    .num-success {
+                        background-color: #308700;
+                    }
+
+                    .num-failed {
+                        background-color: #c92101;
+                    }
+
+                    .num-progress {
+                        background-color: #1c5898;
+                    }
+
+                    .num-stopped {
+                        background-color: #a1a1a1;
+                    }
+
+                    .detail-span {
+                        flex: 0 0 100px;
+                        margin: 10px 0 0 10px;
+                    }
+
+                    .execution-details {
+                        width: 200px;
+                        margin: 8px 35px;
+                    }
+                }
+            }
+
+            .executions-detail {
+                width: 391px;
+
+                label {
+                    display: inline-block;
+                    width: 120px;
+                }
+
+                > div {
+                    margin-top: 10px;
+                }
+            }
         }
-      }
     }
 
-    .execution-block {
-      margin-top: 24px;
-      display: flex;
-      flex-wrap: wrap;
+    .tasks-detail {
+        margin-top: 65px;
 
-      .execution-detail-label {
-        margin-right: 10px;
-        text-align: left;
+        .action-select {
+            padding-right: 18px;
+            height: 24px;
+            display: flex;
+            justify-content: flex-end;
 
-        .detail-row {
-          display: flex;
-          height: 27px;
+            .filter-tag {
+                float: left;
+                margin-top: 8px;
+            }
 
-          .common-style {
-            width: 12px;
-            height: 12px;
-            margin-top: 16px;
-          }
+            .refresh-btn {
+                cursor: pointer;
+                margin-top: 7px;
+            }
 
-          .num-success {
-            background-color: #308700;
-          }
-
-          .num-failed {
-            background-color: #C92101;
-          }
-
-          .num-progress {
-            background-color: #1C5898;
-          }
-
-          .num-stopped {
-            background-color: #A1A1A1;
-          }
-
-          .detail-span {
-            flex:0 0 100px;
-            margin: 10px 0 0 10px;
-          }
-
-          .execution-details {
-            width: 200px;
-            margin: 8px 35px;
-          }
-        }
-      }
-
-      .executions-detail {
-        width: 391px;
-
-        label {
-          display: inline-block;
-          width: 120px;
+            .refresh-btn:hover {
+                color: #007cbb;
+            }
         }
 
-        >div {
-          margin-top: 10px;
+        clr-datagrid {
+            .resource-width {
+                width: 150px;
+            }
         }
-      }
     }
-  }
-
-  .tasks-detail {
-    margin-top: 65px;
-
-    .action-select {
-      padding-right: 18px;
-      height: 24px;
-      display: flex;
-      justify-content: flex-end;
-
-      .filter-tag {
-        float: left;
-        margin-top: 8px;
-      }
-
-      .refresh-btn {
-        cursor: pointer;
-        margin-top: 7px;
-      }
-
-      .refresh-btn:hover {
-        color: #007CBB;
-      }
-    }
-
-    clr-datagrid {
-      .resource-width {
-        width: 150px;
-      }
-    }
-  }
 }
 
 .margin-top-16px {
-  margin-top: 16px;
+    margin-top: 16px;
 }
 
 .flex-end {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 .refresh-btn {
-  margin-top: 6px;
-  cursor: pointer;
+    margin-top: 6px;
+    cursor: pointer;
 }
 
 .filter-tag {
-  margin-top: 7px;
+    margin-top: 7px;
 }
 
 .button-stop {
-  margin-top: 16px;
-  margin-left: -5px;
+    margin-top: 16px;
+    margin-left: -5px;
 }
 
 .refresh-btn {
-  margin-right: 1rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .pre {
-  min-width: 25rem;
-  max-width: 100%;
+    min-width: 25rem;
+    max-width: 100%;
 }

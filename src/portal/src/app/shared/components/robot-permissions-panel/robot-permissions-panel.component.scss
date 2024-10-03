@@ -1,20 +1,20 @@
 .td {
-  height: 24px;
-  line-height: 24px;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+    height: 24px;
+    line-height: 24px;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 .dropdown-menu {
-  max-width: unset;
+    max-width: unset;
 }
 
 :host::ng-deep.trigger clr-icon {
-  padding: 0;
-  position: unset !important;
+    padding: 0;
+    position: unset !important;
 }
 
 .select-all-for-dropdown {
-  margin-bottom: 0.25rem;
-  width: fit-content;
+    margin-bottom: 0.25rem;
+    width: fit-content;
 }

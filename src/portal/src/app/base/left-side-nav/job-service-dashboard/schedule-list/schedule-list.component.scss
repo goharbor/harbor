@@ -1,24 +1,24 @@
 .action-bar {
-  display: flex;
-  justify-content: right;
+    display: flex;
+    justify-content: right;
 }
 
 .refresh-btn {
-  margin-right: 1rem;
+    margin-right: 1rem;
 }
 
 .link-normal {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 10rem;
-  text-transform: unset;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 10rem;
+    text-transform: unset;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .pre {
-  min-width: 25rem;
+    min-width: 25rem;
 }

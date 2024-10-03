@@ -1,18 +1,18 @@
-  .alert-text-blink {
+.alert-text-blink {
     color: red;
     font-weight: bolder;
-  }
+}
 
-  .alert-btn-link {
+.alert-btn-link {
     padding: 0 !important;
     min-width: 30px !important;
-  }
+}
 
-  .alert-item {
+.alert-item {
     text-align: center;
     align-items: center;
 }
 
-:host::ng-deep .alert-icon-wrapper{
+:host::ng-deep .alert-icon-wrapper {
     display: inline;
 }

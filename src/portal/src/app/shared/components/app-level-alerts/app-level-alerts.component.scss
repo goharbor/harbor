@@ -1,21 +1,21 @@
 .alert-text {
-  flex: 0 0 auto !important;
+    flex: 0 0 auto !important;
 }
 
 .alert-action {
-  text-decoration: underline
+    text-decoration: underline;
 }
 
 .last {
-  position: absolute;
-  right: 3rem;
+    position: absolute;
+    right: 3rem;
 }
 
 .no-underline {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 .banner-message {
-  min-width: 0;
-  word-break: break-word;
+    min-width: 0;
+    word-break: break-word;
 }

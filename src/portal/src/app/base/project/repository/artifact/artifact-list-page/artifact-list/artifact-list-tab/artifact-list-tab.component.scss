@@ -1,234 +1,233 @@
 .refresh-btn {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .refresh-btn:hover {
-  color: #007cbb;
+    color: #007cbb;
 }
 
 .hidden-tag {
-  display: block;
-  height: 0;
+    display: block;
+    height: 0;
 }
 
 .truncated {
-  width: 100px;
-  line-height: 20px;
-  height: 20px;
-  display: inline-block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+    width: 100px;
+    line-height: 20px;
+    height: 20px;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .right-pos {
-  margin-right: 35px;
-  display: flex;
-  align-items: center;
+    margin-right: 35px;
+    display: flex;
+    align-items: center;
 }
 
 .tag-row {
-  position: relative;
+    position: relative;
 }
 
 .color-green {
-  color: #1d5100;
+    color: #1d5100;
 }
 
 .color-red {
-  color: #c92100;
+    color: #c92100;
 }
 
 .color-gray {
-  color: #565656;
+    color: #565656;
 }
 
 .cell {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .ml-8 {
-  margin-left: 8px;
+    margin-left: 8px;
 }
 
 .white-normal {
-  white-space: normal;
+    white-space: normal;
 }
 
 .digest {
-  width: 128px;
-  flex-grow:0;
-  flex-shrink:0;
+    width: 128px;
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
 .artifact-icon {
-  width: 0.8rem;
-  height: 0.8rem;
-  vertical-align: top;
+    width: 0.8rem;
+    height: 0.8rem;
+    vertical-align: top;
 }
 
 .width-p-100 {
-  width: 100%;
+    width: 100%;
 
-  .lg {
-    width: 550px;
-  }
+    .lg {
+        width: 550px;
+    }
 }
 
 .tag-header-color {
-  color: #fff;
+    color: #fff;
 }
 
 .tag-body-color {
-  color: #ccc;
-  max-width: 120px;
+    color: #ccc;
+    max-width: 120px;
 }
 
 .table {
-  .tag-tr {
-    td {
-      padding-top: 8px;
-      padding-bottom: 2px;
+    .tag-tr {
+        td {
+            padding-top: 8px;
+            padding-bottom: 2px;
+        }
     }
-  }
 
-  .tag-thead {
-    th {
-      padding-top: 0;
-      padding-bottom: 5px;
-      border: none;
-      font-weight: 400;
+    .tag-thead {
+        th {
+            padding-top: 0;
+            padding-bottom: 5px;
+            border: none;
+            font-weight: 400;
+        }
     }
-  }
 }
 
 .action-dropdown {
-  .action-dropdown-item {
-    position: static;
-    padding-left: 1rem;
-    line-height: inherit;
-    height: auto;
+    .action-dropdown-item {
+        position: static;
+        padding-left: 1rem;
+        line-height: inherit;
+        height: auto;
 
-    &::before {
-      margin-top: .5rem;
+        &::before {
+            margin-top: 0.5rem;
+        }
     }
-  }
 
-  .dropdown-header {
-    text-transform: none;
-  }
+    .dropdown-header {
+        text-transform: none;
+    }
 }
 
 .eslip {
-  margin-left: -3px;
+    margin-left: -3px;
 }
 
 .execution-select {
-  height: 24px;
-  display: flex;
-  justify-content: flex-end;
+    height: 24px;
+    display: flex;
+    justify-content: flex-end;
 
-  .filter-tag {
-      float: left;
-      margin-top: 8px;
+    .filter-tag {
+        float: left;
+        margin-top: 8px;
 
-      .clr-form-control {
-        margin-top: 0;
-      }
-  }
+        .clr-form-control {
+            margin-top: 0;
+        }
+    }
 }
 
 .no-border:focus {
-  outline: none;
+    outline: none;
 }
 
 .margin-left-5 {
-  margin-left: 5px;
+    margin-left: 5px;
 }
 
 .pull-command-column {
-  width: 6rem !important;
+    width: 6rem !important;
 }
 
 .co-signed-column {
-  width: 7rem !important;
+    width: 7rem !important;
 }
 
 .size-column {
-  width: 6rem !important;
+    width: 6rem !important;
 }
 
 .vul-column {
-  width: 11rem !important;
+    width: 11rem !important;
 }
 
 .sbom-column {
-  width: 7rem !important;
+    width: 7rem !important;
 }
 
 .annotations-column {
-  width: 5rem !important;
+    width: 5rem !important;
 }
 
 .signed {
-  color: #00d40f;
+    color: #00d40f;
 }
 
 .mb-05 {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .top-3-px {
-  top: 3px;
+    top: 3px;
 }
 
 .center {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .width-p-75 {
-  width: 75%;
+    width: 75%;
 }
 
 .action-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .signpost-item {
-  margin-left: -24px;
-  height: 10px;
-  display: flex;
-  align-items: center;
+    margin-left: -24px;
+    height: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .margin-5px {
-  margin: 5px;
+    margin: 5px;
 }
 
 .flex-max-width {
-  max-width: 220px;
-  min-width: 200px;
+    max-width: 220px;
+    min-width: 200px;
 }
 
 .filter-grid {
-  cursor: unset;
-  padding: 0;
+    cursor: unset;
+    padding: 0;
 }
 
 .filter-grid:hover {
-  color: unset;
-  background-color: unset;
-
+    color: unset;
+    background-color: unset;
 }
 
 .clr-signpost-content-label-list {
-  max-height: 200px;
-  overflow-y: auto;
-  margin-bottom: -10px;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: -10px;
 }

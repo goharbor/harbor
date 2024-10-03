@@ -20,12 +20,12 @@
     top: -9px;
 }
 
-.bg{
+.bg {
     position: absolute;
-    top: 60px; 
+    top: 60px;
     right: 0;
-    width: 100%; 
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     background-size: cover;
 }
 
@@ -33,13 +33,13 @@
     flex-wrap: wrap;
 
     .login {
-        background:transparent;
+        background: transparent;
     }
 }
 
 .reset-label {
-    font-size:inherit;
-    color:inherit;
+    font-size: inherit;
+    color: inherit;
     font-family: inherit;
 }
 
@@ -90,13 +90,13 @@
 
 .title {
     position: absolute;
-    top: 10rem
+    top: 10rem;
 }
 
 .login-group {
     width: 70%;
     position: absolute;
-    top: 10rem
+    top: 10rem;
 }
 
 .more-info {

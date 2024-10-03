@@ -1,95 +1,96 @@
 .default-quota {
-  display: flex;
-
-  .default-quota-text {
     display: flex;
-    align-items: center;
-    font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
 
-    .width-10rem {
-      width: 15rem;
-      font-size: 15px;
-    }
+    .default-quota-text {
+        display: flex;
+        align-items: center;
+        font-family: Metropolis, 'Avenir Next', 'Helvetica Neue', Arial,
+            sans-serif;
 
-    .num-count {
-      display: inline-block;
-      min-width: 2rem;
-      font-weight: 600;
-      font-size: 15px;
-      text-transform: uppercase;
+        .width-10rem {
+            width: 15rem;
+            font-size: 15px;
+        }
+
+        .num-count {
+            display: inline-block;
+            min-width: 2rem;
+            font-weight: 600;
+            font-size: 15px;
+            text-transform: uppercase;
+        }
     }
-  }
 }
 
 .pt-19px {
-  padding-top: 19px;
+    padding-top: 19px;
 }
 
 .font-size-13 {
-  font-size: 13px;
+    font-size: 13px;
 }
 
 .progress-block {
-  label {
-    font-weight: 400 !important;
-    width: 30%;
-    font-size: 10px;
-  }
+    label {
+        font-weight: 400 !important;
+        width: 30%;
+        font-size: 10px;
+    }
 }
 
 .default-quota-edit-button {
-  font-size: 14px;
-  margin-left: 60px;
+    font-size: 14px;
+    margin-left: 60px;
 }
 
 .min-label-width {
-  min-width: 120px;
+    min-width: 120px;
 }
 
 .quota-top {
-  display: flex;
-  justify-content: space-between;
-  line-height: 1.55;
-  margin-bottom: .35rem;
+    display: flex;
+    justify-content: space-between;
+    line-height: 1.55;
+    margin-bottom: 0.35rem;
 }
 
 :host::ng-deep {
-  .progress {
-    &.warning>progress {
-      color: orange;
+    .progress {
+        &.warning > progress {
+            color: orange;
 
-      &::-webkit-progress-value {
-        background-color: orange;
-      }
+            &::-webkit-progress-value {
+                background-color: orange;
+            }
 
-      &::-moz-progress-bar {
-        background-color: orange;
-      }
+            &::-moz-progress-bar {
+                background-color: orange;
+            }
+        }
+        /* stylelint-disable */
+        & > progress {
+            height: 75%;
+        }
     }
-    /* stylelint-disable */
-    &>progress {
-      height: 75%;
-    }
-  }
 }
 
 .action-head-pos {
-  padding-right: 18px;
-  height: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+    padding-right: 18px;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .search {
-  align-items: baseline;
-  padding-top: 0.2rem;
-  justify-content: flex-end;
-  margin-right: 2rem;
+    align-items: baseline;
+    padding-top: 0.2rem;
+    justify-content: flex-end;
+    margin-right: 2rem;
 }
 
 :host::ng-deep {
-  .filter-input {
-    width: 240px;
-  }
+    .filter-input {
+        width: 240px;
+    }
 }

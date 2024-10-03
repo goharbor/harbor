@@ -1,31 +1,28 @@
 .label-config {
-  position: relative;
-  margin-top: 30px;
-  /* stylelint-disable */
+    position: relative;
+    margin-top: 30px;
+    /* stylelint-disable */
     .rightPos {
-      position: absolute;
-      z-index: 100;
-      right: 35px;
-      height: 24px;
+        position: absolute;
+        z-index: 100;
+        right: 35px;
+        height: 24px;
 
-      .option-right {
-        padding-right: 16px;
+        .option-right {
+            padding-right: 16px;
 
-          .refresh-btn {
-            cursor: pointer;
+            .refresh-btn {
+                cursor: pointer;
 
-              :hover {
-              color: #007CBB;
+                :hover {
+                    color: #007cbb;
+                }
             }
-          }
-      }    
-  }
+        }
+    }
 
-  hbr-label-piece {
-    max-width: 100%;
-    display: flex;
-  }
+    hbr-label-piece {
+        max-width: 100%;
+        display: flex;
+    }
 }
-
-
-

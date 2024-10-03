@@ -1,45 +1,45 @@
 .no-info-div {
-  background: white;
-  border: 1px;
-  border-style: solid;
-  border-color: #CCC;
-  padding: 12px;
+    background: white;
+    border: 1px;
+    border-style: solid;
+    border-color: #ccc;
+    padding: 12px;
 }
 
 .info-div {
-  border: 1px;
-  border-style: solid;
-  border-color: #CCC;
-  padding: 0 12px 24px;
+    border: 1px;
+    border-style: solid;
+    border-color: #ccc;
+    padding: 0 12px 24px;
 }
 
 .loading {
-  height: 3rem;
-  border: 1px;
-  border-style: solid;
-  border-color: #CCC;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    height: 3rem;
+    border: 1px;
+    border-style: solid;
+    border-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .info-pre {
-  border: 0;
-  max-height: fit-content;
+    border: 0;
+    max-height: fit-content;
 }
 
 #info-edit-button {
-  margin-top: 0;
-  margin-bottom: 12px;
-  font-size: 12px;
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 12px;
 
-  .markdown {
-    position: relative;
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    margin-left: 10px;
-    top: 6px;
-    fill: gray;
-  }
+    .markdown {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        margin-left: 10px;
+        top: 6px;
+        fill: gray;
+    }
 }

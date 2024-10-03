@@ -1,48 +1,47 @@
 .robot-space {
-  margin-top: 28px;
-  position: relative;
+    margin-top: 28px;
+    position: relative;
 
-  clr-icon.red-position {
-    margin-left: 2px;
-  }
-  /* stylelint-disable */
-  .rightPos {
-    position: absolute;
-    z-index: 100;
-    right: 35px;
-    margin-top: 4px;
-
-    .option-left {
-      padding-left: 16px;
-      position: relative;
-      top: 10px;
+    clr-icon.red-position {
+        margin-left: 2px;
     }
+    /* stylelint-disable */
+    .rightPos {
+        position: absolute;
+        z-index: 100;
+        right: 35px;
+        margin-top: 4px;
 
-    .option-right {
-      padding-right: 16px;
+        .option-left {
+            padding-left: 16px;
+            position: relative;
+            top: 10px;
+        }
 
-      .refresh-btn {
-        cursor: pointer;
-      }
+        .option-right {
+            padding-right: 16px;
+
+            .refresh-btn {
+                cursor: pointer;
+            }
+        }
     }
-  }
 }
 
 .all-projects {
-  display: flex;
-  align-items: center;
-  height: 16px;
+    display: flex;
+    align-items: center;
+    height: 16px;
 }
 
-
 .icon {
-  margin-top: 3px;
+    margin-top: 3px;
 }
 
 .projects-col {
-  min-width: 14rem !important;
+    min-width: 14rem !important;
 }
 
 .permission-col {
-  min-width: 8rem !important;
+    min-width: 8rem !important;
 }

@@ -54,7 +54,7 @@
     content: '';
     display: inline-block;
     background: #fafafa;
-    opacity: .15;
+    opacity: 0.15;
     height: 40px;
     width: 1px;
     top: 10px;
@@ -73,6 +73,6 @@
     outline: none;
 }
 
-.search-input::placeholder{
+.search-input::placeholder {
     color: #fafafa;
 }

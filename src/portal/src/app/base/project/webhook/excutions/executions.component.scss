@@ -1,48 +1,48 @@
 .link-normal {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 10rem;
-  text-transform: unset;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 10rem;
+    text-transform: unset;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .pre {
-  min-width: 25rem;
-  max-width: 40rem;
+    min-width: 25rem;
+    max-width: 40rem;
 }
 
 .flex-end {
-  display: flex;
-  justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
 }
 
 .refresh-btn {
-  margin-right: 1rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
 }
 
 .refresh-btn:hover {
-  color: #007CBB;
+    color: #007cbb;
 }
 
 pre {
-  border: none;
+    border: none;
 }
 
 .label-flex {
-  width: 9.5rem;
-  letter-spacing: 0;
-  display: block;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  border: 1px solid;
-  border-radius: 9px;
-  padding: 0 7px 0 10px;
-  text-align: center;
+    width: 9.5rem;
+    letter-spacing: 0;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    border: 1px solid;
+    border-radius: 9px;
+    padding: 0 7px 0 10px;
+    text-align: center;
 }

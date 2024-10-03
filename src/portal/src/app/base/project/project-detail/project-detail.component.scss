@@ -1,160 +1,159 @@
 .sub-header-title {
-  margin-top: 12px;
-  margin-bottom: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 .sub-nav-bg-color {
-  background-color: #fafafa;
+    background-color: #fafafa;
 }
 
 .subnav .nav {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .role-label {
-  font-size: 14px;
-  font-style: italic;
-  letter-spacing: 0.01em;
-  margin-top: 8px;
+    font-size: 14px;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    margin-top: 8px;
 }
 /* stylelint-disable */
 .backStyle {
-  color: #007cbb;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 2px;
+    color: #007cbb;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 2px;
 }
 
 button {
-  outline: none;
+    outline: none;
 }
 
 #project-tabs {
-  .clear-default-active {
-    box-shadow: none;
+    .clear-default-active {
+        box-shadow: none;
 
-    &:hover {
-      box-shadow: 0 -3px 0 #0077b8 inset;
+        &:hover {
+            box-shadow: 0 -3px 0 #0077b8 inset;
+        }
     }
-  }
 }
 
 .tabs {
-  .nav-link {
-    padding: 0;
-  }
+    .nav-link {
+        padding: 0;
+    }
 }
 
 .ml-05 {
-  margin-left: 0.5rem;
+    margin-left: 0.5rem;
 }
 
 .proxy-cache {
-  margin-left: 2.5rem;
-  font-size: 10px;
-  font-weight: 300;
-  opacity: 0.8;
+    margin-left: 2.5rem;
+    font-size: 10px;
+    font-weight: 300;
+    opacity: 0.8;
 }
 
 .line-height-10 {
-  line-height: 10px;
+    line-height: 10px;
 }
 
 .back-icon {
-  margin-right: 5px;
-  color: #007cbb;
-  font-size: 16px;
+    margin-right: 5px;
+    color: #007cbb;
+    font-size: 16px;
 }
 
 .flex-end {
-  display: flex;
-  justify-content: flex-end;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.card{
-  width: auto;
-  min-width: 10rem;
-  margin-right: 0.5rem;
-  margin-top: 0;
-  height: 6rem;
+.card {
+    width: auto;
+    min-width: 10rem;
+    margin-right: 0.5rem;
+    margin-top: 0;
+    height: 6rem;
 }
 
 .head {
-  margin-top: 0;
-  margin-bottom: 0.25rem;
-  font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+    font-size: 18px;
 }
 
 .font-weight-700 {
-  font-weight: 700;
+    font-weight: 700;
 }
 
 .storage-used {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 8rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 8rem;
 }
 
 .size-number {
-  font-size: 1.5rem;
+    font-size: 1.5rem;
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .margin-right-5px {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .center {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .divider {
-  height: 24px;
-  width: 1px;
-  margin-right: 24px;
-  margin-left: 24px;
+    height: 24px;
+    width: 1px;
+    margin-right: 24px;
+    margin-left: 24px;
 }
-
 
 .progress,
 .progress-static {
-  progress {
-    max-height: 0.48rem;
-  }
+    progress {
+        max-height: 0.48rem;
+    }
 }
 
 :host::ng-deep {
-  .progress {
-    &.warning>progress {
-      color: orange;
+    .progress {
+        &.warning > progress {
+            color: orange;
 
-      &::-webkit-progress-value {
-        background-color: orange;
-      }
+            &::-webkit-progress-value {
+                background-color: orange;
+            }
 
-      &::-moz-progress-bar {
-        background-color: orange;
-      }
+            &::-moz-progress-bar {
+                background-color: orange;
+            }
+        }
     }
-  }
 }
 
 .of {
-  margin-right: 5px;
-  margin-left: 5px;
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 .project-name {
-  text-overflow: ellipsis;
-  max-width: 20rem;
-  overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 20rem;
+    overflow: hidden;
 }

@@ -1,80 +1,79 @@
 .rule-width {
-  width: 100%;
+    width: 100%;
 }
 
 .input-width {
-  width: 350px;
+    width: 350px;
 }
 
 .padding-left-0 {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .no-margin {
-  margin: 0;
+    margin: 0;
 }
 
-.padding-left-120{
-  padding-left: 126px;
+.padding-left-120 {
+    padding-left: 126px;
 }
 
-.w-90{
-  width: 90%;
+.w-90 {
+    width: 90%;
 }
 
 .date {
-  margin-top: -0.9rem;
+    margin-top: -0.9rem;
 }
 
 .input-width-date {
-  width: 265px;
+    width: 265px;
 }
 
 .width-table {
-  width: 388px;
+    width: 388px;
 }
 
 .all-projects {
-  width: 100%;
+    width: 100%;
 }
 
 .opacity-07 {
-  opacity: 0.7;
+    opacity: 0.7;
 }
 
 .disabled {
-  opacity: 0.5;
+    opacity: 0.5;
 }
 
 .modal-footer {
-  align-items: center;
-  justify-content: space-between;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .message {
-  margin-left: 10px;
+    margin-left: 10px;
 }
 
 .flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .expiration-width {
-  width: 194px;
+    width: 194px;
 }
-
 
 /* stylelint-disable */
 .showWarning {
-  color: #b3a000;
+    color: #b3a000;
 }
 
 .ml-20px {
-  margin-left: 20px;
+    margin-left: 20px;
 }
 
 :host::ng-deep.modal-dialog {
-  width: 48rem;
+    width: 48rem;
 }
