@@ -59,4 +59,7 @@ def prepare_docker_compose(configs, with_trivy):
     if metric:
         rendering_variables['metric'] = metric
 
+    # look and feel
+    rendering_variables['look_and_feel'] = configs['look_and_feel']
+
     render_jinja(docker_compose_template_path, docker_compose_yml_path,  mode=0o644, **rendering_variables)
