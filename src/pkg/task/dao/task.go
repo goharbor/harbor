@@ -74,7 +74,7 @@ func (t *taskDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := t.querySetter(ctx, query)
+	qs, err := t.querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -250,8 +250,8 @@ func (t *taskDAO) GetMaxEndTime(ctx context.Context, executionID int64) (time.Ti
 	return endTime, nil
 }
 
-func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Task{}, query, options...)
 	if err != nil {
 		return nil, err
 	}
