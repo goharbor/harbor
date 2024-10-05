@@ -111,12 +111,21 @@ describe('ProjectQuotasComponent', () => {
         await fixture.whenStable();
         const openEditButton: HTMLButtonElement =
             fixture.nativeElement.querySelector('#open-edit');
+        expect(openEditButton.disabled).toBeFalse();
         openEditButton.dispatchEvent(new Event('click'));
         fixture.detectChanges();
         await fixture.whenStable();
         const modal: HTMLElement =
             fixture.nativeElement.querySelector('clr-modal');
         expect(modal).toBeTruthy();
+    });
+    it('edit quota should be disabled when storage per project not editable', async () => {
+        component.config.storage_per_project.editable = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const openEditButton: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#open-edit');
+        expect(openEditButton.disabled).toBeTrue();
     });
     it('should call navigate function', async () => {
         // wait getting list and rendering
