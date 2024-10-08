@@ -172,9 +172,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
-		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
+		log.Warningf("repo %v, tag %v not found in remote, fallback to local", art.Repository, art.Tag)
+		return true, nil, nil
 	}
-
 	var content []byte
 	var contentType string
 	if c.cache == nil {
