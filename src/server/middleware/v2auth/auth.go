@@ -164,7 +164,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
 				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 				rw.Header().Set("Www-Authenticate", challenge)
-				lib_http.SendError(rw, errors.UnauthorizedError(err).WithMessagef(err.Error()))
+				lib_http.SendError(rw, errors.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)
