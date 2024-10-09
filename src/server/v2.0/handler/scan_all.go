@@ -73,7 +73,7 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, _ operation.StopScanAllPar
 		return s.SendError(ctx, err)
 	}
 	if execution == nil {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("no scan all job is found currently"))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("no scan all job is found currently"))
 	}
 
 	if err = s.scanCtl.StopScanAll(s.makeCtx(), execution.ID, true); err != nil {

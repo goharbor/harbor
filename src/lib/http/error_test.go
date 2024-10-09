@@ -70,7 +70,7 @@ func TestAPIError(t *testing.T) {
 	assert.Contains(t, stacktrace, `http.apiError`)
 
 	// errors.Error
-	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("resource not found")
+	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)

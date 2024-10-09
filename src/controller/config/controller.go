@@ -78,7 +78,7 @@ func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, er
 
 func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
 	if readOnlyForAll {
-		return errors.ForbiddenError(nil).WithMessagef("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
+		return errors.ForbiddenError(nil).WithMessage("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
 	}
 	mgr := config.GetCfgManager(ctx)
 	err := mgr.Load(ctx)

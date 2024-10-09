@@ -113,7 +113,7 @@ func (suite *ErrorTestSuite) TestNew() {
 
 func (suite *ErrorTestSuite) TestWithMessage() {
 	cause := New("root")
-	err := cause.WithMessagef("append message").WithMessage("append message2")
+	err := cause.WithMessage("append message").WithMessage("append message2")
 	suite.Equal("append message2", err.Error())
 }
 
@@ -172,7 +172,7 @@ func (suite *ErrorTestSuite) TestNilErr() {
 }
 
 func (suite *ErrorTestSuite) TestNilWithMessage() {
-	nilErr := New(nil).WithMessagef("it's a nil error")
+	nilErr := New(nil).WithMessage("it's a nil error")
 	suite.Equal("it's a nil error", nilErr.Error())
 }
 
@@ -223,7 +223,7 @@ func (suite *ErrorTestSuite) TestNotFoundError() {
 	suite.Equal(`resource not found: something is not found`, err.Error())
 
 	root = errors.New("something is not found")
-	err = NotFoundError(root).WithMessagef("asset not found")
+	err = NotFoundError(root).WithMessage("asset not found")
 	suite.Equal(`asset not found: something is not found`, err.Error())
 }
 
@@ -276,7 +276,7 @@ func (suite *ErrorTestSuite) TestErrors() {
 	err2 := Wrap(err, "append message").WithCode(ConflictCode)
 	suite.Equal(`{"errors":[{"code":"CONFLICT","message":"append message: root: stdErr"}]}`, NewErrs(err2).Error())
 
-	err = New(nil).WithCode(GeneralCode).WithMessagef("internal server error")
+	err = New(nil).WithCode(GeneralCode).WithMessage("internal server error")
 	suite.Equal(`{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`, NewErrs(err).Error())
 }
 

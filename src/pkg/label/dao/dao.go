@@ -166,7 +166,7 @@ func (d *defaultDAO) CreateReference(ctx context.Context, ref *model.Reference) 
 			err = e
 		} else if e := orm.AsForeignKeyError(err, "the reference tries to refer a non existing label %d or artifact %d",
 			ref.LabelID, ref.ArtifactID); e != nil {
-			err = errors.New(e).WithCode(errors.NotFoundCode)
+			err = errors.New(e).WithCode(errors.NotFoundCode).WithMessage(e.Message)
 		}
 	}
 	return id, err

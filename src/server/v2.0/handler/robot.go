@@ -448,7 +448,7 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 				return errors.DeniedError(nil)
 			}
 			if scRobots[0].ID != creatorRobot.ID && scRobots[0].ID != r.ID {
-				return errors.New(nil).WithMessagef("as for a nested robot account, only person who has the right permission or the creator robot or nested robot itself has the permission to update").WithCode(errors.DENIED)
+				return errors.New(nil).WithMessage("as for a nested robot account, only person who has the right permission or the creator robot or nested robot itself has the permission to update").WithCode(errors.DENIED)
 			}
 		}
 
