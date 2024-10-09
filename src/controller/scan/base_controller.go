@@ -376,8 +376,7 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 	}
 
 	if len(executions) == 0 {
-		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
-		return errors.BadRequestError(nil).WithMessage(message)
+		return errors.BadRequestError(nil).WithMessage("no scan job for artifact digest=%v", artifact.Digest)
 	}
 	execution := executions[0]
 	return bc.execMgr.Stop(ctx, execution.ID)

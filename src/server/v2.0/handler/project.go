@@ -578,7 +578,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
 			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
-			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf(errMsg)))
+			return a.SendError(ctx, errors.New(nil).WithMessage(errMsg).WithCode(errors.BadRequestCode))
 		}
 	}
 

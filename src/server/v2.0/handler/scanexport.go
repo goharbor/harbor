@@ -202,7 +202,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	}
 	log.Infof("reading data from file : %s", repositoryName)
 
-	return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+	return middleware.ResponderFunc(func(writer http.ResponseWriter, _ runtime.Producer) {
 		defer se.cleanUpArtifact(ctx, repositoryName, execution.ExportDataDigest, params.ExecutionID, file)
 
 		writer.Header().Set("Content-Type", "text/csv")

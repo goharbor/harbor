@@ -18,8 +18,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"errors"
-	"fmt"
-
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/goharbor/harbor/src/common"
@@ -83,7 +81,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 	}
 
 	if !token.Valid {
-		log.Errorf(fmt.Sprintf("invalid jwt token, %v", token))
+		log.Errorf("invalid jwt token, %v", token)
 		return nil, errors.New("invalid jwt token")
 	}
 	return &Token{
