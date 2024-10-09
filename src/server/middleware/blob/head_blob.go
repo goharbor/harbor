@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -70,11 +69,11 @@ func handleHead(req *http.Request) error {
 				return errors.Wrapf(err, "the request id is: %s", req.Header.Get(requestid.HeaderXRequestID))
 			}
 		}
-		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage("the asking blob is in GC, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID)).WithCode(errors.NotFoundCode)
 	case blob_models.StatusDeleteFailed:
-		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is delete failed, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage("the asking blob is delete failed, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID)).WithCode(errors.NotFoundCode)
 	default:
-		return errors.New(nil).WithMessage(fmt.Sprintf("wrong blob status, %s", bb.Status))
+		return errors.New(nil).WithMessage("wrong blob status, %s", bb.Status)
 	}
 	return nil
 }
