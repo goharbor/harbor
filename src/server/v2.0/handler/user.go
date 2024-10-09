@@ -200,7 +200,7 @@ func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, _ operation.GetCurren
 	sctx, _ := security.FromContext(ctx)
 	lsc, ok := sctx.(*local.SecurityContext)
 	if !ok {
-		return u.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage("get current user not available for security context: %s", sctx.Name()))
+		return u.SendError(ctx, errors.PreconditionFailedError(nil).WithMessagef("get current user not available for security context: %s", sctx.Name()))
 	}
 	resp, err := u.getUserByID(ctx, lsc.User().UserID)
 	if err != nil {
@@ -307,10 +307,10 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 		ok, err := u.ctl.VerifyPassword(ctx, sctx.GetUsername(), params.Password.OldPassword)
 		if err != nil {
 			log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
-			return u.SendError(ctx, errors.UnknownError(nil).WithMessage("Failed to verify password"))
+			return u.SendError(ctx, errors.UnknownError(nil).WithMessagef("Failed to verify password"))
 		}
 		if !ok {
-			return u.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Current password is incorrect"))
+			return u.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Current password is incorrect"))
 		}
 	}
 	newPwd := params.Password.NewPassword
@@ -325,10 +325,10 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	ok, err := u.ctl.VerifyPassword(ctx, user.Username, newPwd)
 	if err != nil {
 		log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
-		return u.SendError(ctx, errors.UnknownError(nil).WithMessage("Failed to verify password"))
+		return u.SendError(ctx, errors.UnknownError(nil).WithMessagef("Failed to verify password"))
 	}
 	if ok {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("New password is identical to old password"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessagef("New password is identical to old password"))
 	}
 	err2 := u.ctl.UpdatePassword(ctx, uid, params.Password.NewPassword)
 	if err2 != nil {
@@ -356,14 +356,14 @@ func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
 		return err
 	}
 	if a != common.OIDCAuth {
-		return errors.PreconditionFailedError(nil).WithMessage("unable to update CLI secret under authmode: %s", a)
+		return errors.PreconditionFailedError(nil).WithMessagef("unable to update CLI secret under authmode: %s", a)
 	}
 	sctx, ok := security.FromContext(ctx)
 	if !ok || !sctx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
 	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) {
-		return errors.ForbiddenError(nil).WithMessage("Not authorized to update the CLI secret for user: %d", id)
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to update the CLI secret for user: %d", id)
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ func (u *usersAPI) requireCreatable(ctx context.Context) error {
 		return err
 	}
 	if a != common.DBAuth {
-		return errors.ForbiddenError(nil).WithMessage("creating local user is not allowed under auth mode: %s", a)
+		return errors.ForbiddenError(nil).WithMessagef("creating local user is not allowed under auth mode: %s", a)
 	}
 	sr, err := config.SelfRegistration(ctx)
 	if err != nil {
@@ -387,7 +387,7 @@ func (u *usersAPI) requireCreatable(ctx context.Context) error {
 		return accessErr
 	}
 	if accessErr != nil && !lib.GetCarrySession(ctx) {
-		return errors.ForbiddenError(nil).WithMessage("self-registration cannot be triggered via API")
+		return errors.ForbiddenError(nil).WithMessagef("self-registration cannot be triggered via API")
 	}
 	return nil
 }
@@ -398,7 +398,7 @@ func (u *usersAPI) requireReadable(ctx context.Context, id int) error {
 		return errors.UnauthorizedError(nil)
 	}
 	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionRead, rbac.ResourceUser) {
-		return errors.ForbiddenError(nil).WithMessage("Not authorized to read user: %d", id)
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to read user: %d", id)
 	}
 	return nil
 }
@@ -409,10 +409,10 @@ func (u *usersAPI) requireDeletable(ctx context.Context, id int) error {
 		return errors.UnauthorizedError(nil)
 	}
 	if !sctx.Can(ctx, rbac.ActionDelete, rbac.ResourceUser) {
-		return errors.ForbiddenError(nil).WithMessage("Not authorized to delete users")
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to delete users")
 	}
 	if matchUserID(sctx, id) || id == 1 {
-		return errors.ForbiddenError(nil).WithMessage("User with ID %d cannot be deleted", id)
+		return errors.ForbiddenError(nil).WithMessagef("User with ID %d cannot be deleted", id)
 	}
 	return nil
 }
@@ -427,7 +427,7 @@ func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
 		return errors.UnauthorizedError(nil)
 	}
 	if !modifiable(ctx, a, id) {
-		return errors.ForbiddenError(nil).WithMessage("User with ID %d can't be updated", id)
+		return errors.ForbiddenError(nil).WithMessagef("User with ID %d can't be updated", id)
 	}
 	return nil
 }
@@ -456,7 +456,7 @@ func requireValidSecret(in string) error {
 	if len(in) >= 8 && len(in) <= 128 && hasLower.MatchString(in) && hasUpper.MatchString(in) && hasNumber.MatchString(in) {
 		return nil
 	}
-	return errors.BadRequestError(nil).WithMessage("the password or secret must be 8-128, inclusively, characters long with at least 1 uppercase letter, 1 lowercase letter and 1 number")
+	return errors.BadRequestError(nil).WithMessagef("the password or secret must be 8-128, inclusively, characters long with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
 func getRandomSecret() (string, error) {
@@ -473,7 +473,7 @@ func getRandomSecret() (string, error) {
 	if err := retry.Retry(func() error {
 		cliSecret = utils.GenerateRandomStringWithLen(9)
 		if err := requireValidSecret(cliSecret); err != nil {
-			return errors.New(nil).WithMessage("invalid cli secret format")
+			return errors.New(nil).WithMessagef("invalid cli secret format")
 		}
 		return nil
 	}, options...); err != nil {
@@ -485,22 +485,22 @@ func getRandomSecret() (string, error) {
 func validateUserProfile(user *commonmodels.User, create bool) error {
 	if len(user.Email) > 0 {
 		if m, _ := regexp.MatchString(`^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`, user.Email); !m {
-			return errors.BadRequestError(nil).WithMessage("email with illegal format")
+			return errors.BadRequestError(nil).WithMessagef("email with illegal format")
 		}
 	} else {
-		return errors.BadRequestError(nil).WithMessage("email can't be empty")
+		return errors.BadRequestError(nil).WithMessagef("email can't be empty")
 	}
 
 	if utils.IsIllegalLength(user.Realname, 1, 255) {
-		return errors.BadRequestError(nil).WithMessage("realname with illegal length")
+		return errors.BadRequestError(nil).WithMessagef("realname with illegal length")
 	}
 
 	if strings.ContainsAny(user.Realname, common.IllegalCharsInUsername) {
-		return errors.BadRequestError(nil).WithMessage("realname contains illegal characters")
+		return errors.BadRequestError(nil).WithMessagef("realname contains illegal characters")
 	}
 
 	if utils.IsIllegalLength(user.Comment, -1, 30) {
-		return errors.BadRequestError(nil).WithMessage("comment with illegal length")
+		return errors.BadRequestError(nil).WithMessagef("comment with illegal length")
 	}
 
 	// skip to validate username for update because username is empty in the request
@@ -509,11 +509,11 @@ func validateUserProfile(user *commonmodels.User, create bool) error {
 	}
 
 	if utils.IsIllegalLength(user.Username, 1, 255) {
-		return errors.BadRequestError(nil).WithMessage("username with illegal length")
+		return errors.BadRequestError(nil).WithMessagef("username with illegal length")
 	}
 
 	if strings.ContainsAny(user.Username, common.IllegalCharsInUsername) {
-		return errors.BadRequestError(nil).WithMessage("username contains illegal characters")
+		return errors.BadRequestError(nil).WithMessagef("username contains illegal characters")
 	}
 
 	return nil

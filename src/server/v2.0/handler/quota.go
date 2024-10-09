@@ -95,7 +95,7 @@ func (qa *quotaAPI) UpdateQuota(ctx context.Context, params operation.UpdateQuot
 	}
 
 	if params.Hard == nil || len(params.Hard.Hard) == 0 {
-		return qa.SendError(ctx, errors.BadRequestError(nil).WithMessage("hard required in body"))
+		return qa.SendError(ctx, errors.BadRequestError(nil).WithMessagef("hard required in body"))
 	}
 
 	q, err := qa.quotaCtl.Get(ctx, params.ID)
@@ -109,7 +109,7 @@ func (qa *quotaAPI) UpdateQuota(ctx context.Context, params operation.UpdateQuot
 	}
 
 	if err := quota.Validate(ctx, q.Reference, hard); err != nil {
-		return qa.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
+		return qa.SendError(ctx, errors.BadRequestError(nil).WithMessagef(err.Error()))
 	}
 
 	q.SetHard(hard)

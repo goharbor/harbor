@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -57,7 +56,7 @@ func probeBlob(r *http.Request, digest string) error {
 			// StatusDeleteFailed => StatusNone, and then let the proxy to handle manifest upload
 			return probeBlob(r, digest)
 		}
-		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)).WithCode(errors.NotFoundCode)
 	default:
 		return nil
 	}

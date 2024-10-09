@@ -18,6 +18,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"errors"
+
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/goharbor/harbor/src/common"

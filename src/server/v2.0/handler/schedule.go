@@ -45,7 +45,7 @@ func (s *scheduleAPI) GetSchedulePaused(ctx context.Context, params schedule.Get
 		return s.SendError(ctx, err)
 	}
 	if !strings.EqualFold(params.JobType, all) {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("job_type can only be 'all'"))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("job_type can only be 'all'"))
 	}
 	paused, err := s.jobServiceCtl.Paused(ctx)
 	if err != nil {

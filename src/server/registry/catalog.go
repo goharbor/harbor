@@ -48,7 +48,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	if withN {
 		maxEntries, err = strconv.Atoi(reqQ.Get("n"))
 		if err != nil || maxEntries < 0 {
-			err := errors.New(err).WithCode(errors.BadRequestCode).WithMessage("the N must be a positive int type")
+			err := errors.New(err).WithCode(errors.BadRequestCode).WithMessagef("the N must be a positive int type")
 			lib_http.SendError(w, err)
 			return
 		}
@@ -82,7 +82,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	if lastEntry != "" {
 		lastEntryIndex := util.IndexString(repoNames, lastEntry)
 		if lastEntryIndex == -1 {
-			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(fmt.Sprintf("the last: %s should be a valid repository name.", lastEntry))
+			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef(fmt.Sprintf("the last: %s should be a valid repository name.", lastEntry))
 			lib_http.SendError(w, err)
 			return
 		}

@@ -100,7 +100,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// No report yet?
 				msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
 					`To continue with pull, please contact your project administrator for help.`, projectSeverity)
-				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessagef(msg)
 			}
 
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
@@ -122,7 +122,7 @@ func Middleware() func(http.Handler) http.Handler {
 		if !vulnerable.IsScanSuccess() {
 			msg := fmt.Sprintf(`current image with "%s" status of vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
 				`To continue with pull, please contact your project administrator for help.`, vulnerable.ScanStatus, projectSeverity)
-			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessagef(msg)
 		}
 
 		// Do judgement
@@ -134,7 +134,7 @@ func Middleware() func(http.Handler) http.Handler {
 			msg := fmt.Sprintf(`current image with %d %s cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
 				`To continue with pull, please contact your project administrator to exempt matched vulnerabilities through configuring the CVE allowlist.`,
 				vulnerable.VulnerabilitiesCount, thing, projectSeverity)
-			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessagef(msg)
 		}
 
 		// Print scannerPull CVE list

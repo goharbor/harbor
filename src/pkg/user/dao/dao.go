@@ -71,7 +71,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 func (d *dao) Create(ctx context.Context, user *commonmodels.User) (int, error) {
 	if user.UserID > 0 {
-		return 0, errors.BadRequestError(nil).WithMessage("user ID is set when creating user: %d", user.UserID)
+		return 0, errors.BadRequestError(nil).WithMessagef("user ID is set when creating user: %d", user.UserID)
 	}
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
@@ -94,7 +94,7 @@ func (d *dao) Update(ctx context.Context, user *commonmodels.User, props ...stri
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("user with id %d not found", user.UserID)
+		return errors.NotFoundError(nil).WithMessagef("user with id %d not found", user.UserID)
 	}
 	return nil
 }

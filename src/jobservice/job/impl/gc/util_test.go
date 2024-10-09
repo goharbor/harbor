@@ -16,15 +16,15 @@ func TestIgnoreNotFound(t *testing.T) {
 	}
 	assert.Nil(t, ignoreNotFound(f))
 	f = func() error {
-		return errors.New(nil).WithMessage("my error")
+		return errors.New(nil).WithMessagef("my error")
 	}
 	assert.NotNil(t, ignoreNotFound(f))
 	f = func() error {
-		return errors.New(nil).WithMessage("my error").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("my error").WithCode(errors.BadRequestCode)
 	}
 	assert.NotNil(t, ignoreNotFound(f))
 	f = func() error {
-		return errors.New(nil).WithMessage("my error").WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("my error").WithCode(errors.NotFoundCode)
 	}
 	assert.Nil(t, ignoreNotFound(f))
 }

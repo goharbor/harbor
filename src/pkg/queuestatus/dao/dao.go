@@ -24,7 +24,7 @@ import (
 )
 
 // ErrQueueTypeDup ...
-var ErrQueueTypeDup = errors.ConflictError(nil).WithMessage("duplicated queue type")
+var ErrQueueTypeDup = errors.ConflictError(nil).WithMessagef("duplicated queue type")
 
 func init() {
 	orm.RegisterModel(

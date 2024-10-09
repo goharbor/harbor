@@ -134,7 +134,7 @@ func (p *projectMetadataAPI) UpdateProjectMetadata(ctx context.Context, params o
 
 func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]string, error) {
 	if len(metas) != 1 {
-		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("only allow one key/value pair")
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("only allow one key/value pair")
 	}
 
 	key, value := "", ""
@@ -146,23 +146,23 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 		proModels.ProMetaAutoSBOMGen, proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
-			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
 		}
 		metas[key] = strconv.FormatBool(v)
 	case proModels.ProMetaSeverity:
 		severity := vuln.ParseSeverityVersion3(strings.ToLower(value))
 		if severity == vuln.Unknown {
-			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
 		}
 		metas[proModels.ProMetaSeverity] = strings.ToLower(severity.String())
 	case proModels.ProMetaProxySpeed:
 		v, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
-			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid value: %s", value)
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
 		}
 		metas[proModels.ProMetaProxySpeed] = strconv.FormatInt(v, 10)
 	default:
-		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid key: %s", key)
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid key: %s", key)
 	}
 	return metas, nil
 }

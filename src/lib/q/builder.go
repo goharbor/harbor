@@ -64,13 +64,13 @@ func parseKeywords(q string) (map[string]interface{}, error) {
 		if len(strs) != 2 || len(strs[0]) == 0 || len(strs[1]) == 0 {
 			return nil, errors.New(nil).
 				WithCode(errors.BadRequestCode).
-				WithMessage(`the query string must contain "=" and the key/value cannot be empty`)
+				WithMessagef(`the query string must contain "=" and the key/value cannot be empty`)
 		}
 		value, err := parsePattern(strs[1])
 		if err != nil {
 			return nil, errors.New(err).
 				WithCode(errors.BadRequestCode).
-				WithMessage("invalid query string value: %s", strs[1])
+				WithMessagef("invalid query string value: %s", strs[1])
 		}
 		keywords[strs[0]] = value
 	}

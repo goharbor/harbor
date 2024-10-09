@@ -167,7 +167,7 @@ func (c *controller) Ensure(ctx context.Context, digest string, contentType stri
 
 func (c *controller) Exist(ctx context.Context, digest string, options ...Option) (bool, error) {
 	if digest == "" {
-		return false, errors.BadRequestError(nil).WithMessage("exist blob require digest")
+		return false, errors.BadRequestError(nil).WithMessagef("exist blob require digest")
 	}
 
 	_, err := c.Get(ctx, digest, options...)
@@ -220,7 +220,7 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 
 func (c *controller) Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error) {
 	if digest == "" {
-		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("require digest")
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("require digest")
 	}
 
 	opts := newOptions(options...)
@@ -248,7 +248,7 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 	if err != nil {
 		return nil, err
 	} else if len(blobs) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("blob %s not found", digest)
+		return nil, errors.NotFoundError(nil).WithMessagef("blob %s not found", digest)
 	}
 
 	return blobs[0], nil
@@ -363,7 +363,7 @@ func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

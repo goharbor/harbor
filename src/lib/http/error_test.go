@@ -30,21 +30,21 @@ import (
 func TestSendError(t *testing.T) {
 	// unauthorized error
 	rw := httptest.NewRecorder()
-	err := errors.New(nil).WithCode(errors.UnAuthorizedCode).WithMessage("unauthorized")
+	err := errors.New(nil).WithCode(errors.UnAuthorizedCode).WithMessagef("unauthorized")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusUnauthorized, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized"}]}`+"\n", rw.Body.String())
 
 	// internal server error
 	rw = httptest.NewRecorder()
-	err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("unknown")
+	err = errors.New(nil).WithCode(errors.GeneralCode).WithMessagef("unknown")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusInternalServerError, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`+"\n", rw.Body.String())
 
 	// not internal server error
 	rw = httptest.NewRecorder()
-	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("object not found")
+	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("object not found")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusNotFound, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"object not found"}]}`+"\n", rw.Body.String())
@@ -70,7 +70,7 @@ func TestAPIError(t *testing.T) {
 	assert.Contains(t, stacktrace, `http.apiError`)
 
 	// errors.Error
-	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("resource not found")
+	err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("resource not found")
 	statusCode, payload, stacktrace = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)

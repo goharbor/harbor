@@ -190,7 +190,7 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 		return a.SendError(ctx, err)
 	}
 	if len(accs) >= 1 && accs[0].IsHard() {
-		return a.SendError(ctx, errors.New(nil).WithCode(errors.DENIED).WithMessage("the operation isn't supported for an artifact accessory"))
+		return a.SendError(ctx, errors.New(nil).WithCode(errors.DENIED).WithMessagef("the operation isn't supported for an artifact accessory"))
 	}
 
 	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
@@ -212,7 +212,7 @@ func parse(s string) (string, string, error) {
 	matches := reference.ReferenceRegexp.FindStringSubmatch(s)
 	if matches == nil {
 		return "", "", errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid input: %s", s)
+			WithMessagef("invalid input: %s", s)
 	}
 	repository := matches[1]
 	reference := matches[2]
@@ -220,7 +220,7 @@ func parse(s string) (string, string, error) {
 		_, err := digest.Parse(matches[3])
 		if err != nil {
 			return "", "", errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid input: %s", s)
+				WithMessagef("invalid input: %s", s)
 		}
 		reference = matches[3]
 	}
@@ -270,7 +270,7 @@ func (a *artifactAPI) requireNonProxyCacheProject(ctx context.Context, name stri
 	}
 	if pro.IsProxy() {
 		return errors.New(nil).WithCode(errors.MethodNotAllowedCode).
-			WithMessage("the operation isn't supported for a proxy cache project")
+			WithMessagef("the operation isn't supported for a proxy cache project")
 	}
 	return nil
 }
@@ -295,7 +295,7 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	}
 	// the tag not found
 	if id == 0 {
-		err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage(
+		err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef(
 			"tag %s attached to artifact %d not found", params.TagName, artifact.ID)
 		return a.SendError(ctx, err)
 	}
@@ -496,7 +496,7 @@ func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labe
 		return err
 	}
 	if l.Scope == common.LabelScopeProject && l.ProjectID != projectID {
-		return errors.NotFoundError(nil).WithMessage("project id %d, label %d not found", projectID, labelID)
+		return errors.NotFoundError(nil).WithMessagef("project id %d, label %d not found", projectID, labelID)
 	}
 	return nil
 }

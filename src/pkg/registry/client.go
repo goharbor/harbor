@@ -340,7 +340,7 @@ func (c *client) DeleteManifest(repository, reference string) error {
 		}
 		if !exist {
 			return errors.New(nil).WithCode(errors.NotFoundCode).
-				WithMessage("%s:%s not found", repository, reference)
+				WithMessagef("%s:%s not found", repository, reference)
 		}
 		reference = string(desc.Digest)
 	}
@@ -597,7 +597,7 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 		// the same name artifact exists, but not allowed to override
 		if !override {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("the same name but different digest artifact exists, but the override is set to false")
+				WithMessagef("the same name but different digest artifact exists, but the override is set to false")
 		}
 	}
 
@@ -681,7 +681,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			code = errors.RateLimitCode
 		}
 		return nil, errors.New(nil).WithCode(code).
-			WithMessage("http status code: %d, body: %s", resp.StatusCode, string(body))
+			WithMessagef("http status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	return resp, nil
 }

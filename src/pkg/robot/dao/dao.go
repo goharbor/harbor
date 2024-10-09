@@ -78,7 +78,7 @@ func (d *dao) Update(ctx context.Context, r *model.Robot, props ...string) error
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("robot %d not found", r.ID)
+		return errors.NotFoundError(nil).WithMessagef("robot %d not found", r.ID)
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("robot account %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("robot account %d not found", id)
 	}
 	return nil
 }

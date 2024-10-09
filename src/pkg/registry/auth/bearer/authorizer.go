@@ -133,7 +133,7 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 			code = errors.ForbiddenCode
 		}
 		return nil, errors.New(nil).WithCode(code).
-			WithMessage("http status code: %d, body: %s", resp.StatusCode, string(body))
+			WithMessagef("http status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	token := &token{}
 	if err = json.Unmarshal(body, token); err != nil {

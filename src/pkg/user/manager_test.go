@@ -91,7 +91,7 @@ func (m *mgrTestSuite) TestOnboard() {
 	m.dao.On("Create", mock.Anything, testifymock.MatchedBy(
 		func(u *models.User) bool {
 			return u.Username == "existing"
-		})).Return(0, errors.ConflictError(nil).WithMessage("username exists"))
+		})).Return(0, errors.ConflictError(nil).WithMessagef("username exists"))
 	m.dao.On("Create", mock.Anything, testifymock.MatchedBy(
 		func(u *models.User) bool {
 			return u.Username != "existing" && u.Username != "dup-but-not-existing"

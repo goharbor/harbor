@@ -65,7 +65,7 @@ func (m *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 	}
 	// SBOM artifact should only have one layer
 	if len(manifest.Layers) != 1 {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("The sbom is not found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("The sbom is not found")
 	}
 	layerDgst := manifest.Layers[0].Digest.String()
 	_, blob, err := m.RegCli.PullBlob(art.RepositoryName, layerDgst)

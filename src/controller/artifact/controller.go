@@ -307,7 +307,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 	}
 	if len(tags) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("artifact %s:%s not found", repository, tag)
+			WithMessagef("artifact %s:%s not found", repository, tag)
 	}
 	return c.Get(ctx, tags[0].ArtifactID, option)
 }
@@ -351,7 +351,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		// the root artifact is referenced by other artifacts
 		if isRoot {
 			return errors.New(nil).WithCode(errors.ViolateForeignKeyConstraintCode).
-				WithMessage("the deleting artifact is referenced by others")
+				WithMessagef("the deleting artifact is referenced by others")
 		}
 		// the child artifact is referenced by other artifacts, skip
 		return nil

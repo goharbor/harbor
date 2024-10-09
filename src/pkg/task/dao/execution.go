@@ -161,7 +161,7 @@ func (e *executionDAO) Update(ctx context.Context, execution *Execution, props .
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("execution %d not found", execution.ID)
+		return errors.NotFoundError(nil).WithMessagef("execution %d not found", execution.ID)
 	}
 	return nil
 }
@@ -182,7 +182,7 @@ func (e *executionDAO) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("execution %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("execution %d not found", id)
 	}
 	return nil
 }

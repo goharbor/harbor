@@ -67,10 +67,10 @@ func (s *schedulerController) Get(ctx context.Context, vendorType string) (*sche
 		return nil, err
 	}
 	if len(sch) == 0 {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("no schedule is found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("no schedule is found")
 	}
 	if sch[0] == nil {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("no schedule is found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("no schedule is found")
 	}
 	return sch[0], nil
 }

@@ -69,7 +69,7 @@ func MiddlewareWithConfig(config Config, skippers ...middleware.Skipper) func(ht
 
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if config.ReadOnly(r) {
-			pkgE := errors.New(nil).WithCode(errors.DENIED).WithMessage("The system is in read only mode. Any modification is prohibited.")
+			pkgE := errors.New(nil).WithCode(errors.DENIED).WithMessagef("The system is in read only mode. Any modification is prohibited.")
 			lib_http.SendError(w, pkgE)
 			return
 		}

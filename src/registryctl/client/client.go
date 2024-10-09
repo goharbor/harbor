@@ -134,7 +134,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			code = errors.NotFoundCode
 		}
 		return nil, errors.New(nil).WithCode(code).
-			WithMessage("http status code: %d, body: %s", resp.StatusCode, string(body))
+			WithMessagef("http status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	return resp, nil
 }

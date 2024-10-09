@@ -488,7 +488,7 @@ func reserveResources(resources types.ResourceList) func(hardLimits, used types.
 		newUsed := types.Add(used, resources)
 
 		if err := quota.IsSafe(hardLimits, used, newUsed, false); err != nil {
-			return nil, errors.DeniedError(err).WithMessage("Quota exceeded when processing the request of %v", err)
+			return nil, errors.DeniedError(err).WithMessagef("Quota exceeded when processing the request of %v", err)
 		}
 
 		return newUsed, nil

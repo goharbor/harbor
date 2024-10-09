@@ -77,7 +77,7 @@ func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.U
 		return c.SendError(ctx, err)
 	}
 	if params.Configurations == nil {
-		return c.SendError(ctx, errors.BadRequestError(nil).WithMessage("Missing configure item"))
+		return c.SendError(ctx, errors.BadRequestError(nil).WithMessagef("Missing configure item"))
 	}
 	conf := params.Configurations
 	cfgMap, err := toCfgMap(conf)

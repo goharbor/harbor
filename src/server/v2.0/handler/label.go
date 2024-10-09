@@ -78,7 +78,7 @@ func (lAPI *labelAPI) GetLabelByID(ctx context.Context, params operation.GetLabe
 		return lAPI.SendError(ctx, err)
 	}
 	if label == nil || label.Deleted {
-		return lAPI.SendError(ctx, errors.New(nil).WithMessage("label %d not found", params.LabelID).WithCode(errors.NotFoundCode))
+		return lAPI.SendError(ctx, errors.New(nil).WithMessagef("label %d not found", params.LabelID).WithCode(errors.NotFoundCode))
 	}
 
 	if err := lAPI.requireAccess(ctx, label, rbac.ActionRead); err != nil {
@@ -96,7 +96,7 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 
 	scope := lib.StringValue(params.Scope)
 	if scope != common.LabelScopeGlobal && scope != common.LabelScopeProject {
-		return lAPI.SendError(ctx, errors.New(nil).WithMessage("invalid scope: %s", scope).WithCode(errors.BadRequestCode))
+		return lAPI.SendError(ctx, errors.New(nil).WithMessagef("invalid scope: %s", scope).WithCode(errors.BadRequestCode))
 	}
 	query.Keywords["Level"] = common.LabelLevelUser
 	query.Keywords["Scope"] = scope
@@ -107,7 +107,7 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 	if scope == common.LabelScopeProject {
 		pid := lib.Int64Value(params.ProjectID)
 		if pid == 0 {
-			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project labels"))
+			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessagef("must with project ID when to query project labels"))
 		}
 		if err := lAPI.RequireProjectAccess(ctx, pid, rbac.ActionList, rbac.ResourceLabel); err != nil {
 			return lAPI.SendError(ctx, err)
@@ -148,7 +148,7 @@ func (lAPI *labelAPI) UpdateLabel(ctx context.Context, params operation.UpdateLa
 		return lAPI.SendError(ctx, err)
 	}
 	if label == nil || label.Deleted {
-		return lAPI.SendError(ctx, errors.New(nil).WithMessage("label %d not found", params.LabelID).WithCode(errors.NotFoundCode))
+		return lAPI.SendError(ctx, errors.New(nil).WithMessagef("label %d not found", params.LabelID).WithCode(errors.NotFoundCode))
 	}
 
 	if err := lAPI.requireAccess(ctx, label, rbac.ActionUpdate); err != nil {

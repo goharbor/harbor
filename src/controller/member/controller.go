@@ -72,10 +72,10 @@ type UserGroup struct {
 }
 
 // ErrDuplicateProjectMember ...
-var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessage("The project member specified already exist")
+var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessagef("The project member specified already exist")
 
 // ErrInvalidRole ...
-var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("Failed to update project member, role is not in 1,2,3")
+var ErrInvalidRole = errors.BadRequestError(nil).WithMessagef("Failed to update project member, role is not in 1,2,3")
 
 type controller struct {
 	userManager  user.Manager
@@ -103,7 +103,7 @@ func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}
 		return err
 	}
 	if p == nil {
-		return errors.BadRequestError(nil).WithMessage("project is not found")
+		return errors.BadRequestError(nil).WithMessagef("project is not found")
 	}
 	return c.mgr.UpdateRole(ctx, p.ProjectID, memberID, role)
 }
@@ -114,7 +114,7 @@ func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, membe
 		return nil, err
 	}
 	if p == nil {
-		return nil, errors.BadRequestError(nil).WithMessage("project is not found")
+		return nil, errors.BadRequestError(nil).WithMessagef("project is not found")
 	}
 	return c.mgr.Get(ctx, p.ProjectID, memberID)
 }
@@ -125,7 +125,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		return 0, err
 	}
 	if p == nil {
-		return 0, errors.BadRequestError(nil).WithMessage("project is not found")
+		return 0, errors.BadRequestError(nil).WithMessagef("project is not found")
 	}
 	var member models.Member
 	member.ProjectID = p.ProjectID
@@ -135,20 +135,20 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 	if req.MemberUser.UserID > 0 {
 		user, err := c.userManager.Get(ctx, req.MemberUser.UserID)
 		if err != nil {
-			return 0, errors.BadRequestError(nil).WithMessage("Failed to get user %d: %v", req.MemberUser.UserID, err)
+			return 0, errors.BadRequestError(nil).WithMessagef("Failed to get user %d: %v", req.MemberUser.UserID, err)
 		}
 		if user == nil {
-			return 0, errors.BadRequestError(nil).WithMessage("User %d not found", req.MemberUser.UserID)
+			return 0, errors.BadRequestError(nil).WithMessagef("User %d not found", req.MemberUser.UserID)
 		}
 		member.EntityID = req.MemberUser.UserID
 		member.EntityType = common.UserMember
 	} else if req.MemberGroup.ID > 0 {
 		g, err := c.groupManager.Get(ctx, req.MemberGroup.ID)
 		if err != nil {
-			return 0, errors.BadRequestError(nil).WithMessage("Failed to get group %d: %v", req.MemberGroup.ID, err)
+			return 0, errors.BadRequestError(nil).WithMessagef("Failed to get group %d: %v", req.MemberGroup.ID, err)
 		}
 		if g == nil {
-			return 0, errors.BadRequestError(nil).WithMessage("Group %d not found", req.MemberGroup.ID)
+			return 0, errors.BadRequestError(nil).WithMessagef("Group %d not found", req.MemberGroup.ID)
 		}
 		member.EntityID = req.MemberGroup.ID
 	} else if len(req.MemberUser.Username) > 0 {
@@ -245,7 +245,7 @@ func (c *controller) List(ctx context.Context, projectNameOrID interface{}, enti
 		return nil, err
 	}
 	if p == nil {
-		return nil, errors.BadRequestError(nil).WithMessage("project is not found")
+		return nil, errors.BadRequestError(nil).WithMessagef("project is not found")
 	}
 	pm := models.Member{
 		ProjectID:  p.ProjectID,

@@ -130,7 +130,7 @@ func (b *BaseAPI) RequireSystemAccess(ctx context.Context, action rbac.Action, s
 	}
 	resource := system.NewNamespace().Resource(subresource...)
 	if !secCtx.Can(ctx, action, resource) {
-		return errors.ForbiddenError(nil).WithMessage(secCtx.GetUsername())
+		return errors.ForbiddenError(nil).WithMessagef(secCtx.GetUsername())
 	}
 	return nil
 }
@@ -151,7 +151,7 @@ func (b *BaseAPI) RequireAuthenticated(ctx context.Context) error {
 func (b *BaseAPI) RequireSolutionUserAccess(ctx context.Context) error {
 	sec, exist := security.FromContext(ctx)
 	if !exist || !sec.IsSolutionUser() {
-		return errors.UnauthorizedError(nil).WithMessage("only internal service is allowed to call this API")
+		return errors.UnauthorizedError(nil).WithMessagef("only internal service is allowed to call this API")
 	}
 	return nil
 }

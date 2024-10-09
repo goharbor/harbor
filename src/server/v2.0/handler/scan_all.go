@@ -73,7 +73,7 @@ func (s *scanAllAPI) StopScanAll(ctx context.Context, _ operation.StopScanAllPar
 		return s.SendError(ctx, err)
 	}
 	if execution == nil {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("no scan all job is found currently"))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("no scan all job is found currently"))
 	}
 
 	if err = s.scanCtl.StopScanAll(s.makeCtx(), execution.ID, true); err != nil {
@@ -102,7 +102,7 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 		if execution != nil && execution.IsOnGoing() {
 			message := fmt.Sprintf("a previous scan all job aleady exits, its status is %s", execution.Status)
-			return s.SendError(ctx, errors.ConflictError(nil).WithMessage(message))
+			return s.SendError(ctx, errors.ConflictError(nil).WithMessagef(message))
 		}
 
 		if _, err := s.scanCtl.ScanAll(ctx, task.ExecutionTriggerManual, true); err != nil {
@@ -116,7 +116,7 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 		if schedule != nil {
 			message := "fail to set schedule for scan all as always had one, please delete it firstly then to re-schedule"
-			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage(message))
+			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessagef(message))
 		}
 
 		if _, err := s.createOrUpdateScanAllSchedule(ctx, req.Schedule.Type, req.Schedule.Cron, nil); err != nil {
@@ -135,7 +135,7 @@ func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation
 
 	if req.Schedule.Type == ScheduleManual {
 		message := fmt.Sprintf("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type)
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(message))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef(message))
 	}
 
 	schedule, err := s.getScanAllSchedule(ctx)
@@ -197,7 +197,7 @@ func (s *scanAllAPI) GetLatestScheduledScanAllMetrics(ctx context.Context, _ ope
 func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType, cron string, previous *scheduler.Schedule) (int64, error) {
 	if err := utils.ValidateCronString(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid cron string for scheduled scan all: %s, error: %v", cron, err)
+			WithMessagef("invalid cron string for scheduled scan all: %s, error: %v", cron, err)
 	}
 	if previous != nil {
 		if cronType == previous.CRONType && cron == previous.CRON {
@@ -303,7 +303,7 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 	}
 
 	if len(l) == 0 {
-		return errors.PreconditionFailedError(nil).WithMessage("no scanner is configured, it's not possible to scan")
+		return errors.PreconditionFailedError(nil).WithMessagef("no scanner is configured, it's not possible to scan")
 	}
 
 	return nil

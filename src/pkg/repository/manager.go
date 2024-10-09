@@ -83,7 +83,7 @@ func (m *manager) GetByName(ctx context.Context, name string) (repository *model
 	}
 	if len(repositories) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("repository %s not found", name)
+			WithMessagef("repository %s not found", name)
 	}
 	return repositories[0], nil
 }

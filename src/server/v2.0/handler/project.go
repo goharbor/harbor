@@ -108,17 +108,17 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	secCtx, _ := security.FromContext(ctx)
 	if r, ok := secCtx.(*robotSec.SecurityContext); ok && !r.User().IsSysLevel() {
 		log.Errorf("Only system level robot can create project")
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system level robot can create project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system level robot can create project"))
 	}
 	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system admin can create project"))
 	}
 
 	req := params.Project
 
 	if req.RegistryID != nil && !a.isSysAdmin(ctx, rbac.ActionCreate) {
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create proxy cache project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system admin can create proxy cache project"))
 	}
 
 	// populate storage limit
@@ -155,7 +155,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// validate metadata.public value, should only be "true" or "false"
 	if p := req.Metadata.Public; p != "" {
 		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
 		}
 	}
 
@@ -196,7 +196,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 			return a.SendError(ctx, err)
 		}
 		if len(admins) == 0 {
-			return a.SendError(ctx, errors.New(nil).WithMessage("cannot create project as no system admin found"))
+			return a.SendError(ctx, errors.New(nil).WithMessagef("cannot create project as no system admin found"))
 		}
 		ownerID = admins[0].UserID
 	} else {
@@ -548,11 +548,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 			params.Project.CVEAllowlist.ProjectID = p.ProjectID
 		} else if params.Project.CVEAllowlist.ProjectID != p.ProjectID {
 			return a.SendError(ctx, errors.BadRequestError(nil).
-				WithMessage("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
+				WithMessagef("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
 		}
 
 		if err := lib.JSONCopy(&p.CVEAllowlist, params.Project.CVEAllowlist); err != nil {
-			return a.SendError(ctx, errors.UnknownError(nil).WithMessage("failed to process cve_allowlist, error: %v", err))
+			return a.SendError(ctx, errors.UnknownError(nil).WithMessagef("failed to process cve_allowlist, error: %v", err))
 		}
 	}
 
@@ -578,7 +578,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
 			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
-			return a.SendError(ctx, errors.New(nil).WithMessage(errMsg).WithCode(errors.BadRequestCode))
+			return a.SendError(ctx, errors.New(nil).WithMessagef(errMsg).WithCode(errors.BadRequestCode))
 		}
 	}
 
@@ -806,7 +806,7 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		// validate metadata.proxy_speed_kb. It should be an int32
 		if ps := req.Metadata.ProxySpeedKb; ps != nil {
 			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
-				return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err))
+				return errors.BadRequestError(nil).WithMessagef(fmt.Sprintf("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err))
 			}
 		}
 	}

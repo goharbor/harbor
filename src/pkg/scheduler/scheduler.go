@@ -99,7 +99,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	}
 	if _, err := utils.CronParser().Parse(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid cron %s: %v", cron, err)
+			WithMessagef("invalid cron %s: %v", cron, err)
 	}
 	if !callbackFuncExist(callbackFuncName) {
 		return 0, fmt.Errorf("callback function %s not found", callbackFuncName)

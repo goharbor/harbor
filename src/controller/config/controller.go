@@ -78,7 +78,7 @@ func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, er
 
 func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
 	if readOnlyForAll {
-		return errors.ForbiddenError(nil).WithMessage("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
+		return errors.ForbiddenError(nil).WithMessagef("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
 	}
 	mgr := config.GetCfgManager(ctx)
 	err := mgr.Load(ctx)
@@ -124,7 +124,7 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 			}
 			if !canBeModified {
 				return errors.BadRequestError(nil).
-					WithMessage("the auth mode cannot be modified as new users have been inserted into database")
+					WithMessagef("the auth mode cannot be modified as new users have been inserted into database")
 			}
 		}
 	}
@@ -182,11 +182,11 @@ func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error 
 			// the cfgs is unmarshal from json string, the number type will be float64
 			if vf, ok := v.(float64); ok {
 				if vf <= 0 {
-					return errors.BadRequestError(nil).WithMessage("the %s value must be positive", c)
+					return errors.BadRequestError(nil).WithMessagef("the %s value must be positive", c)
 				}
 
 				if int64(vf) > maxValue {
-					return errors.BadRequestError(nil).WithMessage("the %s value is over the limit value: %d", c, maxValue)
+					return errors.BadRequestError(nil).WithMessagef("the %s value is over the limit value: %d", c, maxValue)
 				}
 			}
 		}
