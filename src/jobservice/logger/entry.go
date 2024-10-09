@@ -14,7 +14,10 @@
 
 package logger
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Entry provides unique interfaces on top of multiple logger backends.
 // Entry also implements @Interface.
@@ -115,7 +118,7 @@ func (e *Entry) Close() error {
 		}
 	}
 	if errMsg != "" {
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 	return nil
 }

@@ -59,7 +59,7 @@ func handleHead(req *http.Request) error {
 	case blob_models.StatusNone, blob_models.StatusDelete:
 		if err := blob.Ctl.Touch(req.Context(), bb); err != nil {
 			log.Errorf("failed to update blob: %s status to StatusNone, error:%v", blobInfo.Digest, err)
-			return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", req.Header.Get(requestid.HeaderXRequestID)))
+			return errors.Wrapf(err, "the request id is: %s", req.Header.Get(requestid.HeaderXRequestID))
 		}
 	case blob_models.StatusDeleting:
 		now := time.Now().UTC()
@@ -67,7 +67,7 @@ func handleHead(req *http.Request) error {
 		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCTimeWindow())*time.Hour {
 			if err := blob.Ctl.Fail(req.Context(), bb); err != nil {
 				log.Errorf("failed to update blob: %s status to StatusDeleteFailed, error:%v", blobInfo.Digest, err)
-				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", req.Header.Get(requestid.HeaderXRequestID)))
+				return errors.Wrapf(err, "the request id is: %s", req.Header.Get(requestid.HeaderXRequestID))
 			}
 		}
 		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", req.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)

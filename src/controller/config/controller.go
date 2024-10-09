@@ -186,7 +186,7 @@ func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error 
 				}
 
 				if int64(vf) > maxValue {
-					return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("the %s value is over the limit value: %d", c, maxValue))
+					return errors.BadRequestError(nil).WithMessage("the %s value is over the limit value: %d", c, maxValue)
 				}
 			}
 		}

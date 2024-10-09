@@ -363,7 +363,7 @@ func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessage("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

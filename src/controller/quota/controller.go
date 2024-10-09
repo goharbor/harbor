@@ -349,7 +349,7 @@ func (c *controller) updateUsageWithRetry(ctx context.Context, reference, refere
 	options := []retry.Option{
 		retry.Timeout(defaultRetryTimeout),
 		retry.Backoff(false),
-		retry.Callback(func(err error, sleep time.Duration) {
+		retry.Callback(func(err error, _ time.Duration) {
 			log.G(ctx).Debugf("failed to update the quota usage for %s %s, error: %v", reference, referenceID, err)
 		}),
 	}
@@ -496,7 +496,7 @@ func reserveResources(resources types.ResourceList) func(hardLimits, used types.
 }
 
 func rollbackResources(resources types.ResourceList) func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
-	return func(hardLimits, used types.ResourceList) (types.ResourceList, error) {
+	return func(_, used types.ResourceList) (types.ResourceList, error) {
 		newUsed := types.Subtract(used, resources)
 		// ensure that new used is never negative
 		if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {

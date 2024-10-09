@@ -428,7 +428,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 
 	content, _ := json.Marshal(vulnerabilities)
 
-	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+	return middleware.ResponderFunc(func(w http.ResponseWriter, _ runtime.Producer) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(content)
 	})
@@ -449,7 +449,7 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 		return a.SendError(ctx, err)
 	}
 
-	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+	return middleware.ResponderFunc(func(w http.ResponseWriter, _ runtime.Producer) {
 		w.Header().Set("Content-Type", addition.ContentType)
 		_, _ = w.Write(addition.Content)
 	})

@@ -201,24 +201,24 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			return err
 		}
 
-		projectIds := filterCriteria.Projects
-		if len(projectIds) == 0 {
+		projectIDs := filterCriteria.Projects
+		if len(projectIDs) == 0 {
 			return nil
 		}
 
 		// extract the repository ids if any repositories have been specified
-		repoIds, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIds)
+		repoIDs, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIDs)
 		if err != nil {
 			return err
 		}
 
-		if len(repoIds) == 0 {
+		if len(repoIDs) == 0 {
 			logger.Infof("No repositories found with specified names: %v", filterCriteria.Repositories)
 			return nil
 		}
 
 		// filter artifacts by tags
-		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIds)
+		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIDs)
 		if err != nil {
 			return err
 		}

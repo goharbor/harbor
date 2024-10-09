@@ -30,8 +30,8 @@ import (
 )
 
 type FilterProcessor interface {
-	ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error)
-	ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error)
+	ProcessRepositoryFilter(ctx context.Context, filter string, projectIDs []int64) ([]int64, error)
+	ProcessTagFilter(ctx context.Context, filter string, repositoryIDs []int64) ([]*artifact.Artifact, error)
 	ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error)
 }
 

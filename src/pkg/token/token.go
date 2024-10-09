@@ -54,7 +54,7 @@ func (tk *Token) Raw() (string, error) {
 	}
 	raw, err := tk.Token.SignedString(key)
 	if err != nil {
-		log.Debugf(fmt.Sprintf("failed to issue token %v", err))
+		log.Debugf("failed to issue token %v", err)
 		return "", err
 	}
 	return raw, err
@@ -67,7 +67,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		return nil, err
 	}
 	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
-	token, err := parser.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := parser.ParseWithClaims(rawToken, claims, func(_ *jwt.Token) (interface{}, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:
 			return &k.PublicKey, nil
@@ -78,7 +78,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		}
 	})
 	if err != nil {
-		log.Errorf(fmt.Sprintf("parse token error, %v", err))
+		log.Errorf("parse token error, %v", err)
 		return nil, err
 	}
 
