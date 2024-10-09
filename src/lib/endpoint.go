@@ -28,7 +28,7 @@ func ValidateHTTPURL(s string) (string, error) {
 	s = strings.Trim(s, " ")
 	s = strings.TrimRight(s, "/")
 	if len(s) == 0 {
-		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("empty string")
+		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("empty string")
 	}
 	if !strings.Contains(s, "://") {
 		s = "http://" + s

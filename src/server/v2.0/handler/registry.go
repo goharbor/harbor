@@ -256,7 +256,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 	}
 
 	if len(registry.Type) == 0 || len(registry.URL) == 0 {
-		return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("type or url cannot be empty"))
+		return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("type or url cannot be empty"))
 	}
 
 	healthy, err := r.ctl.IsHealthy(ctx, registry)
@@ -265,7 +265,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 	}
 
 	if !healthy {
-		return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the registry is unhealthy"))
+		return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the registry is unhealthy"))
 	}
 
 	return operation.NewPingRegistryOK()

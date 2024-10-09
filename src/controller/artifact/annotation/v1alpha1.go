@@ -97,7 +97,7 @@ func parseV1alpha1Icon(artifact *artifact.Artifact, manifest *v1.Manifest, reg r
 	data, err := io.ReadAll(io.LimitReader(icon, 1<<20))
 	if err != nil {
 		if err == io.EOF {
-			return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the maximum size of the icon is 1MB")
+			return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the maximum size of the icon is 1MB")
 		}
 		return err
 	}

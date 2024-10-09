@@ -167,7 +167,7 @@ func (c *controller) Ensure(ctx context.Context, digest string, contentType stri
 
 func (c *controller) Exist(ctx context.Context, digest string, options ...Option) (bool, error) {
 	if digest == "" {
-		return false, errors.BadRequestError(nil).WithMessagef("exist blob require digest")
+		return false, errors.BadRequestError(nil).WithMessage("exist blob require digest")
 	}
 
 	_, err := c.Get(ctx, digest, options...)
@@ -220,7 +220,7 @@ func (c *controller) FindMissingAssociationsForProject(ctx context.Context, proj
 
 func (c *controller) Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error) {
 	if digest == "" {
-		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("require digest")
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("require digest")
 	}
 
 	opts := newOptions(options...)

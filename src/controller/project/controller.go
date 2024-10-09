@@ -170,7 +170,7 @@ func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, optio
 
 func (c *controller) GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error) {
 	if projectName == "" {
-		return nil, errors.BadRequestError(nil).WithMessagef("project name required")
+		return nil, errors.BadRequestError(nil).WithMessage("project name required")
 	}
 
 	p, err := c.projectMgr.Get(ctx, projectName)

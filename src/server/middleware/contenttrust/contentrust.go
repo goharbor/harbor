@@ -47,7 +47,7 @@ func ContentTrust() func(http.Handler) http.Handler {
 		if pro.ContentTrustCosignEnabled() {
 			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeCosignSignature); err != nil {
 				if errors.IsErr(err, errors.PROJECTPOLICYVIOLATION) {
-					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessagef("The image is not signed by cosign.")
+					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed by cosign.")
 				}
 				return err
 			}
@@ -55,7 +55,7 @@ func ContentTrust() func(http.Handler) http.Handler {
 		if pro.ContentTrustEnabled() {
 			if err := signatureChecking(ctx, r, af, pro.ProjectID, model.TypeNotationSignature); err != nil {
 				if errors.IsErr(err, errors.PROJECTPOLICYVIOLATION) {
-					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessagef("The image is not signed by notation.")
+					return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed by notation.")
 				}
 				return err
 			}

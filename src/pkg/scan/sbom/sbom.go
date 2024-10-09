@@ -233,7 +233,7 @@ func (h *scanHandler) delete(ctx context.Context, art *artifact.Artifact, mimeTy
 	taskMgr := h.TaskMgrFunc()
 	for _, rpt := range sbomReports {
 		if !taskMgr.IsTaskFinished(ctx, rpt.UUID) {
-			return errors.ConflictError(nil).WithMessagef("a previous sbom generate process is running")
+			return errors.ConflictError(nil).WithMessage("a previous sbom generate process is running")
 		}
 	}
 
@@ -287,7 +287,7 @@ func (h *scanHandler) GetPlaceHolder(ctx context.Context, artRepo string, artDig
 	}
 	if len(rpts) == 0 {
 		logger.Errorf("No report found for artifact %s@%s of mimetype %s, error %v", artRepo, artDigest, mimeType, err)
-		return nil, errors.NotFoundError(nil).WithMessagef("no report found to update data")
+		return nil, errors.NotFoundError(nil).WithMessage("no report found to update data")
 	}
 	return &scanModel.Report{
 		UUID:     rpts[0].UUID,

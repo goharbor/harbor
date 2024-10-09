@@ -42,7 +42,7 @@ func HandleBadRequest(w http.ResponseWriter, err error) {
 // HandleError ...
 func HandleError(w http.ResponseWriter, err error) {
 	if _, ok := err.(driver.PathNotFoundError); ok {
-		err = errors.New(err).WithCode(errors.NotFoundCode)
+		err = errors.New(nil).WithCode(errors.NotFoundCode).WithMessage(err.Error())
 	}
 	lib_http.SendError(w, err)
 }

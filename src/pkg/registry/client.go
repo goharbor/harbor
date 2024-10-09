@@ -597,7 +597,7 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 		// the same name artifact exists, but not allowed to override
 		if !override {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessagef("the same name but different digest artifact exists, but the override is set to false")
+				WithMessage("the same name but different digest artifact exists, but the override is set to false")
 		}
 	}
 

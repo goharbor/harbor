@@ -358,7 +358,7 @@ func (d *controller) toScope(ctx context.Context, p *Permission) (string, error)
 	switch p.Kind {
 	case LEVELSYSTEM:
 		if p.Namespace != "/" {
-			return "", errors.New(nil).WithMessagef("unknown namespace").WithCode(errors.BadRequestCode)
+			return "", errors.New(nil).WithMessage("unknown namespace").WithCode(errors.BadRequestCode)
 		}
 		return SCOPESYSTEM, nil
 	case LEVELPROJECT:
@@ -371,7 +371,7 @@ func (d *controller) toScope(ctx context.Context, p *Permission) (string, error)
 		}
 		return fmt.Sprintf("/project/%d", pro.ProjectID), nil
 	}
-	return "", errors.New(nil).WithMessagef("unknown robot kind").WithCode(errors.BadRequestCode)
+	return "", errors.New(nil).WithMessage("unknown robot kind").WithCode(errors.BadRequestCode)
 }
 
 // set the project info if it's a project level robot
@@ -404,7 +404,7 @@ func CreateSec(salt ...string) (string, string, string, error) {
 	if err := retry.Retry(func() error {
 		pwd = utils.GenerateRandomString()
 		if !IsValidSec(pwd) {
-			return errors.New(nil).WithMessagef("invalid secret format")
+			return errors.New(nil).WithMessage("invalid secret format")
 		}
 		return nil
 	}, options...); err != nil {

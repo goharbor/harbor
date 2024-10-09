@@ -67,7 +67,7 @@ func ParseNAndLastParameters(r *http.Request) (*int, string, error) {
 	if q.Get("n") != "" {
 		value, err := strconv.Atoi(q.Get("n"))
 		if err != nil || value < 0 {
-			return nil, "", errors.New(err).WithCode(errors.BadRequestCode).WithMessagef("the N must be a positive int type")
+			return nil, "", errors.New(err).WithCode(errors.BadRequestCode).WithMessage("the N must be a positive int type")
 		}
 
 		n = &value

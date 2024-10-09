@@ -63,7 +63,7 @@ func caller2() error {
 
 func caller3() error {
 	err := caller4()
-	return New(nil).WithMessagef("it's caller 3.").WithCause(err)
+	return New(nil).WithMessage("it's caller 3.").WithCause(err)
 }
 
 func caller4() error {
@@ -113,7 +113,7 @@ func (suite *ErrorTestSuite) TestNew() {
 
 func (suite *ErrorTestSuite) TestWithMessage() {
 	cause := New("root")
-	err := cause.WithMessagef("append message").WithMessagef("append message2")
+	err := cause.WithMessagef("append message").WithMessage("append message2")
 	suite.Equal("append message2", err.Error())
 }
 
@@ -125,7 +125,7 @@ func (suite *ErrorTestSuite) TestWithCause() {
 
 func (suite *ErrorTestSuite) TestWithCauseMessage() {
 	cause := errors.New("stdErr")
-	err := New("root").WithCause(cause).WithMessagef("With Message")
+	err := New("root").WithCause(cause).WithMessage("With Message")
 	suite.Equal("With Message: stdErr", err.Error())
 }
 

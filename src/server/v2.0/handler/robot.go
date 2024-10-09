@@ -89,7 +89,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 	case *robotSc.SecurityContext:
 		creatorRef = s.User().ID
 	default:
-		return rAPI.SendError(ctx, errors.New(nil).WithMessagef("invalid security context"))
+		return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context"))
 	}
 	r.CreatorType = sc.Name()
 	r.CreatorRef = creatorRef
@@ -181,16 +181,16 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 	// GET /api/v2.0/robots?level=project&project_id=1
 	if _, ok := query.Keywords["Level"]; ok {
 		if !isValidLevel(query.Keywords["Level"].(string)) {
-			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("bad request error level input").WithCode(errors.BadRequestCode))
+			return rAPI.SendError(ctx, errors.New(nil).WithMessage("bad request error level input").WithCode(errors.BadRequestCode))
 		}
 		level = query.Keywords["Level"].(string)
 		if level == robot.LEVELPROJECT {
 			if _, ok := query.Keywords["ProjectID"]; !ok {
-				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessagef("must with project ID when to query project robots"))
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project robots"))
 			}
 			pid, err := strconv.ParseInt(query.Keywords["ProjectID"].(string), 10, 64)
 			if err != nil {
-				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessagef("Project ID must be int type."))
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("Project ID must be int type."))
 			}
 			projectID = pid
 		}
@@ -262,7 +262,7 @@ func (rAPI *robotAPI) UpdateRobot(ctx context.Context, params operation.UpdateRo
 	}
 
 	if !r.Editable {
-		err = errors.DeniedError(nil).WithMessagef("editing of legacy robot is not allowed")
+		err = errors.DeniedError(nil).WithMessage("editing of legacy robot is not allowed")
 	} else {
 		err = rAPI.updateV2Robot(ctx, params, r)
 	}
@@ -341,18 +341,18 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	}
 
 	if len(permissions) == 0 {
-		return errors.New(nil).WithMessagef("bad request empty permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
 	}
 
 	for _, perm := range permissions {
 		if len(perm.Access) == 0 {
-			return errors.New(nil).WithMessagef("bad request empty access").WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
 		}
 	}
 
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
-		return errors.New(nil).WithMessagef("bad request permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
 	}
 
 	provider := rbac.GetPermissionProvider()
@@ -393,7 +393,7 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 			return err
 		}
 		if r.ProjectID != projectID {
-			return errors.BadRequestError(nil).WithMessagef("cannot update the project id of robot")
+			return errors.BadRequestError(nil).WithMessage("cannot update the project id of robot")
 		}
 	}
 	r.ProjectNameOrID = params.Robot.Permissions[0].Namespace
@@ -401,7 +401,7 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		return err
 	}
 	if params.Robot.Level != r.Level || params.Robot.Name != r.Name {
-		return errors.BadRequestError(nil).WithMessagef("cannot update the level or name of robot")
+		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
 
 	if r.Duration != *params.Robot.Duration {
@@ -478,7 +478,7 @@ func validateName(name string) error {
 	robotNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
 	legal := regexp.MustCompile(robotNameReg).MatchString(name)
 	if !legal {
-		return errors.BadRequestError(nil).WithMessagef("robot name is not in lower case or contains illegal characters")
+		return errors.BadRequestError(nil).WithMessage("robot name is not in lower case or contains illegal characters")
 	}
 	return nil
 }

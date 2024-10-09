@@ -788,7 +788,7 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 	}
 
 	if len(reports) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessagef("report not found")
+		return nil, errors.NotFoundError(nil).WithMessage("report not found")
 	}
 
 	scanStatus := reports[0].Status

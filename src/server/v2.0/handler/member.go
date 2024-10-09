@@ -45,7 +45,7 @@ func (m *memberAPI) CreateProjectMember(ctx context.Context, params operation.Cr
 		return m.SendError(ctx, err)
 	}
 	if params.ProjectMember == nil {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessagef("the project member should provide"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the project member should provide"))
 	}
 	req, err := toMemberReq(params.ProjectMember)
 	if err != nil {
@@ -78,7 +78,7 @@ func (m *memberAPI) DeleteProjectMember(ctx context.Context, params operation.De
 		return m.SendError(ctx, err)
 	}
 	if params.Mid == 0 {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessagef("the project member id is required."))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the project member id is required."))
 	}
 	err := m.ctl.Delete(ctx, projectNameOrID, int(params.Mid))
 	if err != nil {
@@ -94,7 +94,7 @@ func (m *memberAPI) GetProjectMember(ctx context.Context, params operation.GetPr
 	}
 
 	if params.Mid == 0 {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessagef("the member id can not be empty!"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the member id can not be empty!"))
 	}
 
 	member, err := m.ctl.Get(ctx, projectNameOrID, int(params.Mid))
@@ -159,10 +159,10 @@ func (m *memberAPI) UpdateProjectMember(ctx context.Context, params operation.Up
 		return m.SendError(ctx, err)
 	}
 	if params.Role == nil {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessagef("role can not be empty!"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("role can not be empty"))
 	}
 	if params.Mid == 0 {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessagef("member id can not be empty!"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("member id can not be empty"))
 	}
 
 	err := m.ctl.UpdateRole(ctx, projectNameOrID, int(params.Mid), int(params.Role.RoleID))

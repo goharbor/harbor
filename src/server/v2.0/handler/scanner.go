@@ -51,7 +51,7 @@ func (s *scannerAPI) CreateScanner(ctx context.Context, params operation.CreateS
 	copyToScannerRegistration(r, params.Registration)
 
 	if err := r.Validate(false); err != nil {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef(err.Error()))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
 	}
 
 	uuid, err := s.scannerCtl.CreateRegistration(ctx, r)
@@ -179,7 +179,7 @@ func (s *scannerAPI) PingScanner(ctx context.Context, params operation.PingScann
 	}
 
 	if err := r.Validate(false); err != nil {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef(err.Error()))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
 	}
 
 	if _, err := s.scannerCtl.Ping(ctx, r); err != nil {
@@ -226,7 +226,7 @@ func (s *scannerAPI) UpdateScanner(ctx context.Context, params operation.UpdateS
 	copyToScannerRegistration(r, params.Registration)
 
 	if err := r.Validate(true); err != nil {
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef(err.Error()))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
 	}
 
 	if err := s.scannerCtl.UpdateRegistration(ctx, r); err != nil {

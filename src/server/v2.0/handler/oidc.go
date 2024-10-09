@@ -45,7 +45,7 @@ func (o oidcAPI) PingOIDC(ctx context.Context, params oidc.PingOIDCParams) middl
 
 	if err != nil {
 		log.Errorf("Failed to verify connection: %+v, err: %v", params.Endpoint, err)
-		return o.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("failed to verify connection"))
+		return o.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("failed to verify connection"))
 	}
 	return oidc.NewPingOIDCOK()
 }

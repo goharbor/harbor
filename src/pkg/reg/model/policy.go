@@ -46,7 +46,7 @@ func (f *Filter) Validate() error {
 		value, ok := f.Value.(string)
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessagef("the type of filter value isn't string")
+				WithMessage("the type of filter value isn't string")
 		}
 		if f.Type == FilterTypeResource {
 			rt := value
@@ -58,25 +58,25 @@ func (f *Filter) Validate() error {
 		if f.Type == FilterTypeName || f.Type == FilterTypeResource {
 			if f.Decoration != "" {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("only tag and label filter support decoration")
+					WithMessage("only tag and label filter support decoration")
 			}
 		}
 	case FilterTypeLabel:
 		labels, ok := f.Value.([]interface{})
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessagef("the type of label filter value isn't string slice")
+				WithMessage("the type of label filter value isn't string slice")
 		}
 		for _, label := range labels {
 			_, ok := label.(string)
 			if !ok {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("the type of label filter value isn't string slice")
+					WithMessage("the type of label filter value isn't string slice")
 			}
 		}
 	default:
 		return errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef("invalid filter type")
+			WithMessage("invalid filter type")
 	}
 
 	if f.Decoration != "" && f.Decoration != Matches && f.Decoration != Excludes {

@@ -193,10 +193,10 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 		return nil, err
 	}
 	if len(sch) == 0 {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("no gc schedule is found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("no gc schedule is found")
 	}
 	if sch[0] == nil {
-		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessagef("no gc schedule is found")
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("no gc schedule is found")
 	}
 	return sch[0], nil
 }

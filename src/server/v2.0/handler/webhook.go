@@ -420,7 +420,7 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		// don't allow set the payload format for slack type
 		// slack should be migrated as a kind of payload in the future
 		if len(target.PayloadFormat) > 0 && target.Type == "slack" {
-			return false, errors.New(nil).WithMessagef("set payload format is not allowed for slack").WithCode(errors.BadRequestCode)
+			return false, errors.New(nil).WithMessage("set payload format is not allowed for slack").WithCode(errors.BadRequestCode)
 		}
 
 		if len(target.PayloadFormat) > 0 && !isPayloadFormatSupported(target.PayloadFormat) {
@@ -436,7 +436,7 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 
 func (n *webhookAPI) validateEventTypes(policy *policy_model.Policy) (bool, error) {
 	if len(policy.EventTypes) == 0 {
-		return false, errors.New(nil).WithMessagef("empty event type").WithCode(errors.BadRequestCode)
+		return false, errors.New(nil).WithMessage("empty event type").WithCode(errors.BadRequestCode)
 	}
 	for _, eventType := range policy.EventTypes {
 		if !isEventTypeSupported(eventType) {

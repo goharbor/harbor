@@ -63,7 +63,7 @@ func (p *Policy) IsScheduledTrigger() bool {
 // Validate the policy
 func (p *Policy) Validate() error {
 	if len(p.Name) == 0 {
-		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("empty name")
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("empty name")
 	}
 	var srcRegistryID, dstRegistryID int64
 	if p.SrcRegistry != nil {
@@ -77,7 +77,7 @@ func (p *Policy) Validate() error {
 	if srcRegistryID != 0 && dstRegistryID != 0 ||
 		srcRegistryID == 0 && dstRegistryID == 0 {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef("either src_registry or dest_registry should be empty and the other one shouldn't be empty")
+			WithMessage("either src_registry or dest_registry should be empty and the other one shouldn't be empty")
 	}
 
 	// valid the filters
@@ -110,14 +110,14 @@ func (p *Policy) Validate() error {
 			}
 			cronParts := strings.Split(p.Trigger.Settings.Cron, " ")
 			if cronParts[0] != "0" {
-				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the 1st field (indicating Seconds of time) of the cron setting must be 0")
+				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the 1st field (indicating Seconds of time) of the cron setting must be 0")
 			}
 			if cronParts[1] == "*" {
-				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("* is not allowed for the Minutes field of the cron setting of replication policy")
+				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("* is not allowed for the Minutes field of the cron setting of replication policy")
 			}
 		default:
 			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessagef("invalid trigger type")
+				WithMessage("invalid trigger type")
 		}
 	}
 	return nil

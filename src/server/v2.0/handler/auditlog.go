@@ -51,7 +51,7 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 		return a.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
 	}
 	if !secCtx.IsAuthenticated() {
-		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessagef(secCtx.GetUsername()))
+		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
 	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {

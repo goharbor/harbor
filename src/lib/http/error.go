@@ -55,7 +55,7 @@ func SendError(w http.ResponseWriter, err error) {
 	// the error detail is logged only, and will not be sent to the client to avoid leaking server information
 	if statusCode >= http.StatusInternalServerError {
 		log.Errorf("%s %s", errPayload, stackTrace)
-		err = errors.New(nil).WithCode(errors.GeneralCode).WithMessagef("internal server error")
+		err = errors.New(nil).WithCode(errors.GeneralCode).WithMessage("internal server error")
 		errPayload = errors.NewErrs(err).Error()
 	} else {
 		// only log the error whose status code < 500 when debugging to avoid log flooding
@@ -77,12 +77,12 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		// So we needed to convert the format to the internal error response format.
 		code = int(openAPIErr.Code())
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = errors.New(openAPIErr).WithCode(errCode)
+		err = errors.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
 	} else if legacyErr, ok := err.(*commonhttp.Error); ok {
 		// make sure the legacy error format is align with the new one
 		code = legacyErr.Code
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = errors.New(legacyErr).WithCode(errCode)
+		err = errors.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
 	} else {
 		code = codeMap[errors.ErrCode(err)]
 	}

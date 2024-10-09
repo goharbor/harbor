@@ -124,7 +124,7 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 			}
 			if !canBeModified {
 				return errors.BadRequestError(nil).
-					WithMessagef("the auth mode cannot be modified as new users have been inserted into database")
+					WithMessage("the auth mode cannot be modified as new users have been inserted into database")
 			}
 		}
 	}

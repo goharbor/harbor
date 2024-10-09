@@ -107,7 +107,7 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 	if scope == common.LabelScopeProject {
 		pid := lib.Int64Value(params.ProjectID)
 		if pid == 0 {
-			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessagef("must with project ID when to query project labels"))
+			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project labels"))
 		}
 		if err := lAPI.RequireProjectAccess(ctx, pid, rbac.ActionList, rbac.ResourceLabel); err != nil {
 			return lAPI.SendError(ctx, err)

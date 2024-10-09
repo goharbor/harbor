@@ -108,17 +108,17 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	secCtx, _ := security.FromContext(ctx)
 	if r, ok := secCtx.(*robotSec.SecurityContext); ok && !r.User().IsSysLevel() {
 		log.Errorf("Only system level robot can create project")
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system level robot can create project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system level robot can create project"))
 	}
 	if onlyAdmin && !(a.isSysAdmin(ctx, rbac.ActionCreate) || secCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system admin can create project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create project"))
 	}
 
 	req := params.Project
 
 	if req.RegistryID != nil && !a.isSysAdmin(ctx, rbac.ActionCreate) {
-		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessagef("Only system admin can create proxy cache project"))
+		return a.SendError(ctx, errors.ForbiddenError(nil).WithMessage("Only system admin can create proxy cache project"))
 	}
 
 	// populate storage limit
@@ -155,7 +155,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// validate metadata.public value, should only be "true" or "false"
 	if p := req.Metadata.Public; p != "" {
 		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true' or 'false', but got: '%s'", p))
 		}
 	}
 
@@ -196,7 +196,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 			return a.SendError(ctx, err)
 		}
 		if len(admins) == 0 {
-			return a.SendError(ctx, errors.New(nil).WithMessagef("cannot create project as no system admin found"))
+			return a.SendError(ctx, errors.New(nil).WithMessage("cannot create project as no system admin found"))
 		}
 		ownerID = admins[0].UserID
 	} else {
@@ -578,7 +578,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
 			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
-			return a.SendError(ctx, errors.New(nil).WithMessagef(errMsg).WithCode(errors.BadRequestCode))
+			return a.SendError(ctx, errors.New(nil).WithMessage(errMsg).WithCode(errors.BadRequestCode))
 		}
 	}
 

@@ -81,7 +81,7 @@ func (m *manager) Create(ctx context.Context, project *models.Project) (int64, e
 
 	legal := validProjectName.MatchString(project.Name)
 	if !legal {
-		return 0, errors.BadRequestError(nil).WithMessagef("project name is not in lower case or contains illegal characters")
+		return 0, errors.BadRequestError(nil).WithMessage("project name is not in lower case or contains illegal characters")
 	}
 
 	return m.dao.Create(ctx, project)

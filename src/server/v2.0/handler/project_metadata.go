@@ -134,7 +134,7 @@ func (p *projectMetadataAPI) UpdateProjectMetadata(ctx context.Context, params o
 
 func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]string, error) {
 	if len(metas) != 1 {
-		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("only allow one key/value pair")
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("only allow one key/value pair")
 	}
 
 	key, value := "", ""

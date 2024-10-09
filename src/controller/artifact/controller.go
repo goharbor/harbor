@@ -351,7 +351,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		// the root artifact is referenced by other artifacts
 		if isRoot {
 			return errors.New(nil).WithCode(errors.ViolateForeignKeyConstraintCode).
-				WithMessagef("the deleting artifact is referenced by others")
+				WithMessage("the deleting artifact is referenced by others")
 		}
 		// the child artifact is referenced by other artifacts, skip
 		return nil

@@ -72,10 +72,10 @@ type UserGroup struct {
 }
 
 // ErrDuplicateProjectMember ...
-var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessagef("The project member specified already exist")
+var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessage("The project member specified already exist")
 
 // ErrInvalidRole ...
-var ErrInvalidRole = errors.BadRequestError(nil).WithMessagef("Failed to update project member, role is not in 1,2,3")
+var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("Failed to update project member, role is not in 1,2,3")
 
 type controller struct {
 	userManager  user.Manager
@@ -103,7 +103,7 @@ func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}
 		return err
 	}
 	if p == nil {
-		return errors.BadRequestError(nil).WithMessagef("project is not found")
+		return errors.BadRequestError(nil).WithMessage("project is not found")
 	}
 	return c.mgr.UpdateRole(ctx, p.ProjectID, memberID, role)
 }
@@ -114,7 +114,7 @@ func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, membe
 		return nil, err
 	}
 	if p == nil {
-		return nil, errors.BadRequestError(nil).WithMessagef("project is not found")
+		return nil, errors.BadRequestError(nil).WithMessage("project is not found")
 	}
 	return c.mgr.Get(ctx, p.ProjectID, memberID)
 }
@@ -125,7 +125,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		return 0, err
 	}
 	if p == nil {
-		return 0, errors.BadRequestError(nil).WithMessagef("project is not found")
+		return 0, errors.BadRequestError(nil).WithMessage("project is not found")
 	}
 	var member models.Member
 	member.ProjectID = p.ProjectID
@@ -245,7 +245,7 @@ func (c *controller) List(ctx context.Context, projectNameOrID interface{}, enti
 		return nil, err
 	}
 	if p == nil {
-		return nil, errors.BadRequestError(nil).WithMessagef("project is not found")
+		return nil, errors.BadRequestError(nil).WithMessage("project is not found")
 	}
 	pm := models.Member{
 		ProjectID:  p.ProjectID,

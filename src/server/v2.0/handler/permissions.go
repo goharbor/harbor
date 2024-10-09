@@ -49,7 +49,7 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		return p.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
 	}
 	if !secCtx.IsAuthenticated() {
-		return p.SendError(ctx, errors.UnauthorizedError(nil).WithMessagef(secCtx.GetUsername()))
+		return p.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
 
 	var isSystemAdmin bool

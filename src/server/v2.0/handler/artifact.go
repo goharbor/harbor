@@ -190,7 +190,7 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 		return a.SendError(ctx, err)
 	}
 	if len(accs) >= 1 && accs[0].IsHard() {
-		return a.SendError(ctx, errors.New(nil).WithCode(errors.DENIED).WithMessagef("the operation isn't supported for an artifact accessory"))
+		return a.SendError(ctx, errors.New(nil).WithCode(errors.DENIED).WithMessage("the operation isn't supported for an artifact accessory"))
 	}
 
 	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)

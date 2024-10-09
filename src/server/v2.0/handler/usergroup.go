@@ -71,7 +71,7 @@ func (u *userGroupAPI) DeleteUserGroup(ctx context.Context, params operation.Del
 		return u.SendError(ctx, err)
 	}
 	if params.GroupID <= 0 {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessagef("the group id should be provided"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("the group id should be provided"))
 	}
 	err := u.ctl.Delete(ctx, int(params.GroupID))
 	if err != nil {
@@ -85,7 +85,7 @@ func (u *userGroupAPI) GetUserGroup(ctx context.Context, params operation.GetUse
 		return u.SendError(ctx, err)
 	}
 	if params.GroupID <= 0 {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessagef("the group id should be provided"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("the group id should be provided"))
 	}
 	ug, err := u.ctl.Get(ctx, int(params.GroupID))
 	if err != nil {
@@ -194,7 +194,7 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 		return u.SendError(ctx, err)
 	}
 	if len(params.Groupname) == 0 {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessagef("need to provide groupname to search user group"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("need to provide groupname to search user group"))
 	}
 	query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: params.Groupname}
 	total, err := u.ctl.Count(ctx, query)

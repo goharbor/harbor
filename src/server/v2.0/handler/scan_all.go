@@ -116,7 +116,7 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 		if schedule != nil {
 			message := "fail to set schedule for scan all as always had one, please delete it firstly then to re-schedule"
-			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessagef(message))
+			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage(message))
 		}
 
 		if _, err := s.createOrUpdateScanAllSchedule(ctx, req.Schedule.Type, req.Schedule.Cron, nil); err != nil {
@@ -303,7 +303,7 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 	}
 
 	if len(l) == 0 {
-		return errors.PreconditionFailedError(nil).WithMessagef("no scanner is configured, it's not possible to scan")
+		return errors.PreconditionFailedError(nil).WithMessage("no scanner is configured, it's not possible to scan")
 	}
 
 	return nil

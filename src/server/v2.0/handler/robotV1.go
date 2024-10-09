@@ -249,10 +249,10 @@ func (rAPI *robotV1API) UpdateRobotV1(ctx context.Context, params operation.Upda
 
 func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRobotV1Params) error {
 	if params.Robot == nil {
-		return errors.New(nil).WithMessagef("bad request no robot").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request no robot").WithCode(errors.BadRequestCode)
 	}
 	if len(params.Robot.Access) == 0 {
-		return errors.New(nil).WithMessagef("bad request no access").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("bad request no access").WithCode(errors.BadRequestCode)
 	}
 
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)

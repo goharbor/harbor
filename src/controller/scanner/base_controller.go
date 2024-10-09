@@ -402,7 +402,7 @@ type MetadataResult struct {
 func (m *MetadataResult) Unpack() (*v1.ScannerAdapterMetadata, error) {
 	var err error
 	if m.Error != "" {
-		err = errors.New(m.Error)
+		err = errors.New(nil).WithMessage(m.Error)
 	}
 
 	return m.Metadata, err

@@ -107,10 +107,10 @@ func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUs
 
 func (c *controller) OnboardOIDCUser(ctx context.Context, u *commonmodels.User) error {
 	if u == nil {
-		return errors.BadRequestError(nil).WithMessagef("user model is nil")
+		return errors.BadRequestError(nil).WithMessage("user model is nil")
 	}
 	if u.OIDCUserMeta == nil {
-		return errors.BadRequestError(nil).WithMessagef("OIDC meta of the user model is empty")
+		return errors.BadRequestError(nil).WithMessage("OIDC meta of the user model is empty")
 	}
 	uid, err := c.mgr.Create(ctx, u)
 	if err != nil {

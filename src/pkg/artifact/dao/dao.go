@@ -304,7 +304,7 @@ func (d *dao) ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*
 	var pid interface{}
 	if pid, ok = query.Keywords["ProjectID"]; !ok {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef(`the value of "ProjectID" must be set`)
+			WithMessage(`the value of "ProjectID" must be set`)
 	}
 	queryParam = append(queryParam, pid)
 
@@ -317,7 +317,7 @@ func (d *dao) ListWithLatest(ctx context.Context, query *q.Query) (artifacts []*
 
 	if attributionValue == "" {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef(`the value of "media_type" or "artifact_type" must be set`)
+			WithMessage(`the value of "media_type" or "artifact_type" must be set`)
 	}
 	queryParam = append(queryParam, attributionValue)
 
@@ -372,7 +372,7 @@ func setBaseQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, 
 	b, ok := base.(string)
 	if !ok || b != "*" {
 		return qs, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef(`the value of "base" query can only be exact match value with "*"`)
+			WithMessage(`the value of "base" query can only be exact match value with "*"`)
 	}
 	// the base is specified as "*"
 	return qs, nil
@@ -430,7 +430,7 @@ func setTagQuery(ctx context.Context, qs beegoorm.QuerySeter, query *q.Query) (b
 		return qs, nil
 	}
 	return qs, errors.New(nil).WithCode(errors.BadRequestCode).
-		WithMessagef(`the value of "tags" query can only be fuzzy match value or exact match value`)
+		WithMessage(`the value of "tags" query can only be fuzzy match value or exact match value`)
 }
 
 // handle query string: q=labels=(1 2 3)
@@ -448,14 +448,14 @@ func setLabelQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter,
 	al, ok := labels.(*q.AndList)
 	if !ok {
 		return qs, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef(`the value of "labels" query can only be integer list with intersetion relationship`)
+			WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
 	}
 	var collections []string
 	for _, value := range al.Values {
 		labelID, ok := value.(int64)
 		if !ok {
 			return qs, errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessagef(`the value of "labels" query can only be integer list with intersetion relationship`)
+				WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
 		}
 		// param "labelID" is integer, no need to sanitize
 		collections = append(collections, fmt.Sprintf(`SELECT artifact_id FROM label_reference WHERE label_id=%d`, labelID))
