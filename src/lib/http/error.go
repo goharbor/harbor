@@ -77,12 +77,12 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		// So we needed to convert the format to the internal error response format.
 		code = int(openAPIErr.Code())
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = errors.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
+		err = errors.New(openAPIErr).WithCode(errCode)
 	} else if legacyErr, ok := err.(*commonhttp.Error); ok {
 		// make sure the legacy error format is align with the new one
 		code = legacyErr.Code
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
-		err = errors.New(nil).WithCode(errCode).WithMessage(legacyErr.Message)
+		err = errors.New(legacyErr).WithCode(errCode)
 	} else {
 		code = codeMap[errors.ErrCode(err)]
 	}
