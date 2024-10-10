@@ -23,6 +23,7 @@ def prepare_docker_compose(configs, with_trivy):
         'http_port': configs['http_port'],
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
+        'ip_family': configs['ip_family'],
         'with_trivy': with_trivy,
     }
 
