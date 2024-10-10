@@ -330,6 +330,11 @@ jobs:
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
+      - name: Fail if format changes are detected
+        if: ${{ failure() }}
+        run: |
+          echo "Code formatting issues detected. Please run 'npm run format' locally and commit the changes."
+          exit 1
       - name: Codecov For UI
         uses: codecov/codecov-action@v4
         with:
