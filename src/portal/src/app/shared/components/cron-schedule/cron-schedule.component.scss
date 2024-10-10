@@ -1,40 +1,40 @@
 .normal-wrapper-box {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .font-style {
-  display: inline-block;
+    display: inline-block;
 }
 
 span.required {
-  &::after {
-    content: '*';
-    font-size: .5848rem;
-    line-height: .5rem;
-    color: #c92100;
-    margin-left: .25rem;
-  }
+    &::after {
+        content: '*';
+        font-size: 0.5848rem;
+        line-height: 0.5rem;
+        color: #c92100;
+        margin-left: 0.25rem;
+    }
 }
 
 .height-1rem {
-  height: 1rem;
+    height: 1rem;
 }
 
-.margin-left-minus-075{
-  margin-left: -0.75rem;
+.margin-left-minus-075 {
+    margin-left: -0.75rem;
 }
 
 .mt-05 {
-  margin-top: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .mb-05 {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .alert-warning {
-  flex-grow: 1;
-  margin-right: 0.6rem;
-  margin-left: 0.6rem;
+    flex-grow: 1;
+    margin-right: 0.6rem;
+    margin-left: 0.6rem;
 }
