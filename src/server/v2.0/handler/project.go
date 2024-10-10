@@ -806,7 +806,7 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		// validate metadata.proxy_speed_kb. It should be an int32
 		if ps := req.Metadata.ProxySpeedKb; ps != nil {
 			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
-				return errors.BadRequestError(nil).WithMessagef(fmt.Sprintf("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err))
+				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
 			}
 		}
 	}

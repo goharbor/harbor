@@ -102,7 +102,7 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 		if execution != nil && execution.IsOnGoing() {
 			message := fmt.Sprintf("a previous scan all job aleady exits, its status is %s", execution.Status)
-			return s.SendError(ctx, errors.ConflictError(nil).WithMessagef(message))
+			return s.SendError(ctx, errors.ConflictError(nil).WithMessage(message))
 		}
 
 		if _, err := s.scanCtl.ScanAll(ctx, task.ExecutionTriggerManual, true); err != nil {
