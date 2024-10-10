@@ -421,42 +421,6 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		}
 	}
 
-	creatorRobot, err := rAPI.robotCtl.Get(ctx, r.CreatorRef, &robot.Option{
-		WithPermission: true,
-	})
-	if err != nil && !errors.IsErr(err, errors.NotFoundCode) {
-		return err
-	}
-
-	// for nested robot only
-	if creatorRobot != nil && r.CreatorType == "robot" {
-		sc, err := rAPI.GetSecurityContext(ctx)
-		if err != nil {
-			return err
-		}
-		if _, ok := sc.(*robotSc.SecurityContext); ok {
-			scRobots, err := rAPI.robotCtl.List(ctx, q.New(q.KeyWords{
-				"name":       strings.TrimPrefix(sc.GetUsername(), config.RobotPrefix(ctx)),
-				"project_id": r.ProjectID,
-			}), &robot.Option{
-				WithPermission: true,
-			})
-			if err != nil {
-				return err
-			}
-			if len(scRobots) == 0 {
-				return errors.DeniedError(nil)
-			}
-			if scRobots[0].ID != creatorRobot.ID && scRobots[0].ID != r.ID {
-				return errors.New(nil).WithMessage("as for a nested robot account, only person who has the right permission or the creator robot or nested robot itself has the permission to update").WithCode(errors.DENIED)
-			}
-		}
-
-		if !isValidPermissionScope(params.Robot.Permissions, creatorRobot.Permissions) {
-			return errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the creator robot's permissions: %s", creatorRobot.Name).WithCode(errors.DENIED)
-		}
-	}
-
 	if err := rAPI.robotCtl.Update(ctx, r, &robot.Option{
 		WithPermission: true,
 	}); err != nil {
