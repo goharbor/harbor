@@ -134,8 +134,7 @@ func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation
 	req := params.Schedule
 
 	if req.Schedule.Type == ScheduleManual {
-		message := fmt.Sprintf("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type)
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef(message))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type))
 	}
 
 	schedule, err := s.getScanAllSchedule(ctx)
