@@ -32,6 +32,8 @@ const (
 	WebhookJobVendorType = "WEBHOOK"
 	// SlackJobVendorType : the name of the slack job in job service
 	SlackJobVendorType = "SLACK"
+	// TeamsJobVendorType : the name of the teams job in job service
+	TeamsJobVendorType = "TEAMS"
 	// RetentionVendorType : the name of the retention job
 	RetentionVendorType = "RETENTION"
 	// P2PPreheatVendorType : the name of the P2P preheat job
@@ -60,6 +62,7 @@ var (
 		ExecSweepVendorType:             10,
 		GarbageCollectionVendorType:     50,
 		SlackJobVendorType:              50,
+		TeamsJobVendorType:              50,
 		WebhookJobVendorType:            50,
 		ReplicationVendorType:           50,
 		ScanDataExportVendorType:        50,
