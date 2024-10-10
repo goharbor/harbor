@@ -117,7 +117,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		}
 
 		if !isValidPermissionScope(params.Robot.Permissions, creatorRobots[0].Permissions) {
-			return rAPI.SendError(ctx, errors.New(nil).WithMessage("permission scope is invalid. It must be equal to or more restrictive than the creator robot's permissions: %s", creatorRobots[0].Name).WithCode(errors.DENIED))
+			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the creator robot's permissions: %s", creatorRobots[0].Name).WithCode(errors.DENIED))
 		}
 	}
 
@@ -333,11 +333,11 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, r *robot.Robot, action 
 // more validation
 func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.RobotPermission) error {
 	if !isValidDuration(d) {
-		return errors.New(nil).WithMessage("bad request error duration input: %d, duration must be either -1(Never) or a positive integer", d).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("bad request error duration input: %d, duration must be either -1(Never) or a positive integer", d).WithCode(errors.BadRequestCode)
 	}
 
 	if !isValidLevel(level) {
-		return errors.New(nil).WithMessage("bad request error level input: %s", level).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("bad request error level input: %s", level).WithCode(errors.BadRequestCode)
 	}
 
 	if len(permissions) == 0 {
@@ -362,18 +362,18 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 			polices := provider.GetPermissions(rbac.ScopeSystem)
 			for _, acc := range perm.Access {
 				if !containsAccess(polices, acc) {
-					return errors.New(nil).WithMessage("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
+					return errors.New(nil).WithMessagef("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
 				}
 			}
 		} else if perm.Kind == robot.LEVELPROJECT {
 			polices := provider.GetPermissions(rbac.ScopeProject)
 			for _, acc := range perm.Access {
 				if !containsAccess(polices, acc) {
-					return errors.New(nil).WithMessage("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
+					return errors.New(nil).WithMessagef("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
 				}
 			}
 		} else {
-			return errors.New(nil).WithMessage("bad request permission level: %s", perm.Kind).WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessagef("bad request permission level: %s", perm.Kind).WithCode(errors.BadRequestCode)
 		}
 	}
 
@@ -453,7 +453,7 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		}
 
 		if !isValidPermissionScope(params.Robot.Permissions, creatorRobot.Permissions) {
-			return errors.New(nil).WithMessage("permission scope is invalid. It must be equal to or more restrictive than the creator robot's permissions: %s", creatorRobot.Name).WithCode(errors.DENIED)
+			return errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the creator robot's permissions: %s", creatorRobot.Name).WithCode(errors.DENIED)
 		}
 	}
 

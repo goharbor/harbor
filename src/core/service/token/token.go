@@ -39,7 +39,7 @@ func (h *Handler) Get() {
 	tokenCreator, ok := creatorMap[service]
 	if !ok {
 		errMsg := fmt.Sprintf("Unable to handle service: %s", service)
-		log.Errorf(errMsg)
+		log.Error(errMsg)
 		h.CustomAbort(http.StatusBadRequest, template.HTMLEscapeString(errMsg))
 	}
 	token, err := tokenCreator.Create(request)

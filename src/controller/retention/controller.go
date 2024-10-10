@@ -36,8 +36,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/task"
 )
 
-// go:generate mockery -name Controller -case snake
-
 // Controller to handle the requests related with retention
 type Controller interface {
 	GetRetention(ctx context.Context, id int64) (*policy.Metadata, error)
