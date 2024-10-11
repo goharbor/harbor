@@ -173,16 +173,18 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 	}
-	// fire event
-	e := &metadata.PushArtifactEventMetadata{
-		Ctx:      ctx,
-		Artifact: artifact,
-	}
+	if created {
+		// fire event for create
+		e := &metadata.PushArtifactEventMetadata{
+			Ctx:      ctx,
+			Artifact: artifact,
+		}
 
-	if option != nil && len(option.Tags) > 0 {
-		e.Tag = option.Tags[0]
+		if option != nil && len(option.Tags) > 0 {
+			e.Tag = option.Tags[0]
+		}
+		notification.AddEvent(ctx, e)
 	}
-	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
 }
 
@@ -305,7 +307,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 	}
 	if len(tags) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("artifact %s:%s not found", repository, tag)
+			WithMessagef("artifact %s:%s not found", repository, tag)
 	}
 	return c.Get(ctx, tags[0].ArtifactID, option)
 }

@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
         "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts, des règles de réplication ou des charts Helm et ne peut pas être supprimé.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n'a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "sur",
         "COUNT_QUOTA": "Quota de nombre",
         "STORAGE_QUOTA": "Quota du projet",
@@ -423,7 +426,12 @@
         "SELECT_PERMISSIONS": "Selectionner les permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Selectionner les permissions système",
         "SELECT_PROJECT_PERMISSIONS": "Selectionner les permissions projet",
-        "SYSTEM_PERMISSIONS": "Permissions système"
+        "SYSTEM_PERMISSIONS": "Permissions système",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "Éditer",
@@ -916,18 +924,20 @@
             "UID": "UID LDAP",
             "SCOPE": "Scope LDAP",
             "VERIFY_CERT": "Vérifier le certificat LDAP",
-            "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
-            "LDAP_GROUP_BASE_DN_INFO": "Le DN de base à partir duquel rechercher un groupe dans l'annuaire LDAP/AD.",
+            "LDAP_GROUP_BASE_DN": "DN de base du groupe LDAP",
+            "LDAP_GROUP_BASE_DN_INFO": "Le DN de base à partir duquel rechercher un groupe dans l'annuaire LDAP/AD. Ce champ ne peut pas être vide si vous devez activer la fonctionnalité liée aux groupes LDAP.",
             "LDAP_GROUP_FILTER": "Filtre de groupe LDAP",
-            "LDAP_GROUP_FILTER_INFO": "Filtre de recherche de groupe LDAP/AD, objectclass=groupOfNames est utilisé par défaut.",
+            "LDAP_GROUP_FILTER_INFO": "Filtre de recherche de groupe LDAP/AD. Pour OpenLDAP : objectclass=groupOfNames. Pour Active Directory : objectclass=group. Ce champ ne peut pas être vide si vous avez besoin de la fonctionnalité liée aux groupes LDAP.",
             "LDAP_GROUP_GID": "GID du groupe LDAP",
-            "LDAP_GROUP_GID_INFO": "L'attribut utilisé dans la recherche pour trouver un utilisateur ; ce peut être l'uid, le cn ou d'autres attributs en fonction de votre LDAP/AD. Le groupe dens Harbor est nommé avec cet attribut par défaut.",
-            "LDAP_GROUP_ADMIN_DN": "DN LDAP du groupe Admin",
+            "LDAP_GROUP_GID_INFO": "L'attribut utilisé dans la recherche pour trouver un utilisateur ; ce peut être l'uid, le cn ou d'autres attributs en fonction de votre LDAP/AD. Le groupe dens Harbor est nommé avec cet attribut par défaut. Ce champ ne peut pas être vide si vous devez activer la fonctionnalité liée aux groupes LDAP.",
+            "LDAP_GROUP_ADMIN_DN": "DN du groupe Admin LDAP",
             "LDAP_GROUP_ADMIN_DN_INFO": "Spécifiez un DN de groupe LDAP. Tous les utilisateurs dans ce groupe auront les droits d'administration sur Harbor. Laissez le champ vide si vous ne le souhaitez pas.",
             "LDAP_GROUP_MEMBERSHIP": "Appartenance au groupe LDAP",
-            "LDAP_GROUP_MEMBERSHIP_INFO": "L'attribut indique l'appartenance au groupe LDAP ; la valeur par défaut est \"memberOf\", dans certains LDAP cela peut être \"isMemberOf\"",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "L'attribut indique l'appartenance au groupe LDAP ; la valeur par défaut est \"memberOf\", dans certains LDAP cela peut être \"isMemberOf\". Ce champ ne peut pas être vide si vous devez activer la fonction liée au groupe LDAP.",
             "GROUP_SCOPE": "Scope des groupes LDAP",
-            "GROUP_SCOPE_INFO": "Scope dans lequel faire la recherche, 'subtree' par défaut."
+            "GROUP_SCOPE_INFO": "Scope dans lequel faire la recherche, 'subtree' par défaut.",
+            "GROUP_ATTACH_PARALLEL": "Groupe LDAP attaché en parallèle",
+            "GROUP_ATTACH_PARALLEL_INFO": "Activez pour attacher les groupes en parallèle afin d'éviter les dépassements de délai lorsqu'il y a trop de groupes. Si l'option est désactivée, les informations sur les groupes LDAP seront attachées séquentiellement."
         },
         "UAA": {
             "ENDPOINT": "Endpoint UAA",
@@ -1045,7 +1055,7 @@
             "COLUMN_VERSION": "Version actuelle",
             "COLUMN_LICENSE": "License",
             "COLUMN_DESCRIPTION": "Description",
-            "FOOT_ITEMS": "Elements",
+            "FOOT_ITEMS": "Eléments",
             "FOOT_OF": "of"
         },
         "STATE": {
@@ -1063,7 +1073,7 @@
         "DOWNLOAD": "Télécharger le SBOM",
         "Details": "Détails du SBOM",
         "STOP": "Arrêter la génération du SBOM",
-        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+        "TRIGGER_STOP_SUCCESS": "Arrêt de la génération du SBOM réussi"
     },
     "VULNERABILITY": {
         "STATE": {
@@ -1145,7 +1155,7 @@
         "ALL": "Tous",
         "PLACEHOLDER": "Nous n'avons trouvé aucun artefact !",
         "SCAN_UNSUPPORTED": "Non supporté",
-        "SBOM_UNSUPPORTED": "Unsupported",
+        "SBOM_UNSUPPORTED": "Non supporté",
         "SUMMARY": "Résumé",
         "DEPENDENCIES": "Dépendances",
         "VALUES": "Valeurs",
@@ -1623,6 +1633,9 @@
         "TRIGGER": "Déclencheur",
         "CREATED": "Date/Heure de création",
         "DESCRIPTION": "Description",
+        "SCOPE": "Champ d'application",
+        "SCOPE_SINGLE_PEER": "Pair unique",
+        "SCOPE_ALL_PEERS": "Tous les pairs",
         "NO_POLICY": "Aucune stratégie",
         "ENABLED_POLICY_SUMMARY": "Voulez-vous activer la stratégie {{name}} ?",
         "DISABLED_POLICY_SUMMARY": "Voulez-vous désactiver la stratégie {{name}} ?",

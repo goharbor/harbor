@@ -421,7 +421,7 @@ func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation
 	if execution.ID != task.ExecutionID {
 		return r.SendError(ctx, errors.New(nil).
 			WithCode(errors.NotFoundCode).
-			WithMessage("execution %d contains no task with ID %d", params.ID, params.TaskID))
+			WithMessagef("execution %d contains no task with ID %d", params.ID, params.TaskID))
 	}
 	log, err := r.ctl.GetTaskLog(ctx, params.TaskID)
 	if err != nil {

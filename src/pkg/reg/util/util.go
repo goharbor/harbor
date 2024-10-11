@@ -49,7 +49,7 @@ func Ping(registry *model.Registry) (string, string, error) {
 			return challenge.Parameters["realm"], challenge.Parameters["service"], nil
 		}
 	}
-	return "", "", errors.New(nil).WithCode(errors.ChallengesUnsupportedCode).WithMessage("bearer auth scheme isn't supported: %v", challenges)
+	return "", "", errors.New(nil).WithCode(errors.ChallengesUnsupportedCode).WithMessagef("bearer auth scheme isn't supported: %v", challenges)
 }
 
 // ParseRepository parses the "repository" provided into two parts: namespace and the rest

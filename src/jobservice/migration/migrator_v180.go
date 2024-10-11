@@ -390,7 +390,7 @@ func toInt(v interface{}) int64 {
 
 func hashKey(p *period.Policy) string {
 	key := p.JobName
-	if p.JobParameters != nil && len(p.JobParameters) > 0 {
+	if len(p.JobParameters) > 0 {
 		if bytes, err := json.Marshal(p.JobParameters); err == nil {
 			key = fmt.Sprintf("%s:%s", key, string(bytes))
 		}

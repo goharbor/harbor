@@ -490,6 +490,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 severity: this.addP2pPolicyComponent.severity,
                 label: this.addP2pPolicyComponent.labels,
                 triggerType: this.addP2pPolicyComponent.triggerType,
+                scope: this.addP2pPolicyComponent.scope,
             });
             this.addP2pPolicyComponent.originPolicyForEdit = clone(
                 this.selectedRow

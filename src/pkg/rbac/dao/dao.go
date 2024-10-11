@@ -74,7 +74,7 @@ func (d *dao) DeletePermission(ctx context.Context, id int64) (err error) {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("role permission %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("role permission %d not found", id)
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func (d *dao) DeletePermissionsByRole(ctx context.Context, roleType string, role
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("role permission %s:%d not found", roleType, roleID)
+		return errors.NotFoundError(nil).WithMessagef("role permission %s:%d not found", roleType, roleID)
 	}
 	return err
 }
@@ -132,7 +132,7 @@ func (d *dao) DeleteRbacPolicy(ctx context.Context, id int64) (err error) {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("rbac policy %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("rbac policy %d not found", id)
 	}
 	return nil
 }

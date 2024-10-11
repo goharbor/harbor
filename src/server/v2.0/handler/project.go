@@ -155,8 +155,13 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// validate metadata.public value, should only be "true" or "false"
 	if p := req.Metadata.Public; p != "" {
 		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage(fmt.Sprintf("metadata.public should only be 'true' or 'false', but got: '%s'", p)))
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true' or 'false', but got: '%s'", p))
 		}
+	}
+
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if req.RegistryID == nil {
+		req.Metadata.ProxySpeedKb = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -543,12 +548,17 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 			params.Project.CVEAllowlist.ProjectID = p.ProjectID
 		} else if params.Project.CVEAllowlist.ProjectID != p.ProjectID {
 			return a.SendError(ctx, errors.BadRequestError(nil).
-				WithMessage("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
+				WithMessagef("project_id in cve_allowlist must be %d but it's %d", p.ProjectID, params.Project.CVEAllowlist.ProjectID))
 		}
 
 		if err := lib.JSONCopy(&p.CVEAllowlist, params.Project.CVEAllowlist); err != nil {
-			return a.SendError(ctx, errors.UnknownError(nil).WithMessage("failed to process cve_allowlist, error: %v", err))
+			return a.SendError(ctx, errors.UnknownError(nil).WithMessagef("failed to process cve_allowlist, error: %v", err))
 		}
+	}
+
+	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	if params.Project.Metadata != nil && !p.IsProxy() {
+		params.Project.Metadata.ProxySpeedKb = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -568,7 +578,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 		if rid, ok := md["retention_id"]; !ok || rid != ridParam {
 			errMsg := "the retention_id in the request's payload when updating a project should be omitted, alternatively passing the one that has already been associated to this project"
-			return a.SendError(ctx, errors.BadRequestError(fmt.Errorf(errMsg)))
+			return a.SendError(ctx, errors.New(nil).WithMessage(errMsg).WithCode(errors.BadRequestCode))
 		}
 	}
 
@@ -791,6 +801,13 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		}
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
+		}
+
+		// validate metadata.proxy_speed_kb. It should be an int32
+		if ps := req.Metadata.ProxySpeedKb; ps != nil {
+			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
+			}
 		}
 	}
 
