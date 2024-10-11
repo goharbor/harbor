@@ -63,9 +63,15 @@ func (e *Error) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// WithMessage ...
-func (e *Error) WithMessage(format string, v ...interface{}) *Error {
+// WithMessagef ...
+func (e *Error) WithMessagef(format string, v ...interface{}) *Error {
 	e.Message = fmt.Sprintf(format, v...)
+	return e
+}
+
+// WithMessage ...
+func (e *Error) WithMessage(message string) *Error {
+	e.Message = message
 	return e
 }
 

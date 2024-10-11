@@ -74,7 +74,7 @@ func (t *taskDAO) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := t.querySetter(ctx, query)
+	qs, err := t.querySetter(ctx, query, orm.WithSortDisabled(true))
 	if err != nil {
 		return 0, err
 	}
@@ -114,8 +114,8 @@ func (t *taskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([
 	}
 
 	var tasks []*Task
-	param := fmt.Sprintf(`{"report_uuids":["%s"]}`, uuid)
-	sql := `SELECT * FROM task WHERE extra_attrs::jsonb @> cast( ? as jsonb )`
+	param := fmt.Sprintf(`"%s"`, uuid)
+	sql := `SELECT * FROM task WHERE extra_attrs::jsonb -> 'report_uuids' @> ?`
 	_, err = ormer.Raw(sql, param).QueryRows(&tasks)
 	if err != nil {
 		return nil, err
@@ -166,7 +166,7 @@ func (t *taskDAO) Update(ctx context.Context, task *Task, props ...string) error
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("task %d not found", task.ID)
+		return errors.NotFoundError(nil).WithMessagef("task %d not found", task.ID)
 	}
 	return nil
 }
@@ -217,7 +217,7 @@ func (t *taskDAO) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("task %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("task %d not found", id)
 	}
 	return nil
 }
@@ -250,8 +250,8 @@ func (t *taskDAO) GetMaxEndTime(ctx context.Context, executionID int64) (time.Ti
 	return endTime, nil
 }
 
-func (t *taskDAO) querySetter(ctx context.Context, query *q.Query) (orm.QuerySeter, error) {
-	qs, err := orm.QuerySetter(ctx, &Task{}, query)
+func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
+	qs, err := orm.QuerySetter(ctx, &Task{}, query, options...)
 	if err != nil {
 		return nil, err
 	}

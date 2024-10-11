@@ -339,7 +339,7 @@ func (c *nativeToRelationalSchemaConverter) updateReport(ctx context.Context, vu
 		return err
 	}
 	if len(reports) == 0 {
-		return errors.New(nil).WithMessage("report not found, uuid:%v", reportUUID)
+		return errors.New(nil).WithMessagef("report not found, uuid:%v", reportUUID)
 	}
 	r := reports[0]
 

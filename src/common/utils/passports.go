@@ -72,7 +72,7 @@ func (p *passportsPool) Revoke() bool {
 type LimitedConcurrentRunner interface {
 	// AddTask adds a task to run
 	AddTask(task func() error)
-	// Wait waits all the tasks to be finished, returns error if the any of the tasks gets error
+	// Wait waits all the tasks to be finished, returns error if any of the tasks gets error
 	Wait() (err error)
 	// Cancel cancels all tasks, tasks that already started will continue to run
 	Cancel(err error)
@@ -106,7 +106,7 @@ func (r *limitedConcurrentRunner) AddTask(task func() error) {
 			r.wg.Done()
 		}()
 
-		// Return false means no passport acquired, and no valid passport will be dispatched any more.
+		// Return false means no passport acquired, and no valid passport will be dispatched anymore.
 		// For example, some crucial errors happened and all tasks should be cancelled.
 		if ok := r.passportsPool.Apply(); !ok {
 			return

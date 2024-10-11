@@ -77,6 +77,16 @@ export const TRIGGER_I18N_MAP = {
     'scheduled(paused)': 'JOB_SERVICE_DASHBOARD.SCHEDULE_PAUSED',
 };
 
+export enum SCOPE {
+    SINGLE_PEER = 'single_peer',
+    ALL_PEERS = 'all_peers',
+}
+
+export const SCOPE_I18N_MAP = {
+    single_peer: 'P2P_PROVIDER.SCOPE_SINGLE_PEER',
+    all_peers: 'P2P_PROVIDER.SCOPE_ALL_PEERS',
+};
+
 export const TIME_OUT: number = 7000;
 
 export const PROJECT_SEVERITY_LEVEL_MAP = {

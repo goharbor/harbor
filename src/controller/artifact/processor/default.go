@@ -132,5 +132,5 @@ func (d *defaultProcessor) AbstractAddition(_ context.Context, artifact *artifac
 	// It will be support in the future.
 	// return error directly
 	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-		WithMessage("the processor for artifact %s not found, cannot get the addition", artifact.Type)
+		WithMessagef("the processor for artifact %s not found, cannot get the addition", artifact.Type)
 }

@@ -73,7 +73,7 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("artifact trash %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("artifact trash %d not found", id)
 	}
 	return nil
 }
@@ -102,10 +102,8 @@ func (d *dao) Flush(ctx context.Context, cutOff time.Time) (err error) {
 	if err != nil {
 		return err
 	}
+
 	sql := fmt.Sprintf(`DELETE FROM artifact_trash where creation_time <= TO_TIMESTAMP('%f')`, float64(cutOff.UnixNano())/float64((time.Second)))
-	if err != nil {
-		return err
-	}
 	_, err = ormer.Raw(sql).Exec()
 	if err != nil {
 		return err

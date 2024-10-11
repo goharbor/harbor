@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "COUNT_QUOTA": "存储数量",
         "STORAGE_QUOTA": "项目配额限制",
         "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
@@ -286,9 +289,9 @@
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
         "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
-        "SBOM": "SBOM generation",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
+        "SBOM": "生成软件物料清单",
+        "AUTOSBOM_TOGGLE": "在推送镜像时自动生成软件物料清单",
+        "AUTOSBOM_POLICY": "在推送镜像时自动生成该镜像的软件物料清单（SBOM)。"
     },
     "MEMBER": {
         "NEW_USER": "添加用户成员",
@@ -405,7 +408,7 @@
         "REPOSITORY": "仓库",
         "ARTIFACT": "Artifact",
         "SCAN": "扫描",
-        "SBOM": "SBOM",
+        "SBOM": "软件物料清单",
         "TAG": "Tag",
         "ACCESSORY": "附件",
         "ARTIFACT_ADDITION": "Artifact 额外信息",
@@ -421,7 +424,12 @@
         "SELECT_PERMISSIONS": "选择权限",
         "SELECT_SYSTEM_PERMISSIONS": "选择系统权限",
         "SELECT_PROJECT_PERMISSIONS": "选择项目权限",
-        "SYSTEM_PERMISSIONS": "系统权限"
+        "SYSTEM_PERMISSIONS": "系统权限",
+        "ROBOT": "机器人账户",
+        "USER": "用户",
+        "LDAPUSER": "LDAP 用户",
+        "GROUP": "用户组",
+        "MEMBER": "项目成员"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
@@ -777,7 +785,7 @@
         "ARTIFACTS": "Artifacts",
         "SIZE": "大小",
         "VULNERABILITY": "漏洞",
-        "SBOM": "SBOM",
+        "SBOM": "软件物料清单",
         "BUILD_HISTORY": "构建历史",
         "SIGNED": "已签名",
         "AUTHOR": "作者",
@@ -926,7 +934,10 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP 组成员",
             "LDAP_GROUP_MEMBERSHIP_INFO": "LDAP组成员的membership属性，默认为 memberof, 在某些LDAP服务器会变为 ismemberof。如果要开启LDAP组功能，则此项必填",
             "GROUP_SCOPE": "LDAP组搜索范围",
-            "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\""
+          "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\"",
+          "GROUP_ATTACH_PARALLEL": "LDAP组并行同步",
+          "GROUP_ATTACH_PARALLEL_INFO": "打开这个选项时，LDAP组的信息是并行同步到Harbor, 这样可以防止用户组太多时造成的登录超时，如果关闭这个选项，LDAP组信息是顺序同步到Harbor"
+
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -1038,31 +1049,31 @@
             "TOOLTIPS_TITLE_ZERO": "No recognizable SBOM detected"
         },
         "GRID": {
-            "PLACEHOLDER": "No scan results found.",
-            "COLUMN_PACKAGE": "Package",
-            "COLUMN_PACKAGES": "Packages",
-            "COLUMN_VERSION": "Current version",
-            "COLUMN_LICENSE": "License",
-            "COLUMN_DESCRIPTION": "Description",
+            "PLACEHOLDER": "没有扫描结果.",
+            "COLUMN_PACKAGE": "软件包",
+            "COLUMN_PACKAGES": "软件包",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_LICENSE": "许可证",
+            "COLUMN_DESCRIPTION": "描述",
             "FOOT_ITEMS": "Items",
             "FOOT_OF": "of"
         },
         "STATE": {
-            "OTHER_STATUS": "No SBOM",
+            "OTHER_STATUS": "无软件物料清单",
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
             "STOPPED": "Generation stopped"
         },
-        "NO_SBOM": "No SBOM",
+        "NO_SBOM": "无软件物料清单",
         "PACKAGES": "SBOM",
         "COMPLETED": "Completed",
         "REPORTED_BY": "Reported by {{scanner}}",
-        "GENERATE": "Generate SBOM",
-        "DOWNLOAD": "Download SBOM",
-        "Details": "SBOM details",
-        "STOP": "Stop Generate SBOM",
-        "TRIGGER_STOP_SUCCESS": "Trigger stopping SBOM generation successfully"
+        "GENERATE": "生成软件物料清单",
+        "DOWNLOAD": "下载软件物料清单",
+        "Details": "软件物料清单详情",
+        "STOP": "停止生成软件物料清单",
+        "TRIGGER_STOP_SUCCESS": "成功触发停止执行"
     },
     "VULNERABILITY": {
         "STATE": {
@@ -1108,12 +1119,12 @@
         "PLACEHOLDER": "过滤漏洞",
         "PACKAGE": "组件",
         "PACKAGES": "组件",
-        "SCAN_NOW": "Scan vulnerability",
+        "SCAN_NOW": "漏洞扫描",
         "SCAN_BY": "使用 {{scanner}} 进行扫描",
         "REPORTED_BY": "结果由 {{scanner}} 提供",
         "NO_SCANNER": "无扫描器",
         "TRIGGER_STOP_SUCCESS": "停止扫描成功",
-        "STOP_NOW": "Stop Scan Vulnerability"
+        "STOP_NOW": "停止漏洞扫描"
     },
     "PUSH_IMAGE": {
         "TITLE": "推送命令",
@@ -1469,10 +1480,10 @@
         "NAME_REQUIRED": "名称为必填项",
         "NAME_REX": "名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
         "DESCRIPTION": "描述",
-        "SBOM": "SBOM",
-        "VULNERABILITY": "Vulnerability",
-        "SUPPORTED": "Supported",
-        "NOT_SUPPORTED": "Not Supported",
+        "SBOM": "软件物料清单",
+        "VULNERABILITY": "漏洞扫描",
+        "SUPPORTED": "支持",
+        "NOT_SUPPORTED": "不支持",
         "ENDPOINT": "地址",
         "ENDPOINT_EXISTS": "地址已存在",
         "ENDPOINT_REQUIRED": "地址为必填项",
@@ -1621,6 +1632,9 @@
         "TRIGGER": "触发器",
         "CREATED": "创建时间",
         "DESCRIPTION": "描述",
+        "SCOPE": "范围",
+        "SCOPE_SINGLE_PEER": "单节点",
+        "SCOPE_ALL_PEERS": "全节点",
         "NO_POLICY": "暂无记录",
         "ENABLED_POLICY_SUMMARY": "是否启用策略 {{name}}?",
         "DISABLED_POLICY_SUMMARY": "是否禁用策略 {{name}}?",

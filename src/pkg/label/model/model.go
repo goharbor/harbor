@@ -52,9 +52,9 @@ func (l *Label) Valid() error {
 	}
 
 	if l.Scope != common.LabelScopeGlobal && l.Scope != common.LabelScopeProject {
-		return errors.New(nil).WithMessage("invalid: %s", l.Scope).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("invalid: %s", l.Scope).WithCode(errors.BadRequestCode)
 	} else if l.Scope == common.LabelScopeProject && l.ProjectID <= 0 {
-		return errors.New(nil).WithMessage("invalid: %d", l.ProjectID).WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessagef("invalid: %d", l.ProjectID).WithCode(errors.BadRequestCode)
 	}
 	return nil
 }

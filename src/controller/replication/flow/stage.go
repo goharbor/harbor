@@ -199,7 +199,7 @@ func replaceNamespace(repository string, namespace string, replaceCount int8, ds
 		dstRepoPrefix = namespace
 	case int(replaceCount) > srcLength-1: // invalid replace count
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("the source repository %q contains only %d path components %v excepting the last one, but the destination namespace flattening level is %d",
+			WithMessagef("the source repository %q contains only %d path components %v excepting the last one, but the destination namespace flattening level is %d",
 				repository, srcLength-1, srcRepoPathComponents[:srcLength-1], replaceCount)
 	case len(namespace) == 0:
 		dstRepoPrefix = strings.Join(srcRepoPathComponents[replaceCount:srcLength-1], "/")
@@ -214,12 +214,12 @@ func replaceNamespace(repository string, namespace string, replaceCount int8, ds
 	switch dstRepoComponentPathType {
 	case model.RepositoryPathComponentTypeOnlyTwo:
 		if dstLength != 2 {
-			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the destination repository %q contains %d path components %v, but the destination registry only supports 2",
+			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the destination repository %q contains %d path components %v, but the destination registry only supports 2",
 				dstRepo, dstLength, dstRepoPathComponents)
 		}
 	case model.RepositoryPathComponentTypeAtLeastTwo:
 		if dstLength < 2 {
-			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the destination repository %q contains only %d path components %v, but the destination registry requires at least 2",
+			return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the destination repository %q contains only %d path components %v, but the destination registry requires at least 2",
 				dstRepo, dstLength, dstRepoPathComponents)
 		}
 	}
