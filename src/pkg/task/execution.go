@@ -275,7 +275,7 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 	for _, task := range tasks {
 		if !job.Status(task.Status).Final() {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("the execution %d has tasks that aren't in final status, stop the tasks first", id)
+				WithMessagef("the execution %d has tasks that aren't in final status, stop the tasks first", id)
 		}
 
 		log.Debugf("delete task %d as execution %d has been deleted", task.ID, task.ExecutionID)
@@ -305,7 +305,7 @@ func (e *executionManager) DeleteByVendor(ctx context.Context, vendorType string
 	for _, execution := range executions {
 		if !job.Status(execution.Status).Final() {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("contains executions that aren't in final status, stop the execution first")
+				WithMessagef("contains executions that aren't in final status, stop the execution first")
 		}
 	}
 	// delete the executions

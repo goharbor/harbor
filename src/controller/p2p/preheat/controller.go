@@ -219,7 +219,7 @@ func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
 	if len(policies) > 0 {
 		return errors.New(nil).
 			WithCode(errors.PreconditionCode).
-			WithMessage("Provider [%s] cannot be deleted as some preheat policies are using it", ins.Name)
+			WithMessagef("Provider [%s] cannot be deleted as some preheat policies are using it", ins.Name)
 	}
 
 	return c.iManager.Delete(ctx, id)
@@ -246,7 +246,7 @@ func (c *controller) UpdateInstance(ctx context.Context, instance *providerModel
 		if len(policies) > 0 {
 			return errors.New(nil).
 				WithCode(errors.PreconditionCode).
-				WithMessage("Provider [%s] cannot be disabled as some preheat policies are using it", oldIns.Name)
+				WithMessagef("Provider [%s] cannot be disabled as some preheat policies are using it", oldIns.Name)
 		}
 	}
 

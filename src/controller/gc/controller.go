@@ -139,7 +139,7 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 	}
 	if len(execs) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("garbage collection execution %d not found", id)
+			WithMessagef("garbage collection execution %d not found", id)
 	}
 	return convertExecution(execs[0]), nil
 }
@@ -157,7 +157,7 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	}
 	if len(tasks) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("garbage collection task %d not found", id)
+			WithMessagef("garbage collection task %d not found", id)
 	}
 	return convertTask(tasks[0]), nil
 }

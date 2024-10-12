@@ -143,7 +143,7 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 func (p *purgeAPI) updateSchedule(ctx context.Context, vendorType, cronType, cron string, policy pg.JobPolicy, extraParams map[string]interface{}) error {
 	if err := utils.ValidateCronString(cron); err != nil {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid cron string for scheduled log rotation purge: %s, error: %v", cron, err)
+			WithMessagef("invalid cron string for scheduled log rotation purge: %s, error: %v", cron, err)
 	}
 	if err := p.schedulerCtl.Delete(ctx, vendorType); err != nil {
 		return err
@@ -247,7 +247,7 @@ func (p *purgeAPI) GetPurgeJobLog(ctx context.Context, params purge.GetPurgeJobL
 	if len(tasks) == 0 {
 		return p.SendError(ctx,
 			errors.New(nil).WithCode(errors.NotFoundCode).
-				WithMessage("purge job with execution ID: %d taskLog is not found", params.PurgeID))
+				WithMessagef("purge job with execution ID: %d taskLog is not found", params.PurgeID))
 	}
 	taskLog, err := p.taskCtl.GetLog(ctx, tasks[0].ID)
 	if err != nil {

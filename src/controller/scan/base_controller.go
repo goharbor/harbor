@@ -243,12 +243,12 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// In case it does not exist
 	if r == nil {
-		return errors.PreconditionFailedError(nil).WithMessage("no available scanner for project: %d", artifact.ProjectID)
+		return errors.PreconditionFailedError(nil).WithMessagef("no available scanner for project: %d", artifact.ProjectID)
 	}
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is deactivated", r.Name)
+		return errors.PreconditionFailedError(nil).WithMessagef("scanner %s is deactivated", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -266,7 +266,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 			// skip to return err for event related scan
 			return nil
 		}
-		return errors.BadRequestError(nil).WithMessage("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
+		return errors.BadRequestError(nil).WithMessagef("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
 	}
 
 	var (
@@ -376,8 +376,7 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 	}
 
 	if len(executions) == 0 {
-		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
-		return errors.BadRequestError(nil).WithMessage(message)
+		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact digest=%v", artifact.Digest)
 	}
 	execution := executions[0]
 	return bc.execMgr.Stop(ctx, execution.ID)
@@ -590,7 +589,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if r == nil {
-		return nil, errors.NotFoundError(nil).WithMessage("no scanner registration configured for project: %d", artifact.ProjectID)
+		return nil, errors.NotFoundError(nil).WithMessagef("no scanner registration configured for project: %d", artifact.ProjectID)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -599,7 +598,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if !scannable {
-		return nil, errors.NotFoundError(nil).WithMessage("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
+		return nil, errors.NotFoundError(nil).WithMessagef("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
 	groupReports := make([][]*scan.Report, len(artifacts))
@@ -681,7 +680,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	reportUUIDToTasks := map[string]*task.Task{}
 	for _, t := range tasks {
 		if !scanTaskForArtifacts(t, artifactMap) {
-			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
+			return nil, errors.NotFoundError(nil).WithMessagef("scan log with uuid: %s not found", uuid)
 		}
 		for _, reportUUID := range GetReportUUIDs(t.ExtraAttrs) {
 			reportUUIDToTasks[reportUUID] = t
@@ -1043,7 +1042,7 @@ func (bc *basicController) getScanTask(ctx context.Context, reportUUID string) (
 	}
 
 	if len(tasks) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("task for report %s not found", reportUUID)
+		return nil, errors.NotFoundError(nil).WithMessagef("task for report %s not found", reportUUID)
 	}
 
 	return tasks[0], nil

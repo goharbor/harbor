@@ -162,7 +162,7 @@ func (dd *DragonflyDriver) Self() *Metadata {
 		ID:          "dragonfly",
 		Name:        "Dragonfly",
 		Icon:        "https://raw.githubusercontent.com/dragonflyoss/Dragonfly2/master/docs/images/logo/dragonfly-linear.png",
-		Version:     "2.1.57",
+		Version:     "2.1.59",
 		Source:      "https://github.com/dragonflyoss/Dragonfly2",
 		Maintainers: []string{"chlins.zhang@gmail.com", "gaius.qi@gmail.com"},
 	}

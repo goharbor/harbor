@@ -114,7 +114,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("schedule %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("schedule %d not found", id)
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func (d *dao) Update(ctx context.Context, schedule *schedule, props ...string) e
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("schedule %d not found", schedule.ID)
+		return errors.NotFoundError(nil).WithMessagef("schedule %d not found", schedule.ID)
 	}
 	return nil
 }
