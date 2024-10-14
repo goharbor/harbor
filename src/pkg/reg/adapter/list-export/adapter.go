@@ -127,7 +127,7 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 	}
 
 	result := &Result{
-		Registry:  registry.Name,
+		Registry:  registry.URL,
 		Artifacts: artifacts,
 	}
 
