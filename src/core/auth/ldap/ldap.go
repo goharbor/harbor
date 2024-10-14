@@ -204,7 +204,7 @@ func verifyGroupInLDAP(groupDN string, sess *ldap.Session) (*model.Group, bool) 
 		return nil, false
 	}
 	if len(lGroups) == 0 {
-		log.Warningf("Can not get the ldap group name with DN %v", groupDN)
+		log.Debugf("Can not get the ldap group name with DN %v", groupDN)
 		return nil, false
 	}
 	return &lGroups[0], true
