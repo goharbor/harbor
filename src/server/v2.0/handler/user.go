@@ -200,7 +200,7 @@ func (u *usersAPI) GetCurrentUserInfo(ctx context.Context, _ operation.GetCurren
 	sctx, _ := security.FromContext(ctx)
 	lsc, ok := sctx.(*local.SecurityContext)
 	if !ok {
-		return u.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage("get current user not available for security context: %s", sctx.Name()))
+		return u.SendError(ctx, errors.PreconditionFailedError(nil).WithMessagef("get current user not available for security context: %s", sctx.Name()))
 	}
 	resp, err := u.getUserByID(ctx, lsc.User().UserID)
 	if err != nil {
@@ -356,14 +356,14 @@ func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
 		return err
 	}
 	if a != common.OIDCAuth {
-		return errors.PreconditionFailedError(nil).WithMessage("unable to update CLI secret under authmode: %s", a)
+		return errors.PreconditionFailedError(nil).WithMessagef("unable to update CLI secret under authmode: %s", a)
 	}
 	sctx, ok := security.FromContext(ctx)
 	if !ok || !sctx.IsAuthenticated() {
 		return errors.UnauthorizedError(nil)
 	}
 	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) {
-		return errors.ForbiddenError(nil).WithMessage("Not authorized to update the CLI secret for user: %d", id)
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to update the CLI secret for user: %d", id)
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ func (u *usersAPI) requireCreatable(ctx context.Context) error {
 		return err
 	}
 	if a != common.DBAuth {
-		return errors.ForbiddenError(nil).WithMessage("creating local user is not allowed under auth mode: %s", a)
+		return errors.ForbiddenError(nil).WithMessagef("creating local user is not allowed under auth mode: %s", a)
 	}
 	sr, err := config.SelfRegistration(ctx)
 	if err != nil {
@@ -398,7 +398,7 @@ func (u *usersAPI) requireReadable(ctx context.Context, id int) error {
 		return errors.UnauthorizedError(nil)
 	}
 	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionRead, rbac.ResourceUser) {
-		return errors.ForbiddenError(nil).WithMessage("Not authorized to read user: %d", id)
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to read user: %d", id)
 	}
 	return nil
 }
@@ -412,7 +412,7 @@ func (u *usersAPI) requireDeletable(ctx context.Context, id int) error {
 		return errors.ForbiddenError(nil).WithMessage("Not authorized to delete users")
 	}
 	if matchUserID(sctx, id) || id == 1 {
-		return errors.ForbiddenError(nil).WithMessage("User with ID %d cannot be deleted", id)
+		return errors.ForbiddenError(nil).WithMessagef("User with ID %d cannot be deleted", id)
 	}
 	return nil
 }
@@ -427,7 +427,7 @@ func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
 		return errors.UnauthorizedError(nil)
 	}
 	if !modifiable(ctx, a, id) {
-		return errors.ForbiddenError(nil).WithMessage("User with ID %d can't be updated", id)
+		return errors.ForbiddenError(nil).WithMessagef("User with ID %d can't be updated", id)
 	}
 	return nil
 }

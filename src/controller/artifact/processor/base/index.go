@@ -44,7 +44,7 @@ func (m *IndexProcessor) AbstractMetadata(_ context.Context, _ *artifact.Artifac
 // AbstractAddition abstracts the addition of artifact
 func (m *IndexProcessor) AbstractAddition(_ context.Context, _ *artifact.Artifact, addition string) (*processor.Addition, error) {
 	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-		WithMessage("addition %s isn't supported", addition)
+		WithMessagef("addition %s isn't supported", addition)
 }
 
 // GetArtifactType returns the artifact type

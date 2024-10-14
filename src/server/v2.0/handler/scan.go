@@ -123,7 +123,7 @@ func (s *scanAPI) GetReportLog(ctx context.Context, params operation.GetReportLo
 
 	if bytes == nil {
 		// Not found
-		return s.SendError(ctx, errors.NotFoundError(nil).WithMessage("report with uuid %s does not exist", params.ReportID))
+		return s.SendError(ctx, errors.NotFoundError(nil).WithMessagef("report with uuid %s does not exist", params.ReportID))
 	}
 
 	return operation.NewGetReportLogOK().WithPayload(string(bytes))

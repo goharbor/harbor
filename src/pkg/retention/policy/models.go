@@ -69,7 +69,7 @@ func (m *Metadata) ValidateRetentionPolicy() error {
 			if ok && len(cronItem.(string)) > 0 {
 				if err := utils.ValidateCronString(cronItem.(string)); err != nil {
 					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("invalid cron string for scheduled tag retention: %s, error: %v", cronItem.(string), err)
+						WithMessagef("invalid cron string for scheduled tag retention: %s, error: %v", cronItem.(string), err)
 				}
 			}
 		}

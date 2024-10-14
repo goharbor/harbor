@@ -132,13 +132,13 @@ func (s *Schema) ValidatePreheatPolicy() error {
 	if s.Trigger != nil && s.Trigger.Type == TriggerTypeScheduled && len(s.Trigger.Settings.Cron) > 0 {
 		if err := utils.ValidateCronString(s.Trigger.Settings.Cron); err != nil {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
+				WithMessagef("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
 		}
 	}
 
 	// validate preheat scope
 	if s.Scope != "" && s.Scope != ScopeTypeSinglePeer && s.Scope != ScopeTypeAllPeers {
-		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid scope for preheat policy: %s", s.Scope)
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid scope for preheat policy: %s", s.Scope)
 	}
 
 	return nil

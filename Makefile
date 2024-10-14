@@ -104,8 +104,8 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.51.2
-TRIVYADAPTERVERSION=v0.31.2
+TRIVYVERSION=v0.56.1
+TRIVYADAPTERVERSION=v0.32.0-rc.1
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.3
@@ -115,7 +115,7 @@ DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
+TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -142,7 +142,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.22.3
+GOBUILDIMAGE=golang:1.23.2
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -312,7 +312,7 @@ gen_apis: lint_apis
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.43.2
+MOCKERY_VERSION=v2.46.2
 MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
