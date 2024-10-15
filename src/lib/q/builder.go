@@ -70,7 +70,7 @@ func parseKeywords(q string) (map[string]interface{}, error) {
 		if err != nil {
 			return nil, errors.New(err).
 				WithCode(errors.BadRequestCode).
-				WithMessage("invalid query string value: %s", strs[1])
+				WithMessagef("invalid query string value: %s", strs[1])
 		}
 		keywords[strs[0]] = value
 	}

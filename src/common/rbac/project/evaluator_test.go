@@ -87,8 +87,8 @@ func TestProjectRoleAccess(t *testing.T) {
 			Username: "username",
 		}
 		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
-		resorce := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
-		assert.True(evaluator.HasPermission(context.TODO(), resorce, rbac.ActionPush))
+		resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
+		assert.True(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
 	}
 
 	{
@@ -101,8 +101,8 @@ func TestProjectRoleAccess(t *testing.T) {
 			Username: "username",
 		}
 		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
-		resorce := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
-		assert.False(evaluator.HasPermission(context.TODO(), resorce, rbac.ActionPush))
+		resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
+		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
 	}
 }
 

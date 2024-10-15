@@ -125,7 +125,6 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		message := fmt.Sprintf("http status code: %d, body: %s", resp.StatusCode, string(body))
 		code := errors.GeneralCode
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
@@ -134,7 +133,7 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 			code = errors.ForbiddenCode
 		}
 		return nil, errors.New(nil).WithCode(code).
-			WithMessage(message)
+			WithMessagef("http status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	token := &token{}
 	if err = json.Unmarshal(body, token); err != nil {

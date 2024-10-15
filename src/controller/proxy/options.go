@@ -12,6 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package common
+package proxy
 
-//go:generate mockery --case snake --dir ../../common/security --name Context --output ./security --outpkg security
+type Option func(*Options)
+
+type Options struct {
+	// Speed is the data transfer speed for proxy cache from Harbor to upstream registry, no limit by default.
+	Speed int32
+}
+
+func NewOptions(opts ...Option) *Options {
+	o := &Options{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	return o
+}
+
+func WithSpeed(speed int32) Option {
+	return func(o *Options) {
+		o.Speed = speed
+	}
+}
