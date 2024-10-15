@@ -23,7 +23,6 @@ import { AppConfigService } from '../../services/app-config.service';
 import { MessageHandlerService } from '../services/message-handler.service';
 import { SearchTriggerService } from '../components/global-search/search-trigger.service';
 import { Observable } from 'rxjs';
-import { UN_LOGGED_PARAM, YES } from '../../account/sign-in/sign-in.service';
 import { CommonRoutes, CONFIG_AUTH_MODE } from '../entities/shared.const';
 
 @Injectable({
@@ -46,12 +45,12 @@ export class AuthCheckGuard {
         this.msgHandler.clear();
         this.searchTrigger.closeSearch(true);
         return new Observable(observer => {
-            // if the url has the queryParam `publicAndNotLogged=yes`, then skip auth check
-            const queryParams = route.queryParams;
-            if (queryParams && queryParams[UN_LOGGED_PARAM] === YES) {
+            let user = this.authService.getCurrentUser();
+            // if the target url is in the AuthCheckGuardAllowList then skip auth check
+            if (!user && state.url && isAllowListed(state.url)) {
                 return observer.next(true);
             }
-            let user = this.authService.getCurrentUser();
+
             if (!user) {
                 this.authService.retrieveUser().subscribe(
                     () => {
@@ -101,4 +100,15 @@ export class AuthCheckGuard {
     ): Observable<boolean> | boolean {
         return this.canActivate(route, state);
     }
+}
+
+export const AuthCheckGuardAllowList = [/harbor\/projects\/.+/];
+
+export function isAllowListed(url: string): boolean {
+    for (let i = 0; i < AuthCheckGuardAllowList.length; i++) {
+        if (url.match(AuthCheckGuardAllowList[i])) {
+            return true;
+        }
+    }
+    return false;
 }
