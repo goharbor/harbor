@@ -123,6 +123,7 @@ func flushQuota(ctx context.Context) {
 	iter, err := cache.Default().Scan(ctx, "quota:*")
 	if err != nil {
 		log.Errorf("failed to scan out the quota records from redis")
+		return
 	}
 
 	for iter.Next(ctx) {
