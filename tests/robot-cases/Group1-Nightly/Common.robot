@@ -244,7 +244,7 @@ Test Case - User View Logs
     Create An New Project And Go Into Project  project${d}
     Logout Harbor
 
-    Body Of Replication Of Pull Images from Registry To Self   harbor  https://cicd.harbor.vmwarecna.net  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   harbor  https://${LOCAL_REGISTRY}  ${null}  ${null}  nightly/${replication_image}  project${d}  N  Flatten 1 Level  @{target_images}
 
     Push image  ${ip}  ${user}  ${pwd}  project${d}  ${img}:${tag}
     Pull image  ${ip}  ${user}  ${pwd}  project${d}  ${replication_image}:${replication_tag}
@@ -1118,7 +1118,7 @@ Test Case - Job Service Dashboard Workers
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project And Go Into Project  ${project_name}
     Switch to Registries
-    Create A New Endpoint  harbor  ${endpoint_name}  https://cicd.harbor.vmwarecna.net  ${null}  ${null}
+    Create A New Endpoint  harbor  ${endpoint_name}  https://${LOCAL_REGISTRY}  ${null}  ${null}
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  ${rule_name}  pull  nightly/test_replication  image  ${endpoint_name}  ${project_name}  bandwidth=50  bandwidth_unit=Mbps
     Select Rule And Replicate  ${rule_name}

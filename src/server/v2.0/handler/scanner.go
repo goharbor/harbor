@@ -74,13 +74,13 @@ func (s *scannerAPI) DeleteScanner(ctx context.Context, params operation.DeleteS
 	}
 
 	if r == nil {
-		return s.SendError(ctx, errors.NotFoundError(nil).WithMessage("scanner %s not found", params.RegistrationID))
+		return s.SendError(ctx, errors.NotFoundError(nil).WithMessagef("scanner %s not found", params.RegistrationID))
 	}
 
 	// Immutable registration is not allowed
 	if r.Immutable {
 		format := "registration %s is not allowed to delete as it is immutable: scanner API: delete"
-		return s.SendError(ctx, errors.ForbiddenError(nil).WithMessage(format, r.Name))
+		return s.SendError(ctx, errors.ForbiddenError(nil).WithMessagef(format, r.Name))
 	}
 
 	deleted, err := s.scannerCtl.DeleteRegistration(ctx, r.UUID)
@@ -102,7 +102,7 @@ func (s *scannerAPI) GetScanner(ctx context.Context, params operation.GetScanner
 	}
 
 	if r == nil {
-		return s.SendError(ctx, errors.NotFoundError(nil).WithMessage("scanner %s not found", params.RegistrationID))
+		return s.SendError(ctx, errors.NotFoundError(nil).WithMessagef("scanner %s not found", params.RegistrationID))
 	}
 
 	return operation.NewGetScannerOK().WithPayload(model.NewScannerRegistration(r).ToSwagger(ctx))
@@ -214,13 +214,13 @@ func (s *scannerAPI) UpdateScanner(ctx context.Context, params operation.UpdateS
 	}
 
 	if r == nil {
-		return s.SendError(ctx, errors.NotFoundError(nil).WithMessage("scanner %s not found", params.RegistrationID))
+		return s.SendError(ctx, errors.NotFoundError(nil).WithMessagef("scanner %s not found", params.RegistrationID))
 	}
 
 	// Immutable registration is not allowed
 	if r.Immutable {
 		format := "registration %s is not allowed to update as it is immutable: scanner API: update"
-		return s.SendError(ctx, errors.ForbiddenError(nil).WithMessage(format, r.Name))
+		return s.SendError(ctx, errors.ForbiddenError(nil).WithMessagef(format, r.Name))
 	}
 
 	copyToScannerRegistration(r, params.Registration)

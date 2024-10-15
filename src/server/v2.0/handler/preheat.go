@@ -483,6 +483,7 @@ func convertPolicyToPayload(policy *policy.Schema) (*models.PreheatPolicy, error
 		ProjectID:    policy.ProjectID,
 		ProviderID:   policy.ProviderID,
 		Trigger:      policy.TriggerStr,
+		Scope:        policy.Scope,
 		UpdateTime:   strfmt.DateTime(policy.UpdatedTime),
 	}, nil
 }
@@ -511,6 +512,7 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 		FiltersStr:  model.Filters,
 		TriggerStr:  model.Trigger,
 		Enabled:     model.Enabled,
+		Scope:       model.Scope,
 		CreatedAt:   time.Time(model.CreationTime),
 		UpdatedTime: time.Time(model.UpdateTime),
 	}, nil
@@ -563,6 +565,7 @@ func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel
 
 	return &instanceModel.Instance{
 		AuthData:       string(authData),
+		AuthInfo:       model.AuthInfo,
 		AuthMode:       model.AuthMode,
 		Default:        model.Default,
 		Description:    model.Description,

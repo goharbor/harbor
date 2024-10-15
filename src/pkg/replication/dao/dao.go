@@ -109,7 +109,7 @@ func (d *dao) Update(ctx context.Context, policy *model.Policy, props ...string)
 	}
 
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("replication policy %d not found", policy.ID)
+		return errors.NotFoundError(nil).WithMessagef("replication policy %d not found", policy.ID)
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("replication policy %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("replication policy %d not found", id)
 	}
 	return nil
 }

@@ -385,7 +385,7 @@ func (d *dao) DeleteBlob(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("blob %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("blob %d not found", id)
 	}
 	return nil
 }

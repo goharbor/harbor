@@ -69,7 +69,7 @@ func (i *iDao) UpdateImmutableRule(ctx context.Context, projectID int64, ir *mod
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("immutable %d not found", ir.ID)
+		return errors.NotFoundError(nil).WithMessagef("immutable %d not found", ir.ID)
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func (i *iDao) ToggleImmutableRule(ctx context.Context, id int64, status bool) e
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("immutable %d not found", ir.ID)
+		return errors.NotFoundError(nil).WithMessagef("immutable %d not found", ir.ID)
 	}
 	return nil
 }
@@ -142,7 +142,7 @@ func (i *iDao) DeleteImmutableRule(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("immutable rule %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("immutable rule %d not found", id)
 	}
 	return nil
 }

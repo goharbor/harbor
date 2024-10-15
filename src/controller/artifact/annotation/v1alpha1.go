@@ -106,7 +106,7 @@ func parseV1alpha1Icon(artifact *artifact.Artifact, manifest *v1.Manifest, reg r
 	switch contentType {
 	case GIF, PNG, JPEG:
 	default:
-		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("unsupported content type: %s", contentType)
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("unsupported content type: %s", contentType)
 	}
 	artifact.Icon = iconDigest
 	return nil
