@@ -15,7 +15,6 @@
 package blob
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -44,7 +43,7 @@ func probeBlob(r *http.Request, digest string) error {
 	case models.StatusNone, models.StatusDelete, models.StatusDeleteFailed:
 		if err := blobController.Touch(r.Context(), bb); err != nil {
 			logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
-			return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
+			return errors.Wrapf(err, "the request id is: %s", r.Header.Get(requestid.HeaderXRequestID))
 		}
 	case models.StatusDeleting:
 		now := time.Now().UTC()
@@ -52,12 +51,12 @@ func probeBlob(r *http.Request, digest string) error {
 		if now.Sub(bb.UpdateTime) > time.Duration(config.GetGCTimeWindow())*time.Hour {
 			if err := blob.Ctl.Fail(r.Context(), bb); err != nil {
 				log.Errorf("failed to update blob: %s status to StatusDeleteFailed, error:%v", bb.Digest, err)
-				return errors.Wrapf(err, fmt.Sprintf("the request id is: %s", r.Header.Get(requestid.HeaderXRequestID)))
+				return errors.Wrapf(err, "the request id is: %s", r.Header.Get(requestid.HeaderXRequestID))
 			}
 			// StatusDeleteFailed => StatusNone, and then let the proxy to handle manifest upload
 			return probeBlob(r, digest)
 		}
-		return errors.New(nil).WithMessage(fmt.Sprintf("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID))).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("the asking blob is in GC, mark it as non existing, request id: %s", r.Header.Get(requestid.HeaderXRequestID)).WithCode(errors.NotFoundCode)
 	default:
 		return nil
 	}

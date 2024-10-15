@@ -146,7 +146,7 @@ func (c *controller) GetTask(ctx context.Context, taskID int64) (*task.Task, err
 
 	if len(tasks) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("webhook task %d not found", taskID)
+			WithMessagef("webhook task %d not found", taskID)
 	}
 	return tasks[0], nil
 }

@@ -143,7 +143,7 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		}
 		if len(artifacts) == 0 {
 			return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-				WithMessage("the icon %s not found", digest)
+				WithMessagef("the icon %s not found", digest)
 		}
 		_, iconFile, err = c.regCli.PullBlob(artifacts[0].RepositoryName, digest)
 		if err != nil {

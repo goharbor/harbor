@@ -80,7 +80,7 @@ func (md *metaDAO) Update(ctx context.Context, oidcUser *models.OIDCUser, props 
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("oidc user data with id %d not found", oidcUser.ID)
+		return errors.NotFoundError(nil).WithMessagef("oidc user data with id %d not found", oidcUser.ID)
 	}
 	return nil
 }

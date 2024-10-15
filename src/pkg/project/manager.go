@@ -71,12 +71,12 @@ type manager struct {
 // Create creates project instance
 func (m *manager) Create(ctx context.Context, project *models.Project) (int64, error) {
 	if project.OwnerID <= 0 {
-		return 0, errors.BadRequestError(nil).WithMessage("Owner is missing when creating project %s", project.Name)
+		return 0, errors.BadRequestError(nil).WithMessagef("Owner is missing when creating project %s", project.Name)
 	}
 
 	if utils.IsIllegalLength(project.Name, projectNameMinLen, projectNameMaxLen) {
 		format := "Project name %s is illegal in length. (greater than %d or less than %d)"
-		return 0, errors.BadRequestError(nil).WithMessage(format, project.Name, projectNameMaxLen, projectNameMinLen)
+		return 0, errors.BadRequestError(nil).WithMessagef(format, project.Name, projectNameMaxLen, projectNameMinLen)
 	}
 
 	legal := validProjectName.MatchString(project.Name)
@@ -107,7 +107,7 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 	if ok {
 		// check white space in project name
 		if strings.Contains(name, " ") {
-			return nil, errors.BadRequestError(nil).WithMessage("invalid project name: '%s'", name)
+			return nil, errors.BadRequestError(nil).WithMessagef("invalid project name: '%s'", name)
 		}
 		return m.dao.GetByName(ctx, name)
 	}

@@ -154,7 +154,7 @@ func (w *basicWorker) Start() error {
 	logger.Infof("Basic worker is started")
 
 	// Start the reaper
-	w.knownJobs.Range(func(k interface{}, v interface{}) bool {
+	w.knownJobs.Range(func(k interface{}, _ interface{}) bool {
 		w.reaper.jobTypes = append(w.reaper.jobTypes, k.(string))
 
 		return true
