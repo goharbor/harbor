@@ -100,7 +100,7 @@ export class ListReplicationRuleComponent implements OnInit, OnDestroy {
     paused: boolean = false;
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
-        [false, false, false, false, false, false, false, true, true]
+        [false, false, false, false, false, false, true, true, false]
     );
     @ViewChild('datagrid')
     datagrid: ClrDatagrid;
