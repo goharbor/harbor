@@ -21,7 +21,7 @@ export class JobServiceDashboardHealthCheckService {
         return this._hasManuallyClosed;
     }
 
-    setHealthy(value: boolean): void {
+    setUnHealthy(value: boolean): void {
         this._hasUnhealthyQueue = value;
     }
     setManuallyClosed(value: boolean): void {
