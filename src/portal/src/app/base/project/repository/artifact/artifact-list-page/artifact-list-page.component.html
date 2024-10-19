@@ -1,7 +1,9 @@
 <div>
     <div class="breadcrumb">
-        <span class="back-icon"><</span>
-        <a (click)="goProBack()">{{ 'SIDE_NAV.PROJECTS' | translate }}</a>
+        <ng-container *ngIf="hasSignedIn()">
+            <span class="back-icon"><</span>
+            <a (click)="goProBack()">{{ 'SIDE_NAV.PROJECTS' | translate }}</a>
+        </ng-container>
         <span class="back-icon"><</span>
         <a (click)="watchGoBackEvt(projectId)">{{ projectName }}</a>
         <span *ngIf="depth"
