@@ -1,0 +1,369 @@
+name: Preview (build)
+
+on:
+  pull_request:
+    types: [opened,reopened,synchronize,closed]
+    paths-ignore:
+    - 'docs/'
+    - '.md'
+    - 'tests/'
+    - '!tests/.sh'
+    - '!tests/apitests/'
+    - '!tests/ci/'
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+  actions: write
+
+jobs:
+  # Job to build-push harbor-core image
+  build-harbor-core:
+    name: Build and Push `harbor-core` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Make versions dir
+        run: |
+          make compile
+      - name: Make harbor_core
+        run: |
+          make compile_core
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_CORE=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_CORE }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/core/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+# Job to build-push harbor-portal image
+  build-harbor-portal:
+    name: Build and Push `harbor-portal` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_PORTAL=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_PORTAL }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/portal/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+      - name: Echo image
+        run: echo ${{ steps.meta.outputs.images }}
+
+  # Job to build-push harbor-jobservice image
+  build-harbor-jobservice:
+    name: Build and Push `harbor-jobservice` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Make harbor_jobservice file
+        run: |
+          make compile
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_JS=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_JS }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/jobservice/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+  # Job to build-push harbor-registry image
+  build-harbor-registry:
+    name: Build and Push `harbor-registry` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Make registry file
+        run: |
+            make build -e BUILDTARGET="_build_registry"
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_REG=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_REG }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/registry/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+  # Job to build-push harbor-registryctl image
+  build-harbor-registryctl:
+    name: Build and Push `harbor-registryctl` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Make registry file
+        run: |
+            make build -e BUILDTARGET="_build_registry"
+      - name: Compile registryctl file
+        run: |
+            make compile_registryctl
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_REGCTL=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_REGCTL }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/registryctl/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+
+  # Job to build-push harbor-db image
+  build-harbor-db:
+    name: Build and Push `harbor-db` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Build DB
+        run: |
+          make build -e BUILDTARGET="_build_db"
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_DB=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_DB }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/db/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+  # Job to build-push harbor-redis image
+  build-harbor-redis:
+    name: Build and Push `harbor-redis` Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+      - name: Build DB
+        run: |
+          make build -e BUILDTARGET="_build_redis"
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_RDS=$(uuidgen)" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+        # An anonymous, emphemeral registry built on ttl.sh
+          images: registry.uffizzi.com/${{ env.UUID_RDS }}
+          tags: type=raw,value=60d
+      - name: Build and Push Image to Uffizzi Ephemeral Registry
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./make/photon/redis/Dockerfile
+          context: .
+          build-args: |
+            harbor_base_image_version=dev
+            harbor_base_namespace=goharbor
+            npm_registry=https://registry.npmjs.org
+  # Render values file
+  render-values:
+      name: Render values file
+      needs:
+      - build-harbor-core
+      - build-harbor-portal
+      - build-harbor-jobservice
+      - build-harbor-registry
+      - build-harbor-registryctl
+      - build-harbor-db
+      - build-harbor-redis
+      runs-on: ubuntu-latest
+      steps:
+        - name: Export values from needs
+          id: yq
+          run: |
+              export REPO_core=$(echo ${{ needs.build-harbor-core.outputs.tags }} | cut -f1 -d":")
+              export REPO_portal=$(echo ${{ needs.build-harbor-portal.outputs.tags }} | cut -f1 -d":")
+              export REPO_jobservice=$(echo ${{ needs.build-harbor-jobservice.outputs.tags }} | cut -f1 -d":")
+              export REPO_registry=$(echo ${{ needs.build-harbor-registry.outputs.tags }} | cut -f1 -d":")
+              export REPO_registryctl=$(echo ${{ needs.build-harbor-registryctl.outputs.tags }} | cut -f1 -d":")
+              export REPO_db=$(echo ${{ needs.build-harbor-db.outputs.tags }} | cut -f1 -d":")
+              export REPO_redis=$(echo ${{ needs.build-harbor-redis.outputs.tags }} | cut -f1 -d":")
+              touch values.yaml
+              yq eval ".expose.tls.certSource = \"none\"" -i values.yaml
+              yq eval ".core.image.repository = \"$REPO_core\"" -i values.yaml
+              yq eval ".core.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".portal.image.repository = \"$REPO_portal\"" -i values.yaml
+              yq eval ".portal.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".jobservice.image.repository = \"$REPO_jobservice\"" -i values.yaml
+              yq eval ".jobservice.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".registry.registry.image.repository = \"$REPO_registry\"" -i values.yaml
+              yq eval ".registry.registry.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".registry.controller.image.repository |= \"$REPO_registryctl\"" -i values.yaml
+              yq eval ".registry.controller.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".database.internal.image.repository = \"$REPO_db\"" -i values.yaml
+              yq eval ".database.internal.image.tag |= \"60d\"" -i values.yaml
+              yq eval ".redis.internal.image.repository = \"$REPO_redis\"" -i values.yaml
+              yq eval ".redis.internal.image.tag |= \"60d\"" -i values.yaml
+              
+        - name: Upload values as artifact
+          uses: actions/upload-artifact@v3
+          with:
+              name: preview-spec
+              path: values.yaml
+              retention-days: 2
+
+        - name: Upload PR Event as Artifact
+          uses: actions/upload-artifact@v3
+          with:
+              name: preview-spec
+              path: ${{ github.event_path }}
+              retention-days: 2
+
+  uffizzi-cluster-delete:
+      if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Delete Virtual Cluster
+          uses: UffizziCloud/cluster-action@main
+          with:
+              action: delete
+              cluster-name: pr-${{ github.event.pull_request.number }}
+        - name: Upload PR Event as Artifact
+          uses: actions/upload-artifact@v3
+          with:
+              name: preview-spec
+              path: ${{ github.event_path }}
+              retention-days: 2
