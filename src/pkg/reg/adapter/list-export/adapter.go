@@ -4,18 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	regadapter "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
-	"github.com/google/go-containerregistry/pkg/crane"
-	"io"
-	"net/http"
-	"net/url"
-	"path"
-	"time"
 )
 
 var (
@@ -25,6 +23,7 @@ var (
 var ErrNotImplemented = errors.New("not implemented")
 
 type Result struct {
+	Group     string     `json:"group"`
 	Registry  string     `json:"registry"`
 	Artifacts []Artifact `json:"artifacts"`
 }
@@ -45,8 +44,7 @@ func init() {
 	}
 }
 
-type factory struct {
-}
+type factory struct{}
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (regadapter.Adapter, error) {
@@ -63,7 +61,6 @@ type adapter struct {
 }
 
 func (a adapter) RoundTrip(request *http.Request) (*http.Response, error) {
-
 	u, err := url.Parse(config.InternalCoreURL())
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse internal core url: %v", err)
@@ -85,11 +82,11 @@ func (a adapter) Info() (*model.RegistryInfo, error) {
 }
 
 func (a adapter) PrepareForPush(resources []*model.Resource) error {
-
 	var (
-		artifacts       []Artifact
-		registry        *model.Registry
-		destinationRepo string
+		artifacts      []Artifact
+		registry       *model.Registry
+		destinationURL string
+		groupName      string
 	)
 
 	for _, r := range resources {
@@ -102,15 +99,32 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 		if r.Registry == nil {
 			continue
 		}
+		if r.ExtendedInfo == nil {
+			return fmt.Errorf("extended_info map is nil")
+		}
 
 		if registry == nil {
 			registry = r.Registry
 		}
+		if destinationURL == "" {
+			destURL, ok := r.ExtendedInfo["destinationURL"].(string)
+			if ok {
+				destinationURL = destURL
+			} else {
+				return fmt.Errorf("destination_url not a string or missing")
+			}
+		}
+
+		if groupName == "" {
+			grp, ok := r.ExtendedInfo["groupName"].(string)
+			if ok {
+				groupName = grp
+			} else {
+				return fmt.Errorf("groupName not a string or missing")
+			}
+		}
 
 		for _, at := range r.Metadata.Artifacts {
-			if destinationRepo == "" {
-				destinationRepo = r.Metadata.Repository.Name
-			}
 			artifacts = append(artifacts, Artifact{
 				Repository: r.Metadata.Repository.Name,
 				Deleted:    r.Deleted,
@@ -127,6 +141,7 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 	}
 
 	result := &Result{
+		Group:     groupName,
 		Registry:  registry.URL,
 		Artifacts: artifacts,
 	}
@@ -136,37 +151,30 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 		return errors.Wrap(err, "failed to marshal result")
 	}
 
-	img, err := crane.Image(map[string][]byte{
-		"artifacts.json": data,
-	})
+	fmt.Println("kumar is here \n \n\n kumar")
+	fmt.Printf("json %v:  \n \n\n kumar", string(data))
+
+	// Create a POST request
+	req, err := http.NewRequest("POST", destinationURL, bytes.NewBuffer(data))
 	if err != nil {
-		return fmt.Errorf("image create failed: %v", err)
+		fmt.Println("Error creating request:", err)
+		return nil
 	}
 
-	destinationRepo = fmt.Sprintf("%s/%s", path.Dir(destinationRepo), "state")
-	//
+	// Set the content type header
+	req.Header.Set("Content-Type", "application/json")
 
-	err = crane.Push(img, destinationRepo, crane.WithTransport(a))
+	// Send the request using http.Client
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("push image failed: %v", err)
-	}
-
-	err = crane.Tag(destinationRepo, fmt.Sprintf("%d", time.Now().Unix()), crane.WithTransport(a))
-	if err != nil {
-		return fmt.Errorf("tag image failed: %v", err)
-	}
-
-	err = crane.Tag(destinationRepo, "latest", crane.WithTransport(a))
-	if err != nil {
-		return fmt.Errorf("tag image failed: %v", err)
-	}
-
-	responseBody := bytes.NewBuffer(data)
-	resp, err := http.Post(registry.URL, "application/json", responseBody)
-	if err != nil {
-		return errors.Wrap(err, "failed to post result")
+		fmt.Println("Error sending request:", err)
+		return nil
 	}
 	defer resp.Body.Close()
+
+	// Print the response status
+	fmt.Println("Response Status:", resp.Status)
 
 	return nil
 }
@@ -232,7 +240,6 @@ func (a adapter) ListTags(repository string) (tags []string, err error) {
 }
 
 func newAdapter(_ *model.Registry) (regadapter.Adapter, error) {
-
 	return &adapter{
 		httpClient: &http.Client{},
 	}, nil
