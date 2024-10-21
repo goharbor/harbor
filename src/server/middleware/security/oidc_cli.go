@@ -59,7 +59,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
+	if strings.HasPrefix(username, config.RobotPrefix(ctx)) || username == "admin" {
 		return nil
 	}
 
