@@ -1,214 +1,213 @@
 $input-width: 12rem;
 
-
 .subtitle {
-  font-size: 14px;
-  font-weight: 600;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .clr-form-horizontal {
-  .clr-form-control {
-    & >.clr-control-label {
-      width: 15rem;
+    .clr-form-control {
+        & > .clr-control-label {
+            width: 15rem;
+        }
     }
-  }
 
-  .flex-direction-column {
-    flex-direction: column;
-  }
+    .flex-direction-column {
+        flex-direction: column;
+    }
 }
 
 .bottom-line {
-  display: flex;
-  flex-direction: column-reverse;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
 .expire-data {
-  min-width: 12.5rem;
-  margin-top: -1rem;
+    min-width: 12.5rem;
+    margin-top: -1rem;
 }
 
 .position-relative {
-  position: relative;
+    position: relative;
 }
 
 .pl-05 {
-  padding-left: 0.5rem;
+    padding-left: 0.5rem;
 }
 
 .mt-1 {
-  margin-top: 1rem;
+    margin-top: 1rem;
 }
 
 .d-f {
-  display: flex;
+    display: flex;
 }
 
 .font-size-13 {
-  font-size: 13px;
+    font-size: 13px;
 }
 
 .mt-05 {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .title {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .margin-top-4 {
-  margin-top: 4px;
+    margin-top: 4px;
 }
 
 .allowlist-window {
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 12px;
-  height: 224px;
-  width: 222px;
-  overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 12px;
+    height: 224px;
+    width: 222px;
+    overflow-y: auto;
 
-  li {
-    height: 24px;
-    line-height: 24px;
-    list-style-type: none;
-  }
+    li {
+        height: 24px;
+        line-height: 24px;
+        list-style-type: none;
+    }
 }
 
 .width-90per {
-  width: 90%;
+    width: 90%;
 }
 
 .none {
-  color: #ccc;
+    color: #ccc;
 }
 
 .color-0079bb {
-  color: #0079bb;
+    color: #0079bb;
 }
 
 .padding-top-8 {
-  padding-top: 8px;
+    padding-top: 8px;
 }
 
 .padding-left-80 {
-  padding-left: 80px;
+    padding-left: 80px;
 }
 
 .add-modal {
-  position: absolute;
-  padding: 0 8px;
-  background-color: rgb(238 238 238);
+    position: absolute;
+    padding: 0 8px;
+    background-color: rgb(238 238 238);
 
-  input {
-    width: 100%;
-    border: 1px solid;
-  }
+    input {
+        width: 100%;
+        border: 1px solid;
+    }
 
-  button {
-    float: right;
-  }
+    button {
+        float: right;
+    }
 }
 
-.hand{
-  cursor: pointer;
-  margin: 0;
+.hand {
+    cursor: pointer;
+    margin: 0;
 }
 
 .cert-down {
-  margin-top: 0.15rem;
+    margin-top: 0.15rem;
 }
 
 .info-tips-icon {
-  color: grey;
+    color: grey;
 }
 
 .info-tips-icon:hover {
-  color: #007CBB;
+    color: #007cbb;
 }
 
 .replication-config {
-  margin-top: 0;
-  margin-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .replication-text {
-  font-size: 14px;
-  font-weight: 600;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .replication-tooltip {
-  top: -8px;
+    top: -8px;
 }
 
 .margin-top-3px {
-  margin-top: 3px;
+    margin-top: 3px;
 }
 
 .center {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .clr-input {
-  width: $input-width;
+    width: $input-width;
 }
 
 .pro-creation {
-  width: $input-width;
+    width: $input-width;
 }
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  appearance: none;
-  margin: 0;
+    appearance: none;
+    margin: 0;
 }
 
 /* Firefox */
-input[type=number] {
-  appearance: textfield;
+input[type='number'] {
+    appearance: textfield;
 }
 
 .clr-textarea {
-  max-width: none;
-  width: $input-width;
+    max-width: none;
+    width: $input-width;
 }
 
 .flex-baseline {
-  display: flex;
-  align-items: baseline;
+    display: flex;
+    align-items: baseline;
 }
 
 $message-type-width: 12rem;
 
 .message-type {
-  margin-left: 2rem;
-  width: $message-type-width;
+    margin-left: 2rem;
+    width: $message-type-width;
 }
 
 .message-label {
-  margin-right: 0.25rem;
+    margin-right: 0.25rem;
 }
 
 .duration {
-  width: $input-width;
-  display: flex;
-  justify-content: right;
+    width: $input-width;
+    display: flex;
+    justify-content: right;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
-:host::ng-deep clr-date-container{
-  margin-top: 0;
-  margin-left: 0.5rem;
+:host::ng-deep clr-date-container {
+    margin-top: 0;
+    margin-left: 0.5rem;
 }
 
 .message-select {
-  width: 6.75rem;
+    width: 6.75rem;
 }
 
 .date {
-  width: 6rem;
+    width: 6rem;
 }

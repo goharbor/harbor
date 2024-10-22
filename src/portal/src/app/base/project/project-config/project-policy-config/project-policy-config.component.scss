@@ -1,101 +1,101 @@
 #severity-blk div {
-  display: inline-block;
+    display: inline-block;
 }
 
 .select {
-  width: 120px;
+    width: 120px;
 }
 
 .margin-top-4 {
-  margin-top: 4px;
+    margin-top: 4px;
 }
 
 .allowlist-window {
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 12px;
-  height: 224px;
-  width: 270px;
-  overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 12px;
+    height: 224px;
+    width: 270px;
+    overflow-y: auto;
 
-  li {
-    height: 24px;
-    line-height: 24px;
-    list-style-type: none;
-  }
+    li {
+        height: 24px;
+        line-height: 24px;
+        list-style-type: none;
+    }
 }
 
 .width-90per {
-  width: 90%;
+    width: 90%;
 }
 
 .none {
-  color: #ccc;
+    color: #ccc;
 }
 
 .underline {
-  border-bottom: 1px solid;
+    border-bottom: 1px solid;
 }
 
 .color-0079bb {
-  color: #0079bb;
+    color: #0079bb;
 }
 
 .padding-top-16 {
-  padding-top: 16px;
+    padding-top: 16px;
 }
 
 .position-relative {
-  position: relative;
+    position: relative;
 }
 
 .add-modal {
-  position: absolute;
-  padding: 0 8px;
+    position: absolute;
+    padding: 0 8px;
 
-  .flex-direction-column {
-    flex-direction: column;
-  }
+    .flex-direction-column {
+        flex-direction: column;
+    }
 
-  input {
-    width: 100%;
-    border: 1px solid;
-  }
+    input {
+        width: 100%;
+        border: 1px solid;
+    }
 
-  button {
-    float: right;
-  }
+    button {
+        float: right;
+    }
 }
 
 .hand {
-  cursor: pointer;
-  margin: 0;
+    cursor: pointer;
+    margin: 0;
 }
 
 .config-subtext {
-  font-size: 0.55rem;
-  line-height: 1.2rem;
-  font-weight: 300;
+    font-size: 0.55rem;
+    line-height: 1.2rem;
+    font-weight: 300;
 }
 
 .col-flex-grow-0 {
-  flex-grow: 0;
+    flex-grow: 0;
 }
 
 .expire-data {
-  min-width: 12.5rem;
-  margin-top: -1rem;
+    min-width: 12.5rem;
+    margin-top: -1rem;
 }
 
 .bottom-line {
-  display: flex;
-  flex-direction: column-reverse;
-  font-size: 13px;
-  color: #000;
+    display: flex;
+    flex-direction: column-reverse;
+    font-size: 13px;
+    color: #000;
 }
 
 .margin-top-05 {
-  margin-top: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .margin-left-05 {
