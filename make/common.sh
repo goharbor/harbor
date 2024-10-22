@@ -103,7 +103,7 @@ function check_docker {
 }
 
 function check_dockercompose {
-	if [! docker compose version] &> /dev/null || [! docker-compose --version] &> /dev/null
+	if ! [docker compose version &> /dev/null] || ! [docker-compose --version &> /dev/null]
 	then
 		error "Need to install docker-compose(1.18.0+) or a docker-compose-plugin (https://docs.docker.com/compose/)by yourself first and run this script again."
 		exit 1
