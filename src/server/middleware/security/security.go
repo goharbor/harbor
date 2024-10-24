@@ -27,9 +27,8 @@ import (
 var (
 	generators = []generator{
 		&secret{},
-		&oidcCli{},
+		&oidcCliOrAPI{},
 		&v2Token{},
-		&idToken{},
 		&authProxy{},
 		&robot{},
 		&basicAuth{},
