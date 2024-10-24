@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "Count quota",
         "STORAGE_QUOTA": "Project quota limits",
@@ -254,7 +257,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR, and JFrog Artifactory registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, and JFrog Artifactory registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "NO_PROJECT": "We couldn't find any projects"
@@ -423,7 +426,12 @@
         "SELECT_PERMISSIONS": "Select Permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
         "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-        "SYSTEM_PERMISSIONS": "System Permissions"
+        "SYSTEM_PERMISSIONS": "System Permissions",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -928,7 +936,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
+          "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
+          "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
+          "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
 
         },
         "UAA": {
@@ -1626,6 +1636,9 @@
         "TRIGGER": "Trigger",
         "CREATED": "Creation Time",
         "DESCRIPTION": "Description",
+        "SCOPE": "Scope",
+        "SCOPE_SINGLE_PEER": "Single Peer",
+        "SCOPE_ALL_PEERS": "All Peers",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to deactivate policy {{name}}?",

@@ -102,8 +102,9 @@ type AdditionLink struct {
 
 // Option is used to specify the properties returned when listing/getting artifacts
 type Option struct {
-	WithTag       bool
-	TagOption     *tag.Option // only works when WithTag is set to true
-	WithLabel     bool
-	WithAccessory bool
+	WithTag            bool
+	TagOption          *tag.Option // only works when WithTag is set to true
+	WithLabel          bool
+	WithAccessory      bool
+	LatestInRepository bool
 }

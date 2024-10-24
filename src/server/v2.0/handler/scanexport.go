@@ -164,7 +164,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	execution, err := se.scanDataExportCtl.GetExecution(ctx, params.ExecutionID)
 	if err != nil {
 		if notFound := orm.AsNotFoundError(err, "execution with id: %d not found", params.ExecutionID); notFound != nil {
-			return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+			return middleware.ResponderFunc(func(writer http.ResponseWriter, _ runtime.Producer) {
 				writer.WriteHeader(http.StatusNotFound)
 			})
 		}
@@ -183,14 +183,14 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	}
 
 	if secContext.GetUsername() != execution.UserName {
-		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+		return middleware.ResponderFunc(func(writer http.ResponseWriter, _ runtime.Producer) {
 			writer.WriteHeader(http.StatusForbidden)
 		})
 	}
 
 	// check if the CSV artifact for the execution exists
 	if !execution.FilePresent {
-		return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+		return middleware.ResponderFunc(func(writer http.ResponseWriter, _ runtime.Producer) {
 			writer.WriteHeader(http.StatusNotFound)
 		})
 	}
@@ -202,7 +202,7 @@ func (se *scanDataExportAPI) DownloadScanData(ctx context.Context, params operat
 	}
 	log.Infof("reading data from file : %s", repositoryName)
 
-	return middleware.ResponderFunc(func(writer http.ResponseWriter, producer runtime.Producer) {
+	return middleware.ResponderFunc(func(writer http.ResponseWriter, _ runtime.Producer) {
 		defer se.cleanUpArtifact(ctx, repositoryName, execution.ExportDataDigest, params.ExecutionID, file)
 
 		writer.Header().Set("Content-Type", "text/csv")
