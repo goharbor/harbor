@@ -63,6 +63,10 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
+	if username == "admin" {
+		return nil
+	}
+
 	info, err := oidc.VerifySecret(ctx, username, secret)
 	if err != nil {
 		logger.Errorf("failed to verify secret, username: %s, error: %v", username, err)
