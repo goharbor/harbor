@@ -1,23 +1,21 @@
-<span class="back-icon"><</span>
-<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">{{
-    'PROJECT_DETAIL.PROJECTS' | translate
-}}</a>
-<ng-container *ngIf="hasSignedIn && isWebhookTaskListPage()">
+<ng-container *ngIf="hasSignedIn">
+    <span class="back-icon"><</span>
+    <a (click)="backToProject()" class="backStyle">{{
+        'PROJECT_DETAIL.PROJECTS' | translate
+    }}</a>
+</ng-container>
+<ng-container *ngIf="isWebhookTaskListPage()">
     <span class="back-icon"><</span>
     <a (click)="backToWebhook()" class="backStyle">{{
         'PROJECT_DETAIL.WEBHOOKS' | translate
     }}</a>
 </ng-container>
-<ng-container *ngIf="hasSignedIn && isP2pPreheatTaskListPage()">
+<ng-container *ngIf="isP2pPreheatTaskListPage()">
     <span class="back-icon"><</span>
     <a (click)="backToP2pPreheat()" class="backStyle">{{
         'P2P_PROVIDER.P2P_PROVIDER' | translate
     }}</a>
 </ng-container>
-
-<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']" class="backStyle">
-    {{ 'SEARCH.BACK' | translate }}</a
->
 <div class="clr-row">
     <div class="clr-col-5">
         <h1 class="custom-h2 center" sub-header-title>

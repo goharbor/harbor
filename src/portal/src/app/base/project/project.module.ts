@@ -25,7 +25,6 @@ const routes: Routes = [
         children: [
             {
                 path: 'summary',
-                canActivate: [MemberPermissionGuard],
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.PROJECT.KEY,
@@ -39,7 +38,6 @@ const routes: Routes = [
             },
             {
                 path: 'repositories',
-                canActivate: [MemberPermissionGuard],
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.REPOSITORY.KEY,
@@ -79,7 +77,6 @@ const routes: Routes = [
             },
             {
                 path: 'labels',
-                canActivate: [MemberPermissionGuard],
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.LABEL.KEY,

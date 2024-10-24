@@ -12,10 +12,6 @@ import {
     dbEncodeURIComponent,
     formatSize,
 } from '../../../../../../../../shared/units/utils';
-import {
-    UN_LOGGED_PARAM,
-    YES,
-} from '../../../../../../../../account/sign-in/sign-in.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { ArtifactService as NewArtifactService } from 'ng-swagger-gen/services/artifact.service';
@@ -110,22 +106,12 @@ export class SubAccessoriesComponent
 
     goIntoArtifactSummaryPage(accessory: Accessory): void {
         const relativeRouterLink: string[] = ['artifacts', accessory.digest];
-        if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
-            this.router.navigate(relativeRouterLink, {
-                relativeTo: this.activatedRoute,
-                queryParams: {
-                    [UN_LOGGED_PARAM]: YES,
-                    [AccessoryQueryParams.ACCESSORY_TYPE]: accessory.type,
-                },
-            });
-        } else {
-            this.router.navigate(relativeRouterLink, {
-                relativeTo: this.activatedRoute,
-                queryParams: {
-                    [AccessoryQueryParams.ACCESSORY_TYPE]: accessory.type,
-                },
-            });
-        }
+        this.router.navigate(relativeRouterLink, {
+            relativeTo: this.activatedRoute,
+            queryParams: {
+                [AccessoryQueryParams.ACCESSORY_TYPE]: accessory.type,
+            },
+        });
     }
 
     delete(a: Accessory) {
