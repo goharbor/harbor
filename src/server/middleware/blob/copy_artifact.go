@@ -33,7 +33,7 @@ func isSuccess(statusCode int) bool {
 
 // CopyArtifactMiddleware middleware to sync the missing associations for the project
 func CopyArtifactMiddleware() func(http.Handler) http.Handler {
-	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+	return middleware.AfterResponse(func(_ http.ResponseWriter, r *http.Request, statusCode int) error {
 		if !isSuccess(statusCode) {
 			return nil
 		}
@@ -49,7 +49,7 @@ func CopyArtifactMiddleware() func(http.Handler) http.Handler {
 		art, err := artifactController.GetByReference(ctx, repository, reference, &artifact.Option{WithAccessory: true})
 		if errors.IsNotFoundErr(err) {
 			// artifact not found, discontinue the API request
-			return errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
+			return errors.BadRequestError(nil).WithMessagef("artifact %s not found", from)
 		} else if err != nil {
 			logger.Errorf("get artifact %s failed, error: %v", from, err)
 			return err

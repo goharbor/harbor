@@ -150,7 +150,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("notificationPolicy %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("notificationPolicy %d not found", id)
 	}
 	return nil
 }

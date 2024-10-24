@@ -713,7 +713,7 @@ func (gc *GarbageCollector) markDeleteFailed(ctx job.Context, blob *blobModels.B
 		return errors.Wrapf(err, "failed to mark gc candidate delete failed: %s, %s", blob.Digest, blob.Status)
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage("no blob found to mark delete failed, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("no blob found to mark delete failed, ID:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

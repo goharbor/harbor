@@ -146,7 +146,7 @@ func (d *dao) GetByDigest(ctx context.Context, repository, digest string) (*Arti
 	}
 	if len(artifacts) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("artifact %s@%s not found", repository, digest)
+			WithMessagef("artifact %s@%s not found", repository, digest)
 	}
 	return artifacts[0], nil
 }
@@ -181,7 +181,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("artifact %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("artifact %d not found", id)
 	}
 
 	return nil
@@ -197,7 +197,7 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("artifact %d not found", artifact.ID)
+		return errors.NotFoundError(nil).WithMessagef("artifact %d not found", artifact.ID)
 	}
 	return nil
 }
@@ -261,7 +261,7 @@ func (d *dao) DeleteReference(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("artifact reference %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("artifact reference %d not found", id)
 	}
 	return nil
 }

@@ -140,7 +140,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestResourcesExceeded() {
 		var errs quota.Errors
 		errs = errs.Add(quota.NewResourceOverflowError(types.ResourceStorage, 100, 100, 110))
 
-		err := errors.DeniedError(errs).WithMessage("Quota exceeded when processing the request of %v", errs)
+		err := errors.DeniedError(errs).WithMessagef("Quota exceeded when processing the request of %v", errs)
 		mock.OnAnything(suite.quotaController, "Request").Return(err).Once()
 
 		req := suite.makeRequest(100)

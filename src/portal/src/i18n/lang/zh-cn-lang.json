@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "COUNT_QUOTA": "存储数量",
         "STORAGE_QUOTA": "项目配额限制",
         "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
@@ -253,7 +256,7 @@
         "QUOTA_UNLIMIT_TIP": "项目可以使用的最大逻辑空间。如果您想要不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址",
         "NO_PROJECT": "未发现任何项目"
@@ -421,7 +424,12 @@
         "SELECT_PERMISSIONS": "选择权限",
         "SELECT_SYSTEM_PERMISSIONS": "选择系统权限",
         "SELECT_PROJECT_PERMISSIONS": "选择项目权限",
-        "SYSTEM_PERMISSIONS": "系统权限"
+        "SYSTEM_PERMISSIONS": "系统权限",
+        "ROBOT": "机器人账户",
+        "USER": "用户",
+        "LDAPUSER": "LDAP 用户",
+        "GROUP": "用户组",
+        "MEMBER": "项目成员"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",

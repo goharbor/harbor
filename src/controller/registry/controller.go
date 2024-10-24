@@ -136,7 +136,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by replication policies, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by replication policies, cannot delete it", id)
 	}
 	// referenced by replication policy as destination registry
 	count, err = c.repMgr.Count(ctx, &q.Query{
@@ -148,7 +148,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by replication policies, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by replication policies, cannot delete it", id)
 	}
 	// referenced by proxy cache project
 	count, err = c.proMgr.Count(ctx, &q.Query{
@@ -160,7 +160,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by proxy cache project, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by proxy cache project, cannot delete it", id)
 	}
 
 	return c.regMgr.Delete(ctx, id)

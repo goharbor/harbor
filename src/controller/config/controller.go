@@ -182,11 +182,11 @@ func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error 
 			// the cfgs is unmarshal from json string, the number type will be float64
 			if vf, ok := v.(float64); ok {
 				if vf <= 0 {
-					return errors.BadRequestError(nil).WithMessage("the %s value must be positive", c)
+					return errors.BadRequestError(nil).WithMessagef("the %s value must be positive", c)
 				}
 
 				if int64(vf) > maxValue {
-					return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("the %s value is over the limit value: %d", c, maxValue))
+					return errors.BadRequestError(nil).WithMessagef("the %s value is over the limit value: %d", c, maxValue)
 				}
 			}
 		}

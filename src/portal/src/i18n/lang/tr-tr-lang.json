@@ -246,6 +246,9 @@
         "TOGGLED_SUCCESS": "Proje başarıyla değiştirildi.",
         "FAILED_TO_DELETE_PROJECT": "Proje havuzları veya çoğaltma kurallarını içeriyor veya helm tabloları silinemiyor.",
         "INLINE_HELP_PUBLIC": "Bir proje herkese açık olarak ayarlandığında, herkes bu proje altındaki depoları okuma iznine sahiptir ve kullanıcının bu proje altındaki imajları çekmeden önce \"docker login\" çalıştırması gerekmez.",
+        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
         "COUNT_QUOTA": "Kota",
         "STORAGE_QUOTA": "Project quota limits",
@@ -254,7 +257,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Bu kotayı sınırsız istiyorsanız, lütfen -1 girin.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "NO_PROJECT": "We couldn't find any projects"
@@ -423,7 +426,12 @@
         "SELECT_PERMISSIONS": "Select Permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
         "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-        "SYSTEM_PERMISSIONS": "System Permissions"
+        "SYSTEM_PERMISSIONS": "System Permissions",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",

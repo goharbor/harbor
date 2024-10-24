@@ -307,7 +307,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 	}
 	if len(tags) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("artifact %s:%s not found", repository, tag)
+			WithMessagef("artifact %s:%s not found", repository, tag)
 	}
 	return c.Get(ctx, tags[0].ArtifactID, option)
 }

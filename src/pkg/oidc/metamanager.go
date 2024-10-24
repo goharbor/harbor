@@ -60,7 +60,7 @@ func (m *metaManager) GetBySubIss(ctx context.Context, sub, iss string) (*models
 		return nil, err
 	}
 	if len(l) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("oidc info for user with issuer %s, subject %s not found", iss, sub)
+		return nil, errors.NotFoundError(nil).WithMessagef("oidc info for user with issuer %s, subject %s not found", iss, sub)
 	}
 	if len(l) > 1 {
 		logger.Warningf("Multiple oidc info records found for issuer %s, subject %s", iss, sub)
@@ -79,7 +79,7 @@ func (m *metaManager) GetByUserID(ctx context.Context, uid int) (*models.OIDCUse
 		return nil, err
 	}
 	if len(l) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("oidc info for user %d not found", uid)
+		return nil, errors.NotFoundError(nil).WithMessagef("oidc info for user %d not found", uid)
 	}
 	if len(l) > 1 {
 		logger.Warningf("%d records of oidc user Info found for user %d", len(l), uid)
