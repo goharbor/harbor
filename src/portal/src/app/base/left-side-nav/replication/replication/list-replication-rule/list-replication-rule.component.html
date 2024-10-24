@@ -121,19 +121,19 @@
                 {{ 'REPLICATION.DES_REPO_FLATTENING' | translate }}
             </ng-template>
         </clr-dg-column>
-        <clr-dg-column>
-            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
-                {{ 'REPLICATION.REPLICATION_TRIGGER' | translate }}
-            </ng-template></clr-dg-column
-        >
         <clr-dg-column [clrDgSortBy]="'speed'">
-            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
+            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[6] }">
                 {{ 'REPLICATION.BANDWIDTH' | translate }}
             </ng-template>
         </clr-dg-column>
         <clr-dg-column [clrDgField]="'description'">
-            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[7] }">
                 {{ 'REPLICATION.DESCRIPTION' | translate }}
+            </ng-template>
+        </clr-dg-column>
+        <clr-dg-column>
+            <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[8] }">
+                {{ 'REPLICATION.REPLICATION_TRIGGER' | translate }}
             </ng-template>
         </clr-dg-column>
         <clr-dg-placeholder>{{
