@@ -180,20 +180,17 @@ func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Para
 }
 
 func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, fileName string) error {
-	csvFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	systemContext := ctx.SystemContext()
-	defer csvFile.Close()
-
 	logger := ctx.GetLogger()
+	csvFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		logger.Errorf("Failed to create CSV export file %s. Error : %v", fileName, err)
 		return err
 	}
+	defer csvFile.Close()
+
 	logger.Infof("Created CSV export file %s", csvFile.Name())
 
+	systemContext := ctx.SystemContext()
 	var exportParams export.Params
 	var artIDGroups [][]int64
 
@@ -204,24 +201,24 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 			return err
 		}
 
-		projectIds := filterCriteria.Projects
-		if len(projectIds) == 0 {
+		projectIDs := filterCriteria.Projects
+		if len(projectIDs) == 0 {
 			return nil
 		}
 
 		// extract the repository ids if any repositories have been specified
-		repoIds, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIds)
+		repoIDs, err := sde.filterProcessor.ProcessRepositoryFilter(systemContext, filterCriteria.Repositories, projectIDs)
 		if err != nil {
 			return err
 		}
 
-		if len(repoIds) == 0 {
+		if len(repoIDs) == 0 {
 			logger.Infof("No repositories found with specified names: %v", filterCriteria.Repositories)
 			return nil
 		}
 
 		// filter artifacts by tags
-		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIds)
+		arts, err := sde.filterProcessor.ProcessTagFilter(systemContext, filterCriteria.Tags, repoIDs)
 		if err != nil {
 			return err
 		}

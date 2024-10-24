@@ -52,7 +52,7 @@ func (m *manifestV1Processor) AbstractMetadata(_ context.Context, artifact *arti
 
 func (m *manifestV1Processor) AbstractAddition(_ context.Context, _ *artifact.Artifact, addition string) (*processor.Addition, error) {
 	return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-		WithMessage("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
+		WithMessagef("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
 }
 
 func (m *manifestV1Processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {

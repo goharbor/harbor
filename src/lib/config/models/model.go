@@ -94,6 +94,7 @@ type GroupConf struct {
 	SearchScope         int    `json:"ldap_group_search_scope"`
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
+	AttachParallel      bool   `json:"ldap_group_attach_parallel,omitempty"`
 }
 
 type GDPRSetting struct {

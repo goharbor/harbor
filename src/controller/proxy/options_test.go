@@ -12,6 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scheduler
+package proxy
 
-//go:generate mockery --name DAO --output . --outpkg scheduler --filename mock_dao_test.go --structname mockDAO --inpackage
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewOptions(t *testing.T) {
+	// test default options
+	o := NewOptions()
+	assert.Equal(t, int32(0), o.Speed)
+
+	// test with options
+	// with speed
+	withSpeed := WithSpeed(1024)
+	o = NewOptions(withSpeed)
+	assert.Equal(t, int32(1024), o.Speed)
+}

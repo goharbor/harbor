@@ -1,6 +1,7 @@
 export class Project {
     project_id: number;
     owner_id?: number;
+    registry_id?: number | null;
     name: string;
     creation_time?: Date | string;
     deleted?: number;
@@ -21,6 +22,7 @@ export class Project {
         auto_scan: string | boolean;
         auto_sbom_generation: string | boolean;
         reuse_sys_cve_allowlist?: string;
+        proxy_speed_kb?: number | null;
     };
     cve_allowlist?: object;
     constructor() {
@@ -30,5 +32,6 @@ export class Project {
         this.metadata.severity = 'low';
         this.metadata.auto_scan = false;
         this.metadata.auto_sbom_generation = false;
+        this.metadata.proxy_speed_kb = -1;
     }
 }

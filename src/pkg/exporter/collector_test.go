@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package exporter
 
-//go:generate mockery --case snake --dir ../../lib/orm --name Creator --output ./orm --outpkg orm
-//go:generate mockery --case snake --dir ../../lib/cache --name Cache --output ./cache --outpkg cache
-//go:generate mockery --case snake --dir ../../lib/cache --name Iterator --output ./cache --outpkg cache
-//go:generate mockery --case snake --dir ../../lib/config --name Manager --output ./config --outpkg config
+import (
+	"github.com/stretchr/testify/suite"
+	"testing"
+)
+
+func TestCollectorsTestSuite(t *testing.T) {
+	setupTest(t)
+	defer tearDownTest(t)
+	suite.Run(t, new(ProjectCollectorTestSuite))
+	suite.Run(t, &StatisticsCollectorTestSuite{
+		collector: NewStatisticsCollector(),
+	})
+}
