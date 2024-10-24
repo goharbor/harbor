@@ -16,6 +16,8 @@ https:
   # The path of cert and key files for nginx
   certificate: /your/certificate/path
   private_key: /your/private/key/path
+  # configure ssl protocols (default: TLSv1.2 TLSv1.3)
+  # ssl_protocols: TLSv1.2 TLSv1.3
   # enable strong ssl ciphers (default: false)
   # strong_ssl_ciphers: false
 
@@ -206,7 +208,7 @@ _version: 2.12.0
 #   # host for redis+sentinel:
 #   #  <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
 #   host: redis:6379
-#   password: 
+#   password:
 #   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
 #   # there's a known issue when using external redis username ref:https://github.com/goharbor/harbor/issues/18892
 #   # if you care about the image pull/push performance, please refer to this https://github.com/goharbor/harbor/wiki/Harbor-FAQs#external-redis-username-password-usage
