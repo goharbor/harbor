@@ -274,7 +274,7 @@ func (rAPI *robotV1API) validate(ctx context.Context, params operation.CreateRob
 			log.Warningf("failed to call JSONCopy on robot access policy when validate, error: %v", err)
 		}
 		if !mp[p.String()] {
-			return errors.New(nil).WithMessage("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, projectNameOrID).WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessagef("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, projectNameOrID).WithCode(errors.BadRequestCode)
 		}
 	}
 
@@ -286,7 +286,7 @@ func getRawResource(resource string) (string, error) {
 	resourceReg := regexp.MustCompile("^/project/[0-9]+/(?P<repository>[a-z-]+)$")
 	matches := resourceReg.FindStringSubmatch(resource)
 	if len(matches) <= 1 {
-		return "", errors.New(nil).WithMessage("bad resource %s", resource).WithCode(errors.BadRequestCode)
+		return "", errors.New(nil).WithMessagef("bad resource %s", resource).WithCode(errors.BadRequestCode)
 	}
 	return matches[1], nil
 }

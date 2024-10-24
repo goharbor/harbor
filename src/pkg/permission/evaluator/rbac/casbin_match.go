@@ -40,7 +40,7 @@ func (s *regexpStore) Get(key string, build func(string) *regexp.Regexp) *regexp
 
 func (s *regexpStore) Purge() {
 	var keys []interface{}
-	s.entries.Range(func(key, value interface{}) bool {
+	s.entries.Range(func(key, _ interface{}) bool {
 		keys = append(keys, key)
 		return true
 	})

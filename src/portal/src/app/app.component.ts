@@ -88,7 +88,9 @@ export class AppComponent implements OnInit, OnDestroy {
                 if (this.sessionService.getCurrentUser()?.has_admin_role) {
                     this.jobServiceDashboardHealthCheckService.checkHealth();
                 } else {
-                    this.jobServiceDashboardHealthCheckService.setHealthy(true);
+                    this.jobServiceDashboardHealthCheckService.setUnHealthy(
+                        false
+                    );
                 }
             }, CHECK_HEALTH_INTERVAL);
         }

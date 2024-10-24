@@ -191,7 +191,7 @@ type RefreshConfig struct {
 
 // RefreshMiddleware middleware which refresh the quota usage after the response success
 func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func(http.Handler) http.Handler {
-	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+	return middleware.AfterResponse(func(_ http.ResponseWriter, r *http.Request, statusCode int) error {
 		// skip to refresh quota usage when response is not success
 		if !isSuccess(statusCode) {
 			return nil

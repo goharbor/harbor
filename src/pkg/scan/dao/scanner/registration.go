@@ -154,7 +154,7 @@ func SetDefaultRegistration(ctx context.Context, UUID string) error {
 			return err
 		}
 		if count == 0 {
-			return errors.NotFoundError(nil).WithMessage("registration %s not found", UUID)
+			return errors.NotFoundError(nil).WithMessagef("registration %s not found", UUID)
 		}
 
 		qt2 := o.QueryTable(new(Registration))

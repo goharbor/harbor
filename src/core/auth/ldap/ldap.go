@@ -204,7 +204,7 @@ func verifyGroupInLDAP(groupDN string, sess *ldap.Session) (*model.Group, bool) 
 		return nil, false
 	}
 	if len(lGroups) == 0 {
-		log.Warningf("Can not get the ldap group name with DN %v", groupDN)
+		log.Debugf("Can not get the ldap group name with DN %v", groupDN)
 		return nil, false
 	}
 	return &lGroups[0], true
@@ -262,7 +262,7 @@ func (l *Auth) SearchUser(ctx context.Context, username string) (*models.User, e
 
 		log.Debugf("Found ldap user %v", user)
 	} else {
-		return nil, errors.NotFoundError(nil).WithMessage("no user found: %v", username)
+		return nil, errors.NotFoundError(nil).WithMessagef("no user found: %v", username)
 	}
 
 	return &user, nil
@@ -292,7 +292,7 @@ func (l *Auth) SearchGroup(ctx context.Context, groupKey string) (*ugModel.UserG
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, errors.NotFoundError(nil).WithMessagef("failed to searh ldap group with groupDN:%v", groupKey)
 	}
 	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,

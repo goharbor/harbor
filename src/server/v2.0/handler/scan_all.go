@@ -134,8 +134,7 @@ func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation
 	req := params.Schedule
 
 	if req.Schedule.Type == ScheduleManual {
-		message := fmt.Sprintf("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type)
-		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(message))
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type))
 	}
 
 	schedule, err := s.getScanAllSchedule(ctx)
@@ -197,7 +196,7 @@ func (s *scanAllAPI) GetLatestScheduledScanAllMetrics(ctx context.Context, _ ope
 func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType, cron string, previous *scheduler.Schedule) (int64, error) {
 	if err := utils.ValidateCronString(cron); err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid cron string for scheduled scan all: %s, error: %v", cron, err)
+			WithMessagef("invalid cron string for scheduled scan all: %s, error: %v", cron, err)
 	}
 	if previous != nil {
 		if cronType == previous.CRONType && cron == previous.CRON {
