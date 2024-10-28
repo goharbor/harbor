@@ -40,9 +40,7 @@ jobs:
           dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
           dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
           gsutil cp gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
-          gsutil cp gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package}.asc gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}.asc
           gsutil cp gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
-          gsutil cp gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package}.asc gs://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}.asc
 
           assets_path=$(pwd)/assets
           source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path
@@ -74,7 +72,6 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.OFFLINE_PACKAGE_PATH }}.asc
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
         uses: softprops/action-gh-release@v2
@@ -83,7 +80,5 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.OFFLINE_PACKAGE_PATH }}.asc
             ${{ env.ONLINE_PACKAGE_PATH }}
-            ${{ env.ONLINE_PACKAGE_PATH }}.asc
             ${{ env.MD5SUM_PATH }}
