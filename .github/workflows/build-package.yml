@@ -96,23 +96,13 @@ jobs:
           echo "Package name is: $harbor_offline_build_bundle"
           echo "Package name is: $harbor_online_build_bundle"
 
-          echo -en "${{ secrets.HARBOR_SIGN_KEY }}" |  gpg --import
-          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_offline_build_bundle
-          gpg -v -ab -u ${{ secrets.HARBOR_SIGN_KEY_ID }} $harbor_online_build_bundle
-
           source tests/ci/build_util.sh
           cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
-          cp ${harbor_offline_build_bundle}.asc             harbor-offline-installer-latest.tgz.asc
           cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
-          cp ${harbor_online_build_bundle}.asc              harbor-online-installer-latest.tgz.asc
           uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
-          uploader ${harbor_offline_build_bundle}.asc       $harbor_target_bucket
           uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader ${harbor_online_build_bundle}.asc        $harbor_target_bucket
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz.asc  $harbor_target_bucket
           uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz.asc   $harbor_target_bucket
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
 
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
