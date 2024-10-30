@@ -77,6 +77,10 @@ var (
 			path:   "./icons/default.png",
 			resize: true,
 		},
+		icon.DigestOfIconModel: {
+			path:   "./icons/model.png",
+			resize: true,
+		},
 	}
 	// Ctl is a global icon controller instance
 	Ctl = NewController()
