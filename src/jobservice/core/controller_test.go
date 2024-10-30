@@ -168,7 +168,7 @@ func (suite *ControllerTestSuite) TestInvalidChecks() {
 	assert.NotNil(suite.T(), err, "invalid job name: error expected but got nil")
 }
 
-// TestScheduledJobs ...
+// TestGetScheduledJobs ...
 func (suite *ControllerTestSuite) TestGetScheduledJobs() {
 	extras := make(query.ExtraParameters)
 	extras.Set(query.ExtraParamKeyKind, job.KindScheduled)
