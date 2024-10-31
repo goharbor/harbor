@@ -58,7 +58,7 @@ type Controller interface {
 	// UseLocalBlob check if the blob should use local copy
 	UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool
 	// UseLocalManifest check manifest should use local copy
-	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error)
+	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, Manifests, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
@@ -142,18 +142,56 @@ func (c *controller) UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) boo
 	return exist
 }
 
+// Manifests is an interface implemented by Manifest and ManifestList
+type Manifests interface {
+	Content() []byte
+	Digest() string
+	ContentType() string
+}
+
+// Manifest ...
+type Manifest struct {
+	content     []byte
+	digest      string
+	contentType string
+}
+
+func (m *Manifest) Content() []byte {
+	return m.content
+}
+
+func (m *Manifest) Digest() string {
+	return m.digest
+}
+
+func (m *Manifest) ContentType() string {
+	return m.contentType
+}
+
 // ManifestList ...
 type ManifestList struct {
-	Content     []byte
-	Digest      string
-	ContentType string
+	content     []byte
+	digest      string
+	contentType string
+}
+
+func (m *ManifestList) Content() []byte {
+	return m.content
+}
+
+func (m *ManifestList) Digest() string {
+	return m.digest
+}
+
+func (m *ManifestList) ContentType() string {
+	return m.contentType
 }
 
 // UseLocalManifest check if these manifest could be found in local registry,
 // the return error should be nil when it is not found in local and need to delegate to remote registry
 // the return error should be NotFoundError when it is not found in remote registry
 // the error will be captured by framework and return 404 to client
-func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error) {
+func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, Manifests, error) {
 	a, err := c.local.GetManifest(ctx, art)
 	if err != nil {
 		return false, nil, err
@@ -175,35 +213,64 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 
+	// Use digest to retrieve manifest, digest is more stable than tag, because tag could be updated
+	// Pass digest to local repo
+	// Pass digest to the cache key
+	if len(art.Digest) == 0 {
+		art.Digest = string(desc.Digest)
+	}
+
+	// attempt to retrieve manifest from local repo
+	man, dig, err := c.local.PullManifest(art.Repository, art.Digest)
+	if err == nil {
+		log.Debugf("Got the manifest for repo: %v with digest: %v", art.Repository, dig)
+		mediaType, payload, err := man.Payload()
+		if err != nil {
+			log.Errorf("Failed to get payload for manifest with digest: %v, error: %v", dig, err)
+		}
+		return true, &Manifest{content: payload, digest: dig, contentType: mediaType}, nil
+	}
+	log.Errorf("Failed to get manifest from local repo, error: %v", err)
+
 	var content []byte
 	var contentType string
 	if c.cache == nil {
 		return a != nil && string(desc.Digest) == a.Digest, nil, nil // digest matches
 	}
-	// Pass digest to the cache key, digest is more stable than tag, because tag could be updated
-	if len(art.Digest) == 0 {
-		art.Digest = string(desc.Digest)
-	}
+
+	// attempt to retrieve manifest list from cache
 	err = c.cache.Fetch(ctx, manifestListKey(art.Repository, art), &content)
-	if err != nil {
-		if errors.Is(err, cache.ErrNotFound) {
-			log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, art))
-		} else {
-			log.Errorf("Failed to get manifest list from cache, error: %v", err)
+	if err == nil {
+		// manifest list was found in cache
+		err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, art), &contentType)
+		if err != nil {
+			log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
+			return false, nil, nil
 		}
-		return a != nil && string(desc.Digest) == a.Digest, nil, nil
+		log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
+		return true, &ManifestList{content, string(desc.Digest), contentType}, nil
 	}
-	err = c.cache.Fetch(ctx, manifestListContentTypeKey(art.Repository, art), &contentType)
-	if err != nil {
-		log.Debugf("failed to get the manifest list content type, not use local. error:%v", err)
-		return false, nil, nil
+	if errors.Is(err, cache.ErrNotFound) {
+		log.Debugf("Digest is not found in manifest list cache, key=cache:%v", manifestListKey(art.Repository, art))
+	} else {
+		log.Errorf("Failed to get manifest list from cache, error: %v", err)
 	}
-	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
-	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
+
+	// neither manifest was found in local repo nor manifest list was found in cache
+	return a != nil && string(desc.Digest) == a.Digest, nil, nil
+}
+
+func manifestKey(repo string, art lib.ArtifactInfo) string {
+	// actual redis key format is cache:manifest:<repo name>:<tag> or cache:manifest:<repo name>:sha256:xxxx
+	return "manifest:" + repo + ":" + getReference(art)
+}
+
+func manifestContentTypeKey(rep string, art lib.ArtifactInfo) string {
+	return manifestKey(rep, art) + ":contenttype"
 }
 
 func manifestListKey(repo string, art lib.ArtifactInfo) string {
-	// actual redis key format is cache:manifestlist:<repo name>:<tag> or cache:manifestlist:<repo name>:sha256:xxxx
+	// actual redis key format is cache:manifest:<repo name>:<tag> or cache:manifest:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + getReference(art)
 }
 

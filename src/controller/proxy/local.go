@@ -43,6 +43,8 @@ type localInterface interface {
 	GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error)
 	// PushBlob push blob to local repo
 	PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error
+	// PullManifest pulls manifest from local repo, ref can be digest or tag
+	PullManifest(repo string, ref string) (distribution.Manifest, string, error)
 	// PushManifest push manifest to local repo, ref can be digest or tag
 	PushManifest(repo string, ref string, manifest distribution.Manifest) error
 	// CheckDependencies check if the manifest's dependency is ready
@@ -107,6 +109,10 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 	defer inflightChecker.removeRequest(artName)
 	err := l.registry.PushBlob(localRepo, ref, desc.Size, bReader)
 	return err
+}
+
+func (l *localHelper) PullManifest(repo string, ref string) (distribution.Manifest, string, error) {
+	return l.registry.PullManifest(repo, ref)
 }
 
 func (l *localHelper) PushManifest(repo string, ref string, manifest distribution.Manifest) error {

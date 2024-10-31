@@ -185,12 +185,12 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	}
 	if useLocal {
 		if man != nil {
-			w.Header().Set(contentLength, fmt.Sprintf("%v", len(man.Content)))
-			w.Header().Set(contentType, man.ContentType)
-			w.Header().Set(dockerContentDigest, man.Digest)
-			w.Header().Set(etag, man.Digest)
+			w.Header().Set(contentLength, fmt.Sprintf("%v", len(man.Content())))
+			w.Header().Set(contentType, man.ContentType())
+			w.Header().Set(dockerContentDigest, man.Digest())
+			w.Header().Set(etag, man.Digest())
 			if r.Method == http.MethodGet {
-				_, err = w.Write(man.Content)
+				_, err = w.Write(man.Content())
 				if err != nil {
 					return err
 				}
