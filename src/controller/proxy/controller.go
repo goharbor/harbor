@@ -270,7 +270,7 @@ func manifestContentTypeKey(rep string, art lib.ArtifactInfo) string {
 }
 
 func manifestListKey(repo string, art lib.ArtifactInfo) string {
-	// actual redis key format is cache:manifest:<repo name>:<tag> or cache:manifest:<repo name>:sha256:xxxx
+	// actual redis key format is cache:manifestlist:<repo name>:<tag> or cache:manifestlist:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + getReference(art)
 }
 
