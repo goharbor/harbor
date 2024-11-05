@@ -260,15 +260,6 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	return a != nil && string(desc.Digest) == a.Digest, nil, nil
 }
 
-func manifestKey(repo string, art lib.ArtifactInfo) string {
-	// actual redis key format is cache:manifest:<repo name>:<tag> or cache:manifest:<repo name>:sha256:xxxx
-	return "manifest:" + repo + ":" + getReference(art)
-}
-
-func manifestContentTypeKey(rep string, art lib.ArtifactInfo) string {
-	return manifestKey(rep, art) + ":contenttype"
-}
-
 func manifestListKey(repo string, art lib.ArtifactInfo) string {
 	// actual redis key format is cache:manifestlist:<repo name>:<tag> or cache:manifestlist:<repo name>:sha256:xxxx
 	return "manifestlist:" + repo + ":" + getReference(art)
