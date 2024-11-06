@@ -42,7 +42,7 @@ func (suite *ControllerTestSuite) TestGet() {
 		Name:        "library+test",
 		Description: "test get method",
 		ProjectID:   1,
-		Secret:      utils.RandStringBytes(10),
+		Secret:      utils.GetNonce(),
 	}, nil)
 	rbacMgr.On("GetPermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return([]*rbac_model.UniversalRolePermission{
 		{
@@ -153,7 +153,7 @@ func (suite *ControllerTestSuite) TestDelete() {
 		Name:        "library+test",
 		Description: "test get method",
 		ProjectID:   1,
-		Secret:      utils.RandStringBytes(10),
+		Secret:      utils.GetNonce(),
 	}, nil)
 	robotMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	rbacMgr.On("DeletePermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return(nil)
@@ -226,7 +226,7 @@ func (suite *ControllerTestSuite) TestList() {
 			Name:        "test",
 			Description: "test list method",
 			ProjectID:   1,
-			Secret:      utils.RandStringBytes(10),
+			Secret:      utils.GetNonce(),
 		},
 	}, nil)
 	rbacMgr.On("GetPermissionsByRole", mock.Anything, mock.Anything, mock.Anything).Return([]*rbac_model.UniversalRolePermission{
