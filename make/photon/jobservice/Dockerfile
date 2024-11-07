@@ -1,10 +1,15 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
+FROM --platform=${BUILDPLATFORM:-linux/amd64} ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
 
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/jobservice/entrypoint.sh /harbor/
-COPY ./make/photon/jobservice/harbor_jobservice /harbor/
+COPY ./make/photon/jobservice/harbor_jobservice-${TARGETOS}-${TARGETARCH} /harbor/harbor_jobservice
 
 
 RUN chown -R harbor:harbor /etc/pki/tls/certs \

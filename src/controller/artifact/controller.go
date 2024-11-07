@@ -397,13 +397,19 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 
 	// delete all tags that attached to the root artifact
 	if isRoot {
-		var ids []int64
+		// var ids []int64
 		for _, tag := range art.Tags {
-			ids = append(ids, tag.ID)
+			// ids = append(ids, tag.ID)
+			if err := c.regCli.DeleteTag(art.RepositoryName, tag.Name); err != nil {
+				return err
+			}
+			if err := c.tagCtl.Delete(ctx, tag.ID); err != nil {
+				return err
+			}
 		}
-		if err = c.tagCtl.DeleteTags(ctx, ids); err != nil {
-			return err
-		}
+		// if err = c.tagCtl.DeleteTags(ctx, ids); err != nil {
+		// 	return err
+		// }
 	}
 
 	// remove labels added to the artifact

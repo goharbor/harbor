@@ -119,6 +119,8 @@ type Client interface {
 	MountBlob(srcRepository, digest, dstRepository string) (err error)
 	// DeleteBlob deletes the specified blob
 	DeleteBlob(repository, digest string) (err error)
+	// DeleteTag deletes the specified tag
+	DeleteTag(repository, reference string) (err error)
 	// Copy the artifact from source repository to the destination. The "override"
 	// is used to specify whether the destination artifact will be overridden if
 	// its name is same with source but digest isn't
@@ -577,6 +579,19 @@ func (c *client) DeleteBlob(repository, digest string) error {
 	return nil
 }
 
+func (c *client) DeleteTag(repository, reference string) error {
+	req, err := http.NewRequest(http.MethodDelete, buildTagURL(c.url, repository, reference), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
 func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
 	// pull the manifest from the source repository
 	manifest, srcDgt, err := c.PullManifest(srcRepo, srcRef)
@@ -720,6 +735,10 @@ func buildBlobURL(endpoint, repository, reference string) string {
 
 func buildMountBlobURL(endpoint, repository, digest, from string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/?mount=%s&from=%s", endpoint, repository, digest, from)
+}
+
+func buildTagURL(endpoint, repository, reference string) string {
+	return fmt.Sprintf("%s/v2/%s/tags/%s", endpoint, repository, reference)
 }
 
 func buildInitiateBlobUploadURL(endpoint, repository string) string {

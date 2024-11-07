@@ -1,11 +1,16 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-FROM ${harbor_base_namespace}/harbor-core-base:${harbor_base_image_version}
+FROM --platform=${BUILDPLATFORM:-linux/amd64} ${harbor_base_namespace}/harbor-core-base:${harbor_base_image_version}
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
 
 HEALTHCHECK CMD curl --fail -s http://localhost:8080/api/v2.0/ping || curl -k --fail -s https://localhost:8443/api/v2.0/ping || exit 1
 COPY ./make/photon/common/install_cert.sh /harbor/
 COPY ./make/photon/core/entrypoint.sh /harbor/
-COPY ./make/photon/core/harbor_core /harbor/
+COPY ./make/photon/core/harbor_core-${TARGETOS}-${TARGETARCH} /harbor/harbor_core
 COPY ./src/core/views /harbor/views
 COPY ./make/migrations /harbor/migrations
 COPY ./icons /harbor/icons

@@ -216,19 +216,19 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 
 	// get gc candidates, and set the repositories.
 	// AS the reference count is calculated by joining table project_blob and blob, here needs to call removeUntaggedBlobs to remove these non-used blobs from table project_blob firstly.
-	orphanBlobs, err := gc.markOrSweepUntaggedBlobs(ctx)
-	if err != nil {
-		return err
-	}
+	// orphanBlobs, err := gc.markOrSweepUntaggedBlobs(ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
 	blobs, err := gc.uselessBlobs(ctx)
 	if err != nil {
 		gc.logger.Errorf("failed to get gc candidate: %v", err)
 		return err
 	}
-	if len(orphanBlobs) != 0 {
-		blobs = append(blobs, orphanBlobs...)
-	}
+	// if len(orphanBlobs) != 0 {
+	// 	blobs = append(blobs, orphanBlobs...)
+	// }
 	if len(blobs) == 0 {
 		if err := saveGCRes(ctx, int64(0), int64(0), int64(0)); err != nil {
 			gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
