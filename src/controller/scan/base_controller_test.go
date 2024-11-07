@@ -235,9 +235,11 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
 			Duration:    -1,
-			Creator:     "harbor-core-for-scan-all",
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
-		Level: robot.LEVELPROJECT,
+		ProjectName: "library",
+		Level:       robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
 			{
 				Kind:      "project",
@@ -267,7 +269,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
 			Duration:    -1,
-			Creator:     "harbor-core-for-scan-all",
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
 		Level: "project",
 	}, nil)

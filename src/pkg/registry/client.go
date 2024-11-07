@@ -340,7 +340,7 @@ func (c *client) DeleteManifest(repository, reference string) error {
 		}
 		if !exist {
 			return errors.New(nil).WithCode(errors.NotFoundCode).
-				WithMessage("%s:%s not found", repository, reference)
+				WithMessagef("%s:%s not found", repository, reference)
 		}
 		reference = string(desc.Digest)
 	}
@@ -669,7 +669,6 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			return nil, err
 		}
-		message := fmt.Sprintf("http status code: %d, body: %s", resp.StatusCode, string(body))
 		code := errors.GeneralCode
 		switch resp.StatusCode {
 		case http.StatusUnauthorized:
@@ -682,7 +681,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			code = errors.RateLimitCode
 		}
 		return nil, errors.New(nil).WithCode(code).
-			WithMessage(message)
+			WithMessagef("http status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 	return resp, nil
 }

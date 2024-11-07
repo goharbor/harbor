@@ -114,7 +114,7 @@ func (m *manager) RemoveFrom(ctx context.Context, labelID int64, artifactID int6
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("reference with label %d and artifact %d not found", labelID, artifactID)
+		return errors.NotFoundError(nil).WithMessagef("reference with label %d and artifact %d not found", labelID, artifactID)
 	}
 	return nil
 }
