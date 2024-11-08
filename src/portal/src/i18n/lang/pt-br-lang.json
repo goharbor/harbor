@@ -1186,6 +1186,7 @@
         "NAME": "Nome",
         "PULL_TIME": "Horário do pull",
         "PUSH_TIME": "Horário do push",
+        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "itens",
         "ADD_TAG": "ADICIONAR TAG",

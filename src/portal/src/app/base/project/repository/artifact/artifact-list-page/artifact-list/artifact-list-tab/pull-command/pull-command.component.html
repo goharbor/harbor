@@ -66,9 +66,7 @@
 
 <clr-dropdown [clrCloseMenuOnItemClick]="false" class="mr-1" *ngIf="isTagMode">
     <button
-        [disabled]="
-            selectedTags?.length !== 1 || !hasPullCommandForTag(artifact)
-        "
+        [disabled]="!hasPullCommandForTag(artifact)"
         class="btn btn-link copy-pull-command"
         clrDropdownTrigger>
         {{ 'PUSH_IMAGE.COPY_PULL_COMMAND' | translate }}

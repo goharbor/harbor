@@ -1193,6 +1193,7 @@
         "NAME": "名称",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
+        "PULL_COMMAND": "Pull Command",
         "OF": "共计",
         "ITEMS": "条记录",
         "ADD_TAG": "添加 TAG",

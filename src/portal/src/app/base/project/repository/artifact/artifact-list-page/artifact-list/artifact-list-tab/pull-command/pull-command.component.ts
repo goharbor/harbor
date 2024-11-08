@@ -8,7 +8,6 @@ import {
     getPullCommandByTag,
     hasPullCommand,
 } from '../../../../artifact';
-import { Tag } from '../../../../../../../../../../ng-swagger-gen/models/tag';
 
 @Component({
     selector: 'app-pull-command',
@@ -29,7 +28,7 @@ export class PullCommandComponent {
 
     // for tagMode
     @Input()
-    selectedTags: Tag[];
+    selectedTag: string;
     @Input()
     artifact: Artifact;
     @Input()
@@ -113,7 +112,7 @@ export class PullCommandComponent {
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
                 this.projectName
             }/${this.repoName}`,
-            this.selectedTags[0].name,
+            this.selectedTag,
             Clients.DOCKER
         );
     }
@@ -124,7 +123,7 @@ export class PullCommandComponent {
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
                 this.projectName
             }/${this.repoName}`,
-            this.selectedTags[0].name,
+            this.selectedTag,
             Clients.PODMAN
         );
     }
@@ -135,7 +134,7 @@ export class PullCommandComponent {
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
                 this.projectName
             }/${this.repoName}`,
-            this.selectedTags[0].name,
+            this.selectedTag,
             Clients.CNAB
         );
     }
@@ -146,7 +145,7 @@ export class PullCommandComponent {
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
                 this.projectName
             }/${this.repoName}`,
-            this.selectedTags[0].name,
+            this.selectedTag,
             Clients.CHART
         );
     }

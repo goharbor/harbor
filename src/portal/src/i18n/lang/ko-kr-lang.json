@@ -1190,6 +1190,7 @@
         "NAME": "이름",
         "PULL_TIME": "풀(Pull) 시간",
         "PUSH_TIME": "푸시 시간",
+        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "아이템",
         "ADD_TAG": "태그 추가",

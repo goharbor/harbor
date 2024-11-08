@@ -1195,6 +1195,7 @@
         "NAME": "Name",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "items",
         "ADD_TAG": "ADD TAG",

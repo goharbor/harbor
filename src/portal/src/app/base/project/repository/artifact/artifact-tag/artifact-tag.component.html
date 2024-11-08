@@ -36,15 +36,6 @@
                 </button>
             </div>
             <div class="right-pos">
-                <app-pull-command
-                    [isTagMode]="true"
-                    [artifact]="artifactDetails"
-                    [accessoryType]="accessoryType"
-                    [registryUrl]="registryUrl"
-                    [projectName]="projectName"
-                    [repoName]="repositoryName"
-                    [selectedTags]="selectedRow"
-                    class="mr-1"></app-pull-command>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </span>
@@ -124,6 +115,9 @@
     <clr-dg-column [clrDgSortBy]="'push_time'">{{
         'TAG.PUSH_TIME' | translate
     }}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'pull command'">{{
+        'TAG.PULL_COMMAND' | translate
+    }}</clr-dg-column>
     <clr-dg-placeholder>
         <span>{{ 'TAG.PLACEHOLDER' | translate }}</span>
     </clr-dg-placeholder>
@@ -149,6 +143,16 @@
         <clr-dg-cell>{{
             tag.push_time | harborDatetime : 'short'
         }}</clr-dg-cell>
+        <clr-dg-cell>
+            <app-pull-command
+                [isTagMode]="true"
+                [artifact]="artifactDetails"
+                [accessoryType]="accessoryType"
+                [registryUrl]="registryUrl"
+                [projectName]="projectName"
+                [repoName]="repositoryName"
+                [selectedTag]="tag.name"></app-pull-command>
+        </clr-dg-cell>
     </clr-dg-row>
 
     <clr-dg-footer>

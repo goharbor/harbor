@@ -1189,6 +1189,7 @@
     "NAME": "名稱",
     "PULL_TIME": "拉取時間",
     "PUSH_TIME": "推送時間",
+    "PULL_COMMAND": "Pull Command",
     "OF": "的",
     "ITEMS": "項目",
     "ADD_TAG": "新增標籤",
