@@ -1193,6 +1193,7 @@
         "NAME": "Nom",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
+        "PULL_COMMAND": "Pull Command",
         "OF": "sur",
         "ITEMS": "entrées",
         "ADD_TAG": "AJOUTER TAG",
