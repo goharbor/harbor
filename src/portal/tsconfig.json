@@ -18,5 +18,5 @@
     ],
     "useDefineForClassFields": false
   },
-  "exclude": ["cypress.config.ts"],
+  "exclude": ["cypress.config.ts"]
 }
