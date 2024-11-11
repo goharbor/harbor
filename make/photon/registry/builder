@@ -22,21 +22,34 @@ cur=$PWD
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 
-# add patch redis
 cd $TEMP
+
+# add GC patch
+# https://github.com/nikhil-ch-rzp/distribution/pull/1...
+wget https://github.com/nikhil-ch-rzp/distribution/pull/1.patch
+git apply 1.patch
+
+# add patch redis
 git apply $cur/redis.patch
 cd $cur
 
 echo 'build the registry binary ...'
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
-echo 'copy the registry binary to local...'
-ID=$(docker create registry-golang)
-docker cp $ID:/go/src/github.com/docker/distribution/bin/registry binary/registry
+TARGETARCH=("amd64" "arm64")
+TARGETOS="linux"
 
-docker rm -f $ID
-docker rmi -f registry-golang
+for arch in "${TARGETARCH[@]}"; do
+  echo "${TARGETOS}/${arch} binary"
+  docker build --build-arg GOARCH=${arch} --build-arg GOOS=${TARGETOS} -f $TEMP/Dockerfile.binary -t registry-golang-${arch} $TEMP
+
+  echo 'copy the registry binary to local...'
+  ID=$(docker create registry-golang-${arch})
+  docker cp $ID:/go/src/github.com/docker/distribution/bin/registry binary/registry-${TARGETOS}-${arch}
+
+  docker rm -f $ID
+  docker rmi -f registry-golang-${arch}
+done
 
 echo "Build registry binary success, then to build photon image..."
 cd $cur
