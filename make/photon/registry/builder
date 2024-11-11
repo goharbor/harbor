@@ -25,9 +25,19 @@ git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
 cd $TEMP
 
 # add GC patch
-# https://github.com/nikhil-ch-rzp/distribution/pull/1...
+echo 'add patch https://github.com/nikhil-ch-rzp/distribution/pull/1...'
 wget https://github.com/nikhil-ch-rzp/distribution/pull/1.patch
 git apply 1.patch
+
+# add patch 3599 to update AWS SDK
+echo 'add patch https://github.com/distribution/distribution/pull/3599 ...'
+wget https://github.com/distribution/distribution/pull/3599.patch
+git apply 3599.patch
+
+# add patch 3921 for IRSA
+echo 'add patch https://github.com/distribution/distribution/pull/3921 ...'
+wget https://github.com/distribution/distribution/pull/3921.patch
+git apply 3921.patch
 
 # add patch redis
 git apply $cur/redis.patch
