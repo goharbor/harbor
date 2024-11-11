@@ -72,8 +72,8 @@ func Middleware() func(handler http.Handler) http.Handler {
 		} else if len(key) != 32 {
 			log.Errorf("Invalid CSRF key length from the environment: %s. Please ensure the key length is 32 characters.", key)
 			protect = func(_ http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					lib_http.SendError(w, errors.New("Invalid CSRF key length from the environment. Please ensure the key length is 32 characters."))
+				return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					lib_http.SendError(w, errors.New("invalid CSRF key length from the environment. Please ensure the key length is 32 characters"))
 				})
 			}
 			return
