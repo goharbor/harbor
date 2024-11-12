@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.22.6
+go 1.22.9
 
 require (
 	github.com/FZambia/sentinel v1.1.0
