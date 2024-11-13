@@ -64,7 +64,14 @@ import (
 //			},
 //		 }
 //	}
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.QuerySeter, error) {
+
+type Config struct {
+	DisableSort bool
+}
+
+type Option func(*Config)
+
+func QuerySetter(ctx context.Context, model interface{}, query *q.Query, options ...Option) (orm.QuerySeter, error) {
 	t := reflect.TypeOf(model)
 	if t.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("<orm.QuerySetter> cannot use non-ptr model struct `%s`", getFullName(t.Elem()))
@@ -82,8 +89,12 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 	// set filters
 	qs = setFilters(ctx, qs, query, metadata)
 
+	opts := newConfig(options...)
 	// sorting
-	qs = setSorts(qs, query, metadata)
+	// Do not set sort when sort disabled. e.g. for Count()
+	if !opts.DisableSort {
+		qs = setSorts(qs, query, metadata)
+	}
 
 	// pagination
 	if query.PageSize > 0 {
@@ -94,6 +105,20 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 	}
 
 	return qs, nil
+}
+
+func WithSortDisabled(disableSort bool) Option {
+	return func(cfg *Config) {
+		cfg.DisableSort = disableSort
+	}
+}
+
+func newConfig(opts ...Option) *Config {
+	config := &Config{}
+	for _, opt := range opts {
+		opt(config)
+	}
+	return config
 }
 
 // PaginationOnRawSQL append page information to the raw sql
@@ -121,7 +146,7 @@ func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query,
 	query.Sorts = nil
 	query.PageSize = 0
 	query.PageNumber = 0
-	return QuerySetter(ctx, model, query)
+	return QuerySetter(ctx, model, query, WithSortDisabled(true))
 }
 
 // set filters according to the query
