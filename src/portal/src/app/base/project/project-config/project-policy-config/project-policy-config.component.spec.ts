@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { SessionService } from '../../../../shared/services/session.service';
 import { Component, ViewChild } from '@angular/core';
 
 const mockSystemInfo: SystemInfo[] = [
@@ -99,6 +100,14 @@ const userPermissionService = {
         return of(true);
     },
 };
+
+const sessionService = {
+    getCurrentUser() {
+        return of({
+            has_admin_role: true,
+        });
+    },
+};
 describe('ProjectPolicyConfigComponent', () => {
     let fixture: ComponentFixture<TestHostComponent>,
         component: TestHostComponent;
@@ -114,6 +123,7 @@ describe('ProjectPolicyConfigComponent', () => {
                 { provide: ErrorHandler, useClass: MessageHandlerService },
                 { provide: ProjectService, useValue: projectService },
                 { provide: SystemInfoService, useValue: systemInfoService },
+                { provide: SessionService, useValue: sessionService },
                 {
                     provide: UserPermissionService,
                     useValue: userPermissionService,

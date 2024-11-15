@@ -144,6 +144,7 @@ export class ProjectDefaultService extends ProjectService {
             .put<any>(
                 `${baseUrl}/${projectId}`,
                 {
+                    registry_id: projectPolicy.RegistryId,
                     metadata: {
                         public: projectPolicy.Public ? 'true' : 'false',
                         enable_content_trust: projectPolicy.ContentTrust
@@ -162,6 +163,7 @@ export class ProjectDefaultService extends ProjectService {
                             ? 'true'
                             : 'false',
                         reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
+                        proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
                     },
                     cve_allowlist: projectAllowlist,
                 },
