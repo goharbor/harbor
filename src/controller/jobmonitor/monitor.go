@@ -92,13 +92,13 @@ func NewMonitorController() MonitorController {
 		taskManager:           task.NewManager(),
 		queueManager:          jm.NewQueueClient(),
 		queueStatusManager:    queuestatus.Mgr,
-		monitorClient:         jobServiceMonitorClient,
+		monitorClient:         JobServiceMonitorClient,
 		jobServiceRedisClient: jm.JobServiceRedisClient,
 		executionDAO:          taskDao.NewExecutionDAO(),
 	}
 }
 
-func jobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
+func JobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
 	cfg, err := job.GlobalClient.GetJobServiceConfig()
 	if err != nil {
 		return nil, err

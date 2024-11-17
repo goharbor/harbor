@@ -16,7 +16,6 @@ package cworker
 
 import (
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"reflect"
 	"sync"
 	"time"
@@ -79,23 +78,6 @@ func (rpc *workerContext) logJob(job *work.Job, next work.NextMiddlewareFunc) er
 	jobInfo, _ := utils.SerializeJob(&jobCopy)
 	logger.Infof("Job incoming: %s", jobInfo)
 
-	return next()
-}
-
-// log the job
-func (rpc *workerContext) checkConcurrency(job *work.Job, next work.NextMiddlewareFunc) error {
-	jobCopy := *job
-
-	observations, err := rpc.client.WorkerObservations()
-	if err != nil {
-		return err
-	}
-
-	for _, observation := range observations {
-		fmt.Println("o", observation.JobID)
-	}
-	spew.Dump(job.Args)
-	spew.Dump(jobCopy.Name, jobCopy.ID)
 	return next()
 }
 
@@ -172,7 +154,6 @@ func (w *basicWorker) Start() error {
 	// Start the backend worker pool
 	// Add middleware
 	w.pool.Middleware(workCtx.logJob)
-	w.pool.Middleware(workCtx.checkConcurrency)
 	// Non blocking call
 	w.pool.Start()
 	logger.Infof("Basic worker is started")

@@ -17,7 +17,6 @@ package flow
 import (
 	"context"
 	"encoding/json"
-
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -92,7 +91,7 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed, c.policy.CopyByChunk)
+	return c.createTasks(ctx, srcResources, dstResources, c.policy)
 }
 
 func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
@@ -103,7 +102,7 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 	return execution.Status == job.StoppedStatus.String(), nil
 }
 
-func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32, copyByChunk bool) error {
+func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, policy *repctlmodel.Policy) error {
 	var taskCnt int
 	defer func() {
 		// if no task be created, mark execution done.
@@ -139,14 +138,15 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			Parameters: map[string]interface{}{
 				"src_resource":  string(src),
 				"dst_resource":  string(dest),
-				"speed":         speed,
-				"copy_by_chunk": copyByChunk,
+				"speed":         policy.Speed,
+				"copy_by_chunk": policy.CopyByChunk,
+				"policy_id":     policy.ID,
 			},
 		}
 
 		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]interface{}{
 			"operation":            "copy",
-			"resource_type":        string(srcResource.Type),
+			"resource_type":        srcResource.Type,
 			"source_resource":      getResourceName(srcResource),
 			"destination_resource": getResourceName(dstResource),
 			"references":           getResourceReferences(dstResource)}); err != nil {
