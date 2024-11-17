@@ -49,6 +49,8 @@ type ExecutionManager interface {
 	// In other cases, the execution status can be calculated from the referenced tasks automatically
 	// and no need to update it explicitly
 	MarkDone(ctx context.Context, id int64, message string) (err error)
+	// MarkSkipped marks the status of the specified execution as skipped.
+	MarkSkipped(ctx context.Context, id int64, message string) (err error)
 	// MarkError marks the status of the specified execution as error.
 	// It must be called to update the execution status when failed to create tasks.
 	// In other cases, the execution status can be calculated from the referenced tasks automatically
@@ -137,6 +139,17 @@ func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extra
 	}
 
 	return e.executionDAO.Update(ctx, execution, "ExtraAttrs", "UpdateTime")
+}
+
+func (e *executionManager) MarkSkipped(ctx context.Context, id int64, message string) error {
+	now := time.Now()
+	return e.executionDAO.Update(ctx, &dao.Execution{
+		ID:            id,
+		Status:        job.SkippedStatus.String(),
+		StatusMessage: message,
+		UpdateTime:    now,
+		EndTime:       now,
+	}, "Status", "StatusMessage", "UpdateTime", "EndTime")
 }
 
 func (e *executionManager) MarkDone(ctx context.Context, id int64, message string) error {
