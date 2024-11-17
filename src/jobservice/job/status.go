@@ -29,6 +29,8 @@ const (
 	SuccessStatus Status = "Success"
 	// ScheduledStatus : job status scheduled
 	ScheduledStatus Status = "Scheduled"
+	// SkippedStatus   : job status skipped
+	SkippedStatus Status = "Skipped"
 )
 
 // Status of job

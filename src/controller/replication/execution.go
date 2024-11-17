@@ -16,7 +16,9 @@ package replication
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/controller/jobmonitor"
 	"time"
 
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -109,10 +111,45 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
+
+	monitorClient, err := jobmonitor.JobServiceMonitorClient()
+	if err != nil {
+		return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("unable to get job monitor's client: %v", err)
+	}
+
+	observations, err := monitorClient.WorkerObservations()
+	if err != nil {
+		return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("unable to get jobs observations: %v", err)
+	}
 	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
+
+	args := map[string]interface{}{}
+
+	for _, o := range observations {
+		if o.JobName != job.ReplicationVendorType {
+			continue
+		}
+		if err = json.Unmarshal([]byte(o.ArgsJSON), &args); err != nil {
+			continue
+		}
+		policyID, ok := args["policy_id"].(float64)
+		if !ok {
+			continue
+		}
+		if int64(policyID) != policy.ID {
+			continue
+		}
+
+		err = c.execMgr.MarkSkipped(ctx, id, "task skipped as a duplicate")
+		if err != nil {
+			return 0, err
+		}
+		return id, nil
+	}
+
 	// start the replication flow in background
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context

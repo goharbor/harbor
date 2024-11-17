@@ -17,7 +17,6 @@ package replication
 import (
 	"encoding/json"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/controller/replication/transfer"
 	// import chart transfer
 	_ "github.com/goharbor/harbor/src/controller/replication/transfer/image"
