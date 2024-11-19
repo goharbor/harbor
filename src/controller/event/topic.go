@@ -137,6 +137,7 @@ type ArtifactEvent struct {
 	Repository string
 	Artifact   *artifact.Artifact
 	Tags       []string // when the artifact is pushed by digest, the tag here will be null
+	Labels     []string
 	Operator   string
 	OccurAt    time.Time
 }
@@ -238,6 +239,7 @@ type CreateTagEvent struct {
 	EventType        string
 	Repository       string
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 	Operator         string
 	OccurAt          time.Time
@@ -266,6 +268,7 @@ type DeleteTagEvent struct {
 	EventType        string
 	Repository       string
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 	Operator         string
 	OccurAt          time.Time
