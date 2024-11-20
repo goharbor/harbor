@@ -52,7 +52,7 @@ func (pj *Job) MaxFails() uint {
 
 // MaxCurrency is implementation of same method in Interface.
 func (pj *Job) MaxCurrency() uint {
-	return 0
+	return 4
 }
 
 // ShouldRetry indicates job can be retried if failed

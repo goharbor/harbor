@@ -41,6 +41,9 @@ type gcAPI struct {
 	gcCtr gc.Controller
 }
 
+const minWorkers = 0
+const maxWorkers = 10
+
 func newGCAPI() *gcAPI {
 	return &gcAPI{
 		gcCtr: gc.NewController(),
@@ -86,7 +89,7 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
 	parameters["time_window"] = config.GetGCTimeWindow()
-
+	
 	var err error
 	var id int64
 	switch scheType {
@@ -106,7 +109,7 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
 			}
 			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than %d and less than or equal to %d.", workers, minWorkers, maxWorkers)
 			}
 			policy.Workers = int(wInt)
 		}
@@ -130,7 +133,7 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
 			}
 			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("Error: Invalid number of workers:%s. Workers must be greater than %d and less than or equal to %d.", workers, minWorkers, maxWorkers)
 			}
 			policy.Workers = int(wInt)
 		}
@@ -284,7 +287,7 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 }
 
 func validateWorkers(workers int) bool {
-	if workers <= 0 || workers > 5 {
+	if workers <= minWorkers || workers > maxWorkers {
 		return false
 	}
 	return true

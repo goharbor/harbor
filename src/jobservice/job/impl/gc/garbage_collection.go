@@ -21,7 +21,7 @@ import (
 	"os"
 	"sync/atomic"
 	"time"
-
+	
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 
@@ -241,24 +241,63 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	blobCt := 0
 	mfCt := 0
 	makeSize := int64(0)
+	
+	g, gcctx := errgroup.WithContext(ctx.SystemContext())
+	ch := make(chan *blobModels.Blob, gc.workers)
+	results := make(chan *blobModels.Blob, gc.workers)
 
-	for _, blob := range blobs {
-		if !gc.dryRun {
-			if gc.shouldStop(ctx) {
-				return errGcStop
+	g.Go(func() error {
+		defer close(ch)
+		for _, blob := range blobs {
+			if !gc.dryRun {
+				if gc.shouldStop(ctx) {
+					return errGcStop
+				}
 			}
-			blob.Status = blobModels.StatusDelete
-			count, err := gc.blobMgr.UpdateBlobStatus(ctx.SystemContext(), blob)
-			if err != nil {
-				gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
-				continue
-			}
-			if count == 0 {
-				gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
-				continue
+
+			select {
+			case ch <- blob:
+			case <- gcctx.Done():
+				return gcctx.Err()
 			}
 		}
-		gc.logger.Infof("blob eligible for deletion: %s", blob.Digest)
+
+		return nil
+	})
+
+	deleteConcurrency := int32(gc.workers)
+
+	for i := 0; i < int(gc.workers); i++ {
+		g.Go(func() error {
+			defer func() {
+				// last worker should close channel
+				if atomic.AddInt32(&deleteConcurrency, -1) == 0 {
+					close(results)
+				}
+			}()
+
+			for blob := range ch {
+				if !gc.dryRun {
+					blob.Status = blobModels.StatusDelete
+					count, err := gc.blobMgr.UpdateBlobStatus(gcctx, blob)
+					if err != nil {
+						gc.logger.Warningf("failed to mark gc candidate, skip it.: %s, error: %v", blob.Digest, err)
+						continue
+					}
+					if count == 0 {
+						gc.logger.Warningf("no blob found to mark gc candidate, skip it. ID:%d, digest:%s", blob.ID, blob.Digest)
+						continue
+					}
+				}
+				gc.logger.Infof("blob eligible for deletion: %s", blob.Digest)
+
+				results <- blob
+			}
+			return nil
+		})
+	}
+
+	for blob := range results {
 		gc.deleteSet = append(gc.deleteSet, blob)
 		if blob.IsManifest() {
 			mfCt++
@@ -278,7 +317,7 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 			gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
 		}
 	}
-	return nil
+	return g.Wait()
 }
 
 func (gc *GarbageCollector) sweep(ctx job.Context) error {
