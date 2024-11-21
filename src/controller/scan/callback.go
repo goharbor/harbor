@@ -92,7 +92,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 
 		robotID := getRobotID(t.ExtraAttrs)
 		if robotID > 0 {
-			if err := robotCtl.Delete(ctx, robotID); err != nil {
+			if err := robotCtl.Delete(ctx, robotID, &robot.Option{Operator: "job-service"}); err != nil {
 				// Should not block the main flow, just logged
 				logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
 			} else {
