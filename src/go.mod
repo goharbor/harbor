@@ -200,4 +200,5 @@ replace (
 	github.com/goharbor/harbor => ../
 	github.com/gomodule/redigo => github.com/gomodule/redigo v1.8.8
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
+	github.com/gocraft/work => github.com/goharbor/work v0.5.1-patch
 )
