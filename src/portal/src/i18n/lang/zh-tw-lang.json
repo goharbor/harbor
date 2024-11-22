@@ -152,6 +152,7 @@
   },
   "ACCOUNT_SETTINGS": {
     "PROFILE": "使用者設定",
+    "PREFERENCES": "Preferences",
     "CHANGE_PWD": "修改密碼",
     "ABOUT": "關於",
     "LOGOUT": "登出"

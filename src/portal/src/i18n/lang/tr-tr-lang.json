@@ -153,6 +153,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Şifreyi Değiştir",
         "ABOUT": "Hakkında",
         "LOGOUT": "Çıkış"
