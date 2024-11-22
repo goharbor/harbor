@@ -153,6 +153,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil de usuario",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Cambiar contraseña",
         "ABOUT": "Acerca de",
         "LOGOUT": "Cerrar sesión"

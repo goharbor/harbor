@@ -18,6 +18,7 @@ import { SkinableConfig } from '../../services/skinable-config.service';
 import { AppConfigService } from '../../services/app-config.service';
 import { ErrorHandler } from '../../shared/units/error-handler';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
+import { PreferenceSettingsComponent } from '../preference-settings/preference-settings.component';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
 import { UserService } from '../../../../ng-swagger-gen/services/user.service';
@@ -128,6 +129,9 @@ describe('HarborShellComponent', () => {
         ).componentInstance;
         component.accountSettingsModal.inlineAlert =
             TestBed.createComponent(InlineAlertComponent).componentInstance;
+        component.prefSetting = TestBed.createComponent(
+            PreferenceSettingsComponent
+        ).componentInstance;
         component.pwdSetting = TestBed.createComponent(
             PasswordSettingComponent
         ).componentInstance;
@@ -148,6 +152,16 @@ describe('HarborShellComponent', () => {
         const accountSettingsUsernameInput =
             fixture.nativeElement.querySelector('#account_settings_username');
         expect(accountSettingsUsernameInput).toBeTruthy();
+    });
+    it('should open users preferenses', async () => {
+        component.openModal({
+            modalName: modalEvents.PREFERENCES,
+            modalFlag: false,
+        });
+        await fixture.whenStable();
+        const dropdowns =
+            fixture.nativeElement.querySelector('.dropdowns');
+        expect(dropdowns).toBeTruthy();
     });
     it('should open users changPwd', async () => {
         component.openModal({
