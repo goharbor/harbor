@@ -152,6 +152,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
         "LOGOUT": "退出"

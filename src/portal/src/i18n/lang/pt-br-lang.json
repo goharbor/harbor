@@ -152,6 +152,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil do usuário",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Alterar senha",
         "ABOUT": "Informativo",
         "LOGOUT": "Sair"

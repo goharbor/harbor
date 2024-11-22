@@ -1,0 +1,54 @@
+<clr-modal
+    [(clrModalOpen)]="opened"
+    [clrModalClosable]="false"
+    [clrModalStaticBackdrop]="false">
+    <h3 class="modal-title">{{ 'CHANGE_PWD.TITLE' | translate }}</h3>
+    <div class="modal-body dialog-body">
+        <div class="dropdowns">
+            <clr-dropdown class="dropdown-lang dropdown bottom-left">
+                <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                    <clr-icon shape="world" class="icon-left"></clr-icon>
+                    <span class="currentLocale">{{ currentLang }}</span>
+                    <clr-icon size="10" shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu *clrIfOpen>
+                    <a
+                        *ngFor="let lang of guiLanguages"
+                        href="javascript:void(0)"
+                        clrDropdownItem
+                        (click)="switchLanguage(lang[0])"
+                        [class.lang-selected]="matchLang(lang[0])"
+                        >{{ lang[1][0] }}</a
+                    >
+                </clr-dropdown-menu>
+            </clr-dropdown>
+            <div class="nav-divider"></div>
+            <clr-dropdown class="dropdown-locale dropdown bottom-left">
+                <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                    <clr-icon shape="date" class="icon-left"></clr-icon>
+                    <span class="currentLocale">{{
+                        currentDatetimeRendering | translate
+                    }}</span>
+                    <clr-icon size="10" shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu *clrIfOpen>
+                    <a
+                        *ngFor="let rendering of guiDatetimeRenderings"
+                        href="javascript:void(0)"
+                        clrDropdownItem
+                        (click)="switchDatetimeRendering(rendering[0])"
+                        [class.locale-selected]="
+                            matchDatetimeRendering(rendering[0])
+                        "
+                        >{{ rendering[1] | translate }}</a
+                    >
+                </clr-dropdown-menu>
+            </clr-dropdown>
+        </div>
+    </div>
+    <div class="modal-footer margin-left-override">
+        <button type="button" class="btn btn-primary" (click)="close()">
+            {{ 'BUTTON.CLOSE' | translate }}
+        </button>
+    </div>
+</clr-modal>
