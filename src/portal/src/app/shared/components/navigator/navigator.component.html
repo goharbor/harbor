@@ -18,7 +18,9 @@
 
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown-lang dropdown bottom-left" *ngIf="!isSessionValid">
+        <clr-dropdown
+            class="dropdown-lang dropdown bottom-left"
+            *ngIf="!isSessionValid">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{ currentLang }}</span>
@@ -35,7 +37,9 @@
                 >
             </clr-dropdown-menu>
         </clr-dropdown>
-        <clr-dropdown class="dropdown-locale dropdown bottom-left" *ngIf="!isSessionValid">
+        <clr-dropdown
+            class="dropdown-locale dropdown bottom-left"
+            *ngIf="!isSessionValid">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="date" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{

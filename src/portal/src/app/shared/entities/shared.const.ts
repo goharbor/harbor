@@ -235,11 +235,11 @@ export const REFRESH_TIME_DIFFERENCE = 10000;
 export const DeFaultRuntime = 'default';
 export type SupportedRuntime = string;
 export const RUNTIMES = {
-    'default': 'docker',
-    'podman': 'podman',
-    'nerdctl': 'nerdctl',
-    'ctr': 'containerd',
-    'crictl': 'cri-o',
+    default: 'docker',
+    podman: 'podman',
+    nerdctl: 'nerdctl',
+    ctr: 'containerd',
+    crictl: 'cri-o',
 } as const;
 export const supportedRuntimes = Object.keys(RUNTIMES) as SupportedRuntime[];
 /**
