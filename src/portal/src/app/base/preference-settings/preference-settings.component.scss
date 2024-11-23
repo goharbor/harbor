@@ -55,12 +55,18 @@
     }
 }
 
+.centered-content-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%
+}
+
 .dropdowns {
     display: flex;
-    flex-direction: row;
-    align-content: center;
+    flex-direction: column;
     justify-content: flex-start;
-    align-items: center;
+    align-items: start;
     gap: 20px;
 }
 
@@ -76,10 +82,6 @@
 
 .dropdown-item {
     outline: none;
-}
-
-.dropdown-locale {
-    padding-right: 0.5rem;
 }
 
 .user-down {
