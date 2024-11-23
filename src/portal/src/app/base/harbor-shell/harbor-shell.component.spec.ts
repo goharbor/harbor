@@ -159,8 +159,7 @@ describe('HarborShellComponent', () => {
             modalFlag: false,
         });
         await fixture.whenStable();
-        const dropdowns =
-            fixture.nativeElement.querySelector('.dropdowns');
+        const dropdowns = fixture.nativeElement.querySelector('.dropdowns');
         expect(dropdowns).toBeTruthy();
     });
     it('should open users changPwd', async () => {
