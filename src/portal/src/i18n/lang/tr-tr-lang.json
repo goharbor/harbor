@@ -143,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Change Preference",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "CONTAINER_RUN": "Container Runtime"
+    },
     "CHANGE_PWD": {
         "TITLE": "Şifreyi değiştir",
         "CURRENT_PWD": "Mevcut Şifre",
@@ -151,6 +157,7 @@
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
         "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
+
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
         "PREFERENCES": "Preferences",

@@ -231,6 +231,21 @@ export enum GroupType {
 export const REFRESH_TIME_DIFFERENCE = 10000;
 
 //
+//
+export const DeFaultRuntime = 'default';
+export type SupportedRuntime = string;
+export const RUNTIMES = {
+    'default': 'docker',
+    'podman': 'podman',
+    'nerdctl': 'nerdctl',
+    'ctr': 'containerd',
+    'crictl': 'cri-o',
+} as const;
+export const supportedRuntimes = Object.keys(RUNTIMES) as SupportedRuntime[];
+/**
+ * The default cookie key used to store current used language preference.
+ */
+export const DEFAULT_RUNTIME_LOCALSTORAGE_KEY = 'harbor-runtime';
 
 export const DeFaultLang = 'en-us';
 export type SupportedLanguage = string;
