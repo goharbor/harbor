@@ -123,7 +123,7 @@ export function getPullCommandByDigest(
     return null;
 }
 
-export function getPullCommandByTag(
+export function getPullCmdByTag(
     artifactType: string,
     url: string,
     tag: string,
@@ -148,6 +148,29 @@ export function getPullCommandByTag(
     return null;
 }
 
+// this should be deleted
+export function getPullCommandByTag(
+    artifactType: string,
+    url: string,
+    tag: string,
+    client: Clients
+): string {
+    if (artifactType && url && tag) {
+        if (artifactType === ArtifactType.IMAGE) {
+            if (Object.values(Clients).includes(client)) {
+                return `${client} pull ${url}:${tag}`;
+            }
+        }
+        if (artifactType === ArtifactType.CNAB) {
+            return `cnab-to-oci pull ${url}:${tag}`;
+        }
+        if (artifactType === ArtifactType.CHART) {
+            return `helm pull oci://${url} --version ${tag}`;
+        }
+    }
+    return null;
+}
+
 export interface ArtifactFilterEvent {
     type?: string;
     stringValue?: string;
@@ -159,6 +182,9 @@ export interface ArtifactFilterEvent {
 export enum Clients {
     DOCKER = 'docker',
     PODMAN = 'podman',
+    NERDCTL = 'nerdctl',
+    CONTAINERD = 'ctr',
+    CRI_O = 'crictl',
     CHART = 'helm',
     CNAB = 'cnab-to-oci',
 }
