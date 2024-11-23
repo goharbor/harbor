@@ -64,66 +64,9 @@
     </clr-dropdown-menu>
 </clr-dropdown>
 
-<clr-dropdown [clrCloseMenuOnItemClick]="false" class="mr-1" *ngIf="isTagMode">
-    <button
-        [disabled]="!hasPullCommandForTag(artifact)"
-        class="btn btn-link copy-pull-command"
-        clrDropdownTrigger>
-        {{ 'PUSH_IMAGE.COPY_PULL_COMMAND' | translate }}
-        <cds-icon shape="angle" direction="down"></cds-icon>
-    </button>
-    <clr-dropdown-menu clrPosition="bottom-right" *clrIfOpen>
-        <ng-container *ngIf="isImage(artifact)">
-            <div
-                class="flex"
-                aria-label="Dropdown header Action"
-                clrDropdownItem>
-                <hbr-copy-input
-                    [title]="getPullCommandForDockerByTag(artifact)"
-                    [iconMode]="true"
-                    [defaultValue]="
-                        getPullCommandForDockerByTag(artifact)
-                    "></hbr-copy-input>
-                <span>{{ 'PUSH_IMAGE.DOCKER' | translate }}</span>
-            </div>
-            <div
-                class="flex"
-                aria-label="Dropdown header Action"
-                clrDropdownItem>
-                <hbr-copy-input
-                    [title]="getPullCommandForPadManByTag(artifact)"
-                    [iconMode]="true"
-                    [defaultValue]="
-                        getPullCommandForPadManByTag(artifact)
-                    "></hbr-copy-input>
-                <span>{{ 'PUSH_IMAGE.PODMAN' | translate }}</span>
-            </div>
-        </ng-container>
-        <div
-            *ngIf="isCNAB(artifact)"
-            class="flex"
-            aria-label="Dropdown header Action"
-            clrDropdownItem>
-            <hbr-copy-input
-                [title]="getPullCommandForCNABByTag(artifact)"
-                [iconMode]="true"
-                [defaultValue]="
-                    getPullCommandForCNABByTag(artifact)
-                "></hbr-copy-input>
-            <span>{{ 'PUSH_IMAGE.CNAB' | translate }}</span>
-        </div>
-        <div
-            *ngIf="isChart(artifact)"
-            class="flex"
-            aria-label="Dropdown header Action"
-            clrDropdownItem>
-            <hbr-copy-input
-                [title]="getPullCommandForChartByTag(artifact)"
-                [iconMode]="true"
-                [defaultValue]="
-                    getPullCommandForChartByTag(artifact)
-                "></hbr-copy-input>
-            <span>{{ 'PUSH_IMAGE.HELM' | translate }}</span>
-        </div>
-    </clr-dropdown-menu>
-</clr-dropdown>
+<hbr-copy-input
+    *ngIf="isTagMode"
+    [title]="getPullCommandForRuntimeByTag(artifact)"
+    [iconMode]="true"
+    [defaultValue]="getPullCommandForRuntimeByTag(artifact)"></hbr-copy-input>
+
