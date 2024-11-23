@@ -109,13 +109,11 @@ export function getPullCommandByDigest(
 ): string {
     if (artifactType && url && digest) {
         if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}@${digest}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}@${digest}`;
+            if (Object.values(Clients).includes(client)) {
+                return `${client} pull ${url}@${digest}`;
             }
         }
+
         if (artifactType === ArtifactType.CNAB) {
             return `${Clients.CNAB} pull ${url}@${digest}`;
         }
@@ -123,32 +121,6 @@ export function getPullCommandByDigest(
     return null;
 }
 
-export function getPullCmdByTag(
-    artifactType: string,
-    url: string,
-    tag: string,
-    client: Clients
-): string {
-    if (artifactType && url && tag) {
-        if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}:${tag}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}:${tag}`;
-            }
-        }
-        if (artifactType === ArtifactType.CNAB) {
-            return `cnab-to-oci pull ${url}:${tag}`;
-        }
-        if (artifactType === ArtifactType.CHART) {
-            return `helm pull oci://${url} --version ${tag}`;
-        }
-    }
-    return null;
-}
-
-// this should be deleted
 export function getPullCommandByTag(
     artifactType: string,
     url: string,
@@ -192,6 +164,9 @@ export enum Clients {
 export enum ClientNames {
     DOCKER = 'Docker',
     PODMAN = 'Podman',
+    NERDCTL = 'nerdctl',
+    CONTAINERD = 'ctr',
+    CRI_O = 'crictl',
     CHART = 'Helm',
     CNAB = 'CNAB',
 }
