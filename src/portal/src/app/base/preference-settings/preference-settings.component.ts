@@ -15,7 +15,10 @@ import { Component, OnInit } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { SkinableConfig } from '../../services/skinable-config.service';
 import { TranslateService } from '@ngx-translate/core';
-import { getDatetimeRendering } from 'src/app/shared/units/shared.utils';
+import {
+    getContainerRuntime,
+    getDatetimeRendering,
+} from 'src/app/shared/units/shared.utils';
 import { registerLocaleData } from '@angular/common';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -26,11 +29,15 @@ import {
     DatetimeRendering,
     DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
     DEFAULT_LANG_LOCALSTORAGE_KEY,
+    DEFAULT_RUNTIME_LOCALSTORAGE_KEY,
     DefaultDatetimeRendering,
     DeFaultLang,
+    DeFaultRuntime,
     LANGUAGES,
+    RUNTIMES,
     stringsForClarity,
     SupportedLanguage,
+    SupportedRuntime,
 } from '../../shared/entities/shared.const';
 
 @Component({
@@ -40,8 +47,10 @@ import {
 })
 export class PreferenceSettingsComponent implements OnInit {
     readonly guiLanguages = Object.entries(LANGUAGES);
+    readonly guiRuntimes = Object.entries(RUNTIMES);
     readonly guiDatetimeRenderings = Object.entries(DATETIME_RENDERINGS);
     selectedLang: SupportedLanguage = DeFaultLang;
+    selectedRuntime: SupportedRuntime = DeFaultRuntime;
     selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
     opened: boolean = false;
     build: string = '4276418';
@@ -75,6 +84,7 @@ export class PreferenceSettingsComponent implements OnInit {
             this.translateClarityComponents();
         }
         this.selectedDatetimeRendering = getDatetimeRendering();
+        this.selectedRuntime = getContainerRuntime();
     }
 
     //Internationalization for Clarity components, refer to https://clarity.design/documentation/internationalization
@@ -105,6 +115,13 @@ export class PreferenceSettingsComponent implements OnInit {
         return appConfig.harbor_version;
     }
 
+    public get currentRuntime(): string {
+        if (this.selectedRuntime) {
+            return RUNTIMES[this.selectedRuntime] as string;
+        }
+        return null;
+    }
+
     public get currentLang(): string {
         if (this.selectedLang) {
             return LANGUAGES[this.selectedLang][0] as string;
@@ -120,6 +137,10 @@ export class PreferenceSettingsComponent implements OnInit {
         return lang === this.selectedLang;
     }
 
+    matchRuntime(runtime: SupportedRuntime): boolean {
+        return runtime === this.selectedRuntime;
+    }
+
     matchDatetimeRendering(datetime: DatetimeRendering): boolean {
         return datetime === this.selectedDatetimeRendering;
     }
@@ -131,6 +152,13 @@ export class PreferenceSettingsComponent implements OnInit {
         // due to the bug(https://github.com/ngx-translate/core/issues/1258) of translate module
         // have to reload
         this.translate.use(lang).subscribe(() => window.location.reload());
+    }
+
+    switchRuntime(runtime: SupportedRuntime): void {
+        this.selectedRuntime = runtime;
+        localStorage.setItem(DEFAULT_RUNTIME_LOCALSTORAGE_KEY, runtime);
+        // have to reload,as HarborDatetimePipe is pure pipe
+        // window.location.reload();
     }
 
     switchDatetimeRendering(datetime: DatetimeRendering): void {

@@ -142,6 +142,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Gostaria de redefinir o segredo?",
         "CONFIRM_BODY_CLI_GENERATE": "Ao fazer isso, o segredo atual não poderá ser recuperado"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Change Preference",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "CONTAINER_RUN": "Container Runtime"
+    },
     "CHANGE_PWD": {
         "TITLE": "Alterar Senha",
         "CURRENT_PWD": "Senha atual",

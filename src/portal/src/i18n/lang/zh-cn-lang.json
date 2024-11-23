@@ -142,6 +142,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
         "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Change Preference",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "CONTAINER_RUN": "Container Runtime"
+    },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
         "CURRENT_PWD": "当前密码",

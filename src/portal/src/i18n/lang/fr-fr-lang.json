@@ -151,6 +151,12 @@
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
         "PASS_TIPS": "8-128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Change Preference",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "CONTAINER_RUN": "Container Runtime"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
         "PREFERENCES": "Preferences",

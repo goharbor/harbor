@@ -151,6 +151,12 @@
         "SAVE_SUCCESS": "Contraseña de usuario guardada satisfactoriamente.",
         "PASS_TIPS": "8-128 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Change Preference",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "CONTAINER_RUN": "Container Runtime"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil de usuario",
         "PREFERENCES": "Preferences",
