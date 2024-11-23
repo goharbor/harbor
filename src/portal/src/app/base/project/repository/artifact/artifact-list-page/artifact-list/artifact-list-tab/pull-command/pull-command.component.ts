@@ -8,6 +8,7 @@ import {
     getPullCommandByTag,
     hasPullCommand,
 } from '../../../../artifact';
+import { getContainerRuntime } from 'src/app/shared/units/shared.utils';
 
 @Component({
     selector: 'app-pull-command',
@@ -103,6 +104,25 @@ export class PullCommandComponent {
             this.accessoryType !== AccessoryType.COSIGN &&
             this.accessoryType !== AccessoryType.NOTATION &&
             this.accessoryType !== AccessoryType.NYDUS
+        );
+    }
+
+    // get client based on the selected container runtime
+    getSelectedClient(): Clients {
+        const runtime = getContainerRuntime();
+        const client = Object.values(Clients).find(client => client == runtime);
+        // return client if match found otherwise return (DOCKER)
+        return client ? client : Clients.DOCKER;
+    }
+
+    getPullCommandForRuntimeByTag(artifact: Artifact): string {
+        return getPullCommandByTag(
+            artifact.type,
+            `${this.registryUrl ? this.registryUrl : location.hostname}/${
+                this.projectName
+            }/${this.repoName}`,
+            this.selectedTag,
+            this.getSelectedClient()
         );
     }
 

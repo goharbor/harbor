@@ -115,15 +115,14 @@
     <clr-dg-column [clrDgSortBy]="'push_time'">{{
         'TAG.PUSH_TIME' | translate
     }}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'pull command'">{{
-        'TAG.PULL_COMMAND' | translate
-    }}</clr-dg-column>
     <clr-dg-placeholder>
         <span>{{ 'TAG.PLACEHOLDER' | translate }}</span>
     </clr-dg-placeholder>
     <clr-dg-row *ngFor="let tag of currentTags" [clrDgItem]="tag">
         <clr-dg-cell>
-            <div class="cell white-normal" [class.immutable]="tag.immutable">
+            <div
+                class="pull cell white-normal"
+                [class.immutable]="tag.immutable">
                 <span
                     href="javascript:void(0)"
                     class="max-width-100"
@@ -133,6 +132,15 @@
                 <span *ngIf="tag.immutable" class="label label-info ml-8">{{
                     'REPOSITORY.IMMUTABLE' | translate
                 }}</span>
+                <app-pull-command
+                    class="pull-btn"
+                    [isTagMode]="true"
+                    [artifact]="artifactDetails"
+                    [accessoryType]="accessoryType"
+                    [registryUrl]="registryUrl"
+                    [projectName]="projectName"
+                    [repoName]="repositoryName"
+                    [selectedTag]="tag.name"></app-pull-command>
             </div>
         </clr-dg-cell>
         <clr-dg-cell>{{
@@ -143,16 +151,6 @@
         <clr-dg-cell>{{
             tag.push_time | harborDatetime : 'short'
         }}</clr-dg-cell>
-        <clr-dg-cell>
-            <app-pull-command
-                [isTagMode]="true"
-                [artifact]="artifactDetails"
-                [accessoryType]="accessoryType"
-                [registryUrl]="registryUrl"
-                [projectName]="projectName"
-                [repoName]="repositoryName"
-                [selectedTag]="tag.name"></app-pull-command>
-        </clr-dg-cell>
     </clr-dg-row>
 
     <clr-dg-footer>
