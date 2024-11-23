@@ -1,72 +1,69 @@
-<clr-dropdown [clrCloseMenuOnItemClick]="false" class="mr-1" *ngIf="!isTagMode">
-    <button
-        [disabled]="
-            selectedRow?.length !== 1 || !hasPullCommand(selectedRow[0])
-        "
-        class="btn btn-link copy-pull-command"
-        clrDropdownTrigger>
-        {{ 'PUSH_IMAGE.COPY_PULL_COMMAND' | translate }}
-        <cds-icon shape="angle" direction="down"></cds-icon>
-    </button>
-    <clr-dropdown-menu clrPosition="bottom-right" *clrIfOpen>
-        <ng-container *ngIf="isImage(selectedRow[0])">
-            <div
-                class="flex"
-                aria-label="Dropdown header Action"
-                clrDropdownItem>
-                <hbr-copy-input
-                    [title]="getPullCommandForDocker(selectedRow[0])"
-                    [iconMode]="true"
-                    [defaultValue]="
-                        getPullCommandForDocker(selectedRow[0])
-                    "></hbr-copy-input>
-                <span>{{ 'PUSH_IMAGE.DOCKER' | translate }}</span>
-            </div>
-            <div
-                class="flex"
-                aria-label="Dropdown header Action"
-                clrDropdownItem>
-                <hbr-copy-input
-                    [title]="getPullCommandForPadMan(selectedRow[0])"
-                    [iconMode]="true"
-                    [defaultValue]="
-                        getPullCommandForPadMan(selectedRow[0])
-                    "></hbr-copy-input>
-                <span>{{ 'PUSH_IMAGE.PODMAN' | translate }}</span>
-            </div>
-        </ng-container>
-        <div
-            *ngIf="isCNAB(selectedRow[0])"
-            class="flex"
-            aria-label="Dropdown header Action"
-            clrDropdownItem>
-            <hbr-copy-input
-                [title]="getPullCommandForCNAB(selectedRow[0])"
-                [iconMode]="true"
-                [defaultValue]="
-                    getPullCommandForCNAB(selectedRow[0])
-                "></hbr-copy-input>
-            <span>{{ 'PUSH_IMAGE.CNAB' | translate }}</span>
-        </div>
-        <div
-            *ngIf="isChart(selectedRow[0])"
-            class="flex"
-            aria-label="Dropdown header Action"
-            clrDropdownItem>
-            <hbr-copy-input
-                [title]="getPullCommandForChart(selectedRow[0])"
-                [iconMode]="true"
-                [defaultValue]="
-                    getPullCommandForChart(selectedRow[0])
-                "></hbr-copy-input>
-            <span>{{ 'PUSH_IMAGE.HELM' | translate }}</span>
-        </div>
-    </clr-dropdown-menu>
-</clr-dropdown>
+<div class="" *ngIf="!isTagMode" [disabled]="!hasPullCommandForTag(artifact)">
+    <hbr-copy-input
+        [title]="getPullCommandForRuntimeByDigest(artifact)"
+        [iconMode]="true"
+        [defaultValue]="
+            getPullCommandForRuntimeByDigest(artifact)
+        "></hbr-copy-input>
+    <div
+        *ngIf="isCNAB(artifact)"
+        class="flex"
+        aria-label="Dropdown header Action"
+        clrDropdownItem>
+        <hbr-copy-input
+            [title]="getPullCommandForCNAB(artifact)"
+            [iconMode]="true"
+            [defaultValue]="getPullCommandForCNAB(artifact)"></hbr-copy-input>
+    </div>
+    <div
+        *ngIf="isChart(artifact)"
+        class="flex"
+        aria-label="Dropdown header Action"
+        clrDropdownItem>
+        <hbr-copy-input
+            [title]="getPullCommandForChart(artifact)"
+            [iconMode]="true"
+            [defaultValue]="getPullCommandForChart(artifact)"></hbr-copy-input>
+    </div>
+</div>
 
-<hbr-copy-input
+<clr-dropdown
+    [clrCloseMenuOnItemClick]="false"
+    class="mr-1"
     *ngIf="isTagMode"
-    [title]="getPullCommandForRuntimeByTag(artifact)"
-    [iconMode]="true"
-    [defaultValue]="getPullCommandForRuntimeByTag(artifact)"></hbr-copy-input>
+    [disabled]="!hasPullCommandForTag(artifact)">
+    <hbr-copy-input
+        *ngIf="isImage(artifact)"
+        [title]="getPullCommandForRuntimeByTag(artifact)"
+        [iconMode]="true"
+        [defaultValue]="
+            getPullCommandForRuntimeByTag(artifact)
+        "></hbr-copy-input>
 
+    <div
+        *ngIf="isCNAB(artifact)"
+        class="flex"
+        aria-label="Dropdown header Action"
+        clrDropdownItem>
+        <hbr-copy-input
+            [title]="getPullCommandForCNABByTag(artifact)"
+            [iconMode]="true"
+            [defaultValue]="
+                getPullCommandForCNABByTag(artifact)
+            "></hbr-copy-input>
+        <span>{{ 'PUSH_IMAGE.CNAB' | translate }}</span>
+    </div>
+    <div
+        *ngIf="isChart(artifact)"
+        class="flex"
+        aria-label="Dropdown header Action"
+        clrDropdownItem>
+        <hbr-copy-input
+            [title]="getPullCommandForChartByTag(artifact)"
+            [iconMode]="true"
+            [defaultValue]="
+                getPullCommandForChartByTag(artifact)
+            "></hbr-copy-input>
+        <span>{{ 'PUSH_IMAGE.HELM' | translate }}</span>
+    </div>
+</clr-dropdown>

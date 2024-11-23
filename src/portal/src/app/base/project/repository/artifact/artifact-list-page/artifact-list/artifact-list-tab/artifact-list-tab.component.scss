@@ -11,11 +11,16 @@
   height: 0;
 }
 
+.fix-width {
+  width: 40px;
+}
+
 .truncated {
   width: 100px;
   line-height: 20px;
   height: 20px;
-  display: inline-block;
+  display: flex;
+  align-items: center;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
