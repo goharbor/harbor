@@ -1,4 +1,4 @@
-<div class="" *ngIf="!isTagMode" [disabled]="!hasPullCommandForTag(artifact)">
+<div class="" *ngIf="!isTagMode">
     <hbr-copy-input
         [title]="getPullCommandForRuntimeByDigest(artifact)"
         [iconMode]="true"
