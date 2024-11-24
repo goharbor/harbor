@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
-import { AppConfigService } from '../../services/app-config.service';
-import { SkinableConfig } from '../../services/skinable-config.service';
 import { TranslateService } from '@ngx-translate/core';
 import {
     getContainerRuntime,
@@ -53,28 +51,13 @@ export class PreferenceSettingsComponent implements OnInit {
     selectedRuntime: SupportedRuntime = DeFaultRuntime;
     selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
     opened: boolean = false;
-    build: string = '4276418';
-    customIntroduction: string;
-    customName: string;
-    customLogo: string;
 
     constructor(
-        private appConfigService: AppConfigService,
-        private skinableConfig: SkinableConfig,
         private translate: TranslateService,
         private commonStrings: ClrCommonStringsService
     ) {}
 
     ngOnInit(): void {
-        // custom skin
-        let customSkinObj = this.skinableConfig.getSkinConfig();
-        if (customSkinObj) {
-            if (customSkinObj.product) {
-                this.customLogo = customSkinObj.product.logo;
-                this.customName = customSkinObj.product.name;
-                this.customIntroduction = customSkinObj.product.introduction;
-            }
-        }
         this.selectedLang = this.translate.currentLang as SupportedLanguage;
         if (this.selectedLang) {
             registerLocaleData(
@@ -108,11 +91,6 @@ export class PreferenceSettingsComponent implements OnInit {
                 this.commonStrings.localize(translatedStringsForClarity);
             }
         });
-    }
-
-    public get version(): string {
-        let appConfig = this.appConfigService.getConfig();
-        return appConfig.harbor_version;
     }
 
     public get currentRuntime(): string {
