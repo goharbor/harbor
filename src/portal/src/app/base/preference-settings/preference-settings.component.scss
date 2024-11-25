@@ -1,44 +1,5 @@
-.sign-in-override {
-    padding-left: 0 !important;
-    padding-right: 5px !important;
-}
-
-.sign-up-override {
-    padding-left: 5px !important;
-}
-
-.custom-divider {
-    display: inline-block;
-    border-right: 2px inset snow;
-    padding: 2px 0;
-    vertical-align: middle;
-    height: 24px;
-}
-
 .locale-selected {
     font-weight: bold;
-}
-
-.nav-divider {
-    display: inline-block;
-    width: 1px;
-    height: 20px;
-    background-color: #fafafa;
-    position: relative;
-    opacity: 0.15;
-    content: '';
-}
-
-.nav-about-link {
-    padding-left: 1.6rem !important;
-    padding-right: 1rem !important;
-    min-width: 125px;
-    text-align: left !important;
-}
-
-.harbor-logo {
-    width: 40px;
-    margin-right: 15px;
 }
 
 .nav-icon-width {
@@ -68,22 +29,4 @@
     justify-content: flex-start;
     align-items: start;
     gap: 20px;
-}
-
-.user-icon {
-    left: -2px;
-}
-
-.headerLogo {
-    width: 36px;
-    height: 36px;
-    object-fit: fill;
-}
-
-.dropdown-item {
-    outline: none;
-}
-
-.user-down {
-    right: 1rem !important;
 }
