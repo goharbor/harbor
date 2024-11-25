@@ -770,6 +770,7 @@
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "下载数",
         "PULL_COMMAND": "拉取命令",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
         "IMMUTABLE": "不可变的",

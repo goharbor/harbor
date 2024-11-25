@@ -770,6 +770,7 @@
         "ARTIFACTS_COUNT": "Artefatos",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando de Pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Horário de Envio",
         "PUSH_TIME": "Horário de Recebimento",
         "IMMUTABLE": "Imutável",

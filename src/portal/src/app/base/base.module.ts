@@ -170,7 +170,6 @@ const routes: Routes = [
     declarations: [
         HarborShellComponent,
         PasswordSettingComponent,
-        PreferenceSettingsComponent,
         AccountSettingsModalComponent,
         ForgotPasswordComponent,
         GlobalConfirmationDialogComponent,
