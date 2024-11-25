@@ -1,4 +1,14 @@
-<clr-dropdown *ngIf="!isTagMode">
+<div *ngIf="isTopModel" class="form-group">
+    <hbr-copy-input
+        #copyInputComponent
+        (onCopySuccess)="onCpSuccess(getPullCommandForTopModel())"
+        inputSize="30"
+        headerTitle=""
+        defaultValue="{{ getPullCommandForTopModel() }}"
+        ></hbr-copy-input>
+</div>
+
+<clr-dropdown *ngIf="!isTopModel && !isTagMode">
     <hbr-copy-input
         *ngIf="isImage(artifact)"
         [title]="getPullCommandForRuntimeByDigest(artifact)"
@@ -33,7 +43,7 @@
 
 <clr-dropdown
     class="mr-1"
-    *ngIf="isTagMode"
+    *ngIf="isTagMode && !isTopModel"
     [disabled]="!hasPullCommandForTag(artifact)">
     <hbr-copy-input
         *ngIf="isImage(artifact)"
