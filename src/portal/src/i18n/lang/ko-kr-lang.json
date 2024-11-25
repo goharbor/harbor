@@ -769,6 +769,7 @@
         "ARTIFACTS_COUNT": "아티팩트",
         "PULL_COUNT": "풀(Pull) 수",
         "PULL_COMMAND": "풀(Pull) 명령어",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "풀(Pull) 시간",
         "PUSH_TIME": "푸시 시간",
         "IMMUTABLE": "Immutable",

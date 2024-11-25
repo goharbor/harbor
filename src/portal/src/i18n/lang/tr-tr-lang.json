@@ -772,6 +772,7 @@
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
         "PULL_COMMAND": "İndirme Komutu",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
         "IMMUTABLE": "Immutable",

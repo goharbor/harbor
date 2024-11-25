@@ -772,6 +772,7 @@
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando Pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "IMMUTABLE": "Immutable",
