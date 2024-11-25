@@ -6,6 +6,7 @@ import {
     Clients,
     getPullCommandByDigest,
     getPullCommandByTag,
+    getPullCommandForTop,
     hasPullCommand,
 } from '../../../../artifact';
 import { getContainerRuntime } from 'src/app/shared/units/shared.utils';
@@ -18,6 +19,8 @@ import { TranslateService } from '@ngx-translate/core';
     styleUrls: ['./pull-command.component.scss'],
 })
 export class PullCommandComponent {
+    @Input()
+    isTopModel: boolean = false; // TopModel is for tab top component,
     @Input()
     isTagMode: boolean = false; // tagMode is for tag list datagrid,
     @Input()
@@ -62,6 +65,15 @@ export class PullCommandComponent {
         const client = Object.values(Clients).find(client => client == runtime);
         // return client if match found otherwise return (DOCKER)
         return client ? client : Clients.DOCKER;
+    }
+
+    getPullCommandForTopModel(): string {
+        return getPullCommandForTop(
+            `${this.registryUrl ? this.registryUrl : location.hostname}/${
+                this.projectName
+            }/${this.repoName}`,
+            this.getSelectedClient()
+        );
     }
 
     getPullCommandForRuntimeByDigest(artifact: Artifact): string {
