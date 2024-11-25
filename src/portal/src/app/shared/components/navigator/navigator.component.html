@@ -87,6 +87,7 @@
                     >{{ 'ACCOUNT_SETTINGS.PREFERENCES' | translate }}</a
                 >
                 <a
+                    *ngIf="canChangePassword"
                     href="javascript:void(0)"
                     clrDropdownItem
                     (click)="openChangePwdModal()"

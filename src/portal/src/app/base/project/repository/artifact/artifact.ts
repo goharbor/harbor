@@ -170,16 +170,6 @@ export enum Clients {
     CNAB = 'cnab-to-oci',
 }
 
-export enum ClientNames {
-    DOCKER = 'Docker',
-    PODMAN = 'Podman',
-    NERDCTL = 'nerdctl',
-    CONTAINERD = 'ctr',
-    CRI_O = 'crictl',
-    CHART = 'Helm',
-    CNAB = 'CNAB',
-}
-
 export enum ArtifactSbomType {
     SPDX = 'SPDX',
 }

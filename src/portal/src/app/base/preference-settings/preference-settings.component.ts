@@ -135,8 +135,6 @@ export class PreferenceSettingsComponent implements OnInit {
     switchRuntime(runtime: SupportedRuntime): void {
         this.selectedRuntime = runtime;
         localStorage.setItem(DEFAULT_RUNTIME_LOCALSTORAGE_KEY, runtime);
-        // have to reload,as HarborDatetimePipe is pure pipe
-        // window.location.reload();
     }
 
     switchDatetimeRendering(datetime: DatetimeRendering): void {
