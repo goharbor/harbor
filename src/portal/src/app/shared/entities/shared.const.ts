@@ -242,7 +242,7 @@ export const RUNTIMES = {
 } as const;
 export const supportedRuntimes = Object.keys(RUNTIMES) as SupportedRuntime[];
 /**
- * The default cookie key used to store current used language preference.
+ * The default cookie key used to store current used container runtime preference.
  */
 export const DEFAULT_RUNTIME_LOCALSTORAGE_KEY = 'harbor-runtime';
 

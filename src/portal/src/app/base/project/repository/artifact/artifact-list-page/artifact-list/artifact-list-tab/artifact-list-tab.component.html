@@ -197,7 +197,7 @@
                 </div>
             </clr-dg-action-bar>
 
-            <clr-dg-column class="" [clrDgSortBy]="'digest'"
+            <clr-dg-column [clrDgSortBy]="'digest'"
                 ><ng-template
                     [clrDgHideableColumn]="{ hidden: hiddenArray[0] }">
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
@@ -260,7 +260,7 @@
             <clr-dg-row
                 *ngFor="let artifact of artifactList; let i = index"
                 [clrDgItem]="artifact">
-                <clr-dg-cell class="">
+                <clr-dg-cell>
                     <div class="cell white-normal">
                         <div
                             class="artifact-icon clr-display-inline-block"
