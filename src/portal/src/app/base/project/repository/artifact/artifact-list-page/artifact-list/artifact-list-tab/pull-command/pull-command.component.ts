@@ -9,6 +9,8 @@ import {
     hasPullCommand,
 } from '../../../../artifact';
 import { getContainerRuntime } from 'src/app/shared/units/shared.utils';
+import { MessageHandlerService } from 'src/app/shared/services/message-handler.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-pull-command',
@@ -32,6 +34,11 @@ export class PullCommandComponent {
     artifact: Artifact;
     @Input()
     accessoryType: string;
+
+    constructor(
+        private msgHandler: MessageHandlerService,
+        private translate: TranslateService
+    ) {}
 
     hasPullCommand(artifact: Artifact): boolean {
         return hasPullCommand(artifact);
@@ -133,5 +140,16 @@ export class PullCommandComponent {
             this.selectedTag,
             Clients.CHART
         );
+    }
+
+    onCpSuccess(copied: string): void {
+        // $event is the defaultValue emitted from CopyInputComponent
+        this.translate
+            .get('REPOSITORY.COPY_SUCCESS', {
+                param: copied,
+            })
+            .subscribe((res: string) => {
+                this.msgHandler.showSuccess(res);
+            });
     }
 }
