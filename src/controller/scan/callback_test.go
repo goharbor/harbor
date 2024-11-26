@@ -96,7 +96,7 @@ func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 			},
 			nil,
 		).Once()
-		suite.robotCtl.On("Delete", mock.Anything, int64(1)).Return(nil).Once()
+		suite.robotCtl.On("Delete", mock.Anything, int64(1), mock.Anything).Return(nil).Once()
 		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
@@ -108,7 +108,7 @@ func (suite *CallbackTestSuite) TestScanTaskStatusChange() {
 			},
 			nil,
 		).Once()
-		suite.robotCtl.On("Delete", mock.Anything, int64(1)).Return(fmt.Errorf("failed")).Once()
+		suite.robotCtl.On("Delete", mock.Anything, int64(1), mock.Anything).Return(fmt.Errorf("failed")).Once()
 		suite.NoError(scanTaskStatusChange(suite.ctx, 1, job.SuccessStatus.String()))
 	}
 
