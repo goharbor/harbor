@@ -152,10 +152,10 @@
         "PASS_TIPS": "8-128 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
     },
     "CHANGE_PREF": {
-        "TITLE": "Change Preference",
+        "TITLE": "Preferences",
         "LANGUAGE": "Language",
         "DATE_TIME_FORMAT": "Date/Time Format",
-        "CONTAINER_RUN": "Container Runtime"
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil de usuario",

@@ -144,10 +144,10 @@
         "CONFIRM_BODY_CLI_GENERATE": "Cli 시크릿을 재생성하면 이전 Cli 시크릿이 삭제됩니다"
     },
     "CHANGE_PREF": {
-        "TITLE": "Change Preference",
+        "TITLE": "Preferences",
         "LANGUAGE": "Language",
         "DATE_TIME_FORMAT": "Date/Time Format",
-        "CONTAINER_RUN": "Container Runtime"
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
     },
     "CHANGE_PWD": {
         "TITLE": "비밀번호 변경",
