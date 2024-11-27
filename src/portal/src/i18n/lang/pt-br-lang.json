@@ -143,10 +143,10 @@
         "CONFIRM_BODY_CLI_GENERATE": "Ao fazer isso, o segredo atual não poderá ser recuperado"
     },
     "CHANGE_PREF": {
-        "TITLE": "Change Preference",
+        "TITLE": "Preferences",
         "LANGUAGE": "Language",
         "DATE_TIME_FORMAT": "Date/Time Format",
-        "CONTAINER_RUN": "Container Runtime"
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
     },
     "CHANGE_PWD": {
         "TITLE": "Alterar Senha",

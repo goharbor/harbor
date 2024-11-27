@@ -151,10 +151,10 @@
     "PASS_TIPS": "密碼長度需介於 8 到 128 個字元之間，且至少包含一個大寫字母、小寫字母或數字。"
   },
   "CHANGE_PREF": {
-    "TITLE": "Change Preference",
+    "TITLE": "Preferences",
     "LANGUAGE": "Language",
     "DATE_TIME_FORMAT": "Date/Time Format",
-    "CONTAINER_RUN": "Container Runtime"
+    "PULL_CMD_PREFIX": "Pull Command Prefix"
   },
   "ACCOUNT_SETTINGS": {
     "PROFILE": "使用者設定",
