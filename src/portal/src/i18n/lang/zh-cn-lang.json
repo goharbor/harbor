@@ -143,10 +143,10 @@
         "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
     "CHANGE_PREF": {
-        "TITLE": "Change Preference",
+        "TITLE": "Preferences",
         "LANGUAGE": "Language",
         "DATE_TIME_FORMAT": "Date/Time Format",
-        "CONTAINER_RUN": "Container Runtime"
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",

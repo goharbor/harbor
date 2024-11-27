@@ -144,10 +144,10 @@
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
     "CHANGE_PREF": {
-        "TITLE": "Change Preference",
+        "TITLE": "Preferences",
         "LANGUAGE": "Language",
         "DATE_TIME_FORMAT": "Date/Time Format",
-        "CONTAINER_RUN": "Container Runtime"
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
     },
     "CHANGE_PWD": {
         "TITLE": "Şifreyi değiştir",
