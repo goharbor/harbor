@@ -29,7 +29,7 @@ func newDesc(subsystem, name, help string) *prometheus.Desc {
 	)
 }
 
-func newDescWithLables(subsystem, name, help string, labels ...string) *prometheus.Desc {
+func newDescWithLabels(subsystem, name, help string, labels ...string) *prometheus.Desc {
 	return prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, subsystem, name),
 		help, labels, nil,
