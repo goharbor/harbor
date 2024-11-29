@@ -6,12 +6,12 @@
                 display: flex;
                 align-items: center;
 
-                >div:first-child {
+                > div:first-child {
                     min-width: 250px;
                     margin-right: 5px;
                 }
 
-                >div:nth-child(2) {
+                > div:nth-child(2) {
                     width: 140px;
 
                     span {
@@ -59,19 +59,19 @@
                     }
 
                     .num-failed {
-                        background-color: #C92101;
+                        background-color: #c92101;
                     }
 
                     .num-progress {
-                        background-color: #1C5898;
+                        background-color: #1c5898;
                     }
 
                     .num-stopped {
-                        background-color: #A1A1A1;
+                        background-color: #a1a1a1;
                     }
 
                     .detail-span {
-                        flex:0 0 100px;
+                        flex: 0 0 100px;
                         margin: 10px 0 0 10px;
                     }
 
@@ -90,7 +90,7 @@
                     width: 120px;
                 }
 
-                >div {
+                > div {
                     margin-top: 10px;
                 }
             }
@@ -105,7 +105,7 @@
             height: 24px;
             display: flex;
             justify-content: flex-end;
-            
+
             .filter-tag {
                 float: left;
                 margin-top: 8px;
@@ -115,9 +115,9 @@
                 cursor: pointer;
                 margin-top: 7px;
             }
-            
+
             .refresh-btn:hover {
-                color: #007CBB;
+                color: #007cbb;
             }
         }
 

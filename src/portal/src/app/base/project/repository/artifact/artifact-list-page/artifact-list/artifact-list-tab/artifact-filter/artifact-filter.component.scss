@@ -1,42 +1,42 @@
 .search-btn {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .dropdown-toggle {
-  height: 1.3rem;
-  width: 200px;
-  display: flex;
-  justify-content: left;
-  border-bottom: 0.05rem solid;
+    height: 1.3rem;
+    width: 200px;
+    display: flex;
+    justify-content: left;
+    border-bottom: 0.05rem solid;
 }
 
 .clr-control-label {
-  margin-bottom: 1rem;
-  margin-left: 0.5rem;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
 }
 
 .filter-divider {
-  display: inline-block;
-  height: 24px;
-  width: 1px;
-  margin-right: 6px;
-  margin-left: 6px;
+    display: inline-block;
+    height: 24px;
+    width: 1px;
+    margin-right: 6px;
+    margin-left: 6px;
 }
 
 .clr-row {
-  align-items: center;
-  margin: 0;
+    align-items: center;
+    margin: 0;
 }
 
 .m-r-10px {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .search-dropdown-toggle {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .no-outline:focus {
-  border: none;
-  background: none;
+    border: none;
+    background: none;
 }
