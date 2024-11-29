@@ -302,11 +302,13 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Select Rule  rule${d}
     ${endpoint_body}=  Fetch From Right  ${endpoint}  //
     ${dest_namespace}=  Set Variable If  '${provider}'=='gitlab'  ${endpoint_body}/${dest_namespace}  ${dest_namespace}
-    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    Run Keyword If  '${provider}'=='gitlab'  Docker Image Can Be Pulled With Credential  registry.gitlab.com  ${username}  ${pwd}  ${dest_namespace}/${image}:${tag1}   times=3
     Executions Result Count Should Be  Succeeded  event_based  1
     Go Into Project  project${d}
     Delete Repo  project${d}  ${image}
-    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Run Keyword If  '${provider}'=='gitlab'  Docker Image Can Not Be Pulled With Credential  registry.gitlab.com  ${username}  ${pwd}  ${dest_namespace}/${image}:${tag1}
     Switch To Replication Manage
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
@@ -669,7 +671,7 @@ Create Schedules For Job Service Dashboard Schedules
     Add A Tag Retention Rule
     Set Tag Retention Policy Schedule  ${schedule_type}  ${schedule_cron}
     # Create a preheat policy triggered by schedule
-    Create An New Distribution  Dragonfly  ${distribution_name}  ${distribution_endpoint}
+    Create An New Distribution  Dragonfly  ${distribution_name}  ${distribution_endpoint}  ${DRAGONFLY_AUTH_TOKEN}
     Go Into Project  ${project_name}
     Create An New P2P Preheat Policy  ${p2p_policy_name}  ${distribution_name}  **  **  Scheduled  ${schedule_type}  ${schedule_cron}
     # Create a replication policy triggered by schedule
