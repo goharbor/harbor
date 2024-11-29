@@ -527,24 +527,30 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     addLabel(label: Label) {
         if (!this.inprogress) {
-            const params: NewArtifactService.AddLabelParams = {
-                projectName: this.projectName,
-                repositoryName: dbEncodeURIComponent(this.repoName),
-                reference: this.selectedRow[0].digest,
-                label: label,
-            };
             this.inprogress = true;
-            this.newArtifactService
-                .addLabel(params)
-                .pipe(finalize(() => (this.inprogress = false)))
+            const labelRequests = this.selectedRow.map((artifact: Artifact) => {
+                const params: NewArtifactService.AddLabelParams = {
+                    projectName: this.projectName,
+                    repositoryName: dbEncodeURIComponent(this.repoName),
+                    reference: artifact.digest,
+                    label: label,
+                };
+
+                return this
+                    .newArtifactService
+                    .addLabel(params)
+                    .pipe(catchError(error => {
+                        this.errorHandlerService.error(error);
+                        return of(error);
+                    }));
+            })
+
+            forkJoin(labelRequests)
+                .pipe(finalize(() => { this.inprogress = false; }))
                 .subscribe({
-                    next: res => {
+                    complete: () => {
                         this.refresh();
-                    },
-                    error: err => {
-                        this.refresh();
-                        this.errorHandlerService.error(err);
-                    },
+                    }
                 });
         }
     }
