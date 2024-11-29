@@ -59,7 +59,7 @@ func SendError(w http.ResponseWriter, err error) {
 		errPayload = errors.NewErrs(err).Error()
 	} else {
 		// only log the error whose status code < 500 when debugging to avoid log flooding
-		log.Debug(errPayload)
+		log.Debugf("%s %s", errPayload, stackTrace)
 	}
 	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, errPayload)
