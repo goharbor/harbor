@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "프로젝트가 성공적으로 전환됐습니다.",
         "FAILED_TO_DELETE_PROJECT": "프로젝트에 리포지토리 또는 복제 규칙이 포함되어 있거나 헬름 차트를 삭제할 수 없습니다.",
         "INLINE_HELP_PUBLIC": "프로젝트가 공개로 설정되면 누구나 이 프로젝트의 저장소에 대한 읽기 권한을 갖게 되며 사용자는 이 프로젝트에서 이미지를 가져오기 전에 \"docker login\"을 실행할 필요가 없습니다.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
@@ -483,7 +483,6 @@
         "CLOUD_EVENT": "클라우드이벤트",
         "PAYLOAD_DATA": "페이로드 데이터",
         "SLACK_RATE_LIMIT": "Slack 속도 제한에 유의하세요."
-
     },
     "GROUP": {
         "GROUP": "그룹",
@@ -934,7 +933,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "속성은 LDAP 그룹의 멤버십을 나타내며 기본값은 memberof이며 일부 LDAP 서버에서는 \"ismemberof\"일 수 있습니다. LDAP 그룹 관련 기능을 활성화해야 하는 경우 이 필드를 비워둘 수 없습니다.",
             "GROUP_SCOPE": "LDAP 그룹 검색 범위",
             "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다."
-
         },
         "UAA": {
             "ENDPOINT": "UAA 엔드포인트",
@@ -1308,7 +1306,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "예약내역을 가져오던 중 에러가 발생했습니다"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "가비지 컬렉션 예약",
@@ -1630,6 +1627,7 @@
         "SCOPE": "범위",
         "SCOPE_SINGLE_PEER": "싱글 피어",
         "SCOPE_ALL_PEERS": "모든 피어",
+        "EXTRA_ATTRIBUTES": "추가 속성",
         "NO_POLICY": "정책 없음",
         "ENABLED_POLICY_SUMMARY": "정책{{name}}을 활성화하시겠습니까?",
         "DISABLED_POLICY_SUMMARY": "정책{{name}}을 비활성화하시겠습니까?",

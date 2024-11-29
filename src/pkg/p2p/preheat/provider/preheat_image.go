@@ -48,6 +48,9 @@ type PreheatImage struct {
 
 	// Scope indicates the preheat scope.
 	Scope string `json:"scope,omitempty"`
+
+	// ExtraAttrs contains extra attributes for the preheating image.
+	ExtraAttrs map[string]interface{} `json:"extra_attrs,omitempty"`
 }
 
 // FromJSON build preheating image from the given data.

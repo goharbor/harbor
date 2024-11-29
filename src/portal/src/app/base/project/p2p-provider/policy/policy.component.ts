@@ -38,6 +38,7 @@ import {
     TIME_OUT,
     TRIGGER,
     TRIGGER_I18N_MAP,
+    SCOPE_I18N_MAP,
 } from '../p2p-provider.service';
 import { PreheatPolicy } from '../../../../../../ng-swagger-gen/models/preheat-policy';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
@@ -490,7 +491,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 severity: this.addP2pPolicyComponent.severity,
                 label: this.addP2pPolicyComponent.labels,
                 triggerType: this.addP2pPolicyComponent.triggerType,
-                scope: this.addP2pPolicyComponent.scope,
+                scope: this.addP2pPolicyComponent.policy.scope,
+                extraAttrs: this.addP2pPolicyComponent.policy.extra_attrs,
             });
             this.addP2pPolicyComponent.originPolicyForEdit = clone(
                 this.selectedRow
@@ -509,6 +511,10 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 this.addP2pPolicyComponent.triggerType;
             this.addP2pPolicyComponent.originCronForEdit =
                 this.addP2pPolicyComponent.cron;
+            this.addP2pPolicyComponent.originScopeForEdit =
+                this.addP2pPolicyComponent.scope;
+            this.addP2pPolicyComponent.originExtraAttrsForEdit =
+                this.addP2pPolicyComponent.extraAttrs;
         }
     }
 
@@ -666,6 +672,13 @@ export class PolicyComponent implements OnInit, OnDestroy {
         return trigger;
     }
 
+    getScopeI18n(scope: string): string {
+        if (scope) {
+            return SCOPE_I18N_MAP[scope];
+        }
+        return '';
+    }
+
     isScheduled(trigger: string): boolean {
         return JSON.parse(trigger).type === TRIGGER.SCHEDULED;
     }
@@ -793,5 +806,18 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 }
             }
         }
+    }
+
+    toString(v: any) {
+        if (v) {
+            return JSON.stringify(v);
+        }
+        return '';
+    }
+    toJson(v: any) {
+        if (v) {
+            return JSON.parse(v);
+        }
+        return null;
     }
 }

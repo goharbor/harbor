@@ -247,7 +247,7 @@
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
@@ -913,7 +913,6 @@
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *.",
             "SKIP_SCANNER_PULL_TIME_TOOLTIP": "Vulnerability scanner(e.g. Trivy) will not update the image \"last pull time\" when the image is scanned."
-
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -1196,7 +1195,6 @@
         "ADD_TAG": "ADD TAG",
         "REMOVE_TAG": "REMOVE TAG",
         "NAME_ALREADY_EXISTS": "Tag already exists under the repository"
-
     },
     "LABEL": {
         "LABEL": "Label",
@@ -1307,7 +1305,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",
@@ -1633,6 +1630,7 @@
         "SCOPE": "Scope",
         "SCOPE_SINGLE_PEER": "Single Peer",
         "SCOPE_ALL_PEERS": "All Peers",
+        "EXTRA_ATTRIBUTES": "Extra Attributes",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to disable policy {{name}}?",

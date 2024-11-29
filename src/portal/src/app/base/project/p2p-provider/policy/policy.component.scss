@@ -19,11 +19,11 @@
     height: 100%;
 }
 
-.margin-left-5px{
+.margin-left-5px {
     margin-left: 5px;
 }
 
-.margin-left-10px{
+.margin-left-10px {
     margin-left: 10px;
 }
 
@@ -57,4 +57,25 @@
 
 .no-wrapper {
     white-space: nowrap;
+}
+
+.flex {
+    display: flex;
+}
+
+.pre {
+    min-width: 25rem;
+    max-width: 40rem;
+}
+
+pre {
+    border: none;
+}
+
+.link-normal {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 10rem;
+    text-transform: unset;
 }

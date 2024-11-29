@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "Proje başarıyla değiştirildi.",
         "FAILED_TO_DELETE_PROJECT": "Proje havuzları veya çoğaltma kurallarını içeriyor veya helm tabloları silinemiyor.",
         "INLINE_HELP_PUBLIC": "Bir proje herkese açık olarak ayarlandığında, herkes bu proje altındaki depoları okuma iznine sahiptir ve kullanıcının bu proje altındaki imajları çekmeden önce \"docker login\" çalıştırması gerekmez.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
@@ -936,7 +936,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "Öznitelik, LDAP grubunun üyeliğini gösterir, varsayılan değer memberof, bazı LDAP sunucularında \"ismemberof\" olabilir. This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
             "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Uç Noktası",
@@ -1310,7 +1309,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "Takvimlendirme de bir hata oluştu"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",
@@ -1636,6 +1634,7 @@
         "SCOPE": "Scope",
         "SCOPE_SINGLE_PEER": "Single Peer",
         "SCOPE_ALL_PEERS": "All Peers",
+        "EXTRA_ATTRIBUTES": "Extra Attributes",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to disable policy {{name}}?",

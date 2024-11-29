@@ -76,23 +76,25 @@ func (p *PolicyTestSuite) TestValidatePreheatPolicy() {
 // TestDecode tests decode.
 func (p *PolicyTestSuite) TestDecode() {
 	s := &Schema{
-		ID:          100,
-		Name:        "test-for-decode",
-		Description: "",
-		ProjectID:   1,
-		ProviderID:  1,
-		Filters:     nil,
-		FiltersStr:  "[{\"type\":\"repository\",\"value\":\"**\"},{\"type\":\"tag\",\"value\":\"**\"},{\"type\":\"label\",\"value\":\"test\"}]",
-		Trigger:     nil,
-		TriggerStr:  "{\"type\":\"event_based\",\"trigger_setting\":{\"cron\":\"\"}}",
-		Enabled:     false,
-		Scope:       "all_peers",
+		ID:            100,
+		Name:          "test-for-decode",
+		Description:   "",
+		ProjectID:     1,
+		ProviderID:    1,
+		Filters:       nil,
+		FiltersStr:    "[{\"type\":\"repository\",\"value\":\"**\"},{\"type\":\"tag\",\"value\":\"**\"},{\"type\":\"label\",\"value\":\"test\"}]",
+		Trigger:       nil,
+		TriggerStr:    "{\"type\":\"event_based\",\"trigger_setting\":{\"cron\":\"\"}}",
+		Enabled:       false,
+		Scope:         "all_peers",
+		ExtraAttrsStr: "{\"key\":\"value\"}",
 	}
 	p.NoError(s.Decode())
 	p.Len(s.Filters, 3)
 	p.NotNil(s.Trigger)
 
 	p.Equal(ScopeTypeAllPeers, s.Scope)
+	p.Equal(map[string]interface{}{"key": "value"}, s.ExtraAttrs)
 
 	// invalid filter or trigger
 	s.FiltersStr = ""
@@ -133,9 +135,13 @@ func (p *PolicyTestSuite) TestEncode() {
 		TriggerStr: "",
 		Enabled:    false,
 		Scope:      "single_peer",
+		ExtraAttrs: map[string]interface{}{
+			"key": "value",
+		},
 	}
 	p.NoError(s.Encode())
 	p.Equal(`[{"type":"repository","value":"**"},{"type":"tag","value":"**"},{"type":"label","value":"test"}]`, s.FiltersStr)
 	p.Equal(`{"type":"event_based","trigger_setting":{}}`, s.TriggerStr)
 	p.Equal(ScopeTypeSinglePeer, s.Scope)
+	p.Equal(`{"key":"value"}`, s.ExtraAttrsStr)
 }

@@ -481,6 +481,23 @@
                             </select>
                         </clr-select-container>
                     </div>
+                    <!-- extra_attrs -->
+                    <div class="clr-form-control">
+                        <label class="clr-control-label width-6rem">{{
+                            'P2P_PROVIDER.EXTRA_ATTRIBUTES' | translate
+                        }}</label>
+                        <div class="clr-control-container">
+                            <textarea
+                                autocomplete="off"
+                                class="clr-textarea width-380"
+                                type="text"
+                                id="extraAttrs"
+                                #ngExtraAttrs="ngModel"
+                                [disabled]="loading"
+                                [(ngModel)]="extraAttrs"
+                                name="extraAttrs"></textarea>
+                        </div>
+                    </div>
                 </section>
             </form>
             <div class="mt-1 bottom-btn" *ngIf="!isEdit">

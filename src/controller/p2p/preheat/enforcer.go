@@ -402,7 +402,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 	// Start tasks
 	count := 0
 	for _, c := range candidates {
-		if _, err = de.startTask(ctx, eid, c, insData, pl.Scope); err != nil {
+		if _, err = de.startTask(ctx, eid, c, insData, pl.Scope, pl.ExtraAttrs); err != nil {
 			// Just log the error and skip
 			log.Errorf("start task error for preheating image: %s/%s:%s@%s", c.Namespace, c.Repository, c.Tags[0], c.Digest)
 			continue
@@ -421,7 +421,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 }
 
 // startTask starts the preheat task(job) for the given candidate
-func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, candidate *selector.Candidate, instance, scope string) (int64, error) {
+func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, candidate *selector.Candidate, instance, scope string, extraAttrs map[string]interface{}) (int64, error) {
 	u, err := de.fullURLGetter(candidate)
 	if err != nil {
 		return -1, err
@@ -438,10 +438,11 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 		Headers: map[string]interface{}{
 			accessCredHeaderKey: cred,
 		},
-		ImageName: fmt.Sprintf("%s/%s", candidate.Namespace, candidate.Repository),
-		Tag:       candidate.Tags[0],
-		Digest:    candidate.Digest,
-		Scope:     scope,
+		ImageName:  fmt.Sprintf("%s/%s", candidate.Namespace, candidate.Repository),
+		Tag:        candidate.Tags[0],
+		Digest:     candidate.Digest,
+		Scope:      scope,
+		ExtraAttrs: extraAttrs,
 	}
 
 	piData, err := pi.ToJSON()

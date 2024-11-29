@@ -16,7 +16,7 @@
         "HEADER_LINK": "Einloggen",
         "OR": "ODER",
         "VIA_LOCAL_DB": "LOGIN MIT LOKALER DB",
-	"CORE_SERVICE_NOT_AVAILABLE": "Core Service ist nicht verfügbar"
+        "CORE_SERVICE_NOT_AVAILABLE": "Core Service ist nicht verfügbar"
     },
     "SIGN_UP": {
         "TITLE": "Registrieren"
@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "Projekt erfolgreich geändert.",
         "FAILED_TO_DELETE_PROJECT": "Das Projekt enthält Repositories, Replikations-Regeln oder Helm-Charts und kann daher nicht gelöscht werden.",
         "INLINE_HELP_PUBLIC": "Wenn ein Projekt öffentlich ist, hat jeder lesenden Zugriff auf die Repositories innerhalb des Projekts. Der Nutzer muss nicht \"docker login\" vor dem Pull eines Images durchführen.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "von",
@@ -385,7 +385,7 @@
         "INVALID_VALUE": "Der Wert der Ablaufzeit ist ungültig",
         "NEVER_EXPIRED": "Läuft nie ab",
         "NAME_PREFIX": "Prefix für den Namen der Robot-Zugänge",
-	    "NAME_PREFIX_REQUIRED": "Es ist ein Prefix für den Robot-Zugang erforderlich",
+        "NAME_PREFIX_REQUIRED": "Es ist ein Prefix für den Robot-Zugang erforderlich",
         "UPDATE": "Update",
         "AUDIT_LOG": "Audit Log",
         "PREHEAT_INSTANCE": "Preheat Instance",
@@ -936,7 +936,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
             "GROUP_SCOPE": "LDAP Gruppen Search Scope",
             "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Endpunkt",
@@ -966,8 +965,8 @@
             "OIDC_USERNAME": "Nutzername",
             "GROUP_CLAIM_NAME": "Group Claim Name",
             "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
-	        "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
-	        "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
+            "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
+            "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
         },
@@ -1310,7 +1309,6 @@
         "ON": "am",
         "AT": "um",
         "NOSCHEDULE": "Ein Fehler ist aufgetreten beim setzen des Intervalls"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Speicherbereinigungs-Intervall",
@@ -1444,8 +1442,8 @@
         "DAYS_LARGE": "Parameter \"TAGE\" ist zu hoch",
         "EXECUTION_TYPE": "Ausführungstyp",
         "ACTION": "AKTION",
-	"YES": "Ja",
-	"NO": "Nein"
+        "YES": "Ja",
+        "NO": "Nein"
     },
     "IMMUTABLE_TAG": {
         "IMMUTABLE_RULES": "Immutability Regeln",
@@ -1636,6 +1634,7 @@
         "SCOPE": "Umfang",
         "SCOPE_SINGLE_PEER": "Einzelner Peer",
         "SCOPE_ALL_PEERS": "Alle Peers",
+        "EXTRA_ATTRIBUTES": "Extra Attributes",
         "NO_POLICY": "Keine Regelwerke",
         "ENABLED_POLICY_SUMMARY": "Soll das Regelwerk {{name}} aktiviert werden?",
         "DISABLED_POLICY_SUMMARY": "Soll das Regelwerk {{name}} deaktiviert werden?",

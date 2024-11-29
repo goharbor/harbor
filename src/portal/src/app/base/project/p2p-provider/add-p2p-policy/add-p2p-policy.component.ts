@@ -12,6 +12,7 @@ import { NgForm } from '@angular/forms';
 import { OriginCron, ProjectService } from '../../../../shared/services';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
+import { ExtraAttrs } from '../../../../../../ng-swagger-gen/models/extra-attrs';
 import {
     debounceTime,
     distinctUntilChanged,
@@ -76,6 +77,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     labels: string;
     triggerType: string = TRIGGER.MANUAL;
     scope: string = SCOPE.SINGLE_PEER;
+    extraAttrs: string;
     cron: string;
     @ViewChild('policyForm', { static: true }) currentForm: NgForm;
     loading: boolean = false;
@@ -90,6 +92,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     originLabelsForEdit: string;
     originTriggerTypeForEdit: string;
     originCronForEdit: string;
+    originScopeForEdit: string;
+    originExtraAttrsForEdit: string;
     @Input()
     providers: ProviderUnderProject[] = [];
     preventVul: boolean = false;
@@ -309,6 +313,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.buttonStatus = ClrLoadingState.LOADING;
         policy.scope = this.scope ? this.scope : SCOPE.SINGLE_PEER;
+        policy.extra_attrs = this.extraAttrs;
         deleteEmptyKey(policy);
         if (isAdd) {
             policy.project_id = this.projectId;
@@ -410,7 +415,11 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
             return true;
         }
         // eslint-disable-next-line eqeqeq
-        if (this.policy.scope != this.scope) {
+        if (this.originScopeForEdit != this.scope) {
+            return true;
+        }
+        // eslint-disable-next-line eqeqeq
+        if (this.originExtraAttrsForEdit != this.extraAttrs) {
             return true;
         }
         // eslint-disable-next-line eqeqeq

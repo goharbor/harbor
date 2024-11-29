@@ -86,6 +86,9 @@ func (suite *DragonflyTestSuite) TestPreheat() {
 		URL:       "https://harbor.com",
 		Digest:    "sha256:f3c97e3bd1e27393eb853a5c90b1132f2cda84336d5ba5d100c720dc98524c82",
 		Scope:     "single_peer",
+		ExtraAttrs: map[string]interface{}{
+			"cluster_ids": []uint{1, 2, 3},
+		},
 	})
 	require.NoError(suite.T(), err, "preheat image")
 	suite.Equal(provider.PreheatingStatusPending, st.Status, "preheat status")

@@ -245,7 +245,7 @@
         "TOGGLED_SUCCESS": "Projeto alterado com sucesso.",
         "FAILED_TO_DELETE_PROJECT": "Projeto não pode ser removido porque ainda possui recursos em repositórios, regras de replicação ou helm charts.",
         "INLINE_HELP_PUBLIC": "Quando o projeto é público, o acesso de leitura aos repositórios é liberado, incluindo usuários anônimos não autenticados. O usuário não precisa executar \"docker login\" para baixar imagens desse projeto.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "de",
@@ -933,7 +933,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "Atributo que informa a lista de grupos do usuário. Se não informado, o nome \"memberof\" será usado. Alguns servidores LDAP utilizam o atributo \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
             "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
-
         },
         "UAA": {
             "ENDPOINT": "Endereço UAA",
@@ -1303,7 +1302,6 @@
         "ON": "em",
         "AT": "às",
         "NOSCHEDULE": "Ocorreu um erro na rotina Get"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Agenda",
@@ -1633,6 +1631,7 @@
         "SCOPE": "Escopo",
         "SCOPE_SINGLE_PEER": "Par único",
         "SCOPE_ALL_PEERS": "Todos os pares",
+        "EXTRA_ATTRIBUTES": "Atributos extras",
         "NO_POLICY": "Nenhuma política",
         "ENABLED_POLICY_SUMMARY": "Gostaria de habilitar a política {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Gostaria de desabilitar a política {{name}}?",

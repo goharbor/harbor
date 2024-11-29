@@ -484,6 +484,7 @@ func convertPolicyToPayload(policy *policy.Schema) (*models.PreheatPolicy, error
 		ProviderID:   policy.ProviderID,
 		Trigger:      policy.TriggerStr,
 		Scope:        policy.Scope,
+		ExtraAttrs:   policy.ExtraAttrsStr,
 		UpdateTime:   strfmt.DateTime(policy.UpdatedTime),
 	}, nil
 }
@@ -504,17 +505,18 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 	}
 
 	return &policy.Schema{
-		ID:          model.ID,
-		Name:        model.Name,
-		Description: model.Description,
-		ProjectID:   model.ProjectID,
-		ProviderID:  model.ProviderID,
-		FiltersStr:  model.Filters,
-		TriggerStr:  model.Trigger,
-		Enabled:     model.Enabled,
-		Scope:       model.Scope,
-		CreatedAt:   time.Time(model.CreationTime),
-		UpdatedTime: time.Time(model.UpdateTime),
+		ID:            model.ID,
+		Name:          model.Name,
+		Description:   model.Description,
+		ProjectID:     model.ProjectID,
+		ProviderID:    model.ProviderID,
+		FiltersStr:    model.Filters,
+		TriggerStr:    model.Trigger,
+		Enabled:       model.Enabled,
+		Scope:         model.Scope,
+		ExtraAttrsStr: model.ExtraAttrs,
+		CreatedAt:     time.Time(model.CreationTime),
+		UpdatedTime:   time.Time(model.UpdateTime),
 	}, nil
 }
 

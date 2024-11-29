@@ -166,6 +166,10 @@
         <clr-dg-column>{{ 'P2P_PROVIDER.PROVIDER' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'P2P_PROVIDER.FILTERS' | translate }}</clr-dg-column>
         <clr-dg-column>{{ 'P2P_PROVIDER.TRIGGER' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'P2P_PROVIDER.SCOPE' | translate }}</clr-dg-column>
+        <clr-dg-column>{{
+            'P2P_PROVIDER.EXTRA_ATTRIBUTES' | translate
+        }}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="'creation_time'">{{
             'P2P_PROVIDER.CREATED' | translate
         }}</clr-dg-column>
@@ -281,6 +285,29 @@
                                     | translate
                             }}
                         </div>
+                    </clr-signpost-content>
+                </clr-signpost>
+            </clr-dg-cell>
+            <clr-dg-cell>{{ getScopeI18n(p.scope) | translate }}</clr-dg-cell>
+            <clr-dg-cell class="flex">
+                <clr-signpost>
+                    <a class="btn btn-link link-normal" clrSignpostTrigger>
+                        <span>
+                            {{ toString(toJson(p?.extra_attrs)) }}
+                        </span>
+                    </a>
+                    <clr-signpost-content
+                        class="pre"
+                        [clrPosition]="'top-middle'"
+                        *clrIfOpen>
+                        <hbr-copy-input
+                            [iconMode]="true"
+                            [defaultValue]="
+                                toString(p?.extra_attrs)
+                            "></hbr-copy-input>
+                        <pre
+                            [innerHTML]="toJson(p?.extra_attrs) | json"
+                            class="abc"></pre>
                     </clr-signpost-content>
                 </clr-signpost>
             </clr-dg-cell>

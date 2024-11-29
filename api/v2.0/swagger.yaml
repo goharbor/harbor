@@ -1193,7 +1193,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1226,7 +1226,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -6553,7 +6553,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Errors'    
+      $ref: '#/definitions/Errors'
   '500':
     description: Internal server error
     headers:
@@ -7098,6 +7098,9 @@ definitions:
       scope:
         type: string
         description: The scope of preheat policy
+      extra_attrs:
+        type: string
+        description: The extra attributes of preheat policy
       creation_time:
         type: string
         format: date-time
@@ -7937,7 +7940,7 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.

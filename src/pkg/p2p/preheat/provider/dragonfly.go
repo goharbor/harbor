@@ -54,13 +54,13 @@ const (
 
 type dragonflyCreateJobRequest struct {
 	// Type is the job type, support preheat.
-	Type string `json:"type" binding:"required"`
+	Type string `json:"type"`
 
 	// Args is the preheating args.
-	Args dragonflyCreateJobRequestArgs `json:"args" binding:"omitempty"`
+	Args dragonflyCreateJobRequestArgs `json:"args"`
 
 	// SchedulerClusterIDs is the scheduler cluster ids for preheating.
-	SchedulerClusterIDs []uint `json:"scheduler_cluster_ids" binding:"omitempty"`
+	SchedulerClusterIDs []uint `json:"scheduler_cluster_ids"`
 }
 
 type dragonflyCreateJobRequestArgs struct {
@@ -150,6 +150,12 @@ type dragonflyJobResponse struct {
 	} `json:"result"`
 }
 
+// dragonflyExtraAttrs is the extra attributes model definition for dragonfly provider.
+type dragonflyExtraAttrs struct {
+	// ClusterIDs is the cluster ids for dragonfly provider.
+	ClusterIDs []uint `json:"cluster_ids"`
+}
+
 // DragonflyDriver implements the provider driver interface for Alibaba dragonfly.
 // More details, please refer to https://github.com/alibaba/Dragonfly
 type DragonflyDriver struct {
@@ -201,6 +207,18 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 		return nil, errors.New("no image specified")
 	}
 
+	var extraAttrs dragonflyExtraAttrs
+	if preheatingImage.ExtraAttrs != nil && len(preheatingImage.ExtraAttrs) > 0 {
+		extraAttrsStr, err := json.Marshal(preheatingImage.ExtraAttrs)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to marshal extra attributes")
+		}
+
+		if err := json.Unmarshal(extraAttrsStr, &extraAttrs); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal extra attributes")
+		}
+	}
+
 	// Construct the preheat job request by the given parameters of the preheating image .
 	req := &dragonflyCreateJobRequest{
 		Type: "preheat",
@@ -211,6 +229,11 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 			Headers: headerToMapString(preheatingImage.Headers),
 			Scope:   preheatingImage.Scope,
 		},
+	}
+
+	// Set the cluster ids if it is specified.
+	if len(extraAttrs.ClusterIDs) > 0 {
+		req.SchedulerClusterIDs = extraAttrs.ClusterIDs
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(dd.instance.Endpoint, "/"), dragonflyJobPath)
