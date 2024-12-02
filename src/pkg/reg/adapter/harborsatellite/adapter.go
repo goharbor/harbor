@@ -1,4 +1,4 @@
-package list_export
+package harborsatellite
 
 import (
 	"bytes"
@@ -38,7 +38,7 @@ type Artifact struct {
 }
 
 func init() {
-	err := regadapter.RegisterFactory(model.RegistryArtifactListExport, &factory{})
+	err := regadapter.RegisterFactory(model.RegistryHarborSatellite, &factory{})
 	if err != nil {
 		return
 	}
@@ -151,14 +151,10 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 		return errors.Wrap(err, "failed to marshal result")
 	}
 
-	fmt.Println("kumar is here \n \n\n kumar")
-	fmt.Printf("json %v:  \n \n\n kumar", string(data))
-
 	// Create a POST request
 	req, err := http.NewRequest("POST", destinationURL, bytes.NewBuffer(data))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
-		return nil
+		return fmt.Errorf("error creating request: %v", err)
 	}
 
 	// Set the content type header
@@ -168,13 +164,9 @@ func (a adapter) PrepareForPush(resources []*model.Resource) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return nil
+		return fmt.Errorf("error sending request: %v", err)
 	}
 	defer resp.Body.Close()
-
-	// Print the response status
-	fmt.Println("Response Status:", resp.Status)
 
 	return nil
 }

@@ -95,7 +95,7 @@ func assembleDestinationResources(resources []*model.Resource,
 		log.Debugf("assembling dest resources...")
 
 		// Check condition to determine whether to assemble list or destination resources
-		if policy.DestRegistry.Type == "artifact-list-export" {
+		if policy.DestRegistry.Type == "harbor-satellite" {
 			// Assemble list resources
 			registry = policy.SrcRegistry
 			repositoryName = resource.Metadata.Repository.Name

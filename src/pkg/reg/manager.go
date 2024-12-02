@@ -43,6 +43,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
+	// register the HarborSatellite adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harborsatellite"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/huawei"
 	// register the Jfrog Artifactory adapter
@@ -55,8 +57,6 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/tencentcr"
 	// register the VolcEngine CR Registry adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/volcenginecr"
-	// register artifact list exporter
-	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/list-export"
 )
 
 var (
