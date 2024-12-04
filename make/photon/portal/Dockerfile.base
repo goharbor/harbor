@@ -1,8 +1,11 @@
-FROM photon:5.0
+# Use Alpine as the base image
+FROM alpine:3.18
 
-RUN tdnf install -y nginx shadow >> /dev/null \
-    && tdnf clean all \
+# Install nginx and shadow (for groupmod and usermod commands)
+RUN apk add --no-cache nginx shadow \
+    && groupmod -g 10000 nginx \
+    && usermod -g 10000 -u 10000 -d /home/nginx -s /bin/bash nginx \
+    && mkdir -p /home/nginx \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log \
-    && groupmod -g 10000 nginx && usermod -g 10000 -u 10000 -d /home/nginx -s /bin/bash nginx \
-    && chown -R nginx:nginx /etc/nginx
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+

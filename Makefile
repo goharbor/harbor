@@ -114,8 +114,6 @@ DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -126,7 +124,7 @@ endef
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build
+DOCKERBUILD=$(DOCKERCMD) buildx build --platform linux/amd64,linux/arm64 --provenance=false --push --no-cache
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
 DOCKERIMAGES=$(DOCKERCMD) images
@@ -357,6 +355,27 @@ compile_standalone_db_migrator:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
 	@echo "Done."
 
+core:
+	@echo "build core"
+	@echo $(GOBUILDPATH_CORE)
+	@cd ${GOBUILDPATH_CORE} ;$(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
+	@echo "Done."
+
+
+jobservice:
+	@echo "build jobservice"
+	@cd ${GOBUILDPATH_JOBSERVICE} ;$(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+
+registryctl:
+	@echo "build registryctl"
+	@cd ${GOBUILDPATH_REGISTRYCTL} ;$(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
+
+
+standalone_db_migrator:
+	@echo "build standalone db migrator"
+	@cd ${GOBUILDPATH_STANDALONE_DB_MIGRATOR} ;$(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
+
+
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl
 
 update_prepare_version:
@@ -397,7 +416,8 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) \
+	 -e TRIVYFLAG=$(TRIVYFLAG)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)

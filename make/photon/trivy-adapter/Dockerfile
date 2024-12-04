@@ -1,13 +1,31 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+ARG GOBUILDIMAGE
+FROM ${GOBUILDIMAGE} AS builder
+WORKDIR /harbor
+ARG TRIVYADAPTERVERSION
+ARG TRIVYVERSION
+ENV CGO_ENABLED=0
+RUN mkdir -p /go/src/github.com/aquasecurity
+WORKDIR  /go/src/github.com/aquasecurity
+
+RUN git clone -b $TRIVYADAPTERVERSION https://github.com/aquasecurity/harbor-scanner-trivy.git \
+    && cd  harbor-scanner-trivy/ \
+    && make build
+
+RUN git clone -b $TRIVYVERSION https://github.com/aquasecurity/trivy.git \
+    && cd  trivy/ \
+    && go build -o trivy cmd/trivy/main.go
+
+
 FROM ${harbor_base_namespace}/harbor-trivy-adapter-base:${harbor_base_image_version}
 
 ARG trivy_version
 
 COPY ./make/photon/common/install_cert.sh /home/scanner
 COPY ./make/photon/trivy-adapter/entrypoint.sh /home/scanner
-COPY ./make/photon/trivy-adapter/binary/trivy /usr/local/bin/trivy
-COPY ./make/photon/trivy-adapter/binary/scanner-trivy /home/scanner/bin/scanner-trivy
+COPY --from=builder /go/src/github.com/aquasecurity/trivy/trivy /usr/local/bin/trivy
+COPY --from=builder /go/src/github.com/aquasecurity/harbor-scanner-trivy/scanner-trivy /home/scanner/bin/scanner-trivy
 
 
 RUN chown -R scanner:scanner /etc/pki/tls/certs \

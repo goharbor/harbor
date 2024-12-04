@@ -1,13 +1,33 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+ARG GOBUILDIMAGE
+FROM ${GOBUILDIMAGE} AS builder
+
+ARG REGISTRY_SRC_TAG
+ENV DISTRIBUTION_DIR=/go/src/github.com/docker
+ENV BUILDTAGS="include_oss include_gcs"
+ENV GO111MODULE=auto
+RUN mkdir -p $DISTRIBUTION_DIR
+
+WORKDIR $DISTRIBUTION_DIR
+ENV CGO_ENABLED=0
+RUN  git clone -b $REGISTRY_SRC_TAG https://github.com/distribution/distribution.git  \
+     && cd distribution \
+     && git apply /harbor/make/photon/registry/redis.patch \
+     && mkdir -p binary \
+     && rm -rf binary/registry || true \
+     && make PREFIX=/go clean binaries
+
+
+
 FROM ${harbor_base_namespace}/harbor-registry-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
 COPY ./make/photon/registry/entrypoint.sh /home/harbor
-COPY ./make/photon/registry/binary/registry /usr/bin/registry_DO_NOT_USE_GC
+COPY --from=builder /go/src/github.com/docker/distribution/bin/registry /usr/bin/registry_DO_NOT_USE_GC
+COPY --from=builder /go/src/github.com/docker/distribution/cmd/registry/config-example.yml /etc/registry/config.yml
 
-RUN chown -R harbor:harbor /etc/pki/tls/certs \
-    && chown harbor:harbor /home/harbor/entrypoint.sh && chmod u+x /home/harbor/entrypoint.sh \
+RUN chown harbor:harbor /home/harbor/entrypoint.sh && chmod u+x /home/harbor/entrypoint.sh \
     && chown harbor:harbor /home/harbor/install_cert.sh && chmod u+x /home/harbor/install_cert.sh \
     && chown harbor:harbor /usr/bin/registry_DO_NOT_USE_GC && chmod u+x /usr/bin/registry_DO_NOT_USE_GC
 

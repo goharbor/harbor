@@ -1,8 +1,15 @@
-FROM photon:5.0
+# Use Alpine as the base image
+FROM alpine:3.18
 
-RUN tdnf install -y python3 python3-pip python3-PyYAML python3-jinja2 && tdnf clean all
+# Install Python 3, pip, PyYAML, Jinja2, and necessary tools
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    py3-yaml \
+    py3-jinja2
+
+# Install a specific version of pipenv
 RUN pip3 install pipenv==2022.1.8
 
-#To install only htpasswd binary from photon package httpd
-RUN tdnf install -y rpm cpio apr-util
-RUN tdnf -y --downloadonly --downloaddir=/tmp/ install httpd && rpm2cpio /tmp/httpd-*.rpm | cpio -ivdm ./usr/bin/htpasswd && rm -f /tmp/*
+# Install only the htpasswd binary from the apache2-utils package
+RUN apk add --no-cache apache2-utils

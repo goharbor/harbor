@@ -1,6 +1,5 @@
-FROM photon:5.0
+# Use Alpine as the base image
+FROM alpine:3.18
 
-RUN tdnf install -y shadow >> /dev/null \
-    && groupadd -g 999 redis \
-    && useradd -u 999 -g 999 -c "Redis Database Server" -d /var/lib/redis -s /sbin/nologin -m redis
-RUN tdnf install -y redis && tdnf clean all
+# Install shadow (for groupadd and useradd commands) and redis
+RUN apk add --no-cache shadow redis
