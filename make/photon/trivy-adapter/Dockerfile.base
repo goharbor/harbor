@@ -1,6 +1,9 @@
-FROM photon:5.0
-
-RUN tdnf install -y rpm shadow >> /dev/null \
-    && tdnf clean all \
+# Use Alpine as the base image
+FROM alpine:3.18
+USER root
+# Install shadow (for groupadd and useradd commands)
+RUN apk add --no-cache shadow \
+    && mkdir -p /etc/registry \
     && groupadd -r -g 10000 scanner \
-    && useradd --no-log-init -m -r -g 10000 -u 10000 scanner
+    && useradd -r -g 10000 -u 10000 -d /home/harbor -m -s /sbin/nologin scanner \
+    && mkdir /home/scanner/bin/ -p
