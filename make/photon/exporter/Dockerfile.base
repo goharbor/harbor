@@ -1,6 +1,8 @@
-FROM photon:5.0
+# Use Alpine as the base image
+FROM alpine:3.18
 
-RUN tdnf install -y tzdata shadow >> /dev/null \
-    && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -m -g 10000 -u 10000 harbor \
+# Install tzdata (for time zone data) and shadow (for groupadd and useradd commands)
+RUN apk add --no-cache tzdata shadow \
+    && groupadd -r -g 10000 harbor \
+    && useradd --no-log-init -r -m -g 10000 -u 10000 harbor \
     && mkdir /harbor/

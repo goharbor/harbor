@@ -1,14 +1,24 @@
+ARG GOBUILDIMAGE
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+FROM ${GOBUILDIMAGE} AS builder
+WORKDIR /harbor
+COPY ./ /harbor
+ENV CGO_ENABLED=0
+RUN apt update \
+    && apt install -y make \
+    && cd /harbor \
+    && make jobservice
+
+
+
 FROM ${harbor_base_namespace}/harbor-jobservice-base:${harbor_base_image_version}
+COPY --from=builder /harbor/make/photon/common/install_cert.sh /harbor/
+COPY --from=builder /harbor/make/photon/jobservice/entrypoint.sh /harbor/
+COPY --from=builder /harbor/make/photon/jobservice/harbor_jobservice /harbor/
 
-COPY ./make/photon/common/install_cert.sh /harbor/
-COPY ./make/photon/jobservice/entrypoint.sh /harbor/
-COPY ./make/photon/jobservice/harbor_jobservice /harbor/
 
-
-RUN chown -R harbor:harbor /etc/pki/tls/certs \
-    && chown -R harbor:harbor /harbor/ \
+RUN chown -R harbor:harbor /harbor/ \
     && chmod u+x /harbor/entrypoint.sh \
     && chmod u+x /harbor/install_cert.sh \
     && chmod u+x /harbor/harbor_jobservice
