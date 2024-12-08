@@ -1,0 +1,32 @@
+.locale-selected {
+    font-weight: bold;
+}
+
+.nav-icon-width {
+    width: auto !important;
+    padding-left: 18px !important;
+
+    .icon-left {
+        left: -8px;
+    }
+    /* stylelint-disable */
+    .currentLocale {
+        padding-right: 40px;
+        padding-left: 10px;
+    }
+}
+
+.centered-content-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%
+}
+
+.dropdowns {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: start;
+    gap: 20px;
+}
