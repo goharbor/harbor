@@ -175,59 +175,59 @@ func (a adapter) HealthCheck() (string, error) {
 	return model.Healthy, nil
 }
 
-func (a adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
+func (a adapter) FetchArtifacts(_ []*model.Filter) ([]*model.Resource, error) {
 	return nil, nil
 }
 
-func (a adapter) ManifestExist(repository, reference string) (exist bool, desc *distribution.Descriptor, err error) {
+func (a adapter) ManifestExist(_, _ string) (exist bool, desc *distribution.Descriptor, err error) {
 	return true, nil, nil
 }
 
-func (a adapter) PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error) {
+func (a adapter) PullManifest(_, _ string, _ ...string) (manifest distribution.Manifest, digest string, err error) {
 	return nil, "", ErrNotImplemented
 }
 
-func (a adapter) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+func (a adapter) PushManifest(_, _, _ string, _ []byte) (string, error) {
 	return "", nil
 }
 
-func (a adapter) DeleteManifest(repository, reference string) error {
+func (a adapter) DeleteManifest(_, _ string) error {
 	return ErrNotImplemented
 }
 
-func (a adapter) BlobExist(repository, digest string) (exist bool, err error) {
+func (a adapter) BlobExist(_, _ string) (exist bool, err error) {
 	return true, nil
 }
 
-func (a adapter) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+func (a adapter) PullBlob(_, _ string) (size int64, blob io.ReadCloser, err error) {
 	return 0, nil, ErrNotImplemented
 }
 
-func (a adapter) PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error) {
+func (a adapter) PullBlobChunk(_, _ string, _, _, _ int64) (size int64, blob io.ReadCloser, err error) {
 	return 0, nil, ErrNotImplemented
 }
 
-func (a adapter) PushBlobChunk(repository, digest string, size int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error) {
+func (a adapter) PushBlobChunk(_, _ string, _ int64, _ io.Reader, _, _ int64, _ string) (nextUploadLocation string, endRange int64, err error) {
 	return "", 0, ErrNotImplemented
 }
 
-func (a adapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+func (a adapter) PushBlob(_, _ string, _ int64, _ io.Reader) error {
 	return nil
 }
 
-func (a adapter) MountBlob(srcRepository, digest, dstRepository string) (err error) {
+func (a adapter) MountBlob(_, _, _ string) (err error) {
 	return nil
 }
 
-func (a adapter) CanBeMount(digest string) (mount bool, repository string, err error) {
+func (a adapter) CanBeMount(_ string) (mount bool, repository string, err error) {
 	return false, "", ErrNotImplemented
 }
 
-func (a adapter) DeleteTag(repository, tag string) error {
+func (a adapter) DeleteTag(_, _ string) error {
 	return ErrNotImplemented
 }
 
-func (a adapter) ListTags(repository string) (tags []string, err error) {
+func (a adapter) ListTags(_ string) (tags []string, err error) {
 	return nil, nil
 }
 
