@@ -54,7 +54,7 @@ If you are an organization that wants to help shape the evolution of Harbor,
 - Harbor Satellite Support
 - Helm Chart 
 - Open Compose (install.sh less) supporting Docker & Podman Compose
-- Multiple flavors - (Vanilla, Next)
+- Multiple flavors - (Vanilla, Next, Debug)
 - Prepending vetted features not yet upstream
 
 
