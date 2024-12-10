@@ -29,7 +29,7 @@ Test Case - Distribution CRUD
     ${endpoint_new}=  Set Variable  https://10.65.65.42
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${name}  ${endpoint}
+    Create An New Distribution  Dragonfly  ${name}  ${endpoint}  ${DRAGONFLY_AUTH_TOKEN}
     Edit A Distribution  ${name}  ${endpoint}  new_endpoint=${endpoint_new}
     Delete A Distribution  ${name}  ${endpoint_new}
     Close Browser
@@ -45,7 +45,7 @@ Test Case - P2P Preheat Policy CRUD
     ${tag}=  Set Variable  v1.0
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${endpoint}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${endpoint}  ${DRAGONFLY_AUTH_TOKEN}
     Create An New Project And Go Into Project  ${project_name}
     Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  ${repo}  ${tag}
     Edit A P2P Preheat Policy  ${policy_name}  ${repo_new}
@@ -67,7 +67,7 @@ Test Case - P2P Preheat By Manual
     ${tag2}=  Set Variable  stable
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}  ${DRAGONFLY_AUTH_TOKEN}
     Create An New Project And Go Into Project  ${project_name}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag1}  ${tag1}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag2}  ${tag2}
@@ -93,7 +93,7 @@ Test Case - P2P Preheat By Event
     ${label}=  Set Variable  p2p_preheat
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}  ${DRAGONFLY_AUTH_TOKEN}
     Create An New Project And Go Into Project  ${project_name}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag1}  ${tag1}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag2}  ${tag2}

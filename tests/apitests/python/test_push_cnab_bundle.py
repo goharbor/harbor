@@ -71,7 +71,7 @@ class TestCNAB(unittest.TestCase):
 
         #3. Push bundle to harbor as repository(RA);
         target = harbor_server + "/" + TestCNAB.project_name  + "/" + TestCNAB.cnab_repo_name  + ":" + TestCNAB.cnab_tag
-        TestCNAB.reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, TestCNAB.user_name, TestCNAB.user_push_cnab_password, "goharbor/harbor-log:v1.10.0", "kong:latest", target)
+        TestCNAB.reference_sha256 = library.cnab.push_cnab_bundle(harbor_server, TestCNAB.user_name, TestCNAB.user_push_cnab_password, "registry.goharbor.io/nightly/goharbor/harbor-log:v1.10.0", "registry.goharbor.io/nightly/library/kong:latest", target)
 
         #4. Get repository from Harbor successfully;
         TestCNAB.cnab_bundle_data = TestCNAB.repo.get_repository(TestCNAB.project_name, TestCNAB.cnab_repo_name, **TestCNAB.USER_CLIENT)
