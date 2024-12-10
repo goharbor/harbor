@@ -11,22 +11,52 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor)](https://artifacthub.io/packages/helm/harbor/harbor)
 </br>
+||||||| parent of 2feb2dcca (Update README.md (#48))
+[![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/goharbor/harbor/actions?query=event%3Apush+branch%3Amain+workflow%3ACI+)
+[![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/main/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
+[![Go Report Card](https://goreportcard.com/badge/github.com/goharbor/harbor)](https://goreportcard.com/report/github.com/goharbor/harbor)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/792fe1755edc4d6e91f4c3469f553389)](https://www.codacy.com/gh/goharbor/harbor/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
+![Code scanning - action](https://github.com/goharbor/harbor/workflows/Code%20scanning%20-%20action/badge.svg)
+[![Nightly Status](https://us-central1-eminent-nation-87317.cloudfunctions.net/harbor-nightly-result)](https://www.googleapis.com/storage/v1/b/harbor-nightly/o)
+![CONFORMANCE_TEST](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
+</br>
 
-|![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
-|------------------|
-|The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
-</br> </br>
+> [!NOTE]
+> The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).
+
+> [!IMPORTANT]  
+> Harbor Next is the place
+> where the community can already use features and capabiliites
+> that are not yet upstream.
+> Harbor Next is a stable and backwards API compatible outlook on wha'ts next. 
 
 **Note**: The `main` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
 
 <img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
-Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
+Harbor is a CNCF graduated open-source container registry to store and manage container images and other OCI artifacts securely with policies, role-based access control, vulnerability scans and signing.
 
-Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about whose involved and how Harbor plays a role, read the CNCF
-[announcement](https://www.cncf.io/blog/2018/07/31/cncf-to-host-harbor-in-the-sandbox/).
+Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io)
+(CNCF).
+If you are an organization that wants to help shape the evolution of Harbor,
+[reach out](https://container-registry.com/contact/) to us.
+
+## Harbor Next Differences
+
+- Continuous delivery
+- Multi-architecture artifacts
+- Scratch images with minimal size and attack surface.
+- Docker Distribution V3
+- Harbor Satellite Support
+- Helm Chart 
+- Open Compose (install.sh less) supporting Docker & Podman Compose
+- Multiple flavors - (Vanilla, Next)
+- Prepending vetted features not yet upstream
+
 
 ## Features
 
@@ -42,6 +72,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
 * **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart, and a Harbor Operator was added recently as well.
+
 
 ## Architecture
 
@@ -110,11 +141,5 @@ For further details please see our complete [security release process](SECURITY.
 
 Harbor is available under the [Apache 2 license](LICENSE).
 
-This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
-
-* Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-
-
 ## Fossa Status
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_large)
