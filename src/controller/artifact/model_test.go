@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
+	"github.com/goharbor/harbor/src/pkg/label/model"
 )
 
 func TestUnmarshalJSONWithACC(t *testing.T) {
@@ -103,4 +104,59 @@ func TestUnmarshalJSONWithPartial(t *testing.T) {
 	assert.Equal(t, "sha256:1234", artifact.Digest)
 	assert.Equal(t, "", artifact.Type)
 	assert.Equal(t, "application/vnd.docker.container.image.v1+json", artifact.MediaType)
+}
+
+func TestAbstractLabelNames(t *testing.T) {
+	tests := []struct {
+		name     string
+		artifact Artifact
+		want     []string
+	}{
+		{
+			name: "Nil labels",
+			artifact: Artifact{
+				Labels: nil,
+			},
+			want: []string{},
+		},
+		{
+			name: "Single label",
+			artifact: Artifact{
+				Labels: []*model.Label{
+					{Name: "label1"},
+				},
+			},
+			want: []string{"label1"},
+		},
+		{
+			name: "Multiple labels",
+			artifact: Artifact{
+				Labels: []*model.Label{
+					{Name: "label1"},
+					{Name: "label2"},
+					{Name: "label3"},
+				},
+			},
+			want: []string{"label1", "label2", "label3"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.artifact.AbstractLabelNames()
+
+			// Check if lengths match
+			if len(got) != len(tt.want) {
+				t.Errorf("AbstractLabelNames() got length = %v, want length = %v", len(got), len(tt.want))
+				return
+			}
+
+			// Check if elements match
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("AbstractLabelNames() got[%d] = %v, want[%d] = %v", i, got[i], i, tt.want[i])
+				}
+			}
+		})
+	}
 }
