@@ -51,8 +51,9 @@ func (c *CreateRobotEventMetadata) Resolve(event *event.Event) error {
 
 // DeleteRobotEventMetadata is the metadata from which the delete robot event can be resolved
 type DeleteRobotEventMetadata struct {
-	Ctx   context.Context
-	Robot *model.Robot
+	Ctx      context.Context
+	Robot    *model.Robot
+	Operator string
 }
 
 // Resolve to the event from the metadata
@@ -62,9 +63,13 @@ func (d *DeleteRobotEventMetadata) Resolve(event *event.Event) error {
 		Robot:     d.Robot,
 		OccurAt:   time.Now(),
 	}
-	cx, exist := security.FromContext(d.Ctx)
-	if exist {
-		data.Operator = cx.GetUsername()
+	if d.Operator != "" {
+		data.Operator = d.Operator
+	} else {
+		cx, exist := security.FromContext(d.Ctx)
+		if exist {
+			data.Operator = cx.GetUsername()
+		}
 	}
 	data.Robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(d.Ctx), data.Robot.Name)
 	event.Topic = event2.TopicDeleteRobot

@@ -481,11 +481,14 @@ func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot
 
 	for _, pCreating := range creating {
 		key := fmt.Sprintf("%s:%s", pCreating.Kind, pCreating.Namespace)
-		creatingPerm, found := creatorMap[key]
+		creatorPerm, found := creatorMap[key]
 		if !found {
-			return false
+			allProjects := fmt.Sprintf("%s:*", pCreating.Kind)
+			if creatorPerm, found = creatorMap[allProjects]; !found {
+				return false
+			}
 		}
-		if !hasLessThanOrEqualAccess(pCreating.Access, creatingPerm.Access) {
+		if !hasLessThanOrEqualAccess(pCreating.Access, creatorPerm.Access) {
 			return false
 		}
 	}
