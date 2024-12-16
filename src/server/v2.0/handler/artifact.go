@@ -238,7 +238,8 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
-			WithTag: true,
+			WithTag:   true,
+			WithLabel: true,
 		})
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -256,6 +257,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	notification.AddEvent(ctx, &metadata.CreateTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              tag.Name,
+		Labels:           art.AbstractLabelNames(),
 		AttachedArtifact: &art.Artifact,
 	})
 
@@ -281,7 +283,8 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	}
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
-			WithTag: true,
+			WithTag:   true,
+			WithLabel: true,
 		})
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -307,6 +310,7 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	notification.AddEvent(ctx, &metadata.DeleteTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              params.TagName,
+		Labels:           artifact.AbstractLabelNames(),
 		AttachedArtifact: &artifact.Artifact,
 	})
 
