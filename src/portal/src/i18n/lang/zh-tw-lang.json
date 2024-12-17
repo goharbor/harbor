@@ -150,8 +150,15 @@
     "SAVE_SUCCESS": "成功更改使用者密碼。",
     "PASS_TIPS": "密碼長度需介於 8 到 128 個字元之間，且至少包含一個大寫字母、小寫字母或數字。"
   },
+  "CHANGE_PREF": {
+    "TITLE": "Preferences",
+    "LANGUAGE": "Language",
+    "DATE_TIME_FORMAT": "Date/Time Format",
+    "PULL_CMD_PREFIX": "Pull Command Prefix"
+  },
   "ACCOUNT_SETTINGS": {
     "PROFILE": "使用者設定",
+    "PREFERENCES": "Preferences",
     "CHANGE_PWD": "修改密碼",
     "ABOUT": "關於",
     "LOGOUT": "登出"
@@ -763,6 +770,7 @@
     "ARTIFACTS_COUNT": "Artifact 數量",
     "PULL_COUNT": "下載數",
     "PULL_COMMAND": "Pull 命令",
+    "COPY_SUCCESS": "{{ param }} copied to Clipboard",
     "PULL_TIME": "拉取時間",
     "PUSH_TIME": "推送時間",
     "IMMUTABLE": "不可變的",
@@ -1189,6 +1197,7 @@
     "NAME": "名稱",
     "PULL_TIME": "拉取時間",
     "PUSH_TIME": "推送時間",
+    "PULL_COMMAND": "Pull Command",
     "OF": "的",
     "ITEMS": "項目",
     "ADD_TAG": "新增標籤",

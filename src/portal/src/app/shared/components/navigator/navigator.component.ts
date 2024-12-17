@@ -173,6 +173,14 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
+    // Open change preferences dialog
+    openPreferencesModal(): void {
+        this.showDialogModalAction.emit({
+            modalName: modalEvents.PREFERENCES,
+            modalFlag: true,
+        });
+    }
+
     // Open change password dialog
     openChangePwdModal(): void {
         this.showDialogModalAction.emit({

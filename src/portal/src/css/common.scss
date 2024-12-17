@@ -103,7 +103,7 @@
 }
 
 .go-link {
-  color: $mode-link-color1 !important; 
+  color: $mode-link-color1 !important;
   border-bottom: 1px solid  $mode-link-color1 !important;
 }
 
@@ -137,7 +137,7 @@ clr-dg-action-overflow {
       background: $select-back-color;
       color: $select-option-color;
     }
-  } 
+  }
 }
 
 hbr-tag {
@@ -252,7 +252,9 @@ clr-header {
 hbr-copy-input {
   .command-input {
     color: $command-input-color;
+    padding-left: 8px;
     background-color: $command-input-bg-color;
+    border-radius: 4px;
   }
 }
 
