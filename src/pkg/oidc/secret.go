@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -86,6 +87,9 @@ var m SecretManager = &defaultManager{
 func (dm *defaultManager) VerifySecret(ctx context.Context, username string, secret string) (*UserInfo, error) {
 	log.Debugf("Verifying the secret for user: %s", username)
 	oidcUser, err := dm.metaDao.GetByUsername(ctx, username)
+	if strings.Contains(err.Error(), "no row found") {
+		return nil, fmt.Errorf("oidc user: %v not found", username)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oidc user info, error: %v", err)
 	}
