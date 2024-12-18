@@ -37,7 +37,7 @@ describe('WebhookComponent', () => {
             'pushImage',
             'deleteImage',
         ],
-        notify_type: ['http', 'slack'],
+        notify_type: ['http', 'slack', 'teams'],
     };
     const mockedWehook: WebhookPolicy = {
         id: 1,
