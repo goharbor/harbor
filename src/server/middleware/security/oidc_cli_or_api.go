@@ -43,9 +43,9 @@ var (
 	uctl           = user.Ctl
 )
 
-type oidcCli struct{}
+type oidcCliOrAPI struct{}
 
-func (o *oidcCli) Generate(req *http.Request) security.Context {
+func (o *oidcCliOrAPI) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
 	if lib.GetAuthMode(ctx) != common.OIDCAuth {
 		return nil
@@ -78,7 +78,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	return local.NewSecurityContext(u)
 }
 
-func (o *oidcCli) valid(req *http.Request) bool {
+func (o *oidcCliOrAPI) valid(req *http.Request) bool {
 	path := strings.TrimSuffix(req.URL.Path, "/")
 
 	if path == "/service/token" ||
@@ -102,6 +102,11 @@ func (o *oidcCli) valid(req *http.Request) bool {
 	}
 
 	if req.Method == http.MethodDelete && tagsAPIRe.MatchString(path) { // deleting tags
+		return true
+	}
+
+	// The request was sent to the v2 API directly
+	if strings.HasPrefix(req.URL.Path, "/api") || req.URL.Path == "/service/token" {
 		return true
 	}
 	return false

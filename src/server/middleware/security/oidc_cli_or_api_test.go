@@ -31,17 +31,12 @@ import (
 )
 
 func TestOIDCCli(t *testing.T) {
-	oidcCli := &oidcCli{}
-	// not the candidate request
-	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/v2.0/users/", nil)
-	require.Nil(t, err)
-	ctx := oidcCli.Generate(req)
-	assert.Nil(t, ctx)
+	oc := &oidcCliOrAPI{}
 
 	// the auth mode isn't OIDC
-	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
 	require.Nil(t, err)
-	ctx = oidcCli.Generate(req)
+	ctx := oc.Generate(req)
 	assert.Nil(t, ctx)
 
 	// pass
@@ -57,12 +52,12 @@ func TestOIDCCli(t *testing.T) {
 	oidc.SetHardcodeVerifierForTest(password)
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	req.SetBasicAuth(username, password)
-	ctx = oidcCli.Generate(req)
+	ctx = oc.Generate(req)
 	assert.NotNil(t, ctx)
 }
 
 func TestOIDCCliValid(t *testing.T) {
-	oc := &oidcCli{}
+	oc := &oidcCliOrAPI{}
 	req1, _ := http.NewRequest(http.MethodPost, "https://test.goharbor.io/api/v2.0/projects", nil)
 	req2, _ := http.NewRequest(http.MethodGet, "https://test.goharbor.io/api/v2.0/projects?name=test", nil)
 	req3, _ := http.NewRequest(http.MethodGet, "https://test.goharbor.io/api/v2.0/projects/library/repositories/", nil)
@@ -96,4 +91,28 @@ func TestOIDCCliValid(t *testing.T) {
 		assert.Equal(t, c.valid, oc.valid(c.r), fmt.Sprintf("Failed. path: %s, method: %s, expected: %v", c.r.URL.Path, c.r.Method, c.valid))
 	}
 
+}
+
+func TestOIDCAPI(t *testing.T) {
+	oc := &oidcCliOrAPI{}
+
+	// not the OIDC mode
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	ctx := oc.Generate(req)
+	assert.Nil(t, ctx)
+
+	// contains no authorization header
+	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	ctx = oc.Generate(req)
+	assert.Nil(t, ctx)
+
+	// contains no authorization header
+	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token?service=harbor-registry&scope=repository:foo/bar:pull", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	ctx = oc.Generate(req)
+	assert.Nil(t, ctx)
 }
