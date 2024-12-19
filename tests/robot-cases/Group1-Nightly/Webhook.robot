@@ -43,7 +43,7 @@ Test Case - Artifact Event Type Webhook Functionality
     ${image}=  Set Variable  busybox
     ${tag}=  Set Variable  latest
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -70,7 +70,7 @@ Test Case - Scan Event Type Webhook Functionality
     ${image2}=  Set Variable  goharbor/harbor-e2e-engine
     ${tag2}=  Set Variable  latest-api
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -96,7 +96,7 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality
     ${tag1}=  Set Variable  latest
     ${tag2}=  Set Variable  stable
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -124,7 +124,7 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality
 Test Case - Tag Quota Event Type Webhook Functionality
     [Tags]  quota_webhook  need_webhook_endpoint
     Init Chrome Driver
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -141,7 +141,7 @@ Test Case - Artifact Event Type Webhook Functionality By CloudEvents Format
     ${tag}=  Set Variable  latest
     ${payload_format}=  Set Variable  CloudEvents
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -169,7 +169,7 @@ Test Case - Scan Event Type Webhook Functionality By CloudEvents Format
     ${tag2}=  Set Variable  5.0.0-api
     ${payload_format}=  Set Variable  CloudEvents
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -196,7 +196,7 @@ Test Case - Tag Retention And Replication Event Type Webhook Functionality By Cl
     ${tag2}=  Set Variable  stable
     ${payload_format}=  Set Variable  CloudEvents
     ${d}=  Get Current Date  result_format=%m%s
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -225,7 +225,7 @@ Test Case - Tag Quota Event Type Webhook Functionality By CloudEvents Format
     [Tags]  quota_webhook_cloudevents  need_webhook_endpoint
     ${payload_format}=  Set Variable  CloudEvents
     Init Chrome Driver
-    Go To  http://${WEBHOOK_ENDPOINT}
+    Go To  http://${WEBHOOK_ENDPOINT_UI}
     ${webhook_endpoint_url}=  Get Text  //p//code
     New Tab
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

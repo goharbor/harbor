@@ -334,13 +334,19 @@ Select Provider
     Retry Element Click    ${distribution_provider_select_id}
     Retry Element Click    ${distribution_provider_select_id}//option[contains(.,'${provider}')]
 
+Set Authcode
+    [Arguments]    ${auth_code}
+    Retry Element Click    ${distribution_provider_authmode_id}
+    Retry Text Input  ${distribution_provider_authcode_id}  ${auth_code}
+
 Create An New Distribution
-    [Arguments]    ${provider}  ${name}  ${endpoint}
+    [Arguments]    ${provider}  ${name}  ${endpoint}  ${auth_token}
     Switch To Distribution
     Retry Element Click  ${distribution_add_btn_id}
     Select Provider  ${provider}
     Retry Text Input  ${distribution_name_input_id}  ${name}
     Retry Text Input  ${distribution_endpoint_id}  ${endpoint}
+    Set Authcode  ${auth_token}
     Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
     Distribution Exist  ${name}  ${endpoint}
 
