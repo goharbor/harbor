@@ -326,7 +326,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 // the error handling logic for the root parent artifact and others is different
 // "isAccessory" is used to specify whether the artifact is an accessory.
 func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAccessory bool) error {
-	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true})
+	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true, WithLabel: true})
 	if err != nil {
 		// return nil if the nonexistent artifact isn't the root parent
 		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
@@ -450,14 +450,20 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 
 	// only fire event for the root parent artifact
 	if isRoot {
-		var tags []string
+		var tags, labels []string
 		for _, tag := range art.Tags {
 			tags = append(tags, tag.Name)
 		}
+
+		for _, label := range art.Labels {
+			labels = append(labels, label.Name)
+		}
+
 		notification.AddEvent(ctx, &metadata.DeleteArtifactEventMetadata{
 			Ctx:      ctx,
 			Artifact: &art.Artifact,
 			Tags:     tags,
+			Labels:   labels,
 		})
 	}
 

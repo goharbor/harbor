@@ -89,7 +89,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -336,7 +336,7 @@ jobs:
           echo "Code formatting issues detected. Please run 'npm run format' locally and commit the changes."
           exit 1
       - name: Codecov For UI
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
