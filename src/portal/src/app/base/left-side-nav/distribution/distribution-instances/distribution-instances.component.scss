@@ -1,9 +1,9 @@
-@import "../base";
+@import '../base';
 
-$refrsh-btn-color: #007CBB;
+$refrsh-btn-color: #007cbb;
 
 .refresh-btn {
-    @include refresh-button
+    @include refresh-button;
 }
 
 .refresh-btn:hover {
