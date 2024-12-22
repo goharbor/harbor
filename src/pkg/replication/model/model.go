@@ -43,6 +43,7 @@ type Policy struct {
 	UpdateTime                time.Time `orm:"column(update_time);auto_now"`
 	Speed                     int32     `orm:"column(speed_kb)"`
 	CopyByChunk               bool      `orm:"column(copy_by_chunk)"`
+	SkipIfRunning             bool      `orm:"column(skip_if_running)"`
 }
 
 // TableName set table name for ORM
