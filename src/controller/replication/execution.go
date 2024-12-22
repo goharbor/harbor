@@ -18,8 +18,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/controller/jobmonitor"
 	"time"
+
+	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/controller/jobmonitor"
 
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
@@ -112,42 +114,30 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		extra["operator"] = op
 	}
 
-	monitorClient, err := jobmonitor.JobServiceMonitorClient()
-	if err != nil {
-		return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("unable to get job monitor's client: %v", err)
-	}
-
-	observations, err := monitorClient.WorkerObservations()
-	if err != nil {
-		return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("unable to get jobs observations: %v", err)
-	}
 	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
 
-	args := map[string]interface{}{}
-
-	for _, o := range observations {
-		if o.JobName != job.ReplicationVendorType {
-			continue
-		}
-		if err = json.Unmarshal([]byte(o.ArgsJSON), &args); err != nil {
-			continue
-		}
-		policyID, ok := args["policy_id"].(float64)
-		if !ok {
-			continue
-		}
-		if int64(policyID) != policy.ID {
-			continue
-		}
-
-		err = c.execMgr.MarkSkipped(ctx, id, "task skipped as a duplicate")
+	if policy.SkipIfRunning {
+    log.Infof("kumar eh policy with ID %v skipped.", policy.ID)
+		monitorClient, err := jobmonitor.JobServiceMonitorClient()
 		if err != nil {
-			return 0, err
+			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get job monitor's client: %v", err)
 		}
-		return id, nil
+		observations, err := monitorClient.WorkerObservations()
+		if err != nil {
+			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get jobs observations: %v", err)
+		}
+		for _, o := range observations {
+			if isDuplicateJob(o, policy.ID) {
+				err = c.execMgr.MarkSkipped(ctx, id, "task skipped as a duplicate")
+				if err != nil {
+					return 0, err
+				}
+				return id, nil
+			}
+		}
 	}
 
 	// start the replication flow in background
@@ -186,6 +176,18 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		c.markError(ctx, id, err)
 	}()
 	return id, nil
+}
+
+func isDuplicateJob(o *work.WorkerObservation, policyID int64) bool {
+	if o.JobName != job.ReplicationVendorType {
+		return false
+	}
+	args := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(o.ArgsJSON), &args); err != nil {
+		return false
+	}
+	policyIDFromArgs, ok := args["policy_id"].(float64)
+	return ok && int64(policyIDFromArgs) == policyID
 }
 
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {
