@@ -825,6 +825,31 @@
                             'REPLICATION.ENABLED_RULE' | translate
                         }}</label>
                     </div>
+                    <div class="clr-checkbox-wrapper">
+                        <input
+                            type="checkbox"
+                            class="clr-checkbox"
+                            [checked]="true"
+                            id="skipIfRunning"
+                            formControlName="skip_if_running" />
+                        <label for="skipIfRunning" class="clr-control-label"
+                            >{{ 'REPLICATION.SKIP_IF_RUNNING' | translate }}
+                            <clr-tooltip class="override-tooltip">
+                                <clr-icon
+                                    clrTooltipTrigger
+                                    shape="info-circle"
+                                    size="24"></clr-icon>
+                                <clr-tooltip-content
+                                    clrPosition="top-left"
+                                    clrSize="md"
+                                    *clrIfOpen>
+                                    <span>{{
+                                        'TOOLTIP.SKIP_IF_RUNNING' | translate
+                                    }}</span>
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                        </label>
+                    </div>
                 </div>
             </div>
         </form>

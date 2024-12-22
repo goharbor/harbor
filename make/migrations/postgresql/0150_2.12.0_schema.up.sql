@@ -5,3 +5,5 @@ ALTER TABLE robot ADD COLUMN IF NOT EXISTS creator_ref integer default 0;
 ALTER TABLE robot ADD COLUMN IF NOT EXISTS creator_type varchar(255);
 
 ALTER TABLE p2p_preheat_policy ADD COLUMN IF NOT EXISTS scope varchar(255);
+
+ALTER TABLE replication_policy ADD COLUMN IF NOT EXISTS single_active_replication boolean;
