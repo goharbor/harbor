@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
-	"github.com/goharbor/harbor/src/controller/jobmonitor"
 
 	"github.com/goharbor/harbor/src/controller/event/operator"
+	"github.com/goharbor/harbor/src/controller/jobmonitor"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
 	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -120,7 +120,6 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	}
 
 	if policy.SkipIfRunning {
-    log.Infof("kumar eh policy with ID %v skipped.", policy.ID)
 		monitorClient, err := jobmonitor.JobServiceMonitorClient()
 		if err != nil {
 			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get job monitor's client: %v", err)
