@@ -17,6 +17,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -136,11 +137,12 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 				JobKind: job.KindGeneric,
 			},
 			Parameters: map[string]interface{}{
-				"src_resource":  string(src),
-				"dst_resource":  string(dest),
-				"speed":         policy.Speed,
-				"copy_by_chunk": policy.CopyByChunk,
-				"policy_id":     policy.ID,
+				"src_resource":    string(src),
+				"dst_resource":    string(dest),
+				"speed":           policy.Speed,
+				"copy_by_chunk":   policy.CopyByChunk,
+				"skip_if_running": policy.SkipIfRunning,
+				"policy_id":       policy.ID,
 			},
 		}
 
@@ -149,7 +151,8 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			"resource_type":        srcResource.Type,
 			"source_resource":      getResourceName(srcResource),
 			"destination_resource": getResourceName(dstResource),
-			"references":           getResourceReferences(dstResource)}); err != nil {
+			"references":           getResourceReferences(dstResource),
+		}); err != nil {
 			return err
 		}
 
