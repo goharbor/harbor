@@ -267,10 +267,15 @@ func (w *monitorController) ListQueues(ctx context.Context) ([]*jm.Queue, error)
 		if skippedUnusedJobType(queue.JobName) {
 			continue
 		}
+		// normalize latency, it sometimes return -1
+		var latency int64
+		if queue.Latency > 0 {
+			latency = queue.Latency
+		}
 		result = append(result, &jm.Queue{
 			JobType: queue.JobName,
 			Count:   queue.Count,
-			Latency: queue.Latency,
+			Latency: latency,
 			Paused:  statusMap[queue.JobName],
 		})
 	}
