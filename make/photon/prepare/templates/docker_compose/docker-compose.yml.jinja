@@ -12,12 +12,8 @@ services:
       - SETUID
     volumes:
       - {{log_location}}/:/var/log/docker/:z
-      - type: bind
-        source: ./common/config/log/logrotate.conf
-        target: /etc/logrotate.d/logrotate.conf
-      - type: bind
-        source: ./common/config/log/rsyslog_docker.conf
-        target: /etc/rsyslog.d/rsyslog_docker.conf
+      - ./common/config/log/logrotate.conf:/etc/logrotate.d/logrotate.conf:z
+      - ./common/config/log/rsyslog_docker.conf:/etc/rsyslog.d/rsyslog_docker.conf:z
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -35,27 +31,15 @@ services:
     volumes:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
-      - type: bind
-        source: {{data_volume}}/secret/registry/root.crt
-        target: /etc/registry/root.crt
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - {{data_volume}}/secret/registry/root.crt:/etc/registry/root.crt:z
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {% if gcs_keyfile %}
-      - type: bind
-        source: {{gcs_keyfile}}
-        target: /etc/registry/gcs.key
+      - {{gcs_keyfile}}:/etc/registry/gcs.key:z
 {% endif %}
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.core_crt_path}}
-        target: /harbor_cust_cert/core.crt
-      - type: bind
-        source: {{internal_tls.registry_crt_path}}
-        target: /etc/harbor/tls/registry.crt
-      - type: bind
-        source: {{internal_tls.registry_key_path}}
-        target: /etc/harbor/tls/registry.key
+      - {{internal_tls.core_crt_path}}:/harbor_cust_cert/core.crt:z
+      - {{internal_tls.registry_crt_path}}:/etc/harbor/tls/registry.crt:z
+      - {{internal_tls.registry_key_path}}:/etc/harbor/tls/registry.key:z
 {% endif %}
     networks:
       - harbor
@@ -81,24 +65,14 @@ services:
     volumes:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
-      - type: bind
-        source: ./common/config/registryctl/config.yml
-        target: /etc/registryctl/config.yml
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - ./common/config/registryctl/config.yml:/etc/registryctl/config.yml:z
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {% if gcs_keyfile %}
-      - type: bind
-        source: {{gcs_keyfile}}
-        target: /etc/registry/gcs.key
+      - {{gcs_keyfile}}:/etc/registry/gcs.key:z
 {% endif %}
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.registryctl_crt_path}}
-        target: /etc/harbor/ssl/registryctl.crt
-      - type: bind
-        source: {{internal_tls.registryctl_key_path}}
-        target: /etc/harbor/ssl/registryctl.key
+      - {{internal_tls.registryctl_crt_path}}:/etc/harbor/ssl/registryctl.crt:z
+      - {{internal_tls.registryctl_key_path}}:/etc/harbor/ssl/registryctl.key:z
 {% endif %}
     networks:
       - harbor
@@ -151,30 +125,16 @@ services:
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
       - {{data_volume}}/:/data/:z
       - ./common/config/core/certificates/:/etc/core/certificates/:z
-      - type: bind
-        source: ./common/config/core/app.conf
-        target: /etc/core/app.conf
-      - type: bind
-        source: {{data_volume}}/secret/core/private_key.pem
-        target: /etc/core/private_key.pem
-      - type: bind
-        source: {{data_volume}}/secret/keys/secretkey
-        target: /etc/core/key
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - ./common/config/core/app.conf:/etc/core/app.conf:z
+      - {{data_volume}}/secret/core/private_key.pem:/etc/core/private_key.pem:z
+      - {{data_volume}}/secret/keys/secretkey:/etc/core/key:z
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {% if uaa_ca_file %}
-      - type: bind
-        source: {{uaa_ca_file}}
-        target: /etc/core/certificates/uaa_ca.pem
+      - {{uaa_ca_file}}:/etc/core/certificates/uaa_ca.pem:z
 {% endif %}
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.core_crt_path}}
-        target: /etc/harbor/ssl/core.crt
-      - type: bind
-        source: {{internal_tls.core_key_path}}
-        target: /etc/harbor/ssl/core.key
+      - {{internal_tls.core_crt_path}}:/etc/harbor/ssl/core.crt:z
+      - {{internal_tls.core_key_path}}:/etc/harbor/ssl/core.key:z
 {% endif %}
     networks:
       harbor:
@@ -204,16 +164,10 @@ services:
       - SETUID
       - NET_BIND_SERVICE
     volumes:
-      - type: bind
-        source: ./common/config/portal/nginx.conf
-        target: /etc/nginx/nginx.conf
+      - ./common/config/portal/nginx.conf:/etc/nginx/nginx.conf:z
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.portal_crt_path}}
-        target: /etc/harbor/tls/portal.crt
-      - type: bind
-        source: {{internal_tls.portal_key_path}}
-        target: /etc/harbor/tls/portal.key
+      - {{internal_tls.portal_crt_path}}:/etc/harbor/tls/portal.crt:z
+      - {{internal_tls.portal_key_path}}:/etc/harbor/tls/portal.key:z
 {% endif %}
     networks:
       - harbor
@@ -239,19 +193,11 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/job_logs:/var/log/jobs:z
-      - type: bind
-        source: ./common/config/jobservice/config.yml
-        target: /etc/jobservice/config.yml
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.job_service_crt_path}}
-        target: /etc/harbor/ssl/job_service.crt
-      - type: bind
-        source: {{internal_tls.job_service_key_path}}
-        target: /etc/harbor/ssl/job_service.key
+      - {{internal_tls.job_service_crt_path}}:/etc/harbor/ssl/job_service.crt:z
+      - {{internal_tls.job_service_key_path}}:/etc/harbor/ssl/job_service.key:z
 {% endif %}
     networks:
       - harbor
@@ -274,7 +220,7 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/redis:/var/lib/redis
+      - {{data_volume}}/redis:/var/lib/redis:z
     networks:
       harbor:
     depends_on:
@@ -301,16 +247,10 @@ services:
 {% if protocol == 'https' %}
       - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {%if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.proxy_crt_path}}
-        target: /etc/harbor/tls/proxy.crt
-      - type: bind
-        source: {{internal_tls.proxy_key_path}}
-        target: /etc/harbor/tls/proxy.key
+      - {{internal_tls.proxy_crt_path}}:/etc/harbor/tls/proxy.crt:z
+      - {{internal_tls.proxy_key_path}}:/etc/harbor/tls/proxy.key:z
 {% endif %}
     networks:
       - harbor
@@ -347,22 +287,12 @@ services:
     networks:
       - harbor
     volumes:
-      - type: bind
-        source: {{data_volume}}/trivy-adapter/trivy
-        target: /home/scanner/.cache/trivy
-      - type: bind
-        source: {{data_volume}}/trivy-adapter/reports
-        target: /home/scanner/.cache/reports
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - {{data_volume}}/trivy-adapter/trivy:/home/scanner/.cache/trivy:z
+      - {{data_volume}}/trivy-adapter/reports:/home/scanner/.cache/reports:z
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
 {% if internal_tls.enabled %}
-      - type: bind
-        source: {{internal_tls.trivy_adapter_crt_path}}
-        target: /etc/harbor/ssl/trivy_adapter.crt
-      - type: bind
-        source: {{internal_tls.trivy_adapter_key_path}}
-        target: /etc/harbor/ssl/trivy_adapter.key
+      - {{internal_tls.trivy_adapter_crt_path}}:/etc/harbor/ssl/trivy_adapter.crt:z
+      - {{internal_tls.trivy_adapter_key_path}}:/etc/harbor/ssl/trivy_adapter.key:z
 {% endif %}
     logging:
       driver: "syslog"
@@ -387,9 +317,7 @@ services:
       - postgresql
   {% endif %}
     volumes:
-      - type: bind
-        source: ./common/config/shared/trust-certificates
-        target: /harbor_cust_cert
+      - ./common/config/shared/trust-certificates:/harbor_cust_cert:z
     logging:
       driver: "syslog"
       options:
@@ -399,4 +327,3 @@ services:
 networks:
   harbor:
     external: false
-
