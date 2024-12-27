@@ -163,6 +163,20 @@ func init() {
 			},
 		},
 	}, daysps.New, daysps.Valid)
+
+	// Register daysps
+	Register(&Metadata{
+		TemplateID: daysps.TemplateID,
+		Action:     "immutable",
+		Parameters: []*IndexedParam{
+			{
+				Name:     daysps.ParameterN,
+				Type:     "int",
+				Unit:     "days",
+				Required: true,
+			},
+		},
+	}, daysps.New, daysps.Valid)
 }
 
 // Register the rule evaluator with the corresponding rule template

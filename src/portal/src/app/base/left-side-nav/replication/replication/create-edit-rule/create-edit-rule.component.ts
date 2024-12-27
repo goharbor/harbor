@@ -334,6 +334,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             override: true,
             speed: -1,
             copy_by_chunk: false,
+            skip_if_running: false,
         });
     }
 
@@ -367,6 +368,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             dest_namespace_replace_count: Flatten_Level.FLATTEN_LEVEl_1,
             speed: -1,
             copy_by_chunk: false,
+            skip_if_running: false,
         });
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
@@ -410,6 +412,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 override: rule.override,
                 speed: speed,
                 copy_by_chunk: rule.copy_by_chunk,
+                skip_if_running: rule.skip_if_running,
             });
             let filtersArray = this.getFilterArray(rule);
             this.noSelectedEndpoint = false;
