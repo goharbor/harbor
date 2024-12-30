@@ -49,7 +49,7 @@ func New(opt *Options, claims jwt.Claims) (*Token, error) {
 func (tk *Token) Raw() (string, error) {
 	key, err := tk.Opt.GetKey()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	raw, err := tk.Token.SignedString(key)
 	if err != nil {
