@@ -16,6 +16,8 @@ clr-signpost {
             .signpost-content-body {
                 padding-bottom: 6px;
                 padding-top: 6px;
+                height: 10rem;
+                overflow-y: scroll;
             }
         }
     }
