@@ -126,7 +126,8 @@ endef
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build
+DOCKERPLATFORM="linux/$(shell arch)"
+DOCKERBUILD=$(DOCKERCMD) build --platform $(DOCKERPLATFORM)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
 DOCKERIMAGES=$(DOCKERCMD) images
@@ -269,7 +270,7 @@ ifeq ($(TRIVYFLAG), true)
 endif
 
 
-RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
+RUNCONTAINER=$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
 
 # $1 the name of the docker image
 # $2 the tag of the docker image
@@ -339,22 +340,22 @@ check_environment:
 compile_core: gen_apis
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBUILDPATHINCONTAINER)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
+	@$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
 	@echo "Done."
 
 compile_jobservice:
 	@echo "compiling binary for jobservice (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
 compile_registryctl:
 	@echo "compiling binary for harbor registry controller (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
+	@$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
 compile_standalone_db_migrator:
 	@echo "compiling binary for standalone db migrator (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
+	@$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_STANDALONE_DB_MIGRATOR) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_STANDALONE_DB_MIGRATOR)/$(STANDALONE_DB_MIGRATOR_BINARYNAME)
 	@echo "Done."
 
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl
@@ -364,12 +365,12 @@ update_prepare_version:
 	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
 
 gen_tls:
-	@$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
+	@$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
 
 prepare: update_prepare_version
 	@echo "preparing..."
 	@if [ -n "$(GEN_TLS)" ] ; then \
-		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+		$(DOCKERCMD) run --platform=$(DOCKERPLATFORM) --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
