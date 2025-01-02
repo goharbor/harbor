@@ -36,7 +36,12 @@ http {
         ssl_prefer_server_ciphers on;
         ssl_session_cache shared:SSL:10m;
 {% else %}
+    {% if ip_family.ipv4.enabled %}
         listen 8080;
+    {% endif %}
+    {% if ip_family.ipv6.enabled %}
+        listen [::]:8080;
+    {% endif %}
 {% endif %}
         server_name  localhost;
 
