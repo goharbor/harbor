@@ -27,6 +27,7 @@ const (
 	contextKeyAuthMode     contextKey = "authMode"
 	contextKeyCarrySession contextKey = "carrySession"
 	contextKeyRequestID    contextKey = "X-Request-ID"
+	contextKeyHost         contextKey = "host"
 )
 
 // ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
@@ -127,4 +128,19 @@ func GetXRequestID(ctx context.Context) string {
 		id, _ = value.(string)
 	}
 	return id
+}
+
+// WithHost returns a context with Host set
+func WithHost(ctx context.Context, host string) context.Context {
+	return setToContext(ctx, contextKeyHost, host)
+}
+
+// GetHost gets the Host from the context
+func GetHost(ctx context.Context) string {
+	host := ""
+	value := getFromContext(ctx, contextKeyHost)
+	if value != nil {
+		host, _ = value.(string)
+	}
+	return host
 }
