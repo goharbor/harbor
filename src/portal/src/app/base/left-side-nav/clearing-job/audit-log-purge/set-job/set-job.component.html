@@ -141,7 +141,7 @@
                 )
             }">
             <span class="font-style required flex-200"
-                >{{ 'CLEARANCES.INCLUDED_OPERATIONS' | translate
+                >{{ 'CLEARANCES.INCLUDED_RESOURCE_TYPES' | translate
                 }}<clr-tooltip>
                     <clr-icon
                         clrTooltipTrigger
@@ -152,37 +152,38 @@
                         clrSize="lg"
                         *clrIfOpen>
                         <span>{{
-                            'CLEARANCES.INCLUDED_OPERATION_TOOLTIP' | translate
+                            'CLEARANCES.INCLUDED_RESOURCE_TYPE_TOOLTIP'
+                                | translate
                         }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip></span
             >
             <div
-                class="clr-control-container clr-control-inline"
-                [class.clr-error]="!(selectedOperations?.length > 0)">
+                class="clr-control-container"
+                [class.clr-error]="!(selectedResourceTypes?.length > 0)">
                 <div
-                    class="clr-checkbox-wrapper"
-                    *ngFor="let item of operations">
+                    class="clr-checkbox-wrapper float-left"
+                    *ngFor="let item of resourceTypes">
                     <input
                         type="checkbox"
-                        id="{{ item }}"
-                        name="operations"
-                        value="{{ item }}"
+                        id="{{ item.id }}"
+                        name="resourceTypes"
+                        value="{{ item.value }}"
                         class="clr-checkbox"
-                        (change)="setOperation(item)"
-                        [checked]="hasOperation(item)" />
-                    <label for="{{ item }}" class="clr-control-label">{{
-                        operationsToText(item) | translate
+                        (change)="setResourceType(item.value)"
+                        [checked]="hasResourceType(item.value)" />
+                    <label for="{{ item.id }}" class="clr-control-label">{{
+                        item.label
                     }}</label>
                 </div>
                 <div
                     class="clr-subtext-wrapper"
-                    *ngIf="!(selectedOperations?.length > 0)">
+                    *ngIf="!(selectedResourceTypes?.length > 0)">
                     <clr-icon
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
                     <span class="clr-subtext">{{
-                        'CLEARANCES.INCLUDED_OPERATION_ERROR' | translate
+                        'CLEARANCES.INCLUDED_RESOURCE_TYPE_ERROR' | translate
                     }}</span>
                 </div>
             </div>
@@ -197,7 +198,7 @@
                 [disabled]="
                     disableGC ||
                     purgeForm.invalid ||
-                    !(selectedOperations?.length > 0)
+                    !(selectedResourceTypes?.length > 0)
                 ">
                 {{ 'CLEARANCES.PURGE_NOW' | translate }}
             </button>
@@ -210,7 +211,7 @@
                 [disabled]="
                     dryRunOnGoing ||
                     purgeForm.invalid ||
-                    !(selectedOperations?.length > 0)
+                    !(selectedResourceTypes?.length > 0)
                 ">
                 {{ 'TAG_RETENTION.WHAT_IF_RUN' | translate }}
             </button>

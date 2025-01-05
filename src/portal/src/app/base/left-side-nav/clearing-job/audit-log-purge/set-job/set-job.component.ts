@@ -10,13 +10,15 @@ import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-his
 import {
     JOB_STATUS,
     REFRESH_STATUS_TIME_DIFFERENCE,
-    RETENTION_OPERATIONS,
-    RETENTION_OPERATIONS_I18N_MAP,
+    RESOURCE_TYPES,
+    RESOURCE_TYPES_I18N_MAP,
     RetentionTimeUnit,
 } from '../../clearing-job-interfact';
 import { clone } from '../../../../../shared/units/utils';
 import { PurgeHistoryComponent } from '../history/purge-history.component';
 import { NgForm } from '@angular/forms';
+import { AuditlogService } from 'ng-swagger-gen/services';
+import { AuditLogEventType } from 'ng-swagger-gen/models';
 
 const ONE_MINUTE: number = 60000;
 const ONE_DAY: number = 24;
@@ -30,6 +32,7 @@ const MAX_RETENTION_DAYS: number = 10000;
 export class SetJobComponent implements OnInit, OnDestroy {
     originCron: OriginCron;
     disableGC: boolean = false;
+    loading: boolean = false;
     getLabelCurrent = 'CLEARANCES.SCHEDULE_TO_PURGE';
     loadingGcStatus = false;
     @ViewChild(CronScheduleComponent)
@@ -43,20 +46,23 @@ export class SetJobComponent implements OnInit, OnDestroy {
 
     retentionTime: number;
     retentionUnit: string = RetentionTimeUnit.DAYS;
-    operations: string[] = clone(RETENTION_OPERATIONS);
-    selectedOperations: string[] = clone(RETENTION_OPERATIONS);
+
+    resourceTypes: Record<string, string>[] = [];
+    selectedResourceTypes: string[] = clone([]);
     @ViewChild(PurgeHistoryComponent)
     purgeHistoryComponent: PurgeHistoryComponent;
     @ViewChild('purgeForm')
     purgeForm: NgForm;
     constructor(
         private purgeService: PurgeService,
+        private logService: AuditlogService,
         private errorHandler: ErrorHandler
     ) {}
 
     ngOnInit() {
         this.getCurrentSchedule(true);
         this.getStatus();
+        this.initResourceTypes();
     }
     ngOnDestroy() {
         if (this.statusTimeout) {
@@ -64,6 +70,43 @@ export class SetJobComponent implements OnInit, OnDestroy {
             this.statusTimeout = null;
         }
     }
+
+    initResourceTypes() {
+        this.loading = true;
+        this.logService
+            .listAuditLogEventTypesResponse()
+            .pipe(finalize(() => (this.loading = false)))
+            .subscribe(
+                response => {
+                    const auditLogEventTypes =
+                        response.body as AuditLogEventType[];
+                    this.resourceTypes = [
+                        ...auditLogEventTypes
+                            .filter(item =>
+                                RESOURCE_TYPES.includes(item.event_type)
+                            )
+                            .map(event => ({
+                                label:
+                                    event.event_type.charAt(0).toUpperCase() +
+                                    event.event_type
+                                        .slice(1)
+                                        .replace(/_/g, ' '),
+                                value: event.event_type,
+                                id: event.event_type,
+                            })),
+                        {
+                            label: 'Other events',
+                            value: 'other',
+                            id: 'other_events',
+                        },
+                    ];
+                },
+                error => {
+                    this.errorHandler.error(error);
+                }
+            );
+    }
+
     // get the latest non-dry-run execution to get the status
     getStatus() {
         this.loadingLastCompletedTime = true;
@@ -122,11 +165,11 @@ export class SetJobComponent implements OnInit, OnDestroy {
             };
             if (purgeHistory && purgeHistory.job_parameters) {
                 const obj = JSON.parse(purgeHistory.job_parameters);
-                if (obj?.include_operations) {
-                    this.selectedOperations =
-                        obj?.include_operations?.split(',');
+                if (obj?.include_resource_types) {
+                    this.selectedResourceTypes =
+                        obj?.include_resource_types?.split(',');
                 } else {
-                    this.selectedOperations = [];
+                    this.selectedResourceTypes = [];
                 }
                 if (
                     obj?.audit_retention_hour > ONE_DAY &&
@@ -140,7 +183,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 }
             } else {
                 this.retentionTime = null;
-                this.selectedOperations = clone(RETENTION_OPERATIONS);
+                this.selectedResourceTypes = clone([]);
                 this.retentionUnit = RetentionTimeUnit.DAYS;
             }
         } else {
@@ -165,7 +208,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         audit_retention_hour: +retentionTime,
-                        include_operations: this.selectedOperations.join(','),
+                        include_resource_types:
+                            this.selectedResourceTypes.join(','),
                         dry_run: false,
                     },
                     schedule: {
@@ -195,7 +239,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         audit_retention_hour: +retentionTime,
-                        include_operations: this.selectedOperations.join(','),
+                        include_resource_types:
+                            this.selectedResourceTypes.join(','),
                         dry_run: true,
                     },
                     schedule: {
@@ -231,8 +276,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             audit_retention_hour: +retentionTime,
-                            include_operations:
-                                this.selectedOperations.join(','),
+                            include_resource_types:
+                                this.selectedResourceTypes.join(','),
                             dry_run: false,
                         },
                         schedule: {
@@ -259,8 +304,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             audit_retention_hour: +retentionTime,
-                            include_operations:
-                                this.selectedOperations.join(','),
+                            include_resource_types:
+                                this.selectedResourceTypes.join(','),
                             dry_run: false,
                         },
                         schedule: {
@@ -283,21 +328,18 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 });
         }
     }
-    hasOperation(operation: string): boolean {
-        return this.selectedOperations?.indexOf(operation) !== -1;
+    hasResourceType(resourceType: string): boolean {
+        return this.selectedResourceTypes?.indexOf(resourceType) !== -1;
     }
-    operationsToText(operation: string): string {
-        if (RETENTION_OPERATIONS_I18N_MAP[operation]) {
-            return RETENTION_OPERATIONS_I18N_MAP[operation];
-        }
-        return operation;
-    }
-    setOperation(operation: string) {
-        if (this.selectedOperations.indexOf(operation) === -1) {
-            this.selectedOperations.push(operation);
+
+    setResourceType(resourceType: string) {
+        if (this.selectedResourceTypes.indexOf(resourceType) === -1) {
+            this.selectedResourceTypes.push(resourceType);
         } else {
-            this.selectedOperations.splice(
-                this.selectedOperations.findIndex(item => item === operation),
+            this.selectedResourceTypes.splice(
+                this.selectedResourceTypes.findIndex(
+                    item => item === resourceType
+                ),
                 1
             );
         }
@@ -311,7 +353,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
             return true;
         }
         return !(
-            this.purgeForm?.invalid || !(this.selectedOperations?.length > 0)
+            this.purgeForm?.invalid || !(this.selectedResourceTypes?.length > 0)
         );
     }
     isRetentionTimeValid() {

@@ -1,0 +1,21 @@
+<nav class="mt-1">
+    <ul class="nav">
+        <li class="nav-item">
+            <a
+                class="nav-link"
+                routerLink="project-audit-log"
+                routerLinkActive="active"
+                >{{ 'SIDE_NAV.AUDIT_LOGS' | translate }}</a
+            >
+        </li>
+        <li class="nav-item">
+            <a
+                class="nav-link"
+                routerLink="project-audit-legacy-log"
+                routerLinkActive="active"
+                >{{ 'SIDE_NAV.LEGACY_LOGS' | translate }}</a
+            >
+        </li>
+    </ul>
+</nav>
+<router-outlet></router-outlet>
