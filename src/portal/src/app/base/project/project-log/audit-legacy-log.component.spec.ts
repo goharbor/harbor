@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ProjectAuditLogComponent } from './audit-log.component';
+import { ProjectAuditLegacyLogComponent } from './audit-legacy-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, LOCALE_ID } from '@angular/core';
 import { delay } from 'rxjs/operators';
-import { AuditLogExt } from '../../../../../ng-swagger-gen/models/audit-log-ext';
+import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { click } from '../../../shared/units/utils';
@@ -14,9 +14,9 @@ import { registerLocaleData } from '@angular/common';
 import locale_en from '@angular/common/locales/en';
 import { DatePickerComponent } from '../../../shared/components/datetime-picker/datetime-picker.component';
 
-describe('ProjectAuditLogComponent', () => {
-    let component: ProjectAuditLogComponent;
-    let fixture: ComponentFixture<ProjectAuditLogComponent>;
+describe('ProjectAuditLegacyLogComponent', () => {
+    let component: ProjectAuditLegacyLogComponent;
+    let fixture: ComponentFixture<ProjectAuditLegacyLogComponent>;
     const mockMessageHandlerService = {
         handleError: () => {},
     };
@@ -38,9 +38,9 @@ describe('ProjectAuditLogComponent', () => {
         }).pipe(delay(0)),
     };
     const mockRouter = null;
-    const mockedAuditLogExts: AuditLogExt[] = [];
+    const mockedAuditLogs: AuditLog[] = [];
     for (let i = 0; i < 18; i++) {
-        let item: AuditLogExt = {
+        let item: AuditLog = {
             id: 234 + i,
             resource: 'myProject/Demo' + i,
             resource_type: 'N/A',
@@ -48,14 +48,14 @@ describe('ProjectAuditLogComponent', () => {
             op_time: '2017-04-11T10:26:22Z',
             username: 'user91' + i,
         };
-        mockedAuditLogExts.push(item);
+        mockedAuditLogs.push(item);
     }
-    const fakedAuditlogExtService = {
-        getLogExtsResponse(params: ProjectService.GetLogsParams) {
+    const fakedAuditlogService = {
+        getLogsResponse(params: ProjectService.GetLogsParams) {
             if (params.q && params.q.indexOf('Demo0') !== -1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogExts.slice(0, 1),
+                        body: mockedAuditLogs.slice(0, 1),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -65,7 +65,7 @@ describe('ProjectAuditLogComponent', () => {
             if (params.page <= 1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogExts.slice(0, 15),
+                        body: mockedAuditLogs.slice(0, 15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -74,7 +74,7 @@ describe('ProjectAuditLogComponent', () => {
             } else {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogExts.slice(15),
+                        body: mockedAuditLogs.slice(15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -98,11 +98,11 @@ describe('ProjectAuditLogComponent', () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [SharedTestingModule],
-            declarations: [ProjectAuditLogComponent],
+            declarations: [ProjectAuditLegacyLogComponent],
             providers: [
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: Router, useValue: mockRouter },
-                { provide: ProjectService, useValue: fakedAuditlogExtService },
+                { provide: ProjectService, useValue: fakedAuditlogService },
                 {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
@@ -112,7 +112,7 @@ describe('ProjectAuditLogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(ProjectAuditLogComponent);
+        fixture = TestBed.createComponent(ProjectAuditLegacyLogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
