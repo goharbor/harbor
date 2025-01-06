@@ -337,3 +337,13 @@ func MostMatchSorter(a, b string, matchWord string) bool {
 func IsLocalPath(path string) bool {
 	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
 }
+
+// StringInSlice check if the string is in the slice
+func StringInSlice(str string, slice []string) bool {
+	for _, s := range slice {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}
