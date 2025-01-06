@@ -480,6 +480,13 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 this.addP2pPolicyComponent.triggerType = trigger.type;
                 this.addP2pPolicyComponent.cron = trigger.trigger_setting.cron;
             }
+            if (this.addP2pPolicyComponent.policy.extra_attrs) {
+                const { scope = '', cluster_ids = [] } = JSON.parse(
+                    this.addP2pPolicyComponent.policy.extra_attrs
+                );
+                this.addP2pPolicyComponent.scope = scope;
+                this.addP2pPolicyComponent.clusterIDs = cluster_ids.join(',');
+            }
             this.addP2pPolicyComponent.currentForm.reset({
                 provider: this.addP2pPolicyComponent.policy.provider_id,
                 name: this.addP2pPolicyComponent.policy.name,
@@ -491,6 +498,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 label: this.addP2pPolicyComponent.labels,
                 triggerType: this.addP2pPolicyComponent.triggerType,
                 scope: this.addP2pPolicyComponent.scope,
+                clusterIDs: this.addP2pPolicyComponent.clusterIDs,
             });
             this.addP2pPolicyComponent.originPolicyForEdit = clone(
                 this.selectedRow
@@ -509,6 +517,10 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 this.addP2pPolicyComponent.triggerType;
             this.addP2pPolicyComponent.originCronForEdit =
                 this.addP2pPolicyComponent.cron;
+            this.addP2pPolicyComponent.originScopeForEdit =
+                this.addP2pPolicyComponent.scope;
+            this.addP2pPolicyComponent.originClusterIDsForEdit =
+                this.addP2pPolicyComponent.clusterIDs;
         }
     }
 

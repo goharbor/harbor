@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
         "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts, des règles de réplication ou des charts Helm et ne peut pas être supprimé.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n'a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
-        "PROXY_CACHE_BANDWIDTH":"Définissez la bande passante maximale du réseau pour les pulls d'image en amont pour le proxy-cache. Pour une bande passante illimitée, entrez -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Définissez la bande passante maximale du réseau pour les pulls d'image en amont pour le proxy-cache. Pour une bande passante illimitée, entrez -1. ",
         "BANDWIDTH": "Bande passante",
         "SPEED_LIMIT_TIP": "Entrez -1 ou un nombre entier supérieur à 0. ",
         "OF": "sur",
@@ -1623,6 +1623,14 @@
         "CREATE_INSTANCE": "Créer une instance"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "Scope",
+            "SCOPE_SINGLE_SEED_PEER": "Single Seed Peer",
+            "SCOPE_ALL_SEED_PEERS": "All Seed Peers",
+            "SCOPE_ALL_PEERS": "All Peers",
+            "CLUSTER_IDS": "Cluster IDs",
+            "CLUSTER_IDS_SEPARATOR": "Enter multiple comma separated cluster ids, eg., 1,2,3 (If empty, preheat all clusters)"
+        },
         "P2P_PROVIDER": "Préchauffage P2P",
         "POLICIES": "Stratégies",
         "NEW_POLICY": "Nouvelle stratégie",
@@ -1633,9 +1641,6 @@
         "TRIGGER": "Déclencheur",
         "CREATED": "Date/Heure de création",
         "DESCRIPTION": "Description",
-        "SCOPE": "Champ d'application",
-        "SCOPE_SINGLE_PEER": "Pair unique",
-        "SCOPE_ALL_PEERS": "Tous les pairs",
         "NO_POLICY": "Aucune stratégie",
         "ENABLED_POLICY_SUMMARY": "Voulez-vous activer la stratégie {{name}} ?",
         "DISABLED_POLICY_SUMMARY": "Voulez-vous désactiver la stratégie {{name}} ?",
