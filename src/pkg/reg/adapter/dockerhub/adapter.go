@@ -46,6 +46,13 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
+	var registryURL string
+	if registry.URL != baseURL {
+		registryURL = registry.URL
+	} else {
+		registryURL = defaultRegistryURL
+	}
+
 	return &adapter{
 		client:   client,
 		registry: registry,
