@@ -64,6 +64,8 @@ func (s Status) Code() int {
 		return 3
 	case "Success":
 		return 3
+	case "Skipped":
+		return 3
 	default:
 	}
 
