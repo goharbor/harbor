@@ -76,7 +76,7 @@
         "PULL_BASED": "Pull the resources from the remote registry to the local Harbor.",
         "DESTINATION_NAMESPACE": "Specify the destination namespace. If empty, the resources will be put under the same namespace as the source.",
         "OVERRIDE": "Specify whether to override the resources at the destination if a resource with the same name exists.",
-        "SINGLE_ACTIVE_REPLICATION": "Whether to Defer execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
+        "SINGLE_ACTIVE_REPLICATION": "Specify whether to defer execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
         "USER_NAME": "Debe tener una longitud máxima de 255 caracteres y no puede contener caracteres especiales.",
         "FULL_NAME": "La longitud máxima debería ser de 20 caracteres.",

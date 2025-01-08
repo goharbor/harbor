@@ -76,7 +76,7 @@
         "PULL_BASED": "Lade die Ressourcen von der entfernten Registry auf den lokalen Harbor runter.",
         "DESTINATION_NAMESPACE": "Spezifizieren des Ziel-Namespace. Wenn das Feld leer ist, werden die Ressourcen unter dem gleichen Namespace abgelegt wie in der Quelle.",
         "OVERRIDE": "Spezifizieren, ob die Ressourcen am Ziel überschrieben werden sollen, falls eine Ressource mit gleichem Namen existiert.",
-        "SINGLE_ACTIVE_REPLICATION": "Whether to Defer execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
+        "SINGLE_ACTIVE_REPLICATION": "Specify whether to defer execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
         "EMAIL": "E-Mail sollte eine gültige E-Mail-Adresse wie name@example.com sein.",
         "USER_NAME": "Darf keine Sonderzeichen enthalten und sollte kürzer als 255 Zeichen sein.",
         "FULL_NAME": "Maximale Länge soll 20 Zeichen sein.",
