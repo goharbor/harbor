@@ -47,7 +47,7 @@ type Policy struct {
 	UpdateTime                time.Time       `json:"update_time"`
 	Speed                     int32           `json:"speed"`
 	CopyByChunk               bool            `json:"copy_by_chunk"`
-	SkipIfRunning             bool            `json:"skip_if_running"`
+	SingleActiveReplication   bool            `json:"single_active_replication"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -142,7 +142,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.UpdateTime = policy.UpdateTime
 	p.Speed = policy.Speed
 	p.CopyByChunk = policy.CopyByChunk
-	p.SkipIfRunning = policy.SkipIfRunning
+	p.SingleActiveReplication = policy.SingleActiveReplication
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -188,7 +188,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		UpdateTime:                p.UpdateTime,
 		Speed:                     p.Speed,
 		CopyByChunk:               p.CopyByChunk,
-		SkipIfRunning:             p.SkipIfRunning,
+		SingleActiveReplication:   p.SingleActiveReplication,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

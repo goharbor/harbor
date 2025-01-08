@@ -137,12 +137,12 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 				JobKind: job.KindGeneric,
 			},
 			Parameters: map[string]interface{}{
-				"src_resource":    string(src),
-				"dst_resource":    string(dest),
-				"speed":           policy.Speed,
-				"copy_by_chunk":   policy.CopyByChunk,
-				"skip_if_running": policy.SkipIfRunning,
-				"policy_id":       policy.ID,
+				"src_resource":              string(src),
+				"dst_resource":              string(dest),
+				"speed":                     policy.Speed,
+				"copy_by_chunk":             policy.CopyByChunk,
+				"single_active_replication": policy.SingleActiveReplication,
+				"policy_id":                 policy.ID,
 			},
 		}
 

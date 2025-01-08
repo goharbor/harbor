@@ -119,7 +119,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		return 0, err
 	}
 
-	if policy.SkipIfRunning {
+	if policy.SingleActiveReplication {
 		monitorClient, err := jobmonitor.JobServiceMonitorClient()
 		if err != nil {
 			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get job monitor's client: %v", err)
@@ -130,7 +130,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		}
 		for _, o := range observations {
 			if isDuplicateJob(o, policy.ID) {
-				err = c.execMgr.MarkSkipped(ctx, id, "task skipped as a duplicate")
+				err = c.execMgr.MarkSkipped(ctx, id, "Execution deferred: active replication still in progress.")
 				if err != nil {
 					return 0, err
 				}
