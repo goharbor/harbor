@@ -830,10 +830,10 @@
                             type="checkbox"
                             class="clr-checkbox"
                             [checked]="true"
-                            id="skipIfRunning"
-                            formControlName="skip_if_running" />
-                        <label for="skipIfRunning" class="clr-control-label"
-                            >{{ 'REPLICATION.SKIP_IF_RUNNING' | translate }}
+                            id="singleActiveReplication"
+                            formControlName="single_active_replication" />
+                        <label for="singleActiveReplication" class="clr-control-label"
+                            >{{ 'REPLICATION.SINGLE_ACTIVE_REPLICATION' | translate }}
                             <clr-tooltip class="override-tooltip">
                                 <clr-icon
                                     clrTooltipTrigger
@@ -844,7 +844,7 @@
                                     clrSize="md"
                                     *clrIfOpen>
                                     <span>{{
-                                        'TOOLTIP.SKIP_IF_RUNNING' | translate
+                                        'TOOLTIP.SINGLE_ACTIVE_REPLICATION' | translate
                                     }}</span>
                                 </clr-tooltip-content>
                             </clr-tooltip>

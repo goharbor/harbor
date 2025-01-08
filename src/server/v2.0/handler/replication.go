@@ -113,8 +113,8 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		policy.CopyByChunk = *params.Policy.CopyByChunk
 	}
 
-	if params.Policy.SkipIfRunning != nil {
-		policy.SkipIfRunning = *params.Policy.SkipIfRunning
+	if params.Policy.SingleActiveReplication != nil {
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	id, err := r.ctl.CreatePolicy(ctx, policy)
@@ -185,8 +185,8 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 		policy.CopyByChunk = *params.Policy.CopyByChunk
 	}
 
-	if params.Policy.SkipIfRunning != nil {
-		policy.SkipIfRunning = *params.Policy.SkipIfRunning
+	if params.Policy.SingleActiveReplication != nil {
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
@@ -454,7 +454,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
-		SkipIfRunning:             &policy.SkipIfRunning,
+		SingleActiveReplication:             &policy.SingleActiveReplication,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)

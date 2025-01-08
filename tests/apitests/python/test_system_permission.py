@@ -149,7 +149,7 @@ replication_policy_payload = {
     "override": True,
     "speed": -1,
     "copy_by_chunk": False,
-    "skip_if_running": False
+    "single_active_replication": False
 }
 create_replication_policy = Permission("{}/replication/policies".format(harbor_base_url), "POST", 201, replication_policy_payload, "id", id_from_header=True)
 list_replication_policy = Permission("{}/replication/policies".format(harbor_base_url), "GET", 200, replication_policy_payload)
@@ -203,7 +203,7 @@ if "replication" in resources or "all" == resources:
         "override": True,
         "speed": -1,
         "copy_by_chunk": False,
-        "skip_if_running": False
+        "single_active_replication": False
     }
     response = requests.post("{}/replication/policies".format(harbor_base_url), data=json.dumps(replication_policy_payload), verify=False, auth=(admin_user_name, admin_password), headers={"Content-Type": "application/json"})
     replication_policy_id = int(response.headers["Location"].split("/")[-1])
