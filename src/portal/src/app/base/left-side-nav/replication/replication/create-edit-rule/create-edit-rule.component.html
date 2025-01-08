@@ -832,8 +832,13 @@
                             [checked]="true"
                             id="singleActiveReplication"
                             formControlName="single_active_replication" />
-                        <label for="singleActiveReplication" class="clr-control-label"
-                            >{{ 'REPLICATION.SINGLE_ACTIVE_REPLICATION' | translate }}
+                        <label
+                            for="singleActiveReplication"
+                            class="clr-control-label"
+                            >{{
+                                'REPLICATION.SINGLE_ACTIVE_REPLICATION'
+                                    | translate
+                            }}
                             <clr-tooltip class="override-tooltip">
                                 <clr-icon
                                     clrTooltipTrigger
@@ -844,7 +849,8 @@
                                     clrSize="md"
                                     *clrIfOpen>
                                     <span>{{
-                                        'TOOLTIP.SINGLE_ACTIVE_REPLICATION' | translate
+                                        'TOOLTIP.SINGLE_ACTIVE_REPLICATION'
+                                            | translate
                                     }}</span>
                                 </clr-tooltip-content>
                             </clr-tooltip>
