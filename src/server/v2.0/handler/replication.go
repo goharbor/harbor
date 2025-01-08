@@ -454,7 +454,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
-		SingleActiveReplication:             &policy.SingleActiveReplication,
+		SingleActiveReplication:   &policy.SingleActiveReplication,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)
