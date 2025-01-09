@@ -6940,6 +6940,7 @@ definitions:
         description: The operation's detail description
       operation_result:
         type: boolean
+        x-omitempty: false
         description: the operation's result, true for success, false for fail
       op_time:
         type: string
