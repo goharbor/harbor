@@ -333,7 +333,7 @@ jobs:
       - name: Fail if format changes are detected
         if: ${{ failure() }}
         run: |
-          echo "Code formatting issues detected. Please run 'npm run format' locally and commit the changes."
+          echo "Code formatting issues detected. Please run 'npm run format_fix' locally and commit the changes."
           exit 1
       - name: Codecov For UI
         uses: codecov/codecov-action@v5
