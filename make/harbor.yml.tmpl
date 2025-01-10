@@ -135,6 +135,8 @@ trivy:
 jobservice:
   # Maximum number of job workers in job service
   max_job_workers: 10
+  # Maximum hours of task duration in job service, default 24
+  max_job_duration_hours: 24
   # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
   job_loggers:
     - STD_OUTPUT
