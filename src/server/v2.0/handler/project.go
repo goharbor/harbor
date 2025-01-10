@@ -938,3 +938,11 @@ func highestRole(roles []int) int {
 	}
 	return highest
 }
+
+func (a *projectAPI) GetLogExts(ctx context.Context, params operation.GetLogExtsParams) middleware.Responder {
+	// TODO: implement the function
+	return operation.NewGetLogExtsOK().
+		WithXTotalCount(0).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, 0, 0, 15).String()).
+		WithPayload(nil)
+}

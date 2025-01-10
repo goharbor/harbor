@@ -82,6 +82,33 @@ func (ins *Instance) ToJSON() (string, error) {
 	return string(data), nil
 }
 
+// Decode decodes the instance.
+func (ins *Instance) Decode() error {
+	// decode the auth data.
+	authInfo, err := decodeAuthData(ins.AuthData)
+	if err != nil {
+		return err
+	}
+
+	if len(authInfo) > 0 {
+		ins.AuthInfo = authInfo
+	}
+
+	return nil
+}
+
+// decodeAuthData decodes the auth data.
+func decodeAuthData(data string) (map[string]string, error) {
+	authInfo := make(map[string]string)
+	if len(data) > 0 {
+		if err := json.Unmarshal([]byte(data), &authInfo); err != nil {
+			return nil, errors.Wrap(err, "decode auth data error")
+		}
+	}
+
+	return authInfo, nil
+}
+
 // TableName ...
 func (ins *Instance) TableName() string {
 	return "p2p_preheat_instance"

@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/quota"
+	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
@@ -54,7 +55,7 @@ func (q *Quota) ToSwagger(ctx context.Context) *models.Quota {
 
 	return &models.Quota{
 		ID:           q.ID,
-		Ref:          q.Ref,
+		Ref:          NewQuotaRefObject(q.Ref).ToSwagger(),
 		Hard:         NewResourceList(hard).ToSwagger(),
 		Used:         NewResourceList(used).ToSwagger(),
 		CreationTime: strfmt.DateTime(q.CreationTime),
@@ -65,4 +66,25 @@ func (q *Quota) ToSwagger(ctx context.Context) *models.Quota {
 // NewQuota new quota instance
 func NewQuota(quota *quota.Quota) *Quota {
 	return &Quota{Quota: quota}
+}
+
+// QuotaRefObject model
+type QuotaRefObject struct {
+	driver.QuotaRefObject
+}
+
+// ToSwagger converts the QuotaRefObject to the swagger model
+func (rl *QuotaRefObject) ToSwagger() models.QuotaRefObject {
+	result := make(map[string]interface{}, len(rl.QuotaRefObject))
+
+	for name, value := range rl.QuotaRefObject {
+		result[string(name)] = value
+	}
+
+	return result
+}
+
+// NewQuotaRefObject new QuotaRefObject instance
+func NewQuotaRefObject(qr driver.QuotaRefObject) *QuotaRefObject {
+	return &QuotaRefObject{QuotaRefObject: qr}
 }
