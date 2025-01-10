@@ -16,10 +16,14 @@ package replication
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/gocraft/work"
+
 	"github.com/goharbor/harbor/src/controller/event/operator"
+	"github.com/goharbor/harbor/src/controller/jobmonitor"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
 	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -109,10 +113,32 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
+
 	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
+
+	if policy.SingleActiveReplication {
+		monitorClient, err := jobmonitor.JobServiceMonitorClient()
+		if err != nil {
+			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get job monitor's client: %v", err)
+		}
+		observations, err := monitorClient.WorkerObservations()
+		if err != nil {
+			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get jobs observations: %v", err)
+		}
+		for _, o := range observations {
+			if isDuplicateJob(o, policy.ID) {
+				err = c.execMgr.MarkSkipped(ctx, id, "Execution deferred: active replication still in progress.")
+				if err != nil {
+					return 0, err
+				}
+				return id, nil
+			}
+		}
+	}
+
 	// start the replication flow in background
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context
@@ -149,6 +175,18 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		c.markError(ctx, id, err)
 	}()
 	return id, nil
+}
+
+func isDuplicateJob(o *work.WorkerObservation, policyID int64) bool {
+	if o.JobName != job.ReplicationVendorType {
+		return false
+	}
+	args := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(o.ArgsJSON), &args); err != nil {
+		return false
+	}
+	policyIDFromArgs, ok := args["policy_id"].(float64)
+	return ok && int64(policyIDFromArgs) == policyID
 }
 
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {
