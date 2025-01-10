@@ -81,8 +81,8 @@ list_project = Permission("{}/projects".format(harbor_base_url), "GET", 200, pro
 registry_payload = {
     "insecure": False,
     "name": "registry-{}".format(random.randint(1000, 9999)),
-    "type": "docker-hub",
-    "url": "https://hub.docker.com"
+    "type": "harbor",
+    "url": "https://registry.goharbor.io"
 }
 create_registry = Permission("{}/registries".format(harbor_base_url), "POST", 201, registry_payload, "id", id_from_header=True)
 list_registry = Permission("{}/registries".format(harbor_base_url), "GET", 200, registry_payload)
@@ -93,8 +93,8 @@ delete_registry = Permission("{}/registries/{}".format(harbor_base_url, ID_PLACE
 registry_ping_payload = {
     "insecure": False,
     "name": "registry-{}".format(random.randint(1000, 9999)),
-    "type": "docker-hub",
-    "url": "https://hub.docker.com"
+    "type": "harbor",
+    "url": "https://registry.goharbor.io"
 }
 ping_registry = Permission("{}/registries/ping".format(harbor_base_url), "POST", 200, registry_ping_payload)
 # registry permissions end
