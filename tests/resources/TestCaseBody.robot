@@ -676,9 +676,9 @@ Create Schedules For Job Service Dashboard Schedules
     Create An New P2P Preheat Policy  ${p2p_policy_name}  ${distribution_name}  **  **  Scheduled  ${schedule_type}  ${schedule_cron}
     # Create a replication policy triggered by schedule
     Switch to Registries
-    Create A New Endpoint  docker-hub  docker-hub${d}  ${null}  ${null}  ${null}  Y
+    Create A New Endpoint  harbor  goharbor${d}  ${null}  ${null}  ${null}  Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  goharbor/harbor-core  image  docker-hub${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
+    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  harbor-ci/goharbor/harbor-core  image  goharbor${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
     # Set up a schedule to scan all
     Switch To Vulnerability Page
     Set Scan Schedule  Custom  value=${schedule_cron}

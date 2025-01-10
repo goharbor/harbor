@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "COUNT_QUOTA": "存储数量",
@@ -934,10 +934,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP 组成员",
             "LDAP_GROUP_MEMBERSHIP_INFO": "LDAP组成员的membership属性，默认为 memberof, 在某些LDAP服务器会变为 ismemberof。如果要开启LDAP组功能，则此项必填",
             "GROUP_SCOPE": "LDAP组搜索范围",
-          "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\"",
-          "GROUP_ATTACH_PARALLEL": "LDAP组并行同步",
-          "GROUP_ATTACH_PARALLEL_INFO": "打开这个选项时，LDAP组的信息是并行同步到Harbor, 这样可以防止用户组太多时造成的登录超时，如果关闭这个选项，LDAP组信息是顺序同步到Harbor"
-
+            "GROUP_SCOPE_INFO": "搜索组的范围，默认值为\"子树\"",
+            "GROUP_ATTACH_PARALLEL": "LDAP组并行同步",
+            "GROUP_ATTACH_PARALLEL_INFO": "打开这个选项时，LDAP组的信息是并行同步到Harbor, 这样可以防止用户组太多时造成的登录超时，如果关闭这个选项，LDAP组信息是顺序同步到Harbor"
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -1309,7 +1308,6 @@
         "ON": " ",
         "AT": " ",
         "NOSCHEDULE": "获取schedule时出现错误"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "当前定时任务",
@@ -1622,6 +1620,14 @@
         "CREATE_INSTANCE": "新建实例"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "范围",
+            "SCOPE_SINGLE_SEED_PEER": "单个种子节点",
+            "SCOPE_ALL_SEED_PEERS": "所有种子节点",
+            "SCOPE_ALL_PEERS": "所有节点",
+            "CLUSTER_IDS": "集群 IDs",
+            "CLUSTER_IDS_SEPARATOR": "使用逗号分隔集群ID, 例如 1,2,3 (若为空则预热所有集群)"
+        },
         "P2P_PROVIDER": "P2P 预热",
         "POLICIES": "策略",
         "NEW_POLICY": "新建策略",
@@ -1632,9 +1638,6 @@
         "TRIGGER": "触发器",
         "CREATED": "创建时间",
         "DESCRIPTION": "描述",
-        "SCOPE": "范围",
-        "SCOPE_SINGLE_PEER": "单节点",
-        "SCOPE_ALL_PEERS": "全节点",
         "NO_POLICY": "暂无记录",
         "ENABLED_POLICY_SUMMARY": "是否启用策略 {{name}}?",
         "DISABLED_POLICY_SUMMARY": "是否禁用策略 {{name}}?",
