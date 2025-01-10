@@ -151,8 +151,15 @@
         "SAVE_SUCCESS": "Nutzerpasswort erfolgreich geändert.",
         "PASS_TIPS": "8-128 Zeichen mit einem Groß-, einem Kleinbuchstaben und einer Ziffer"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Nutzerprofil",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Passwort ändern",
         "ABOUT": "Info",
         "LOGOUT": "Ausloggen"
@@ -764,6 +771,7 @@
         "ARTIFACTS_COUNT": "Artefakte",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Pull Befehl",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Zeit",
         "PUSH_TIME": "Push Zeit",
         "IMMUTABLE": "Immutable",
@@ -1191,6 +1199,7 @@
         "NAME": "Name",
         "PULL_TIME": "Pull am",
         "PUSH_TIME": "Push am",
+        "PULL_COMMAND": "Pull Command",
         "OF": "von",
         "ITEMS": "Elementen",
         "ADD_TAG": "TAG HINZUFÜGEN",

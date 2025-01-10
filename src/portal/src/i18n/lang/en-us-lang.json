@@ -151,8 +151,15 @@
         "SAVE_SUCCESS": "User password changed successfully.",
         "PASS_TIPS": "8-128 characters long with at least 1 uppercase, 1 lowercase and 1 number"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Change Password",
         "ABOUT": "About",
         "LOGOUT": "Log Out"
@@ -764,6 +771,7 @@
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Pull Command",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "IMMUTABLE": "Immutable",
@@ -1193,6 +1201,7 @@
         "NAME": "Name",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "items",
         "ADD_TAG": "ADD TAG",

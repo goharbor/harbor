@@ -151,8 +151,15 @@
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
         "PASS_TIPS": "8-128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Modifier le mot de passe",
         "ABOUT": "À propos",
         "LOGOUT": "Se déconnecter"
@@ -764,6 +771,7 @@
         "ARTIFACTS_COUNT": "Artefacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Commande de pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
         "IMMUTABLE": "Immutable",
@@ -1193,6 +1201,7 @@
         "NAME": "Nom",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
+        "PULL_COMMAND": "Pull Command",
         "OF": "sur",
         "ITEMS": "entrées",
         "ADD_TAG": "AJOUTER TAG",

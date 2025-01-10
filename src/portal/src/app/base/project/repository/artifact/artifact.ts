@@ -101,6 +101,15 @@ export function hasPullCommand(artifact: Artifact): boolean {
     );
 }
 
+export function getPullCommandForTop(url: string, client: Clients): string {
+    if (url) {
+        if (Object.values(Clients).includes(client)) {
+            return `${client} pull ${url}`;
+        }
+    }
+    return null;
+}
+
 export function getPullCommandByDigest(
     artifactType: string,
     url: string,
@@ -109,13 +118,11 @@ export function getPullCommandByDigest(
 ): string {
     if (artifactType && url && digest) {
         if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}@${digest}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}@${digest}`;
+            if (Object.values(Clients).includes(client)) {
+                return `${client} pull ${url}@${digest}`;
             }
         }
+
         if (artifactType === ArtifactType.CNAB) {
             return `${Clients.CNAB} pull ${url}@${digest}`;
         }
@@ -131,11 +138,8 @@ export function getPullCommandByTag(
 ): string {
     if (artifactType && url && tag) {
         if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}:${tag}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}:${tag}`;
+            if (Object.values(Clients).includes(client)) {
+                return `${client} pull ${url}:${tag}`;
             }
         }
         if (artifactType === ArtifactType.CNAB) {
@@ -159,15 +163,11 @@ export interface ArtifactFilterEvent {
 export enum Clients {
     DOCKER = 'docker',
     PODMAN = 'podman',
+    NERDCTL = 'nerdctl',
+    CONTAINERD = 'ctr',
+    CRI_O = 'crictl',
     CHART = 'helm',
     CNAB = 'cnab-to-oci',
-}
-
-export enum ClientNames {
-    DOCKER = 'Docker',
-    PODMAN = 'Podman',
-    CHART = 'Helm',
-    CNAB = 'CNAB',
 }
 
 export enum ArtifactSbomType {
