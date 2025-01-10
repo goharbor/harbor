@@ -1,79 +1,79 @@
 .title-width {
-  width: 12rem;
+    width: 12rem;
 }
 
 .pt-05 {
-  padding-top: 1rem;
+    padding-top: 1rem;
 }
 
 .flex {
-  display: flex;
+    display: flex;
 }
 
 .card-row {
-  justify-content: flex-end;
-  padding-right: 2rem;
+    justify-content: flex-end;
+    padding-right: 2rem;
 }
 
 .mr-5px {
-  margin-right: 5px;
+    margin-right: 5px;
 }
 
 .container {
-  display: flex;
-  flex-wrap: wrap;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .card {
-  width: 24rem;
-  margin-right: 1rem;
-  flex-grow:0;
-  flex-shrink:0;
+    width: 24rem;
+    margin-right: 1rem;
+    flex-grow: 0;
+    flex-shrink: 0;
 }
 
 .number {
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  color: #266aac;
-  height: 4rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #266aac;
+    height: 4rem;
 }
 
 .column {
-  font-size: 10px;
-  font-weight: bolder;
-  text-transform: uppercase;
+    font-size: 10px;
+    font-weight: bolder;
+    text-transform: uppercase;
 }
 
 .card-header {
-  padding-bottom: 0;
+    padding-bottom: 0;
 }
 
 .ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .card-block {
-  min-height: 6rem;
+    min-height: 6rem;
 }
 
 .size-24 {
-  width: 20px;
-  height: 20px;
+    width: 20px;
+    height: 20px;
 }
 
 .chart-name {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .no-underline {
-  border-bottom-style: none;
+    border-bottom-style: none;
 }
 
 .center {
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: center;
 }

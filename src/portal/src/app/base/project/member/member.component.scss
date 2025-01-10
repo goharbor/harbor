@@ -13,7 +13,7 @@
 }
 
 .refresh-btn:hover {
-    color: #007CBB;
+    color: #007cbb;
 }
 
 :host::ng-deep .btn-group-overflow .dropdown-toggle {
@@ -21,7 +21,7 @@
     height: 24px;
 }
 /* stylelint-disable */
-.rightPos{
+.rightPos {
     position: absolute;
     z-index: 100;
     right: 35px;
@@ -30,9 +30,9 @@
 
 clr-datagrid {
     ::ng-deep clr-checkbox {
-         position: inherit;
-     }
- }
+        position: inherit;
+    }
+}
 
 :host::ng-deep clr-checkbox.checkbox.datagrid-foot-select {
     position: inherit;
@@ -49,6 +49,5 @@ clr-datagrid {
 
 .dropdown-header {
     text-transform: none;
-    font-size: 13px; 
+    font-size: 13px;
 }
-

@@ -16,7 +16,7 @@ h4 {
 }
 
 .alert-label {
-    color:red;
+    color: red;
     font-size: 12px;
 }
 
@@ -28,7 +28,7 @@ h4 {
 .filterSelect {
     position: relative;
     width: 315px;
-    margin-bottom:0.25rem;
+    margin-bottom: 0.25rem;
 }
 
 .filterSelect clr-icon {
@@ -65,11 +65,11 @@ h4 {
 }
 
 .addEndpoint {
-    margin-top: .25em !important;
+    margin-top: 0.25em !important;
     padding-left: 2px;
     padding-right: 2px;
     min-width: 58px;
-    margin-right: 0
+    margin-right: 0;
 }
 
 .shadow {
@@ -109,16 +109,16 @@ h4 {
 }
 
 .form-group {
-    >label:first-child{
+    > label:first-child {
         font-size: 14px;
         width: 7rem;
     }
 
-   .radio {
-       label {
-           margin-right:10px;
-       }
-   }
+    .radio {
+        label {
+            margin-right: 10px;
+        }
+    }
 }
 
 .form-select {
@@ -130,7 +130,7 @@ h4 {
     cursor: pointer;
 }
 
-.arrowSet{
+.arrowSet {
     display: inline-block;
     position: absolute;
     right: 50px;
@@ -150,7 +150,7 @@ clr-modal {
     color: red;
 }
 
-.deletedDiv a{
+.deletedDiv a {
     margin-left: 10px;
     text-decoration: underline;
     cursor: pointer;
@@ -165,7 +165,7 @@ clr-modal {
     margin-left: -15px;
 }
 
-.mr-t-11{
+.mr-t-11 {
     margin-top: 11px;
 }
 
@@ -178,7 +178,7 @@ clr-modal {
 }
 
 .form-cron {
-    padding-left:3.8rem;
+    padding-left: 3.8rem;
 }
 
 .mode-tooltip {
@@ -206,7 +206,7 @@ clr-modal {
     }
 }
 
-.display-none{
+.display-none {
     display: none;
 }
 
@@ -251,7 +251,7 @@ clr-modal {
 }
 
 :host::ng-deep.flatten {
-    width: 23rem!important;
+    width: 23rem !important;
 }
 
 .width-input {
@@ -274,7 +274,7 @@ clr-modal {
 .right-align {
     min-width: 204px;
     overflow-y: auto;
-    transform: translateX(-9rem) translateY(1.25rem)!important;
+    transform: translateX(-9rem) translateY(1.25rem) !important;
 }
 
 .dropdown-item {
@@ -295,7 +295,7 @@ clr-modal {
     display: inline-block;
 
     input {
-      width: 12rem;
+        width: 12rem;
     }
 }
 
@@ -309,10 +309,10 @@ clr-modal {
 
 .label-piece {
     display: flex;
-    left: .25rem;
+    left: 0.25rem;
 }
 
-.label-container{
+.label-container {
     position: absolute;
     display: flex;
     align-items: center;

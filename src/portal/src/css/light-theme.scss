@@ -1,7 +1,6 @@
 // Variables for light theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui.min.css";
+@import '../../node_modules/@clr/ui/clr-ui.min.css';
 
-  
 $mode-background-color: #fff;
 $mode-background-color1: $mode-background-color;
 $mode-background-color2: #fafafa;
@@ -22,9 +21,9 @@ $light-color-green: $right-status-fill-color;
 $color-ddd: #ddd;
 $color-f2: #f2f2f2;
 $color-657b83: #657b83;
-$color-fdf6e3:  #fdf6e3;
+$color-fdf6e3: #fdf6e3;
 $header-color: rgb(0 74 112);
-$color-yaml:  #fdf6e3;
+$color-yaml: #fdf6e3;
 $filter-divider-bg-color: #ccc;
 /* stylelint-disable */
 $selectBox-option-hover-bg-color-start: #f5f5f5;
@@ -42,11 +41,11 @@ $back-link-color: none;
 $radio-button-checked: #0072a3;
 $input-autofill-bg-color: #fafafa;
 $input-autofill-color: #000;
-$pull-command-icon-color: #007CBB;
+$pull-command-icon-color: #007cbb;
 $pull-command-icon-hover-color: #4aaed9;
 $select-all-for-dropdown-color: #0072a3;
 $normal-border-color: #6a7a81;
 $text-color-job-service-dashboard: #0072a3;
 $datagrid-numeric-filter-input-bg-color: unset;
 $alert-info-bg-color: #107eb0;
-@import "./common.scss";
+@import './common.scss';
