@@ -62,7 +62,7 @@ func (d *driver) HardLimits(ctx context.Context) types.ResourceList {
 	}
 }
 
-func (d *driver) Load(ctx context.Context, key string) (dr.RefObject, error) {
+func (d *driver) Load(ctx context.Context, key string) (dr.QuotaRefObject, error) {
 	thunk := d.loader.Load(ctx, dataloader.StringKey(key))
 
 	result, err := thunk()
@@ -75,7 +75,7 @@ func (d *driver) Load(ctx context.Context, key string) (dr.RefObject, error) {
 		return nil, fmt.Errorf("bad result for project: %s", key)
 	}
 
-	return dr.RefObject{
+	return dr.QuotaRefObject{
 		"id":         project.ProjectID,
 		"name":       project.Name,
 		"owner_name": project.OwnerName,
