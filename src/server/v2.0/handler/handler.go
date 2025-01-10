@@ -44,7 +44,6 @@ func New() http.Handler {
 		PreheatAPI:            newPreheatAPI(),
 		IconAPI:               newIconAPI(),
 		RobotAPI:              newRobotAPI(),
-		Robotv1API:            newRobotV1API(),
 		ReplicationAPI:        newReplicationAPI(),
 		RegistryAPI:           newRegistryAPI(),
 		SysteminfoAPI:         newSystemInfoAPI(),
