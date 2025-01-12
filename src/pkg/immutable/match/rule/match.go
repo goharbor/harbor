@@ -16,18 +16,22 @@ package rule
 
 import (
 	"context"
-
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
+
+// EvaluatorGetter functions that gets evaluator from index based on templateID
+type EvaluatorGetter func(templateID string, parameters rule.Parameters) (rule.Evaluator, error)
 
 // Matcher ...
 type Matcher struct {
-	rules []*model.Metadata
+	rules           []*model.Metadata
+	evaluatorGetter EvaluatorGetter
 }
 
 // Match ...
@@ -82,7 +86,23 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		if len(tagCandidates) == 0 {
 			continue
 		}
+		params := rule.Parameters{}
+		for k, v := range r.Parameters {
+			params[k] = v
+		}
 
+		evaluator, err := rm.evaluatorGetter(r.Template, params)
+		if err != nil {
+			return false, err
+		}
+
+		ruleCandidates, err := evaluator.Process(cands)
+		if err != nil {
+			return false, err
+		}
+		if len(ruleCandidates) == 0 {
+			continue
+		}
 		return true, nil
 	}
 	return false, nil
@@ -98,6 +118,6 @@ func (rm *Matcher) getImmutableRules(ctx context.Context, pid int64) error {
 }
 
 // NewRuleMatcher ...
-func NewRuleMatcher() match.ImmutableTagMatcher {
-	return &Matcher{}
+func NewRuleMatcher(eg EvaluatorGetter) match.ImmutableTagMatcher {
+	return &Matcher{evaluatorGetter: eg}
 }

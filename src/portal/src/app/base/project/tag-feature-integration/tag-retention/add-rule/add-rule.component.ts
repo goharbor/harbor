@@ -18,7 +18,7 @@ import {
     ViewChild,
     Input,
 } from '@angular/core';
-import { Retention, Rule, RuleMetadate } from '../retention';
+import {Retention, Rule, RuleMetadate, Template} from '../retention';
 import { TagRetentionService } from '../tag-retention.service';
 import { compareValue } from '../../../../../shared/units/utils';
 import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
@@ -54,7 +54,10 @@ export class AddRuleComponent {
     get unit(): string {
         let str = '';
         this.metadata.templates.forEach(t => {
-            if (t.rule_template === this.rule.template) {
+          if (
+            t.rule_template === this.rule.template &&
+            t.action === 'retain'
+          ) {
                 str = t.params[0].unit;
             }
         });
@@ -74,6 +77,10 @@ export class AddRuleComponent {
         }
         this.rule.params[this.template] = num;
     }
+
+  filterTemplate(t: Template) {
+    return t.action === 'retain';
+  }
 
     get repoSelect() {
         return this.rule.scope_selectors.repository[0].decoration;
@@ -304,7 +311,10 @@ export class AddRuleComponent {
         if (this.metadata && this.metadata.templates) {
             let flag: boolean = false;
             this.metadata.templates.forEach(t => {
-                if (t.rule_template === this.template) {
+              if (
+                t.rule_template === this.template &&
+                t.action === 'retain'
+              ) {
                     if (t.params && t.params.length > 0) {
                         flag = true;
                     }

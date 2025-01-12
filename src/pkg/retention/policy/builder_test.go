@@ -15,6 +15,8 @@
 package policy
 
 import (
+	rule2 "github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"testing"
 	"time"
 
@@ -88,7 +90,7 @@ func (suite *TestBuilderSuite) SetupSuite() {
 		doublestar.NSExcludes,
 	}, doublestar.New)
 	index.Register(label.Kind, []string{label.With, label.Without}, label.New)
-	index3.Register(action.Retain, action.NewRetainAction)
+	index3.Register(action.Retain, action.NewRetainAction(rule2.NewRuleMatcher(policyindex.Get)))
 
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}

@@ -16,6 +16,8 @@ package or
 
 import (
 	"errors"
+	rule2 "github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"testing"
 	"time"
 
@@ -87,8 +89,8 @@ func (suite *ProcessorTestSuite) TearDownSuite() {
 // TestProcess tests process method
 func (suite *ProcessorTestSuite) TestProcess() {
 
-	perf := action.NewRetainAction(suite.all, false)
-
+	factory := action.NewRetainAction(rule2.NewRuleMatcher(policyindex.Get))
+	perf := factory(suite.all, false)
 	params := make([]*alg.Parameter, 0)
 	lastxParams := make(map[string]rule.Parameter)
 	lastxParams[lastx.ParameterX] = 10
@@ -129,7 +131,8 @@ func (suite *ProcessorTestSuite) TestProcess() {
 
 // TestProcess2 ...
 func (suite *ProcessorTestSuite) TestProcess2() {
-	perf := action.NewRetainAction(suite.all, false)
+	factory := action.NewRetainAction(rule2.NewRuleMatcher(policyindex.Get))
+	perf := factory(suite.all, false)
 
 	params := make([]*alg.Parameter, 0)
 	alwaysParams := make(map[string]rule.Parameter)

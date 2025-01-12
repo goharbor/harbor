@@ -222,6 +222,10 @@ func Get(templateID string, parameters rule.Parameters) (rule.Evaluator, error) 
 		return nil, errors.New("empty rule template ID")
 	}
 
+	if templateID == "immutable_template" {
+		templateID = always.TemplateID
+	}
+
 	v, ok := index.Load(templateID)
 	if !ok {
 		return nil, errors.Errorf("rule evaluator %s is not registered", templateID)

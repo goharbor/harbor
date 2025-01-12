@@ -17,14 +17,13 @@ package core
 import (
 	"fmt"
 
-	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/encode/repository"
 )
 
-func (c *client) ListAllArtifacts(project, repo string) ([]*modelsv2.Artifact, error) {
+func (c *client) ListAllArtifacts(project, repo string) ([]*Artifact, error) {
 	repo = repository.Encode(repo)
 	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts", project, repo))
-	var arts []*modelsv2.Artifact
+	var arts []*Artifact
 	if err := c.httpclient.GetAndIteratePagination(url, &arts); err != nil {
 		return nil, err
 	}

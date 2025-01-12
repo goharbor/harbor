@@ -69,7 +69,10 @@
                             class="clr-select w-100">
                             <option class="display-none" value=""></option>
                             <option
-                                *ngFor="let t of metadata?.templates"
+                              *ngFor="
+                                    let t of metadata?.templates
+                                        | callback : filterTemplate
+                                "
                                 value="{{ t?.rule_template }}">
                                 {{ getI18nKey(t?.action) | translate
                                 }}{{ getI18nKey(t?.display_text) | translate }}

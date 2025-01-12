@@ -26,6 +26,10 @@ type ImmutableRule struct {
 
 // ToSwagger ...
 func (ir *ImmutableRule) ToSwagger() *models.ImmutableRule {
+	params := make(map[string]interface{})
+	for k, v := range ir.Parameters {
+		params[k] = v
+	}
 	return &models.ImmutableRule{
 		ID:             ir.ID,
 		Disabled:       ir.Disabled,
@@ -34,6 +38,7 @@ func (ir *ImmutableRule) ToSwagger() *models.ImmutableRule {
 		ScopeSelectors: ir.ToScopeSelectors(),
 		TagSelectors:   ir.ToTagSelectors(),
 		Template:       ir.Template,
+		Params:         params,
 	}
 }
 

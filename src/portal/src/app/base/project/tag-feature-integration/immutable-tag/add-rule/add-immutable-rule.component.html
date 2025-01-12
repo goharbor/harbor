@@ -92,6 +92,48 @@
                 </div>
             </div>
         </div>
+      <div class="height-72">
+        <div class="clr-row">
+          <div class="clr-col-4">
+            <div class="over-line"></div>
+            <label>{{ 'IMMUTABLE_TAG.CONDITION' | translate }}</label>
+          </div>
+          <div class="clr-col-5">
+            <div class="over-line"></div>
+            <div class="clr-select-wrapper w-100">
+              <select
+                id="template"
+                [(ngModel)]="template"
+                class="clr-select w-100">
+                <option
+                  *ngFor="
+                                    let t of metadata?.templates
+                                        | callback : filterTemplate
+                                "
+                  value="{{ t?.rule_template }}">
+                  {{
+                    getI18nKey(t?.action) | translate
+                  }}{{ getI18nKey(t?.display_text) | translate }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="clr-col-3">
+            <div class="over-line">
+                        <span *ngIf="hasParam()">{{
+                            getI18nKey(unit) | translate
+                          }}</span>
+            </div>
+            <div class="w-100 disabled">
+              <input
+                id="param"
+                *ngIf="hasParam()"
+                [(ngModel)]="num"
+                class="clr-input w-100"/>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
         <button

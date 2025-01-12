@@ -20,7 +20,6 @@ import (
 
 	chttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
-	modelsv2 "github.com/goharbor/harbor/src/controller/artifact"
 )
 
 // Client defines the methods that a core client should implement
@@ -32,7 +31,7 @@ type Client interface {
 
 // ArtifactClient defines the methods that an image client should implement
 type ArtifactClient interface {
-	ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error)
+	ListAllArtifacts(project, repository string) ([]*Artifact, error)
 	DeleteArtifact(project, repository, digest string) error
 	DeleteArtifactRepository(project, repository string) error
 }

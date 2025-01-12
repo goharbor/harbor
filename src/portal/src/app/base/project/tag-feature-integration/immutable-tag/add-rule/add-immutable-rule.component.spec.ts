@@ -46,6 +46,7 @@ describe('AddRuleComponent', () => {
                 },
             ],
         },
+      params: {},
     };
     const mockErrorHandler = {
         handleErrorPopupUnauthorized: () => {},
