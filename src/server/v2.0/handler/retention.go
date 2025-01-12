@@ -135,7 +135,7 @@ var (
 				},
 			},
 			{
-				RuleTemplate: "immutable_template", //backward compatibility, should be always
+				RuleTemplate: "immutable_template", // backward compatibility, should be always
 				DisplayText:  "always",
 				Action:       "immutable",
 				Params:       []*models.RetentionRuleParamMetadata{},

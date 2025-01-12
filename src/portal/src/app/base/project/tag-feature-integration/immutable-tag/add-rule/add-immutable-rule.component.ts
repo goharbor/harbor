@@ -21,7 +21,7 @@ import {
 import {
     ImmutableRetentionRule,
     RuleMetadate,
-  Template,
+    Template,
 } from '../../tag-retention/retention';
 import { ImmutableTagService } from '../immutable-tag.service';
 import { compareValue } from '../../../../../shared/units/utils';
@@ -162,9 +162,9 @@ export class AddImmutableRuleComponent {
         return '';
     }
 
-  filterTemplate(t: Template) {
-    return t.action === 'immutable';
-  }
+    filterTemplate(t: Template) {
+        return t.action === 'immutable';
+    }
 
     canNotAdd(): boolean {
         if (this.onGoing) {
@@ -270,50 +270,50 @@ export class AddImmutableRuleComponent {
         return this.immutableTagService.getI18nKey(str);
     }
 
-  set template(template) {
-    this.rule.template = template;
-  }
-
-  get template() {
-    return this.rule.template;
-  }
-
-  get unit(): string {
-    let str = '';
-    this.metadata.templates.forEach(t => {
-      if (t.rule_template === this.rule.template) {
-        str = t.params[0].unit;
-      }
-    });
-    return str;
-  }
-
-  get num() {
-    return this.rule.params[this.template];
-  }
-
-  set num(num) {
-    if (num) {
-      num = num.trim();
+    set template(template) {
+        this.rule.template = template;
     }
-    if (parseInt(num, 10) > 0) {
-      num = parseInt(num, 10);
-    }
-    this.rule.params[this.template] = num;
-  }
 
-  hasParam(): boolean {
-    if (this.metadata && this.metadata.templates) {
-      let flag: boolean = false;
-      this.metadata.templates.forEach(t => {
-        if (t.rule_template === this.template) {
-          if (t.params && t.params.length > 0) {
-            flag = true;
-          }
+    get template() {
+        return this.rule.template;
+    }
+
+    get unit(): string {
+        let str = '';
+        this.metadata.templates.forEach(t => {
+            if (t.rule_template === this.rule.template) {
+                str = t.params[0].unit;
+            }
+        });
+        return str;
+    }
+
+    get num() {
+        return this.rule.params[this.template];
+    }
+
+    set num(num) {
+        if (num) {
+            num = num.trim();
         }
-      });
-      return flag;
+        if (parseInt(num, 10) > 0) {
+            num = parseInt(num, 10);
+        }
+        this.rule.params[this.template] = num;
     }
-    return false;
-  }
+
+    hasParam(): boolean {
+        if (this.metadata && this.metadata.templates) {
+            let flag: boolean = false;
+            this.metadata.templates.forEach(t => {
+                if (t.rule_template === this.template) {
+                    if (t.params && t.params.length > 0) {
+                        flag = true;
+                    }
+                }
+            });
+            return flag;
+        }
+        return false;
+    }
 }

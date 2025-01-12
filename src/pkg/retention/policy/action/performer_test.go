@@ -83,7 +83,7 @@ func (suite *TestPerformerSuite) TearDownSuite() {
 func (suite *TestPerformerSuite) TestPerform() {
 	p := &retainAction{
 		all: suite.all,
-		//immutableTagMatcher: rule2.NewRuleMatcher(),
+		// immutableTagMatcher: rule2.NewRuleMatcher(),
 	}
 
 	candidates := []*selector.Candidate{

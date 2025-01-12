@@ -91,16 +91,16 @@
                             <span>, </span>
                             <span>{{
                                 getI18nKey(rule?.action) | translate
-                              }}</span>
+                            }}</span>
                             <span>{{
                                 getI18nKey(rule?.template)
-                                  | translate
-                                  : {
-                                    number: (rule?.params || {})[
-                                      rule?.template
-                                      ]
-                                  }
-                              }}</span>
+                                    | translate
+                                        : {
+                                              number: (rule?.params || {})[
+                                                  rule?.template
+                                              ]
+                                          }
+                            }}</span>
                             <span>{{
                                 'IMMUTABLE_TAG.LOWER_TAGS' | translate
                             }}</span>
