@@ -110,3 +110,15 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(auditLogs)
 }
+func (a *auditlogAPI) ListAuditLogExts(ctx context.Context, params auditlog.ListAuditLogExtsParams) middleware.Responder {
+	// TODO: implement this method
+	return auditlog.NewListAuditLogExtsOK().
+		WithXTotalCount(0).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, 0, 0, 0).String()).
+		WithPayload(nil)
+}
+
+func (a *auditlogAPI) ListAuditLogEventTypes(_ context.Context, _ auditlog.ListAuditLogEventTypesParams) middleware.Responder {
+	// TODO: implement this method
+	return auditlog.NewListAuditLogEventTypesOK().WithPayload(nil)
+}

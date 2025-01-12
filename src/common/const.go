@@ -220,6 +220,9 @@ const (
 	// ScannerSkipUpdatePullTime
 	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
 
+	// AuditLogEventsDisabled
+	AuditLogEventsDisabled = "audit_log_events_disabled"
+
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
 
