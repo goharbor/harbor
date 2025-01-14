@@ -246,7 +246,7 @@
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
@@ -486,7 +486,6 @@
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "Payload Data",
         "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
-
     },
     "GROUP": {
         "GROUP": "Group",
@@ -587,8 +586,8 @@
         "FILTER_EXECUTIONS_PLACEHOLDER": "Filter Executions",
         "DELETION_TITLE": "Confirm Replication Rule Deletion",
         "DELETION_SUMMARY": "Do you want to delete replication rule {{param}}?",
-        "REPLICATION_TITLE": "Confirm Rule Replication",
-        "REPLICATION_SUMMARY": "Do you want to replicate the rule {{param}}?",
+        "REPLICATION_TITLE": "Confirm Replication Rule Execution",
+        "REPLICATION_SUMMARY": "Do you want to execute replication rule {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
         "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
         "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
@@ -936,10 +935,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-          "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
-          "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
-          "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
-
+            "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
+            "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -1313,7 +1311,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",
@@ -1626,6 +1623,14 @@
         "CREATE_INSTANCE": "Create instance"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "Scope",
+            "SCOPE_SINGLE_SEED_PEER": "Single Seed Peer",
+            "SCOPE_ALL_SEED_PEERS": "All Seed Peers",
+            "SCOPE_ALL_PEERS": "All Peers",
+            "CLUSTER_IDS": "Cluster IDs",
+            "CLUSTER_IDS_SEPARATOR": "Enter multiple comma separated cluster ids, eg., 1,2,3 (If empty, preheat all clusters)"
+        },
         "P2P_PROVIDER": "P2P Preheat",
         "POLICIES": "Policies",
         "NEW_POLICY": "NEW POLICY",
@@ -1636,9 +1641,6 @@
         "TRIGGER": "Trigger",
         "CREATED": "Creation Time",
         "DESCRIPTION": "Description",
-        "SCOPE": "Scope",
-        "SCOPE_SINGLE_PEER": "Single Peer",
-        "SCOPE_ALL_PEERS": "All Peers",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to deactivate policy {{name}}?",

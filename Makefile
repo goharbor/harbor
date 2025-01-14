@@ -291,7 +291,7 @@ lint_apis:
 	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
 
 SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
-SWAGGER_VERSION=v0.25.0
+SWAGGER_VERSION=v0.31.0
 SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
 SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
@@ -468,7 +468,7 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-# golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation 
+# golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:

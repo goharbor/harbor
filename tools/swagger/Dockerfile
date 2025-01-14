@@ -2,7 +2,7 @@ ARG GOLANG
 FROM ${GOLANG}
 
 ARG SWAGGER_VERSION
-RUN curl -fsSL -o /usr/bin/swagger https://github.com/go-swagger/go-swagger/releases/download/$SWAGGER_VERSION/swagger_linux_amd64 && chmod +x /usr/bin/swagger
+RUN go install github.com/go-swagger/go-swagger/cmd/swagger@$SWAGGER_VERSION
 
-ENTRYPOINT ["/usr/bin/swagger"]
+ENTRYPOINT ["swagger"]
 CMD ["--help"]
