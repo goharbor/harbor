@@ -114,7 +114,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             projectName: this.projectName,
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDetails.digest,
-            withSignature: true,
             withImmutableStatus: true,
             q: encodeURIComponent(`name=${name}`),
         };
@@ -165,7 +164,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDetails.digest,
             page: pageNumber,
-            withSignature: true,
             withImmutableStatus: true,
             pageSize: this.pageSize,
             sort: getSortingString(state),

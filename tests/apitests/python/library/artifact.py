@@ -23,8 +23,6 @@ class Artifact(base.Base, object):
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
         params = {}
-        if "with_signature" in kwargs:
-            params["with_signature"] = kwargs["with_signature"]
         if "with_tag" in kwargs:
             params["with_tag"] = kwargs["with_tag"]
         if "with_scan_overview" in kwargs:
