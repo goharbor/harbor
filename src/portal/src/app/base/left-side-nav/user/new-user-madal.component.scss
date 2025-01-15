@@ -1,11 +1,11 @@
 ::ng-deep {
-  .modal-title {
-    padding-bottom: 0;
-  }
-
-  .modal-header {
     .modal-title {
-      padding: 0;
+        padding-bottom: 0;
     }
-  }
+
+    .modal-header {
+        .modal-title {
+            padding: 0;
+        }
+    }
 }

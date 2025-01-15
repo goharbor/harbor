@@ -1,20 +1,20 @@
 .tooltip {
     &.tooltip-validation.invalid {
-        &::before{
-        top: 0.7em;
-        right: 3em;
+        &::before {
+            top: 0.7em;
+            right: 3em;
         }
     }
 
-    >.tooltip-content{
+    > .tooltip-content {
         opacity: 1;
         visibility: visible;
         left: 75%;
         background-color: #c92100;
     }
 
-    >.tooltip-content::before {
-        border-left-color:#c92100;
+    > .tooltip-content::before {
+        border-left-color: #c92100;
         border-top-color: #c92100;
     }
 }

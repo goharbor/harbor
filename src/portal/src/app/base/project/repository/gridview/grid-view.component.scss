@@ -1,59 +1,59 @@
 .grid-content {
-  position: relative;
-  top: 66px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: auto;
-  max-height: 65vh;
+    position: relative;
+    top: 66px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    max-height: 65vh;
 }
 
 .card-item {
-  display: block;
-  max-width: 400px;
-  min-width: 300px;
-  position: absolute;
-  margin-right: 40px;
-  transition: width 0.4s, transform 0.4s;
+    display: block;
+    max-width: 400px;
+    min-width: 300px;
+    position: absolute;
+    margin-right: 40px;
+    transition: width 0.4s, transform 0.4s;
 }
 
 .content-empty {
-  text-align: center;
-  display: block;
-  margin-top: 100px;
+    text-align: center;
+    display: block;
+    margin-top: 100px;
 }
 
 .central-block-loading {
-  position: absolute;
-  z-index: 10;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  text-align: center;
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
 }
 
 .central-block-loading-more {
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  text-align: center;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
 
-  .spinner {
-    width: 1rem;
-    height: 1rem;
-  }
+    .spinner {
+        width: 1rem;
+        height: 1rem;
+    }
 }
 
 .vertical-helper {
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
 }
 /* stylelint-disable no-descending-specificity */
 .spinner {
-  width: 100px;
-  height: 100px;
-  vertical-align: middle;
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
 }

@@ -1,74 +1,74 @@
 .result-row {
-  position: relative;
+    position: relative;
 }
 /* stylelint-disable */
-.rightPos{
-  position: absolute;
-  z-index: 100;
-  right: 0;
-  margin-top: 1.25rem;
+.rightPos {
+    position: absolute;
+    z-index: 100;
+    right: 0;
+    margin-top: 1.25rem;
 }
 
 .option-right {
-  padding-right: 16px;
-  margin-top: 5px;
+    padding-right: 16px;
+    margin-top: 5px;
 }
 
 .center {
-  align-items: center;
+    align-items: center;
 }
 
 .label-critical {
-  background:#ff4d2e;
-  color:#000;
+    background: #ff4d2e;
+    color: #000;
 }
 
 .label-danger {
-  background:#ff8f3d!important;
-  color:#000!important;
+    background: #ff8f3d !important;
+    color: #000 !important;
 }
 
 .label-medium {
-  background-color: #ffce66;
-  color:#000;
+    background-color: #ffce66;
+    color: #000;
 }
 
 .label-low {
-  background: #fff1ad;
-  color:#000;
+    background: #fff1ad;
+    color: #000;
 }
 
 .label-none {
-  background-color: #2ec0ff;
-  color:#000;
+    background-color: #2ec0ff;
+    color: #000;
 }
 
 .no-border {
-  border: none;
+    border: none;
 }
 
 .ml-05 {
-  margin-left: 0.5rem;
+    margin-left: 0.5rem;
 }
 
 .report {
-  text-align: left;
+    text-align: left;
 }
 
 .mt-5px {
-  margin-top: 5px;
+    margin-top: 5px;
 }
 
 .label {
-  min-width: 3rem;
+    min-width: 3rem;
 }
 
 .package-medium {
-  max-width: 25rem;
-  text-overflow: ellipsis;
+    max-width: 25rem;
+    text-overflow: ellipsis;
 }
 
 .version-medium {
-  min-width: 22rem;
-  text-overflow: ellipsis;
+    min-width: 22rem;
+    text-overflow: ellipsis;
 }
