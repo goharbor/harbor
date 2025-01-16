@@ -25,7 +25,7 @@ class TestScan(unittest.TestCase):
         self.user_password = "Aa123456"
         self.project_id, self.project_name, self.user_id, self.user_name, self.repo_name1 = [None] * 5
         self.user_id, self.user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
-        self.USER_CLIENT = dict(with_signature = True, with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password, with_scan_overview = True)
+        self.USER_CLIENT = dict(with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password, with_scan_overview = True)
 
 
         #2. Create a new private project(PA) by user(UA);
