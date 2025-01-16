@@ -23,7 +23,7 @@ class TestProjects(unittest.TestCase):
         self.webhook= Webhook()
         self.user_id, self.project_id = [None] * 2
         self.user_id, self.user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
-        self.USER_CLIENT = dict(with_signature = True, with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password)
+        self.USER_CLIENT = dict(with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password)
 
     @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def tearDown(self):

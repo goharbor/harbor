@@ -1,6 +1,7 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-FROM node:16.18.0 as nodeportal
+ARG NODE
+FROM ${NODE} as nodeportal
 
 WORKDIR /build_dir
 
