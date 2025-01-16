@@ -48,7 +48,7 @@
 #               remove the base images of Harbor images
 # cleanimage: 	remove Harbor images
 # cleandockercomposefile:
-#				remove specific version docker-compose
+#				remove specific version docker-compose file
 # cleanversiontag:
 #				cleanpackageremove specific version tag
 # cleanpackage: remove online/offline install package
@@ -133,7 +133,7 @@ DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
 DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
-DOCKERCOMPOSECMD=$(shell which docker-compose)
+DOCKERCOMPOSECMD=$(DOCKERCMD) compose
 DOCKERTAG=$(DOCKERCMD) tag
 
 # go parameters

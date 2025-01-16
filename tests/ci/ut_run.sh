@@ -9,7 +9,7 @@ export CHROME_BIN=chromium-browser
 #export DISPLAY=:99.0
 #sh -e /etc/init.d/xvfb start
 
-sudo docker-compose -f ./make/docker-compose.test.yml up -d
+sudo docker compose -f ./make/docker-compose.test.yml up -d
 sleep 10
 ./tests/pushimage.sh
 docker ps

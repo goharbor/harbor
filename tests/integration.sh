@@ -17,7 +17,7 @@ set -x
 gsutil version -l
 set +x
 
-docker-compose version
+docker compose version
 
 ## -------------------------------------------- Pre-condition --------------------------------------------
 if [[ $DRONE_REPO != "goharbor/harbor" ]]; then

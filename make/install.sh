@@ -18,8 +18,7 @@ with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
 
-# flag to using docker compose v1 or v2, default would using v1 docker-compose
-DOCKER_COMPOSE=docker-compose
+DOCKER_COMPOSE=docker compose
 
 while [ $# -gt 0 ]; do
         case $1 in
@@ -41,7 +40,7 @@ cd $workdir
 h2 "[Step $item]: checking if docker is installed ..."; let item+=1
 check_docker
 
-h2 "[Step $item]: checking docker-compose is installed ..."; let item+=1
+h2 "[Step $item]: checking docker compose is installed ..."; let item+=1
 check_dockercompose
 
 if [ -f harbor*.tar.gz ]

@@ -3,7 +3,7 @@
 set -o noglob
 set -e
 
-usage=$'Checking environment for harbor build and install. Include golang, docker and docker-compose.'
+usage=$'Checking environment for harbor build and install. Including golang and docker.'
 
 while [ $# -gt 0 ]; do
         case $1 in
