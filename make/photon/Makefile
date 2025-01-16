@@ -149,7 +149,7 @@ _build_trivy_adapter:
 		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary ; \
 		echo "Downloading Trivy scanner $(TRIVYVERSION)..." ; \
 		$(call _extract_archive, $(TRIVY_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
-		if [ "$(BUILDBIN)" != "true" ] ; then \
+		if [ "$(BUILDTRIVYADP)" != "true" ] ; then \
 			echo "Downloading Trivy adapter $(TRIVYADAPTERVERSION)..." ; \
 			$(call _extract_archive, $(TRIVY_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
 		else \
@@ -174,7 +174,7 @@ _build_nginx:
 
 _build_registry:
 	@$(call _build_base,$(REGISTRY),$(DOCKERFILEPATH_REG))
-	@if [ "$(BUILDBIN)" != "true" ] ; then \
+	@if [ "$(BUILDREG)" != "true" ] ; then \
 		rm -rf $(DOCKERFILEPATH_REG)/binary && mkdir -p $(DOCKERFILEPATH_REG)/binary && \
 		$(call _get_binary, $(REGISTRYURL), $(DOCKERFILEPATH_REG)/binary/registry); \
 	else \
