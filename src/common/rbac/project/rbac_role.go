@@ -127,8 +127,6 @@ var (
 
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
 
-			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
@@ -199,8 +197,6 @@ var (
 			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
@@ -253,8 +249,6 @@ var (
 
 			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
