@@ -29,10 +29,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.21
+      - name: Set up Go 1.23
         uses: actions/setup-go@v1
         with:
-          go-version: 1.21.12
+          go-version: 1.23.4
         id: go
       - uses: actions/checkout@v2
         with:
@@ -90,10 +90,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.21
+      - name: Set up Go 1.23
         uses: actions/setup-go@v1
         with:
-          go-version: 1.21.12
+          go-version: 1.23.4
         id: go
       - uses: actions/checkout@v2
         with:
@@ -145,10 +145,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.21
+      - name: Set up Go 1.23
         uses: actions/setup-go@v1
         with:
-          go-version: 1.21.12
+          go-version: 1.23.4
         id: go
       - uses: actions/checkout@v2
         with:
@@ -198,10 +198,10 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Set up Go 1.21
+      - name: Set up Go 1.23
         uses: actions/setup-go@v1
         with:
-          go-version: 1.21.12
+          go-version: 1.23.4
         id: go
       - uses: actions/checkout@v2
         with:
