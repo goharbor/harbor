@@ -37,7 +37,7 @@ jobs:
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: 20.10
+          docker_version: 27.31
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
@@ -103,7 +103,7 @@ jobs:
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: 20.10
+          docker_version: 27.31
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
@@ -163,7 +163,7 @@ jobs:
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: 20.10
+          docker_version: 27.31
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
@@ -221,7 +221,7 @@ jobs:
       - name: setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
-          docker_version: 20.10
+          docker_version: 27.31
           docker_channel: stable
       - uses: actions/checkout@v2
         with:
