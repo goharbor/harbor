@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							goharbor/golang:1.21.12
+#							goharbor/golang:1.23.4
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -137,7 +137,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOVERSION=1.21.12
+GOVERSION=1.23.4
 GOBUILDIMAGE=goharbor/golang:$(GOVERSION)
 PUSHGOIMAGE=false
 GOBUILDPATH=/harbor
