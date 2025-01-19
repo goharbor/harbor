@@ -15,10 +15,11 @@
 package index
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action/performer"
-	"sync"
 )
 
 // index for keeping the mapping action and its performer

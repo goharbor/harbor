@@ -15,8 +15,9 @@
 package index
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"sync"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"

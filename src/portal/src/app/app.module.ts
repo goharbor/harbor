@@ -40,6 +40,7 @@ import {
 import { ErrorHandler } from './shared/units/error-handler';
 import { MessageHandlerService } from './shared/services/message-handler.service';
 import { HarborTranslateLoaderService } from './services/harbor-translate-loader.service';
+import { SharedModule } from './shared/shared.module';
 
 function initConfig(
     configService: AppConfigService,
@@ -76,6 +77,7 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
         HttpClientModule,
         HarborRoutingModule,
         CookieModule.forRoot(),
+        SharedModule.forRoot(),
     ],
     providers: [
         AppConfigService,

@@ -255,7 +255,14 @@ ClarityIcons.add({
         },
     ],
 })
-export class SharedModule {}
+export class SharedModule {
+    static forRoot() {
+        return {
+            ngModule: SharedModule,
+            providers: [],
+        };
+    }
+}
 
 // this module is only for testing, you should only import this module in *.spec.ts files
 @NgModule({

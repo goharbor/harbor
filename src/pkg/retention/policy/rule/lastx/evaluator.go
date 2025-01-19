@@ -15,8 +15,9 @@
 package lastx
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
