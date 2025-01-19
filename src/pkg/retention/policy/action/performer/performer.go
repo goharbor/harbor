@@ -12,46 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package action
+package performer
 
 import (
 	"context"
-
-	"github.com/goharbor/harbor/src/pkg/immutable/match"
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
+	rule2 "github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 )
-
-const (
-	// Retain artifacts
-	Retain = "retain"
-)
-
-// Performer performs the related actions targeting the candidates
-type Performer interface {
-	// Perform the action
-	//
-	//  Arguments:
-	//    candidates []*art.Candidate : the targets to perform
-	//
-	//  Returns:
-	//    []*art.Result : result infos
-	//    error     : common error if any errors occurred
-	Perform(ctx context.Context, candidates []*selector.Candidate) ([]*selector.Result, error)
-}
-
-// PerformerFactory is factory method for creating Performer
-type PerformerFactory func(params any, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
 	all []*selector.Candidate
 	// Indicate if it is a dry run
 	isDryRun bool
-
-	immutableTagMatcher match.ImmutableTagMatcher
 }
 
 // Perform the action
@@ -66,7 +43,7 @@ func (ra *retainAction) Perform(ctx context.Context, candidates []*selector.Cand
 		if _, ok := retainedShare[c.Hash()]; ok {
 			continue
 		}
-		if ra.isImmutable(ctx, c) {
+		if isImmutable(ctx, c) {
 			immutableShare[c.Hash()] = true
 		}
 	}
@@ -95,11 +72,11 @@ func (ra *retainAction) Perform(ctx context.Context, candidates []*selector.Cand
 	return
 }
 
-func (ra *retainAction) isImmutable(ctx context.Context, c *selector.Candidate) bool {
+func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 	projectID := c.NamespaceID
 	repo := c.Repository
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := ra.immutableTagMatcher.Match(ctx, projectID, selector.Candidate{
+	matched, err := rule2.NewRuleMatcher().Match(ctx, projectID, selector.Candidate{
 		Repository:  repoName,
 		Tags:        c.Tags,
 		NamespaceID: projectID,
@@ -113,23 +90,18 @@ func (ra *retainAction) isImmutable(ctx context.Context, c *selector.Candidate) 
 	return matched
 }
 
-// NewRetainAction returns factory method for RetainAction
-func NewRetainAction(m match.ImmutableTagMatcher) PerformerFactory {
-	return func(params interface{}, isDryRun bool) Performer {
-		if params != nil {
-			if all, ok := params.([]*selector.Candidate); ok {
-				ra := &retainAction{
-					all:                 all,
-					isDryRun:            isDryRun,
-					immutableTagMatcher: m,
-				}
-				return ra
+// NewRetainAction returns performer for RetainAction
+func NewRetainAction(params interface{}, isDryRun bool) action.Performer {
+	if params != nil {
+		if all, ok := params.([]*selector.Candidate); ok {
+			return &retainAction{
+				all:      all,
+				isDryRun: isDryRun,
 			}
 		}
-		return &retainAction{
-			all:                 make([]*selector.Candidate, 0),
-			isDryRun:            isDryRun,
-			immutableTagMatcher: m,
-		}
+	}
+	return &retainAction{
+		all:      make([]*selector.Candidate, 0),
+		isDryRun: isDryRun,
 	}
 }

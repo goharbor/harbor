@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package action
+package performer
 
 import (
-	rule2 "github.com/goharbor/harbor/src/pkg/immutable/match/rule"
-	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"testing"
 	"time"
 
@@ -83,7 +81,6 @@ func (suite *TestPerformerSuite) TearDownSuite() {
 func (suite *TestPerformerSuite) TestPerform() {
 	p := &retainAction{
 		all: suite.all,
-		// immutableTagMatcher: rule2.NewRuleMatcher(),
 	}
 
 	candidates := []*selector.Candidate{
@@ -151,8 +148,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 		},
 	}
 	p := &retainAction{
-		all:                 all,
-		immutableTagMatcher: rule2.NewRuleMatcher(policyindex.Get),
+		all: all,
 	}
 
 	rule := &immumodel.Metadata{

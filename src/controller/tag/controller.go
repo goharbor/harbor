@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
-	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -64,7 +63,7 @@ func NewController() Controller {
 	return &controller{
 		tagMgr:       tag.Mgr,
 		artMgr:       pkg.ArtifactMgr,
-		immutableMtr: rule.NewRuleMatcher(policyindex.Get),
+		immutableMtr: rule.NewRuleMatcher(),
 	}
 }
 

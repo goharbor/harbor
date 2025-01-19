@@ -6,7 +6,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
-	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -149,7 +148,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 	s.ruleIDs = append(s.ruleIDs, id)
 	s.require.Nil(err)
 
-	match := NewRuleMatcher(policyindex.Get)
+	match := NewRuleMatcher()
 
 	c1 := selector.Candidate{
 		NamespaceID: 1,

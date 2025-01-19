@@ -19,7 +19,6 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 	"os"
 	"strings"
 	"time"
@@ -136,7 +135,7 @@ func NewController() Controller {
 		artrashMgr:   artifactrash.Mgr,
 		blobMgr:      blob.Mgr,
 		labelMgr:     label.Mgr,
-		immutableMtr: rule.NewRuleMatcher(policyindex.Get),
+		immutableMtr: rule.NewRuleMatcher(),
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
 		accessoryMgr: accessory.Mgr,

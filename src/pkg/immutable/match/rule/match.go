@@ -23,15 +23,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 )
-
-// EvaluatorGetter functions that gets evaluator from index based on templateID
-type EvaluatorGetter func(templateID string, parameters rule.Parameters) (rule.Evaluator, error)
 
 // Matcher ...
 type Matcher struct {
-	rules           []*model.Metadata
-	evaluatorGetter EvaluatorGetter
+	rules []*model.Metadata
 }
 
 // Match ...
@@ -91,7 +88,7 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 			params[k] = v
 		}
 
-		evaluator, err := rm.evaluatorGetter(r.Template, params)
+		evaluator, err := policyindex.Get(r.Template, params)
 		if err != nil {
 			return false, err
 		}
@@ -118,6 +115,6 @@ func (rm *Matcher) getImmutableRules(ctx context.Context, pid int64) error {
 }
 
 // NewRuleMatcher ...
-func NewRuleMatcher(eg EvaluatorGetter) match.ImmutableTagMatcher {
-	return &Matcher{evaluatorGetter: eg}
+func NewRuleMatcher() match.ImmutableTagMatcher {
+	return &Matcher{}
 }

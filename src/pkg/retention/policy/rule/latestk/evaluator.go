@@ -15,12 +15,12 @@
 package latestk
 
 import (
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
