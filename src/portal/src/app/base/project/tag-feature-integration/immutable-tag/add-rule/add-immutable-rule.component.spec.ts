@@ -19,6 +19,7 @@ import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
 import { AddImmutableRuleComponent } from './add-immutable-rule.component';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
+import { CallbackPipe } from '../../../../../shared/pipes/callback.pipe';
 
 describe('AddRuleComponent', () => {
     let component: AddImmutableRuleComponent;
@@ -53,7 +54,11 @@ describe('AddRuleComponent', () => {
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [AddImmutableRuleComponent, InlineAlertComponent],
+            declarations: [
+                AddImmutableRuleComponent,
+                InlineAlertComponent,
+                CallbackPipe,
+            ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [SharedTestingModule],
             providers: [

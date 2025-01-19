@@ -77,7 +77,6 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
         HttpClientModule,
         HarborRoutingModule,
         CookieModule.forRoot(),
-        SharedModule.forRoot(),
     ],
     providers: [
         AppConfigService,
