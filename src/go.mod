@@ -64,17 +64,17 @@ require (
 	go.opentelemetry.io/otel/trace v1.32.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.31.0
-	golang.org/x/oauth2 v0.25.0
 	golang.org/x/net v0.33.0
+	golang.org/x/oauth2 v0.25.0
 	golang.org/x/sync v0.10.0
 	golang.org/x/text v0.21.0
 	golang.org/x/time v0.7.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.16.2
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.32.0
-	k8s.io/client-go v0.31.1
+	k8s.io/api v0.32.1
+	k8s.io/apimachinery v0.32.1
+	k8s.io/client-go v0.32.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
