@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	jobSvc "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -26,11 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/log"
 
-	"github.com/gocraft/work"
-
-	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/lib/q"
-	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	jm "github.com/goharbor/harbor/src/pkg/jobmonitor"
 	"github.com/goharbor/harbor/src/pkg/task"
 	taskDao "github.com/goharbor/harbor/src/pkg/task/dao"
@@ -92,27 +87,10 @@ func NewMonitorController() MonitorController {
 		taskManager:           task.NewManager(),
 		queueManager:          jm.NewQueueClient(),
 		queueStatusManager:    queuestatus.Mgr,
-		monitorClient:         JobServiceMonitorClient,
+		monitorClient:         jm.GetJobServiceMonitorClient,
 		jobServiceRedisClient: jm.JobServiceRedisClient,
 		executionDAO:          taskDao.NewExecutionDAO(),
 	}
-}
-
-func JobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
-	cfg, err := job.GlobalClient.GetJobServiceConfig()
-	if err != nil {
-		return nil, err
-	}
-	config := cfg.RedisPoolConfig
-	pool, err := libRedis.GetRedisPool(jm.JobServicePool, config.RedisURL, &libRedis.PoolParam{
-		PoolMaxIdle:     0,
-		PoolIdleTimeout: time.Duration(config.IdleTimeoutSecond) * time.Second,
-	})
-	if err != nil {
-		log.Errorf("failed to get redis pool: %v", err)
-		return nil, err
-	}
-	return work.NewClient(fmt.Sprintf("{%s}", config.Namespace), pool), nil
 }
 
 func (w *monitorController) ListWorkers(ctx context.Context, poolID string) ([]*jm.Worker, error) {

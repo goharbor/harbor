@@ -16,14 +16,12 @@ package replication
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/pkg/jobmonitor"
 
 	"github.com/goharbor/harbor/src/controller/event/operator"
-	"github.com/goharbor/harbor/src/controller/jobmonitor"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
 	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -80,26 +78,28 @@ type Controller interface {
 // NewController creates a new instance of the replication controller
 func NewController() Controller {
 	return &controller{
-		repMgr:     replication.Mgr,
-		execMgr:    task.ExecMgr,
-		taskMgr:    task.Mgr,
-		regMgr:     reg.Mgr,
-		scheduler:  scheduler.Sched,
-		flowCtl:    flow.NewController(),
-		ormCreator: orm.Crt,
-		wp:         lib.NewWorkerPool(10),
+		repMgr:         replication.Mgr,
+		execMgr:        task.ExecMgr,
+		taskMgr:        task.Mgr,
+		regMgr:         reg.Mgr,
+		scheduler:      scheduler.Sched,
+		flowCtl:        flow.NewController(),
+		ormCreator:     orm.Crt,
+		wp:             lib.NewWorkerPool(10),
+		observationMgr: jobmonitor.NewObservationManagerImpl(),
 	}
 }
 
 type controller struct {
-	repMgr     replication.Manager
-	execMgr    task.ExecutionManager
-	taskMgr    task.Manager
-	regMgr     reg.Manager
-	scheduler  scheduler.Scheduler
-	flowCtl    flow.Controller
-	ormCreator orm.Creator
-	wp         *lib.WorkerPool
+	repMgr         replication.Manager
+	execMgr        task.ExecutionManager
+	taskMgr        task.Manager
+	regMgr         reg.Manager
+	scheduler      scheduler.Scheduler
+	flowCtl        flow.Controller
+	ormCreator     orm.Creator
+	wp             *lib.WorkerPool
+	observationMgr jobmonitor.ObservationManager
 }
 
 func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (int64, error) {
@@ -120,21 +120,13 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	}
 
 	if policy.SingleActiveReplication {
-		monitorClient, err := jobmonitor.JobServiceMonitorClient()
+		o, err := c.observationMgr.ObservationByJobNameAndPolicyID(ctx, job.ReplicationVendorType, policy.ID)
 		if err != nil {
-			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get job monitor's client: %v", err)
+			return 0, err
 		}
-		observations, err := monitorClient.WorkerObservations()
-		if err != nil {
-			return 0, errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("unable to get jobs observations: %v", err)
-		}
-		for _, o := range observations {
-			if isDuplicateJob(o, policy.ID) {
-				err = c.execMgr.MarkSkipped(ctx, id, "Execution deferred: active replication still in progress.")
-				if err != nil {
-					return 0, err
-				}
-				return id, nil
+		if o != nil {
+			if err = c.execMgr.MarkSkipped(ctx, policy.ID, "Execution deferred: active replication still in progress."); err != nil {
+				return 0, err
 			}
 		}
 	}
@@ -175,18 +167,6 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		c.markError(ctx, id, err)
 	}()
 	return id, nil
-}
-
-func isDuplicateJob(o *work.WorkerObservation, policyID int64) bool {
-	if o.JobName != job.ReplicationVendorType {
-		return false
-	}
-	args := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(o.ArgsJSON), &args); err != nil {
-		return false
-	}
-	policyIDFromArgs, ok := args["policy_id"].(float64)
-	return ok && int64(policyIDFromArgs) == policyID
 }
 
 func (c *controller) markError(ctx context.Context, executionID int64, err error) {

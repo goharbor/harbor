@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/goharbor/harbor/src/pkg/jobmonitor"
+
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -27,11 +29,12 @@ import (
 )
 
 type copyFlow struct {
-	executionID  int64
-	resources    []*model.Resource
-	policy       *repctlmodel.Policy
-	executionMgr task.ExecutionManager
-	taskMgr      task.Manager
+	executionID    int64
+	resources      []*model.Resource
+	policy         *repctlmodel.Policy
+	executionMgr   task.ExecutionManager
+	taskMgr        task.Manager
+	observationMgr jobmonitor.ObservationManager
 }
 
 // NewCopyFlow returns an instance of the copy flow which replicates the resources from
@@ -39,11 +42,12 @@ type copyFlow struct {
 // will fetch the resources first
 func NewCopyFlow(executionID int64, policy *repctlmodel.Policy, resources ...*model.Resource) Flow {
 	return &copyFlow{
-		executionMgr: task.ExecMgr,
-		taskMgr:      task.Mgr,
-		executionID:  executionID,
-		policy:       policy,
-		resources:    resources,
+		executionMgr:   task.ExecMgr,
+		taskMgr:        task.Mgr,
+		executionID:    executionID,
+		policy:         policy,
+		resources:      resources,
+		observationMgr: jobmonitor.NewObservationManagerImpl(),
 	}
 }
 
@@ -104,6 +108,18 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 }
 
 func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, policy *repctlmodel.Policy) error {
+	if policy.SingleActiveReplication {
+		o, err := c.observationMgr.ObservationByJobNameAndPolicyID(ctx, job.ReplicationVendorType, policy.ID)
+		if err != nil {
+			return err
+		}
+		if o != nil {
+			if err = c.executionMgr.MarkSkipped(ctx, policy.ID, "Execution deferred: active replication still in progress."); err != nil {
+				return err
+			}
+		}
+	}
+
 	var taskCnt int
 	defer func() {
 		// if no task be created, mark execution done.
