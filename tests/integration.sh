@@ -155,9 +155,6 @@ if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRAN
     if [[ $DRONE_BUILD_EVENT == "push" ]]; then
         package_installer
         upload_latest_build=true
-        echo -en "$HARBOR_SIGN_KEY" | gpg --import
-        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_offline_build_bundle
-        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_online_build_bundle
     fi
 fi
 
@@ -176,14 +173,10 @@ fi
 set -e
 if [ $upload_build == true ]; then
     cp ${harbor_offline_build_bundle}     harbor-offline-installer-latest.tgz
-    cp ${harbor_offline_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
     ls -l
     uploader ${harbor_offline_build_bundle}     $harbor_target_bucket
-    uploader ${harbor_offline_build_bundle}.asc $harbor_target_bucket
     uploader ${harbor_online_build_bundle}     $harbor_target_bucket
-    uploader ${harbor_online_build_bundle}.asc $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz     $harbor_target_bucket
-    uploader harbor-offline-installer-latest.tgz.asc $harbor_target_bucket
     upload_bundle_success=true
 fi
 
