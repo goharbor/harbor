@@ -20,7 +20,7 @@ Library  requests
 Library  Process
 Library  SSHLibrary  1 minute
 Library  DateTime
-Library  SeleniumLibrary  60  10
+Library  Selenium2Library  60  10
 Library  JSONLibrary
 Resource  Harbor-Util.robot
 Resource  Harbor-Pages/Public_Elements.robot
