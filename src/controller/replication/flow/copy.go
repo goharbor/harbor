@@ -114,7 +114,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			return err
 		}
 		if o != nil {
-			if err = c.executionMgr.MarkSkipped(ctx, policy.ID, "Execution deferred: active replication still in progress."); err != nil {
+			if err = c.executionMgr.MarkSkipped(ctx, c.executionID, "Execution deferred: active replication still in progress."); err != nil {
 				return err
 			}
 		}

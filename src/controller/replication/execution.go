@@ -125,7 +125,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			return 0, err
 		}
 		if o != nil {
-			if err = c.execMgr.MarkSkipped(ctx, policy.ID, "Execution deferred: active replication still in progress."); err != nil {
+			if err = c.execMgr.MarkSkipped(ctx, id, "Execution deferred: active replication still in progress."); err != nil {
 				return 0, err
 			}
 		}
