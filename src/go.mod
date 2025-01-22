@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.80
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.84
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/beego/beego/v2 v2.3.4
@@ -64,8 +64,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.32.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.31.0
-	golang.org/x/oauth2 v0.25.0
 	golang.org/x/net v0.33.0
+	golang.org/x/oauth2 v0.25.0
 	golang.org/x/sync v0.10.0
 	golang.org/x/text v0.21.0
 	golang.org/x/time v0.7.0
