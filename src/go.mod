@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.80
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.84
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/beego/beego/v2 v2.3.4
@@ -72,9 +72,9 @@ require (
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
 	helm.sh/helm/v3 v3.16.2
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.32.0
-	k8s.io/client-go v0.31.1
+	k8s.io/api v0.32.1
+	k8s.io/apimachinery v0.32.1
+	k8s.io/client-go v0.32.1
 	sigs.k8s.io/yaml v1.4.0
 )
 
