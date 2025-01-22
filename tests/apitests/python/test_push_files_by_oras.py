@@ -47,7 +47,7 @@ class TestProjects(unittest.TestCase):
         #1. Create user-001
         TestProjects.user_id, user_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
 
-        TestProjects.USER_CLIENT=dict(with_signature = True, endpoint = url, username = user_name, password = user_001_password)
+        TestProjects.USER_CLIENT=dict(endpoint = url, username = user_name, password = user_001_password)
 
         #2. Create a new private project(PA) by user(UA);
         TestProjects.project_id, TestProjects.project_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CLIENT)

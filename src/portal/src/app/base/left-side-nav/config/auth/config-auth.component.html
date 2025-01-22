@@ -906,7 +906,7 @@
                 size="40"
                 required
                 [disabled]="disabled(currentConfig.oidc_scope)"
-                pattern="^([\w.]+,){0,}openid(,[\w.]+){0,}$" />
+                pattern='^(((?!["\\ ])[ -~])+,){0,}openid(,((?!["\\ ])[ -~])+){0,}$' />
             <clr-control-error>{{
                 'TOOLTIP.SCOPE_REQUIRED' | translate
             }}</clr-control-error>

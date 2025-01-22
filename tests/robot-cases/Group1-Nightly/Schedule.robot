@@ -203,7 +203,7 @@ Test Case - P2P Preheat Schedule Job
     ${image}=  Set Variable  busybox
     ${tag}=  Set Variable  latest
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
+    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}  ${DRAGONFLY_AUTH_TOKEN}
     Create An New Project And Go Into Project  ${project_name}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image}  ${tag}
     Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  **  **

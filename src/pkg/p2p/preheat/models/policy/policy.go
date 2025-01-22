@@ -30,9 +30,6 @@ func init() {
 	beego_orm.RegisterModel(&Schema{})
 }
 
-// ScopeType represents the preheat scope type.
-type ScopeType = string
-
 const (
 	// Filters:
 	//  Repository : type=Repository value=name text (double star pattern used)
@@ -58,11 +55,6 @@ const (
 	TriggerTypeScheduled TriggerType = "scheduled"
 	// TriggerTypeEventBased represents the event_based trigger type
 	TriggerTypeEventBased TriggerType = "event_based"
-
-	// ScopeTypeSinglePeer represents preheat image to single peer in p2p cluster.
-	ScopeTypeSinglePeer ScopeType = "single_peer"
-	// ScopeTypeAllPeers represents preheat image to all peers in p2p cluster.
-	ScopeTypeAllPeers ScopeType = "all_peers"
 )
 
 // Schema defines p2p preheat policy schema
@@ -80,10 +72,11 @@ type Schema struct {
 	// Use JSON data format (query by trigger type should be supported)
 	TriggerStr string `orm:"column(trigger)" json:"-"`
 	Enabled    bool   `orm:"column(enabled)" json:"enabled"`
-	// Scope decides the preheat scope.
-	Scope       string    `orm:"column(scope)" json:"scope"`
-	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
+	// ExtraAttrs is used to store extra attributes provided by vendor.
+	ExtraAttrsStr string                 `orm:"column(extra_attrs)" json:"-"`
+	ExtraAttrs    map[string]interface{} `orm:"-" json:"extra_attrs"`
+	CreatedAt     time.Time              `orm:"column(creation_time)" json:"creation_time"`
+	UpdatedTime   time.Time              `orm:"column(update_time)" json:"update_time"`
 }
 
 // TableName specifies the policy schema table name.
@@ -136,11 +129,6 @@ func (s *Schema) ValidatePreheatPolicy() error {
 		}
 	}
 
-	// validate preheat scope
-	if s.Scope != "" && s.Scope != ScopeTypeSinglePeer && s.Scope != ScopeTypeAllPeers {
-		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid scope for preheat policy: %s", s.Scope)
-	}
-
 	return nil
 }
 
@@ -162,6 +150,14 @@ func (s *Schema) Encode() error {
 		s.TriggerStr = string(triggerStr)
 	}
 
+	if s.ExtraAttrs != nil {
+		extraAttrsStr, err := json.Marshal(s.ExtraAttrs)
+		if err != nil {
+			return err
+		}
+		s.ExtraAttrsStr = string(extraAttrsStr)
+	}
+
 	return nil
 }
 
@@ -180,6 +176,13 @@ func (s *Schema) Decode() error {
 		return err
 	}
 	s.Trigger = trigger
+
+	// parse extra attributes
+	extraAttrs, err := decodeExtraAttrs(s.ExtraAttrsStr)
+	if err != nil {
+		return err
+	}
+	s.ExtraAttrs = extraAttrs
 
 	return nil
 }
@@ -229,4 +232,18 @@ func decodeTrigger(triggerStr string) (*Trigger, error) {
 	}
 
 	return trigger, nil
+}
+
+// decodeExtraAttrs parse extraAttrsStr to extraAttrs.
+func decodeExtraAttrs(extraAttrsStr string) (map[string]interface{}, error) {
+	if len(extraAttrsStr) == 0 {
+		return nil, nil
+	}
+
+	extraAttrs := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(extraAttrsStr), &extraAttrs); err != nil {
+		return nil, err
+	}
+
+	return extraAttrs, nil
 }

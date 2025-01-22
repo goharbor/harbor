@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -92,7 +93,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 
 		robotID := getRobotID(t.ExtraAttrs)
 		if robotID > 0 {
-			if err := robotCtl.Delete(ctx, robotID); err != nil {
+			if err := robotCtl.Delete(ctx, robotID, &robot.Option{Operator: secret.JobserviceUser}); err != nil {
 				// Should not block the main flow, just logged
 				logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
 			} else {

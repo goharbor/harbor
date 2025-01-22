@@ -28,6 +28,7 @@ import (
 type CreateTagEventMetadata struct {
 	Ctx              context.Context
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 }
 
@@ -37,6 +38,7 @@ func (c *CreateTagEventMetadata) Resolve(event *event.Event) error {
 		EventType:        event2.TopicCreateTag,
 		Repository:       c.AttachedArtifact.RepositoryName,
 		Tag:              c.Tag,
+		Labels:           c.Labels,
 		AttachedArtifact: c.AttachedArtifact,
 		OccurAt:          time.Now(),
 	}
@@ -53,6 +55,7 @@ func (c *CreateTagEventMetadata) Resolve(event *event.Event) error {
 type DeleteTagEventMetadata struct {
 	Ctx              context.Context
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 }
 
@@ -62,6 +65,7 @@ func (d *DeleteTagEventMetadata) Resolve(event *event.Event) error {
 		EventType:        event2.TopicDeleteTag,
 		Repository:       d.AttachedArtifact.RepositoryName,
 		Tag:              d.Tag,
+		Labels:           d.Labels,
 		AttachedArtifact: d.AttachedArtifact,
 		OccurAt:          time.Now(),
 	}

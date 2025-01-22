@@ -29,6 +29,7 @@ type PushArtifactEventMetadata struct {
 	Ctx      context.Context
 	Artifact *artifact.Artifact
 	Tag      string
+	Labels   []string
 }
 
 // Resolve to the event from the metadata
@@ -37,6 +38,7 @@ func (p *PushArtifactEventMetadata) Resolve(event *event.Event) error {
 		EventType:  event2.TopicPushArtifact,
 		Repository: p.Artifact.RepositoryName,
 		Artifact:   p.Artifact,
+		Labels:     p.Labels,
 		OccurAt:    time.Now(),
 	}
 	if p.Tag != "" {
@@ -86,6 +88,7 @@ type DeleteArtifactEventMetadata struct {
 	Ctx      context.Context
 	Artifact *artifact.Artifact
 	Tags     []string
+	Labels   []string
 }
 
 // Resolve to the event from the metadata
@@ -96,6 +99,7 @@ func (d *DeleteArtifactEventMetadata) Resolve(event *event.Event) error {
 			Repository: d.Artifact.RepositoryName,
 			Artifact:   d.Artifact,
 			Tags:       d.Tags,
+			Labels:     d.Labels,
 			OccurAt:    time.Now(),
 		},
 	}

@@ -16,7 +16,6 @@ package instance
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
@@ -119,11 +118,9 @@ func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error
 	if err != nil {
 		return nil, err
 	}
-	// mapping auth data to auth info.
-	if len(ins.AuthData) > 0 {
-		if err := json.Unmarshal([]byte(ins.AuthData), &ins.AuthInfo); err != nil {
-			return nil, err
-		}
+
+	if err := ins.Decode(); err != nil {
+		return nil, err
 	}
 
 	return ins, nil
@@ -131,7 +128,16 @@ func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error
 
 // Get implements @Manager.GetByName
 func (dm *manager) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
-	return dm.dao.GetByName(ctx, name)
+	ins, err := dm.dao.GetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ins.Decode(); err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 // Count implements @Manager.Count
@@ -141,5 +147,16 @@ func (dm *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // List implements @Manager.List
 func (dm *manager) List(ctx context.Context, query *q.Query) ([]*provider.Instance, error) {
-	return dm.dao.List(ctx, query)
+	inss, err := dm.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range inss {
+		if err := inss[i].Decode(); err != nil {
+			return nil, err
+		}
+	}
+
+	return inss, nil
 }

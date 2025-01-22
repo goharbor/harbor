@@ -84,4 +84,5 @@ func (p *Permission) IsCoverAll() bool {
 // Option ...
 type Option struct {
 	WithPermission bool
+	Operator       string
 }

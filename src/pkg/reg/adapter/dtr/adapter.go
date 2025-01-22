@@ -74,7 +74,7 @@ func newAdapter(registry *model.Registry) *adapter {
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
-		Type: model.RegistryTypeAzureAcr,
+		Type: model.RegistryTypeDTR,
 		SupportedResourceTypes: []string{
 			model.ResourceTypeImage,
 		},

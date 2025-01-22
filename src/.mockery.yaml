@@ -462,6 +462,16 @@ packages:
       DAO:
         config:
           dir: testing/pkg/audit/dao
+  github.com/goharbor/harbor/src/pkg/auditext:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/auditext
+  github.com/goharbor/harbor/src/pkg/auditext/dao:
+    interfaces:
+      DAO:
+        config:
+          dir: testing/pkg/auditext/dao
   github.com/goharbor/harbor/src/pkg/systemartifact:
     interfaces:
       Manager:

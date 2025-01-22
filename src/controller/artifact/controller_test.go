@@ -487,6 +487,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	// root artifact and doesn't exist
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err := c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true, false)
 	c.Require().NotNil(err)
 	c.Assert().True(errors.IsErr(err, errors.NotFoundCode))
@@ -497,6 +498,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	// child artifact and doesn't exist
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
 
@@ -516,6 +518,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
 	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
 
@@ -532,6 +535,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 		},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true, false)
 	c.Require().NotNil(err)
 
@@ -548,6 +552,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 		},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(nil, 1, false, false)
 	c.Require().Nil(err)
 
@@ -573,6 +578,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.blobMgr.On("CleanupAssociationsForProject", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
 	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
+	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true, true)
 	c.Require().Nil(err)
 
