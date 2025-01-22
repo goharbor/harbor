@@ -239,12 +239,14 @@ export const RUNTIMES = {
     nerdctl: 'nerdctl',
     ctr: 'containerd',
     crictl: 'cri-o',
+    custom: 'custom',
 } as const;
 export const supportedRuntimes = Object.keys(RUNTIMES) as SupportedRuntime[];
 /**
  * The default cookie key used to store current used container runtime preference.
  */
 export const DEFAULT_RUNTIME_LOCALSTORAGE_KEY = 'harbor-runtime';
+export const CUSTOM_RUNTIME_LOCALSTORAGE_KEY = 'harbor-custom-runtime';
 
 //
 export const DeFaultLang = 'en-us';

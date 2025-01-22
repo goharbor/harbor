@@ -120,9 +120,7 @@
     </clr-dg-placeholder>
     <clr-dg-row *ngFor="let tag of currentTags" [clrDgItem]="tag">
         <clr-dg-cell>
-            <div
-                class="pull cell white-normal"
-                [class.immutable]="tag.immutable">
+            <div class="pull" [class.immutable]="tag.immutable">
                 <span
                     href="javascript:void(0)"
                     class="max-width-150"

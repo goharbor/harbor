@@ -2,6 +2,7 @@ import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
 import { Platform } from '../../../../../../ng-swagger-gen/models/platform';
 import { Label } from '../../../../../../ng-swagger-gen/models/label';
+import { getCustomContainerRuntime } from 'src/app/shared/units/shared.utils';
 
 export interface ArtifactFront extends Artifact {
     platform?: Platform;
@@ -104,6 +105,9 @@ export function hasPullCommand(artifact: Artifact): boolean {
 export function getPullCommandForTop(url: string, client: Clients): string {
     if (url) {
         if (Object.values(Clients).includes(client)) {
+            if (client == 'custom') {
+                return `${getCustomContainerRuntime()} pull ${url}`;
+            }
             return `${client} pull ${url}`;
         }
     }
@@ -119,6 +123,9 @@ export function getPullCommandByDigest(
     if (artifactType && url && digest) {
         if (artifactType === ArtifactType.IMAGE) {
             if (Object.values(Clients).includes(client)) {
+                if (client == 'custom') {
+                    return `${getCustomContainerRuntime()} pull ${url}@${digest}`;
+                }
                 return `${client} pull ${url}@${digest}`;
             }
         }
@@ -139,6 +146,10 @@ export function getPullCommandByTag(
     if (artifactType && url && tag) {
         if (artifactType === ArtifactType.IMAGE) {
             if (Object.values(Clients).includes(client)) {
+                if (client == 'custom') {
+                    return `${getCustomContainerRuntime()} pull ${url}:${tag}`;
+                }
+
                 return `${client} pull ${url}:${tag}`;
             }
         }
@@ -166,6 +177,7 @@ export enum Clients {
     NERDCTL = 'nerdctl',
     CONTAINERD = 'ctr',
     CRI_O = 'crictl',
+    CUSTOM = 'custom',
     CHART = 'helm',
     CNAB = 'cnab-to-oci',
 }

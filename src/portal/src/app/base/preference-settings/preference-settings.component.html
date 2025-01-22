@@ -3,7 +3,7 @@
     [clrModalClosable]="false"
     [clrModalStaticBackdrop]="false">
     <h3 class="modal-title">{{ 'CHANGE_PREF.TITLE' | translate }}</h3>
-    <div class="modal-body dialog-body">
+    <div class="modal-body body-format dialog-body">
         <div class="dropdowns content-container">
             <div class="content-area centered-content-area">
                 <div class="clr-control-label">
@@ -66,14 +66,74 @@
                         <clr-icon size="10" shape="caret down"></clr-icon>
                     </button>
                     <clr-dropdown-menu *clrIfOpen>
-                        <a
-                            *ngFor="let runtime of guiRuntimes"
-                            href="javascript:void(0)"
-                            clrDropdownItem
-                            (click)="switchRuntime(runtime[0])"
-                            [class.lang-selected]="matchRuntime(runtime[0])"
-                            >{{ runtime[1] }}</a
-                        >
+                        <clr-dropdown>
+                            <button clrDropdownTrigger>custom</button>
+                            <clr-dropdown-menu *clrIfOpen>
+                                <form
+                                    #customruntimeForm="ngForm"
+                                    class="clr-form">
+                                    <div class="clr-form-control">
+                                        <label
+                                            for="customPrefix"
+                                            class="clr-control-label"
+                                            >Custom</label
+                                        >
+                                        <div class="clr-control-container">
+                                            <div class="clr-input-wrapper">
+                                                <input
+                                                    type="text"
+                                                    id="customPrefix"
+                                                    name="customPrefix"
+                                                    placeholder="Enter custom prefix"
+                                                    [(ngModel)]="customRuntime"
+                                                    #customPrefix="ngModel"
+                                                    minlength="2"
+                                                    class="clr-input" />
+                                                <cds-icon
+                                                    class="clr-validate-icon"
+                                                    shape="exclamation-circle"></cds-icon>
+                                            </div>
+                                            <div
+                                                *ngIf="
+                                                    customPrefix.invalid &&
+                                                    customPrefix.touched
+                                                ">
+                                                <div
+                                                    *ngIf="customPrefix.errors?.['required']">
+                                                    Prefix is required
+                                                </div>
+                                                <div
+                                                    *ngIf="customPrefix.errors?.['minlength']">
+                                                    Prefix must be at least 2
+                                                    characters
+                                                </div>
+                                            </div>
+                                            <!-- <span class="clr-subtext">Helper Text</span> -->
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button
+                                                clrDropdownItem
+                                                type="button"
+                                                class="btn btn-primary"
+                                                id="ok-btn"
+                                                [disabled]="!isValid"
+                                                (click)="addCustomRuntime()">
+                                                {{ 'BUTTON.OK' | translate }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                        <ng-container *ngFor="let runtime of guiRuntimes">
+                            <a
+                                href="javascript:void(0)"
+                                clrDropdownItem
+                                (click)="switchRuntime(runtime[0])"
+                                [class.lang-selected]="matchRuntime(runtime[0])"
+                                >{{ runtime[1] }}</a
+                            >
+                        </ng-container>
                     </clr-dropdown-menu>
                 </clr-dropdown>
             </div>

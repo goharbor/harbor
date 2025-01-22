@@ -26,6 +26,7 @@ import {
     DEFAULT_RUNTIME_LOCALSTORAGE_KEY,
     RUNTIMES,
     DeFaultRuntime,
+    CUSTOM_RUNTIME_LOCALSTORAGE_KEY,
 } from '../entities/shared.const';
 
 /**
@@ -224,8 +225,21 @@ export function getContainerRuntime(): SupportedRuntime {
     }
     return DeFaultRuntime;
 }
-function isSupportedRuntime(x: unknown): x is DatetimeRendering {
+function isSupportedRuntime(x: unknown): x is SupportedRuntime {
     return Object.keys(RUNTIMES).some(k => k === x);
+}
+
+/**
+ * Gets the custom container runtime saved by the user
+ */
+export function getCustomContainerRuntime(): SupportedRuntime {
+    const savedContainerRuntime = localStorage.getItem(
+        CUSTOM_RUNTIME_LOCALSTORAGE_KEY
+    );
+    if (savedContainerRuntime) {
+        return savedContainerRuntime;
+    }
+    return DeFaultRuntime;
 }
 
 /**

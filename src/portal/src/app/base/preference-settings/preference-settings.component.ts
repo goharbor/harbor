@@ -11,10 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import {
     getContainerRuntime,
+    getCustomContainerRuntime,
     getDatetimeRendering,
 } from 'src/app/shared/units/shared.utils';
 import { registerLocaleData } from '@angular/common';
@@ -23,6 +24,7 @@ import { map } from 'rxjs/operators';
 import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
 import { ClrCommonStringsService } from '@clr/angular';
 import {
+    CUSTOM_RUNTIME_LOCALSTORAGE_KEY,
     DATETIME_RENDERINGS,
     DatetimeRendering,
     DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
@@ -37,6 +39,8 @@ import {
     SupportedLanguage,
     SupportedRuntime,
 } from '../../shared/entities/shared.const';
+import { NgForm } from '@angular/forms';
+import { InlineAlertComponent } from 'src/app/shared/components/inline-alert/inline-alert.component';
 
 @Component({
     selector: 'preference-settings',
@@ -45,12 +49,21 @@ import {
 })
 export class PreferenceSettingsComponent implements OnInit {
     readonly guiLanguages = Object.entries(LANGUAGES);
-    readonly guiRuntimes = Object.entries(RUNTIMES);
+    readonly guiRuntimes = Object.entries(RUNTIMES).filter(
+        ([_, value]) => value !== RUNTIMES.custom
+    );
     readonly guiDatetimeRenderings = Object.entries(DATETIME_RENDERINGS);
     selectedLang: SupportedLanguage = DeFaultLang;
     selectedRuntime: SupportedRuntime = DeFaultRuntime;
     selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
     opened: boolean = false;
+    error: any = null;
+    customRuntime: string = '';
+
+    @ViewChild('customruntimeForm', { static: false })
+    customRuntimeForm: NgForm;
+    @ViewChild(InlineAlertComponent, { static: true })
+    inlineAlert: InlineAlertComponent;
 
     constructor(
         private translate: TranslateService,
@@ -68,6 +81,27 @@ export class PreferenceSettingsComponent implements OnInit {
         }
         this.selectedDatetimeRendering = getDatetimeRendering();
         this.selectedRuntime = getContainerRuntime();
+        this.customRuntime = getCustomContainerRuntime();
+    }
+
+    // Check If form is valid
+    public get isValid(): boolean {
+        const customPrefixControl =
+            this.customRuntimeForm?.form.get('customPrefix');
+
+        return (
+            customPrefixControl?.valid &&
+            customPrefixControl?.value?.trim() !== '' &&
+            this.error === null
+        );
+    }
+
+    addCustomRuntime() {
+        if (this.customRuntime.trim()) {
+            const customRuntimeValue = this.customRuntime.trim();
+            this.switchRuntime('custom');
+            this.switchCustomRuntime(customRuntimeValue);
+        }
     }
 
     //Internationalization for Clarity components, refer to https://clarity.design/documentation/internationalization
@@ -135,6 +169,10 @@ export class PreferenceSettingsComponent implements OnInit {
     switchRuntime(runtime: SupportedRuntime): void {
         this.selectedRuntime = runtime;
         localStorage.setItem(DEFAULT_RUNTIME_LOCALSTORAGE_KEY, runtime);
+    }
+
+    switchCustomRuntime(runtime: SupportedRuntime): void {
+        localStorage.setItem(CUSTOM_RUNTIME_LOCALSTORAGE_KEY, runtime);
     }
 
     switchDatetimeRendering(datetime: DatetimeRendering): void {
