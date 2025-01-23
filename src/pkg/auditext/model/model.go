@@ -30,7 +30,7 @@ type AuditLogExt struct {
 	ProjectID            int64     `orm:"column(project_id)" json:"project_id"`
 	Operation            string    `orm:"column(operation)" json:"operation"`
 	OperationDescription string    `orm:"column(op_desc)" json:"operation_description"`
-	OperationResult      bool      `orm:"column(op_result)" json:"operation_result"`
+	IsSuccessful         bool      `orm:"column(op_result)" json:"is_successful"`
 	ResourceType         string    `orm:"column(resource_type)"  json:"resource_type"`
 	Resource             string    `orm:"column(resource)" json:"resource"`
 	Username             string    `orm:"column(username)"  json:"username"`

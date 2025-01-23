@@ -264,6 +264,9 @@ func BannerMessage(ctx context.Context) string {
 
 // AuditLogEventEnabled returns the audit log enabled setting for a specific event_type, such as delete_user, create_user
 func AuditLogEventEnabled(ctx context.Context, eventType string) bool {
+	if DefaultMgr() == nil || DefaultMgr().Get(ctx, common.AuditLogEventsDisabled) == nil {
+		return true
+	}
 	disableListStr := DefaultMgr().Get(ctx, common.AuditLogEventsDisabled).GetString()
 	disableList := strings.Split(disableListStr, ",")
 	for _, t := range disableList {

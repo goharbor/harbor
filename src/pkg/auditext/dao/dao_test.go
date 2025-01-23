@@ -46,7 +46,7 @@ func (d *daoTestSuite) SetupSuite() {
 		Resource:             "user01",
 		Username:             "admin",
 		OperationDescription: "Create user",
-		OperationResult:      true,
+		IsSuccessful:         true,
 		OpTime:               time.Now().AddDate(0, 0, -8),
 	})
 	d.Require().Nil(err)
@@ -148,11 +148,11 @@ func (d *daoTestSuite) TestListPIDs() {
 
 func (d *daoTestSuite) TestCreate() {
 	audit := &model.AuditLogExt{
-		Operation:       "create",
-		ResourceType:    "user",
-		Resource:        "user02",
-		OperationResult: true,
-		Username:        "admin",
+		Operation:    "create",
+		ResourceType: "user",
+		Resource:     "user02",
+		IsSuccessful: true,
+		Username:     "admin",
 	}
 	_, err := d.dao.Create(d.ctx, audit)
 	d.Require().Nil(err)
