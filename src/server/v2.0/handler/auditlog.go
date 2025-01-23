@@ -191,7 +191,7 @@ func convertToModelAuditLogExt(logs []*model.AuditLogExt) []*models.AuditLogExt 
 			Username:             log.Username,
 			Operation:            log.Operation,
 			OperationDescription: log.OperationDescription,
-			OperationResult:      log.OperationResult,
+			OperationResult:      log.IsSuccessful,
 			OpTime:               strfmt.DateTime(log.OpTime),
 		})
 	}
