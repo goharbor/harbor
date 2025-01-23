@@ -87,6 +87,12 @@
                                                     placeholder="Enter custom prefix"
                                                     [(ngModel)]="customRuntime"
                                                     #customPrefix="ngModel"
+                                                    [ngClass]="{
+                                                        'is-invalid':
+                                                            customPrefix.invalid &&
+                                                            customPrefix.touched
+                                                    }"
+                                                    pattern="^[a-z]+$"
                                                     minlength="2"
                                                     class="clr-input" />
                                                 <cds-icon
@@ -106,6 +112,11 @@
                                                     *ngIf="customPrefix.errors?.['minlength']">
                                                     Prefix must be at least 2
                                                     characters
+                                                </div>
+                                                <div
+                                                    *ngIf="customPrefix.errors?.['pattern']">
+                                                    Prefix must only contain
+                                                    lowercase alphabets (a-z)
                                                 </div>
                                             </div>
                                             <!-- <span class="clr-subtext">Helper Text</span> -->
