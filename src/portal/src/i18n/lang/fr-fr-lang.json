@@ -770,7 +770,6 @@
         "ARTIFACT_TOOTIP": "Cliquez pour voir la liste des index des artefacts de cet OCI",
         "ARTIFACTS_COUNT": "Artefacts",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Commande de pull",
         "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
@@ -1146,8 +1145,7 @@
         "TOOLTIP": "Commandes pour push un artefact dans ce projet.",
         "TAG_COMMAND": "Taguer une image pour ce projet :",
         "PUSH_COMMAND": "Push une image dans ce projet :",
-        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence.",
-        "COPY_PULL_COMMAND": "COMMANDE COPY PULL"
+        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrer les artefacts",
@@ -1201,7 +1199,6 @@
         "NAME": "Nom",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
-        "PULL_COMMAND": "Pull Command",
         "OF": "sur",
         "ITEMS": "entrées",
         "ADD_TAG": "AJOUTER TAG",

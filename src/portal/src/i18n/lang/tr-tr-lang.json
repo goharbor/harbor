@@ -771,7 +771,6 @@
         "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
-        "PULL_COMMAND": "İndirme Komutu",
         "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
@@ -1145,8 +1144,7 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
-        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1200,7 +1198,6 @@
         "NAME": "Name",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
-        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "items",
         "ADD_TAG": "ADD TAG",

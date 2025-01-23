@@ -769,7 +769,6 @@
         "ARTIFACT_TOOTIP": "Clique para ver a lista de artefatos OCI",
         "ARTIFACTS_COUNT": "Artefatos",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Comando de Pull",
         "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Horário de Envio",
         "PUSH_TIME": "Horário de Recebimento",
@@ -1141,8 +1140,7 @@
         "TOOLTIP": "Referência de comandos para enviar artefatos a este projeto.",
         "TAG_COMMAND": "Colocar tag em uma imagem deste projeto:",
         "PUSH_COMMAND": "Envia uma imagem a esse projeto:",
-        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrar",
@@ -1193,7 +1191,6 @@
         "NAME": "Nome",
         "PULL_TIME": "Horário do pull",
         "PUSH_TIME": "Horário do push",
-        "PULL_COMMAND": "Pull Command",
         "OF": "of",
         "ITEMS": "itens",
         "ADD_TAG": "ADICIONAR TAG",
