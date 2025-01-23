@@ -119,7 +119,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 func getAdapterInfo() *model.AdapterPattern {
 	info := &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
-			EndpointType: model.EndpointPatternTypeFix,
+			EndpointType: model.EndpointPatternTypeStandard,
 			Endpoints: []*model.Endpoint{
 				{
 					Key:   "hub.docker.com",
