@@ -21,12 +21,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.7
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/go-openapi/errors v0.22.0
-	github.com/go-openapi/loads v0.22.0 // indirect
+	github.com/go-openapi/loads v0.22.0
 	github.com/go-openapi/runtime v0.28.0
-	github.com/go-openapi/spec v0.21.0 // indirect
+	github.com/go-openapi/spec v0.21.0
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/go-openapi/swag v0.23.0
-	github.com/go-openapi/validate v0.24.0 // indirect
+	github.com/go-openapi/validate v0.24.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
@@ -60,7 +60,7 @@ require (
 	go.opentelemetry.io/otel v1.34.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.31.0
-	go.opentelemetry.io/otel/sdk v1.31.0
+	go.opentelemetry.io/otel/sdk v1.34.0
 	go.opentelemetry.io/otel/trace v1.34.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.31.0
@@ -178,7 +178,7 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8 // indirect
