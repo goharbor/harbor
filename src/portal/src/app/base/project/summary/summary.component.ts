@@ -37,7 +37,6 @@ export class SummaryComponent implements OnInit {
         private projectService: ProjectService,
         private userPermissionService: UserPermissionService,
         private errorHandler: ErrorHandler,
-        private appConfigService: AppConfigService,
         private route: ActivatedRoute,
         private repoService: RepositoryService,
         private router: Router

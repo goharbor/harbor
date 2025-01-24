@@ -11,7 +11,6 @@
                 [routerLink]="
                     getLink(r.project_id, r.name || r.repository_name)
                 "
-                [queryParams]="getQueryParams()"
                 >{{ r.name || r.repository_name }}</a
             ></clr-dg-cell
         >

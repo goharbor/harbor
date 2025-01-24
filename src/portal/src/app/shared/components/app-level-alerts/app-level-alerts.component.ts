@@ -5,7 +5,6 @@ import { DEFAULT_PAGE_SIZE, delUrlParam } from '../../units/utils';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { Project } from '../../../../../ng-swagger-gen/models/project';
 import { ScannerService } from '../../../../../ng-swagger-gen/services/scanner.service';
-import { UN_LOGGED_PARAM } from '../../../account/sign-in/sign-in.service';
 import { CommonRoutes, httpStatusCode } from '../../entities/shared.const';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from '../global-message/message.service';
@@ -68,19 +67,15 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
                         // User session timed out, then redirect to sign-in page
                         if (
                             this.session.getCurrentUser() &&
-                            !this.isSignInUrl() &&
-                            this.route.snapshot.queryParams[UN_LOGGED_PARAM] !==
-                                YES
+                            !this.isSignInUrl()
                         ) {
-                            const url = delUrlParam(
-                                this.router.url,
-                                UN_LOGGED_PARAM
-                            );
                             this.session.clear(); // because of SignInGuard, must clear user session before navigating to sign-in page
                             this.router.navigate(
                                 [CommonRoutes.EMBEDDED_SIGN_IN],
                                 {
-                                    queryParams: { redirect_url: url },
+                                    queryParams: {
+                                        redirect_url: this.router.url,
+                                    },
                                 }
                             );
                         }
@@ -166,10 +161,8 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
     }
 
     signIn(): void {
-        // remove queryParam UN_LOGGED_PARAM of redirect url
-        const url = delUrlParam(this.router.url, UN_LOGGED_PARAM);
         this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], {
-            queryParams: { redirect_url: url },
+            queryParams: { redirect_url: this.router.url },
         });
     }
 

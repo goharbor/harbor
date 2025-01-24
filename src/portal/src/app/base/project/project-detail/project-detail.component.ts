@@ -22,7 +22,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 import { SessionService } from '../../../shared/services/session.service';
-import { AppConfigService } from '../../../services/app-config.service';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import {
     UserPermissionService,
@@ -146,8 +145,7 @@ export class ProjectDetailComponent
             linkName: 'configs',
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.CONFIG',
-            permissions: () =>
-                this.isSessionValid && this.hasConfigurationListPermission,
+            permissions: () => this.hasConfigurationListPermission,
         },
     ];
     previousWindowWidth: number;
@@ -163,7 +161,6 @@ export class ProjectDetailComponent
         private route: ActivatedRoute,
         private router: Router,
         private sessionService: SessionService,
-        private appConfigService: AppConfigService,
         private userPermissionService: UserPermissionService,
         private errorHandler: ErrorHandler,
         private cdf: ChangeDetectorRef,
@@ -342,7 +339,13 @@ export class ProjectDetailComponent
                     this.getQuotaInfo();
                 }
             },
-            error => this.errorHandler.error(error)
+            error => {
+                // for un-authed users, they can view 'summary,repositories and labels' tabs
+                this.hasProjectReadPermission = true;
+                this.hasRepositoryListPermission = true;
+                this.hasLabelListPermission = true;
+                this.hasLabelCreatePermission = true;
+            }
         );
     }
     getQuotaInfo() {

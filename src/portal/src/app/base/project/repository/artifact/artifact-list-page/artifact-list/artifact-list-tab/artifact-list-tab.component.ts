@@ -68,10 +68,6 @@ import { errorHandler } from '../../../../../../../shared/units/shared.utils';
 import { ConfirmationDialogComponent } from '../../../../../../../shared/components/confirmation-dialog';
 import { ConfirmationMessage } from '../../../../../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../../../../../../global-confirmation-dialog/confirmation-state-message';
-import {
-    UN_LOGGED_PARAM,
-    YES,
-} from '../../../../../../../account/sign-in/sign-in.service';
 import { Label } from '../../../../../../../../../ng-swagger-gen/models/label';
 import {
     EventService,
@@ -84,7 +80,6 @@ import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
-import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
@@ -767,20 +762,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     goIntoArtifactSummaryPage(artifact: Artifact): void {
         const relativeRouterLink: string[] = ['artifacts', artifact.digest];
-        if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
-            this.router.navigate(relativeRouterLink, {
-                relativeTo: this.activatedRoute,
-                queryParams: {
-                    [UN_LOGGED_PARAM]: YES,
-                    sbomDigest: artifact.sbomDigest ?? '',
-                },
-            });
-        } else {
-            this.router.navigate(relativeRouterLink, {
-                relativeTo: this.activatedRoute,
-                queryParams: { sbomDigest: artifact.sbomDigest ?? '' },
-            });
-        }
+        this.router.navigate(relativeRouterLink, {
+            relativeTo: this.activatedRoute,
+            queryParams: { sbomDigest: artifact.sbomDigest ?? '' },
+        });
     }
 
     // Get sbom status
@@ -977,13 +962,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             'depth',
             depth,
         ];
-        if (this.activatedRoute.snapshot.queryParams[UN_LOGGED_PARAM] === YES) {
-            this.router.navigate(linkUrl, {
-                queryParams: { [UN_LOGGED_PARAM]: YES },
-            });
-        } else {
-            this.router.navigate(linkUrl);
-        }
+        this.router.navigate(linkUrl);
     }
 
     filterEvent(e: ArtifactFilterEvent) {

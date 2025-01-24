@@ -16,6 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../../../project';
 import { ArtifactListPageService } from './artifact-list-page.service';
 import { Subscription } from 'rxjs';
+import { SessionService } from '../../../../../shared/services/session.service';
 
 @Component({
     selector: 'artifact-list-page',
@@ -33,7 +34,8 @@ export class ArtifactListPageComponent implements OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private artifactListPageService: ArtifactListPageService
+        private artifactListPageService: ArtifactListPageService,
+        private sessionService: SessionService
     ) {
         if (!this.routeParamsSub) {
             this.routeParamsSub = this.route.params.subscribe(params => {
@@ -103,5 +105,8 @@ export class ArtifactListPageComponent implements OnDestroy {
                 this.repoName,
             ]);
         }
+    }
+    hasSignedIn(): boolean {
+        return !!this.sessionService.getCurrentUser();
     }
 }
