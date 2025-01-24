@@ -55,7 +55,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 **System requirements:**
 
-**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
+**On a Linux host:** docker 20.10.10-ce+ and docker-compose-plugin 2.0.0+.
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
