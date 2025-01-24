@@ -464,7 +464,9 @@
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
                             *ngIf="
-                                hasSbom(artifact) && !artifact?.accessoryLoading
+                                hasSbom(artifact) &&
+                                !artifact?.accessoryLoading &&
+                                !hasChild(artifact)
                             "
                             [inputScanner]="
                                 handleSbomOverview(artifact.sbom_overview)
