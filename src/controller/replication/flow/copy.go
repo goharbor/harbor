@@ -17,7 +17,6 @@ package flow
 import (
 	"context"
 	"encoding/json"
-
 	"github.com/goharbor/harbor/src/pkg/jobmonitor"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
@@ -96,7 +95,7 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return c.createTasks(ctx, srcResources, dstResources, c.policy)
+	return c.createTasks(ctx, srcResources, dstResources)
 }
 
 func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
@@ -107,19 +106,7 @@ func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
 	return execution.Status == job.StoppedStatus.String(), nil
 }
 
-func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, policy *repctlmodel.Policy) error {
-	if policy.SingleActiveReplication {
-		o, err := c.observationMgr.ObservationByJobNameAndPolicyID(ctx, job.ReplicationVendorType, policy.ID)
-		if err != nil {
-			return err
-		}
-		if o != nil {
-			if err = c.executionMgr.MarkSkipped(ctx, c.executionID, "Execution deferred: active replication still in progress."); err != nil {
-				return err
-			}
-		}
-	}
-
+func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource) error {
 	var taskCnt int
 	defer func() {
 		// if no task be created, mark execution done.
@@ -153,12 +140,11 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 				JobKind: job.KindGeneric,
 			},
 			Parameters: map[string]interface{}{
-				"src_resource":              string(src),
-				"dst_resource":              string(dest),
-				"speed":                     policy.Speed,
-				"copy_by_chunk":             policy.CopyByChunk,
-				"single_active_replication": policy.SingleActiveReplication,
-				"policy_id":                 policy.ID,
+				"src_resource":  string(src),
+				"dst_resource":  string(dest),
+				"speed":         c.policy.Speed,
+				"copy_by_chunk": c.policy.CopyByChunk,
+				"policy_id":     c.policy.ID,
 			},
 		}
 

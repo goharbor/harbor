@@ -118,16 +118,16 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if err != nil {
 		return 0, err
 	}
-
 	if policy.SingleActiveReplication {
 		o, err := c.observationMgr.ObservationByJobNameAndPolicyID(ctx, job.ReplicationVendorType, policy.ID)
 		if err != nil {
 			return 0, err
 		}
 		if o != nil {
-			if err = c.execMgr.MarkSkipped(ctx, id, "Execution deferred: active replication still in progress."); err != nil {
+			if err = c.execMgr.MarkSkipped(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
 				return 0, err
 			}
+			return id, nil
 		}
 	}
 
