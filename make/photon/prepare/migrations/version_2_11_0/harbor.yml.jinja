@@ -71,6 +71,20 @@ ip_family:
 #     enabled: true
 {% endif %}
 
+
+# # Network : This section defines a custom network configuration for a Docker service.
+# # It specifies a network named "harbor" with the following parameters: subnet and gateway
+# networks:
+#   harbor:
+#     subnet: 172.22.0.0/16
+#     gateway: 172.22.0.1
+{% if networks is defined %}
+networks:
+  harbor:
+    subnet: {{ networks.harbor.subnet }}
+    gateway: {{ networks.harbor.gateway }}
+{% endif %}
+
 {% if internal_tls is defined %}
 # Uncomment following will enable tls communication between all harbor components
 internal_tls:
