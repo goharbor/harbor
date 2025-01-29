@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 )
+
+func resetMiddleware() {
+	once = sync.Once{}
+}
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
@@ -32,7 +37,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func TestMiddleware(t *testing.T) {
-	srv := Middleware()(&handler{})
 	cases := []struct {
 		req         *http.Request
 		statusCode  int
@@ -60,6 +64,7 @@ func TestMiddleware(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
+		srv := Middleware()(&handler{})
 		rec := httptest.NewRecorder()
 		srv.ServeHTTP(rec, c.req)
 		assert.Equal(t, c.statusCode, rec.Result().StatusCode)
@@ -67,13 +72,24 @@ func TestMiddleware(t *testing.T) {
 	}
 }
 
-func hasCookie(resp *http.Response, name string) bool {
-	for _, c := range resp.Cookies() {
-		if c != nil && c.Name == name {
-			return true
-		}
-	}
-	return false
+func TestMiddlewareInvalidKey(t *testing.T) {
+	originalEnv := os.Getenv(csrfKeyEnv)
+	defer os.Setenv(csrfKeyEnv, originalEnv)
+
+	t.Run("invalid CSRF key", func(t *testing.T) {
+		os.Setenv(csrfKeyEnv, "invalidkey")
+		resetMiddleware()
+		middleware := Middleware()
+		testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Error("handler should not be reached when CSRF key is invalid")
+		})
+
+		handler := middleware(testHandler)
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	})
 }
 
 func TestSecureCookie(t *testing.T) {

@@ -261,3 +261,19 @@ func ScannerSkipUpdatePullTime(ctx context.Context) bool {
 func BannerMessage(ctx context.Context) string {
 	return DefaultMgr().Get(ctx, common.BannerMessage).GetString()
 }
+
+// AuditLogEventEnabled returns the audit log enabled setting for a specific event_type, such as delete_user, create_user
+func AuditLogEventEnabled(ctx context.Context, eventType string) bool {
+	if DefaultMgr() == nil || DefaultMgr().Get(ctx, common.AuditLogEventsDisabled) == nil {
+		return true
+	}
+	disableListStr := DefaultMgr().Get(ctx, common.AuditLogEventsDisabled).GetString()
+	disableList := strings.Split(disableListStr, ",")
+	for _, t := range disableList {
+		tName := strings.TrimSpace(t)
+		if strings.EqualFold(tName, eventType) {
+			return false
+		}
+	}
+	return true
+}

@@ -45,6 +45,8 @@ ${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
 
 ${distribution_add_btn_id}  //*[@id='new-instance']
 ${distribution_provider_select_id}  //*[@id='provider']
+${distribution_provider_authmode_id}  //clr-main-container//clr-radio-container//label[contains(@class,'clr-control-label') and contains(.,'OAuth')]
+${distribution_provider_authcode_id}  //*[@id='auth_data_token']
 ${distribution_name_input_id}  //*[@id='name']
 ${distribution_endpoint_id}  //*[@id='endpoint']
 ${distribution_description_id}  //*[@id='description']

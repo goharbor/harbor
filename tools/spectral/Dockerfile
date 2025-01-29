@@ -1,5 +1,5 @@
-ARG GOLANG
-FROM ${GOLANG}
+ARG NODE
+FROM ${NODE}
 
 ARG SPECTRAL_VERSION
 RUN case "$(dpkg --print-architecture)" in \

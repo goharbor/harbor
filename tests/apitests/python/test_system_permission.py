@@ -32,6 +32,9 @@ class Permission:
     def call(self):
         if ID_PLACEHOLDER in self.url:
             self.url = self.url.replace(ID_PLACEHOLDER, str(self.payload.get(self.payload_id_field)))
+        # remove the id field in the payload when calling the gc and purgeaudit schedule api with PUT method
+        if self.method == "PUT" and (self.url.endswith("system/gc/schedule") or self.url.endswith("system/purgeaudit/schedule")):
+            self.payload.pop("id", None)
         response = requests.request(self.method, self.url, data=json.dumps(self.payload), verify=False, auth=(user_name, password), headers={"Content-Type": "application/json"})
         if self.expect_status_code == None:
             assert response.status_code != 403, "Failed to call the {} {}, expected status code is not 403, but got {}, error msg is {}".format(self.method, self.url, response.status_code, response.text)
@@ -81,8 +84,8 @@ list_project = Permission("{}/projects".format(harbor_base_url), "GET", 200, pro
 registry_payload = {
     "insecure": False,
     "name": "registry-{}".format(random.randint(1000, 9999)),
-    "type": "docker-hub",
-    "url": "https://hub.docker.com"
+    "type": "harbor",
+    "url": "https://registry.goharbor.io"
 }
 create_registry = Permission("{}/registries".format(harbor_base_url), "POST", 201, registry_payload, "id", id_from_header=True)
 list_registry = Permission("{}/registries".format(harbor_base_url), "GET", 200, registry_payload)
@@ -93,8 +96,8 @@ delete_registry = Permission("{}/registries/{}".format(harbor_base_url, ID_PLACE
 registry_ping_payload = {
     "insecure": False,
     "name": "registry-{}".format(random.randint(1000, 9999)),
-    "type": "docker-hub",
-    "url": "https://hub.docker.com"
+    "type": "harbor",
+    "url": "https://registry.goharbor.io"
 }
 ping_registry = Permission("{}/registries/ping".format(harbor_base_url), "POST", 200, registry_ping_payload)
 # registry permissions end

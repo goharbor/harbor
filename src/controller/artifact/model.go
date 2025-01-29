@@ -94,6 +94,16 @@ func (artifact *Artifact) SetSBOMAdditionLink(sbomDgst string, version string) {
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
 }
 
+// AbstractLabelNames abstracts the label names from the artifact.
+func (artifact *Artifact) AbstractLabelNames() []string {
+	var names []string
+	for _, label := range artifact.Labels {
+		names = append(names, label.Name)
+	}
+
+	return names
+}
+
 // AdditionLink is a link via that the addition can be fetched
 type AdditionLink struct {
 	HREF     string `json:"href"`
