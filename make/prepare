@@ -30,7 +30,7 @@ else
     fi
 fi
 
-data_path=$(grep '^[^#]*data_volume:' $input_dir/harbor.yml | awk '{print $NF}')
+data_path=$(grep '^[^#]*data_volume:' $input_dir/harbor.yml | awk '{print $NF}' | sed 's/"//g')
 
 # If previous secretkeys exist, move it to new location
 previous_secretkey_path=/data/secretkey
