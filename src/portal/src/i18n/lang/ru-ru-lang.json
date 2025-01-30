@@ -1,11 +1,11 @@
 {
     "APP_TITLE": {
-        "VMW_HARBOR": "Харбор",
-        "HARBOR": "Харбор",
+        "VMW_HARBOR": "Harbor",
+        "HARBOR": "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Управление",
         "REG": "Реестр",
-        "HARBOR_SWAGGER": "Харбор Swagger",
+        "HARBOR_SWAGGER": "Harbor Swagger",
         "THEME_DARK_TEXT": "ТЕМНЫЙ",
         "THEME_LIGHT_TEXT": "СВЕТЛЫЙ"
     },
@@ -61,10 +61,10 @@
         "SWITCH_SUCCESS": "Успешно переключено",
         "SWITCH_FAILURE": "Переключение не удалось",
         "REPLICATE_SUCCESS": "Успешно запущено",
-        "REPLICATE_FAILURE": "Запуск не удалось",
+        "REPLICATE_FAILURE": "Запуск не удался",
         "STOP_SUCCESS": "Успешно остановлено",
-        "STOP_FAILURE": "Остановка выполнения не удалась",
-        "TIME_OUT": "Тайм-аут шлюза"
+        "STOP_FAILURE": "Остановить выполнение не удалось",
+        "TIME_OUT": "Шлюз не отвечает"
     },
     "TOOLTIP": {
         "NAME_FILTER": "Фильтровать по имени ресурса. Оставьте пустым или используйте '**' для соответствия всем. 'library/**' соответствует только ресурсам под 'library'. Для получения дополнительных шаблонов обратитесь к руководству пользователя.",
@@ -120,7 +120,7 @@
     "PROFILE": {
         "TITLE": "Профиль пользователя",
         "USER_NAME": "Имя пользователя",
-        "EMAIL": "Email",
+        "EMAIL": "Почта",
         "FULL_NAME": "Имя и фамилия",
         "COMMENT": "Комментарии",
         "PASSWORD": "Пароль",
@@ -139,8 +139,8 @@
         "CONFIRM_SECRET": "Повторно введите секрет",
         "GENERATE_SUCCESS": "Настройка секрета CLI прошла успешно",
         "GENERATE_ERROR": "Настройка секрета CLI не удалась",
-        "CONFIRM_TITLE_CLI_GENERATE": "Вы уверены, что можете повторно сгенерировать секрет?",
-        "CONFIRM_BODY_CLI_GENERATE": "Если вы повторно сгенерируете секрет CLI, старый секрет CLI будет отброшен"
+        "CONFIRM_TITLE_CLI_GENERATE": "Вы уверены, что хотите перегенерировать секрет?",
+        "CONFIRM_BODY_CLI_GENERATE": "Если вы перегенерируете секрет CLI, старый секрет CLI будет отброшен"
     },
     "CHANGE_PWD": {
         "TITLE": "Изменить пароль",
