@@ -17,8 +17,6 @@ package flow
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/pkg/jobmonitor"
-
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -28,12 +26,11 @@ import (
 )
 
 type copyFlow struct {
-	executionID    int64
-	resources      []*model.Resource
-	policy         *repctlmodel.Policy
-	executionMgr   task.ExecutionManager
-	taskMgr        task.Manager
-	observationMgr jobmonitor.ObservationManager
+	executionID  int64
+	resources    []*model.Resource
+	policy       *repctlmodel.Policy
+	executionMgr task.ExecutionManager
+	taskMgr      task.Manager
 }
 
 // NewCopyFlow returns an instance of the copy flow which replicates the resources from
@@ -41,12 +38,11 @@ type copyFlow struct {
 // will fetch the resources first
 func NewCopyFlow(executionID int64, policy *repctlmodel.Policy, resources ...*model.Resource) Flow {
 	return &copyFlow{
-		executionMgr:   task.ExecMgr,
-		taskMgr:        task.Mgr,
-		executionID:    executionID,
-		policy:         policy,
-		resources:      resources,
-		observationMgr: jobmonitor.NewObservationManagerImpl(),
+		executionMgr: task.ExecMgr,
+		taskMgr:      task.Mgr,
+		executionID:  executionID,
+		policy:       policy,
+		resources:    resources,
 	}
 }
 
@@ -144,7 +140,6 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 				"dst_resource":  string(dest),
 				"speed":         c.policy.Speed,
 				"copy_by_chunk": c.policy.CopyByChunk,
-				"policy_id":     c.policy.ID,
 			},
 		}
 

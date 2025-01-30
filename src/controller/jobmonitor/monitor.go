@@ -17,7 +17,11 @@ package jobmonitor
 import (
 	"context"
 	"fmt"
+	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/common/job"
+	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	"strings"
+	"time"
 
 	jobSvc "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -87,10 +91,27 @@ func NewMonitorController() MonitorController {
 		taskManager:           task.NewManager(),
 		queueManager:          jm.NewQueueClient(),
 		queueStatusManager:    queuestatus.Mgr,
-		monitorClient:         jm.GetJobServiceMonitorClient,
+		monitorClient:         jobServiceMonitorClient,
 		jobServiceRedisClient: jm.JobServiceRedisClient,
 		executionDAO:          taskDao.NewExecutionDAO(),
 	}
+}
+
+func jobServiceMonitorClient() (jm.JobServiceMonitorClient, error) {
+	cfg, err := job.GlobalClient.GetJobServiceConfig()
+	if err != nil {
+		return nil, err
+	}
+	config := cfg.RedisPoolConfig
+	pool, err := libRedis.GetRedisPool(jm.JobServicePool, config.RedisURL, &libRedis.PoolParam{
+		PoolMaxIdle:     0,
+		PoolIdleTimeout: time.Duration(config.IdleTimeoutSecond) * time.Second,
+	})
+	if err != nil {
+		log.Errorf("failed to get redis pool: %v", err)
+		return nil, err
+	}
+	return work.NewClient(fmt.Sprintf("{%s}", config.Namespace), pool), nil
 }
 
 func (w *monitorController) ListWorkers(ctx context.Context, poolID string) ([]*jm.Worker, error) {

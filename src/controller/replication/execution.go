@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/jobmonitor"
-
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/flow"
 	replicationmodel "github.com/goharbor/harbor/src/controller/replication/model"
@@ -78,28 +76,26 @@ type Controller interface {
 // NewController creates a new instance of the replication controller
 func NewController() Controller {
 	return &controller{
-		repMgr:         replication.Mgr,
-		execMgr:        task.ExecMgr,
-		taskMgr:        task.Mgr,
-		regMgr:         reg.Mgr,
-		scheduler:      scheduler.Sched,
-		flowCtl:        flow.NewController(),
-		ormCreator:     orm.Crt,
-		wp:             lib.NewWorkerPool(10),
-		observationMgr: jobmonitor.NewObservationManagerImpl(),
+		repMgr:     replication.Mgr,
+		execMgr:    task.ExecMgr,
+		taskMgr:    task.Mgr,
+		regMgr:     reg.Mgr,
+		scheduler:  scheduler.Sched,
+		flowCtl:    flow.NewController(),
+		ormCreator: orm.Crt,
+		wp:         lib.NewWorkerPool(10),
 	}
 }
 
 type controller struct {
-	repMgr         replication.Manager
-	execMgr        task.ExecutionManager
-	taskMgr        task.Manager
-	regMgr         reg.Manager
-	scheduler      scheduler.Scheduler
-	flowCtl        flow.Controller
-	ormCreator     orm.Creator
-	wp             *lib.WorkerPool
-	observationMgr jobmonitor.ObservationManager
+	repMgr     replication.Manager
+	execMgr    task.ExecutionManager
+	taskMgr    task.Manager
+	regMgr     reg.Manager
+	scheduler  scheduler.Scheduler
+	flowCtl    flow.Controller
+	ormCreator orm.Creator
+	wp         *lib.WorkerPool
 }
 
 func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy, resource *model.Resource, trigger string) (int64, error) {
@@ -118,16 +114,23 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if err != nil {
 		return 0, err
 	}
+
 	if policy.SingleActiveReplication {
-		o, err := c.observationMgr.ObservationByJobNameAndPolicyID(ctx, job.ReplicationVendorType, policy.ID)
+		count, err := c.execMgr.Count(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"VendorType": job.ReplicationVendorType,
+				"VendorID":   policy.ID,
+				"Status":     job.RunningStatus.String(),
+			},
+		})
 		if err != nil {
 			return 0, err
 		}
-		if o != nil {
+
+		if count > 1 {
 			if err = c.execMgr.MarkSkipped(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
 				return 0, err
 			}
-			return id, nil
 		}
 	}
 
