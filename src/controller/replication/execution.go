@@ -115,6 +115,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		return 0, err
 	}
 
+	// If running executions are found, skip the current execution and mark it as skipped.
 	if policy.SingleActiveReplication {
 		count, err := c.execMgr.Count(ctx, &q.Query{
 			Keywords: map[string]interface{}{
@@ -131,6 +132,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			if err = c.execMgr.MarkSkipped(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
 				return 0, err
 			}
+			return id, nil
 		}
 	}
 
