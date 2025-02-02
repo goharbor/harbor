@@ -17,6 +17,7 @@ package flow
 import (
 	"context"
 	"encoding/json"
+
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"

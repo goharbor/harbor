@@ -17,11 +17,13 @@ package jobmonitor
 import (
 	"context"
 	"fmt"
-	"github.com/gocraft/work"
-	"github.com/goharbor/harbor/src/common/job"
-	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	"strings"
 	"time"
+
+	"github.com/gocraft/work"
+
+	"github.com/goharbor/harbor/src/common/job"
+	libRedis "github.com/goharbor/harbor/src/lib/redis"
 
 	jobSvc "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"

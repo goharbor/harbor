@@ -66,9 +66,7 @@ type basicWorker struct {
 
 // workerContext ...
 // We did not use this context to pass context info so far, just a placeholder.
-type workerContext struct {
-	client *work.Client
-}
+type workerContext struct{}
 
 // log the job
 func (rpc *workerContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
@@ -148,12 +146,9 @@ func (w *basicWorker) Start() error {
 		w.pool.Stop()
 	}()
 
-	workCtx := workerContext{
-		client: w.client,
-	}
 	// Start the backend worker pool
 	// Add middleware
-	w.pool.Middleware(workCtx.logJob)
+	w.pool.Middleware((*workerContext).logJob)
 	// Non blocking call
 	w.pool.Start()
 	logger.Infof("Basic worker is started")
