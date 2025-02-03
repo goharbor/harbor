@@ -54,7 +54,7 @@ class TestProxyCache(unittest.TestCase):
             2. Delete user(UA).
         """
         user_id, user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
-        USER_CLIENT=dict(with_signature = True, endpoint = self.url, username = user_name, password = self.user_password)
+        USER_CLIENT=dict(endpoint = self.url, username = user_name, password = self.user_password)
 
         image_for_docker = dict(image = "for_proxy", tag = "1.0")
         image_for_ctr = dict(image = "redis", tag = "latest")
