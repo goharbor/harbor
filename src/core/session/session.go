@@ -84,23 +84,42 @@ func (rs *Store) SessionID(_ context.Context) string {
 	return rs.sid
 }
 
-// SessionRelease save session values to redis
-func (rs *Store) SessionRelease(ctx context.Context, _ http.ResponseWriter) {
-	b, err := session.EncodeGob(rs.values)
+func (rs *Store) releaseSession(ctx context.Context, _ http.ResponseWriter, requirePresent bool) {
+	rs.lock.RLock()
+	values := rs.values
+	rs.lock.RUnlock()
+	b, err := session.EncodeGob(values)
 	if err != nil {
 		return
 	}
-
 	if ctx == nil {
 		ctx = context.TODO()
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
 	if rdb, ok := rs.c.(*redis.Cache); ok {
-		cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
-		if cmd.Err() != nil {
-			log.Debugf("release session error: %v", err)
+		if requirePresent {
+			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), maxlifetime)
+			if cmd.Err() != nil {
+				log.Debugf("release session error: %v", err)
+			}
+		} else {
+			cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
+			if cmd.Err() != nil {
+				log.Debugf("release session error: %v", err)
+			}
 		}
 	}
+}
+
+// SessionRelease save session values to redis
+func (rs *Store) SessionRelease(ctx context.Context, w http.ResponseWriter) {
+	rs.releaseSession(ctx, w, false)
+}
+
+// added by beego version v2.3.4, commit https://github.com/beego/beego/commit/06d869664a9c55aea6c2bb6ac3866f8a39b1100c#diff-bc81cfdba9f5250f9bf95ccaae2e4e34b37af87e2091dda11ef49dc58bd91c2c
+// SessionReleaseIfPresent save session values to redis when key is present
+func (rs *Store) SessionReleaseIfPresent(ctx context.Context, w http.ResponseWriter) {
+	rs.releaseSession(ctx, w, true)
 }
 
 // Provider redis session provider
