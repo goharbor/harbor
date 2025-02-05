@@ -90,7 +90,6 @@ func MiddleWares() []web.MiddleWare {
 		trace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
-		log.Middleware(),
 		session.Middleware(),
 		csrf.Middleware(),
 		orm.Middleware(pingSkipper),
@@ -98,6 +97,7 @@ func MiddleWares() []web.MiddleWare {
 		transaction.Middleware(dbTxSkippers...),
 		artifactinfo.Middleware(),
 		security.Middleware(pingSkipper),
+		log.Middleware(), // log middleware should be after the security middleware so that the user info can be logged
 		security.UnauthorizedMiddleware(),
 		readonly.Middleware(readonlySkippers...),
 	}

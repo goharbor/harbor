@@ -58,7 +58,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             self.project.add_project_members(project_id, member_role_id = 3, _ldap_group_dn = "cn=harbor_guest,ou=groups,dc=example,dc=com", **ADMIN_CLIENT)
 
             projects = self.project.get_projects(dict(name=project_name), **USER_ADMIN)
-            self.assertTrue(len(projects) == 1)
+            self.assertTrue(len(projects) == 1) 
             self.assertEqual(1, projects[0].current_user_role_id)
 
             #Mike has logged in harbor in previous test.
@@ -80,8 +80,8 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             self.assertTrue(len(artifacts) == 0)
 
             self.assertTrue(self.project.query_user_logs(project_name, **USER_ADMIN)>0, "admin user can see logs")
-            self.assertTrue(self.project.query_user_logs(project_name, **USER_DEV)>0, "dev user can see logs")
-            self.assertTrue(self.project.query_user_logs(project_name, **USER_GUEST)>0, "guest user can see logs")
+            self.assertTrue(self.project.query_user_logs(project_name, status_code=403, **USER_DEV)==0, "dev user can not see any logs")
+            self.assertTrue(self.project.query_user_logs(project_name, status_code=403, **USER_GUEST)==0, "guest user can not see any logs")
             self.assertTrue(self.project.query_user_logs(project_name, status_code=403, **USER_TEST)==0, "test user can not see any logs")
 
             self.repo.delete_repository(project_name, repo_name_admin.split('/')[1], **USER_ADMIN)

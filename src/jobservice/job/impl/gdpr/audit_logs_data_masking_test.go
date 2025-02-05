@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/goharbor/harbor/src/testing/pkg/audit"
+	"github.com/goharbor/harbor/src/testing/pkg/auditext"
 	"github.com/goharbor/harbor/src/testing/pkg/user"
 )
 
@@ -35,12 +36,14 @@ func TestAuditLogsCleanupJobValidateParams(t *testing.T) {
 	const validUsername = "user"
 	var (
 		manager     = &audit.Manager{}
+		extManger   = &auditext.Manager{}
 		userManager = &user.Manager{}
 	)
 
 	rep := &AuditLogsDataMasking{
 		manager:     manager,
 		userManager: userManager,
+		extManager:  extManger,
 	}
 	err := rep.Validate(nil)
 	// parameters are required
@@ -61,6 +64,7 @@ func TestAuditLogsCleanupJobValidateParams(t *testing.T) {
 	ctx.On("GetLogger").Return(logger)
 	userManager.On("GenerateCheckSum", validUsername).Return("hash")
 	manager.On("UpdateUsername", context.TODO(), validUsername, "hash").Return(nil)
+	extManger.On("UpdateUsername", context.TODO(), validUsername, "hash").Return(nil)
 
 	err = rep.Run(ctx, validParams)
 	assert.Nil(t, err)
