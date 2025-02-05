@@ -16,12 +16,14 @@ package auditlog
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/controller/event"
+	evtModel "github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/audit"
-	am "github.com/goharbor/harbor/src/pkg/audit/model"
+	"github.com/goharbor/harbor/src/pkg/auditext"
+	am "github.com/goharbor/harbor/src/pkg/auditext/model"
 )
 
 // Handler - audit log handler
@@ -30,7 +32,7 @@ type Handler struct {
 
 // AuditResolver - interface to resolve to AuditLog
 type AuditResolver interface {
-	ResolveToAuditLog() (*am.AuditLog, error)
+	ResolveToAuditLog() (*am.AuditLogExt, error)
 }
 
 // Name ...
@@ -40,13 +42,12 @@ func (h *Handler) Name() string {
 
 // Handle ...
 func (h *Handler) Handle(ctx context.Context, value interface{}) error {
-	var auditLog *am.AuditLog
 	var addAuditLog bool
 	switch v := value.(type) {
 	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
 		*event.DeleteRepositoryEvent, *event.CreateProjectEvent, *event.DeleteProjectEvent,
 		*event.DeleteTagEvent, *event.CreateTagEvent,
-		*event.CreateRobotEvent, *event.DeleteRobotEvent:
+		*event.CreateRobotEvent, *event.DeleteRobotEvent, *evtModel.CommonEvent:
 		addAuditLog = true
 	case *event.PullArtifactEvent:
 		addAuditLog = !config.PullAuditLogDisable(ctx)
@@ -56,14 +57,13 @@ func (h *Handler) Handle(ctx context.Context, value interface{}) error {
 
 	if addAuditLog {
 		resolver := value.(AuditResolver)
-		al, err := resolver.ResolveToAuditLog()
+		auditLog, err := resolver.ResolveToAuditLog()
 		if err != nil {
 			log.Errorf("failed to handler event %v", err)
 			return err
 		}
-		auditLog = al
-		if auditLog != nil {
-			_, err := audit.Mgr.Create(ctx, auditLog)
+		if auditLog != nil && config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", auditLog.Operation, auditLog.ResourceType)) {
+			_, err := auditext.Mgr.Create(ctx, auditLog)
 			if err != nil {
 				log.Debugf("add audit log err: %v", err)
 			}
