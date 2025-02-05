@@ -20,18 +20,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gocraft/work"
-
-	"github.com/goharbor/harbor/src/common/job"
-	libRedis "github.com/goharbor/harbor/src/lib/redis"
-
 	jobSvc "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/queuestatus"
 
 	"github.com/goharbor/harbor/src/lib/log"
 
+	"github.com/gocraft/work"
+
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/lib/q"
+	libRedis "github.com/goharbor/harbor/src/lib/redis"
 	jm "github.com/goharbor/harbor/src/pkg/jobmonitor"
 	"github.com/goharbor/harbor/src/pkg/task"
 	taskDao "github.com/goharbor/harbor/src/pkg/task/dao"
