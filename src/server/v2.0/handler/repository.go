@@ -153,7 +153,7 @@ func (r *repositoryAPI) listAuthorizedProjectIDs(ctx context.Context) ([]int64, 
 		query.Keywords["public"] = true
 	}
 
-	projects, err := r.proCtl.List(ctx, query)
+	projects, err := r.proCtl.List(ctx, query, project.Detail(false))
 	if err != nil {
 		return nil, err
 	}
