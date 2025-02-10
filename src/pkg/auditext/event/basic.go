@@ -46,7 +46,7 @@ type Resolver struct {
 	SucceedCodes   []int
 	// SensitiveAttributes is the attributes that need to be redacted
 	SensitiveAttributes []string
-	// HasResourceName indicates if the resource has name, if true, need to resolve the resource name before delete
+	// ShouldResolveName indicates if the resource name should be resolved before delete, if true, need to resolve the resource name before delete
 	ShouldResolveName bool
 	// IDToNameFunc is used to resolve the resource name from resource id
 	IDToNameFunc ResolveIDToNameFunc
