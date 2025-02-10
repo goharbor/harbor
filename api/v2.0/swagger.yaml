@@ -997,12 +997,6 @@ paths:
           type: boolean
           required: false
           default: false
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
@@ -1313,12 +1307,6 @@ paths:
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the returning tags
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the returning tags
@@ -6952,6 +6940,7 @@ definitions:
         description: The operation's detail description
       operation_result:
         type: boolean
+        x-omitempty: false
         description: the operation's result, true for success, false for fail
       op_time:
         type: string

@@ -76,7 +76,7 @@
                     }
 
                     .detail-span {
-                        flex:0 0 100px;
+                        flex:0 0 150px;
                         margin: 10px 0 0 10px;
                     }
 
@@ -92,7 +92,7 @@
 
                 label {
                     display: inline-block;
-                    width: 120px;
+                    width: 140px;
                 }
                 /* stylelint-disable */
                 >div {
@@ -110,7 +110,7 @@
             height: 24px;
             display: flex;
             justify-content: flex-end;
-            
+
             .filter-tag {
                 float: left;
                 margin-top: 8px;
@@ -120,7 +120,7 @@
                 cursor: pointer;
                 margin-top: 7px;
             }
-            
+
             .refresh-btn:hover {
                 color: #007CBB;
             }

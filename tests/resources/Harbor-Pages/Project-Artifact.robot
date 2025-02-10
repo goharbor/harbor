@@ -52,7 +52,7 @@ Should Not Contain Any Artifact
 
 Get The Specific Artifact
     [Arguments]  ${project_name}  ${repo_name}  ${reference}
-    ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "${HARBOR_URL}/api/v2.0/projects/${project_name}/repositories/${repo_name}/artifacts/${reference}?page=1&page_size=10&with_tag=true&with_label=true&with_scan_overview=true&with_accessory=true&with_signature=true&with_immutable_status=true"
+    ${cmd}=  Set Variable  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "${HARBOR_URL}/api/v2.0/projects/${project_name}/repositories/${repo_name}/artifacts/${reference}?page=1&page_size=10&with_tag=true&with_label=true&with_scan_overview=true&with_accessory=true&with_immutable_status=true"
     ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
     [Return]  ${output}
 

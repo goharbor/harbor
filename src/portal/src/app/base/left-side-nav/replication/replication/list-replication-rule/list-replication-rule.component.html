@@ -179,14 +179,6 @@
                 getFlattenLevelString(p.dest_namespace_replace_count)
                     | translate
             }}</clr-dg-cell>
-            <clr-dg-cell class="trigger">
-                {{ getTriggerTypeI18n(p.trigger) | translate }}
-                <clr-signpost *ngIf="p?.trigger?.trigger_settings?.cron">
-                    <clr-signpost-content *clrIfOpen>
-                        {{ p?.trigger?.trigger_settings?.cron }}
-                    </clr-signpost-content>
-                </clr-signpost>
-            </clr-dg-cell>
             <clr-dg-cell>{{
                 getBandwidthStr(p.speed) | translate
             }}</clr-dg-cell>
@@ -205,6 +197,14 @@
                         <span>{{ p.description }}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
+            </clr-dg-cell>
+            <clr-dg-cell class="trigger">
+                {{ getTriggerTypeI18n(p.trigger) | translate }}
+                <clr-signpost *ngIf="p?.trigger?.trigger_settings?.cron">
+                    <clr-signpost-content *clrIfOpen>
+                        {{ p?.trigger?.trigger_settings?.cron }}
+                    </clr-signpost-content>
+                </clr-signpost>
             </clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
