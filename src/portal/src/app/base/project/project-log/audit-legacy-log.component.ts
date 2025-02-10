@@ -16,7 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionUser } from '../../../shared/entities/session-user';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
-import { AuditLogExt } from '../../../../../ng-swagger-gen/models/audit-log-ext';
+import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
 import { Project } from '../project';
 import { finalize } from 'rxjs/operators';
 import {
@@ -62,11 +62,11 @@ export class SearchOption {
 }
 
 @Component({
-    selector: 'project-audit-log',
-    templateUrl: './audit-log.component.html',
-    styleUrls: ['./audit-log.component.scss'],
+    selector: 'project-audit-legacy-log',
+    templateUrl: './audit-legacy-log.component.html',
+    styleUrls: ['./audit-legacy-log.component.scss'],
 })
-export class ProjectAuditLogComponent implements OnInit {
+export class ProjectAuditLegacyLogComponent implements OnInit {
     search: SearchOption = new SearchOption();
     currentUser: SessionUser;
     projectId: number;
@@ -75,7 +75,7 @@ export class ProjectAuditLogComponent implements OnInit {
     queryStartTime: string;
     queryEndTime: string;
     queryOperation: string[] = [];
-    auditLogs: AuditLogExt[];
+    auditLogs: AuditLog[];
     loading: boolean = true;
 
     toggleName = optionalSearch;
@@ -113,7 +113,7 @@ export class ProjectAuditLogComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const resolverData = this.route.parent.parent.parent?.snapshot?.data;
+        const resolverData = this.route.parent.parent.parent.snapshot.data;
         if (resolverData) {
             const pro: Project = <Project>resolverData['projectResolver'];
             this.projectName = pro.name;
@@ -146,7 +146,7 @@ export class ProjectAuditLogComponent implements OnInit {
             arr.push(`operation={${this.queryOperation.join(' ')}}`);
         }
 
-        const param: ProjectService.GetLogExtsParams = {
+        const param: ProjectService.GetLogsParams = {
             projectName: this.projectName,
             pageSize: this.pageSize,
             page: this.currentPage,
@@ -156,7 +156,7 @@ export class ProjectAuditLogComponent implements OnInit {
         }
         this.loading = true;
         this.auditLogService
-            .getLogExtsResponse(param)
+            .getLogsResponse(param)
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(
                 response => {
