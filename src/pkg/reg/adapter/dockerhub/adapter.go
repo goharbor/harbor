@@ -46,6 +46,13 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
+	var registryURL string
+	if registry.URL != baseURL {
+		registryURL = registry.URL
+	} else {
+		registryURL = defaultRegistryURL
+	}
+
 	return &adapter{
 		client:   client,
 		registry: registry,
@@ -112,7 +119,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 func getAdapterInfo() *model.AdapterPattern {
 	info := &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
-			EndpointType: model.EndpointPatternTypeFix,
+			EndpointType: model.EndpointPatternTypeStandard,
 			Endpoints: []*model.Endpoint{
 				{
 					Key:   "hub.docker.com",
