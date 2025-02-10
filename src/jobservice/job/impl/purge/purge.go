@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/audit"
+	"github.com/goharbor/harbor/src/pkg/auditext"
 )
 
 // Job defines the purge job
@@ -29,6 +30,7 @@ type Job struct {
 	includeOperations []string
 	dryRun            bool
 	auditMgr          audit.Manager
+	auditExtMgr       auditext.Manager
 }
 
 // MaxFails is implementation of same method in Interface.
@@ -106,17 +108,26 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	if j.retentionHour > common.MaxAuditRetentionHour {
 		j.retentionHour = common.MaxAuditRetentionHour
 	}
+	// TODO: Remove the previous purge logic when the audit_log is not used anymore
 	n, err := j.auditMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
 	if err != nil {
 		logger.Errorf("failed to purge audit log, error: %v", err)
 		return err
 	}
+	// purge the audit_log_ext table
+	n2, err2 := j.auditExtMgr.Purge(ormCtx, j.retentionHour, j.includeOperations, j.dryRun)
+	if err2 != nil {
+		logger.Errorf("failed to purge audit log ext, error: %v", err2)
+		return err2
+	}
 	logger.Infof("Purge operation parameter, retention_hour=%v, include_operations:%v, dry_run:%v",
 		j.retentionHour, j.includeOperations, j.dryRun)
 	if j.dryRun {
-		logger.Infof("[DRYRUN]Purged %d rows of audit logs", n)
+		logger.Infof("[DRYRUN]Purged %d rows of audit_logs", n)
+		logger.Infof("[DRYRUN]Purged %d rows of audit_log_exts", n2)
 	} else {
-		logger.Infof("Purged %d rows of audit logs", n)
+		logger.Infof("Purged %d rows of audit_logs", n)
+		logger.Infof("Purged %d rows of audit_log_exts", n2)
 	}
 
 	// Successfully exit
