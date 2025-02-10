@@ -65,6 +65,25 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return err
 	}
 
+	// go will panic if the network connection is ever interrupted, despite recovering successfully
+	// it will return an error type of http.ErrAbortHandler if it recovers. Middleware is expected to suppress this.
+	// golang/go#28239
+	defer func() {
+		r := recover()
+		err, ok := r.(error)
+
+		switch {
+		case r == nil:
+			return
+
+		case ok && errors.Is(err, http.ErrAbortHandler):
+			return // suppress
+
+		default:
+			panic(r)
+		}
+	}()
+
 	// Handle dockerhub request without library prefix
 	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
 	if err != nil {
@@ -179,7 +198,6 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return err
 	}
 	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
-
 	if err != nil {
 		return err
 	}
