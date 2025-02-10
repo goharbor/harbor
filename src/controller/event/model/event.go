@@ -36,6 +36,8 @@ type Replication struct {
 	DestResource       *ReplicationResource `json:"dest_resource,omitempty"`
 	SuccessfulArtifact []*ArtifactInfo      `json:"successful_artifact,omitempty"`
 	FailedArtifact     []*ArtifactInfo      `json:"failed_artifact,omitempty"`
+	ExecutionID        int64                `json:"execution_id,omitempty"`
+	TaskID             int64                `json:"task_id,omitempty"`
 }
 
 // ArtifactInfo describe info of artifact
