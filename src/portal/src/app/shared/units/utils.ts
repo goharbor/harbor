@@ -934,6 +934,7 @@ export function delUrlParam(url: string, key: string): string {
 }
 
 const PAGE_SIZE_MAP_KEY: string = 'pageSizeMap';
+const PAGE_SIZE_KEY: string = 'pageSize';
 
 interface DataGridMetadata {
     pageSize?: number;
@@ -942,7 +943,6 @@ interface DataGridMetadata {
 
 /**
  * Get the page size from the browser's localStorage
- * @param key
  * @param initialSize
  */
 export function getPageSizeFromLocalStorage(
@@ -952,36 +952,23 @@ export function getPageSizeFromLocalStorage(
     if (!initialSize) {
         initialSize = DEFAULT_PAGE_SIZE;
     }
-    if (localStorage && key && localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
-        const metadataMap: {
-            [k: string]: DataGridMetadata;
-        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
-        return metadataMap[key]?.pageSize
-            ? metadataMap[key]?.pageSize
-            : initialSize;
+    if (localStorage && localStorage.getItem(PAGE_SIZE_KEY)) {
+        const pageSize = localStorage.getItem(PAGE_SIZE_KEY);
+        return Number(pageSize) || initialSize;
     }
     return initialSize;
 }
 
 /**
  * Set the page size to the browser's localStorage
- * @param key
  * @param pageSize
  */
 export function setPageSizeToLocalStorage(key: string, pageSize: number) {
-    if (localStorage && key && pageSize) {
-        if (!localStorage.getItem(PAGE_SIZE_MAP_KEY)) {
-            // if first set
-            localStorage.setItem(PAGE_SIZE_MAP_KEY, '{}');
+    if (localStorage) {
+        if (pageSize) {
+            localStorage.setItem(PAGE_SIZE_KEY, `${pageSize}`);
         }
-        const metadataMap: {
-            [k: string]: DataGridMetadata;
-        } = JSON.parse(localStorage.getItem(PAGE_SIZE_MAP_KEY));
-        if (!isObject(metadataMap[key])) {
-            metadataMap[key] = {};
-        }
-        metadataMap[key].pageSize = pageSize;
-        localStorage.setItem(PAGE_SIZE_MAP_KEY, JSON.stringify(metadataMap));
+        localStorage.setItem(PAGE_SIZE_KEY, `${DEFAULT_PAGE_SIZE}`);
     }
 }
 
