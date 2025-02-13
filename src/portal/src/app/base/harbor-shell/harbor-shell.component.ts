@@ -37,6 +37,7 @@ import { THEME_ARRAY, ThemeInterface } from '../../services/theme';
 import { clone } from '../../shared/units/utils';
 import { ThemeService } from '../../services/theme.service';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
+import { PreferenceSettingsComponent } from '../preference-settings/preference-settings.component';
 import {
     EventService,
     HarborEvent,
@@ -52,6 +53,9 @@ const HAS_STYLE_MODE: string = 'styleModeLocal';
 export class HarborShellComponent implements OnInit, OnDestroy {
     @ViewChild(AccountSettingsModalComponent)
     accountSettingsModal: AccountSettingsModalComponent;
+
+    @ViewChild(PreferenceSettingsComponent)
+    prefSetting: PreferenceSettingsComponent;
 
     @ViewChild(PasswordSettingComponent)
     pwdSetting: PasswordSettingComponent;
@@ -175,6 +179,9 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         switch (event.modalName) {
             case modalEvents.USER_PROFILE:
                 this.accountSettingsModal.open();
+                break;
+            case modalEvents.PREFERENCES:
+                this.prefSetting.open();
                 break;
             case modalEvents.CHANGE_PWD:
                 this.pwdSetting.open();
