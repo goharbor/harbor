@@ -967,6 +967,7 @@ export function setPageSizeToLocalStorage(key: string, pageSize: number) {
     if (localStorage) {
         if (pageSize) {
             localStorage.setItem(PAGE_SIZE_KEY, `${pageSize}`);
+            return;
         }
         localStorage.setItem(PAGE_SIZE_KEY, `${DEFAULT_PAGE_SIZE}`);
     }
