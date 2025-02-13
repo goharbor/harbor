@@ -18,7 +18,7 @@
 </br> </br>
 
 **Note**: The `main` branch may be in an *unstable or even broken state* during development.
-Please use [releases](https://github.com/vmware/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
+Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
 
 <img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
@@ -57,7 +57,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 **On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
