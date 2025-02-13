@@ -51,9 +51,12 @@
             </clr-dg-row>
             <clr-dg-footer>
                 <clr-dg-pagination #pagination [clrDgPageSize]="pageSize">
-                    <clr-dg-page-size [clrPageSizeOptions]="[10, 20, 30]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="[15, 25, 50, 100]"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
