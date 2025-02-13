@@ -209,14 +209,18 @@ func (s *Session) Open() error {
 
 	switch protocol {
 	case "ldap":
-		ldap, err := goldap.Dial("tcp", hostport)
+		ldap, err := goldap.DialURL(ldapURL)
 		if err != nil {
 			return err
 		}
 		s.ldapConn = ldap
 	case "ldaps":
 		log.Debug("Start to dial ldaps")
-		ldap, err := goldap.DialTLS("tcp", hostport, &tls.Config{ServerName: host, InsecureSkipVerify: !s.basicCfg.VerifyCert})
+		tc := &tls.Config{
+			ServerName:         host,
+			InsecureSkipVerify: !s.basicCfg.VerifyCert,
+		}
+		ldap, err := goldap.DialURL(ldapURL, goldap.DialWithTLSConfig(tc))
 		if err != nil {
 			return err
 		}
