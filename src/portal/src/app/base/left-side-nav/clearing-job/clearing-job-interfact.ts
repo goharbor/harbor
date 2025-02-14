@@ -3,12 +3,19 @@ export enum RetentionTimeUnit {
     DAYS = 'days',
 }
 
-export const RETENTION_OPERATIONS = ['create', 'delete', 'pull'];
+export const RESOURCE_TYPES = [
+    'create_artifact',
+    'delete_artifact',
+    'pull_artifact',
+];
 
-export const RETENTION_OPERATIONS_I18N_MAP = {
-    pull: 'AUDIT_LOG.PULL',
-    create: 'AUDIT_LOG.CREATE',
-    delete: 'AUDIT_LOG.DELETE',
+export const RESOURCE_TYPES_I18N_MAP = {
+    artifact: 'AUDIT_LOG.ARTIFACT',
+    user_login_logout: 'AUDIT_LOG.USER_LOGIN_LOGOUT',
+    user: 'AUDIT_LOG.USER',
+    project: 'AUDIT_LOG.PROJECT',
+    configuration: 'AUDIT_LOG.CONFIGURATION',
+    project_member: 'AUDIT_LOG.PROJECT_MEMBER',
 };
 
 export const JOB_STATUS = {
