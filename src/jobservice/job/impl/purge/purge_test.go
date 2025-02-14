@@ -27,6 +27,7 @@ import (
 	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 	"github.com/goharbor/harbor/src/testing/mock"
 	mockAudit "github.com/goharbor/harbor/src/testing/pkg/audit"
+	mockauditext "github.com/goharbor/harbor/src/testing/pkg/auditext"
 )
 
 type PurgeJobTestSuite struct {
@@ -67,14 +68,16 @@ func (suite *PurgeJobTestSuite) TestRun() {
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.NilCommand, true)
 	auditManager := &mockAudit.Manager{}
+	auditExtManager := &mockauditext.Manager{}
 	auditManager.On("Purge", mock.Anything, 128, []string{}, true).Return(int64(100), nil)
-	j := &Job{auditMgr: auditManager}
+	auditExtManager.On("Purge", mock.Anything, 128, []string{}, true).Return(int64(100), nil)
+	j := &Job{auditMgr: auditManager, auditExtMgr: auditExtManager}
 	param := job.Parameters{common.PurgeAuditRetentionHour: 128, common.PurgeAuditDryRun: true}
 	ret := j.Run(ctx, param)
 	suite.Require().Nil(ret)
 
 	auditManager.On("Purge", mock.Anything, 24, []string{}, false).Return(int64(0), fmt.Errorf("failed to connect database"))
-	j2 := &Job{auditMgr: auditManager}
+	j2 := &Job{auditMgr: auditManager, auditExtMgr: auditExtManager}
 	param2 := job.Parameters{common.PurgeAuditRetentionHour: 24, common.PurgeAuditDryRun: false}
 	ret2 := j2.Run(ctx, param2)
 	suite.Require().NotNil(ret2)
@@ -85,7 +88,8 @@ func (suite *PurgeJobTestSuite) TestStop() {
 	ctx.On("GetLogger").Return(logger)
 	ctx.On("OPCommand").Return(job.StopCommand, true)
 	auditManager := &mockAudit.Manager{}
-	j := &Job{auditMgr: auditManager}
+	auditExtManager := &mockauditext.Manager{}
+	j := &Job{auditMgr: auditManager, auditExtMgr: auditExtManager}
 	suite.True(j.shouldStop(ctx))
 }
 

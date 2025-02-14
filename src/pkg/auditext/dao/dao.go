@@ -199,6 +199,8 @@ func permitEventTypes(includeEventTypes []string) []string {
 		event := strings.ToLower(e)
 		if utils.StringInSlice(event, model.EventTypes) {
 			filterEvents = append(filterEvents, e)
+		} else if event == model.OtherEvents { // include all other events
+			filterEvents = append(filterEvents, model.OtherEventTypes...)
 		}
 	}
 	return filterEvents
