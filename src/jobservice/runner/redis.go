@@ -174,7 +174,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	case job.PendingStatus, job.ScheduledStatus:
 		// do nothing now
 		break
-	case job.StoppedStatus:
+	case job.StoppedStatus, job.SkippedStatus:
 		// Probably jobs has been stopped by directly mark status to stopped.
 		// Directly exit and no retry
 		return nil
