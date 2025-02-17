@@ -5,7 +5,6 @@ env:
    POSTGRESQL_USR: postgres
    POSTGRESQL_PWD: root123
    POSTGRESQL_DATABASE: registry
-   DOCKER_COMPOSE_VERSION: 2.27.1
    HARBOR_ADMIN: admin
    HARBOR_ADMIN_PASSWD: Harbor12345
    CORE_SECRET: tempString
@@ -66,9 +65,6 @@ jobs:
           env
           #sudo apt install -y xvfb
           #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "IP=$IP" >> $GITHUB_ENV
@@ -129,11 +125,6 @@ jobs:
           pwd
           env
           df -h
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
@@ -184,11 +175,6 @@ jobs:
           pwd
           env
           df -h
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
@@ -208,7 +194,6 @@ jobs:
     env:
       APITEST_LDAP: true
     runs-on:
-      #- self-hosted
       - ubuntu-latest
     timeout-minutes: 100
     steps:
@@ -238,11 +223,6 @@ jobs:
           pwd
           env
           df -h
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
@@ -290,11 +270,6 @@ jobs:
           pwd
           env
           df -h
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "IP=$IP" >> $GITHUB_ENV

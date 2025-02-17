@@ -16,7 +16,7 @@ Please specify the versions of following systems.
 
 - harbor version: [x.x.x]
 - docker engine version: [y.y.y]
-- docker-compose version: [z.z.z]
+- docker compose version: [z.z.z]
 
 **Additional context:**
 
