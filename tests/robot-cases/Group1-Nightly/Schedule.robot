@@ -247,7 +247,7 @@ Test Case - Log Rotation Schedule Job
         Should Be Equal As Strings  ${log["job_status"]}  Success
         Should Be Equal As Strings  ${log["job_parameters"]["audit_retention_hour"]}  48
         Should Be Equal As Strings  ${log["job_parameters"]["dry_run"]}  False
-        Should Not Contain Any  ${log["job_parameters"]["include_operations"]}  @{exclude_operations}  ignore_case=True
+        Should Not Contain Any  ${log["job_parameters"]["include_event_types"]}  @{exclude_operations}  ignore_case=True
     END
     Should Be True  ${len} > 3 and ${len} < 6
     Close Browser
