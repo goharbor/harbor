@@ -189,19 +189,22 @@ func parseList(value string, c rune) ([]interface{}, error) {
 
 // try to parse value as time first, then integer, and last string
 func parseValue(value string) interface{} {
+	var ret any
 	value = strings.TrimSpace(value)
-	// try to parse time
-	time, err := time.Parse("2006-01-02T15:04:05", value)
-	if err == nil {
-		return time
+
+	// try parsing as different value types
+	if time, err := time.Parse("2006-01-02T15:04:05", value); err == nil {
+		// parsed as time value
+		ret = time
+	} else if i, err := strconv.ParseInt(value, 10, 64); err == nil {
+		// parsed as integer value
+		ret = i
+	} else {
+		// no other parsing worked, treat as a string value
+		ret = strings.Trim(value, `"'`)
 	}
-	// try to parse integer
-	i, err := strconv.ParseInt(value, 10, 64)
-	if err == nil {
-		return i
-	}
-	// if the value isn't time and integer, treat it as string
-	return strings.Trim(value, `"'`)
+	log.Debugf(`parsed %s as '%T' value: %v`, value, ret, ret)
+	return ret
 }
 
 // escape the special character
