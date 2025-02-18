@@ -25,7 +25,7 @@ type JobPolicy struct {
 	Trigger           *Trigger               `json:"trigger"`
 	DryRun            bool                   `json:"dryrun"`
 	RetentionHour     int                    `json:"retention_hour"`
-	IncludeOperations string                 `json:"include_operations"`
+	IncludeEventTypes string                 `json:"include_event_types"`
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"`
 }
 
