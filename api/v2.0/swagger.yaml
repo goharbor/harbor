@@ -4486,7 +4486,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -4516,7 +4516,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -9101,6 +9101,9 @@ definitions:
       banner_message:
         $ref: '#/definitions/StringConfigItem'
         description: The banner message for the UI.It is the stringified result of the banner message object
+      disabled_audit_log_event_types:
+        $ref: '#/definitions/StringConfigItem'
+        description: The audit log event types to skip to log in database
   Configurations:
     type: object
     properties:
@@ -9377,6 +9380,11 @@ definitions:
       banner_message:
         type: string
         description: The banner message for the UI.It is the stringified result of the banner message object
+        x-omitempty: true
+        x-isnullable: true
+      disabled_audit_log_event_types:
+        type: string
+        description: the list to disable log audit event types. 
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:

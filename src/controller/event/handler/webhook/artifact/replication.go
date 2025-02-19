@@ -163,6 +163,8 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 				OverrideMode:       rpPolicy.Override,
 				TriggerType:        string(execution.Trigger),
 				ExecutionTimestamp: execution.StartTime.Unix(),
+				ExecutionID:        execution.ID,
+				TaskID:             task.ID,
 			},
 		},
 	}

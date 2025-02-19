@@ -318,7 +318,7 @@ update_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url),
 purge_audit_payload = {
     "parameters": {
         "audit_retention_hour": 24,
-        "include_operations": "create,delete,pull",
+        "include_event_types": "create_artifact,delete_artifact,pull_artifact",
         "dry_run": True
     },
     "schedule": {
