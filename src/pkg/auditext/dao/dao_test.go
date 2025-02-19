@@ -186,7 +186,7 @@ func TestPermitEventTypes(t *testing.T) {
 	}
 
 	// test other event types
-	otherEventTypes := permitEventTypes([]string{"create_artifact", "delete_artifact", "pull_artifact", "other_events"})
+	otherEventTypes := permitEventTypes([]string{"create_artifact", "delete_artifact", "pull_artifact", "other"})
 	if len(otherEventTypes) != len(model.EventTypes) {
 		t.Errorf("permitOtherEventTypes failed, it should include all event types")
 	}
