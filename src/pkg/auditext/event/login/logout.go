@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	ctlEvent "github.com/goharbor/harbor/src/controller/event"
+	ctlevent "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -44,7 +44,7 @@ func (l *logoutResolver) Resolve(ce *commonevent.Metadata, event *event.Event) e
 	if ce.ResponseCode != http.StatusOK {
 		e.IsSuccessful = false
 	}
-	event.Topic = ctlEvent.TopicCommonEvent
+	event.Topic = ctlevent.TopicCommonEvent
 	event.Data = e
 	return nil
 }
