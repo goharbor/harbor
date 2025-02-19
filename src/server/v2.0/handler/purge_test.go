@@ -18,10 +18,11 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {
@@ -33,9 +34,9 @@ func Test_verifyUpdateRequest(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"normal", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeOperations: "pull"}}}}, false},
-		{"missing_schedule", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeOperations: "pull"}}}}, true},
-		{"missing_retention_hour", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditIncludeOperations: "pull"}}}}, true},
+		{"normal", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, false},
+		{"missing_schedule", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, true},
+		{"missing_retention_hour", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, true},
 		{"missing_operations", args{purge.UpdatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168"}}}}, true},
 	}
 	for _, tt := range tests {
@@ -56,10 +57,10 @@ func Test_verifyCreateRequest(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"normal", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeOperations: "pull"}}}}, false},
-		{"missing_schedule", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeOperations: "pull"}}}}, true},
-		{"missing_retention_hour", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditIncludeOperations: "pull"}}}}, true},
-		{"missing_operations", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168"}}}}, true},
+		{"normal", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, false},
+		{"missing_schedule", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168", common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, true},
+		{"missing_retention_hour", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditIncludeEventTypes: "pull_artifact"}}}}, true},
+		{"missing_event_types", args{purge.CreatePurgeScheduleParams{Schedule: &models.Schedule{Schedule: &models.ScheduleObj{}, Parameters: map[string]interface{}{common.PurgeAuditRetentionHour: "168"}}}}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
