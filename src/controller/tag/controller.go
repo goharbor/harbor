@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -28,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -106,7 +108,7 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		return tag.ID, c.Update(ctx, tag, "ArtifactID", "PushTime")
 	}
 
-	// the tag doesn't exist under the repository, create it
+	// the tag doesn't exist under the repository, create it and fire an event
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	tagID := int64(0)
@@ -116,7 +118,22 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.ArtifactID = artifactID
 		tag.Name = name
 		tag.PushTime = time.Now()
+
 		tagID, err = c.Create(ctx, tag)
+
+		attachedArtifact, err := c.artMgr.Get(ctx, tag.ArtifactID)
+		if err != nil {
+			return err
+		}
+
+		e := &metadata.CreateTagEventMetadata{
+			Ctx:              ctx,
+			Tag:              tag.Name,
+			AttachedArtifact: attachedArtifact,
+		}
+
+		notification.AddEvent(ctx, e)
+
 		return err
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
 		return 0, err
