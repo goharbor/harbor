@@ -84,8 +84,8 @@ func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
-	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
+	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
+		return errors.BadRequestError(fmt.Errorf("include_event_types should provide"))
 	}
 	return nil
 }
@@ -119,8 +119,8 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 	if dryRun, ok := parameters[common.PurgeAuditDryRun].(bool); ok {
 		policy.DryRun = dryRun
 	}
-	if includeOperations, ok := parameters[common.PurgeAuditIncludeOperations].(string); ok {
-		policy.IncludeOperations = includeOperations
+	if includeEventTypes, ok := parameters[common.PurgeAuditIncludeEventTypes].(string); ok {
+		policy.IncludeEventTypes = includeEventTypes
 	}
 	retHour, err := retentionHour(parameters)
 	if err != nil {
@@ -312,8 +312,8 @@ func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
-	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
+	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
+		return errors.BadRequestError(fmt.Errorf("include_event_types should provide"))
 	}
 	return nil
 }
