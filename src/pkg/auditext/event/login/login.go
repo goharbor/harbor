@@ -33,6 +33,7 @@ func init() {
 	var login = &loginResolver{}
 	var logout = &logoutResolver{}
 	commonevent.RegisterResolver(`/c/login$`, login)
+	commonevent.RegisterResolver(`/c/oidc/callback.*`, login)
 	commonevent.RegisterResolver(`/c/log_out$`, logout)
 }
 
@@ -54,7 +55,7 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 		OcurrAt:              time.Now(),
 		Operation:            opLogin,
 		OperationDescription: opLogin,
-		IsSuccessful:         true,
+		IsSuccessful:         ce.ResponseCode <= http.StatusTemporaryRedirect,
 	}
 
 	// Extract the username from payload
@@ -65,9 +66,10 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 			e.ResourceName = match[1]
 			e.Operator = match[1]
 		}
-	}
-	if ce.ResponseCode != http.StatusOK {
-		e.IsSuccessful = false
+	} else if ce.RequestMethod == http.MethodGet {
+		e.IsSuccessful = true // for OIDC login event, always success
+		e.Operator = ce.Username
+		e.ResourceName = ce.Username
 	}
 	event.Topic = ctlevent.TopicCommonEvent
 	event.Data = e
