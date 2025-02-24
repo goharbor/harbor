@@ -208,7 +208,7 @@ const (
 	// 24h.
 	DefaultCacheExpireHours = 24
 
-	PurgeAuditIncludeOperations = "include_operations"
+	PurgeAuditIncludeEventTypes = "include_event_types"
 	PurgeAuditDryRun            = "dry_run"
 	PurgeAuditRetentionHour     = "audit_retention_hour"
 	// AuditLogForwardEndpoint indicate to forward the audit log to an endpoint
@@ -220,8 +220,8 @@ const (
 	// ScannerSkipUpdatePullTime
 	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
 
-	// AuditLogEventsDisabled
-	AuditLogEventsDisabled = "audit_log_events_disabled"
+	// AuditLogEventsDisabled ...
+	AuditLogEventsDisabled = "disabled_audit_log_event_types"
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
