@@ -79,7 +79,7 @@ var (
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
 		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
-		cnai.ArtifactTypeCNAI:   icon.DigestOfIconImage,
+		cnai.ArtifactTypeCNAI:   icon.DigestOfIconCNAI,
 	}
 )
 

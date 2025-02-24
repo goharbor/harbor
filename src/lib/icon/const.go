@@ -28,4 +28,5 @@ const (
 	DigestOfIconAccNotation = "sha256:3ac706e102bbe9362b400aa162df58135d35e66b9c3bee2165de92022d25fe34"
 	DigestOfIconAccNydus    = "sha256:dfcb6617cd9c144358dc1b305b87bbe34f0b619f1e329116e6aee2e41f2e34cf"
 	DigestOfIconAccSBOM     = "sha256:c19f80c357cd7e90d2a01b9ae3e2eb62ce447a2662bb590a19177d72d550bdae"
+	DigestOfIconCNAI        = "sha256:9f51c0a8800e98c84952264755c956dba448f2d62112eff5c5a4ef88cd460d1e"
 )
