@@ -121,23 +121,23 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 
 		tagID, err = c.Create(ctx, tag)
 
-		attachedArtifact, err := c.artMgr.Get(ctx, tag.ArtifactID)
-		if err != nil {
-			return err
-		}
-
-		e := &metadata.CreateTagEventMetadata{
-			Ctx:              ctx,
-			Tag:              tag.Name,
-			AttachedArtifact: attachedArtifact,
-		}
-
-		notification.AddEvent(ctx, e)
-
 		return err
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
 		return 0, err
 	}
+
+	attachedArtifact, err := c.artMgr.Get(ctx, artifactID)
+	if err != nil {
+		return 0, err
+	}
+
+	e := &metadata.CreateTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              name,
+		AttachedArtifact: attachedArtifact,
+	}
+
+	notification.AddEvent(ctx, e)
 
 	return tagID, nil
 }
