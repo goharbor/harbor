@@ -80,7 +80,7 @@ class TestAuditLogForword(unittest.TestCase, object):
         repo_name, tag = push_self_build_image_to_project(project_name, harbor_server, user_name, user_password, self.image, self.tag)
 
         # 6. Verify that the Audit Log should be in the log database
-        first_audit_log = self.audit_log.get_latest_audit_log()
+        first_audit_log = self.audit_log.get_latest_audit_log_ext()
         self.assertEqual(first_audit_log.operation, "create")
         self.assertEqual(first_audit_log.resource, "{}:{}".format(repo_name, tag))
         self.assertEqual(first_audit_log.resource_type, "artifact")
@@ -101,7 +101,7 @@ class TestAuditLogForword(unittest.TestCase, object):
         self.artifact.create_tag(project_name, self.image, self.tag, self.tag2, **user_client)
 
         # 10. Verify that the Audit Log should not be in log database
-        second_audit_log = self.audit_log.get_latest_audit_log()
+        second_audit_log = self.audit_log.get_latest_audit_log_ext()
         self.assertEqual(first_audit_log.operation, second_audit_log.operation)
         self.assertEqual(first_audit_log.resource, second_audit_log.resource)
         self.assertEqual(first_audit_log.resource_type,second_audit_log.resource_type)
