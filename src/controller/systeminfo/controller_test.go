@@ -57,7 +57,6 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 			withProtected: false,
 			expect: Data{
 				AuthMode:         "db_auth",
-				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
 				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 			},
@@ -66,12 +65,12 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 			withProtected: true,
 			expect: Data{
 				AuthMode:         "db_auth",
-				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
 				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 				Protected: &protectedData{
 					RegistryURL:             "test.goharbor.io",
 					ExtURL:                  "https://test.goharbor.io",
+					HarborVersion:           "test-fakeid",
 					ProjectCreationRestrict: "everyone",
 					// CI pipeline has it
 					HasCARoot:                   true,
