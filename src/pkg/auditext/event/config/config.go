@@ -36,7 +36,9 @@ func init() {
 	commonevent.RegisterResolver(`/api/v2.0/configurations`, configureEventResolver)
 }
 
-const payloadSizeLimit = 450
+// payloadSizeLimit max size allowed in the op_desc
+// the size of audit_log_ext's op_desc - 50
+const payloadSizeLimit = 950
 
 // resolver used to resolve the configuration event
 type resolver struct {
