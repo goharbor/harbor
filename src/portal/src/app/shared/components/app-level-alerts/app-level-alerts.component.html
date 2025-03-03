@@ -6,9 +6,9 @@
         [(clrAlertClosed)]="bannerMessageClosed"
         [clrAlertClosable]="getBannerMessageClosable()">
         <clr-alert-item>
-            <span class="alert-text banner-message">{{
-                getBannerMessage()
-            }}</span>
+            <span class="alert-text banner-message">
+                <markdown [data]="getBannerMessage()"></markdown>
+            </span>
         </clr-alert-item>
     </clr-alert>
     <clr-alert
