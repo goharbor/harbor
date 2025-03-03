@@ -150,9 +150,16 @@
         "SAVE_SUCCESS": "成功更改使用者密碼。",
         "PASS_TIPS": "密碼長度需介於 8 到 128 個字元之間，且至少包含一個大寫字母、小寫字母或數字。"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "使用者設定",
         "CHANGE_PWD": "修改密碼",
+        "PREFERENCES": "Preferences",
         "ABOUT": "關於",
         "LOGOUT": "登出"
     },
@@ -772,7 +779,7 @@
         "ARTIFACT_TOOTIP": "點選此圖示進入引用的 Artifact 列表",
         "ARTIFACTS_COUNT": "Artifact 數量",
         "PULL_COUNT": "下載數",
-        "PULL_COMMAND": "Pull 命令",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "拉取時間",
         "PUSH_TIME": "推送時間",
         "IMMUTABLE": "不可變的",
@@ -1144,8 +1151,7 @@
         "TOOLTIP": "推送映像擋至此專案的參考命令。",
         "TAG_COMMAND": "為此專案標記映像檔：",
         "PUSH_COMMAND": "將映像檔推送至此專案：",
-        "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。",
-        "COPY_PULL_COMMAND": "複製拉取命令"
+        "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "篩選 Artifact(s)",
