@@ -1152,7 +1152,7 @@
         "TOOLTIP": "Referencias de comandos para enviar un artefacto a este proyecto.",
         "TAG_COMMAND": "Tag a imagen  para este proyecto:",
         "PUSH_COMMAND": "Push a imagen  para este proyecto:",
-        "COPY_ERROR": "Copiar fallido, por favor intenta copiar manualmente las referencias del comando.",
+        "COPY_ERROR": "Copiar fallido, por favor intenta copiar manualmente las referencias del comando."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrar Artifacts",
