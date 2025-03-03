@@ -112,6 +112,7 @@ export class Configuration {
     oidc_admin_group: StringValueItem;
     oidc_group_filter: StringValueItem;
     audit_log_forward_endpoint: StringValueItem;
+    disabled_audit_log_event_types: StringValueItem;
     skip_audit_log_database: BoolValueItem;
     session_timeout: NumberValueItem;
     scanner_skip_update_pulltime: BoolValueItem;
@@ -189,6 +190,7 @@ export class Configuration {
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
         this.audit_log_forward_endpoint = new StringValueItem('', true);
+        this.disabled_audit_log_event_types = new StringValueItem('', true);
         this.skip_audit_log_database = new BoolValueItem(false, true);
         this.session_timeout = new NumberValueItem(60, true);
         this.scanner_skip_update_pulltime = new BoolValueItem(false, true);

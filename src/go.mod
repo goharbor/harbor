@@ -200,6 +200,6 @@ replace (
 	github.com/docker/distribution => github.com/distribution/distribution v2.8.2+incompatible
 	github.com/gocraft/work => github.com/goharbor/work v0.5.1-patch
 	github.com/goharbor/harbor => ../
-	github.com/gomodule/redigo => github.com/gomodule/redigo v1.8.8
+	github.com/gomodule/redigo => github.com/gomodule/redigo v1.9.2
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )

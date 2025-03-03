@@ -31,25 +31,25 @@ import (
 )
 
 const (
-	createOp          = "create"
-	updateOp          = "update"
-	deleteOp          = "delete"
-	resourceIDPattern = `^%v/(\d+)$`
+	createOp = "create"
+	updateOp = "update"
+	deleteOp = "delete"
 )
 
 // ResolveIDToNameFunc is the function to resolve the resource name from resource id
 type ResolveIDToNameFunc func(string) string
 
 type Resolver struct {
-	BaseURLPattern string
-	ResourceType   string
-	SucceedCodes   []int
+	ResourceType string
+	SucceedCodes []int
 	// SensitiveAttributes is the attributes that need to be redacted
 	SensitiveAttributes []string
 	// ShouldResolveName indicates if the resource name should be resolved before delete, if true, need to resolve the resource name before delete
 	ShouldResolveName bool
 	// IDToNameFunc is used to resolve the resource name from resource id
 	IDToNameFunc ResolveIDToNameFunc
+	// ResourceIDPattern the URL pattern to match the resourceID
+	ResourceIDPattern string
 }
 
 // PreCheck check if the event should be captured and resolve the resource name if needed, if need to resolve the resource name, return the resource name
@@ -61,9 +61,9 @@ func (e *Resolver) PreCheck(ctx context.Context, url string, method string) (cap
 	// for delete operation on a resource has name, need to resolve the resource id to resource name before delete
 	resName := ""
 	if capture && method == http.MethodDelete && e.ShouldResolveName {
-		re := regexp.MustCompile(fmt.Sprintf(resourceIDPattern, e.BaseURLPattern))
+		re := regexp.MustCompile(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(url)
-		if len(m) == 2 && e.IDToNameFunc != nil {
+		if len(m) >= 2 && e.IDToNameFunc != nil {
 			resName = e.IDToNameFunc(m[1])
 		}
 	}
@@ -92,9 +92,9 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 	case createOp:
 		if len(ce.ResponseLocation) > 0 {
 			// extract resource id from response location
-			re := regexp.MustCompile(fmt.Sprintf(resourceIDPattern, e.BaseURLPattern))
+			re := regexp.MustCompile(e.ResourceIDPattern)
 			m := re.FindStringSubmatch(ce.ResponseLocation)
-			if len(m) != 2 {
+			if len(m) < 2 {
 				return nil
 			}
 			evt.ResourceName = m[1]
@@ -107,9 +107,9 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 		}
 
 	case deleteOp:
-		re := regexp.MustCompile(fmt.Sprintf(resourceIDPattern, e.BaseURLPattern))
+		re := regexp.MustCompile(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(ce.RequestURL)
-		if len(m) != 2 {
+		if len(m) < 2 {
 			return nil
 		}
 		evt.ResourceName = m[1]
@@ -118,9 +118,9 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 		}
 
 	case updateOp:
-		re := regexp.MustCompile(fmt.Sprintf(resourceIDPattern, e.BaseURLPattern))
+		re := regexp.MustCompile(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(ce.RequestURL)
-		if len(m) != 2 {
+		if len(m) < 2 {
 			return nil
 		}
 		evt.ResourceName = m[1]

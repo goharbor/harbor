@@ -1,4 +1,11 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+    AfterViewChecked,
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
 import { NgForm } from '@angular/forms';
 import {
     BannerMessage,
@@ -7,6 +14,7 @@ import {
     Configuration,
 } from '../config';
 import {
+    clone,
     CURRENT_BASE_HREF,
     getChanges,
     isEmpty,
@@ -20,15 +28,20 @@ import {
     HarborEvent,
 } from '../../../../services/event-service/event.service';
 import { Subscription } from 'rxjs';
+import { AuditlogService } from 'ng-swagger-gen/services';
+import { AuditLogEventType } from 'ng-swagger-gen/models';
 
 @Component({
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
     styleUrls: ['./system-settings.component.scss'],
 })
-export class SystemSettingsComponent implements OnInit, OnDestroy {
+export class SystemSettingsComponent
+    implements OnInit, OnDestroy, AfterViewChecked
+{
     bannerMessageTypes: string[] = Object.values(BannerMessageType);
     onGoing = false;
+    loading = false;
     downloadLink: string;
     get currentConfig(): Configuration {
         return this.conf.getConfig();
@@ -51,13 +64,17 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
     messageToDateCopy: Date;
     bannerRefreshSub: Subscription;
     currentDate: Date = new Date();
+    logEventTypes: Record<string, string>[] = [];
+    selectedLogEventTypes: string[] = clone([]);
     @ViewChild('systemConfigFrom') systemSettingsForm: NgForm;
 
     constructor(
         private appConfigService: AppConfigService,
-        private errorHandler: MessageHandlerService,
         private conf: ConfigService,
-        private event: EventService
+        private logService: AuditlogService,
+        private event: EventService,
+        private errorHandler: MessageHandlerService,
+        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.downloadLink = CURRENT_BASE_HREF + '/systeminfo/getcert';
     }
@@ -65,16 +82,23 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.conf.resetConfig();
         if (!this.bannerRefreshSub) {
-            this.bannerRefreshSub = this.event.subscribe(
+            this.bannerRefreshSub = this.event?.subscribe(
                 HarborEvent.REFRESH_BANNER_MESSAGE,
                 () => {
                     this.setValueForBannerMessage();
+                    this.setValueForDisabledAuditLogEventTypes();
                 }
             );
         }
         if (this.currentConfig.banner_message) {
             this.setValueForBannerMessage();
         }
+        this.initLogEventTypes();
+        this.setValueForDisabledAuditLogEventTypes();
+    }
+
+    ngAfterViewChecked() {
+        this.changeDetectorRef.detectChanges();
     }
 
     ngOnDestroy() {
@@ -82,6 +106,36 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
             this.bannerRefreshSub.unsubscribe();
             this.bannerRefreshSub = null;
         }
+    }
+
+    initLogEventTypes() {
+        this.loading = true;
+        this.logService
+            .listAuditLogEventTypesResponse()
+            .pipe(finalize(() => (this.loading = false)))
+            .subscribe(
+                response => {
+                    const auditLogEventTypes =
+                        response.body as AuditLogEventType[];
+                    this.logEventTypes = auditLogEventTypes.map(event => ({
+                        label:
+                            event.event_type.charAt(0).toUpperCase() +
+                            event.event_type.slice(1).replace(/_/g, ' '),
+                        value: event.event_type,
+                        id: event.event_type,
+                    }));
+                },
+                error => {
+                    this.errorHandler.error(error);
+                }
+            );
+    }
+
+    setValueForDisabledAuditLogEventTypes() {
+        const checkedEventTypes =
+            this.currentConfig?.disabled_audit_log_event_types?.value;
+        this.selectedLogEventTypes =
+            checkedEventTypes?.split(',')?.filter(evt => evt !== '') ?? [];
     }
 
     setValueForBannerMessage() {
@@ -165,6 +219,25 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
         );
     }
 
+    hasLogEventType(resourceType: string): boolean {
+        return this.selectedLogEventTypes?.indexOf(resourceType) !== -1;
+    }
+
+    setLogEventType(resourceType: string) {
+        if (this.selectedLogEventTypes.indexOf(resourceType) === -1) {
+            this.selectedLogEventTypes.push(resourceType);
+        } else {
+            this.selectedLogEventTypes.splice(
+                this.selectedLogEventTypes.findIndex(
+                    item => item === resourceType
+                ),
+                1
+            );
+        }
+        this.currentConfig.disabled_audit_log_event_types.value =
+            this.selectedLogEventTypes.join(',');
+    }
+
     public getChanges() {
         let allChanges = getChanges(
             this.conf.getOriginalConfig(),
@@ -190,6 +263,7 @@ export class SystemSettingsComponent implements OnInit, OnDestroy {
                 prop === 'skip_audit_log_database' ||
                 prop === 'session_timeout' ||
                 prop === 'scanner_skip_update_pulltime' ||
+                prop === 'disabled_audit_log_event_types' ||
                 prop === 'banner_message'
             ) {
                 changes[prop] = allChanges[prop];
