@@ -24,11 +24,13 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
 
@@ -37,6 +39,8 @@ const stateKey = "oidc_state"
 const userInfoKey = "oidc_user_info"
 const redirectURLKey = "oidc_redirect_url"
 const oidcUserComment = "Onboarded via OIDC provider"
+
+const loginUserOperation = "login_user"
 
 // OIDCController handles requests for OIDC login, callback and user onboard
 type OIDCController struct {
@@ -208,6 +212,19 @@ func (oc *OIDCController) Callback() {
 		redirectURLStr = "/"
 	}
 	oc.Controller.Redirect(redirectURLStr, http.StatusFound)
+	// The log middleware can capture the OIDC user login event with the URL, but it cannot get the current username from security context because the security context is not ready yet.
+	// need to create login event in the OIDC login call back logic
+	// to avoid generate duplicate event in audit log ext, the PreCheck function of the login event intentionally bypass the OIDC user login event in log middleware
+	// and OIDC's login callback function will create the login event and send it to notification.
+	if config.AuditLogEventEnabled(ctx, loginUserOperation) {
+		e := &commonevent.Metadata{
+			Ctx:           ctx,
+			Username:      u.Username,
+			RequestMethod: oc.Ctx.Request.Method,
+			RequestURL:    oc.Ctx.Request.URL.String(),
+		}
+		notification.AddEvent(e.Ctx, e, true)
+	}
 }
 
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {

@@ -79,7 +79,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 	}
 
 	log.Debug("get redis pool:", name, rawurl)
-	if u.Scheme == "redis" {
+	if u.Scheme == "redis" || u.Scheme == "rediss" {
 		pool := &redis.Pool{
 			Dial: func() (redis.Conn, error) {
 				return redis.DialURL(rawurl)
@@ -95,7 +95,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 		}
 		knownPool.Store(name, pool)
 		return pool, nil
-	} else if u.Scheme == "redis+sentinel" {
+	} else if u.Scheme == "redis+sentinel" || u.Scheme == "rediss+sentinel" {
 		pool, err := getSentinelPool(u, param, name)
 		if err != nil {
 			return nil, err
@@ -126,6 +126,10 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 	if param.DialWriteTimeout > 0 {
 		log.Debug(name, "sentinel DialWriteTimeout:", param.DialWriteTimeout)
 		sentinelOptions = append(sentinelOptions, redis.DialWriteTimeout(param.DialWriteTimeout))
+	}
+
+	if u.Scheme == "rediss+sentinel" {
+		sentinelOptions = append(sentinelOptions, redis.DialUseTLS(true))
 	}
 
 	redisOptions := sentinelOptions
