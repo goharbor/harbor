@@ -1,0 +1,24 @@
+name: JSON Lint
+
+on:
+  pull_request:
+    branches: [ "main", "master" ]
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install jsonlint
+        run: |
+          npm install --global jsonlint
+
+      - name: Run JSON lint
+        run: |
+          # Alle JSON-Dateien im i18n-Ordner suchen
+          find src/portal/src/i18n -name "*.json" -print0 | xargs -0 jsonlint -q
