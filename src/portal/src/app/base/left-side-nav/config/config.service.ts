@@ -85,6 +85,10 @@ export class ConfigService {
                     );
                     this._currentConfig.oidc_client_secret =
                         new StringValueItem(fakePass, true);
+                    if (!this._currentConfig.disabled_audit_log_event_types) {
+                        this._currentConfig.disabled_audit_log_event_types =
+                            new StringValueItem('', true);
+                    }
                     // Keep the original copy of the data
                     this._originalConfig = clone(this._currentConfig);
                 },

@@ -2,16 +2,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { CronScheduleComponent } from '../../../../../shared/components/cron-schedule';
 import { CronTooltipComponent } from '../../../../../shared/components/cron-schedule';
-import { of } from 'rxjs';
+import { delay, of } from 'rxjs';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { SetJobComponent } from './set-job.component';
 import { PurgeService } from 'ng-swagger-gen/services/purge.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { AuditlogService } from 'ng-swagger-gen/services';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 
 describe('GcComponent', () => {
     let component: SetJobComponent;
     let fixture: ComponentFixture<SetJobComponent>;
     let purgeService: PurgeService;
+    let auditlogService: AuditlogService;
     let mockSchedule = [];
     const fakedErrorHandler = {
         error(error) {
@@ -23,6 +26,29 @@ describe('GcComponent', () => {
     };
     let spySchedule: jasmine.Spy;
     let spyGcNow: jasmine.Spy;
+    const mockedAuditLogs = [
+        {
+            event_type: 'create_artifact',
+        },
+        {
+            event_type: 'delete_artifact',
+        },
+        {
+            event_type: 'pull_artifact',
+        },
+    ];
+    const fakedAuditlogService = {
+        listAuditLogEventTypesResponse() {
+            return of(
+                new HttpResponse({
+                    body: mockedAuditLogs,
+                    headers: new HttpHeaders({
+                        'x-total-count': '18',
+                    }),
+                })
+            ).pipe(delay(0));
+        },
+    };
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [SharedTestingModule],
@@ -31,7 +57,10 @@ describe('GcComponent', () => {
                 CronScheduleComponent,
                 CronTooltipComponent,
             ],
-            providers: [{ provide: ErrorHandler, useValue: fakedErrorHandler }],
+            providers: [
+                { provide: ErrorHandler, useValue: fakedErrorHandler },
+                { provide: AuditlogService, useValue: fakedAuditlogService },
+            ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
@@ -39,7 +68,7 @@ describe('GcComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(SetJobComponent);
         component = fixture.componentInstance;
-
+        auditlogService = fixture.debugElement.injector.get(AuditlogService);
         purgeService = fixture.debugElement.injector.get(PurgeService);
         spySchedule = spyOn(purgeService, 'getPurgeSchedule').and.returnValues(
             of(mockSchedule as any)
@@ -47,6 +76,7 @@ describe('GcComponent', () => {
         spyGcNow = spyOn(purgeService, 'createPurgeSchedule').and.returnValues(
             of(null)
         );
+        component.selectedEventTypes = ['create_artifact'];
         fixture.detectChanges();
     });
     it('should create', () => {

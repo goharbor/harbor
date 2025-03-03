@@ -15,15 +15,32 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import { RecentLogComponent } from './recent-log.component';
 import { RouterModule, Routes } from '@angular/router';
+import { LogsComponent } from './logs.component';
+import { AuditLogComponent } from './audit-log.component';
 
 const routes: Routes = [
     {
         path: '',
-        component: RecentLogComponent,
+        component: LogsComponent,
+        children: [
+            {
+                path: 'audit-log',
+                component: AuditLogComponent,
+            },
+            {
+                path: 'audit-legacy-log',
+                component: RecentLogComponent,
+            },
+            {
+                path: '',
+                redirectTo: 'audit-log',
+                pathMatch: 'full',
+            },
+        ],
     },
 ];
 @NgModule({
     imports: [SharedModule, RouterModule.forChild(routes)],
-    declarations: [RecentLogComponent],
+    declarations: [LogsComponent, AuditLogComponent, RecentLogComponent],
 })
 export class LogModule {}

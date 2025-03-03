@@ -20,7 +20,7 @@ import (
 	beego_orm "github.com/beego/beego/v2/client/orm"
 )
 
-const OtherEvents = "other_events"
+const OtherEvents = "other"
 
 func init() {
 	beego_orm.RegisterModel(&AuditLogExt{})
@@ -60,7 +60,7 @@ var EventTypes = []string{
 	"update_user",
 	"create_robot",
 	"delete_robot",
-	"update_configure",
+	"update_configuration",
 }
 
 // OtherEventTypes defines the types of other audit log event types excludes previous EventTypes: create_artifact, delete_artifact, pull_artifact
