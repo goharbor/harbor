@@ -26,21 +26,21 @@ import (
 	pkgUser "github.com/goharbor/harbor/src/pkg/user"
 )
 
+const urlPattern = `^/api/v2.0/users/(\d+)(/password|/sysadmin)?$`
+
 func init() {
 	var userResolver = &userEventResolver{
 		Resolver: event.Resolver{
-			BaseURLPattern:      "/api/v2.0/users",
 			ResourceType:        rbac.ResourceUser.String(),
 			SucceedCodes:        []int{http.StatusCreated, http.StatusOK},
 			SensitiveAttributes: []string{"password"},
 			ShouldResolveName:   true,
 			IDToNameFunc:        userIDToName,
+			ResourceIDPattern:   urlPattern,
 		},
 	}
 	commonevent.RegisterResolver(`/api/v2.0/users$`, userResolver)
-	commonevent.RegisterResolver(`^/api/v2.0/users/\d+/password$`, userResolver)
-	commonevent.RegisterResolver(`^/api/v2.0/users/\d+/sysadmin$`, userResolver)
-	commonevent.RegisterResolver(`^/api/v2.0/users/\d+$`, userResolver)
+	commonevent.RegisterResolver(urlPattern, userResolver)
 }
 
 type userEventResolver struct {

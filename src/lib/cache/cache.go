@@ -32,8 +32,12 @@ const (
 	Memory = "memory"
 	// Redis the cache name of redis
 	Redis = "redis"
+	// Redis the cache name of redis TLS
+	RedisTLS = "rediss"
 	// RedisSentinel the cache name of redis sentinel
 	RedisSentinel = "redis+sentinel"
+	// RedisSentinel with TLS connection
+	RedisSentinelTLS = "rediss+sentinel"
 )
 
 var (

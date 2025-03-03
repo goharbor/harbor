@@ -179,14 +179,20 @@ func New(opts cache.Options) (cache.Cache, error) {
 	*/
 
 	switch u.Scheme {
-	case cache.Redis:
+	case cache.Redis, cache.RedisTLS:
+		/*
+			Harbor will only support standard TLS for server-certificate-athentication on Redis connection.
+			mTLS is not the goal
+		*/
+		// tls.Options{Servername:h} will need to be set by ParseURL
 		rdbOpts, err := redis.ParseURL(u.String())
 		if err != nil {
 			return nil, err
 		}
 
 		client = redis.NewClient(rdbOpts)
-	case cache.RedisSentinel:
+	case cache.RedisSentinel, cache.RedisSentinelTLS:
+		// TLS config will be set by ParseSentinelURL
 		failoverOpts, err := ParseSentinelURL(u.String())
 		if err != nil {
 			return nil, err
@@ -203,4 +209,6 @@ func New(opts cache.Options) (cache.Cache, error) {
 func init() {
 	cache.Register(cache.Redis, New)
 	cache.Register(cache.RedisSentinel, New)
+	cache.Register(cache.RedisTLS, New)
+	cache.Register(cache.RedisSentinelTLS, New)
 }
