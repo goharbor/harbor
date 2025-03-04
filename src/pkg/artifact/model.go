@@ -48,6 +48,15 @@ type Artifact struct {
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
 }
 
+// ResolveArtifactType returns the artifact type of the artifact, prefer ArtifactType, use MediaType if ArtifactType is empty.
+func (a *Artifact) ResolveArtifactType() string {
+	if a.ArtifactType != "" {
+		return a.ArtifactType
+	}
+
+	return a.MediaType
+}
+
 func (a *Artifact) String() string {
 	return fmt.Sprintf("%s@%s", a.RepositoryName, a.Digest)
 }
