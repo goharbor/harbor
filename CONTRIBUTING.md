@@ -348,7 +348,7 @@ If you find a match, you can "subscribe" to it to get notified on updates. If yo
 
 When reporting issues, always include:
 
-* Version of docker engine and docker-compose
+* Version of docker engine and docker-compose-plugin
 * Configuration files of Harbor
 * Log files in /var/log/harbor/
 

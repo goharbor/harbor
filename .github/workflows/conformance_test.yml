@@ -1,6 +1,4 @@
 name: CONFORMANCE_TEST
-env:
-  DOCKER_COMPOSE_VERSION: 1.23.0
 
 on:
   repository_dispatch:
@@ -40,9 +38,6 @@ jobs:
           pwd
           env
           df -h
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
           IP=`hostname -I | awk '{print $1}'`
           echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
           echo "IP=$IP" >> $GITHUB_ENV

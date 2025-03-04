@@ -45,13 +45,13 @@ $ docker-machine scp -r ./config harbor.mydomain.com:$PWD
 Next, build your Harbor images:
 
 ```
-$ docker-compose build
+$ docker compose build
 ```
 
 And finally, spin up your Harbor containers:
 
 ```
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 Now you should be able to browse `http://harbor.mydomain.com`.
