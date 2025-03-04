@@ -142,6 +142,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
         "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
         "CURRENT_PWD": "当前密码",
@@ -152,6 +158,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
         "LOGOUT": "退出"
@@ -772,7 +779,7 @@
         "ARTIFACT_TOOTIP": "点击查看此 OCI 索引的 Artifact 列表",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "下载数",
-        "PULL_COMMAND": "拉取命令",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
         "IMMUTABLE": "不可变的",
@@ -1147,8 +1154,7 @@
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。",
-        "COPY_PULL_COMMAND": "复制拉取命令"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",

@@ -143,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "Şifreyi değiştir",
         "CURRENT_PWD": "Mevcut Şifre",
@@ -151,8 +157,10 @@
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
         "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
+
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Şifreyi Değiştir",
         "ABOUT": "Hakkında",
         "LOGOUT": "Çıkış"
@@ -773,7 +781,7 @@
         "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
-        "PULL_COMMAND": "İndirme Komutu",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
         "IMMUTABLE": "Immutable",
@@ -1146,8 +1154,7 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
-        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",

@@ -151,8 +151,15 @@
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
         "PASS_TIPS": "8-128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Modifier le mot de passe",
         "ABOUT": "À propos",
         "LOGOUT": "Se déconnecter"
@@ -773,7 +780,7 @@
         "ARTIFACT_TOOTIP": "Cliquez pour voir la liste des index des artefacts de cet OCI",
         "ARTIFACTS_COUNT": "Artefacts",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Commande de pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
         "IMMUTABLE": "Immutable",
@@ -1148,8 +1155,7 @@
         "TOOLTIP": "Commandes pour push un artefact dans ce projet.",
         "TAG_COMMAND": "Taguer une image pour ce projet :",
         "PUSH_COMMAND": "Push une image dans ce projet :",
-        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence.",
-        "COPY_PULL_COMMAND": "COMMANDE COPY PULL"
+        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrer les artefacts",
