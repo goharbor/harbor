@@ -1,0 +1,31 @@
+<div class="artifact-label" *ngIf="type === 'MODEL'">
+    <div class="label" *ngIf="artifactExtraAttrs.config.architecture">
+        <img
+            [src]="
+                artifactExtraAttrs.config.architecture === 'safetensor'
+                    ? 'images/artifact-label-safetensor.svg'
+                    : 'images/artifact-label-transformer.svg'
+            "
+            class="artifact-icon" />
+
+        <span>{{ artifactExtraAttrs.config.architecture }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.format">
+        <img
+            [src]="'images/artifact-label-tensorflow.svg'"
+            class="artifact-icon" />
+        <span>{{ artifactExtraAttrs.config.format }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.descriptor.name">
+        <span>{{ artifactExtraAttrs.descriptor.name }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.precision">
+        <span>{{ artifactExtraAttrs.config.precision }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.puantization">
+        <span>{{ artifactExtraAttrs.config.puantization }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.descriptor.family">
+        <span>{{ artifactExtraAttrs.descriptor.family }}</span>
+    </div>
+</div>

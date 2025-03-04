@@ -4,7 +4,13 @@
             *ngIf="readme"
             class="md-div"
             [innerHTML]="readme | markdown"></div>
-        <div *ngIf="!readme">{{ 'ARTIFACT.NO_README' | translate }}</div>
+        <div *ngIf="!readme">
+            {{
+                type === 'MODEL'
+                    ? ('ARTIFACT.MODEL_NO_README' | translate)
+                    : ('ARTIFACT.NO_README' | translate)
+            }}
+        </div>
     </div>
 </div>
 <div *ngIf="loading" class="clr-row mt-3 center">
