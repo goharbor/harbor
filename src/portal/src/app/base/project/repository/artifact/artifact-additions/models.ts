@@ -19,4 +19,6 @@ export enum ADDITIONS {
     VALUES = 'values.yaml',
     DEPENDENCIES = 'dependencies',
     SBOMS = 'sboms',
+    LICENSE = 'license',
+    FILES = 'files',
 }
