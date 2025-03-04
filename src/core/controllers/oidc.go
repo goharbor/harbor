@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -45,6 +46,11 @@ const loginUserOperation = "login_user"
 // OIDCController handles requests for OIDC login, callback and user onboard
 type OIDCController struct {
 	api.BaseController
+}
+
+// Context returns the context.Context from http.Request
+func (oc *OIDCController) Context() context.Context {
+	return lib.WithHost(oc.Ctx.Request.Context(), oc.Ctx.Request.Host)
 }
 
 type onboardReq struct {
@@ -116,7 +122,7 @@ func (oc *OIDCController) Callback() {
 		}
 	}
 	code := oc.Ctx.Request.URL.Query().Get("code")
-	ctx := oc.Ctx.Request.Context()
+	ctx := oc.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
 	if err != nil {
 		log.Errorf("Failed to exchange token, error: %v", err)
@@ -293,7 +299,7 @@ func (oc *OIDCController) Onboard() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	ctx := oc.Ctx.Request.Context()
+	ctx := oc.Context()
 	if user, onboarded := userOnboard(ctx, oc, d, username, tb); onboarded {
 		user.OIDCUserMeta = nil
 		if err := oc.DelSession(userInfoKey); err != nil {
