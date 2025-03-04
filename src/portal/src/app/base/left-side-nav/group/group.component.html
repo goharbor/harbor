@@ -75,9 +75,18 @@
                         [clrDgPageSize]="pageSize"
                         [(clrDgPage)]="currentPage"
                         [clrDgTotalItems]="totalCount">
-                        <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                            'PAGINATION.PAGE_SIZE' | translate
-                        }}</clr-dg-page-size>
+                        <clr-dg-page-size
+                            [clrPageSizeOptions]="pageSizeOptions"
+                            >{{
+                                'PAGINATION.PAGE_SIZE' | translate
+                            }}</clr-dg-page-size
+                        >
+                        <input
+                            type="number"
+                            min="1"
+                            [(ngModel)]="newPageSize"
+                            placeholder="Enter custom page size" />
+                        <button (click)="addPageSize()">Add</button>
                         <span *ngIf="totalCount">
                             {{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}
