@@ -102,6 +102,11 @@ trivy:
   # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
   skip_java_db_update: false
   #
+  # OCI repository to retrieve the trivy vulnerability database from.
+  db_repository: ghcr.io/aquasecurity/trivy-db
+  # OCI repository to retrieve the Java trivy vulnerability database from.
+  java_db_repository: ghcr.io/aquasecurity/trivy-java-db
+  #
   # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
