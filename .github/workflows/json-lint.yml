@@ -20,5 +20,5 @@ jobs:
 
       - name: Run JSON lint
         run: |
-          # Alle JSON-Dateien im i18n-Ordner suchen
+          # Find all JSON files in the i18n folder
           find src/portal/src/i18n -name "*.json" -print0 | xargs -0 jsonlint -q
