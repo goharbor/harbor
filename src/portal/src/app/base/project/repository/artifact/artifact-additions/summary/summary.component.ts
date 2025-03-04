@@ -16,6 +16,7 @@ import { AdditionsService } from '../additions.service';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { finalize } from 'rxjs/operators';
+import { Artifact } from 'ng-swagger-gen/models/artifact';
 
 @Component({
     selector: 'hbr-artifact-summary',
@@ -24,7 +25,9 @@ import { finalize } from 'rxjs/operators';
 })
 export class SummaryComponent implements OnInit {
     @Input() summaryLink: AdditionLink;
+    @Input() artifactDetails: Artifact;
     readme: string;
+    type: string;
     loading: boolean = false;
     constructor(
         private errorHandler: ErrorHandler,
@@ -33,6 +36,9 @@ export class SummaryComponent implements OnInit {
 
     ngOnInit(): void {
         this.getReadme();
+        if (this.artifactDetails) {
+            this.type = this.artifactDetails.type;
+        }
     }
     getReadme() {
         if (

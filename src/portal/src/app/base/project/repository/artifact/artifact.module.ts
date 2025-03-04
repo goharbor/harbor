@@ -17,6 +17,7 @@ import { SharedModule } from '../../../../shared/shared.module';
 import { ArtifactListPageComponent } from './artifact-list-page/artifact-list-page.component';
 import { ArtifactListTabComponent } from './artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component';
 import { ArtifactSummaryComponent } from './artifact-summary.component';
+import { ArtifactLabelComponent } from './artifact-label/artifact-label.component';
 import { ArtifactTagComponent } from './artifact-tag/artifact-tag.component';
 import { ArtifactCommonPropertiesComponent } from './artifact-common-properties/artifact-common-properties.component';
 import { ArtifactAdditionsComponent } from './artifact-additions/artifact-additions.component';
@@ -25,6 +26,8 @@ import { SummaryComponent } from './artifact-additions/summary/summary.component
 import { DependenciesComponent } from './artifact-additions/dependencies/dependencies.component';
 import { BuildHistoryComponent } from './artifact-additions/build-history/build-history.component';
 import { ArtifactVulnerabilitiesComponent } from './artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component';
+import { ArtifactFilesComponent } from './artifact-additions/files/files.component';
+import { ArtifactLicenseComponent } from './artifact-additions/license/license.component';
 import { ArtifactSbomComponent } from './artifact-additions/artifact-sbom/artifact-sbom.component';
 import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { ArtifactDetailRoutingResolverService } from '../../../../services/routing-resolvers/artifact-detail-routing-resolver.service';
@@ -87,6 +90,9 @@ const routes: Routes = [
         ArtifactListPageComponent,
         ArtifactListTabComponent,
         ArtifactSummaryComponent,
+        ArtifactLabelComponent,
+        ArtifactLicenseComponent,
+        ArtifactFilesComponent,
         ArtifactTagComponent,
         ArtifactCommonPropertiesComponent,
         ArtifactAdditionsComponent,
@@ -96,6 +102,7 @@ const routes: Routes = [
         BuildHistoryComponent,
         ArtifactSbomComponent,
         ArtifactVulnerabilitiesComponent,
+
         ResultBarChartComponent,
         ResultSbomComponent,
         SbomTipHistogramComponent,

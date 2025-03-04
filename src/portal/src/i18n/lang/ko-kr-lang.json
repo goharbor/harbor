@@ -1168,6 +1168,8 @@
         "SCAN_UNSUPPORTED": "지원되지 않음",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "요약",
+        "LICENSE": "특허",
+        "FILES": "파일",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
         "NAME": "이름",
@@ -1175,6 +1177,9 @@
         "OF": "of",
         "VERSION": "버전",
         "NO_README": "이 차트에서는 추가 정보 파일이 제공되지 않습니다.",
+        "NO_LICENSE": "이 모델에는 라이센스 파일이 제공되지 않습니다.",
+        "NO_FILES": "이 모델에 제공된 파일이 없습니다.",
+        "MODEL_NO_README": "이 모델에 대해 제공된 README 파일이 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
         "SHOW_YAML": "YAML 파일"

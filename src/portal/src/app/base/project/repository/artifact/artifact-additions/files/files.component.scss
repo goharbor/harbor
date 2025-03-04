@@ -1,0 +1,24 @@
+.content-wrapper {
+    margin-top: 20px;
+    padding: 0 0 0 15px;
+
+    .md-container {
+        border: solid 1px #ddd;
+    }
+
+    .md-div {
+        padding: 24px;
+
+        .file {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+}
+
+.center {
+    justify-content: center;
+    align-items: center;
+}

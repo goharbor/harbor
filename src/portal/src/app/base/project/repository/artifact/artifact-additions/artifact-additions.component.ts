@@ -60,6 +60,9 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
         if (!this.activeTab) {
             this.currentTabLinkId = 'vulnerability';
         }
+        if (!this.activeTab) {
+            this.currentTabLinkId = 'summary-link';
+        }
         this.artifactListPageService.init(this.projectId);
     }
 
@@ -109,6 +112,20 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     getValues(): AdditionLink {
         if (this.additionLinks && this.additionLinks[ADDITIONS.VALUES]) {
             return this.additionLinks[ADDITIONS.VALUES];
+        }
+        return null;
+    }
+
+    getFiles(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.FILES]) {
+            return this.additionLinks[ADDITIONS.FILES];
+        }
+        return null;
+    }
+
+    getLicense(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.LICENSE]) {
+            return this.additionLinks[ADDITIONS.LICENSE];
         }
         return null;
     }

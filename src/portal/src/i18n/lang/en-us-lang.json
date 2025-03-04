@@ -1173,6 +1173,8 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Summary",
+        "LICENSE": "License",
+        "FILES": "Files",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
         "NAME": "Name",
@@ -1180,6 +1182,9 @@
         "OF": "of",
         "VERSION": "Version",
         "NO_README": "No readme file provided by this chart.",
+        "NO_LICENSE": "No license file provided by this model.",
+        "NO_FILES": "No file provided by this model.",
+        "MODEL_NO_README": "No readme file provided by this model.",
         "ITEMS": "items",
         "SHOW_KV": "Key Value Pairs",
         "SHOW_YAML": "YAML File"
