@@ -806,6 +806,8 @@
         "VULNERABILITY": "Vulnerabilidades",
         "SBOM": "SBOM",
         "BUILD_HISTORY": "Construir Historia",
+        "LICENSE": "License",
+        "FILES": "Archivos",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
         "CREATED": "Fecha de creación",
@@ -1170,6 +1172,8 @@
         "SCAN_UNSUPPORTED": "No soportado",
         "SBOM_UNSUPPORTED": "No soportado",
         "SUMMARY": "Resumen",
+        "LICENSE": "License",
+        "FILES": "Archivos",
         "DEPENDENCIES": "Dependencias",
         "VALUES": "Valores",
         "NAME": "Nombre",
@@ -1177,6 +1181,9 @@
         "OF": "de",
         "VERSION": "Versión",
         "NO_README": "Sin archivo readme para este chart.",
+        "NO_LICENSE": "Sin archivo license para este modelo.",
+        "NO_FILES": "No se proporcionan archivos para este modelo.",
+        "MODEL_NO_README": "Sin archivo readme para este modelo.",
         "ITEMS": "items",
         "SHOW_KV": "Pares Key Value",
         "SHOW_YAML": "Archivo YAML"
@@ -1211,7 +1218,6 @@
         "ADD_TAG": "AGREGAR TAG",
         "REMOVE_TAG": "REMOVER TAG",
         "NAME_ALREADY_EXISTS": "Tag ya existe en el repositorio"
-
     },
     "LABEL": {
         "LABEL": "Etiqueta",

@@ -779,7 +779,7 @@
         "ARTIFACT_TOOTIP": "Clique para ver a lista de artefatos OCI",
         "ARTIFACTS_COUNT": "Artefatos",
         "PULL_COUNT": "Pulls",
-        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
+        "PULL_COMMAND": "Comando de Pull",
         "PULL_TIME": "Horário de Envio",
         "PUSH_TIME": "Horário de Recebimento",
         "IMMUTABLE": "Imutável",
@@ -802,6 +802,8 @@
         "ARTIFACTS": "Artefatos",
         "SIZE": "Tamanho",
         "VULNERABILITY": "Vulnerabilidade",
+        "FILES": "Archivos",
+        "README": "Leia-me",
         "SBOM": "SBOM",
         "SIGNED": "Assinada",
         "AUTHOR": "Autor",
@@ -1150,7 +1152,8 @@
         "TOOLTIP": "Referência de comandos para enviar artefatos a este projeto.",
         "TAG_COMMAND": "Colocar tag em uma imagem deste projeto:",
         "PUSH_COMMAND": "Envia uma imagem a esse projeto:",
-        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
+        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrar",
@@ -1168,6 +1171,8 @@
         "SCAN_UNSUPPORTED": "Não pode ser examinada",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Resumo",
+        "FILES": "Archivos",
+        "README": "Leia-me",
         "DEPENDENCIES": "Dependências",
         "VALUES": "Valores",
         "NAME": "Nome",
@@ -1175,6 +1180,9 @@
         "OF": "de",
         "VERSION": "Versão",
         "NO_README": "Nenhum arquivo de README fornecido por esse chart.",
+        "NO_LICENSE": "Nenhum arquivo LICENSE é fornecido para este modelo.",
+        "NO_FILES": "Nenhum arquivo fornecido para este modelo.",
+        "MODEL_NO_README": "Não há arquivo README fornecido para este modelo.",
         "ITEMS": "itens",
         "SHOW_KV": "Pares chave-valor",
         "SHOW_YAML": "Arquivo YAML"

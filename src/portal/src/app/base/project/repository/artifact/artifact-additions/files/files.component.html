@@ -1,0 +1,39 @@
+<div class="row content-wrapper" *ngIf="!loading">
+    <div class="col-md-8 md-container pl-1">
+        <div *ngIf="filesList && filesList.length > 0" class="md-div">
+            <clr-tree>
+                <clr-tree-node
+                    *clrRecursiveFor="
+                        let file of filesList;
+                        getChildren: getChildren
+                    "
+                    [(clrExpanded)]="file.expanded">
+                    <div class="file">
+                        <div>
+                            <clr-icon
+                                size="20"
+                                solid
+                                [attr.shape]="
+                                    file.children
+                                        ? file.expanded
+                                            ? 'folder-open'
+                                            : 'folder'
+                                        : 'file'
+                                "></clr-icon>
+                            {{ file.name }}
+                        </div>
+                        <div *ngIf="file.size">
+                            {{ file.size ? sizeTransform(file.size + '') : '' }}
+                        </div>
+                    </div>
+                </clr-tree-node>
+            </clr-tree>
+        </div>
+        <div *ngIf="filesList && filesList.length === 0">
+            {{ 'ARTIFACT.NO_FILES' | translate }}
+        </div>
+    </div>
+</div>
+<div *ngIf="loading" class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>

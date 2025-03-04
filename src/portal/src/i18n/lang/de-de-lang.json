@@ -805,6 +805,8 @@
         "VULNERABILITY": "Schwachstellen",
         "SBOM": "SBOM",
         "BUILD_HISTORY": "Build History",
+        "LICENSE": "License",
+        "FILES": "Files",
         "SIGNED": "Signiert",
         "AUTHOR": "Autor",
         "CREATED": "Erstellt am",
@@ -1153,7 +1155,8 @@
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
         "TAG_COMMAND": "Tag ein Image für dieses Projekt:",
         "PUSH_COMMAND": "Push ein Image für dieses Projekt:",
-        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
+        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren.",
+        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",
@@ -1171,6 +1174,8 @@
         "SCAN_UNSUPPORTED": "Nicht unterstützt",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Zusammenfassung",
+        "LICENSE": "License",
+        "FILES": "Files",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
         "NAME": "Name",
@@ -1178,6 +1183,9 @@
         "OF": "von",
         "VERSION": "Version",
         "NO_README": "Kein Readme für dieses Chart verfügbar.",
+        "NO_LICENSE": "Kein License für dieses Model verfügbar.",
+        "NO_FILES": "Kein für dieses Model verfügbar.",
+        "MODEL_NO_README": "Kein Readme für dieses Model verfügbar.",
         "ITEMS": "Einträge",
         "SHOW_KV": "Key/Value-Paare",
         "SHOW_YAML": "YAML Datei"

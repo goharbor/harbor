@@ -27,6 +27,9 @@ import { CopyDigestComponent } from './artifact-list-page/artifact-list/artifact
 import { ArtifactFilterComponent } from './artifact-list-page/artifact-list/artifact-list-tab/artifact-filter/artifact-filter.component';
 import { PullCommandComponent } from './artifact-list-page/artifact-list/artifact-list-tab/pull-command/pull-command.component';
 import { SbomTipHistogramComponent } from './sbom-scanning/sbom-tip-histogram/sbom-tip-histogram.component';
+import { ArtifactLabelComponent } from './artifact-label/artifact-label.component';
+import { ArtifactLicenseComponent } from './artifact-additions/license/license.component';
+import { ArtifactFilesComponent } from './artifact-additions/files/files.component';
 
 const routes: Routes = [
     {
@@ -74,6 +77,9 @@ const routes: Routes = [
         ArtifactListPageComponent,
         ArtifactListTabComponent,
         ArtifactSummaryComponent,
+        ArtifactLabelComponent,
+        ArtifactLicenseComponent,
+        ArtifactFilesComponent,
         ArtifactTagComponent,
         ArtifactCommonPropertiesComponent,
         ArtifactAdditionsComponent,

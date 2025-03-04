@@ -1,0 +1,22 @@
+.artifact-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 16px 0;
+
+    .label {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #ffffff;
+        border-radius: 5px;
+        padding: 10px 8px;
+        background-color: var(--clr-color-action-600);
+        margin-right: 16px;
+        color: #ffffff;
+    }
+    .artifact-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+    }
+}

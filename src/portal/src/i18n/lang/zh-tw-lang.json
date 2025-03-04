@@ -804,6 +804,8 @@
         "VULNERABILITY": "弱點",
         "SBOM": "SBOM",
         "BUILD_HISTORY": "建置歷史",
+        "LICENSE": "許可證",
+        "FILES": "文件",
         "SIGNED": "已簽署",
         "AUTHOR": "作者",
         "CREATED": "建立時間",
@@ -1151,7 +1153,8 @@
         "TOOLTIP": "推送映像擋至此專案的參考命令。",
         "TAG_COMMAND": "為此專案標記映像檔：",
         "PUSH_COMMAND": "將映像檔推送至此專案：",
-        "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。"
+        "COPY_ERROR": "複製失敗，請嘗試手動複製參考命令。",
+        "COPY_PULL_COMMAND": "複製拉取命令"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "篩選 Artifact(s)",
@@ -1169,6 +1172,8 @@
         "SCAN_UNSUPPORTED": "不支援掃描",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "摘要",
+        "LICENSE": "許可證",
+        "FILES": "文件",
         "DEPENDENCIES": "相依性",
         "VALUES": "值",
         "NAME": "名稱",
@@ -1176,6 +1181,9 @@
         "OF": "共計",
         "VERSION": "版本",
         "NO_README": "此 Helm Chart 未提供 README 文件",
+        "NO_LICENSE": "此 AI Model 未提供 LICENSE 文件",
+        "NO_FILES": "此 Model 未提供文件",
+        "MODEL_NO_README": "此 Model 未提供 README 文件",
         "ITEMS": "筆紀錄",
         "SHOW_KV": "顯示鍵值對",
         "SHOW_YAML": "顯示 YAML 檔案"

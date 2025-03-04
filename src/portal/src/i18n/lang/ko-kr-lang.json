@@ -802,6 +802,8 @@
         "VULNERABILITY": "취약점",
         "SBOM": "SBOM",
         "BUILD_HISTORY": "기록 생성",
+        "LICENSE": "특허",
+        "FILES": "파일",
         "SIGNED": "서명됨",
         "AUTHOR": "작성자",
         "CREATED": "생성 시간",
@@ -1150,7 +1152,8 @@
         "TOOLTIP": "이 프로젝트에 아티팩트를 푸시하기 위한 명령 참조입니다.",
         "TAG_COMMAND": "이 프로젝트의 이미지에 태그를 지정:",
         "PUSH_COMMAND": "이 프로젝트에 이미지 푸시:",
-        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요."
+        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요.",
+        "COPY_PULL_COMMAND": "풀(PULL) 명령어 복사"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "아티팩트 필터",
@@ -1168,6 +1171,8 @@
         "SCAN_UNSUPPORTED": "지원되지 않음",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "요약",
+        "LICENSE": "특허",
+        "FILES": "파일",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
         "NAME": "이름",
@@ -1175,6 +1180,9 @@
         "OF": "of",
         "VERSION": "버전",
         "NO_README": "이 차트에서는 추가 정보 파일이 제공되지 않습니다.",
+        "NO_LICENSE": "이 모델에는 라이센스 파일이 제공되지 않습니다.",
+        "NO_FILES": "이 모델에 제공된 파일이 없습니다.",
+        "MODEL_NO_README": "이 모델에 대해 제공된 README 파일이 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
         "SHOW_YAML": "YAML 파일"
