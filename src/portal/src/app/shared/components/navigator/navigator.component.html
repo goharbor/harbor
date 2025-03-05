@@ -18,7 +18,9 @@
 
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown-lang dropdown bottom-left">
+        <clr-dropdown
+            class="dropdown-lang dropdown bottom-left"
+            *ngIf="!isSessionValid">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{ currentLang }}</span>
@@ -35,7 +37,9 @@
                 >
             </clr-dropdown-menu>
         </clr-dropdown>
-        <clr-dropdown class="dropdown-locale dropdown bottom-left">
+        <clr-dropdown
+            class="dropdown-locale dropdown bottom-left"
+            *ngIf="!isSessionValid">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="date" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{
@@ -75,6 +79,12 @@
                     clrDropdownItem
                     (click)="openAccountSettingsModal()"
                     >{{ 'ACCOUNT_SETTINGS.PROFILE' | translate }}</a
+                >
+                <a
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="openPreferencesModal()"
+                    >{{ 'ACCOUNT_SETTINGS.PREFERENCES' | translate }}</a
                 >
                 <a
                     *ngIf="canChangePassword"

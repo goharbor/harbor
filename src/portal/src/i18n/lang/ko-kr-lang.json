@@ -143,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "시크릿을 다시 생성할 수 있습니까?",
         "CONFIRM_BODY_CLI_GENERATE": "Cli 시크릿을 재생성하면 이전 Cli 시크릿이 삭제됩니다"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "비밀번호 변경",
         "CURRENT_PWD": "현재 비밀번호",
@@ -153,6 +159,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "사용자 프로필",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "비밀번호 변경",
         "ABOUT": "About",
         "LOGOUT": "로그아웃"
@@ -770,7 +777,7 @@
         "ARTIFACT_TOOTIP": "이 OCI 인덱스의 아티팩트 목록을 보려면 클릭하세요.",
         "ARTIFACTS_COUNT": "아티팩트",
         "PULL_COUNT": "풀(Pull) 수",
-        "PULL_COMMAND": "풀(Pull) 명령어",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "풀(Pull) 시간",
         "PUSH_TIME": "푸시 시간",
         "IMMUTABLE": "Immutable",
@@ -1143,8 +1150,7 @@
         "TOOLTIP": "이 프로젝트에 아티팩트를 푸시하기 위한 명령 참조입니다.",
         "TAG_COMMAND": "이 프로젝트의 이미지에 태그를 지정:",
         "PUSH_COMMAND": "이 프로젝트에 이미지 푸시:",
-        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요.",
-        "COPY_PULL_COMMAND": "풀(PULL) 명령어 복사"
+        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "아티팩트 필터",
