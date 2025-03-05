@@ -1795,7 +1795,7 @@ paths:
             items:
               $ref: '#/definitions/AuditLogEventType'
         '401':
-          $ref: '#/responses/401'      
+          $ref: '#/responses/401'
   /projects/{project_name}/logs:
     get:
       summary: Get recent logs of the projects (deprecated)
@@ -1863,7 +1863,7 @@ paths:
         '401':
           $ref: '#/responses/401'
         '500':
-          $ref: '#/responses/500'          
+          $ref: '#/responses/500'
   /p2p/preheat/providers:
     get:
       summary: List P2P providers
@@ -6949,8 +6949,8 @@ definitions:
         description: The time when this operation is triggered.
   AuditLogEventType:
     type: object
-    properties: 
-      event_type: 
+    properties:
+      event_type:
         type: string
         description: the event type, such as create_user.
         example: create_user
@@ -7446,6 +7446,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to defer execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
