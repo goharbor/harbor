@@ -28,9 +28,6 @@ cur=$PWD
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
 git clone -b $VERSION $DISTRIBUTION_SRC $TEMP
 
-# add patch redis
-cd $TEMP
-git apply $cur/redis.patch
 cd $cur
 
 echo 'build the registry binary ...'
