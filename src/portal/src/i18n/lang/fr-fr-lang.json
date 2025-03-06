@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "Décocher cette case si votre serveur OIDC est hébergé avec un certificat auto-signé.",
         "OIDC_AUTOONBOARD": "Ignorer l'écran d'accueil afin que l'utilisateur ne puisse pas modifier son nom d'utilisateur. Le nom d'utilisateur est fourni à partir du Token ID.",
         "OIDC_USER_CLAIM": "Le nom du claim dans le ID Token à partir duquel le nom d'utilisateur est récupéré. S'il n'est pas spécifié, la valeur par défaut sera 'name'.",
-        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
+        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -987,7 +988,8 @@
             "OIDC_ADMIN_GROUP": "Groupe d'admin OIDC",
             "OIDC_ADMIN_GROUP_INFO": "Spécifie le nom d'un groupe d'admin OIDC. Tous les utilisateurs OIDC de ce groupe auront les droits d'admin dans Harbor. Laisser vide pour ne pas l'utiliser.",
             "OIDC_GROUP_FILTER": "Filtre de groupe OIDC",
-            "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser."
+            "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Déclenchement avec succès de l'arrêt de l'analyse globale !",
@@ -1185,6 +1187,7 @@
         "NO_LICENSE": "Aucune licence n'est fournie pour ce modèle.",
         "NO_FILES": "Aucun fichier fourni pour ce modèle.",
         "MODEL_NO_README": "Aucun fichier README n'est fourni pour ce modèle.",
+        "FILE_TOO_LARGE": "Le fichier est trop volumineux pour être traité.",
         "ITEMS": "entrées",
         "SHOW_KV": "Paires Clé/Valeur",
         "SHOW_YAML": "Fichier YAML"
@@ -1833,9 +1836,9 @@
         "INCLUDED_OPERATIONS": "Opérations incluses",
         "INCLUDED_OPERATION_TOOLTIP": "Supprimer les logs d'audit pour les opérations sélectionnées",
         "INCLUDED_OPERATION_ERROR": "Sélectionner au moins une opération",
-        "INCLUDED_EVENT_TYPES": "Included event types",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
         "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
-        "INCLUDED_EVENT_TYPE_ERROR": "Please select at lease one event type",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "Purger maintenant",
         "PURGE_NOW_SUCCESS": "La purge s'est déclenchée avec succès",
         "PURGE_SCHEDULE_RESET": "Le programme de purge a été réinitialisé",

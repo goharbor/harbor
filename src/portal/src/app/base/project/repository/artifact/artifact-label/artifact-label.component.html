@@ -1,20 +1,29 @@
-<div class="artifact-label" *ngIf="type === 'MODEL'">
+<div class="artifact-label" *ngIf="type === 'CNAI'">
     <div class="label" *ngIf="artifactExtraAttrs.config.architecture">
         <img
-            [src]="
-                artifactExtraAttrs.config.architecture === 'safetensor'
-                    ? 'images/artifact-label-safetensor.svg'
-                    : 'images/artifact-label-transformer.svg'
-            "
+            *ngIf="artifactExtraAttrs.config.architecture === 'transformer'"
+            [src]="'images/artifact-label-transformer.svg'"
             class="artifact-icon" />
 
-        <span>{{ artifactExtraAttrs.config.architecture }}</span>
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.architecture
+        }}</span>
     </div>
     <div class="label" *ngIf="artifactExtraAttrs.config.format">
         <img
-            [src]="'images/artifact-label-tensorflow.svg'"
+            *ngIf="
+                artifactExtraAttrs.config.format === 'tensorflow' ||
+                artifactExtraAttrs.config.format === 'safetensors'
+            "
+            [src]="
+                artifactExtraAttrs.config.format === 'tensorflow'
+                    ? 'images/artifact-label-tensorflow.svg'
+                    : 'images/artifact-label-safetensor.svg'
+            "
             class="artifact-icon" />
-        <span>{{ artifactExtraAttrs.config.format }}</span>
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.format
+        }}</span>
     </div>
     <div class="label" *ngIf="artifactExtraAttrs.descriptor.name">
         <span>{{ artifactExtraAttrs.descriptor.name }}</span>

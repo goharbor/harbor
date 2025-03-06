@@ -1,10 +1,19 @@
 <div class="row content-wrapper" *ngIf="!loading">
-    <div class="col-md-8 md-container pl-1">
-        <div
-            *ngIf="license"
-            class="md-div"
-            [innerHTML]="license | markdown"></div>
-        <div *ngIf="!license">{{ 'ARTIFACT.NO_LICENSE' | translate }}</div>
+    <div class="col-md-8">
+        <div class="col-xs-8">
+            <div
+                *ngIf="license"
+                class="yaml-container"
+                [innerHTML]="license | language | markdown"></div>
+        </div>
+        <div *ngIf="!license">
+            <div class="col-md-8 md-container pl-1" *ngIf="fileTooLargeStatus">
+                {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
+            </div>
+            <div class="col-md-8 md-container pl-1" *ngIf="noLicenseStatus">
+                {{ 'ARTIFACT.NO_LICENSE' | translate }}
+            </div>
+        </div>
     </div>
 </div>
 <div *ngIf="loading" class="clr-row mt-3 center">

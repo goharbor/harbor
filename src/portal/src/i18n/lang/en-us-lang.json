@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
-        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number"
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -987,7 +988,8 @@
             "OIDC_ADMIN_GROUP": "OIDC Admin Group",
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
@@ -1185,6 +1187,7 @@
         "NO_LICENSE": "No license file provided by this model.",
         "NO_FILES": "No file provided by this model.",
         "MODEL_NO_README": "No readme file provided by this model.",
+        "FILE_TOO_LARGE": "The file is too large to be processed.",
         "ITEMS": "items",
         "SHOW_KV": "Key Value Pairs",
         "SHOW_YAML": "YAML File"
@@ -1832,10 +1835,10 @@
         "HOURS": "Hours",
         "INCLUDED_OPERATIONS": "Included operations",
         "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
-        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
-        "INCLUDED_EVENT_TYPES": "Included event types",
+        "INCLUDED_OPERATION_ERROR": "Please select at least one operation",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
         "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
-        "INCLUDED_EVENT_TYPE_ERROR": "Please select at lease one event type",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "PURGE NOW",
         "PURGE_NOW_SUCCESS": "Purge triggered successfully",
         "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",

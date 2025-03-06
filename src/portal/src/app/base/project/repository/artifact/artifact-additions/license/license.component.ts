@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, Input, OnInit } from '@angular/core';
 import { AdditionsService } from '../additions.service';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
@@ -13,6 +26,8 @@ export class ArtifactLicenseComponent implements OnInit {
     @Input() licenseLink: AdditionLink;
     license: string;
     loading: boolean = false;
+    fileTooLargeStatus: boolean = false;
+    noLicenseStatus: boolean = false;
 
     constructor(
         private errorHandler: ErrorHandler,
@@ -38,7 +53,13 @@ export class ArtifactLicenseComponent implements OnInit {
                         this.license = res;
                     },
                     error => {
-                        this.errorHandler.error(error);
+                        if (error.status === 404) {
+                            this.noLicenseStatus = true;
+                        } else if (error.status === 422) {
+                            this.fileTooLargeStatus = true;
+                        } else {
+                            this.errorHandler.error(error);
+                        }
                     }
                 );
         }

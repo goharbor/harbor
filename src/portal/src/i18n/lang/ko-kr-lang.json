@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "OIDC 서버가 자체 서명된 인증서를 통해 호스팅되는 경우 이 상자를 선택 취소하세요.",
         "OIDC_AUTOONBOARD": "온보딩 화면을 건너뛰면 사용자가 사용자 이름을 변경할 수 없습니다. 사용자 이름은 ID 토큰에서 제공됩니다.",
         "OIDC_USER_CLAIM": "사용자 이름을 검색하는 ID 토큰의 클레임 이름입니다. 지정하지 않으면 기본값은 'name'입니다.",
-        "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다"
+        "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "현재 비밀번호를 입력하세요",
@@ -982,7 +983,8 @@
             "OIDC_ADMIN_GROUP": "OIDC 관리 그룹",
             "OIDC_ADMIN_GROUP_INFO": "OIDC 관리자 그룹 이름을 지정합니다. 이 그룹의 모든 OIDC 사용자는 항구 관리자 권한을 갖습니다. 원하지 않으시면 비워두세요.",
             "OIDC_GROUP_FILTER": "OIDC 그룹 필터",
-            "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요."
+            "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "트리거 정지 스캔이 모두 성공적으로 완료되었습니다!",
@@ -1168,8 +1170,6 @@
         "SCAN_UNSUPPORTED": "지원되지 않음",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "요약",
-        "LICENSE": "특허",
-        "FILES": "파일",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
         "NAME": "이름",
@@ -1178,8 +1178,9 @@
         "VERSION": "버전",
         "NO_README": "이 차트에서는 추가 정보 파일이 제공되지 않습니다.",
         "NO_LICENSE": "이 모델에는 라이센스 파일이 제공되지 않습니다.",
-        "NO_FILES": "이 모델에 제공된 파일이 없습니다.",
-        "MODEL_NO_README": "이 모델에 대해 제공된 README 파일이 없습니다.",
+        "NO_FILES": "이 모델에 대해 제공된 파일이 없습니다.",
+        "MODEL_NO_README": "이 모델에는 README 파일이 제공되지 않습니다.",
+        "FILE_TOO_LARGE": "파일이 너무 커서 처리할 수 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
         "SHOW_YAML": "YAML 파일"
@@ -1824,9 +1825,9 @@
         "INCLUDED_OPERATIONS": "포함된 작업",
         "INCLUDED_OPERATION_TOOLTIP": "선택한 작업에 대한 감사 로그 삭제",
         "INCLUDED_OPERATION_ERROR": "작업을 하나 이상 선택하세요.",
-        "INCLUDED_EVENT_TYPES": "Included event types",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
         "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
-        "INCLUDED_EVENT_TYPE_ERROR": "Please select at lease one event type",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "지금 제거",
         "PURGE_NOW_SUCCESS": "제거가 성공적으로 발생됐습니다",
         "PURGE_SCHEDULE_RESET": "제거 예약이 초기화됐습니다",
