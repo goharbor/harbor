@@ -89,7 +89,6 @@ const routes: Routes = [
         BuildHistoryComponent,
         ArtifactSbomComponent,
         ArtifactVulnerabilitiesComponent,
-
         ResultBarChartComponent,
         ResultSbomComponent,
         SbomTipHistogramComponent,

@@ -7,17 +7,19 @@
     .label {
         display: inline-flex;
         align-items: center;
-        border: 1px solid #fff;
-        border-radius: 5px;
+        border: 1px solid var(--clr-color-neutral-500);
+        border-radius: 8px;
         padding: 10px 8px;
         background-color: var(--clr-color-action-600);
-        margin-right: 16px;
+        margin-right: 8px;
         color: #fff;
+        font-size: 12px;
+        height: calc(4px * 6);
     }
 
     .artifact-icon {
         width: 14px;
         height: 14px;
-        margin-right: 6px;
+        margin-right: 4px;
     }
 }
