@@ -6,7 +6,7 @@
             [innerHTML]="readme | markdown"></div>
         <div *ngIf="!readme">
             {{
-                type === 'MODEL'
+                type === 'CNAI'
                     ? ('ARTIFACT.MODEL_NO_README' | translate)
                     : ('ARTIFACT.NO_README' | translate)
             }}

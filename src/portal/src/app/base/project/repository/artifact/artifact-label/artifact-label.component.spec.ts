@@ -28,7 +28,7 @@ describe('ArtifactLabelComponent', () => {
                 name: 'Qwen2.5-0.5B',
             },
         },
-        type: 'MODEL',
+        type: 'CNAI',
     };
 
     beforeEach(async () => {
@@ -59,12 +59,11 @@ describe('ArtifactLabelComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should render all properties', async () => {
+    it('should render all label', async () => {
         component.artifactExtraAttrs = mockedExtraAttrs.extra_attrs;
         component.ngOnInit();
         fixture.detectChanges();
         await fixture.whenStable();
-
         const contentRows = fixture.nativeElement.getElementsByTagName('img');
         expect(contentRows.length).toBeGreaterThan(1);
     });

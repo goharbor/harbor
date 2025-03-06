@@ -1,5 +1,5 @@
 <div class="row content-wrapper" *ngIf="!loading">
-    <div class="col-md-8 md-container pl-1">
+    <div class="col-md-8 md-container">
         <div *ngIf="filesList && filesList.length > 0" class="md-div">
             <clr-tree>
                 <clr-tree-node
@@ -29,7 +29,7 @@
                 </clr-tree-node>
             </clr-tree>
         </div>
-        <div *ngIf="filesList && filesList.length === 0">
+        <div class="pl-1" *ngIf="filesList && filesList.length === 0">
             {{ 'ARTIFACT.NO_FILES' | translate }}
         </div>
     </div>

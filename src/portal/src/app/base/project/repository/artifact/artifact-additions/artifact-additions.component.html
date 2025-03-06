@@ -86,7 +86,8 @@
                     (click)="actionTab('license-link')">
                     {{ 'ARTIFACT.LICENSE' | translate }}
                 </button>
-                <ng-template [clrIfActive]="currentTabLinkId === 'files-link'">
+                <ng-template
+                    [clrIfActive]="currentTabLinkId === 'license-link'">
                     <clr-tab-content id="license-content">
                         <hbr-artifact-license
                             *ngIf="currentTabLinkId === 'license-link'"
@@ -94,7 +95,7 @@
                     </clr-tab-content>
                 </ng-template>
             </clr-tab>
-            <clr-tab *ngIf="getFiles()">
+            <clr-tab *ngIf="getFile()">
                 <button
                     clrTabLink
                     id="files-link"
@@ -105,7 +106,7 @@
                     <clr-tab-content id="files-content">
                         <hbr-artifact-files
                             *ngIf="currentTabLinkId === 'files-link'"
-                            [filesLink]="getFiles()"></hbr-artifact-files>
+                            [filesLink]="getFile()"></hbr-artifact-files>
                     </clr-tab-content>
                 </ng-template>
             </clr-tab>
