@@ -40,14 +40,9 @@ const (
 	RoleMaintainer   = 4
 	RoleLimitedGuest = 5
 
-	LabelLevelSystem  = "s"
 	LabelLevelUser    = "u"
 	LabelScopeGlobal  = "g"
 	LabelScopeProject = "p"
-
-	ResourceTypeProject    = "p"
-	ResourceTypeRepository = "r"
-	ResourceTypeImage      = "i"
 
 	ExtEndpoint                      = "ext_endpoint"
 	AUTHMode                         = "auth_mode"
@@ -120,7 +115,6 @@ const (
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
 
-	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
 	RegistryStorageProviderName       = "registry_storage_provider_name"
 	RegistryControllerURL             = "registry_controller_url"
@@ -128,7 +122,6 @@ const (
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
 	TrivyAdapterURL                   = "trivy_adapter_url"
-	DefaultCoreEndpoint               = "http://core:8080"
 	LDAPGroupType                     = 1
 	HTTPGroupType                     = 2
 	OIDCGroupType                     = 3
