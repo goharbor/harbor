@@ -36,6 +36,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+
+	"go.pinniped.dev/pkg/oidcclient/pkce"
 )
 
 const (
@@ -143,9 +145,10 @@ func getOauthConf(ctx context.Context) (*oauth2.Config, error) {
 	}, nil
 }
 
-// AuthCodeURL returns the URL for OIDC provider's consent page.  The state should be verified when user is redirected
-// back to Harbor.
-func AuthCodeURL(ctx context.Context, state string) (string, error) {
+// AuthCodeURL returns the URL for OIDC provider's consent page.
+// The state should be verified when user is redirected back to Harbor.
+// pkceCode is for the PKCE workflow of authentication.  It is optional.
+func AuthCodeURL(ctx context.Context, state string, pkceCode pkce.Code) (string, error) {
 	conf, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
@@ -164,11 +167,15 @@ func AuthCodeURL(ctx context.Context, state string) (string, error) {
 		options = append(options, oauth2.AccessTypeOffline)
 		options = append(options, oauth2.SetAuthURLParam("prompt", "consent"))
 	}
+	if len(pkceCode) > 0 {
+		options = append(options, pkceCode.Challenge())
+		options = append(options, pkceCode.Method())
+	}
 	return conf.AuthCodeURL(state, options...), nil
 }
 
 // ExchangeToken get the token from token provider via the code
-func ExchangeToken(ctx context.Context, code string) (*Token, error) {
+func ExchangeToken(ctx context.Context, code string, pkceCode pkce.Code) (*Token, error) {
 	oauth, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
@@ -180,7 +187,11 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 		return nil, err
 	}
 	ctx = clientCtx(ctx, setting.VerifyCert)
-	oauthToken, err := oauth.Exchange(ctx, code)
+	var opts []oauth2.AuthCodeOption
+	if len(pkceCode) > 0 {
+		opts = append(opts, pkceCode.Verifier())
+	}
+	oauthToken, err := oauth.Exchange(ctx, code, opts...)
 	if err != nil {
 		return nil, err
 	}
