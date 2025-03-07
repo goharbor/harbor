@@ -1173,7 +1173,7 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Summary",
-        "LICENSE": "Licen",
+        "LICENSE": "License",
         "FILES": "Files",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
