@@ -1172,6 +1172,8 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Özet",
+        "LICENSE": "Lisans",
+        "FILES": "Dosyalar",
         "DEPENDENCIES": "Bağımlılıklar",
         "VALUES": "Değerler",
         "NAME": "İsim",
@@ -1179,6 +1181,9 @@
         "OF": "of",
         "VERSION": "Versiyon",
         "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
+        "NO_LICENSE": "Bu tablo bir lisans dosyası sağlamamaktadır.",
+        "NO_FILES": "Bu Model için dosya sağlanmadı.",
+        "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",
         "SHOW_YAML": "YAML Dosyası"
