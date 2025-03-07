@@ -39,12 +39,16 @@ export class SummaryComponent implements OnInit {
                 .pipe(finalize(() => (this.loading = false)))
                 .subscribe(
                     res => {
-                        this.readme = res;
+                        this.readme = this.removeFrontMatter(res);
                     },
                     error => {
                         this.errorHandler.error(error);
                     }
                 );
         }
+    }
+
+    removeFrontMatter(content: string): string {
+        return content.replace(/^---[\s\S]*?---\s*/, '');
     }
 }
