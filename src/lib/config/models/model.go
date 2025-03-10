@@ -44,6 +44,8 @@ type OIDCSetting struct {
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
 	ExtraRedirectParms map[string]string `json:"extra_redirect_parms"`
+	Logout             bool              `json:"logout"`
+	LogoutOffline      bool              `json:"logout_offline"`
 }
 
 // QuotaSetting wraps the settings for Quota

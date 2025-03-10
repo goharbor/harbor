@@ -966,6 +966,62 @@
                     [(ngModel)]="currentConfig.oidc_auto_onboard.value" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="oidcLogout"
+            >{{ 'CONFIG.OIDC.OIDC_LOGOUT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                    <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                        <span>{{
+                            'TOOLTIP.OIDC_LOGOUT' | translate
+                            }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                        type="checkbox"
+                        clrCheckbox
+                        name="oidcLogout"
+                        id="oidcLogout"
+                        [disabled]="disabled(currentConfig.oidc_logout)"
+                        [(ngModel)]="currentConfig.oidc_logout.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="oidcLogout"
+            >{{ 'CONFIG.OIDC.OIDC_LOGOUT_OFFLINE' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                    <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                        <span>{{
+                            'TOOLTIP.OIDC_LOGOUT_OFFLINE' | translate
+                            }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                        type="checkbox"
+                        clrCheckbox
+                        name="oidcLogoutOffline"
+                        id="oidcLogoutOffline"
+                        [disabled]="disabled(currentConfig.oidc_logout_offline)"
+                        [(ngModel)]="currentConfig.oidc_logout_offline.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
         <clr-input-container>
             <label for="oidcUserClaim"
                 >{{ 'CONFIG.OIDC.USER_CLAIM' | translate }}

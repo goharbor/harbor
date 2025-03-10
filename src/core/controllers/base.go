@@ -108,8 +108,46 @@ func (cc *CommonController) Login() {
 	cc.PopulateUserSession(*user)
 }
 
-// LogOut Habor UI
+// LogOut Harbor UI
 func (cc *CommonController) LogOut() {
+	// redirect for OIDC logout, excludes the admin user.
+	securityCtx, ok := security.FromContext(cc.Context())
+	if !ok {
+		log.Error("Failed to get security context")
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+	}
+	principal := securityCtx.GetUsername()
+	if principal != "" {
+		if redirectForOIDC(cc.Ctx.Request.Context(), principal) {
+			u, err := user.Ctl.GetByName(cc.Context(), principal)
+			if err != nil {
+				log.Errorf("Failed to get user by name: %s, error: %v", principal, err)
+				cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			}
+			if u == nil {
+				cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			}
+			if u.UserID != 1 {
+				ep, err := config.ExtEndpoint()
+				if err != nil {
+					log.Errorf("Failed to get the external endpoint, error: %v", err)
+					cc.CustomAbort(http.StatusUnauthorized, "")
+				}
+				url := strings.TrimSuffix(ep, "/") + common.OIDCLoginoutPath
+				log.Debugf("Redirect user %s to logout page of OIDC provider", u.Username)
+				// Return a json to UI with status code 403, as it cannot handle status 302
+				cc.Ctx.Output.Status = http.StatusForbidden
+				err = cc.Ctx.Output.JSON(struct {
+					Locatioon string `json:"redirect_location"`
+				}{url}, false, false)
+				if err != nil {
+					log.Errorf("Failed to write json to response body, error: %v", err)
+				}
+				return
+			}
+		}
+	}
+
 	if err := cc.DestroySession(); err != nil {
 		log.Errorf("Error occurred in LogOut: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")

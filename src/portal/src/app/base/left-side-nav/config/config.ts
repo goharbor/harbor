@@ -105,6 +105,8 @@ export class Configuration {
     oidc_auto_onboard?: BoolValueItem;
     oidc_scope?: StringValueItem;
     oidc_user_claim?: StringValueItem;
+    oidc_logout?: BoolValueItem;
+    oidc_logout_offline?: BoolValueItem;
     count_per_project: NumberValueItem;
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -187,6 +189,8 @@ export class Configuration {
         this.oidc_admin_group = new StringValueItem('', true);
         this.oidc_group_filter = new StringValueItem('', true);
         this.oidc_user_claim = new StringValueItem('', true);
+        this.oidc_logout = new BoolValueItem(false, true);
+        this.oidc_logout_offline = new BoolValueItem(false, true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
         this.audit_log_forward_endpoint = new StringValueItem('', true);

@@ -106,7 +106,9 @@
         "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
-        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number"
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "OIDC_LOGOUT_OFFLINE": "Logs the user out of their current offline session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -987,7 +989,9 @@
             "OIDC_ADMIN_GROUP": "OIDC Admin Group",
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
+            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT_OFFLINE": "OIDC Offline Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
