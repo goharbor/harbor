@@ -103,6 +103,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     repoName: string;
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
+    artifact: ArtifactFront;
     availableTime = AVAILABLE_TIME;
     inprogress: boolean;
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
