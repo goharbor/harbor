@@ -151,8 +151,15 @@
         "SAVE_SUCCESS": "Nutzerpasswort erfolgreich geändert.",
         "PASS_TIPS": "8-128 Zeichen mit einem Groß-, einem Kleinbuchstaben und einer Ziffer"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Nutzerprofil",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Passwort ändern",
         "ABOUT": "Info",
         "LOGOUT": "Ausloggen"
@@ -773,7 +780,7 @@
         "ARTIFACT_TOOTIP": "Klicken um die Artefakt-Liste des OCI index zu sehen",
         "ARTIFACTS_COUNT": "Artefakte",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Pull Befehl",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Zeit",
         "PUSH_TIME": "Push Zeit",
         "IMMUTABLE": "Immutable",
@@ -1146,8 +1153,7 @@
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
         "TAG_COMMAND": "Tag ein Image für dieses Projekt:",
         "PUSH_COMMAND": "Push ein Image für dieses Projekt:",
-        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",

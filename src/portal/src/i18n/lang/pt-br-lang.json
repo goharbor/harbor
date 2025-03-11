@@ -142,6 +142,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Gostaria de redefinir o segredo?",
         "CONFIRM_BODY_CLI_GENERATE": "Ao fazer isso, o segredo atual não poderá ser recuperado"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "Alterar Senha",
         "CURRENT_PWD": "Senha atual",
@@ -152,6 +158,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil do usuário",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Alterar senha",
         "ABOUT": "Informativo",
         "LOGOUT": "Sair"
@@ -772,7 +779,7 @@
         "ARTIFACT_TOOTIP": "Clique para ver a lista de artefatos OCI",
         "ARTIFACTS_COUNT": "Artefatos",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Comando de Pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Horário de Envio",
         "PUSH_TIME": "Horário de Recebimento",
         "IMMUTABLE": "Imutável",
@@ -1143,8 +1150,7 @@
         "TOOLTIP": "Referência de comandos para enviar artefatos a este projeto.",
         "TAG_COMMAND": "Colocar tag em uma imagem deste projeto:",
         "PUSH_COMMAND": "Envia uma imagem a esse projeto:",
-        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrar",
