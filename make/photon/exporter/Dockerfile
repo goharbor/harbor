@@ -26,4 +26,6 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
 WORKDIR /harbor
 USER harbor
 
+HEALTHCHECK CMD curl --fail -s http://localhost:8080/metrics || exit 1
+
 ENTRYPOINT ["/harbor/entrypoint.sh"]
