@@ -106,7 +106,9 @@
         "OIDC_VERIFYCERT": "OIDC 서버가 자체 서명된 인증서를 통해 호스팅되는 경우 이 상자를 선택 취소하세요.",
         "OIDC_AUTOONBOARD": "온보딩 화면을 건너뛰면 사용자가 사용자 이름을 변경할 수 없습니다. 사용자 이름은 ID 토큰에서 제공됩니다.",
         "OIDC_USER_CLAIM": "사용자 이름을 검색하는 ID 토큰의 클레임 이름입니다. 지정하지 않으면 기본값은 'name'입니다.",
-        "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다"
+        "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "OIDC_LOGOUT_OFFLINE": "Logs the user out of their current offline session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "현재 비밀번호를 입력하세요",
@@ -982,7 +984,9 @@
             "OIDC_ADMIN_GROUP": "OIDC 관리 그룹",
             "OIDC_ADMIN_GROUP_INFO": "OIDC 관리자 그룹 이름을 지정합니다. 이 그룹의 모든 OIDC 사용자는 항구 관리자 권한을 갖습니다. 원하지 않으시면 비워두세요.",
             "OIDC_GROUP_FILTER": "OIDC 그룹 필터",
-            "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요."
+            "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요.",
+            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT_OFFLINE": "OIDC Offline Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "트리거 정지 스캔이 모두 성공적으로 완료되었습니다!",
