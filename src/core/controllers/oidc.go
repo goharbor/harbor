@@ -309,8 +309,8 @@ func (oc *OIDCController) RedirectLogout() {
 	}
 
 	if token.RawIDToken == "" {
-		log.Warning("Empty ID token for offline session.")
-		oc.Controller.Redirect(".", http.StatusFound)
+		log.Warning("Unable to log out user session due to the empty ID token.")
+		oc.Controller.Redirect("/", http.StatusFound)
 		return
 	}
 	if _, err := oidc.VerifyToken(ctx, token.RawIDToken); err != nil {
