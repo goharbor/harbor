@@ -138,7 +138,7 @@ func (cc *CommonController) LogOut() {
 				// Return a json to UI with status code 403, as it cannot handle status 302
 				cc.Ctx.Output.Status = http.StatusForbidden
 				err = cc.Ctx.Output.JSON(struct {
-					Locatioon string `json:"redirect_location"`
+					Location string `json:"redirect_location"`
 				}{url}, false, false)
 				if err != nil {
 					log.Errorf("Failed to write json to response body, error: %v", err)

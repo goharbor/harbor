@@ -323,13 +323,13 @@ func (oc *OIDCController) RedirectLogout() {
 		return
 	}
 	endSessionURL := oidc.EndpointsClaims.EndSessionURL
-	baseUrl, err := config.ExtEndpoint()
+	baseURL, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("Failed to get external endpoint: %v", err)
 		oc.SendInternalServerError(err)
 		return
 	}
-	postLogoutRedirectURI := fmt.Sprintf("%s/harbor/projects", baseUrl)
+	postLogoutRedirectURI := fmt.Sprintf("%s/harbor/projects", baseURL)
 	logoutURL := fmt.Sprintf(
 		"%s?id_token_hint=%s&post_logout_redirect_uri=%s",
 		endSessionURL,
