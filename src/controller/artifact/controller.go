@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnai"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
@@ -46,7 +47,7 @@ import (
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
-	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	trashmodel "github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
@@ -80,6 +81,7 @@ var (
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
 		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
+		cnai.ArtifactTypeCNAI:   icon.DigestOfIconCNAI,
 	}
 )
 
@@ -233,7 +235,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// populate the artifact type
-	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType(ctx, artifact)
+	artifact.Type = processor.Get(artifact.ResolveArtifactType()).GetArtifactType(ctx, artifact)
 
 	// create it
 	// use orm.WithTransaction here to avoid the issue:
@@ -451,7 +453,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	if err = orm.WithTransaction(func(ctx context.Context) error {
-		_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
+		_, err = c.artrashMgr.Create(ctx, &trashmodel.ArtifactTrash{
 			MediaType:         art.MediaType,
 			ManifestMediaType: art.ManifestMediaType,
 			RepositoryName:    art.RepositoryName,
@@ -613,7 +615,7 @@ func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition
 	if err != nil {
 		return nil, err
 	}
-	return processor.Get(artifact.MediaType).AbstractAddition(ctx, artifact, addition)
+	return processor.Get(artifact.ResolveArtifactType()).AbstractAddition(ctx, artifact, addition)
 }
 
 func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error) {
@@ -771,7 +773,7 @@ func (c *controller) populateLabels(ctx context.Context, art *Artifact) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types := processor.Get(artifact.MediaType).ListAdditionTypes(ctx, &artifact.Artifact)
+	types := processor.Get(artifact.ResolveArtifactType()).ListAdditionTypes(ctx, &artifact.Artifact)
 	if len(types) > 0 {
 		version := lib.GetAPIVersion(ctx)
 		for _, t := range types {
