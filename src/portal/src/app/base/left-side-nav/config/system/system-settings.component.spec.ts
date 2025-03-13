@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SystemSettingsComponent } from './system-settings.component';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
-import { of } from 'rxjs';
+import { delay, of, Subscription } from 'rxjs';
 import { Configuration } from '../config';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { ConfigService } from '../config.service';
 import { AppConfigService } from '../../../../services/app-config.service';
+import { AuditlogService } from 'ng-swagger-gen/services';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
 
 describe('SystemSettingsComponent', () => {
     let component: SystemSettingsComponent;
@@ -39,19 +41,50 @@ describe('SystemSettingsComponent', () => {
             return of(null);
         },
     };
-    beforeEach(() => {
-        TestBed.configureTestingModule({
+    const mockedAuditLogs = [
+        {
+            event_type: 'create_artifact',
+        },
+        {
+            event_type: 'delete_artifact',
+        },
+        {
+            event_type: 'pull_artifact',
+        },
+    ];
+    const fakeAuditlogService = {
+        listAuditLogEventTypesResponse() {
+            return of(
+                new HttpResponse({
+                    body: mockedAuditLogs,
+                    headers: new HttpHeaders({
+                        'x-total-count': '18',
+                    }),
+                })
+            ).pipe(delay(0));
+        },
+    };
+    const fakedErrorHandler = {
+        error() {
+            return undefined;
+        },
+    };
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
             providers: [
                 { provide: AppConfigService, useValue: fakedAppConfigService },
+                { provide: ErrorHandler, useValue: fakedErrorHandler },
                 { provide: ConfigService, useValue: fakeConfigService },
+                { provide: AuditlogService, useValue: fakeAuditlogService },
             ],
             declarations: [SystemSettingsComponent],
-        });
+        }).compileComponents();
     });
     beforeEach(() => {
         fixture = TestBed.createComponent(SystemSettingsComponent);
         component = fixture.componentInstance;
+        component.selectedLogEventTypes = ['create_artifact'];
         fixture.autoDetectChanges(true);
     });
 

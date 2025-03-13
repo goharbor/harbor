@@ -143,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "Şifreyi değiştir",
         "CURRENT_PWD": "Mevcut Şifre",
@@ -151,8 +157,10 @@
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
         "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
+
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Şifreyi Değiştir",
         "ABOUT": "Hakkında",
         "LOGOUT": "Çıkış"
@@ -179,6 +187,8 @@
             "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Kayıtlar",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "Görevler",
         "API_EXPLORER": "Api Explorer",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -526,9 +536,16 @@
         "REPOSITORY_NAME": "Depo İsmi",
         "TAGS": "Etiketler",
         "OPERATION": "Operasyon",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "Operasyonlar",
         "TIMESTAMP": "Zaman Damgası",
         "ALL_OPERATIONS": "Tüm Operasyonlar",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Çek",
         "PUSH": "Yükle",
         "CREATE": "Oluştur",
@@ -537,6 +554,7 @@
         "ADVANCED": "Gelişmiş",
         "SIMPLE": "Basit",
         "ITEMS": "adet",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "Günlükleri Filtrele",
         "INVALID_DATE": "Geçersiz tarih.",
         "OF": "of",
@@ -763,7 +781,7 @@
         "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
-        "PULL_COMMAND": "İndirme Komutu",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
         "IMMUTABLE": "Immutable",
@@ -1136,8 +1154,7 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
-        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1809,13 +1826,19 @@
         "HOURS": "Hours",
         "INCLUDED_OPERATIONS": "Included operations",
         "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
-        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+        "INCLUDED_OPERATION_ERROR": "Please select at least one operation",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "PURGE NOW",
         "PURGE_NOW_SUCCESS": "Purge triggered successfully",
         "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
         "PURGE_HISTORY": "Purge History",
         "FORWARD_ENDPOINT": "Audit Log Forward Syslog Endpoint",
         "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE": "Disable Audit Log Event Type",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be disabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "Skip Audit Log Database",
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
         "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",

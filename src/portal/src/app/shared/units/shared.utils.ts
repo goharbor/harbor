@@ -22,6 +22,11 @@ import {
     httpStatusCode,
     SupportedLanguage,
     LANGUAGES,
+    SupportedRuntime,
+    DEFAULT_RUNTIME_LOCALSTORAGE_KEY,
+    RUNTIMES,
+    DeFaultRuntime,
+    CUSTOM_RUNTIME_LOCALSTORAGE_KEY,
 } from '../entities/shared.const';
 
 /**
@@ -207,6 +212,35 @@ export const errorHandler = function (error: any): string {
         }
     }
 };
+
+/**
+ * Gets the container runtime saved by the user, or the default runtime if no valid saved value is found.
+ */
+export function getContainerRuntime(): SupportedRuntime {
+    const savedContainerRuntime = localStorage.getItem(
+        DEFAULT_RUNTIME_LOCALSTORAGE_KEY
+    );
+    if (savedContainerRuntime && isSupportedRuntime(savedContainerRuntime)) {
+        return savedContainerRuntime;
+    }
+    return DeFaultRuntime;
+}
+function isSupportedRuntime(x: unknown): x is SupportedRuntime {
+    return Object.keys(RUNTIMES).some(k => k === x);
+}
+
+/**
+ * Gets the custom container runtime saved by the user
+ */
+export function getCustomContainerRuntime(): SupportedRuntime {
+    const savedContainerRuntime = localStorage.getItem(
+        CUSTOM_RUNTIME_LOCALSTORAGE_KEY
+    );
+    if (savedContainerRuntime) {
+        return savedContainerRuntime;
+    }
+    return DeFaultRuntime;
+}
 
 /**
  * Gets the datetime rendering setting saved by the user, or the default setting if no valid saved value is found.

@@ -143,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "시크릿을 다시 생성할 수 있습니까?",
         "CONFIRM_BODY_CLI_GENERATE": "Cli 시크릿을 재생성하면 이전 Cli 시크릿이 삭제됩니다"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "비밀번호 변경",
         "CURRENT_PWD": "현재 비밀번호",
@@ -153,6 +159,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "사용자 프로필",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "비밀번호 변경",
         "ABOUT": "About",
         "LOGOUT": "로그아웃"
@@ -179,6 +186,8 @@
             "INTERROGATION_SERVICES": "질의 서비스"
         },
         "LOGS": "로그",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "테스크",
         "API_EXPLORER": "Api 탐색기",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -523,9 +532,16 @@
         "REPOSITORY_NAME": "저장소 이름",
         "TAGS": "태그",
         "OPERATION": "작업",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "작업들",
         "TIMESTAMP": "타임스탬프",
         "ALL_OPERATIONS": "모든 작업들",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "풀(Pull)",
         "PUSH": "푸시",
         "CREATE": "생성",
@@ -534,6 +550,7 @@
         "ADVANCED": "Advanced",
         "SIMPLE": "Simple",
         "ITEMS": "아이템",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "로그 필터",
         "INVALID_DATE": "잘못된 날짜.",
         "OF": "of",
@@ -760,7 +777,7 @@
         "ARTIFACT_TOOTIP": "이 OCI 인덱스의 아티팩트 목록을 보려면 클릭하세요.",
         "ARTIFACTS_COUNT": "아티팩트",
         "PULL_COUNT": "풀(Pull) 수",
-        "PULL_COMMAND": "풀(Pull) 명령어",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "풀(Pull) 시간",
         "PUSH_TIME": "푸시 시간",
         "IMMUTABLE": "Immutable",
@@ -1133,8 +1150,7 @@
         "TOOLTIP": "이 프로젝트에 아티팩트를 푸시하기 위한 명령 참조입니다.",
         "TAG_COMMAND": "이 프로젝트의 이미지에 태그를 지정:",
         "PUSH_COMMAND": "이 프로젝트에 이미지 푸시:",
-        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요.",
-        "COPY_PULL_COMMAND": "풀(PULL) 명령어 복사"
+        "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "아티팩트 필터",
@@ -1803,12 +1819,18 @@
         "INCLUDED_OPERATIONS": "포함된 작업",
         "INCLUDED_OPERATION_TOOLTIP": "선택한 작업에 대한 감사 로그 삭제",
         "INCLUDED_OPERATION_ERROR": "작업을 하나 이상 선택하세요.",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "지금 제거",
         "PURGE_NOW_SUCCESS": "제거가 성공적으로 발생됐습니다",
         "PURGE_SCHEDULE_RESET": "제거 예약이 초기화됐습니다",
         "PURGE_HISTORY": "제거 기록",
         "FORWARD_ENDPOINT": "감사 로그를 Syslog 엔트포인트로 전달",
         "FORWARD_ENDPOINT_TOOLTIP": "감사 로그를 syslog 엔드포인트로 전달합니다(예: harbor-log:10514)",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE": "Disable Audit Log Event Type",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be disabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "감사 로그 데이터베이스 건너뛰기",
         "SKIP_DATABASE_TOOLTIP": "데이터베이스의 감사 로그 로그로 건너뛰기, 감사 로그 전달 엔드포인트가 구성된 경우에만 사용 가능",
         "STOP_GC_SUCCESS": "가비지 컬렉션 작업 중지를 성공적으로 발생시켰습니다",
