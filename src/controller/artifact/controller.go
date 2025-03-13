@@ -25,6 +25,7 @@ import (
 
 	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
@@ -33,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -137,6 +139,7 @@ func NewController() Controller {
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
 		accessoryMgr: accessory.Mgr,
+		proCtl:       project.Ctl,
 	}
 }
 
@@ -151,6 +154,7 @@ type controller struct {
 	regCli       registry.Client
 	abstractor   Abstractor
 	accessoryMgr accessory.Manager
+	proCtl       project.Controller
 }
 
 type ArtOption struct {
@@ -175,18 +179,28 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 	}
-	if created {
-		// fire event for create
-		e := &metadata.PushArtifactEventMetadata{
-			Ctx:      ctx,
-			Artifact: artifact,
-		}
 
-		if option != nil && len(option.Tags) > 0 {
-			e.Tag = option.Tags[0]
-		}
-		notification.AddEvent(ctx, e)
+	projectName, _ := utils.ParseRepository(repository)
+	p, err := c.proCtl.GetByName(ctx, projectName)
+	if err != nil {
+		return false, 0, err
 	}
+
+	// Does not fire event only when the current project is a proxy-cache project and the artifact already exists.
+	if p.IsProxy() && !created {
+		return created, artifact.ID, nil
+	}
+
+	// fire event for create
+	e := &metadata.PushArtifactEventMetadata{
+		Ctx:      ctx,
+		Artifact: artifact,
+	}
+
+	if option != nil && len(option.Tags) > 0 {
+		e.Tag = option.Tags[0]
+	}
+	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
 }
 
