@@ -94,6 +94,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
+	github.com/CloudNativeAI/model-spec v0.0.1 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
