@@ -137,6 +137,7 @@ func NewController() Controller {
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
 		accessoryMgr: accessory.Mgr,
+		proCtl:       project.Ctl,
 	}
 }
 
@@ -151,6 +152,7 @@ type controller struct {
 	regCli       registry.Client
 	abstractor   Abstractor
 	accessoryMgr accessory.Manager
+	proCtl       project.Controller
 }
 
 type ArtOption struct {
@@ -177,7 +179,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 	}
 
 	projectName, _ := utils.ParseRepository(repository)
-	p, err := project.Ctl.GetByName(ctx, projectName)
+	p, err := c.proCtl.GetByName(ctx, projectName)
 	if err != nil {
 		return false, 0, err
 	}
