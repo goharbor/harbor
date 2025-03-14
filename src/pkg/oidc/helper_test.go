@@ -103,7 +103,7 @@ func TestAuthCodeURL(t *testing.T) {
 	}
 	ctx := orm.Context()
 	config.GetCfgManager(ctx).UpdateConfig(ctx, conf)
-	res, err := AuthCodeURL(ctx, "random")
+	res, err := AuthCodeURL(ctx, "random", "this-is-a-pkce-code")
 	assert.Nil(t, err)
 	u, err := url.ParseRequestURI(res)
 	assert.Nil(t, err)
@@ -111,6 +111,8 @@ func TestAuthCodeURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "test_value", q.Get("test_key"))
 	assert.Equal(t, "offline", q.Get("access_type"))
+	assert.True(t, len(q.Get("code_challenge")) > 0)
+	assert.Equal(t, "S256", q.Get("code_challenge_method"))
 	assert.False(t, strings.Contains(q.Get("scope"), "offline_access"))
 }
 
