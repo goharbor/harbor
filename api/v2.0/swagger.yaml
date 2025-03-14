@@ -9065,6 +9065,12 @@ definitions:
       oidc_extra_redirect_parms:
         $ref: '#/definitions/StringConfigItem'
         description: Extra parameters to add when redirect request to OIDC provider
+      oidc_logout:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user session from the OIDC provider
+      oidc_logout_offline:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user offline session from the OIDC provider
       robot_token_duration:
         $ref: '#/definitions/IntegerConfigItem'
         description: The robot account token duration in days
@@ -9337,6 +9343,16 @@ definitions:
       oidc_extra_redirect_parms:
         type: string
         description: Extra parameters to add when redirect request to OIDC provider
+        x-omitempty: true
+        x-isnullable: true
+      oidc_logout:
+        type: boolean
+        description: Logout OIDC user session
+        x-omitempty: true
+        x-isnullable: true
+      oidc_logout_offline:
+        type: boolean
+        description: Logout OIDC user offline session
         x-omitempty: true
         x-isnullable: true
       robot_token_duration:
