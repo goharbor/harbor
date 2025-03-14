@@ -57,9 +57,13 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
 
     ngOnInit(): void {
         this.activeTab = this.tab;
-        if (!this.activeTab) {
+
+        if (!this.activeTab && this.additionLinks[ADDITIONS.VULNERABILITIES]) {
             this.currentTabLinkId = 'vulnerability';
+        } else if (!this.activeTab && this.additionLinks[ADDITIONS.SUMMARY]) {
+            this.currentTabLinkId = 'summary-link';
         }
+
         this.artifactListPageService.init(this.projectId);
     }
 
@@ -109,6 +113,20 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     getValues(): AdditionLink {
         if (this.additionLinks && this.additionLinks[ADDITIONS.VALUES]) {
             return this.additionLinks[ADDITIONS.VALUES];
+        }
+        return null;
+    }
+
+    getFile(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.FILES]) {
+            return this.additionLinks[ADDITIONS.FILES];
+        }
+        return null;
+    }
+
+    getLicense(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.LICENSE]) {
+            return this.additionLinks[ADDITIONS.LICENSE];
         }
         return null;
     }

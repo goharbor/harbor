@@ -1,0 +1,16 @@
+<div class="row content-wrapper" *ngIf="!loading">
+    <div class="col-md-8">
+        <div class="col-xs-8">
+            <div
+                *ngIf="license"
+                class="yaml-container"
+                [innerHTML]="license | language | markdown"></div>
+        </div>
+        <div class="md-container pl-1" *ngIf="!license">
+            {{ 'ARTIFACT.NO_LICENSE' | translate }}
+        </div>
+    </div>
+</div>
+<div *ngIf="loading" class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
