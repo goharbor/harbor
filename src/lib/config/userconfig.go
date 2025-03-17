@@ -178,7 +178,6 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 		UserClaim:          mgr.Get(ctx, common.OIDCUserClaim).GetString(),
 		ExtraRedirectParms: mgr.Get(ctx, common.OIDCExtraRedirectParms).GetStringToStringMap(),
 		Logout:             mgr.Get(ctx, common.OIDCLogout).GetBool(),
-		LogoutOffline:      mgr.Get(ctx, common.OIDCLogoutOffline).GetBool(),
 	}, nil
 }
 

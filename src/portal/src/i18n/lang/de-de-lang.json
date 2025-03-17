@@ -107,8 +107,7 @@
         "OIDC_AUTOONBOARD": "Überspringe die Startseite, hierdurch können Nutzer ihren Nutzernamen nicht ändern. Der Nutzername wird aus dem ID Token übernommen.",
         "OIDC_USER_CLAIM": "Der Name des Claims im ID Token, aus dem der Nutzername stammt. Falls das Feld leer ist, wird 'name' verwendet.",
         "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer.",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
-        "OIDC_LOGOUT_OFFLINE": "Logs the user out of their current offline session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Aktuelles Passwort eingeben",
@@ -989,7 +988,6 @@
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
             "OIDC_LOGOUT": "OIDC Session Logout",
-            "OIDC_LOGOUT_OFFLINE": "OIDC Offline Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",

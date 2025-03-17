@@ -247,18 +247,17 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 
 func TestOIDCSetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.OIDCName:          "test",
-		common.OIDCEndpoint:      "https://oidc.test",
-		common.OIDCVerifyCert:    "true",
-		common.OIDCAutoOnboard:   "false",
-		common.OIDCScope:         "openid, profile",
-		common.OIDCGroupsClaim:   "my_group",
-		common.OIDCUserClaim:     "username",
-		common.OIDCCLientID:      "client",
-		common.OIDCClientSecret:  "secret",
-		common.ExtEndpoint:       "https://harbor.test",
-		common.OIDCLogout:        "false",
-		common.OIDCLogoutOffline: "false",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://oidc.test",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCAutoOnboard:  "false",
+		common.OIDCScope:        "openid, profile",
+		common.OIDCGroupsClaim:  "my_group",
+		common.OIDCUserClaim:    "username",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
+		common.OIDCLogout:       "false",
 	}
 	InitWithSettings(m)
 	v, e := OIDCSetting(orm.Context())
@@ -274,7 +273,6 @@ func TestOIDCSetting(t *testing.T) {
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
 	assert.False(t, v.Logout)
-	assert.False(t, v.LogoutOffline)
 }
 
 func TestSplitAndTrim(t *testing.T) {

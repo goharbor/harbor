@@ -106,8 +106,7 @@
         "OIDC_AUTOONBOARD": "Pular tela de alteração durante o cadastro automático. Informações, como nome e e-mail, virão do provedor externo.",
         "OIDC_USER_CLAIM": "Nome da propriedade (claim) cujo valor representa o nome de usuário (login). Se não informado, 'name' será usado.",
         "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número.",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
-        "OIDC_LOGOUT_OFFLINE": "Logs the user out of their current offline session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Informe a senha atual",
@@ -986,7 +985,6 @@
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
             "OIDC_LOGOUT": "OIDC Session Logout",
-            "OIDC_LOGOUT_OFFLINE": "OIDC Offline Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Todos os exames foram interrompidos!",

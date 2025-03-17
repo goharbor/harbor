@@ -23,7 +23,8 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../services/message-handler.service';
 import { SkinableConfig } from '../../../services/skinable-config.service';
 import {
-    CommonRoutes, CONFIG_AUTH_MODE,
+    CommonRoutes,
+    CONFIG_AUTH_MODE,
     DATETIME_RENDERINGS,
     DatetimeRendering,
     DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
@@ -44,7 +45,7 @@ import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interfa
 import { map } from 'rxjs/operators';
 import { forkJoin, Observable } from 'rxjs';
 import { ClrCommonStringsService } from '@clr/angular';
-import {signInStatusError} from "../../../account/sign-in/sign-in.component";
+import { signInStatusError } from '../../../account/sign-in/sign-in.component';
 
 @Component({
     selector: 'navigator',
@@ -130,7 +131,7 @@ export class NavigatorComponent implements OnInit {
         return (
             this.appConfigService.getConfig() &&
             this.appConfigService.getConfig().auth_mode ===
-            CONFIG_AUTH_MODE.OIDC_AUTH
+                CONFIG_AUTH_MODE.OIDC_AUTH
         );
     }
     public get currentDatetimeRendering(): string {
@@ -217,7 +218,10 @@ export class NavigatorComponent implements OnInit {
                 let navigatorExtra: NavigationExtras = {
                     queryParams: { signout, redirect_url },
                 };
-                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+                this.router.navigate(
+                    [CommonRoutes.EMBEDDED_SIGN_IN],
+                    navigatorExtra
+                );
                 // Confirm search result panel is close
                 this.searchTrigger.closeSearch(true);
             },
@@ -241,7 +245,6 @@ export class NavigatorComponent implements OnInit {
                 this.handleError(error);
             }
         );
-
     }
 
     // Switch languages

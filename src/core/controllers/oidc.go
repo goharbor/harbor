@@ -15,9 +15,7 @@
 package controllers
 
 import (
-	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -251,14 +249,14 @@ func (oc *OIDCController) Callback() {
 func (oc *OIDCController) RedirectLogout() {
 	sessionData := oc.GetSession(tokenKey)
 	ctx := oc.Ctx.Request.Context()
-	if sessionData == nil {
-		log.Error("OIDC session token not found.")
-		oc.SendInternalServerError(fmt.Errorf("OIDC session token not found"))
-		return
-	}
 	if err := oc.DestroySession(); err != nil {
 		log.Errorf("Error occurred in LogOut: %v", err)
 		oc.SendInternalServerError(err)
+		return
+	}
+	if sessionData == nil {
+		log.Warningf("OIDC session token not found.")
+		oc.Controller.Redirect("/", http.StatusFound)
 		return
 	}
 	oidcSettings, err := config.OIDCSetting(ctx)
@@ -288,33 +286,20 @@ func (oc *OIDCController) RedirectLogout() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	if oidcSettings.LogoutOffline && token.RefreshToken != "" {
+	if token.RefreshToken != "" {
 		sessionType, err := getSessionType(token.RefreshToken)
 		if err == nil {
-			// If the session is offline, revoke the refresh token
-			if strings.ToLower(sessionType) == "offline" {
-				if oidc.EndpointsClaims.RevokeURL != "" {
-					if err := revokeOIDCRefreshToken(oidc.EndpointsClaims.RevokeURL, token.RefreshToken, oidcSettings.ClientID, oidcSettings.ClientSecret); err != nil {
-						log.Errorf("Failed to revoke the offline session: %v", err)
-						oc.SendInternalServerError(err)
-						return
-					}
-				} else {
-					log.Warning("Unable to logout OIDC offline session since the 'revoke_endpoint' is not set.")
+			// If the session is offline, try best to revoke the refresh token.
+			if strings.ToLower(sessionType) == "offline" && oidc.EndpointsClaims.RevokeURL != "" {
+				if err := oidc.RevokeOIDCRefreshToken(oidc.EndpointsClaims.RevokeURL, token.RefreshToken, oidcSettings.ClientID, oidcSettings.ClientSecret, oidcSettings.VerifyCert); err != nil {
+					log.Warningf("Failed to revoke the offline session: %v", err)
 				}
 			}
-		} else {
-			log.Warningf("Invalid refresh token for offline session: %s, error: %v", token.RefreshToken, err)
 		}
 	}
-
 	if token.RawIDToken == "" {
 		log.Warning("Empty ID token for offline session.")
-		oc.Controller.Redirect(".", http.StatusFound)
-		return
-	}
-	if _, err := oidc.VerifyToken(ctx, token.RawIDToken); err != nil {
-		oc.SendInternalServerError(err)
+		oc.Controller.Redirect("/", http.StatusFound)
 		return
 	}
 	if oidc.EndpointsClaims.EndSessionURL == "" {
@@ -329,14 +314,13 @@ func (oc *OIDCController) RedirectLogout() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	postLogoutRedirectURI := fmt.Sprintf("%s/harbor/projects", baseURL)
 	logoutURL := fmt.Sprintf(
 		"%s?id_token_hint=%s&post_logout_redirect_uri=%s",
 		endSessionURL,
 		url.QueryEscape(token.RawIDToken),
-		url.QueryEscape(postLogoutRedirectURI),
+		url.QueryEscape(baseURL),
 	)
-	log.Info("Redirecting user to OIDC logout:", logoutURL)
+	log.Info("Redirect user to logout page of OIDC provider:", logoutURL)
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
 }
 
@@ -454,32 +438,4 @@ func getSessionType(refreshToken string) (string, error) {
 		return "", errors.New("missing 'typ' claim in refresh token")
 	}
 	return typ, nil
-}
-
-// revokeOIDCRefreshToken revokes an offline session using the refresh token
-func revokeOIDCRefreshToken(revokeURL, refreshToken, clientID, clientSecret string) error {
-	data := url.Values{}
-	data.Set("token", refreshToken)
-	data.Set("token_type_hint", "refresh_token")
-	auth := base64.StdEncoding.EncodeToString([]byte(clientID + ":" + clientSecret))
-	req, err := http.NewRequest("POST", revokeURL, bytes.NewBufferString(data.Encode()))
-	if err != nil {
-		return errors.Errorf("failed to create request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Basic "+auth)
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return errors.Errorf("request failed: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
-		return errors.Errorf("logout failed, status: %d", resp.StatusCode)
-	}
-	return nil
 }
