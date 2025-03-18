@@ -989,7 +989,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Spécifie le nom d'un groupe d'admin OIDC. Tous les utilisateurs OIDC de ce groupe auront les droits d'admin dans Harbor. Laisser vide pour ne pas l'utiliser.",
             "OIDC_GROUP_FILTER": "Filtre de groupe OIDC",
             "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Déclenchement avec succès de l'arrêt de l'analyse globale !",

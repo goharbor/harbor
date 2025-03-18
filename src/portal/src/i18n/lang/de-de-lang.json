@@ -987,7 +987,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
