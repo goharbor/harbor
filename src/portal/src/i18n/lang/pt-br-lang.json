@@ -984,7 +984,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Informe o nome do grupo OIDC que será considerado administrativo. Todos os usuários deste grupo obterão privilégios de adiministração no Harbor. Deixe vazio para ser ignorado.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Todos os exames foram interrompidos!",
@@ -1170,6 +1170,8 @@
         "SCAN_UNSUPPORTED": "Não pode ser examinada",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Resumo",
+        "LICENSE": "Licença",
+        "FILES": "Archivos",
         "DEPENDENCIES": "Dependências",
         "VALUES": "Valores",
         "NAME": "Nome",
@@ -1177,6 +1179,9 @@
         "OF": "de",
         "VERSION": "Versão",
         "NO_README": "Nenhum arquivo de README fornecido por esse chart.",
+        "NO_LICENSE": "Nenhum arquivo LICENSE é fornecido para este modelo.",
+        "NO_FILES": "Nenhum arquivo fornecido para este modelo.",
+        "MODEL_NO_README": "Não há arquivo README fornecido para este modelo.",
         "ITEMS": "itens",
         "SHOW_KV": "Pares chave-valor",
         "SHOW_YAML": "Arquivo YAML"

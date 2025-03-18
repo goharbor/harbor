@@ -986,7 +986,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Especifique un nombre de grupo de administración de OIDC. Todos los usuarios de OIDC en este grupo tendrán privilegios de administrador de puerto. Déjelo en blanco si no lo desea.",
             "OIDC_GROUP_FILTER": "OIDC Filtro Grupo",
             "OIDC_GROUP_FILTER_INFO": "Filtrar grupos OIDC que coincidan con la expresión regular proporcionada. Déjelo en blanco para que coincida con todos los grupos.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Activar detener escanear todos satisfactoriamente!",
@@ -1172,6 +1172,8 @@
         "SCAN_UNSUPPORTED": "No soportado",
         "SBOM_UNSUPPORTED": "No soportado",
         "SUMMARY": "Resumen",
+        "LICENSE": "License",
+        "FILES": "Archivos",
         "DEPENDENCIES": "Dependencias",
         "VALUES": "Valores",
         "NAME": "Nombre",
@@ -1179,6 +1181,9 @@
         "OF": "de",
         "VERSION": "Versión",
         "NO_README": "Sin archivo readme para este chart.",
+        "NO_LICENSE": "Sin archivo license para este modelo.",
+        "NO_FILES": "No se proporcionan archivos para este modelo.",
+        "MODEL_NO_README": "Sin archivo readme para este modelo.",
         "ITEMS": "items",
         "SHOW_KV": "Pares Key Value",
         "SHOW_YAML": "Archivo YAML"

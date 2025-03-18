@@ -40,6 +40,9 @@
     </div>
 </div>
 <ng-container *ngIf="!loading">
+    <!-- labels -->
+    <artifact-label [artifactDetails]="artifact"></artifact-label>
+
     <!-- tags -->
     <artifact-tag
         [artifactDetails]="artifact"

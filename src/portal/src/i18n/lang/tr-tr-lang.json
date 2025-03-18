@@ -988,7 +988,7 @@
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
             "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
@@ -1174,6 +1174,8 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Özet",
+        "LICENSE": "Lisans",
+        "FILES": "Dosyalar",
         "DEPENDENCIES": "Bağımlılıklar",
         "VALUES": "Değerler",
         "NAME": "İsim",
@@ -1181,6 +1183,9 @@
         "OF": "of",
         "VERSION": "Versiyon",
         "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
+        "NO_LICENSE": "Bu tablo bir lisans dosyası sağlamamaktadır.",
+        "NO_FILES": "Bu Model için dosya sağlanmadı.",
+        "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",
         "SHOW_YAML": "YAML Dosyası"
