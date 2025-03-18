@@ -16,9 +16,11 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -244,6 +246,84 @@ func (oc *OIDCController) Callback() {
 	}
 }
 
+func (oc *OIDCController) RedirectLogout() {
+	sessionData := oc.GetSession(tokenKey)
+	ctx := oc.Ctx.Request.Context()
+	if err := oc.DestroySession(); err != nil {
+		log.Errorf("Error occurred in LogOut: %v", err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	if sessionData == nil {
+		log.Warningf("OIDC session token not found.")
+		oc.Controller.Redirect("/", http.StatusFound)
+		return
+	}
+	oidcSettings, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Errorf("Failed to get OIDC settings: %v", err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	if oidcSettings == nil {
+		log.Error("OIDC settings is missing.")
+		oc.SendInternalServerError(fmt.Errorf("OIDC settings is missing"))
+		return
+	}
+	if !oidcSettings.Logout {
+		oc.Controller.Redirect("/", http.StatusFound)
+		return
+	}
+	tk, ok := sessionData.([]byte)
+	if !ok {
+		log.Error("Invalid OIDC session data format.")
+		oc.SendInternalServerError(fmt.Errorf("invalid OIDC session data format"))
+		return
+	}
+	token := oidc.Token{}
+	if err := json.Unmarshal(tk, &token); err != nil {
+		log.Errorf("Error occurred in Unmarshal: %v", err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	if token.RefreshToken != "" {
+		sessionType, err := getSessionType(token.RefreshToken)
+		if err == nil {
+			// If the session is offline, try best to revoke the refresh token.
+			if strings.ToLower(sessionType) == "offline" && oidc.EndpointsClaims.RevokeURL != "" {
+				if err := oidc.RevokeOIDCRefreshToken(oidc.EndpointsClaims.RevokeURL, token.RefreshToken, oidcSettings.ClientID, oidcSettings.ClientSecret, oidcSettings.VerifyCert); err != nil {
+					log.Warningf("Failed to revoke the offline session: %v", err)
+				}
+			}
+		}
+	}
+	if token.RawIDToken == "" {
+		log.Warning("Empty ID token for offline session.")
+		oc.Controller.Redirect("/", http.StatusFound)
+		return
+	}
+	if oidc.EndpointsClaims.EndSessionURL == "" {
+		log.Warning("Unable to logout OIDC session since the 'end_session_point' is not set.")
+		oc.Controller.Redirect("/", http.StatusFound)
+		return
+	}
+	endSessionURL := oidc.EndpointsClaims.EndSessionURL
+	baseURL, err := config.ExtEndpoint()
+	if err != nil {
+		log.Errorf("Failed to get external endpoint: %v", err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	logoutURL := fmt.Sprintf(
+		"%s?id_token_hint=%s&post_logout_redirect_uri=%s",
+		endSessionURL,
+		url.QueryEscape(token.RawIDToken),
+		url.QueryEscape(baseURL),
+	)
+	log.Info("Redirect user to logout page of OIDC provider:", logoutURL)
+	oc.Controller.Redirect(logoutURL, http.StatusFound)
+}
+
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
 	s, t, err := secretAndToken(tokenBytes)
 	if err != nil {
@@ -337,4 +417,25 @@ func secretAndToken(tokenBytes []byte) (string, string, error) {
 		return "", "", err
 	}
 	return secret, token, nil
+}
+
+// getSessionType determines if the session is offline by decoding the refresh token or not
+func getSessionType(refreshToken string) (string, error) {
+	parts := strings.Split(refreshToken, ".")
+	if len(parts) != 3 {
+		return "", errors.Errorf("invalid refresh token")
+	}
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", errors.Errorf("failed to decode refresh token: %v", err)
+	}
+	var claims map[string]interface{}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return "", errors.Errorf("failed to unmarshal refresh token: %v", err)
+	}
+	typ, ok := claims["typ"].(string)
+	if !ok {
+		return "", errors.New("missing 'typ' claim in refresh token")
+	}
+	return typ, nil
 }
