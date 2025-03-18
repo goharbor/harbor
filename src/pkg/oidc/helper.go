@@ -15,10 +15,12 @@
 package oidc
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -32,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
@@ -52,6 +55,11 @@ type providerHelper struct {
 	sync.Mutex
 	instance     atomic.Value
 	creationTime time.Time
+}
+
+var EndpointsClaims struct {
+	EndSessionURL string `json:"end_session_endpoint"`
+	RevokeURL     string `json:"revocation_endpoint"`
 }
 
 func (p *providerHelper) get(ctx context.Context) (*gooidc.Provider, error) {
@@ -84,6 +92,10 @@ func (p *providerHelper) create(ctx context.Context) error {
 	provider, err := gooidc.NewProvider(c, s.Endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
+	}
+	err = provider.Claims(&EndpointsClaims)
+	if err != nil {
+		return err
 	}
 	p.instance.Store(provider)
 	p.creationTime = time.Now()
@@ -484,4 +496,34 @@ func TestEndpoint(conn Conn) error {
 	ctx := clientCtx(context.Background(), conn.VerifyCert)
 	_, err := gooidc.NewProvider(ctx, conn.URL)
 	return err
+}
+
+// RevokeOIDCRefreshToken revokes an offline session using the refresh token
+func RevokeOIDCRefreshToken(revokeURL, refreshToken, clientID, clientSecret string, verifyCert bool) error {
+	data := url.Values{}
+	data.Set("token", refreshToken)
+	data.Set("token_type_hint", "refresh_token")
+	req, err := http.NewRequest("POST", revokeURL, bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		return errors.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(clientID, clientSecret)
+	var client *http.Client
+	if !verifyCert {
+		client = &http.Client{
+			Transport: insecureTransport,
+		}
+	} else {
+		client = &http.Client{}
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Errorf("request failed: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
+		return errors.Errorf("logout failed, status: %d", resp.StatusCode)
+	}
+	return nil
 }
