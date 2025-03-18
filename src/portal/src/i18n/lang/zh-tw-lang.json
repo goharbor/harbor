@@ -1171,6 +1171,8 @@
         "SCAN_UNSUPPORTED": "不支援掃描",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "摘要",
+        "LICENSE": "許可證",
+        "FILES": "文件",
         "DEPENDENCIES": "相依性",
         "VALUES": "值",
         "NAME": "名稱",
@@ -1178,6 +1180,9 @@
         "OF": "共計",
         "VERSION": "版本",
         "NO_README": "此 Helm Chart 未提供 README 文件",
+        "NO_LICENSE": "此 Model 未提供 LICENSE 文件",
+        "NO_FILES": "此 Model 未提供文件",
+        "MODEL_NO_README": "此 Model 未提供 README 文件",
         "ITEMS": "筆紀錄",
         "SHOW_KV": "顯示鍵值對",
         "SHOW_YAML": "顯示 YAML 檔案"

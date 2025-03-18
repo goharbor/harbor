@@ -12,47 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, OnInit } from '@angular/core';
-import { AdditionsService } from '../additions.service';
-import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
-import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { finalize } from 'rxjs/operators';
-import { Artifact } from 'ng-swagger-gen/models/artifact';
+import { AdditionLink } from 'ng-swagger-gen/models';
+import { AdditionsService } from '../additions.service';
+import { ErrorHandler } from '../../../../../../shared/units/error-handler';
+import { FilesItem } from 'src/app/shared/services/interface';
+import { formatSize } from 'src/app/shared/units/utils';
 
 @Component({
-    selector: 'hbr-artifact-summary',
-    templateUrl: './summary.component.html',
-    styleUrls: ['./summary.component.scss'],
+    selector: 'hbr-artifact-files',
+    templateUrl: './files.component.html',
+    styleUrls: ['./files.component.scss'],
 })
-export class SummaryComponent implements OnInit {
-    @Input() summaryLink: AdditionLink;
-    @Input() artifactDetails: Artifact;
-    readme: string;
-    type: string;
-    loading: boolean = false;
+export class ArtifactFilesComponent implements OnInit {
+    @Input() filesLink: AdditionLink;
+    filesList: FilesItem[] = [];
+    loading: Boolean = false;
+    expandedNodes: Set<string> = new Set();
     constructor(
         private errorHandler: ErrorHandler,
         private additionsService: AdditionsService
     ) {}
 
     ngOnInit(): void {
-        if (this.artifactDetails) {
-            this.type = this.artifactDetails.type;
-        }
-        this.getReadme();
+        this.getFiles();
     }
-    getReadme() {
-        if (
-            this.summaryLink &&
-            !this.summaryLink.absolute &&
-            this.summaryLink.href
-        ) {
+    getFiles() {
+        if (this.filesLink && !this.filesLink.absolute && this.filesLink.href) {
             this.loading = true;
             this.additionsService
-                .getDetailByLink(this.summaryLink.href, false, true)
+                .getDetailByLink(this.filesLink.href, false, false)
                 .pipe(finalize(() => (this.loading = false)))
                 .subscribe(
                     res => {
-                        this.readme = this.removeFrontMatter(res);
+                        if (res && res.length) {
+                            this.filesList = res;
+                        }
                     },
                     error => {
                         this.errorHandler.error(error);
@@ -61,7 +56,19 @@ export class SummaryComponent implements OnInit {
         }
     }
 
-    removeFrontMatter(content: string): string {
-        return content.replace(/^---[\s\S]*?---\s*/, '');
+    getChildren(folder: any) {
+        return folder.children || [];
+    }
+
+    sizeTransform(tagSize: string): string {
+        return formatSize(tagSize);
+    }
+
+    toggleNodeExpansion(nodeName: string): void {
+        if (this.expandedNodes.has(nodeName)) {
+            this.expandedNodes.delete(nodeName);
+        } else {
+            this.expandedNodes.add(nodeName);
+        }
     }
 }
