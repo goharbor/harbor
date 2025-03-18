@@ -19,7 +19,6 @@
     position: relative;
 
     .label {
-        position: absolute;
         right: 0;
         margin-right: 0;
     }
@@ -43,6 +42,15 @@
     align-content: center;
     justify-content: space-between;
     align-items: center;
+}
+
+.pull-label {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 8px;
+    align-content: flex-end;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .refresh-btn {
