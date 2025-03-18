@@ -15,6 +15,10 @@
         color: #fff;
         font-size: 12px;
         height: calc(4px * 6);
+
+        .capitalize-first-letter::first-letter {
+            text-transform: uppercase;
+        }
     }
 
     .artifact-icon {

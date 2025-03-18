@@ -35,10 +35,10 @@ export class SummaryComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.getReadme();
         if (this.artifactDetails) {
             this.type = this.artifactDetails.type;
         }
+        this.getReadme();
     }
     getReadme() {
         if (

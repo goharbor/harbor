@@ -21,7 +21,7 @@ import { Artifact } from 'ng-swagger-gen/models/artifact';
 })
 export class ArtifactLabelComponent implements OnInit {
     @Input() artifactDetails: Artifact;
-    artifactExtraAttrs: { [key: string]: any } = {};
+    artifactExtraAttrs: Record<string, any>;
     type: string;
 
     constructor() {}
@@ -31,10 +31,5 @@ export class ArtifactLabelComponent implements OnInit {
             this.artifactExtraAttrs = this.artifactDetails.extra_attrs;
             this.type = this.artifactDetails.type;
         }
-    }
-
-    capitalizeFirstLetter(text: string): string {
-        if (!text) return text;
-        return text.charAt(0).toUpperCase() + text.slice(1);
     }
 }

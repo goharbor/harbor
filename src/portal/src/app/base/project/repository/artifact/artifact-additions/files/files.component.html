@@ -22,8 +22,8 @@
                                 "></clr-icon>
                             {{ file.name }}
                         </div>
-                        <div *ngIf="file.size">
-                            {{ file.size ? sizeTransform(file.size + '') : '' }}
+                        <div *ngIf="file.size === 0 || file.size">
+                            {{ sizeTransform(file.size + '') }}
                         </div>
                     </div>
                 </clr-tree-node>

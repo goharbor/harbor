@@ -5,8 +5,8 @@
             [src]="'images/artifact-label-transformer.svg'"
             class="artifact-icon" />
 
-        <span>{{
-            capitalizeFirstLetter(artifactExtraAttrs.config.architecture)
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.architecture
         }}</span>
     </div>
     <div class="label" *ngIf="artifactExtraAttrs.config.format">
@@ -21,8 +21,8 @@
                     : 'images/artifact-label-safetensor.svg'
             "
             class="artifact-icon" />
-        <span>{{
-            capitalizeFirstLetter(artifactExtraAttrs.config.format)
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.format
         }}</span>
     </div>
     <div class="label" *ngIf="artifactExtraAttrs.descriptor.name">
