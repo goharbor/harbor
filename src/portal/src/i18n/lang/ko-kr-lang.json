@@ -984,7 +984,7 @@
             "OIDC_ADMIN_GROUP_INFO": "OIDC 관리자 그룹 이름을 지정합니다. 이 그룹의 모든 OIDC 사용자는 항구 관리자 권한을 갖습니다. 원하지 않으시면 비워두세요.",
             "OIDC_GROUP_FILTER": "OIDC 그룹 필터",
             "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요.",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "트리거 정지 스캔이 모두 성공적으로 완료되었습니다!",

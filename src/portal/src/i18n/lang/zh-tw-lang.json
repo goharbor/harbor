@@ -985,7 +985,7 @@
             "OIDC_ADMIN_GROUP_INFO": "指定 OIDC 管理員群組名稱。此群組中的所有 OIDC 使用者都將具有 Harbor 管理員權限。如果您不需要，此欄可以留空。",
             "OIDC_GROUP_FILTER": "OIDC 群組篩選器",
             "OIDC_GROUP_FILTER_INFO": "篩選符合提供的正規表達式的 OIDC 群組。保持空白以選取所有群組。",
-            "OIDC_LOGOUT": "OIDC Session Logout",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "成功觸發停止全部掃描！",
