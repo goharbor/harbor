@@ -212,6 +212,13 @@ export interface VulnerabilityItem extends VulnerabilityBase {
     };
 }
 
+export interface FilesItem {
+    name: string;
+    type: 'file' | 'directory';
+    size?: number;
+    children?: FilesItem[];
+}
+
 export interface VulnerabilitySummary {
     report_id?: string;
     mime_type?: string;

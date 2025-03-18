@@ -1,0 +1,40 @@
+<div class="artifact-label" *ngIf="type === 'CNAI'">
+    <div class="label" *ngIf="artifactExtraAttrs.config.architecture">
+        <img
+            *ngIf="artifactExtraAttrs.config.architecture === 'transformer'"
+            [src]="'images/artifact-label-transformer.svg'"
+            class="artifact-icon" />
+
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.architecture
+        }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.format">
+        <img
+            *ngIf="
+                artifactExtraAttrs.config.format === 'tensorflow' ||
+                artifactExtraAttrs.config.format === 'safetensors'
+            "
+            [src]="
+                artifactExtraAttrs.config.format === 'tensorflow'
+                    ? 'images/artifact-label-tensorflow.svg'
+                    : 'images/artifact-label-safetensor.svg'
+            "
+            class="artifact-icon" />
+        <span class="capitalize-first-letter">{{
+            artifactExtraAttrs.config.format
+        }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.descriptor.name">
+        <span>{{ artifactExtraAttrs.descriptor.name }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.precision">
+        <span>{{ artifactExtraAttrs.config.precision }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.config.puantization">
+        <span>{{ artifactExtraAttrs.config.puantization }}</span>
+    </div>
+    <div class="label" *ngIf="artifactExtraAttrs.descriptor.family">
+        <span>{{ artifactExtraAttrs.descriptor.family }}</span>
+    </div>
+</div>
