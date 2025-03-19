@@ -62,6 +62,9 @@ export class GroupComponent implements OnInit, OnDestroy {
     groups: UserGroup[] = [];
     currentPage: number = 1;
     totalCount: number = 0;
+    pageSizeOptions: number[] = [15, 25, 50];
+    // user input
+    newPageSize: number;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.SYSTEM_GROUP_COMPONENT
     );
@@ -138,6 +141,7 @@ export class GroupComponent implements OnInit, OnDestroy {
                     }
                 );
         }
+        this.loadPageSizeOptions();
     }
     ngOnDestroy(): void {
         this.delSub.unsubscribe();
@@ -306,6 +310,36 @@ export class GroupComponent implements OnInit, OnDestroy {
             this.loadData();
         }
     }
+
+    // load page size options from the local storage if set
+    loadPageSizeOptions() {
+        const additionalSizes = JSON.parse(
+            localStorage.getItem('pageSizeOptions')
+        );
+        if (additionalSizes) {
+            this.pageSizeOptions = [
+                ...this.pageSizeOptions,
+                ...additionalSizes,
+            ];
+        }
+    }
+
+    addPageSize() {
+        if (
+            this.newPageSize &&
+            !this.pageSizeOptions.includes(this.newPageSize)
+        ) {
+            this.pageSizeOptions.push(this.newPageSize);
+            // sort the page size options array
+            this.pageSizeOptions.sort((a, b) => a - b);
+            // save new options into local storage
+            localStorage.setItem(
+                'pageSizeOptions',
+                JSON.stringify(this.pageSizeOptions)
+            );
+        }
+    }
+
     get canAddGroup(): boolean {
         return this.session.currentUser.has_admin_role;
     }
