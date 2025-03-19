@@ -1183,6 +1183,7 @@
         "NO_LICENSE": "此 Model 未提供 LICENSE 文件",
         "NO_FILES": "此 Model 未提供文件",
         "MODEL_NO_README": "此 Model 未提供 README 文件",
+        "FILE_TOO_LARGE": "文件太大,無法處理",
         "ITEMS": "筆紀錄",
         "SHOW_KV": "顯示鍵值對",
         "SHOW_YAML": "顯示 YAML 檔案"
