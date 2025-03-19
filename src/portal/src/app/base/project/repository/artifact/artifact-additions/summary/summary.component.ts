@@ -28,6 +28,8 @@ export class SummaryComponent implements OnInit {
     @Input() artifactDetails: Artifact;
     readme: string;
     type: string;
+    fileTooLargeStatus: boolean = false;
+    noReadmeStatus: boolean = false;
     loading: boolean = false;
     constructor(
         private errorHandler: ErrorHandler,
@@ -55,7 +57,16 @@ export class SummaryComponent implements OnInit {
                         this.readme = this.removeFrontMatter(res);
                     },
                     error => {
-                        this.errorHandler.error(error);
+                        if (this.type === 'CNAI' && error.status === 404) {
+                            this.noReadmeStatus = true;
+                        } else if (
+                            this.type === 'CNAI' &&
+                            error.status === 422
+                        ) {
+                            this.fileTooLargeStatus = true;
+                        } else {
+                            this.errorHandler.error(error);
+                        }
                     }
                 );
         }

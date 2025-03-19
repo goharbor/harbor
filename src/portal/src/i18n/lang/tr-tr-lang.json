@@ -1185,7 +1185,8 @@
         "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
         "NO_LICENSE": "Bu tablo bir lisans dosyası sağlamamaktadır.",
         "NO_FILES": "Bu Model için dosya sağlanmadı.",
-        "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
+        "MODEL_NO_README": "Dosya işlenemeyecek kadar büyük",
+        "FILE_TOO_LARGE": "文件太大,無法處理",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",
         "SHOW_YAML": "YAML Dosyası"
