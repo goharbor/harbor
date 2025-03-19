@@ -1182,6 +1182,7 @@
         "NO_LICENSE": "Nenhum arquivo LICENSE é fornecido para este modelo.",
         "NO_FILES": "Nenhum arquivo fornecido para este modelo.",
         "MODEL_NO_README": "Não há arquivo README fornecido para este modelo.",
+        "FILE_TOO_LARGE": "O arquivo é muito grande para ser processado.",
         "ITEMS": "itens",
         "SHOW_KV": "Pares chave-valor",
         "SHOW_YAML": "Arquivo YAML"

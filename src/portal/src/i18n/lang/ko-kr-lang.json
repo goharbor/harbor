@@ -1177,6 +1177,10 @@
         "OF": "of",
         "VERSION": "버전",
         "NO_README": "이 차트에서는 추가 정보 파일이 제공되지 않습니다.",
+        "NO_LICENSE": "이 모델에는 라이센스 파일이 제공되지 않습니다.",
+        "NO_FILES": "이 모델에 대해 제공된 파일이 없습니다.",
+        "MODEL_NO_README": "이 모델에는 README 파일이 제공되지 않습니다.",
+        "FILE_TOO_LARGE": "파일이 너무 커서 처리할 수 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
         "SHOW_YAML": "YAML 파일"
