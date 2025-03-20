@@ -105,7 +105,8 @@
         "OIDC_VERIFYCERT": "如果您的 OIDC 伺服器是透過自簽憑證託管的，請取消勾選此框。",
         "OIDC_AUTOONBOARD": "跳過註冊引導畫面，使用者無法更改其使用者名稱。使用者名稱將由 ID Token 提供。",
         "OIDC_USER_CLAIM": "使用者名稱將從 ID Token 中的特定宣告中取得。若未指定特定宣告，則預設會使用 'name' 宣告。",
-        "NEW_SECRET": "密碼必須超過 8 個字元，並至少包含 1 個大寫字母、1 個小寫字母和 1 個數字。"
+        "NEW_SECRET": "密碼必須超過 8 個字元，並至少包含 1 個大寫字母、1 個小寫字母和 1 個數字。",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "輸入目前密碼",
@@ -983,7 +984,8 @@
             "OIDC_ADMIN_GROUP": "OIDC 管理員群組",
             "OIDC_ADMIN_GROUP_INFO": "指定 OIDC 管理員群組名稱。此群組中的所有 OIDC 使用者都將具有 Harbor 管理員權限。如果您不需要，此欄可以留空。",
             "OIDC_GROUP_FILTER": "OIDC 群組篩選器",
-            "OIDC_GROUP_FILTER_INFO": "篩選符合提供的正規表達式的 OIDC 群組。保持空白以選取所有群組。"
+            "OIDC_GROUP_FILTER_INFO": "篩選符合提供的正規表達式的 OIDC 群組。保持空白以選取所有群組。",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "成功觸發停止全部掃描！",
@@ -1169,6 +1171,8 @@
         "SCAN_UNSUPPORTED": "不支援掃描",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "摘要",
+        "LICENSE": "許可證",
+        "FILES": "文件",
         "DEPENDENCIES": "相依性",
         "VALUES": "值",
         "NAME": "名稱",
@@ -1176,6 +1180,9 @@
         "OF": "共計",
         "VERSION": "版本",
         "NO_README": "此 Helm Chart 未提供 README 文件",
+        "NO_LICENSE": "此 Model 未提供 LICENSE 文件",
+        "NO_FILES": "此 Model 未提供文件",
+        "MODEL_NO_README": "此 Model 未提供 README 文件",
         "ITEMS": "筆紀錄",
         "SHOW_KV": "顯示鍵值對",
         "SHOW_YAML": "顯示 YAML 檔案"
@@ -1823,9 +1830,9 @@
         "INCLUDED_OPERATIONS": "包含的操作",
         "INCLUDED_OPERATION_TOOLTIP": "移除所選操作的稽核日誌",
         "INCLUDED_OPERATION_ERROR": "請至少選擇一個操作",
-        "INCLUDED_EVENT_TYPES": "Included event types",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
         "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
-        "INCLUDED_EVENT_TYPE_ERROR": "Please select at lease one event type",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "立即清除",
         "PURGE_NOW_SUCCESS": "成功觸發清除",
         "PURGE_SCHEDULE_RESET": "清除排程已重設",
