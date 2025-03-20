@@ -61,7 +61,7 @@ export class SummaryComponent implements OnInit {
                             this.noReadmeStatus = true;
                         } else if (
                             this.type === 'CNAI' &&
-                            error.status === 422
+                            error.status === 413
                         ) {
                             this.fileTooLargeStatus = true;
                         } else {

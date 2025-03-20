@@ -55,7 +55,7 @@ export class ArtifactLicenseComponent implements OnInit {
                     error => {
                         if (error.status === 404) {
                             this.noLicenseStatus = true;
-                        } else if (error.status === 422) {
+                        } else if (error.status === 413) {
                             this.fileTooLargeStatus = true;
                         } else {
                             this.errorHandler.error(error);
