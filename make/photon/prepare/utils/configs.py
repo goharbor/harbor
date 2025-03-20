@@ -356,7 +356,7 @@ def parse_yaml_config(config_file_path, with_trivy):
     return config_dict
 
 def get_redis_schema(redis=None):
-    if 'tlsOptions' in redis and redis['tlsOptions'].get('rootCA') is not None:
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
         return redis.get('sentinel_master_set', None) and 'rediss+sentinel' or 'rediss'
     else:
         return redis.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
@@ -465,7 +465,7 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
     
-    if 'tlsOptions' in redis and redis['tlsOptions'].get('rootCA') is not None:
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
         configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
     return configs
