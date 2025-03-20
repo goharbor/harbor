@@ -17,12 +17,15 @@ package user
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
+	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/auditext/event"
+	notifierevent "github.com/goharbor/harbor/src/pkg/notifier/event"
 	pkgUser "github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -61,4 +64,21 @@ func userIDToName(userID string) string {
 		return ""
 	}
 	return user.Username
+}
+
+func (u *userEventResolver) Resolve(ce *commonevent.Metadata, event *notifierevent.Event) error {
+	if err := u.Resolver.Resolve(ce, event); err != nil {
+		return err
+	}
+	if ce.RequestMethod != http.MethodPut {
+		return nil
+	}
+	// update operation description for update user password and add/remove user as system administrator
+	origin := event.Data.(*model.CommonEvent).OperationDescription
+	if strings.HasSuffix(ce.RequestURL, "/sysadmin") {
+		event.Data.(*model.CommonEvent).OperationDescription = origin + ", add/remove user as system administrator"
+	} else if strings.HasSuffix(ce.RequestURL, "/password") {
+		event.Data.(*model.CommonEvent).OperationDescription = origin + ", change user password"
+	}
+	return nil
 }

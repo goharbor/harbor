@@ -127,18 +127,20 @@
                     title="{{ tag.name }}"
                     >{{ tag.name }}</span
                 >
-                <span *ngIf="tag.immutable" class="label label-info ml-8">{{
-                    'REPOSITORY.IMMUTABLE' | translate
-                }}</span>
-                <app-pull-command
-                    class="pull-btn"
-                    [isTagMode]="true"
-                    [artifact]="artifactDetails"
-                    [accessoryType]="accessoryType"
-                    [registryUrl]="registryUrl"
-                    [projectName]="projectName"
-                    [repoName]="repositoryName"
-                    [selectedTag]="tag.name"></app-pull-command>
+                <div class="pull-label">
+                    <span *ngIf="tag.immutable" class="label label-info ml-8">{{
+                        'REPOSITORY.IMMUTABLE' | translate
+                    }}</span>
+                    <app-pull-command
+                        class="pull-btn"
+                        [isTagMode]="true"
+                        [artifact]="artifactDetails"
+                        [accessoryType]="accessoryType"
+                        [registryUrl]="registryUrl"
+                        [projectName]="projectName"
+                        [repoName]="repositoryName"
+                        [selectedTag]="tag.name"></app-pull-command>
+                </div>
             </div>
         </clr-dg-cell>
         <clr-dg-cell>{{
