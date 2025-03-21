@@ -142,11 +142,6 @@ func TestFilesParser(t *testing.T) {
 			expectedType: contentTypeJSON,
 			expectedOutput: []FileList{
 				{
-					Name: "README.md",
-					Type: TypeFile,
-					Size: 100,
-				},
-				{
 					Name: "models",
 					Type: TypeDirectory,
 					Children: []FileList{
@@ -173,6 +168,11 @@ func TestFilesParser(t *testing.T) {
 							},
 						},
 					},
+				},
+				{
+					Name: "README.md",
+					Type: TypeFile,
+					Size: 100,
 				},
 			},
 		},

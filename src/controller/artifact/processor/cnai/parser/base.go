@@ -20,8 +20,14 @@ import (
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
+)
+
+var (
+	// errFileTooLarge is returned when the file is too large to be processed.
+	errFileTooLarge = errors.New("The file is too large to be processed")
 )
 
 const (
@@ -31,6 +37,9 @@ const (
 	contentTypeMarkdown = "text/markdown; charset=utf-8"
 	// contentTypeJSON is the content type of application/json.
 	contentTypeJSON = "application/json; charset=utf-8"
+
+	// defaultFileSizeLimit is the default file size limit.
+	defaultFileSizeLimit = 1024 * 1024 * 4 // 4MB
 )
 
 // newBase creates a new base parser.
@@ -49,6 +58,10 @@ type base struct {
 func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocispec.Descriptor) (string, []byte, error) {
 	if artifact == nil || layer == nil {
 		return "", nil, fmt.Errorf("artifact or manifest cannot be nil")
+	}
+
+	if layer.Size > defaultFileSizeLimit {
+		return "", nil, errors.RequestEntityTooLargeError(errFileTooLarge)
 	}
 
 	_, stream, err := b.regCli.PullBlob(artifact.RepositoryName, layer.Digest.String())
