@@ -314,11 +314,12 @@ func (oc *OIDCController) RedirectLogout() {
 		oc.SendInternalServerError(err)
 		return
 	}
+	postRedirectURL := fmt.Sprintf("%s/account/sign-in", baseURL)
 	logoutURL := fmt.Sprintf(
 		"%s?id_token_hint=%s&post_logout_redirect_uri=%s",
 		endSessionURL,
 		url.QueryEscape(token.RawIDToken),
-		url.QueryEscape(baseURL),
+		url.QueryEscape(postRedirectURL),
 	)
 	log.Info("Redirect user to logout page of OIDC provider:", logoutURL)
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
