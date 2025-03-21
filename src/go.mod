@@ -79,7 +79,7 @@ require (
 )
 
 require (
-	github.com/CloudNativeAI/model-spec v0.0.1
+	github.com/CloudNativeAI/model-spec v0.0.3
 	github.com/prometheus/client_model v0.6.1
 	go.pinniped.dev v0.37.0
 )
