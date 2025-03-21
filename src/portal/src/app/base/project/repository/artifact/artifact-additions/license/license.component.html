@@ -6,8 +6,13 @@
                 class="yaml-container"
                 [innerHTML]="license | language | markdown"></div>
         </div>
-        <div class="md-container pl-1" *ngIf="!license">
-            {{ 'ARTIFACT.NO_LICENSE' | translate }}
+        <div *ngIf="!license">
+            <div class="col-md-8 md-container pl-1" *ngIf="fileTooLargeStatus">
+                {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
+            </div>
+            <div class="col-md-8 md-container pl-1" *ngIf="noLicenseStatus">
+                {{ 'ARTIFACT.NO_LICENSE' | translate }}
+            </div>
         </div>
     </div>
 </div>

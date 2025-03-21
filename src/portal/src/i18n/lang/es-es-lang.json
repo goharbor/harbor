@@ -1184,6 +1184,7 @@
         "NO_LICENSE": "Sin archivo license para este modelo.",
         "NO_FILES": "No se proporcionan archivos para este modelo.",
         "MODEL_NO_README": "Sin archivo readme para este modelo.",
+        "FILE_TOO_LARGE": "El archivo es demasiado grande para procesarlo.",
         "ITEMS": "items",
         "SHOW_KV": "Pares Key Value",
         "SHOW_YAML": "Archivo YAML"

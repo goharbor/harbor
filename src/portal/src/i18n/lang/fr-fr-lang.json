@@ -1187,6 +1187,7 @@
         "NO_LICENSE": "Aucune licence n'est fournie pour ce modèle.",
         "NO_FILES": "Aucun fichier fourni pour ce modèle.",
         "MODEL_NO_README": "Aucun fichier README n'est fourni pour ce modèle.",
+        "FILE_TOO_LARGE": "Le fichier est trop volumineux pour être traité.",
         "ITEMS": "entrées",
         "SHOW_KV": "Paires Clé/Valeur",
         "SHOW_YAML": "Fichier YAML"

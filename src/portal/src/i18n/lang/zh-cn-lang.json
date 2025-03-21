@@ -106,7 +106,7 @@
         "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
         "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
         "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -1186,6 +1186,7 @@
         "NO_LICENSE": "此 Model 未提供 LICENSE 文件",
         "NO_FILES": "此 Model 未提供文件",
         "MODEL_NO_README": "此 Model 未提供 README 文件",
+        "FILE_TOO_LARGE": "文件太大，无法处理",
         "ITEMS": "条记录",
         "SHOW_KV": "展示健值对",
         "SHOW_YAML": "展示YAML文件"
