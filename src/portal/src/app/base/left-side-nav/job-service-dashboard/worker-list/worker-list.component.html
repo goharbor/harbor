@@ -40,7 +40,7 @@
             #pagination
             [clrDgPageSize]="5"
             [clrDgTotalItems]="pools?.length">
-            <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50, 100]">{{
+            <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
             <span *ngIf="pools?.length">
@@ -130,7 +130,7 @@
                 #pagination
                 [clrDgPageSize]="workerPageSize"
                 [clrDgTotalItems]="workers?.length">
-                <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50, 100]">{{
+                <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
                 <span *ngIf="workers?.length">

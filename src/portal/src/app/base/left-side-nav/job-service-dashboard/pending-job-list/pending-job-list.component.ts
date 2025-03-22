@@ -31,6 +31,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from 'src/app/shared/entities/shared.const';
 import {
     operateChanges,
@@ -48,6 +49,7 @@ import { HEALTHY_TIME } from '../job-service-dashboard-health-check.service';
     styleUrls: ['./pending-job-list.component.scss'],
 })
 export class PendingListComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loading: boolean = false;
     selectedRows: JobQueue[] = [];
     pageSize: number = getPageSizeFromLocalStorage(

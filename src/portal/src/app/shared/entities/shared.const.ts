@@ -413,3 +413,5 @@ export enum BandwidthUnit {
     MB = 'Mbps',
     KB = 'Kbps',
 }
+
+export const PAGE_SIZE_OPTIONS = [15, 25, 50, 100];

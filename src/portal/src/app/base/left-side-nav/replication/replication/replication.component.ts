@@ -56,6 +56,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     REFRESH_TIME_DIFFERENCE,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
@@ -88,6 +89,7 @@ const ruleStatus: { [key: string]: any } = [
 ];
 
 export class SearchOption {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     ruleId: number | string;
     ruleName: string = '';
     trigger: string = '';

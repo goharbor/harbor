@@ -295,7 +295,7 @@
                 [clrDgPageSize]="policyPageSize"
                 [(clrDgPage)]="policyPage"
                 [clrDgTotalItems]="totalPolicy">
-                <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50, 100]">{{
+                <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
                 <span *ngIf="totalPolicy"
@@ -425,7 +425,7 @@
                 [(clrDgPage)]="currentExecutionPage"
                 [clrDgPageSize]="pageSize"
                 [clrDgTotalItems]="totalExecutionCount">
-                <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50, 100]">{{
+                <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
                 <span *ngIf="totalExecutionCount"

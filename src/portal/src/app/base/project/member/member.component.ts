@@ -41,6 +41,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     RoleInfo,
 } from '../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
@@ -61,6 +62,7 @@ import { AddGroupComponent } from './add-group/add-group.component';
     styleUrls: ['./member.component.scss'],
 })
 export class MemberComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     members: ProjectMemberEntity[];
     projectId: number;
     roleInfo = RoleInfo;

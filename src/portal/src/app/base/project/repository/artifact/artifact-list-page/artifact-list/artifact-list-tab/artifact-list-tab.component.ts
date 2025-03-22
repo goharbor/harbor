@@ -46,6 +46,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -98,6 +99,7 @@ const FALSE: string = 'false';
     styleUrls: ['./artifact-list-tab.component.scss'],
 })
 export class ArtifactListTabComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     projectName: string;
     repoName: string;
