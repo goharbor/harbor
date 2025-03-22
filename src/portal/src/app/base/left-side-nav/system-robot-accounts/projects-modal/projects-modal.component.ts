@@ -20,6 +20,7 @@ import { PermissionSelectPanelModes } from '../../../../shared/components/robot-
 import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-projects-modal',
@@ -27,6 +28,7 @@ import { finalize } from 'rxjs/operators';
     styleUrls: ['./projects-modal.component.scss'],
 })
 export class ProjectsModalComponent {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectsModalOpened: boolean = false;
     robotName: string;
     cachedAllProjects: Project[];

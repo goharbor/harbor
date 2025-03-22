@@ -129,7 +129,7 @@ describe('functions in utils.ts should work', () => {
         });
         expect(getPageSizeFromLocalStorage(null)).toEqual(DEFAULT_PAGE_SIZE);
         expect(getPageSizeFromLocalStorage('test', 99)).toEqual(99);
-        expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
+        expect(getPageSizeFromLocalStorage('')).toEqual(DEFAULT_PAGE_SIZE);
         setPageSizeToLocalStorage('test1', null);
         expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
         setPageSizeToLocalStorage('test1', 10);

@@ -53,6 +53,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     RoleInfo,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
@@ -67,6 +68,7 @@ const INTERVAL: number = 30000;
     templateUrl: 'list-project.component.html',
 })
 export class ListProjectComponent implements OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loading = true;
     projects: Project[] = [];
     filteredType = 0; // All projects

@@ -29,6 +29,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
@@ -46,6 +47,7 @@ import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-s
     styleUrls: ['./worker-list.component.scss'],
 })
 export class WorkerListComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loadingPools: boolean = false;
     selectedPool: WorkerPool;
     pools: WorkerPool[] = [];
