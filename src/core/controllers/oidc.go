@@ -256,7 +256,7 @@ func (oc *OIDCController) RedirectLogout() {
 	}
 	if sessionData == nil {
 		log.Warningf("OIDC session token not found.")
-		oc.Controller.Redirect("/", http.StatusFound)
+		oc.Controller.Redirect("/account/sign-in", http.StatusFound)
 		return
 	}
 	oidcSettings, err := config.OIDCSetting(ctx)
@@ -271,7 +271,7 @@ func (oc *OIDCController) RedirectLogout() {
 		return
 	}
 	if !oidcSettings.Logout {
-		oc.Controller.Redirect("/", http.StatusFound)
+		oc.Controller.Redirect("/account/sign-in", http.StatusFound)
 		return
 	}
 	tk, ok := sessionData.([]byte)
@@ -299,12 +299,12 @@ func (oc *OIDCController) RedirectLogout() {
 	}
 	if token.RawIDToken == "" {
 		log.Warning("Empty ID token for offline session.")
-		oc.Controller.Redirect("/", http.StatusFound)
+		oc.Controller.Redirect("/account/sign-in", http.StatusFound)
 		return
 	}
 	if oidc.EndpointsClaims.EndSessionURL == "" {
 		log.Warning("Unable to logout OIDC session since the 'end_session_point' is not set.")
-		oc.Controller.Redirect("/", http.StatusFound)
+		oc.Controller.Redirect("/account/sign-in", http.StatusFound)
 		return
 	}
 	endSessionURL := oidc.EndpointsClaims.EndSessionURL
@@ -314,11 +314,12 @@ func (oc *OIDCController) RedirectLogout() {
 		oc.SendInternalServerError(err)
 		return
 	}
+	postRedirectURL := fmt.Sprintf("%s/account/sign-in", baseURL)
 	logoutURL := fmt.Sprintf(
 		"%s?id_token_hint=%s&post_logout_redirect_uri=%s",
 		endSessionURL,
 		url.QueryEscape(token.RawIDToken),
-		url.QueryEscape(baseURL),
+		url.QueryEscape(postRedirectURL),
 	)
 	log.Info("Redirect user to logout page of OIDC provider:", logoutURL)
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
