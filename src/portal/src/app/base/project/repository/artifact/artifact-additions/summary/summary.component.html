@@ -1,15 +1,18 @@
 <div class="row content-wrapper" *ngIf="!loading">
-    <div class="col-md-8 md-container pl-1">
-        <div
-            *ngIf="readme"
-            class="md-div"
-            [innerHTML]="readme | markdown"></div>
-        <div *ngIf="!readme">
-            {{
-                type === 'CNAI'
-                    ? ('ARTIFACT.MODEL_NO_README' | translate)
-                    : ('ARTIFACT.NO_README' | translate)
-            }}
+    <div class="col-md-8 md-container pl-1" *ngIf="readme">
+        <div class="md-div" [innerHTML]="readme | markdown"></div>
+    </div>
+    <div *ngIf="!readme">
+        <div *ngIf="type === 'CNAI'">
+            <div class="col-md-8 md-container pl-1" *ngIf="fileTooLargeStatus">
+                {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
+            </div>
+            <div class="col-md-8 md-container pl-1" *ngIf="noReadmeStatus">
+                {{ 'ARTIFACT.MODEL_NO_README' | translate }}
+            </div>
+        </div>
+        <div *ngIf="type !== 'CNAI'" class="col-md-8 md-container pl-1">
+            {{ 'ARTIFACT.NO_README' | translate }}
         </div>
     </div>
 </div>
