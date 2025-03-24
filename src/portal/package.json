@@ -1,6 +1,6 @@
 {
   "name": "harbor",
-  "version": "2.13.0",
+  "version": "2.12.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
@@ -70,7 +70,6 @@
     "cypress": "13.1.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^4.2.1",
     "express": "^4.21.0",
     "https-proxy-agent": "^5.0.1",
