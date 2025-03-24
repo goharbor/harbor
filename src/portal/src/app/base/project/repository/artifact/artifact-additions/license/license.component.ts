@@ -16,53 +16,46 @@ import { AdditionsService } from '../additions.service';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { finalize } from 'rxjs/operators';
-import { Artifact } from 'ng-swagger-gen/models/artifact';
 
 @Component({
-    selector: 'hbr-artifact-summary',
-    templateUrl: './summary.component.html',
-    styleUrls: ['./summary.component.scss'],
+    selector: 'hbr-artifact-license',
+    templateUrl: './license.component.html',
+    styleUrls: ['./license.component.scss'],
 })
-export class SummaryComponent implements OnInit {
-    @Input() summaryLink: AdditionLink;
-    @Input() artifactDetails: Artifact;
-    readme: string;
-    type: string;
-    fileTooLargeStatus: boolean = false;
-    noReadmeStatus: boolean = false;
+export class ArtifactLicenseComponent implements OnInit {
+    @Input() licenseLink: AdditionLink;
+    license: string;
     loading: boolean = false;
+    fileTooLargeStatus: boolean = false;
+    noLicenseStatus: boolean = false;
+
     constructor(
         private errorHandler: ErrorHandler,
         private additionsService: AdditionsService
     ) {}
 
     ngOnInit(): void {
-        if (this.artifactDetails) {
-            this.type = this.artifactDetails.type;
-        }
-        this.getReadme();
+        this.getLicense();
     }
-    getReadme() {
+
+    getLicense() {
         if (
-            this.summaryLink &&
-            !this.summaryLink.absolute &&
-            this.summaryLink.href
+            this.licenseLink &&
+            !this.licenseLink.absolute &&
+            this.licenseLink.href
         ) {
             this.loading = true;
             this.additionsService
-                .getDetailByLink(this.summaryLink.href, false, true)
+                .getDetailByLink(this.licenseLink.href, false, true)
                 .pipe(finalize(() => (this.loading = false)))
                 .subscribe(
                     res => {
-                        this.readme = this.removeFrontMatter(res);
+                        this.license = res;
                     },
                     error => {
-                        if (this.type === 'CNAI' && error.status === 404) {
-                            this.noReadmeStatus = true;
-                        } else if (
-                            this.type === 'CNAI' &&
-                            error.status === 413
-                        ) {
+                        if (error.status === 404) {
+                            this.noLicenseStatus = true;
+                        } else if (error.status === 413) {
                             this.fileTooLargeStatus = true;
                         } else {
                             this.errorHandler.error(error);
@@ -70,9 +63,5 @@ export class SummaryComponent implements OnInit {
                     }
                 );
         }
-    }
-
-    removeFrontMatter(content: string): string {
-        return content.replace(/^---[\s\S]*?---\s*/, '');
     }
 }

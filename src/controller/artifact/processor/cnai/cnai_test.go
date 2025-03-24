@@ -207,7 +207,7 @@ func (p *ProcessorTestSuite) TestAbstractAddition() {
 				p.Require().NoError(err)
 				r.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
 			},
-			expectContent: `[{"name":"config.json","type":"file","size":50},{"name":"model","type":"directory","children":[{"name":"weights.bin","type":"file","size":100}]}]`,
+			expectContent: `[{"name":"model","type":"directory","children":[{"name":"weights.bin","type":"file","size":100}]},{"name":"config.json","type":"file","size":50}]`,
 			expectType:    "application/json; charset=utf-8",
 		},
 	}
