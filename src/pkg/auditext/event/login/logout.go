@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	ctlevent "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
@@ -55,6 +56,15 @@ func (l *logoutResolver) PreCheck(ctx context.Context, _ string, method string) 
 		operation = opLogout
 	}
 	if len(operation) == 0 {
+		return false, ""
+	}
+	// current /c/log_out is request is sent twice, ignore the second time
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return false, ""
+	}
+	username := secCtx.GetUsername()
+	if len(username) == 0 {
 		return false, ""
 	}
 	return config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", operation, rbac.ResourceUser.String())), ""
