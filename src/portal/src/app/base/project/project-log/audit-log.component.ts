@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionUser } from '../../../shared/entities/session-user';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
-import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
+import { AuditLogExt } from '../../../../../ng-swagger-gen/models/audit-log-ext';
 import { Project } from '../project';
 import { finalize } from 'rxjs/operators';
 import {
@@ -62,11 +62,11 @@ export class SearchOption {
 }
 
 @Component({
-    selector: 'audit-log',
+    selector: 'project-audit-log',
     templateUrl: './audit-log.component.html',
     styleUrls: ['./audit-log.component.scss'],
 })
-export class AuditLogComponent implements OnInit {
+export class ProjectAuditLogComponent implements OnInit {
     search: SearchOption = new SearchOption();
     currentUser: SessionUser;
     projectId: number;
@@ -75,7 +75,7 @@ export class AuditLogComponent implements OnInit {
     queryStartTime: string;
     queryEndTime: string;
     queryOperation: string[] = [];
-    auditLogs: AuditLog[];
+    auditLogs: AuditLogExt[];
     loading: boolean = true;
 
     toggleName = optionalSearch;
@@ -113,7 +113,7 @@ export class AuditLogComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const resolverData = this.route.parent.parent.snapshot.data;
+        const resolverData = this.route.parent.parent.parent?.snapshot?.data;
         if (resolverData) {
             const pro: Project = <Project>resolverData['projectResolver'];
             this.projectName = pro.name;
@@ -146,7 +146,7 @@ export class AuditLogComponent implements OnInit {
             arr.push(`operation={${this.queryOperation.join(' ')}}`);
         }
 
-        const param: ProjectService.GetLogsParams = {
+        const param: ProjectService.GetLogExtsParams = {
             projectName: this.projectName,
             pageSize: this.pageSize,
             page: this.currentPage,
@@ -156,7 +156,7 @@ export class AuditLogComponent implements OnInit {
         }
         this.loading = true;
         this.auditLogService
-            .getLogsResponse(param)
+            .getLogExtsResponse(param)
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(
                 response => {

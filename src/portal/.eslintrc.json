@@ -42,6 +42,15 @@
       "rules": {
         "prettier/prettier": ["error", { "parser": "angular" }]
       }
+    },
+    {
+      "files": ["src/**/*.ts"],
+      "plugins": [
+        "header"
+      ],
+      "rules": {
+        "header/header": [2, "./copyright.tmpl.js"]
+      }
     }
   ]
 }

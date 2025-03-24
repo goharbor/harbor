@@ -62,8 +62,10 @@ type Metadata struct {
 	IPAddress string
 	// ResponseLocation response location
 	ResponseLocation string
-	// ResourceName
+	// ResourceName resource name
 	ResourceName string
+	// Payload request payload
+	Payload string
 }
 
 // Resolve parse the audit information from CommonEventMetadata

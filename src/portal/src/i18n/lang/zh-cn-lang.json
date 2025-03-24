@@ -105,7 +105,8 @@
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
         "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
         "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
-        "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。"
+        "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -142,6 +143,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
         "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
         "CURRENT_PWD": "当前密码",
@@ -152,6 +159,7 @@
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
         "LOGOUT": "退出"
@@ -178,6 +186,8 @@
             "INTERROGATION_SERVICES": "审查服务"
         },
         "LOGS": "日志",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "任务",
         "API_EXPLORER": "API控制中心",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -524,9 +534,16 @@
         "REPOSITORY_NAME": "镜像名称",
         "TAGS": "Tags",
         "OPERATION": "操作",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "操作",
         "TIMESTAMP": "时间戳",
         "ALL_OPERATIONS": "所有操作",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Pull",
         "PUSH": "Push",
         "CREATE": "Create",
@@ -535,6 +552,7 @@
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
         "ITEMS": "条记录",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。",
         "OF": "共计",
@@ -762,7 +780,7 @@
         "ARTIFACT_TOOTIP": "点击查看此 OCI 索引的 Artifact 列表",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "下载数",
-        "PULL_COMMAND": "拉取命令",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
         "IMMUTABLE": "不可变的",
@@ -969,7 +987,8 @@
             "OIDC_ADMIN_GROUP": "OIDC管理员组",
             "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。",
             "OIDC_GROUP_FILTER": "OIDC 组过滤器",
-            "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组。若不填，则表示匹配所有。"
+            "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组。若不填，则表示匹配所有。",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "停止扫描所有镜像任务成功!",
@@ -1137,8 +1156,7 @@
         "TOOLTIP": "推送一个 artifact 到当前项目的参考命令。",
         "TAG_COMMAND": "在项目中标记镜像：",
         "PUSH_COMMAND": "推送镜像到当前项目：",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。",
-        "COPY_PULL_COMMAND": "复制拉取命令"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1156,13 +1174,19 @@
         "SCAN_UNSUPPORTED": "不支持扫描",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "概要",
+        "LICENSE": "许可证",
+        "FILES": "文件",
         "DEPENDENCIES": "依赖",
         "VALUES": "取值",
         "NAME": "名称",
         "REPO": "仓库",
         "OF": "共计",
         "VERSION": "版本",
-        "NO_README": "此Chart未提供README文件",
+        "NO_README": "此 Chart 未提供 README 文件",
+        "NO_LICENSE": "此 Model 未提供 LICENSE 文件",
+        "NO_FILES": "此 Model 未提供文件",
+        "MODEL_NO_README": "此 Model 未提供 README 文件",
+        "FILE_TOO_LARGE": "文件太大，无法处理",
         "ITEMS": "条记录",
         "SHOW_KV": "展示健值对",
         "SHOW_YAML": "展示YAML文件"
@@ -1809,12 +1833,18 @@
         "INCLUDED_OPERATIONS": "包含操作",
         "INCLUDED_OPERATION_TOOLTIP": "删除指定操作类型的日志",
         "INCLUDED_OPERATION_ERROR": "请至少选择一种操作类型",
+        "INCLUDED_EVENT_TYPES": "删除的事件类型",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "删除的事件类型",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "立即清理",
         "PURGE_NOW_SUCCESS": "触发清理成功",
         "PURGE_SCHEDULE_RESET": "清理计划已被重置",
         "PURGE_HISTORY": "清理历史",
         "FORWARD_ENDPOINT": "日志转发端点",
         "FORWARD_ENDPOINT_TOOLTIP": "将日志转发到指定的 syslog 端点，例如：harbor-log:10514",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE": "Disable Audit Log Event Type",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be disabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "跳过日志数据库",
         "SKIP_DATABASE_TOOLTIP": "开启此项将不会在数据库中记录日志，需先配置日志转发端点",
         "STOP_GC_SUCCESS": "成功触发停止垃圾回收的操作",
