@@ -68,6 +68,6 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	log.Infof("a robot security context generated for request %s %s", req.Method, req.URL.Path)
+	log.Debugf("a robot security context generated for request %s %s", req.Method, req.URL.Path)
 	return robotCtx.NewSecurityContext(robot)
 }

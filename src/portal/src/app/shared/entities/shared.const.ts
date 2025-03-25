@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -231,7 +231,24 @@ export enum GroupType {
 export const REFRESH_TIME_DIFFERENCE = 10000;
 
 //
+export const DeFaultRuntime = 'default';
+export type SupportedRuntime = string;
+export const RUNTIMES = {
+    default: 'docker',
+    podman: 'podman',
+    nerdctl: 'nerdctl',
+    ctr: 'containerd',
+    crictl: 'cri-o',
+    custom: 'custom',
+} as const;
+export const supportedRuntimes = Object.keys(RUNTIMES) as SupportedRuntime[];
+/**
+ * The default cookie key used to store current used container runtime preference.
+ */
+export const DEFAULT_RUNTIME_LOCALSTORAGE_KEY = 'harbor-runtime';
+export const CUSTOM_RUNTIME_LOCALSTORAGE_KEY = 'harbor-custom-runtime';
 
+//
 export const DeFaultLang = 'en-us';
 export type SupportedLanguage = string;
 export const LANGUAGES = {

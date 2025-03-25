@@ -257,6 +257,7 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
+		common.OIDCLogout:       "false",
 	}
 	InitWithSettings(m)
 	v, e := OIDCSetting(orm.Context())
@@ -271,6 +272,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+	assert.False(t, v.Logout)
 }
 
 func TestSplitAndTrim(t *testing.T) {

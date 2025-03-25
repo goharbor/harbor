@@ -1449,7 +1449,14 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
+          enum:
+            - build_history
+            - values.yaml
+            - readme.md
+            - dependencies
+            - sbom
+            - license
+            - files
           required: true
       responses:
         '200':
@@ -1795,7 +1802,7 @@ paths:
             items:
               $ref: '#/definitions/AuditLogEventType'
         '401':
-          $ref: '#/responses/401'      
+          $ref: '#/responses/401'
   /projects/{project_name}/logs:
     get:
       summary: Get recent logs of the projects (deprecated)
@@ -1863,7 +1870,7 @@ paths:
         '401':
           $ref: '#/responses/401'
         '500':
-          $ref: '#/responses/500'          
+          $ref: '#/responses/500'
   /p2p/preheat/providers:
     get:
       summary: List P2P providers
@@ -6949,8 +6956,8 @@ definitions:
         description: The time when this operation is triggered.
   AuditLogEventType:
     type: object
-    properties: 
-      event_type: 
+    properties:
+      event_type:
         type: string
         description: the event type, such as create_user.
         example: create_user
@@ -9058,6 +9065,9 @@ definitions:
       oidc_extra_redirect_parms:
         $ref: '#/definitions/StringConfigItem'
         description: Extra parameters to add when redirect request to OIDC provider
+      oidc_logout:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user session from the OIDC provider
       robot_token_duration:
         $ref: '#/definitions/IntegerConfigItem'
         description: The robot account token duration in days
@@ -9330,6 +9340,11 @@ definitions:
       oidc_extra_redirect_parms:
         type: string
         description: Extra parameters to add when redirect request to OIDC provider
+        x-omitempty: true
+        x-isnullable: true
+      oidc_logout:
+        type: boolean
+        description: Logout OIDC user session
         x-omitempty: true
         x-isnullable: true
       robot_token_duration:

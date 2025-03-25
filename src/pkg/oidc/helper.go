@@ -15,10 +15,12 @@
 package oidc
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -32,10 +34,13 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
+
+	"go.pinniped.dev/pkg/oidcclient/pkce"
 )
 
 const (
@@ -50,6 +55,11 @@ type providerHelper struct {
 	sync.Mutex
 	instance     atomic.Value
 	creationTime time.Time
+}
+
+var EndpointsClaims struct {
+	EndSessionURL string `json:"end_session_endpoint"`
+	RevokeURL     string `json:"revocation_endpoint"`
 }
 
 func (p *providerHelper) get(ctx context.Context) (*gooidc.Provider, error) {
@@ -82,6 +92,10 @@ func (p *providerHelper) create(ctx context.Context) error {
 	provider, err := gooidc.NewProvider(c, s.Endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
+	}
+	err = provider.Claims(&EndpointsClaims)
+	if err != nil {
+		return err
 	}
 	p.instance.Store(provider)
 	p.creationTime = time.Now()
@@ -143,9 +157,10 @@ func getOauthConf(ctx context.Context) (*oauth2.Config, error) {
 	}, nil
 }
 
-// AuthCodeURL returns the URL for OIDC provider's consent page.  The state should be verified when user is redirected
-// back to Harbor.
-func AuthCodeURL(ctx context.Context, state string) (string, error) {
+// AuthCodeURL returns the URL for OIDC provider's consent page.
+// The state should be verified when user is redirected back to Harbor.
+// pkceCode is for the PKCE workflow of authentication.  It is optional.
+func AuthCodeURL(ctx context.Context, state string, pkceCode pkce.Code) (string, error) {
 	conf, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
@@ -164,11 +179,15 @@ func AuthCodeURL(ctx context.Context, state string) (string, error) {
 		options = append(options, oauth2.AccessTypeOffline)
 		options = append(options, oauth2.SetAuthURLParam("prompt", "consent"))
 	}
+	if len(pkceCode) > 0 {
+		options = append(options, pkceCode.Challenge())
+		options = append(options, pkceCode.Method())
+	}
 	return conf.AuthCodeURL(state, options...), nil
 }
 
 // ExchangeToken get the token from token provider via the code
-func ExchangeToken(ctx context.Context, code string) (*Token, error) {
+func ExchangeToken(ctx context.Context, code string, pkceCode pkce.Code) (*Token, error) {
 	oauth, err := getOauthConf(ctx)
 	if err != nil {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
@@ -180,7 +199,11 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 		return nil, err
 	}
 	ctx = clientCtx(ctx, setting.VerifyCert)
-	oauthToken, err := oauth.Exchange(ctx, code)
+	var opts []oauth2.AuthCodeOption
+	if len(pkceCode) > 0 {
+		opts = append(opts, pkceCode.Verifier())
+	}
+	oauthToken, err := oauth.Exchange(ctx, code, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -473,4 +496,34 @@ func TestEndpoint(conn Conn) error {
 	ctx := clientCtx(context.Background(), conn.VerifyCert)
 	_, err := gooidc.NewProvider(ctx, conn.URL)
 	return err
+}
+
+// RevokeOIDCRefreshToken revokes an offline session using the refresh token
+func RevokeOIDCRefreshToken(revokeURL, refreshToken, clientID, clientSecret string, verifyCert bool) error {
+	data := url.Values{}
+	data.Set("token", refreshToken)
+	data.Set("token_type_hint", "refresh_token")
+	req, err := http.NewRequest("POST", revokeURL, bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		return errors.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(clientID, clientSecret)
+	var client *http.Client
+	if !verifyCert {
+		client = &http.Client{
+			Transport: insecureTransport,
+		}
+	} else {
+		client = &http.Client{}
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return errors.Errorf("request failed: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 || resp.StatusCode < 200 {
+		return errors.Errorf("logout failed, status: %d", resp.StatusCode)
+	}
+	return nil
 }

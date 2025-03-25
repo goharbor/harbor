@@ -1,7 +1,21 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { Artifact } from '../../../../../../ng-swagger-gen/models/artifact';
 import { Platform } from '../../../../../../ng-swagger-gen/models/platform';
 import { Label } from '../../../../../../ng-swagger-gen/models/label';
+import { getCustomContainerRuntime } from 'src/app/shared/units/shared.utils';
 
 export interface ArtifactFront extends Artifact {
     platform?: Platform;
@@ -101,6 +115,18 @@ export function hasPullCommand(artifact: Artifact): boolean {
     );
 }
 
+export function getPullCommandForTop(url: string, client: Clients): string {
+    if (url) {
+        if (Object.values(Clients).includes(client)) {
+            if (client == 'custom') {
+                return `${getCustomContainerRuntime()} pull ${url}`;
+            }
+            return `${client} pull ${url}`;
+        }
+    }
+    return null;
+}
+
 export function getPullCommandByDigest(
     artifactType: string,
     url: string,
@@ -109,13 +135,14 @@ export function getPullCommandByDigest(
 ): string {
     if (artifactType && url && digest) {
         if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}@${digest}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}@${digest}`;
+            if (Object.values(Clients).includes(client)) {
+                if (client == 'custom') {
+                    return `${getCustomContainerRuntime()} pull ${url}@${digest}`;
+                }
+                return `${client} pull ${url}@${digest}`;
             }
         }
+
         if (artifactType === ArtifactType.CNAB) {
             return `${Clients.CNAB} pull ${url}@${digest}`;
         }
@@ -131,11 +158,12 @@ export function getPullCommandByTag(
 ): string {
     if (artifactType && url && tag) {
         if (artifactType === ArtifactType.IMAGE) {
-            if (client === Clients.DOCKER) {
-                return `${Clients.DOCKER} pull ${url}:${tag}`;
-            }
-            if (client === Clients.PODMAN) {
-                return `${Clients.PODMAN} pull ${url}:${tag}`;
+            if (Object.values(Clients).includes(client)) {
+                if (client == 'custom') {
+                    return `${getCustomContainerRuntime()} pull ${url}:${tag}`;
+                }
+
+                return `${client} pull ${url}:${tag}`;
             }
         }
         if (artifactType === ArtifactType.CNAB) {
@@ -159,15 +187,12 @@ export interface ArtifactFilterEvent {
 export enum Clients {
     DOCKER = 'docker',
     PODMAN = 'podman',
+    NERDCTL = 'nerdctl',
+    CONTAINERD = 'ctr',
+    CRI_O = 'crictl',
+    CUSTOM = 'custom',
     CHART = 'helm',
     CNAB = 'cnab-to-oci',
-}
-
-export enum ClientNames {
-    DOCKER = 'Docker',
-    PODMAN = 'Podman',
-    CHART = 'Helm',
-    CNAB = 'CNAB',
 }
 
 export enum ArtifactSbomType {
