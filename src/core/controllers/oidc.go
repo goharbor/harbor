@@ -321,7 +321,7 @@ func (oc *OIDCController) RedirectLogout() {
 		url.QueryEscape(token.RawIDToken),
 		url.QueryEscape(postRedirectURL),
 	)
-	log.Info("Redirect user to logout page of OIDC provider:", logoutURL)
+	log.Debugf("Redirect user to logout page of OIDC provider: %s", logoutURL)
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
 }
 
