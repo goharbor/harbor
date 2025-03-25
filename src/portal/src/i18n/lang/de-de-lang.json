@@ -1185,6 +1185,7 @@
         "NO_LICENSE": "Kein License für dieses Model verfügbar.",
         "NO_FILES": "Kein für dieses Model verfügbar.",
         "MODEL_NO_README": "Kein Readme für dieses Model verfügbar.",
+        "FILE_TOO_LARGE": "Die Datei ist zu groß, um verarbeitet zu werden.",
         "ITEMS": "Einträge",
         "SHOW_KV": "Key/Value-Paare",
         "SHOW_YAML": "YAML Datei"

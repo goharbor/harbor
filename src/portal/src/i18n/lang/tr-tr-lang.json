@@ -1185,6 +1185,7 @@
         "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
         "NO_LICENSE": "Bu tablo bir lisans dosyası sağlamamaktadır.",
         "NO_FILES": "Bu Model için dosya sağlanmadı.",
+        "FILE_TOO_LARGE": "Dosya işlenemeyecek kadar büyük.",
         "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",

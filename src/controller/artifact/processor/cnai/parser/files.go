@@ -100,8 +100,12 @@ func traverseFileNode(node *FileNode) []FileList {
 		})
 	}
 
-	// sort the children by name.
+	// sort the children by type (directories first) and then by name.
 	sort.Slice(children, func(i, j int) bool {
+		if children[i].Type != children[j].Type {
+			return children[i].Type == TypeDirectory
+		}
+
 		return children[i].Name < children[j].Name
 	})
 
