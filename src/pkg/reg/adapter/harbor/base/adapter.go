@@ -160,12 +160,15 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 	}
 
+	// Create a list of the project names.
 	var ps []string
 	for p := range projects {
-		ps = append(ps, p)
+		// Surround name in 'quotes' to force the server to parse as a string.
+		// Handles the case where a project name consists entirely of numbers.
+		ps = append(ps, fmt.Sprintf("'%s'", p))
 	}
-	// query by project name, decorate the name as string to avoid parsed as int by server in case of pure numbers as project name
-	q := fmt.Sprintf("name={'%s'}", strings.Join(ps, " "))
+	// query by project names
+	q := fmt.Sprintf("name={%s}", strings.Join(ps, " "))
 	// get exist projects
 	queryProjects, err := a.Client.ListProjectsWithQuery(q, false)
 	if err != nil {
