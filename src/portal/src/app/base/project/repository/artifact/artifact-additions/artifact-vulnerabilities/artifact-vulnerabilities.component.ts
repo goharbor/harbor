@@ -45,6 +45,7 @@ import {
     HarborEvent,
 } from '../../../../../../services/event-service/event.service';
 import { severityText } from '../../../../../left-side-nav/interrogation-services/vulnerability-database/security-hub.interface';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-artifact-vulnerabilities',
@@ -85,6 +86,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
         PageSizeMapKeys.ARTIFACT_VUL_COMPONENT,
         25
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     readonly severityText = severityText;
     constructor(
         private errorHandler: ErrorHandler,

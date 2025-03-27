@@ -37,6 +37,7 @@ import {
 } from '../p2p-provider.service';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'task-list',
@@ -44,6 +45,7 @@ import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
     styleUrls: ['./task-list.component.scss'],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     projectName: string;
     isOpenFilterTag: boolean;

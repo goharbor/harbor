@@ -29,6 +29,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
 import { ScannerService } from '../../../../../../ng-swagger-gen/services/scanner.service';
@@ -44,6 +45,7 @@ import { ScannerRegistrationReq } from '../../../../../../ng-swagger-gen/models/
     ],
 })
 export class ConfigurationScannerComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     scanners: Scanner[] = [];
     selectedRow: Scanner;
     onGoing: boolean = true;
