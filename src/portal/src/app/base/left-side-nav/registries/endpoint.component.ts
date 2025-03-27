@@ -27,6 +27,7 @@ import {
     ConfirmationTargets,
     ConfirmationState,
     ConfirmationButtons,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { CreateEditEndpointComponent } from './create-edit-endpoint/create-edit-endpoint.component';
 import {
@@ -56,6 +57,7 @@ import { Registry } from '../../../../../ng-swagger-gen/models/registry';
     styleUrls: ['./endpoint.component.scss'],
 })
 export class EndpointComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     @ViewChild(CreateEditEndpointComponent)
     createEditEndpointComponent: CreateEditEndpointComponent;
 

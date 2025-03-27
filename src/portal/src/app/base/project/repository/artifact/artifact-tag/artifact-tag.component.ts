@@ -30,6 +30,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -71,6 +72,7 @@ class InitTag {
     styleUrls: ['./artifact-tag.component.scss'],
 })
 export class ArtifactTagComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     @Input() artifactDetails: Artifact;
     @Input() projectName: string;
     @Input() isProxyCacheProject: boolean = false;
