@@ -23,6 +23,7 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
 import { finalize } from 'rxjs/operators';
 import { ScheduleTask } from '../../../../../../ng-swagger-gen/models/schedule-task';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-schedule-list',
@@ -30,6 +31,7 @@ import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-s
     styleUrls: ['./schedule-list.component.scss'],
 })
 export class ScheduleListComponent {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loadingSchedules: boolean = true;
     total: number = 0;
     page: number = 1;
