@@ -30,8 +30,8 @@ type Registry struct {
 	URL            string    `orm:"column(url)"`
 	Name           string    `orm:"column(name)"`
 	CredentialType string    `orm:"column(credential_type);default(basic)"`
-	AccessKey      string    `orm:"column(access_key)"`
-	AccessSecret   string    `orm:"column(access_secret)"`
+	AccessKey      string    `orm:"column(access_key)" filter:"false"`
+	AccessSecret   string    `orm:"column(access_secret)" filter:"false"`
 	Type           string    `orm:"column(type)"`
 	Insecure       bool      `orm:"column(insecure)"`
 	Description    string    `orm:"column(description)"`

@@ -23,7 +23,7 @@ type OIDCUser struct {
 	ID     int64 `orm:"pk;auto;column(id)" json:"id"`
 	UserID int   `orm:"column(user_id)" json:"user_id"`
 	// encrypted secret
-	Secret string `orm:"column(secret)" json:"-"`
+	Secret string `orm:"column(secret)" filter:"false" json:"-"`
 	// secret in plain text
 	PlainSecret  string    `orm:"-" json:"secret"`
 	SubIss       string    `orm:"column(subiss)" json:"subiss"`
