@@ -50,6 +50,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationMessage } from '../../../global-confirmation-dialog/confirmation-message';
 import {
@@ -68,6 +69,7 @@ const URL_TO_DISPLAY: RegExp =
     styleUrls: ['./policy.component.scss'],
 })
 export class PolicyComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     @ViewChild(AddP2pPolicyComponent)
     addP2pPolicyComponent: AddP2pPolicyComponent;
     @ViewChild('confirmationDialogComponent')

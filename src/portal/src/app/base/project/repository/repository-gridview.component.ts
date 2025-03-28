@@ -60,6 +60,7 @@ import {
     ConfirmationState,
     ConfirmationTargets,
     FALSE_STR,
+    PAGE_SIZE_OPTIONS,
     TRUE_STR,
 } from '../../../shared/entities/shared.const';
 import {
@@ -92,6 +93,7 @@ import {
 export class RepositoryGridviewComponent
     implements OnChanges, OnInit, OnDestroy
 {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     isFirstLoadingGridView: boolean = false;
     signedCon: { [key: string]: any | string[] } = {};
     downloadLink: string;
