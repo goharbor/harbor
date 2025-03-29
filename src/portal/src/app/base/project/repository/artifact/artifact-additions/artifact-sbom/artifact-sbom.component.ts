@@ -43,7 +43,10 @@ import {
     getArtifactSbom,
 } from '../../artifact';
 import { ArtifactService } from 'ng-swagger-gen/services';
-import { ScanTypes } from '../../../../../../shared/entities/shared.const';
+import {
+    PAGE_SIZE_OPTIONS,
+    ScanTypes,
+} from '../../../../../../shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-artifact-sbom',
@@ -73,6 +76,7 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
         PageSizeMapKeys.ARTIFACT_SBOM_COMPONENT,
         25
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     readonly severityText = severityText;
     constructor(
         private errorHandler: ErrorHandler,
