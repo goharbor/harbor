@@ -179,6 +179,26 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 			}
 			u.GroupDNList = groupDNList
 		}
+		log.Debugf("Searching for nested groups")
+		nestedGroupDNList := []string{}
+		nestedGroupFilter := createNestedGroupFilter(ldapEntry.DN, s.groupCfg.Filter)
+		result, err := s.SearchLdap(nestedGroupFilter)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, groupEntry := range result.Entries {
+			if !contains(u.GroupDNList, groupEntry.DN) {
+				nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
+				log.Debugf("Found group %v", groupEntry.DN)
+			} else {
+				log.Debugf("%v is already in GroupDNList", groupEntry.DN)
+			}
+		}
+
+		u.GroupDNList = append(u.GroupDNList, nestedGroupDNList...)
+		log.Debugf("Done searching for nested groups %v", nestedGroupDNList)
+
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 	}
@@ -429,4 +449,18 @@ func createGroupSearchFilter(baseFilter, groupName, groupNameAttr string) (strin
 	}
 	fb := base.And(gFilter)
 	return fb.String()
+}
+
+func createNestedGroupFilter(userDN string, objectClass string) string {
+	filter := "(&(objectClass=" + objectClass + ")(member:1.2.840.113556.1.4.1941:=" + userDN + "))"
+	return filter
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
