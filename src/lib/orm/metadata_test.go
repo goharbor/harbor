@@ -66,6 +66,8 @@ func TestParseQueryObject(t *testing.T) {
 	key, exist := metadata.Keys["Field2"]
 	require.True(exist)
 	assert.Equal("Field2", key.Name)
+	_, filterable := metadata.Filterable("Field2")
+	assert.False(filterable)
 	assert.False(key.Filterable)
 	assert.True(key.Sortable)
 
@@ -78,6 +80,8 @@ func TestParseQueryObject(t *testing.T) {
 	key, exist = metadata.Keys["Field3"]
 	require.True(exist)
 	assert.Equal("Field3", key.Name)
+	_, filterable = metadata.Filterable("Field2")
+	assert.False(filterable)
 	assert.True(key.Filterable)
 	assert.False(key.Sortable)
 
