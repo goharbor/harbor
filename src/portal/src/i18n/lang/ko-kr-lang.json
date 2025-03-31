@@ -1826,7 +1826,7 @@
         "INCLUDED_OPERATION_TOOLTIP": "선택한 작업에 대한 감사 로그 삭제",
         "INCLUDED_OPERATION_ERROR": "작업을 하나 이상 선택하세요.",
         "INCLUDED_EVENT_TYPES": "Event types to purge",
-        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
         "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "지금 제거",
         "PURGE_NOW_SUCCESS": "제거가 성공적으로 발생됐습니다",
