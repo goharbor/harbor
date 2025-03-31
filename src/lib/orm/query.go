@@ -162,7 +162,7 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 			// e.g. "ArtifactDigest" or the snake case format "artifact_digest" should be used instead:
 			// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/blob/controller.go#L233
 			mk, filterable = meta.Filterable(snakeCase(k))
-			if !filterable {
+			if mk == nil || !filterable {
 				continue
 			}
 		}
