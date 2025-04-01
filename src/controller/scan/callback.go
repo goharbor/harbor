@@ -57,6 +57,9 @@ func init() {
 	if err := task.RegisterTaskStatusChangePostFunc(job.ImageScanJobVendorType, scanTaskStatusChange); err != nil {
 		log.Fatalf("failed to register the task status change post for the scan job, error %v", err)
 	}
+	if err := task.RegisterTaskStatusChangePostFunc(job.SBOMJobVendorType, scanTaskStatusChange); err != nil {
+		log.Fatalf("failed to register the task status change post for the scan job, error %v", err)
+	}
 }
 
 func scanAllCallback(ctx context.Context, param string) error {

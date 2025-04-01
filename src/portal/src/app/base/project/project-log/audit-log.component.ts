@@ -25,6 +25,7 @@ import {
     setPageSizeToLocalStorage,
 } from '../../../shared/units/utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 
@@ -67,6 +68,7 @@ export class SearchOption {
     styleUrls: ['./audit-log.component.scss'],
 })
 export class ProjectAuditLogComponent implements OnInit {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     search: SearchOption = new SearchOption();
     currentUser: SessionUser;
     projectId: number;

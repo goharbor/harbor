@@ -57,6 +57,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
@@ -73,6 +74,7 @@ import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
     styleUrls: ['./system-robot-accounts.component.scss'],
 })
 export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.SYSTEM_ROBOT_COMPONENT
     );

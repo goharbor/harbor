@@ -41,6 +41,7 @@ import {
     QuotaUnlimited,
     QUOTA_DANGER_COEFFICIENT,
     QUOTA_WARNING_COEFFICIENT,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../shared/entities/shared.const';
 import { EditProjectQuotasComponent } from './edit-project-quotas/edit-project-quotas.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -63,6 +64,7 @@ const QuotaType = 'project';
     styleUrls: ['./project-quotas.component.scss'],
 })
 export class ProjectQuotasComponent implements OnChanges {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     config: Configuration = new Configuration();
     @ViewChild('editProjectQuotas')
     editQuotaDialog: EditProjectQuotasComponent;

@@ -31,7 +31,10 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
 } from '../../../../../shared/units/utils';
-import { REFRESH_TIME_DIFFERENCE } from '../../../../../shared/entities/shared.const';
+import {
+    PAGE_SIZE_OPTIONS,
+    REFRESH_TIME_DIFFERENCE,
+} from '../../../../../shared/entities/shared.const';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ReplicationExecution } from '../../../../../../../ng-swagger-gen/models/replication-execution';
 import { ReplicationService } from '../../../../../../../ng-swagger-gen/services';
@@ -49,6 +52,7 @@ const SUCCEED: string = 'Succeed';
     styleUrls: ['./replication-tasks.component.scss'],
 })
 export class ReplicationTasksComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     isOpenFilterTag: boolean;
     inProgress: boolean = false;
     currentPage: number = 1;

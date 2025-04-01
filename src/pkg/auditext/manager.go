@@ -80,7 +80,7 @@ func (m *manager) Create(ctx context.Context, audit *model.AuditLogExt) (int64, 
 	if len(config.AuditLogForwardEndpoint(ctx)) > 0 {
 		auditV1.LogMgr.DefaultLogger(ctx).WithField("operator", audit.Username).
 			WithField("time", audit.OpTime).WithField("resourceType", audit.ResourceType).
-			Infof("action:%s, resource:%s", audit.Operation, audit.Resource)
+			Infof("action:%s, resource:%s, operation_description:%s", audit.Operation, audit.Resource, audit.OperationDescription)
 	}
 	if config.SkipAuditLogDatabase(ctx) {
 		return 0, nil

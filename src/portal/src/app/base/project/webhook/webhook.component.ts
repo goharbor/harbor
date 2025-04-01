@@ -37,6 +37,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
 import { WebhookService } from '../../../../../ng-swagger-gen/services/webhook.service';
@@ -59,6 +60,7 @@ const URL_TO_DISPLAY: RegExp = /^\/harbor\/projects\/(\d+)\/webhook$/;
     styleUrls: ['./webhook.component.scss'],
 })
 export class WebhookComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     @ViewChild(AddWebhookComponent)
     addWebhookComponent: AddWebhookComponent;
     @ViewChild(AddWebhookFormComponent)

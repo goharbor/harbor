@@ -30,6 +30,7 @@ import {
     TIME_OUT,
 } from '../../p2p-provider/p2p-provider.service';
 import { ProjectWebhookService, VendorType } from '../webhook.service';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-executions',
@@ -45,6 +46,7 @@ export class ExecutionsComponent implements OnDestroy {
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.WEBHOOK_EXECUTIONS_COMPONENT
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     total: number = 0;
     state: ClrDatagridStateInterface;
     timeout: any;
