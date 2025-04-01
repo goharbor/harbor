@@ -25,6 +25,7 @@ import (
 
 	goldap "github.com/go-ldap/ldap/v3"
 
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -179,25 +180,30 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 			}
 			u.GroupDNList = groupDNList
 		}
-		log.Debugf("Searching for nested groups")
-		nestedGroupDNList := []string{}
-		nestedGroupFilter := createNestedGroupFilter(ldapEntry.DN, s.groupCfg.Filter)
-		result, err := s.SearchLdap(nestedGroupFilter)
-		if err != nil {
-			return nil, err
-		}
+		nestedAuth := strings.TrimSpace(config.GetLDAPNestedAuth())
+		log.Debugf("ldap nested auth is set to %v \n", nestedAuth)
 
-		for _, groupEntry := range result.Entries {
-			if !contains(u.GroupDNList, groupEntry.DN) {
-				nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
-				log.Debugf("Found group %v", groupEntry.DN)
-			} else {
-				log.Debugf("%v is already in GroupDNList", groupEntry.DN)
+		if nestedAuth == "true" {
+			log.Debugf("Searching for nested groups")
+			nestedGroupDNList := []string{}
+			nestedGroupFilter := createNestedGroupFilter(ldapEntry.DN, s.groupCfg.Filter)
+			result, err := s.SearchLdap(nestedGroupFilter)
+			if err != nil {
+				return nil, err
 			}
-		}
 
-		u.GroupDNList = append(u.GroupDNList, nestedGroupDNList...)
-		log.Debugf("Done searching for nested groups %v", nestedGroupDNList)
+			for _, groupEntry := range result.Entries {
+				if !contains(u.GroupDNList, groupEntry.DN) {
+					nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
+					log.Debugf("Found group %v", groupEntry.DN)
+				} else {
+					log.Debugf("%v is already in GroupDNList", groupEntry.DN)
+				}
+			}
+
+			u.GroupDNList = append(u.GroupDNList, nestedGroupDNList...)
+			log.Debugf("Done searching for nested groups %v", nestedGroupDNList)
+		}
 
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
