@@ -1836,7 +1836,7 @@
         "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
         "INCLUDED_OPERATION_ERROR": "Please select at least one operation",
         "INCLUDED_EVENT_TYPES": "Event types to purge",
-        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
         "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "PURGE NOW",
         "PURGE_NOW_SUCCESS": "Purge triggered successfully",

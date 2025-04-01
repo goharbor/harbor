@@ -32,14 +32,14 @@ type User struct {
 	// Email defined as sql.NullString because sometimes email is missing in LDAP/OIDC auth,
 	// set it to null to avoid unique constraint check
 	Email           sql.NullString `orm:"column(email)" json:"email"`
-	Password        string         `orm:"column(password)" json:"password"`
+	Password        string         `orm:"column(password)" filter:"false" json:"password"`
 	PasswordVersion string         `orm:"column(password_version)" json:"password_version"`
 	Realname        string         `orm:"column(realname)" json:"realname"`
 	Comment         string         `orm:"column(comment)" json:"comment"`
 	Deleted         bool           `orm:"column(deleted)" json:"deleted"`
 	SysAdminFlag    bool           `orm:"column(sysadmin_flag)" json:"sysadmin_flag"`
 	ResetUUID       string         `orm:"column(reset_uuid)" json:"reset_uuid"`
-	Salt            string         `orm:"column(salt)" json:"-"`
+	Salt            string         `orm:"column(salt)" filter:"false" json:"-"`
 	CreationTime    time.Time      `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime      time.Time      `orm:"column(update_time);auto_now" json:"update_time"`
 }
