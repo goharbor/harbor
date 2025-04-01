@@ -65,6 +65,11 @@ func GetCoreURL() string {
 	return os.Getenv("CORE_URL")
 }
 
+// GetLDAPNestedAuth returns boolean of ldap nested auth from env
+func GetLDAPNestedAuth() string {
+	return os.Getenv("LDAP_NESTED_AUTH")
+}
+
 // CoreSecret returns a secret to mark harbor-core when communicate with
 // other component
 func CoreSecret() string {
