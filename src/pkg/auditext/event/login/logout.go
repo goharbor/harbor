@@ -20,12 +20,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	ctlevent "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
+	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 )
 
@@ -50,6 +53,24 @@ func (l *logoutResolver) Resolve(ce *commonevent.Metadata, event *event.Event) e
 	return nil
 }
 
+// check if current auth is oidc common user
+func isOIDCAuthCommonUser(ctx context.Context, username string) bool {
+	authMode, err := config.AuthMode(ctx)
+	if err != nil || common.OIDCAuth != authMode {
+		return false
+	}
+	u, err := user.Ctl.GetByName(ctx, username)
+	if err != nil {
+		log.Errorf("failed to get username %v, error %v", username, err)
+		return false
+	}
+	// for admin user under oidc, it should be handled by /c/log_out, not /c/oidc/logout
+	if u.UserID == 1 {
+		return false
+	}
+	return true
+}
+
 func (l *logoutResolver) PreCheck(ctx context.Context, _ string, method string) (bool, string) {
 	operation := ""
 	if method == http.MethodGet {
@@ -65,6 +86,10 @@ func (l *logoutResolver) PreCheck(ctx context.Context, _ string, method string) 
 	}
 	username := secCtx.GetUsername()
 	if len(username) == 0 {
+		return false, ""
+	}
+	// for oidc auth common user logout, it is handled by oidclogoutResolver
+	if isOIDCAuthCommonUser(ctx, username) {
 		return false, ""
 	}
 	return config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", operation, rbac.ResourceUser.String())), ""
