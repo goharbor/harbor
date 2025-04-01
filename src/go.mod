@@ -3,6 +3,7 @@ module github.com/goharbor/harbor/src
 go 1.23.7
 
 require (
+	github.com/CloudNativeAI/model-spec v0.0.3
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.84
@@ -49,6 +50,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
+	github.com/prometheus/client_model v0.6.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
@@ -62,6 +64,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.34.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
+	go.pinniped.dev v0.37.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.36.0
 	golang.org/x/net v0.37.0
@@ -76,12 +79,6 @@ require (
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
 	sigs.k8s.io/yaml v1.4.0
-)
-
-require (
-	github.com/CloudNativeAI/model-spec v0.0.3
-	github.com/prometheus/client_model v0.6.1
-	go.pinniped.dev v0.37.0
 )
 
 require (

@@ -180,13 +180,6 @@
                     </clr-dropdown>
                 </div>
                 <div class="right-pos">
-                    <app-pull-command
-                        [registryUrl]="registryUrl"
-                        [projectName]="projectName"
-                        [repoName]="repoName"
-                        [isTopModel]="true"
-                        class="mr-1"></app-pull-command>
-
                     <app-artifact-filter
                         [withDivider]="true"
                         (filterEvent)="filterEvent($event)"

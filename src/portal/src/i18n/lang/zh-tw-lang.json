@@ -1832,7 +1832,7 @@
         "INCLUDED_OPERATION_TOOLTIP": "移除所選操作的稽核日誌",
         "INCLUDED_OPERATION_ERROR": "請至少選擇一個操作",
         "INCLUDED_EVENT_TYPES": "Event types to purge",
-        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
         "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "立即清除",
         "PURGE_NOW_SUCCESS": "成功觸發清除",
