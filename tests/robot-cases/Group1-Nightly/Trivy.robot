@@ -172,10 +172,6 @@ Test Case - Generate Image SBOM On Push
     [Tags]  run-once
     Body Of Generate Image SBOM On Push
 
-Test Case - Stop SBOM Manual Generation
-    [Tags]  stop_sbom_gen
-    Body Of Stop SBOM Manual Generation
-
 Test Case - External Scanner CRUD
     [Tags]  external_scanner_crud  need_scanner_endpoint
     ${SCANNER_ENDPOINT_VALUE}=  Get Variable Value  ${SCANNER_ENDPOINT}  ${EMPTY}
