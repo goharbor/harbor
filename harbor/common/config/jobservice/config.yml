@@ -1,0 +1,46 @@
+---
+#Protocol used to serve
+protocol: "http"
+
+#Server listening port
+port: 8080
+
+#Worker pool
+worker_pool:
+  #Worker concurrency
+  workers: 10
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  redis_pool:
+    #redis://[arbitrary_username:password@]ipaddress:port/database_index
+    redis_url: redis://redis:6379/2?idle_timeout_seconds=30
+    namespace: "harbor_job_service_namespace"
+    idle_timeout_second: 3600
+#Loggers for the running job
+job_loggers:
+  # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
+  - name: "STD_OUTPUT"
+    level: "INFO" # INFO/DEBUG/WARNING/ERROR/FATAL
+  - name: "FILE"
+    level: "INFO"
+    settings: # Customized settings of logger
+      base_dir: "/var/log/jobs"
+    sweeper:
+      duration: 1 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/var/log/jobs"
+
+#Loggers for the job service
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "INFO"
+
+
+reaper:
+  # the max time to wait for a task to finish, if unfinished after max_update_hours, the task will be mark as error, but the task will continue to run, default value is 24,
+  max_update_hours: 24
+  # the max time for execution in running state without new task created
+  max_dangling_hours: 168
+
+# the max size of job log returned by API, default is 10M
+max_retrieve_size_mb: 10

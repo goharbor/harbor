@@ -1,0 +1,44 @@
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+storage:
+  cache:
+    layerinfo: redis
+  filesystem:
+    rootdirectory: /storage
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+  delete:
+    enabled: true
+redis:
+  addr: redis:6379
+  readtimeout: 10s
+  writetimeout: 10s
+  dialtimeout: 10s
+  password: 
+  db: 1
+  enableTLS: false
+  pool:
+    maxidle: 100
+    maxactive: 500
+    idletimeout: 60s
+http:
+  addr: :5000
+  secret: placeholder
+  debug:
+    addr: localhost:5001
+auth:
+  htpasswd:
+    realm: harbor-registry-basic-realm
+    path: /etc/registry/passwd
+validation:
+  disabled: true
+compatibility:
+  schema1:
+    enabled: true
