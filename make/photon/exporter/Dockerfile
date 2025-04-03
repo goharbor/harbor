@@ -12,7 +12,7 @@ COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
 RUN go build -o /out/harbor_exporter
 
-FROM ${harbor_base_namespace}/harbor-exporter-base:${harbor_base_image_version}
+FROM ${harbor_base_namespace}/exporter-base-harbor:${harbor_base_image_version}
 
 COPY --from=build /out/harbor_exporter /harbor/harbor_exporter
 COPY ./make/photon/exporter/entrypoint.sh ./make/photon/common/install_cert.sh /harbor/

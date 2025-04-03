@@ -8,14 +8,12 @@
 #
 # compile_golangimage:
 #			compile from golang image
-#			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.18.5
+#			for example: make compile_golangimage -e GOBUILDIMAGE=golang:1.18.5
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
 #
-# install:		include compile binaries, build images, prepare specific \
-#				version composefile and startup Harbor instance
+# install:		include compile binaries, build images, prepare specific version composefile and startup Harbor instance
 #
 # start:		startup Harbor instance
 #
@@ -23,8 +21,7 @@
 #
 # package_online:
 #				prepare online install package
-#			for example: make package_online -e DEVFLAG=false\
-#							REGISTRYSERVER=reg-bj.goharbor.io \
+#			for example: make package_online -e DEVFLAG=false REGISTRYSERVER=reg-bj.goharbor.io \
 #							REGISTRYPROJECTNAME=harborrelease
 #
 # package_offline:
@@ -32,17 +29,12 @@
 #
 # pushimage:	push Harbor images to specific registry server
 #			for example: make pushimage -e DEVFLAG=false REGISTRYUSER=admin \
-#							REGISTRYPASSWORD=***** \
-#							REGISTRYSERVER=reg-bj.goharbor.io/ \
+#							REGISTRYPASSWORD=***** REGISTRYSERVER=reg-bj.goharbor.io/ \
 #							REGISTRYPROJECTNAME=harborrelease
-#				note**: need add "/" on end of REGISTRYSERVER. If not setting \
-#						this value will push images directly to dockerhub.
-#						 make pushimage -e DEVFLAG=false REGISTRYUSER=goharbor \
-#							REGISTRYPASSWORD=***** \
-#							REGISTRYPROJECTNAME=goharbor
+#				note**: need add "/" on end of REGISTRYSERVER. If not setting this value will push images directly to dockerhub.
+#						 make pushimage -e DEVFLAG=false REGISTRYUSER=goharbor REGISTRYPASSWORD=***** REGISTRYPROJECTNAME=goharbor
 #
-# clean:        remove binary, Harbor images, specific version docker-compose \
-#               file, specific version tag and online/offline install package
+# clean:        remove binary, Harbor images, specific version docker-compose file, specific version tag and online/offline install package
 # cleanbinary:	remove core and jobservice binary
 # cleanbaseimage:
 #               remove the base images of Harbor images
@@ -56,11 +48,8 @@
 # other example:
 #	clean specific version binaries and images:
 #				make clean -e VERSIONTAG=[TAG]
-#				note**: If commit new code to github, the git commit TAG will \
-#				change. Better use this command clean previous images and \
-#				files with specific TAG.
-#   By default DEVFLAG=true, if you want to release new version of Harbor, \
-#		should setting the flag to false.
+#				note**: If commit new code to github, the git commit TAG will change. Better use this command clean previous images and files with specific TAG.
+#   By default DEVFLAG=true, if you want to release new version of Harbor, should setting the flag to false.
 #				make XXXX -e DEVFLAG=false
 
 SHELL := /bin/bash
@@ -75,26 +64,26 @@ CHECKENVCMD=checkenv.sh
 
 # parameters
 REGISTRYSERVER=
-REGISTRYPROJECTNAME=goharbor
+REGISTRYPROJECTNAME=ranichowdary
 DEVFLAG=true
-TRIVYFLAG=false
+TRIVYFLAG=false         # TRIVY service commented out
 HTTPPROXY=
 BUILDREG=true
-BUILDTRIVYADP=true
+BUILDTRIVYADP=true      # TRIVY service commented out
 NPM_REGISTRY=https://registry.npmjs.org
 BUILDTARGET=build
 GEN_TLS=
 
 # version prepare
 # for docker image tag
-VERSIONTAG=dev
+VERSIONTAG=latest
 # for base docker image tag
 BUILD_BASE=true
 PUSHBASEIMAGE=false
-BASEIMAGETAG=dev
+BASEIMAGETAG=latest
 BUILDBASETARGET=trivy-adapter core db jobservice log nginx portal prepare redis registry registryctl exporter
-IMAGENAMESPACE=goharbor
-BASEIMAGENAMESPACE=goharbor
+IMAGENAMESPACE=ranichowdary
+BASEIMAGENAMESPACE=ranichowdary
 # #input true/false only
 PULL_BASE_FROM_DOCKERHUB=true
 
@@ -105,25 +94,28 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.61.0
-TRIVYADAPTERVERSION=v0.33.0-rc.2
+TRIVYVERSION=v0.58.2          # TRIVY service commented out
+TRIVYADAPTERVERSION=v0.32.3     # TRIVY service commented out
 NODEBUILDIMAGE=node:16.18.0
+# PLATFORM = linux/arm64
+
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=release/2.8
+REGISTRY_SRC_TAG=v2.8.3
 # source of upstream distribution code
-DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
+DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/v0.58.2/trivy_v0.58.2_Linux-ARM64.tar.gz
+#TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz   # TRIVY service commented out
+TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/v0.32.3.tar.gz    # TRIVY service commented out
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
 REGISTRY_VERSION: $(REGISTRYVERSION)
-TRIVY_VERSION: $(TRIVYVERSION)
-TRIVY_ADAPTER_VERSION: $(TRIVYADAPTERVERSION)
+TRIVY_VERSION: $(TRIVYVERSION)              # TRIVY service commented out
+TRIVY_ADAPTER_VERSION: $(TRIVYADAPTERVERSION) # TRIVY service commented out
 endef
 
 # docker parameters
@@ -196,7 +188,7 @@ PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARA=--conf $(INSIDE_CONFIGPATH)/$(CONFIGFILE)
 ifeq ($(TRIVYFLAG), true)
-	PREPARECMD_PARA+= --with-trivy
+	PREPARECMD_PARA+= --with-trivy   # TRIVY service commented out
 endif
 
 # makefile
@@ -206,14 +198,15 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
-DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare
-DOCKERIMAGENAME_PORTAL=$(IMAGENAMESPACE)/harbor-portal
-DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/harbor-core
-DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/harbor-jobservice
-DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/harbor-log
-DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/harbor-db
-DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/harbor-registryctl
-DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-exporter
+DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare-harbor
+DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/core-harbor
+DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/db-harbor
+DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/jobservice-harbor
+DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/registryctl-harbor
+DOCKERIMAGENAME_PORTAL=$(IMAGENAMESPACE)/portal-harbor
+DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/log-harbor
+DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/exporter-harbor
+
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -246,9 +239,14 @@ DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
+		$(IMAGENAMESPACE)/redis-harbor:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/nginx-harbor:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/registry-harbor:$(VERSIONTAG)
+
+# Commented out TRIVY service addition:
+ifeq ($(TRIVYFLAG), true)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
+endif
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -267,9 +265,8 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)   # TRIVY service commented out
 endif
-
 
 RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
 
@@ -311,7 +308,6 @@ endef
 gen_apis: lint_apis
 	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
-
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
 MOCKERY_VERSION=v2.51.0
@@ -361,9 +357,15 @@ compile_standalone_db_migrator:
 
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl
 
+# update_prepare_version:
+# 	@echo "substitute the prepare version tag in prepare file..."
+# 	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
+
 update_prepare_version:
-	@echo "substitute the prepare version tag in prepare file..."
-	@$(SEDCMDI) -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) prepare /' $(MAKEPATH)/prepare ;
+	@echo "substituting goharbor with ranichowdary and prepare with prepare-base..."
+	@$(SEDCMDI) -e 's/goharbor/ranichowdary/g' $(MAKEPATH)/prepare
+	@$(SEDCMDI) -e 's/prepare:.*[[:space:]]\+/prepare-base:$(VERSIONTAG) prepare-base /g' $(MAKEPATH)/prepare
+
 
 gen_tls:
 	@$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal
@@ -371,9 +373,16 @@ gen_tls:
 prepare: update_prepare_version
 	@echo "preparing..."
 	@if [ -n "$(GEN_TLS)" ] ; then \
-		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare-base:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
 	fi
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
+# prepare: update_prepare_version
+# 	@echo "preparing..."
+# 	@if [ -n "$(GEN_TLS)" ] ; then \
+# 		$(DOCKERCMD) run --rm -v /:/hostfs:z $(IMAGENAMESPACE)/prepare:$(VERSIONTAG) gencert -p /etc/harbor/tls/internal; \
+# 	fi
+# 	@$(MAKEPATH)/prepare $(PREPARECMD_PARA)
+
 
 build:
 # PUSHBASEIMAGE should not be true if BUILD_BASE is not true
@@ -401,6 +410,19 @@ build:
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
 	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
 
+# 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) -e NODEBUILDIMAGE=$(NODEBUILDIMAGE) \
+# 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG)  -e DISTRIBUTION_SRC=$(DISTRIBUTION_SRC)\
+# 	 -e VERSIONTAG=$(VERSIONTAG) \
+# 	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
+# 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
+# 	 -e REGISTRYURL=$(REGISTRYURL) \
+# 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
+# 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
+# 	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE)
+# 	 -e PLATFORM="linux/$(ARCH)"
+# 	 -e NODEBUILDIMAGE=$(NODEBUILDIMAGE)
+# 	# TRIVY-related variables have been removed
+# #	 -e PLATFORM="linux/$(ARCH)"
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
 
@@ -413,16 +435,16 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/$$name-base-harbor:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
-			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
+			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/$$name-base-harbor:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
 	done
 
 pull_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
-		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
+		$(DOCKERPULL) $(BASEIMAGENAMESPACE)/$$name-base-harbor:$(BASEIMAGETAG) ; \
 	done
 
 install: compile build prepare start
@@ -435,21 +457,18 @@ package_online: update_prepare_version
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
-
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
 package_offline: update_prepare_version compile build
-
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
-
 	@echo "saving harbor docker image"
+	@echo "Images to be saved: $(DOCKERSAVE_PARA)"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
 	@gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
-
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
@@ -470,20 +489,16 @@ misspell:
 	@echo checking misspell...
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
-# golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
-# go install golang.org/x/vuln/cmd/govulncheck@latest
 GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
 govulncheck:
 	@echo golang vulnerability check
 	@cd ./src/; $(GOVULNCHECK) ./...;
-
 
 pushimage:
 	@echo "pushing harbor images ..."
@@ -491,27 +506,22 @@ pushimage:
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CORE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CORE):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_DB):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
@@ -553,7 +563,7 @@ cleanbinary:
 cleanbaseimage:
 	@echo "cleaning base image for photon..."
 	@for name in $(BUILDBASETARGET); do \
-		$(DOCKERRMIMAGE) -f $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) ; \
+		$(DOCKERRMIMAGE) -f $(BASEIMAGENAMESPACE)/$$name-base-harbor:$(BASEIMAGETAG) ; \
 	done
 
 cleanimage:
@@ -571,10 +581,8 @@ cleandockercomposefile:
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
-	@if [ -f $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
-	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ] ; then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi
 
 cleanconfig:
 	@echo "clean generated config files"
