@@ -27,6 +27,7 @@ data:
   REGISTRY_URL: "{{ template "harbor.registryURL" . }}"
   TOKEN_SERVICE_URL: "{{ template "harbor.tokenServiceURL" . }}"
   CORE_LOCAL_URL: "{{ ternary "https://127.0.0.1:8443" "http://127.0.0.1:8080" .Values.internalTLS.enabled }}"
+  LDAP_NESTED_AUTH: "{{ .Values.ldap.nestedAuth | ternary "true" "false" }}"
   WITH_TRIVY: {{ .Values.trivy.enabled | quote }}
   TRIVY_ADAPTER_URL: "{{ template "harbor.trivyAdapterURL" . }}"
   REGISTRY_STORAGE_PROVIDER_NAME: "{{ .Values.persistence.imageChartStorage.type }}"
@@ -40,7 +41,7 @@ data:
   {{- end }}
   {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.cacheLayerDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.cacheLayerDatabaseIndex) }}
   _REDIS_URL_CACHE_LAYER: "{{ template "harbor.redis.urlForCache" . }}"
-  {{- end }}  
+  {{- end }}
   PORTAL_URL: "{{ template "harbor.portalURL" . }}"
   REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
@@ -84,7 +85,7 @@ data:
   CACHE_ENABLED: "true"
   CACHE_EXPIRE_HOURS: "{{ .Values.cache.expireHours }}"
   {{- end }}
-  
+
   {{- if .Values.core.quotaUpdateProvider }}
   QUOTA_UPDATE_PROVIDER: "{{ .Values.core.quotaUpdateProvider }}"
   {{- end }}

@@ -66,6 +66,7 @@ const (
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
+	LdapNestedAuth                   = "ldap_nested_auth"
 	JobServiceURL                    = "jobservice_url"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
