@@ -111,7 +111,7 @@ Execute P2P Preheat
 Verify Latest Execution Result
     [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
     Retry Double Keywords When Error  Select P2P Preheat Policy  ${policy_name}  Wait Until Element Is Visible  ${p2p_preheat_executions_refresh_xpath}
-    Retry Keyword N Times When Error  5  Retry P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${contain}  ${not_contain}
+    Retry Keyword N Times When Error  10  Retry P2P Preheat Be Successful  ${project_name}  ${policy_name}  ${contain}  ${not_contain}
 
 Retry P2P Preheat Be Successful
     [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success

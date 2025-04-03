@@ -1187,6 +1187,7 @@
         "NO_LICENSE": "Aucune licence n'est fournie pour ce modèle.",
         "NO_FILES": "Aucun fichier fourni pour ce modèle.",
         "MODEL_NO_README": "Aucun fichier README n'est fourni pour ce modèle.",
+        "FILE_TOO_LARGE": "Le fichier est trop volumineux pour être traité.",
         "ITEMS": "entrées",
         "SHOW_KV": "Paires Clé/Valeur",
         "SHOW_YAML": "Fichier YAML"
@@ -1836,7 +1837,7 @@
         "INCLUDED_OPERATION_TOOLTIP": "Supprimer les logs d'audit pour les opérations sélectionnées",
         "INCLUDED_OPERATION_ERROR": "Sélectionner au moins une opération",
         "INCLUDED_EVENT_TYPES": "Event types to purge",
-        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
         "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "Purger maintenant",
         "PURGE_NOW_SUCCESS": "La purge s'est déclenchée avec succès",

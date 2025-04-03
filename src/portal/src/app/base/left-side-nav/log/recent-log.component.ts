@@ -23,6 +23,7 @@ import {
     setPageSizeToLocalStorage,
 } from '../../../shared/units/utils';
 import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-log',
@@ -30,6 +31,7 @@ import ListAuditLogsParams = AuditlogService.ListAuditLogsParams;
     styleUrls: ['./recent-log.component.scss'],
 })
 export class RecentLogComponent {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     recentLogs: AuditLog[] = [];
     loading: boolean = true;
     currentTerm: string;

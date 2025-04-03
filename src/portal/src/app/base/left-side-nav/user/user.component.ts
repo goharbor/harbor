@@ -34,6 +34,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
@@ -61,6 +62,7 @@ import {
     providers: [UserService],
 })
 export class UserComponent implements OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     users: User[] = [];
     selectedRow: User[] = [];
     ISADMINISTRATOR: string = 'USER.ENABLE_ADMIN_ACTION';
