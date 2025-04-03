@@ -6,9 +6,16 @@ RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
-RUN tdnf install -y postgresql14-server >> /dev/null
-RUN tdnf install -y gzip postgresql15-server findutils bc >> /dev/null \
-    && mkdir -p /docker-entrypoint-initdb.d \
+# Detect architecture and install different packages accordingly
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        tdnf install -y postgresql14-server gzip postgresql15-server findutils bc >> /dev/null; \
+    else \
+        tdnf install -y postgresql15-server gzip findutils bc >> /dev/null; \
+    fi
+
+# Additional setup
+RUN mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
     && chown -R postgres:postgres /run/postgresql \
     && chmod 2777 /run/postgresql \
@@ -17,4 +24,5 @@ RUN tdnf install -y gzip postgresql15-server findutils bc >> /dev/null \
     && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/15/share/postgresql/postgresql.conf.sample \
     && tdnf clean all
 
+# Remove unnecessary tools and install utilities
 RUN tdnf erase -y toybox && tdnf install -y util-linux net-tools
