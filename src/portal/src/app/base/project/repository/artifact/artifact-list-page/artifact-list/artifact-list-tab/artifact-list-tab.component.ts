@@ -915,6 +915,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
     }
 
+    hasChild(artifact: Artifact): boolean {
+        return !!(
+            artifact &&
+            artifact.references &&
+            artifact.references.some(ref => ref['child_digest'])
+        );
+    }
+
     submitFinish(e: boolean) {
         this.scanFinishedArtifactLength += 1;
         // all selected scan action has started
