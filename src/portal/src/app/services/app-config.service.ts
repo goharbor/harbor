@@ -91,6 +91,12 @@ export class AppConfigService {
         );
     }
 
+    public resetVersion(): AppConfig {
+        let cf = this.configurations;
+        cf.harbor_version = '';
+        return cf;
+    }
+
     // Return the reconstructed admiral url
     public getAdmiralEndpoint(currentHref: string): string {
         let admiralUrl: string = this.configurations.admiral_endpoint;
