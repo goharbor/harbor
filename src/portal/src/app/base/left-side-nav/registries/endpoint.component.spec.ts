@@ -526,7 +526,7 @@ describe('EndpointComponent (inline template)', () => {
         },
         'docker-hub': {
             endpoint_pattern: {
-                endpoint_type: 'EndpointPatternTypeFix',
+                endpoint_type: 'EndpointPatternTypeStandard',
                 endpoints: [
                     {
                         key: 'hub.docker.com',
