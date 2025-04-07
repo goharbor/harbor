@@ -3,7 +3,10 @@ name: Publish Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'jt-test*.*.*'
+env:
+  COSIGN_VERSION: V2.4.3
+
 
 jobs:
   release:
@@ -15,10 +18,17 @@ jobs:
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           echo "BASE_TAG=$(cat ./VERSION)" >> $GITHUB_ENV
           release=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/goharbor/harbor/releases/tags/${{ github.ref_name }})
+          echo "debug ref_name: ${{ github.ref_name }}"
+          echo "debug release: $release"
           echo "BUILD_NO=$(echo $release | jq -r '.body' | jq -r '.buildNo')" >> $GITHUB_ENV
           echo "PRE_TAG=$(echo $release | jq -r '.body' | jq -r '.preTag')" >> $GITHUB_ENV
-          echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
+          # echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
+          echo "BRANCH=release-2.13.0" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
+          mkdir -p ${{ runner.workspace }}/bin
+          curl -L "https://github.com/sigstore/cosign/releases/download/$COSIGN_VERSION/cosign-linux-amd64" -o ${{ runner.workspace }}/bin/cosign
+          chmod +x ${{ runner.workspace }}/bin/cosign
+          echo "${{ runner.workspace }}/bin" >> $GITHUB_PATH
       - uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
@@ -44,6 +54,7 @@ jobs:
 
           assets_path=$(pwd)/assets
           source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path
+          echo "ASSET_PATH=$asset_path" >> $GITHUB_ENV
           echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
@@ -52,14 +63,15 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - name: Publish Images
-        run: |
-          tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
-          docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
-          source tools/release/release_utils.sh
-          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
-          publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
+# This section was commented for testing
+#      - name: Publish Images
+#        run: |
+#          tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
+#          docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
+#          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
+#          source tools/release/release_utils.sh
+#          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
+#          publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt
@@ -73,6 +85,17 @@ jobs:
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
             ${{ env.MD5SUM_PATH }}
+      - name: Sign Release
+        if: ${{ env.PRERELEASE == 'false' }} &&
+        run:
+          echo "Sign offline package"
+          offline_package_sig_path=${{ env.OFFLINE_PACKAGE_PATH }}.sig
+          COSIGN_PASSWORD=${{ secrets.COSIGN_PASSWORD }} PRIVATE_KEY=${{ secrets.COSIGN_PRIVATE_KEY }} cosign sign-blob --key=env://PRIVATE_KEY ${{ env.OFFLINE_PACKAGE_PATH }} --output-signature=${{ env.OFFLINE_PACKAGE_PATH }} -y
+          public_key_path=${{ env.ASSET_PATH }}/key.pub
+          echo "${{ secrets.COSIGN_PUBLIC_KEY }}" > $public_key_path 
+          
+          echo "OFFLINE_PACKAGE_SIG_PATH=$offline_package_sig_path" >> $GITHUB_ENV
+          echo "PUBLIC_KEY_PATH=$public_key_path" >> $GITHUB_ENV
       - name: GA Release
         uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'false' }}
@@ -80,5 +103,7 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
+            ${{ env.OFFLINE_PACKAGE_SIG_PATH }}
             ${{ env.ONLINE_PACKAGE_PATH }}
+            ${{ env.PUBLIC_KEY_PATH }} 
             ${{ env.MD5SUM_PATH }}
