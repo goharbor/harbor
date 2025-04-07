@@ -45,7 +45,10 @@ type metadata struct {
 
 func (m *metadata) Filterable(key string) (*key, bool) {
 	k, exist := m.Keys[key]
-	return k, exist
+	if !exist {
+		return nil, false
+	}
+	return k, k.Filterable
 }
 
 func (m *metadata) Sortable(key string) bool {

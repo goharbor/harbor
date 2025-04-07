@@ -29,6 +29,7 @@ import {
 } from '../../../../shared/units/utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { Task } from 'ng-swagger-gen/models/task';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-tasks',
@@ -36,6 +37,7 @@ import { Task } from 'ng-swagger-gen/models/task';
     styleUrls: ['./tasks.component.scss'],
 })
 export class TasksComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     policyId: number;
     tasks: Task[] = [];

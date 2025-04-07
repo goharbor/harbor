@@ -902,7 +902,7 @@ Test Case - Audit Log And Purge
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Logs
-    Verify Log  ${user}  project${d}  project  delete
+    Verify Log  ${user}  project${d}  project  delete  3
     Switch To Log Rotation
     Purge Now  1  Hours
     Close Browser

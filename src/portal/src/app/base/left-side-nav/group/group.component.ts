@@ -38,6 +38,7 @@ import {
     ConfirmationState,
     ConfirmationTargets,
     GroupType,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
 import { errorHandler } from '../../../shared/units/shared.utils';
@@ -58,6 +59,7 @@ import { FilterComponent } from '../../../shared/components/filter/filter.compon
     styleUrls: ['./group.component.scss'],
 })
 export class GroupComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loading = true;
     groups: UserGroup[] = [];
     currentPage: number = 1;
