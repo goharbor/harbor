@@ -29,6 +29,10 @@ jobs:
           curl -L "https://github.com/sigstore/cosign/releases/download/$COSIGN_VERSION/cosign-linux-amd64" -o ${{ runner.workspace }}/bin/cosign
           chmod +x ${{ runner.workspace }}/bin/cosign
           echo "${{ runner.workspace }}/bin" >> $GITHUB_PATH
+          public_key_path="$(pwd)"/public-key.pub
+          echo "copying the public key to $public_key_path"
+          echo "${{ secrets.COSIGN_PUBLIC_KEY }}">$public_key_path
+          echo "PUBLIC_KEY_PATH=$public_key_path" >> $GITHUB_ENV
 
       - uses: 'google-github-actions/auth@v2'
         with:
@@ -94,11 +98,6 @@ jobs:
           echo "offline_package_sig_path $offline_package_sig_path"
           COSIGN_PASSWORD="${{ secrets.COSIGN_PASSWORD }}" PRIVATE_KEY="${{ secrets.COSIGN_PRIVATE_KEY }}" cosign sign-blob --key=env://PRIVATE_KEY ${{ env.OFFLINE_PACKAGE_PATH }} --output-signature=$offline_package_sig_path -y
           
-          public_key_path="$(pwd)"/public-key.pub
-          echo "copying the public key to $public_key_path"
-          echo "${{ secrets.COSIGN_PUBLIC_KEY }}">$public_key_path
-          
-          echo "PUBLIC_KEY_PATH=$public_key_path" >> $GITHUB_ENV
           echo "OFFLINE_PACKAGE_SIG_PATH=$offline_package_sig_path" >> $GITHUB_ENV
       - name: GA Release
         uses: softprops/action-gh-release@v2
