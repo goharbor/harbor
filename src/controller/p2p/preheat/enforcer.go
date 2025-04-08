@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -341,13 +342,18 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 
 // getCandidates get the initial candidates by evaluating the policy
 func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *proModels.Project) ([]*selector.Candidate, error) {
+	// Filter the candidates by supported types.
+	var supportedTypes []any
+	for _, t := range lib.SliceToUpper(pr.SupportedTypes) {
+		supportedTypes = append(supportedTypes, t)
+	}
 	// Get the initial candidates
 	// Here we have a hidden filter, the artifact type filter.
 	// Only get the image type at this moment.
 	arts, err := de.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": ps.ProjectID,
-			"Type":      strings.ToUpper(pr.SupportedType),
+			"Type":      q.NewOrList(supportedTypes),
 		},
 	}, &artifact.Option{
 		WithLabel: true,
@@ -433,7 +439,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 	}
 
 	pi := &pr.PreheatImage{
-		Type: pr.SupportedType,
+		Type: candidate.Kind,
 		URL:  u,
 		Headers: map[string]interface{}{
 			accessCredHeaderKey: cred,
@@ -517,7 +523,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Projec
 				NamespaceID:           p.ProjectID,
 				Namespace:             p.Name,
 				Repository:            pureRepository(p.Name, a.RepositoryName),
-				Kind:                  pr.SupportedType,
+				Kind:                  strings.ToLower(a.Type),
 				Digest:                a.Digest,
 				Tags:                  []string{t.Name},
 				Labels:                getLabels(a.Labels),
