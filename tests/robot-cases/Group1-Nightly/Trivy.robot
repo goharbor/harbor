@@ -86,7 +86,7 @@ Test Case - Security Hub
     # Check the vulnerabilities search
     Retry Wait Element Not Visible  ${add_search_criteria_icon}
     Retry Wait Element Not Visible  ${remove_search_criteria_icon}
-    Retry Wait Element Count  ${vulnerabilities_datagrid_row}  10
+    Retry Wait Element Count  ${vulnerabilities_datagrid_row}  15
     Check The Quick Search
     Check The Search By One Condition  project${d}  project${d}/${images}[2]  ${digest}  ${cve_id}  ${package}  ${tag}  ${cvss_score_v3_from}  ${cvss_score_v3_to}  ${summary}
     Check The Search By All Condition  project${d}  project${d}/${images}[2]  ${digest}  ${cve_id}  ${package}  ${tag}  ${cvss_score_v3_from}  ${cvss_score_v3_to}  ${severity}
