@@ -1,6 +1,6 @@
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-FROM ${harbor_base_namespace}/harbor-registryctl-base:${harbor_base_image_version}
+FROM ${harbor_base_namespace}/registryctl-base-harbor:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
 COPY ./make/photon/registry/binary/registry /usr/bin/registry_DO_NOT_USE_GC
