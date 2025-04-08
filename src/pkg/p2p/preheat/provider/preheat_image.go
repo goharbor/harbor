@@ -17,13 +17,17 @@ package provider
 import (
 	"encoding/json"
 	"net/url"
+	"slices"
 
 	"github.com/pkg/errors"
 )
 
-const (
-	// SupportedType indicates the supported preheating type 'image'.
-	SupportedType = "image"
+var (
+	// SupportedTypes indicates the supported preheating types.
+	SupportedTypes = []string{
+		"image",
+		"cnai",
+	}
 )
 
 // PreheatImage contains related information which can help providers to get/pull the images.
@@ -75,7 +79,7 @@ func (img *PreheatImage) ToJSON() (string, error) {
 
 // Validate PreheatImage
 func (img *PreheatImage) Validate() error {
-	if img.Type != SupportedType {
+	if !slices.Contains(SupportedTypes, img.Type) {
 		return errors.Errorf("unsupported type '%s'", img.Type)
 	}
 
