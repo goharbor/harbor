@@ -20,13 +20,17 @@ import {
 import { SessionService } from '../services/session.service';
 import { Observable } from 'rxjs';
 import { CommonRoutes } from '../entities/shared.const';
+import { AppConfigService } from '../../services/app-config.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class SignInGuard {
-    constructor(private authService: SessionService, private router: Router) {}
-
+    constructor(
+        private authService: SessionService,
+        private router: Router,
+        private appCfgService: AppConfigService
+    ) {}
     canActivate(
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
@@ -39,6 +43,7 @@ export class SignInGuard {
                 this.authService.signOff().subscribe(
                     () => {
                         this.authService.clear(); // Destroy session cache
+                        this.appCfgService.resetVersion(); // reset version info for anoymous users
 
                         return observer.next(true);
                     },
