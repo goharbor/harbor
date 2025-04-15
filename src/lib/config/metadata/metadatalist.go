@@ -81,6 +81,7 @@ var (
 		{Name: common.ExtEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "EXT_ENDPOINT", DefaultValue: "https://host01.com", ItemType: &StringType{}, Editable: false},
 		{Name: common.JobServiceURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "JOBSERVICE_URL", DefaultValue: "http://jobservice:8080", ItemType: &StringType{}, Editable: false},
 
+		{Name: common.LdapNestedAuth, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_NESTED_AUTH", DefaultValue: "false", ItemType: &StringType{}, Editable: false, Description: `Whether to use LDAP Nested authentication`},
 		{Name: common.LDAPBaseDN, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_BASE_DN", DefaultValue: "", ItemType: &NonEmptyStringType{}, Editable: false, Description: `The Base DN for LDAP binding.`},
 		{Name: common.LDAPFilter, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_FILTER", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The filter for LDAP search`},
 		{Name: common.LDAPGroupBaseDN, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_BASE_DN", DefaultValue: "", ItemType: &StringType{}, Editable: false, Description: `The base DN to search LDAP group.`},
