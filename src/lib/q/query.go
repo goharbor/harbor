@@ -105,10 +105,10 @@ func NewSort(key string, desc bool) *Sort {
 }
 
 // NewRange creates a new range
-func NewRange(min, max interface{}) *Range {
+func NewRange(minVal, maxVal interface{}) *Range {
 	return &Range{
-		Min: min,
-		Max: max,
+		Min: minVal,
+		Max: maxVal,
 	}
 }
 
