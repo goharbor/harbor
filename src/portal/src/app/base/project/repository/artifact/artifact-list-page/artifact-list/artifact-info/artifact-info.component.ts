@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, SecurityContext, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { RepositoryService } from 'ng-swagger-gen/services/repository.service';
@@ -30,6 +30,7 @@ import {
     UserPermissionService,
     USERSTATICPERMISSION,
 } from '../../../../../../../shared/services';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
     selector: 'artifact-info',
@@ -46,6 +47,7 @@ export class ArtifactInfoComponent implements OnInit {
     editing: boolean = false;
     imageInfo: string;
     orgImageInfo: string;
+    sanitizedimageInfo: SafeHtml;
     @ViewChild('confirmationDialog')
     confirmationDlg: ConfirmationDialogComponent;
 
@@ -54,7 +56,8 @@ export class ArtifactInfoComponent implements OnInit {
         private repositoryService: RepositoryService,
         private translate: TranslateService,
         private activatedRoute: ActivatedRoute,
-        private permissionService: UserPermissionService
+        private permissionService: UserPermissionService,
+        private sanitizer: DomSanitizer
     ) {}
 
     ngOnInit(): void {
@@ -95,6 +98,9 @@ export class ArtifactInfoComponent implements OnInit {
                 response => {
                     this.orgImageInfo = response.description;
                     this.imageInfo = response.description;
+                    this.sanitizedimageInfo = this.getSanitizedSafeHtml(
+                        this.imageInfo
+                    );
                 },
                 error => this.errorHandler.error(error)
             );
@@ -108,8 +114,25 @@ export class ArtifactInfoComponent implements OnInit {
         return this.imageInfo !== this.orgImageInfo;
     }
 
+    inputChange(event) {
+        this.imageInfo = this.getSanitizedSafeText(event.target.value);
+        this.sanitizedimageInfo = this.getSanitizedSafeHtml(event.target.value);
+    }
+
     reset(): void {
         this.imageInfo = this.orgImageInfo;
+    }
+
+    getSanitizedSafeHtml(raw: string): SafeHtml {
+        const safeText = this.sanitizer.sanitize(1, this.imageInfo);
+        return this.sanitizer.bypassSecurityTrustHtml(safeText);
+    }
+
+    getSanitizedSafeText(raw: string): string {
+        return this.sanitizer.sanitize(
+            SecurityContext.HTML,
+            this.getSanitizedSafeHtml(raw)
+        );
     }
 
     editInfo() {
@@ -123,7 +146,9 @@ export class ArtifactInfoComponent implements OnInit {
         this.onSaving = true;
         let params: RepositoryService.UpdateRepositoryParams = {
             repositoryName: dbEncodeURIComponent(this.repoName),
-            repository: { description: this.imageInfo },
+            repository: {
+                description: this.getSanitizedSafeText(this.imageInfo),
+            },
             projectName: this.projectName,
         };
         this.repositoryService.updateRepository(params).subscribe(
