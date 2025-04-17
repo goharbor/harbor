@@ -29,10 +29,10 @@
                     <p></p>
                 </div>
 
-                <div *ngIf="imageInfo" class="info-div">
+                <div *ngIf="imageInfo && sanitizedimageInfo" class="info-div">
                     <div
                         class="info-pre"
-                        [innerHTML]="imageInfo | markdown"></div>
+                        [innerHTML]="sanitizedimageInfo | markdown"></div>
                 </div>
             </ng-container>
         </div>
@@ -42,6 +42,7 @@
                 class="clr-textarea w-100"
                 rows="5"
                 name="info-edit-textarea"
+                (input)="inputChange(event)"
                 [(ngModel)]="imageInfo"></textarea>
         </div>
         <div class="" *ngIf="editing">
