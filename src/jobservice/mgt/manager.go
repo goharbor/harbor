@@ -226,8 +226,8 @@ func (bm *basicManager) GetPeriodicExecution(pID string, q *query.Parameter) (re
 			return results, total, nil
 		}
 
-		min, max := (pageNumber-1)*pageSize, pageNumber*pageSize-1
-		args := []interface{}{key, min, max}
+		minVal, maxVal := (pageNumber-1)*pageSize, pageNumber*pageSize-1
+		args := []interface{}{key, minVal, maxVal}
 		list, err := redis.Values(conn.Do("ZREVRANGE", args...))
 		if err != nil {
 			return nil, 0, err

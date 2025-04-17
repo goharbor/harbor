@@ -237,14 +237,14 @@ func GetStrValueOfAnyType(value interface{}) string {
 }
 
 // IsIllegalLength ...
-func IsIllegalLength(s string, min int, max int) bool {
-	if min == -1 {
-		return (len(s) > max)
+func IsIllegalLength(s string, minVal int, maxVal int) bool {
+	if minVal == -1 {
+		return (len(s) > maxVal)
 	}
-	if max == -1 {
-		return (len(s) <= min)
+	if maxVal == -1 {
+		return (len(s) <= minVal)
 	}
-	return (len(s) < min || len(s) > max)
+	return (len(s) < minVal || len(s) > maxVal)
 }
 
 // ParseJSONInt ...
