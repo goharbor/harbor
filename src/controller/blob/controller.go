@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 	"github.com/go-redis/redis/v8"
 
 	"github.com/goharbor/harbor/src/lib/errors"
