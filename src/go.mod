@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.23.4
+go 1.23.8
 
 require (
 	github.com/FZambia/sentinel v1.1.0
@@ -8,7 +8,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1193
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/beego/beego/v2 v2.2.1
+	github.com/beego/beego/v2 v2.3.6
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/casbin/casbin v1.9.1
@@ -30,12 +30,12 @@ require (
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-containerregistry v0.20.2
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/csrf v1.7.2
+	github.com/gorilla/csrf v1.7.3
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
@@ -51,7 +51,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.19.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.233+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/volcengine/volcengine-go-sdk v1.0.164
@@ -63,18 +63,18 @@ require (
 	go.opentelemetry.io/otel/sdk v1.31.0
 	go.opentelemetry.io/otel/trace v1.32.0
 	go.uber.org/ratelimit v0.3.1
-	golang.org/x/crypto v0.31.0
-	golang.org/x/net v0.33.0
+	golang.org/x/crypto v0.37.0
+	golang.org/x/net v0.39.0
 	golang.org/x/oauth2 v0.23.0
-	golang.org/x/sync v0.10.0
-	golang.org/x/text v0.21.0
+	golang.org/x/sync v0.13.0
+	golang.org/x/text v0.24.0
 	golang.org/x/time v0.7.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.16.2
-	k8s.io/api v0.31.2
-	k8s.io/apimachinery v0.31.2
-	k8s.io/client-go v0.31.1
+	helm.sh/helm/v3 v3.17.3
+	k8s.io/api v0.32.2
+	k8s.io/apimachinery v0.32.2
+	k8s.io/client-go v0.32.2
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -108,14 +108,14 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-jose/go-jose/v4 v4.0.2 // indirect
+	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
@@ -177,8 +177,8 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/term v0.31.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9 // indirect
@@ -189,9 +189,9 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
+	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
+	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 )
 
 replace (
