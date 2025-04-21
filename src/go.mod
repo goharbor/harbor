@@ -6,7 +6,7 @@ require (
 	github.com/CloudNativeAI/model-spec v0.0.3
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
-	github.com/aliyun/alibaba-cloud-sdk-go v1.63.84
+	github.com/aliyun/alibaba-cloud-sdk-go v1.63.106
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/beego/beego/v2 v2.3.6
@@ -22,12 +22,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.7
 	github.com/go-ldap/ldap/v3 v3.4.10
 	github.com/go-openapi/errors v0.22.0
-	github.com/go-openapi/loads v0.22.0
+	github.com/go-openapi/loads v0.22.0 // indirect
 	github.com/go-openapi/runtime v0.28.0
-	github.com/go-openapi/spec v0.21.0
+	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/strfmt v0.23.0
 	github.com/go-openapi/swag v0.23.0
-	github.com/go-openapi/validate v0.24.0
+	github.com/go-openapi/validate v0.24.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
