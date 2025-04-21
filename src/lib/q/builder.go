@@ -132,17 +132,17 @@ func parseRange(value string) (*Range, error) {
 		return nil, fmt.Errorf(`range must start with "[", end with "]" and contains only one "~"`)
 	}
 	strs := strings.SplitN(value[1:length-1], "~", 2)
-	min := strings.TrimSpace(strs[0])
-	max := strings.TrimSpace(strs[1])
-	if len(min) == 0 && len(max) == 0 {
+	minVal := strings.TrimSpace(strs[0])
+	maxVal := strings.TrimSpace(strs[1])
+	if len(minVal) == 0 && len(maxVal) == 0 {
 		return nil, fmt.Errorf(`min and max at least one should be set in range'`)
 	}
 	r := &Range{}
-	if len(min) > 0 {
-		r.Min = parseValue(min)
+	if len(minVal) > 0 {
+		r.Min = parseValue(minVal)
 	}
-	if len(max) > 0 {
-		r.Max = parseValue(max)
+	if len(maxVal) > 0 {
+		r.Max = parseValue(maxVal)
 	}
 	return r, nil
 }
