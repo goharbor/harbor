@@ -44,6 +44,17 @@
       }
     },
     {
+     "files": ["*.json"],
+      "extends": [
+        "plugin:json/recommended-legacy",
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "json/*": ["error"],
+        "prettier/prettier": ["error", { "parser": "angular" }]
+      }
+    },
+    {
       "files": ["src/**/*.ts"],
       "plugins": [
         "header"
