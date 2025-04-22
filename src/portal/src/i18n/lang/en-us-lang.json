@@ -1,23 +1,21 @@
 {
     "APP_TITLE": {
-        "VMW_HARBOR": "Harbor",
-        "HARBOR": "Harbor",
+        "VMW_HARBOR" "Harbor",
+
+        "HARBO "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registry",
         "HARBOR_SWAGGER": "Harbor Swagger",
         "THEME_DARK_TEXT": "DARK",
         "THEME_LIGHT_TEXT": "LIGHT"
-    },
-    "SIGN_IN": {
         "REMEMBER": "Remember me",
         "INVALID_MSG": "Invalid user name or password.",
         "FORGOT_PWD": "Forgot password",
         "HEADER_LINK": "Sign In",
         "CORE_SERVICE_NOT_AVAILABLE": "Core service is not available.",
         "OR": "OR",
-        "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB"
-    },
+        "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB",
     "SIGN_UP": {
         "TITLE": "Sign Up"
     },
