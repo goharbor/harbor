@@ -79,6 +79,7 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 		Filter:              mgr.Get(ctx, common.LDAPGroupSearchFilter).GetString(),
 		NameAttribute:       mgr.Get(ctx, common.LDAPGroupAttributeName).GetString(),
 		SearchScope:         mgr.Get(ctx, common.LDAPGroupSearchScope).GetInt(),
+		AdminFilter:         mgr.Get(ctx, common.LDAPGroupAdminFilter).GetString(),
 		AdminDN:             mgr.Get(ctx, common.LDAPGroupAdminDn).GetString(),
 		MembershipAttribute: mgr.Get(ctx, common.LDAPGroupMembershipAttribute).GetString(),
 		AttachParallel:      mgr.Get(ctx, common.LDAPGroupAttachParallel).GetBool(),

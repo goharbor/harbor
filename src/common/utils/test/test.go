@@ -117,6 +117,7 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.UAAVerifyCert:          true,
 		common.AdminInitialPassword:   "Harbor12345",
 		common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+		common.LDAPGroupAdminFilter:   "",
 		common.LDAPGroupBaseDN:        "dc=example,dc=com",
 		common.LDAPGroupAttributeName: "cn",
 		common.LDAPGroupSearchScope:   2,

@@ -42,6 +42,7 @@ var groupCfg = models.GroupConf{
 	NameAttribute:       "cn",
 	SearchScope:         2,
 	Filter:              "objectclass=groupOfNames",
+	AdminFilter:         "",
 	MembershipAttribute: "memberof",
 }
 
@@ -205,30 +206,35 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 	ldapGroupConfig := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
 	ldapGroupConfig2 := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
+		AdminFilter:   "",
 		NameAttribute: "o",
 		SearchScope:   2,
 	}
 	groupConfigWithEmptyBaseDN := models.GroupConf{
 		BaseDN:        "",
 		Filter:        "(objectclass=groupOfNames)",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
 	groupConfigWithFilter := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "(cn=*admin*)",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
 	groupConfigWithDifferentGroupDN := models.GroupConf{
 		BaseDN:        "dc=harbor,dc=example,dc=com",
 		Filter:        "(objectclass=groupOfNames)",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
@@ -314,24 +320,28 @@ func TestSession_SearchGroupByName(t *testing.T) {
 	ldapGroupConfig := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
 	ldapGroupConfig2 := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "objectclass=groupOfNames",
+		AdminFilter:   "",
 		NameAttribute: "o",
 		SearchScope:   2,
 	}
 	groupConfigWithFilter := models.GroupConf{
 		BaseDN:        "dc=example,dc=com",
 		Filter:        "(cn=*admin*)",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}
 	groupConfigWithDifferentGroupDN := models.GroupConf{
 		BaseDN:        "dc=harbor,dc=example,dc=com",
 		Filter:        "(objectclass=groupOfNames)",
+		AdminFilter:   "",
 		NameAttribute: "cn",
 		SearchScope:   2,
 	}

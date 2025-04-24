@@ -31,6 +31,7 @@ type LdapGroupValidateRule struct {
 func (l LdapGroupValidateRule) Validate(ctx context.Context, cfgMgr config.Manager, cfgs map[string]interface{}) error {
 	cfg := &cfgModels.GroupConf{
 		Filter:              cfgMgr.Get(ctx, common.LDAPGroupSearchFilter).GetString(),
+		AdminFilter:         cfgMgr.Get(ctx, common.LDAPGroupAdminFilter).GetString(),
 		NameAttribute:       cfgMgr.Get(ctx, common.LDAPGroupAttributeName).GetString(),
 		MembershipAttribute: cfgMgr.Get(ctx, common.LDAPGroupMembershipAttribute).GetString(),
 	}
@@ -38,6 +39,10 @@ func (l LdapGroupValidateRule) Validate(ctx context.Context, cfgMgr config.Manag
 	// Merge the cfgs and the cfgMgr to get the final GroupConf
 	if val, exist := cfgs[common.LDAPGroupSearchFilter]; exist {
 		cfg.Filter = val.(string)
+		updated = true
+	}
+	if val, exist := cfgs[common.LDAPGroupAdminFilter]; exist {
+		cfg.AdminFilter = val.(string)
 		updated = true
 	}
 	if val, exist := cfgs[common.LDAPGroupAttributeName]; exist {

@@ -343,6 +343,35 @@
         </clr-input-container>
 
         <clr-input-container>
+            <label for="ldapGroupAdminFilter"
+                >potta {{ 'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.LDAP.LDAP_GROUP_FILTER_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input
+                clrInput
+                name="ldapGroupAdminFilter"
+                type="text"
+                #ldapGroupAdminFilterInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_group_admin_filter.value"
+                id="ldapGroupAdminFilter"
+                size="40"
+                [disabled]="disabled(currentConfig.ldap_group_admin_filter)" />
+        </clr-input-container>
+
+        <clr-input-container>
             <label for="ldapGroupFilter"
                 >{{ 'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate }}
                 <clr-tooltip>

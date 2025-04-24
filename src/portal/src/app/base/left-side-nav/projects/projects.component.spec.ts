@@ -119,6 +119,10 @@ describe('ProjectComponent', () => {
                     value: '',
                     editable: true,
                 },
+                ldap_group_admin_filter: {
+                    value: '',
+                    editable: true,
+                },
                 ldap_group_search_scope: {
                     value: 2,
                     editable: true,

@@ -51,6 +51,7 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.LDAPGroupBaseDN:            "ou=groups,dc=example,dc=com",
 	common.LDAPGroupSearchScope:       2,
 	common.LDAPGroupSearchFilter:      "objectclass=groupOfNames",
+	common.LDAPGroupAdminFilter:       "",
 	common.LDAPGroupAttributeName:     "cn",
 	common.TokenServiceURL:            "http://token_service",
 	common.RegistryURL:                "http://registry",
@@ -91,6 +92,7 @@ var groupCfg = models.GroupConf{
 	NameAttribute:       "cn",
 	SearchScope:         2,
 	Filter:              "objectclass=groupOfNames",
+	AdminFilter:         "",
 	MembershipAttribute: "memberof",
 }
 

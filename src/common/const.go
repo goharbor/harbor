@@ -79,6 +79,7 @@ const (
 	LDAPVerifyCert                   = "ldap_verify_cert"
 	LDAPGroupBaseDN                  = "ldap_group_base_dn"
 	LDAPGroupSearchFilter            = "ldap_group_search_filter"
+	LDAPGroupAdminFilter             = "ldap_group_admin_filter"
 	LDAPGroupAttributeName           = "ldap_group_attribute_name"
 	LDAPGroupSearchScope             = "ldap_group_search_scope"
 	TokenServiceURL                  = "token_service_url"
