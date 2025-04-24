@@ -944,6 +944,8 @@
             "VERIFY_CERT": "LDAP Verify Certificate",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD. This field cannot be empty if you need to enable the LDAP group related feature.",
+            "LDAP_GROUP_ADMIN_FILTER": "LDAP Group Admin Filter",
+            "LDAP_GROUP_ADMIN_FILTER_INFO": "The filter for LDAP Admin search.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
             "LDAP_GROUP_FILTER_INFO": "The filter to search for LDAP/AD groups. For OpenLDAP: objectclass=groupOfNames. For Active Directory: objectclass=group. This field cannot be empty if you need the LDAP group-related feature.",
             "LDAP_GROUP_GID": "LDAP Group GID",
