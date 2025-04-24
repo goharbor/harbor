@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"slices"
 	"strings"
 	"time"
 
@@ -181,6 +180,7 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 			u.GroupDNList = groupDNList
 		}
 
+		u.DN = ldapEntry.DN
 		// Search for nested group memberships (if AdminFilter is set)
 		if s.groupCfg.AdminFilter != "" {
 			nestedFilter, err := createUserSearchFilter(s.groupCfg.AdminFilter, s.basicCfg.UID, username)
@@ -192,23 +192,17 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 				return nil, err
 			}
 
-			if len(nestedResult.Entries) > 0 {
-				// add them as admins
-				u.GroupDNList = append(u.GroupDNList, s.groupCfg.AdminDN)
-			}
-
-			for _, groupEntry := range nestedResult.Entries {
-				dn := strings.TrimSpace(groupEntry.DN)
-				if !slices.Contains(u.GroupDNList, dn) {
-					u.GroupDNList = append(u.GroupDNList, dn)
-					log.Debugf("Added nested group: %v", dn)
-				} else {
-					log.Debugf("Group %v already in GroupDNList", dn)
+			// check and give permissions to user under admin DN
+			for _, ldapEntry := range nestedResult.Entries {
+				if ldapEntry.DN != u.DN {
+					continue
 				}
+				// add user to AdminDN
+				u.GroupDNList = append(u.GroupDNList, s.groupCfg.AdminDN)
+				log.Debugf("User %s (DN: %s) added to admin group: %s", username, ldapEntry.DN, s.groupCfg.AdminDN)
 			}
 		}
 
-		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 	}
 
