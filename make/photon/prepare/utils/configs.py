@@ -119,7 +119,6 @@ def parse_yaml_config(config_file_path, with_trivy):
     }
 
     config_dict['hostname'] = configs["hostname"]
-    config_dict['ldap_nested_auth'] = configs.get('ldap_nested_auth')
 
     config_dict['protocol'] = 'http'
     http_config = configs.get('http') or {}
@@ -465,7 +464,7 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
-    
+
     if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
         configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
