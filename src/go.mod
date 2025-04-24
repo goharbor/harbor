@@ -1,14 +1,15 @@
 module github.com/goharbor/harbor/src
 
-go 1.23.7
+go 1.23.8
 
 require (
+	github.com/CloudNativeAI/model-spec v0.0.3
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.84
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/aws/aws-sdk-go v1.55.6
-	github.com/beego/beego/v2 v2.3.4
+	github.com/beego/beego/v2 v2.3.6
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/casbin/casbin v1.9.1
@@ -49,6 +50,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
+	github.com/prometheus/client_model v0.6.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
@@ -62,6 +64,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.34.0
 	go.opentelemetry.io/otel/sdk v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
+	go.pinniped.dev v0.37.0
 	go.uber.org/ratelimit v0.3.1
 	golang.org/x/crypto v0.36.0
 	golang.org/x/net v0.37.0
@@ -76,12 +79,6 @@ require (
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
 	sigs.k8s.io/yaml v1.4.0
-)
-
-require (
-	github.com/CloudNativeAI/model-spec v0.0.3
-	github.com/prometheus/client_model v0.6.1
-	go.pinniped.dev v0.37.0
 )
 
 require (
@@ -119,7 +116,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect

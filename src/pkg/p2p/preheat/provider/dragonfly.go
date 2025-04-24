@@ -36,7 +36,17 @@ const (
 
 	// dragonflyJobPath is the job path for dragonfly openapi.
 	dragonflyJobPath = "/oapi/v1/jobs"
+)
 
+const (
+	// preheatTypeImage represents the image to the dragonfly cluster.
+	preheatTypeImage = "image"
+
+	// preheatTypeFile represents the file to the dragonfly cluster.
+	preheatTypeFile = "file"
+)
+
+const (
 	// scopeTypeSingleSeedPeer represents preheat image to single seed peer in p2p cluster.
 	scopeTypeSingleSeedPeer = "single_seed_peer"
 
@@ -233,9 +243,9 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 	// Construct the preheat job request by the given parameters of the preheating image .
 	req := &dragonflyCreateJobRequest{
 		Type: "preheat",
-		// TODO: Support set SchedulerClusterIDs, FilteredQueryParam, ConcurrentCount and Timeout.
+		// TODO: Support set FilteredQueryParam, ConcurrentCount and Timeout.
 		Args: dragonflyCreateJobRequestArgs{
-			Type:    preheatingImage.Type,
+			Type:    preheatTypeImage,
 			URL:     preheatingImage.URL,
 			Headers: headerToMapString(preheatingImage.Headers),
 		},
