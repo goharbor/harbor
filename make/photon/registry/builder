@@ -14,6 +14,7 @@ fi
 
 VERSION="$1"
 DISTRIBUTION_SRC="$2"
+GOBUILDIMAGE="$3"
 
 set -e
 
@@ -32,7 +33,7 @@ cd $cur
 
 echo 'build the registry binary ...'
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
+docker build --build-arg golang_image=$GOBUILDIMAGE -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
 echo 'copy the registry binary to local...'
 ID=$(docker create registry-golang)

@@ -1,4 +1,5 @@
-FROM golang:1.23.8
+ARG golang_image
+FROM ${golang_image}
 
 ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
 ENV BUILDTAGS include_oss include_gcs
