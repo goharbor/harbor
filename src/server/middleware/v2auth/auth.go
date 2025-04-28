@@ -97,11 +97,10 @@ func getChallenge(req *http.Request, accessList []access) string {
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
-	ep, err := tokenSvcEndpoint(req)
+	tokenSvc, err := tokenSvcURL(req)
 	if err != nil {
 		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
 	}
-	tokenSvc := fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
 	scope := ""
 	for _, a := range accessList {
 		if len(scope) > 0 {
@@ -116,12 +115,28 @@ func getChallenge(req *http.Request, accessList []access) string {
 	return challenge
 }
 
-func tokenSvcEndpoint(req *http.Request) (string, error) {
+func tokenSvcURL(req *http.Request) (string, error) {
+	getURL := func(ep string) string {
+		return fmt.Sprintf("%s/service/token", strings.TrimSuffix(ep, "/"))
+	}
+	// TODO: Double check if the internal core URL can be removed, after the token service URI is built according to the Host info in request.
 	rawCoreURL := config.InternalCoreURL()
 	if match(req.Context(), req.Host, rawCoreURL) {
-		return rawCoreURL, nil
+		return getURL(rawCoreURL), nil
 	}
-	return config.ExtEndpoint()
+	extEp, err := config.ExtEndpoint()
+	if err != nil {
+		return "", err
+	}
+	if len(req.Host) > 0 {
+		l := strings.Split(extEp, "://")
+		if len(l) > 1 {
+			return getURL(l[0] + "://" + req.Host), nil
+		}
+		return getURL(req.Host), nil
+	}
+	log.Infof("The Host is empty in the request, forming the URL via the configured external endpoint: %s", extEp)
+	return getURL(extEp), nil
 }
 
 func match(ctx context.Context, reqHost, rawURL string) bool {
