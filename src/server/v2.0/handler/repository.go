@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"html/template"
 
 	"github.com/go-openapi/runtime/middleware"
 
@@ -235,7 +236,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	if err := r.repoCtl.Update(ctx, &repomodel.RepoRecord{
 		RepositoryID: repository.RepositoryID,
 		Name:         repository.Name,
-		Description:  params.Repository.Description,
+		Description:  template.HTMLEscapeString(params.Repository.Description),
 	}, "Description"); err != nil {
 		return r.SendError(ctx, err)
 	}
