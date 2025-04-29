@@ -103,6 +103,61 @@ jobs:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
 
+  APITEST_DB_NIGHTLY:
+    env:
+      APITEST_DB: true
+    runs-on:
+      #- self-hosted
+      - ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.2
+        id: go
+      - uses: actions/checkout@v3
+        with:
+          path: src/github.com/goharbor/harbor
+      - name: setup env
+        run: |
+          cd src/github.com/goharbor/harbor
+          pwd
+          go env
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          IP=`hostname -I | awk '{print $1}'`
+          echo "IP=$IP" >> $GITHUB_ENV
+        shell: bash
+      - name: before_install
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          pwd
+          env
+          df -h
+          #sudo apt install -y xvfb
+          #xvfb-run ls
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+      - name: install
+        run: |
+          cd src/github.com/goharbor/harbor
+          env
+          df -h
+          docker system prune -a -f
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: script
+        run: |
+          cd src/github.com/goharbor/harbor
+          echo IP: $IP
+          df -h
+          bash ./tests/showtime.sh ./tests/ci/api_run.sh DB_NIGHTLY $IP
+          df -h
+
   APITEST_DB:
     env:
       APITEST_DB: true
