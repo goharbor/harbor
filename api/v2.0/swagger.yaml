@@ -1193,7 +1193,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1226,7 +1226,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -4874,7 +4874,7 @@ paths:
           schema:
             type: array
             items:
-             $ref: '#/definitions/JobQueue'
+              $ref: '#/definitions/JobQueue'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -5769,7 +5769,7 @@ paths:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
       tags:
-       - user
+        - user
       operationId: setUserSysAdmin
       parameters:
         - $ref: '#/parameters/requestId'
@@ -6553,7 +6553,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Errors'    
+      $ref: '#/definitions/Errors'
   '500':
     description: Internal server error
     headers:
@@ -7937,7 +7937,7 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
