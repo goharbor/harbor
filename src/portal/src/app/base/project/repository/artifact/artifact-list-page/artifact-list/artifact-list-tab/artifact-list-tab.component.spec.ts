@@ -502,6 +502,26 @@ describe('ArtifactListTabComponent', () => {
         );
         expect(comp.handleScanOverview(mockArtifacts[0])).not.toBeNull();
     });
+    it('Should return true for artifacts with child references', async () => {
+        const artifactWithChild = {
+            ...mockArtifacts[0],
+            references: [{ child_digest: 'childDigest123' }], // child reference
+        };
+
+        const result = comp.hasChild(artifactWithChild);
+
+        expect(result).toBeTruthy();
+    });
+    it('Should return false for artifacts without child references', async () => {
+        const artifactWithoutChild = {
+            ...mockArtifacts[0],
+            references: [], // No child references
+        };
+
+        const result = comp.hasChild(artifactWithoutChild);
+
+        expect(result).toBeFalsy();
+    });
     it('Test utils', async () => {
         fixture = TestBed.createComponent(ArtifactListTabComponent);
         comp = fixture.componentInstance;

@@ -36,6 +36,11 @@ cp robotvars.sample.py robotvars.py
 ./e2e_container.sh
 ```
 
+Check if harbor_ca.crt exists in /ca directory. if not copy it
+```
+cp /ca/ca.crt /ca/harbor_ca.crt
+```
+
 #### 4. Run setup, in the previous container console, run the following command.
 ```
 robot -V /drone/tests/e2e_setup/robotvars.py /drone/tests/robot-cases/Group1-Nightly/Setup_Nightly.robot
