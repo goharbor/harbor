@@ -30,6 +30,7 @@ import (
 	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -40,13 +41,15 @@ import (
 
 var (
 	errInvalidTcrEndpoint = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
+	rateLimiterTransport  http.RoundTripper
 )
 
 func init() {
-	var envTcrQPSLimit, _ = strconv.Atoi(os.Getenv("TCR_QPS_LIMIT"))
-	if envTcrQPSLimit > 1 && envTcrQPSLimit < tcrQPSLimit {
-		tcrQPSLimit = envTcrQPSLimit
+	var envTcrQPSLimit, _ = strconv.Atoi(os.Getenv("REG_ADAPTER_TCR_QPS_LIMIT"))
+	if envTcrQPSLimit > tcrQPSLimit || envTcrQPSLimit < 1 {
+		envTcrQPSLimit = tcrQPSLimit
 	}
+	rateLimiterTransport = lib.NewRateLimitedTransport(envTcrQPSLimit, commonhttp.NewTransport())
 
 	if err := adp.RegisterFactory(model.RegistryTypeTencentTcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeTencentTcr, err)
@@ -154,10 +157,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	client.Init(*instanceInfo.RegionName).
 		WithCredential(tcrCredential).
 		WithProfile(cfp).
-		WithHttpTransport(newRateLimitedTransport(tcrQPSLimit, http.DefaultTransport))
-	if err != nil {
-		return
-	}
+		WithHttpTransport(rateLimiterTransport)
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
 	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
