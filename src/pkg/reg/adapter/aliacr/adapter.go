@@ -17,8 +17,10 @@ package aliacr
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -32,7 +34,16 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 )
 
+var (
+	acrQPSLimit = 20
+)
+
 func init() {
+	var envAcrQPSLimit, _ = strconv.Atoi(os.Getenv("ACR_QPS_LIMIT"))
+	if envAcrQPSLimit > 1 && envAcrQPSLimit < acrQPSLimit {
+		acrQPSLimit = envAcrQPSLimit
+	}
+
 	if err := adp.RegisterFactory(model.RegistryTypeAliAcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeAliAcr, err)
 		return
@@ -101,12 +112,12 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 	var acrAPI openapi
 	if !info.IsACREE {
-		acrAPI, err = newAcrOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID)
+		acrAPI, err = newAcrOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, acrQPSLimit)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		acrAPI, err = newAcreeOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, info.InstanceID)
+		acrAPI, err = newAcreeOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, info.InstanceID, acrQPSLimit)
 		if err != nil {
 			return nil, err
 		}
