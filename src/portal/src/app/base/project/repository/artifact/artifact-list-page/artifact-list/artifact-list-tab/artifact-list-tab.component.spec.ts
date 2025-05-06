@@ -34,7 +34,7 @@ import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { SharedTestingModule } from '../../../../../../../shared/shared.module';
 import { AppConfigService } from '../../../../../../../services/app-config.service';
 import { ArtifactListPageService } from '../../artifact-list-page.service';
-import { ClrLoadingState } from '@clr/angular';
+import { ClarityModule, ClrLoadingState } from '@clr/angular';
 import { Accessory } from 'ng-swagger-gen/models/accessory';
 import { ArtifactModule } from '../../../artifact.module';
 import {
@@ -42,6 +42,7 @@ import {
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
 import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
+import { PullCommandComponent } from './pull-command/pull-command.component';
 
 describe('ArtifactListTabComponent', () => {
     let comp: ArtifactListTabComponent;
@@ -300,9 +301,9 @@ describe('ArtifactListTabComponent', () => {
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [SharedTestingModule, ArtifactModule],
+            imports: [SharedTestingModule, ArtifactModule, ClarityModule],
             schemas: [NO_ERRORS_SCHEMA],
-            declarations: [ArtifactListTabComponent],
+            declarations: [ArtifactListTabComponent, PullCommandComponent],
             providers: [
                 {
                     provide: ArtifactListPageService,
@@ -473,12 +474,11 @@ describe('ArtifactListTabComponent', () => {
         comp.stopSbom();
         expect(comp.onStopSbomArtifactsLength).toBe(1);
     });
-    it('Test tagsString and isRunningState and canStopSbom and canStopScan', async () => {
+    it('Test isRunningState and canStopSbom and canStopScan', async () => {
         fixture = TestBed.createComponent(ArtifactListTabComponent);
         comp = fixture.componentInstance;
         fixture.detectChanges();
         await fixture.whenStable();
-        expect(comp.tagsString([])).toBeNull();
         expect(
             comp.isRunningState(VULNERABILITY_SCAN_STATUS.RUNNING)
         ).toBeTruthy();
