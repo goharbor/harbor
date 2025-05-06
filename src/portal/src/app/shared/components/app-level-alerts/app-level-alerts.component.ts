@@ -280,4 +280,11 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
         }
         return true;
     }
+
+    hasAdminRole(): boolean {
+        return (
+            this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role
+        );
+    }
 }
