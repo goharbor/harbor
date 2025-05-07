@@ -20,7 +20,7 @@
             [defaultValue]="getPullCommandForCNAB(artifact)"></hbr-copy-input>
     </div>
     <div
-        *ngIf="isChart(artifact)"
+        *ngIf="isChart(artifact) && artifact.tagNumber > 0"
         class="flex"
         aria-label="Dropdown header Action">
         <hbr-copy-input
