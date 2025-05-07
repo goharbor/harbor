@@ -572,7 +572,7 @@ packages:
           dir: testing/registryctl
           outpkg: registryctl
   # remote interfaces
-  github.com/docker/distribution:
+  github.com/distribution/distribution/v3:
     interfaces:
       Manifest:
         config:

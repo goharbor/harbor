@@ -26,7 +26,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/v3/registry/auth/token"
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 
