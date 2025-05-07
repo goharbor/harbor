@@ -16,6 +16,7 @@ package proxy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
-	"github.com/goharbor/harbor/src/lib/errors"
+	libErrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -142,7 +143,7 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 		}
 	}
 	if len(newMan.References()) == 0 {
-		return errors.New("manifest list doesn't contain any pushed manifest")
+		return libErrors.New("manifest list doesn't contain any pushed manifest")
 	}
 	_, pl, err := newMan.Payload()
 	if err != nil {
@@ -198,10 +199,30 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 			}
 		}
 	}
-	err := m.local.PushManifest(art.Repository, getReference(art), man)
+
+	err := m.push(art, man)
 	if err != nil {
-		log.Errorf("failed to push manifest, tag: %v, error %v", art.Tag, err)
+		log.Errorf("error occurred on manifest push to local: %v", err)
 	}
+}
+
+func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) error {
+	errs := []error{}
+	if len(art.Digest) > 0 {
+		err := m.local.PushManifest(art.Repository, art.Digest, man)
+		if err != nil {
+			log.Errorf("failed to push manifest referencing digest, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
+			errs = append(errs, err)
+		}
+	}
+	if len(art.Tag) > 0 {
+		err := m.local.PushManifest(art.Repository, art.Tag, man)
+		if err != nil {
+			log.Errorf("failed to push manifest referencing tag, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
