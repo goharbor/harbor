@@ -13,7 +13,7 @@ These scripts (`harbor-backup` and `harbor-restore`) are provided as a convenien
 
 ### Features
 Compared to the scripts the harbor project used to have in their repo this set of scripts is more robust in its error handling and also offers features
-for leaving the backup unzipped/uncompressed. This makes it easy to rsync the whole backup directory to a secondary/standby node and restore there.
+for not packing the backup into a tarball. This makes it easy to rsync the whole backup directory to a secondary/standby node and restore there.
 
 rsync is used extensively by the script. by leaving the files in the backup directory between runs the downtime for backup is greatly reduced at the
 expense of disk space usage.
