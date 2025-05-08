@@ -60,3 +60,5 @@ src/server/v2.0/restapi/
 harborclient/
 openapi-generator-cli.jar
 tests/e2e_setup/robotvars.py
+harbor/
+harbor-offline-installer-*.tgz
