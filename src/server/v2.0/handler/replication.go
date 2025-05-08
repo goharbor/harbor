@@ -113,6 +113,10 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		policy.CopyByChunk = *params.Policy.CopyByChunk
 	}
 
+	if params.Policy.SingleActiveReplication != nil {
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
+	}
+
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -179,6 +183,10 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.CopyByChunk != nil {
 		policy.CopyByChunk = *params.Policy.CopyByChunk
+	}
+
+	if params.Policy.SingleActiveReplication != nil {
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
@@ -446,6 +454,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
+		SingleActiveReplication:   &policy.SingleActiveReplication,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)
@@ -535,6 +544,8 @@ func convertExecution(execution *replication.Execution) *models.ReplicationExecu
 		exec.Status = "Stopped"
 	case job.ErrorStatus.String():
 		exec.Status = "Failed"
+	case job.SkippedStatus.String():
+		exec.Status = "Skipped"
 	}
 
 	return exec
