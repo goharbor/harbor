@@ -142,7 +142,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 
 func (d *dao) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
 	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ArtifactID": artifactID,
 		},
 	})

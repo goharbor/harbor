@@ -48,7 +48,7 @@ const (
 )
 
 type claimsProvider interface {
-	Claims(v interface{}) error
+	Claims(v any) error
 }
 
 type providerHelper struct {
@@ -376,7 +376,7 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		return nil, err
 	}
 	if setting.UserClaim != "" {
-		allClaims := make(map[string]interface{})
+		allClaims := make(map[string]any)
 		if err := c.Claims(&allClaims); err != nil {
 			return nil, err
 		}
@@ -406,12 +406,12 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 // If the claims does not have the claim defined as k, the second return value will be false, otherwise true
 func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 	res := make([]string, 0)
-	claimMap := make(map[string]interface{})
+	claimMap := make(map[string]any)
 	if err := gp.Claims(&claimMap); err != nil {
 		log.Errorf("failed to fetch claims, error: %v", err)
 		return res, false
 	}
-	g, ok := claimMap[k].([]interface{})
+	g, ok := claimMap[k].([]any)
 	if !ok {
 		if len(strings.TrimSpace(k)) > 0 {
 			log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)

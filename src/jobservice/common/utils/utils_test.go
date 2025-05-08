@@ -92,7 +92,7 @@ func (suite *UtilsTestSuite) TestJobSerializeAndDeSerialize() {
 		Name:       "test",
 		ID:         "123",
 		EnqueuedAt: 123,
-		Args: map[string]interface{}{
+		Args: map[string]any{
 			"test": "test",
 		},
 		Unique:   true,

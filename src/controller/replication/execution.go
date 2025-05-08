@@ -105,7 +105,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			WithMessagef("the policy %d is disabled", policy.ID)
 	}
 	// create an execution record
-	extra := make(map[string]interface{})
+	extra := make(map[string]any)
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
@@ -203,7 +203,7 @@ func (c *controller) buildExecutionQuery(query *q.Query) *q.Query {
 
 func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, error) {
 	execs, err := c.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.ReplicationVendorType,
 		},
@@ -240,7 +240,7 @@ func (c *controller) ListTasks(ctx context.Context, query *q.Query) ([]*Task, er
 
 func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	tasks, err := c.taskMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.ReplicationVendorType,
 		},

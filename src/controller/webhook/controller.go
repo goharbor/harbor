@@ -31,7 +31,7 @@ var (
 	Ctl = NewController()
 
 	// webhookJobVendors represents webhook(http) or slack.
-	webhookJobVendors = q.NewOrList([]interface{}{job.WebhookJobVendorType, job.SlackJobVendorType})
+	webhookJobVendors = q.NewOrList([]any{job.WebhookJobVendorType, job.SlackJobVendorType})
 )
 
 type Controller interface {

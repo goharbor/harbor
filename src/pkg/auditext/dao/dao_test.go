@@ -68,7 +68,7 @@ func (d *daoTestSuite) TestList() {
 
 	// query by repository ID and name
 	audits, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Resource": "user01",
 		},
 	})
@@ -94,7 +94,7 @@ func (d *daoTestSuite) TestCount() {
 	d.Require().Nil(err)
 	d.True(total > 0)
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Resource": "user01",
 		},
 	})
@@ -135,7 +135,7 @@ func (d *daoTestSuite) TestListPIDs() {
 		ol.Values = append(ol.Values, item)
 	}
 	audits, err := d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": ol,
 		},
 	})

@@ -164,7 +164,7 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		PageSize:   pageSize,
 		Sorting:    "",
 	}
-	paginationParams := make([]interface{}, 0)
+	paginationParams := make([]any, 0)
 	query, pageLimits := orm.PaginationOnRawSQL(q, sql, paginationParams)
 	// user can open ORM_DEBUG for log the sql
 	return ormer.Raw(query, pageLimits), nil

@@ -39,7 +39,7 @@ type Options struct {
 }
 
 // GetKey ...
-func (o *Options) GetKey() (interface{}, error) {
+func (o *Options) GetKey() (any, error) {
 	var err error
 	var privateKey *rsa.PrivateKey
 	var publicKey *rsa.PublicKey

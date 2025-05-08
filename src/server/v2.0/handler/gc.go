@@ -47,7 +47,7 @@ func newGCAPI() *gcAPI {
 	}
 }
 
-func (g *gcAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (g *gcAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -79,9 +79,9 @@ func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCS
 	return operation.NewUpdateGCScheduleOK()
 }
 
-func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]any) (int64, error) {
 	if parameters == nil {
-		parameters = make(map[string]interface{})
+		parameters = make(map[string]any)
 	}
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")

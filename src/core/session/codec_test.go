@@ -26,12 +26,12 @@ type User struct {
 
 func TestCodec(t *testing.T) {
 	u := &User{User: "admin", Pass: "123456"}
-	m := make(map[interface{}]interface{})
+	m := make(map[any]any)
 	m["user"] = u
 	c, err := codec.Encode(m)
 	assert.NoError(t, err, "encode should not error")
 
-	v := make(map[interface{}]interface{})
+	v := make(map[any]any)
 	err = codec.Decode(c, &v)
 	assert.NoError(t, err, "decode should not error")
 

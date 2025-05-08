@@ -267,7 +267,7 @@ func (suite *daoTestSuite) TestList() {
 	// attempt to read all the system artifact records
 	{
 		query := q.Query{}
-		query.Keywords = map[string]interface{}{"repository": "test_repo4", "digest": "test_digest4"}
+		query.Keywords = map[string]any{"repository": "test_repo4", "digest": "test_digest4"}
 
 		sysArtifacts, err := suite.dao.List(suite.ctx, &query)
 		suite.NotNilf(sysArtifacts, "Expected system artifacts list to be non-nil")
