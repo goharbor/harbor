@@ -117,7 +117,7 @@ type Trigger struct {
 
 	// Settings for the specified trigger
 	// '[cron]="* 22 11 * * *"' for the 'Schedule'
-	Settings map[string]interface{} `json:"settings" valid:"Required"`
+	Settings map[string]any `json:"settings" valid:"Required"`
 }
 
 // Scope definition
@@ -164,7 +164,7 @@ func WithNDaysSinceLastPull(projID int64, n int) *Metadata {
 		},
 		Trigger: &Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 0 0 * * *",
 			},
 		},

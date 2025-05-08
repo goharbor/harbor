@@ -36,7 +36,7 @@ func (h *HTTPHandler) Name() string {
 }
 
 // Handle handles http event
-func (h *HTTPHandler) Handle(ctx context.Context, value interface{}) error {
+func (h *HTTPHandler) Handle(ctx context.Context, value any) error {
 	if value == nil {
 		return errors.New("HTTPHandler cannot handle nil value")
 	}
@@ -84,7 +84,7 @@ func (h *HTTPHandler) process(ctx context.Context, event *model.HookEvent) error
 		return errors.Wrap(err, "error to marshal header")
 	}
 
-	j.Parameters = map[string]interface{}{
+	j.Parameters = map[string]any{
 		"payload":          string(payload),
 		"address":          event.Target.Address,
 		"header":           string(headerBytes),

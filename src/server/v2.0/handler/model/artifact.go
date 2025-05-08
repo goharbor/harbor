@@ -29,8 +29,8 @@ import (
 type Artifact struct {
 	artifact.Artifact
 	// TODO: rename to VulOverview
-	ScanOverview map[string]interface{} `json:"scan_overview"`
-	SBOMOverView map[string]interface{} `json:"sbom_overview"`
+	ScanOverview map[string]any `json:"scan_overview"`
+	SBOMOverView map[string]any `json:"sbom_overview"`
 }
 
 // ToSwagger converts the artifact to the swagger model

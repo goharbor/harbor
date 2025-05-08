@@ -38,7 +38,7 @@ type Notification struct {
 
 	// Value of notification.
 	// Optional
-	Value interface{}
+	Value any
 }
 
 // HandlerChannel provides not only the chan itself but also the count of
@@ -237,7 +237,7 @@ func UnSubscribe(topic string, handler string) error {
 }
 
 // Publish is a wrapper utility method for NotificationWatcher.notify()
-func Publish(ctx context.Context, topic string, value interface{}) error {
+func Publish(ctx context.Context, topic string, value any) error {
 	return notificationWatcher.Notify(ctx, Notification{
 		Topic: topic,
 		Value: value,

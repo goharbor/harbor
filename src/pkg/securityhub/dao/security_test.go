@@ -159,10 +159,10 @@ func (suite *SecurityDaoTestSuite) TestExactMatchFilter() {
 		name       string
 		args       args
 		wantSQLStr string
-		wantParams []interface{}
+		wantParams []any
 	}{
-		{"normal", args{suite.Context(), "cve_id", q.New(q.KeyWords{"cve_id": "CVE-2023-2345"})}, " and cve_id = ?", []interface{}{"CVE-2023-2345"}},
-		{"digest", args{suite.Context(), "digest", q.New(q.KeyWords{"digest": "digest123"})}, " and a.digest = ?", []interface{}{"digest123"}},
+		{"normal", args{suite.Context(), "cve_id", q.New(q.KeyWords{"cve_id": "CVE-2023-2345"})}, " and cve_id = ?", []any{"CVE-2023-2345"}},
+		{"digest", args{suite.Context(), "digest", q.New(q.KeyWords{"digest": "digest123"})}, " and a.digest = ?", []any{"digest123"}},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
@@ -183,9 +183,9 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 		name       string
 		args       args
 		wantSQLStr string
-		wantParams []interface{}
+		wantParams []any
 	}{
-		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{1.0, 2.0}})}, " and cvss_score_v3 between ? and ?", []interface{}{1.0, 2.0}},
+		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{1.0, 2.0}})}, " and cvss_score_v3 between ? and ?", []any{1.0, 2.0}},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
@@ -224,7 +224,7 @@ func (suite *SecurityDaoTestSuite) TestTagFilter() {
 		name       string
 		args       args
 		wantSqlStr string
-		wantParams []interface{}
+		wantParams []any
 	}{
 		{"normal", args{suite.Context(), "tag", q.New(q.KeyWords{"tag": "tag_test"})}, " and a.id IN", nil},
 	}
@@ -242,13 +242,13 @@ func (suite *SecurityDaoTestSuite) TestApplyVulFilter() {
 		ctx    context.Context
 		sqlStr string
 		query  *q.Query
-		params []interface{}
+		params []any
 	}
 	tests := []struct {
 		name       string
 		args       args
 		wantSqlStr string
-		wantParams []interface{}
+		wantParams []any
 	}{
 		{"normal", args{suite.Context(), "select * from vulnerability_record", q.New(q.KeyWords{"tag": "tag_test"}), nil}, " and a.id IN", nil},
 	}

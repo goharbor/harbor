@@ -81,7 +81,7 @@ func (suite *WorkerTestSuite) SetupSuite() {
 	// The missing schedule in database.
 	tte := &tt.ExecutionManager{}
 	tte.On("List", mock.Anything, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"vendor_type": scheduler.JobNameScheduler,
 			"vendor_id":   (int64)(550),
 		},
@@ -93,7 +93,7 @@ func (suite *WorkerTestSuite) SetupSuite() {
 
 	ttm := &tt.Manager{}
 	ttm.On("List", mock.Anything, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"execution_id": (int64)(1550),
 		},
 	}).Return([]*task.Task{

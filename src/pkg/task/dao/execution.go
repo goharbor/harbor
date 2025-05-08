@@ -346,7 +346,7 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 type jsonbStru struct {
 	keyPrefix string
 	key       string
-	value     interface{}
+	value     any
 }
 
 func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
@@ -359,7 +359,7 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options 
 	if query != nil && len(query.Keywords) > 0 {
 		var (
 			jsonbStrus []jsonbStru
-			args       []interface{}
+			args       []any
 		)
 
 		for key, value := range query.Keywords {
@@ -407,13 +407,13 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options 
 // key = extra_attrs.a.b.c
 //
 //	==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
-func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{}) {
+func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 	if len(jsonbStrus) == 0 {
 		return "", nil
 	}
 
 	var cond string
-	var args []interface{}
+	var args []any
 	sql := "select id from execution where"
 
 	for i, jsonbStr := range jsonbStrus {

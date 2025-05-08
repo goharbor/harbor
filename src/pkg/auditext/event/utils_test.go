@@ -44,15 +44,15 @@ func TestRedact(t *testing.T) {
 
 func Test_replacePassword(t *testing.T) {
 	type args struct {
-		data           map[string]interface{}
+		data           map[string]any
 		maskAttributes []string
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
-		{"normal case", args{map[string]interface{}{"password": "123456"}, []string{"password"}}},
-		{"nested case", args{map[string]interface{}{"master": map[string]interface{}{"password": "123456"}}, []string{"password"}}},
+		{"normal case", args{map[string]any{"password": "123456"}, []string{"password"}}},
+		{"nested case", args{map[string]any{"master": map[string]any{"password": "123456"}}, []string{"password"}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -60,8 +60,8 @@ func Test_replacePassword(t *testing.T) {
 			if val, ok := tt.args.data["password"]; ok && val != nil && tt.args.data["password"] != "***" {
 				t.Errorf("replacePassword() = %v, want %v", tt.args.data["password"], "***")
 			}
-			if val, ok := tt.args.data["master"]; ok && val != nil && tt.args.data["master"].(map[string]interface{})["password"] != "***" {
-				t.Errorf("replacePassword() = %v, want %v", tt.args.data["master"].(map[string]interface{})["password"], "***")
+			if val, ok := tt.args.data["master"]; ok && val != nil && tt.args.data["master"].(map[string]any)["password"] != "***" {
+				t.Errorf("replacePassword() = %v, want %v", tt.args.data["master"].(map[string]any)["password"], "***")
 			}
 		})
 	}

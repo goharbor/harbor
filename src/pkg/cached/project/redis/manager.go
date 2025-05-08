@@ -95,7 +95,7 @@ func (m *Manager) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (m *Manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
+func (m *Manager) Get(ctx context.Context, idOrName any) (*models.Project, error) {
 	var (
 		key string
 		err error
