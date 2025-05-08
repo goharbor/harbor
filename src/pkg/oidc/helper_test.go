@@ -37,7 +37,7 @@ import (
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://accounts.google.com",
 		common.OIDCVerifyCert:   "true",
@@ -72,7 +72,7 @@ func TestHelperGet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "https://oauth2.googleapis.com/token", p.Endpoint().TokenURL)
 
-	update := map[string]interface{}{
+	update := map[string]any{
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://accounts.google.com",
 		common.OIDCVerifyCert:   "true",
@@ -91,7 +91,7 @@ func TestHelperGet(t *testing.T) {
 }
 
 func TestAuthCodeURL(t *testing.T) {
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.OIDCName:               "test",
 		common.OIDCEndpoint:           "https://accounts.google.com",
 		common.OIDCVerifyCert:         "true",
@@ -130,10 +130,10 @@ func TestTestEndpoint(t *testing.T) {
 }
 
 type fakeClaims struct {
-	claims map[string]interface{}
+	claims map[string]any
 }
 
-func (fc *fakeClaims) Claims(n interface{}) error {
+func (fc *fakeClaims) Claims(n any) error {
 	b, err := json.Marshal(fc.claims)
 	if err != nil {
 		return err
@@ -142,14 +142,14 @@ func (fc *fakeClaims) Claims(n interface{}) error {
 }
 
 func TestGroupsFromClaim(t *testing.T) {
-	in := map[string]interface{}{
+	in := map[string]any{
 		"user":     "user1",
-		"groups":   []interface{}{"group1", "group2"},
-		"groups_2": []interface{}{"group1", "group2", 2},
+		"groups":   []any{"group1", "group2"},
+		"groups_2": []any{"group1", "group2", 2},
 	}
 
 	m := []struct {
-		input  map[string]interface{}
+		input  map[string]any
 		key    string
 		expect []string
 		ok     bool
@@ -190,15 +190,15 @@ func TestGroupsFromClaim(t *testing.T) {
 
 func TestUserInfoFromClaims(t *testing.T) {
 	s := []struct {
-		input   map[string]interface{}
+		input   map[string]any
 		setting cfgModels.OIDCSetting
 		expect  *UserInfo
 	}{
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"name":   "Daniel",
 				"email":  "daniel@gmail.com",
-				"groups": []interface{}{"g1", "g2"},
+				"groups": []any{"g1", "g2"},
 			},
 			setting: cfgModels.OIDCSetting{
 				Name:        "t1",
@@ -217,10 +217,10 @@ func TestUserInfoFromClaims(t *testing.T) {
 			},
 		},
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"name":   "Daniel",
 				"email":  "daniel@gmail.com",
-				"groups": []interface{}{"g1", "g2"},
+				"groups": []any{"g1", "g2"},
 			},
 			setting: cfgModels.OIDCSetting{
 				Name:        "t2",
@@ -240,12 +240,12 @@ func TestUserInfoFromClaims(t *testing.T) {
 			},
 		},
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"iss":        "issuer",
 				"sub":        "subject000",
 				"name":       "jack",
 				"email":      "jack@gmail.com",
-				"groupclaim": []interface{}{},
+				"groupclaim": []any{},
 			},
 			setting: cfgModels.OIDCSetting{
 				Name:        "t3",
@@ -265,10 +265,10 @@ func TestUserInfoFromClaims(t *testing.T) {
 			},
 		},
 		{
-			input: map[string]interface{}{
+			input: map[string]any{
 				"name":   "Alvaro",
 				"email":  "airadier@gmail.com",
-				"groups": []interface{}{"g1", "g2"},
+				"groups": []any{"g1", "g2"},
 			},
 			setting: cfgModels.OIDCSetting{
 				Name:        "t4",

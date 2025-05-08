@@ -536,7 +536,7 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 	// handle the optional ones, and the artifact controller will move them into trash.
 	if gc.deleteUntagged {
 		untaggedArts, err := gc.artCtl.List(ctx.SystemContext(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"Tags": "nil",
 			},
 		}, &artifact.Option{WithAccessory: true})
@@ -639,7 +639,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobMo
 				Min: lastBlobID,
 			}
 			query := &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"update_time": &timeRG,
 					"projectID":   p.ProjectID,
 					"id":          &blobRG,

@@ -21,7 +21,7 @@ func resetMiddleware() {
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	conf := map[string]interface{}{}
+	conf := map[string]any{}
 	config.InitWithSettings(conf)
 	result := m.Run()
 	if result != 0 {
@@ -94,12 +94,12 @@ func TestMiddlewareInvalidKey(t *testing.T) {
 
 func TestSecureCookie(t *testing.T) {
 	assert.True(t, secureCookie())
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.ExtEndpoint: "http://harbor.test",
 	}
 	config.InitWithSettings(conf)
 
 	assert.False(t, secureCookie())
-	conf = map[string]interface{}{}
+	conf = map[string]any{}
 	config.InitWithSettings(conf)
 }

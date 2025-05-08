@@ -140,7 +140,7 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 }
 
 // ConvertMapToStruct is used to fill the specified struct with map.
-func ConvertMapToStruct(object interface{}, values interface{}) error {
+func ConvertMapToStruct(object any, values any) error {
 	if object == nil {
 		return errors.New("nil struct is not supported")
 	}
@@ -158,7 +158,7 @@ func ConvertMapToStruct(object interface{}, values interface{}) error {
 }
 
 // ParseProjectIDOrName parses value to ID(int64) or name(string)
-func ParseProjectIDOrName(value interface{}) (int64, string, error) {
+func ParseProjectIDOrName(value any) (int64, string, error) {
 	if value == nil {
 		return 0, "", errors.New("harborIDOrName is nil")
 	}
@@ -177,7 +177,7 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 }
 
 // SafeCastString -- cast an object to string safely
-func SafeCastString(value interface{}) string {
+func SafeCastString(value any) string {
 	if result, ok := value.(string); ok {
 		return result
 	}
@@ -185,7 +185,7 @@ func SafeCastString(value interface{}) string {
 }
 
 // SafeCastInt --
-func SafeCastInt(value interface{}) int {
+func SafeCastInt(value any) int {
 	if result, ok := value.(int); ok {
 		return result
 	}
@@ -193,7 +193,7 @@ func SafeCastInt(value interface{}) int {
 }
 
 // SafeCastBool --
-func SafeCastBool(value interface{}) bool {
+func SafeCastBool(value any) bool {
 	if result, ok := value.(bool); ok {
 		return result
 	}
@@ -201,7 +201,7 @@ func SafeCastBool(value interface{}) bool {
 }
 
 // SafeCastFloat64 --
-func SafeCastFloat64(value interface{}) float64 {
+func SafeCastFloat64(value any) float64 {
 	if result, ok := value.(float64); ok {
 		return result
 	}
@@ -214,9 +214,9 @@ func TrimLower(str string) string {
 }
 
 // GetStrValueOfAnyType return string format of any value, for map, need to convert to json
-func GetStrValueOfAnyType(value interface{}) string {
+func GetStrValueOfAnyType(value any) string {
 	var strVal string
-	if _, ok := value.(map[string]interface{}); ok {
+	if _, ok := value.(map[string]any); ok {
 		b, err := json.Marshal(value)
 		if err != nil {
 			log.Errorf("can not marshal json object, error %v", err)
@@ -248,7 +248,7 @@ func IsIllegalLength(s string, minVal int, maxVal int) bool {
 }
 
 // ParseJSONInt ...
-func ParseJSONInt(value interface{}) (int, bool) {
+func ParseJSONInt(value any) (int, bool) {
 	switch v := value.(type) {
 	case float64:
 		return int(v), true

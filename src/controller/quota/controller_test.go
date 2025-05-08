@@ -56,7 +56,7 @@ func (suite *ControllerTestSuite) SetupTest() {
 	suite.quota = &quota.Quota{Hard: hardLimits.String(), Used: types.Zero(hardLimits).String()}
 }
 
-func (suite *ControllerTestSuite) PrepareForUpdate(q *quota.Quota, newUsage interface{}) {
+func (suite *ControllerTestSuite) PrepareForUpdate(q *quota.Quota, newUsage any) {
 	mock.OnAnything(suite.quotaMgr, "GetByRef").Return(q, nil)
 
 	mock.OnAnything(suite.driver, "CalculateUsage").Return(newUsage, nil)

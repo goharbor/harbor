@@ -28,7 +28,7 @@ import (
 // It contains all user related configurations, each of user related settings requires a context provided
 
 // GetSystemCfg returns the all configurations
-func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
+func GetSystemCfg(ctx context.Context) (map[string]any, error) {
 	sysCfg := DefaultMgr().GetAll(ctx)
 	if len(sysCfg) == 0 {
 		return nil, errors.New("can not load system config, the database might be down")
