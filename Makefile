@@ -72,12 +72,13 @@ TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
 PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
+ARCH ?= $(shell uname -m) 
 
 # parameters
 REGISTRYSERVER=
-REGISTRYPROJECTNAME=goharbor
+REGISTRYPROJECTNAME=ranichowdary
 DEVFLAG=true
-TRIVYFLAG=false
+TRIVYFLAG=true
 HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
@@ -87,14 +88,14 @@ GEN_TLS=
 
 # version prepare
 # for docker image tag
-VERSIONTAG=dev
+VERSIONTAG=latest
 # for base docker image tag
 BUILD_BASE=true
 PUSHBASEIMAGE=false
-BASEIMAGETAG=dev
+BASEIMAGETAG=latest
 BUILDBASETARGET=trivy-adapter core db jobservice log nginx portal prepare redis registry registryctl exporter
-IMAGENAMESPACE=goharbor
-BASEIMAGENAMESPACE=goharbor
+IMAGENAMESPACE=ranichowdary
+BASEIMAGENAMESPACE=ranichowdary
 # #input true/false only
 PULL_BASE_FROM_DOCKERHUB=true
 
@@ -105,19 +106,37 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.61.0
-TRIVYADAPTERVERSION=v0.33.0-rc.2
+#TRIVYVERSION=v0.61.0
+#TRIVYADAPTERVERSION=v0.33.0-rc.2
 NODEBUILDIMAGE=node:16.18.0
 
-# version of registry for pulling the source code
-REGISTRY_SRC_TAG=release/2.8
-# source of upstream distribution code
-DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
-
-# dependency binaries
+# Use common registry URL, since REGISTRYVERSION is common
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+
+ifeq ($(ARCH), arm64)
+
+
+   # Arm64-specific version and source values
+   TRIVYVERSION=v0.58.2
+   TRIVYADAPTERVERSION=v0.32.3
+   REGISTRY_SRC_TAG=v2.8.3
+   DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
+   TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION)_Linux-ARM64.tar.gz
+   TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+
+
+else
+  
+   # Default (x86_64 or others) versions   
+   TRIVYVERSION=v0.61.0
+   TRIVYADAPTERVERSION=v0.33.0-rc.2
+   REGISTRY_SRC_TAG=release/2.8
+   DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
+   TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
+   TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+
+endif
+
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -206,14 +225,14 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
-DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare
-DOCKERIMAGENAME_PORTAL=$(IMAGENAMESPACE)/harbor-portal
-DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/harbor-core
-DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/harbor-jobservice
-DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/harbor-log
-DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/harbor-db
-DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/harbor-registryctl
-DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-exporter
+DOCKER_IMAGE_NAME_PREPARE=$(IMAGENAMESPACE)/prepare-harbor
+DOCKERIMAGENAME_PORTAL=$(IMAGENAMESPACE)/portal-harbor
+DOCKERIMAGENAME_CORE=$(IMAGENAMESPACE)/core-harbor
+DOCKERIMAGENAME_JOBSERVICE=$(IMAGENAMESPACE)/jobservice-harbor
+DOCKERIMAGENAME_LOG=$(IMAGENAMESPACE)/log-harbor
+DOCKERIMAGENAME_DB=$(IMAGENAMESPACE)/db-harbor
+DOCKERIMAGENAME_REGCTL=$(IMAGENAMESPACE)/registryctl-harbor
+DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/exporter-harbor
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -246,9 +265,9 @@ DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
+		$(IMAGENAMESPACE)/redis-harbor:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/nginx-harbor:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/registry-harbor:$(VERSIONTAG)
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -267,7 +286,7 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-harbor:$(VERSIONTAG)
 endif
 
 
