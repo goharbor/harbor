@@ -1,5 +1,7 @@
 <div>
-    <div class="command-title" *ngIf="!iconMode && !linkMode">{{ headerTitle }}</div>
+    <div class="command-title" *ngIf="!iconMode && !linkMode">
+        {{ headerTitle }}
+    </div>
     <div>
         <span [class.hide]="iconMode || linkMode">
             <input
@@ -27,11 +29,9 @@
                 [class.is-error]="hasCopyError"
                 [ngxClipboard]="inputTarget1"
                 (cbOnSuccess)="onSuccess($event)"
-                (cbOnError)="onError($event)"
-                >
+                (cbOnError)="onError($event)">
                 {{ linkName }}</a
             >
-
         </span>
         <span *ngIf="!linkMode">
             <clr-icon

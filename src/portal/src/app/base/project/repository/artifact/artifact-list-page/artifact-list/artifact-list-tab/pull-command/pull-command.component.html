@@ -31,10 +31,7 @@
     </div>
 </clr-dropdown>
 
-<clr-dropdown
-    class="flex"
-    *ngIf="isTagMode"
-    [disabled]="!hasPullCommandForTag(artifact)">
+<clr-dropdown class="flex" *ngIf="isTagMode">
     <hbr-copy-input
         *ngIf="isImage(artifact) && !asLink"
         [title]="getPullCommandForRuntimeByTag(artifact)"

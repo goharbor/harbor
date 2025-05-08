@@ -42,7 +42,6 @@ import {
     VULNERABILITY_SCAN_STATUS,
 } from '../../../../../../../shared/units/utils';
 import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
-import { PullCommandComponent } from './pull-command/pull-command.component';
 
 describe('ArtifactListTabComponent', () => {
     let comp: ArtifactListTabComponent;
@@ -303,7 +302,7 @@ describe('ArtifactListTabComponent', () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule, ArtifactModule, ClarityModule],
             schemas: [NO_ERRORS_SCHEMA],
-            declarations: [ArtifactListTabComponent, PullCommandComponent],
+            declarations: [ArtifactListTabComponent],
             providers: [
                 {
                     provide: ArtifactListPageService,
