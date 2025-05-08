@@ -26,7 +26,7 @@ func Redact(payload string, sensitiveAttributes []string) string {
 	if len(payload) == 0 {
 		return ""
 	}
-	var jsonData map[string]interface{}
+	var jsonData map[string]any
 	if err := json.Unmarshal([]byte(payload), &jsonData); err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 		return ""
@@ -42,15 +42,15 @@ func Redact(payload string, sensitiveAttributes []string) string {
 }
 
 // replacePassword recursively replaces attribute in maskAttributes's value with "***"
-func replacePassword(data map[string]interface{}, maskAttributes []string) {
+func replacePassword(data map[string]any, maskAttributes []string) {
 	for key, value := range data {
 		if slices.Contains(maskAttributes, key) {
 			data[key] = "***"
-		} else if nestedMap, ok := value.(map[string]interface{}); ok {
+		} else if nestedMap, ok := value.(map[string]any); ok {
 			replacePassword(nestedMap, maskAttributes)
-		} else if nestedArray, ok := value.([]interface{}); ok {
+		} else if nestedArray, ok := value.([]any); ok {
 			for _, item := range nestedArray {
-				if itemMap, ok := item.(map[string]interface{}); ok {
+				if itemMap, ok := item.(map[string]any); ok {
 					replacePassword(itemMap, maskAttributes)
 				}
 			}

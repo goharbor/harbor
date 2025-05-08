@@ -27,7 +27,7 @@ func TestGetLoggerSingleStd(t *testing.T) {
 
 	l.Debugf("Verify logger testing: %s", "case_1")
 
-	lSettings := map[string]interface{}{}
+	lSettings := map[string]any{}
 	lSettings["output"] = backend.StdErr
 	l, err = GetLogger(BackendOption("STD_OUTPUT", "ERROR", lSettings))
 	if err != nil {
@@ -52,7 +52,7 @@ func TestGetLoggerSingleFile(t *testing.T) {
 		t.Fatalf("expect non nil error when creating file logger with empty settings but got nil error: %s", "case_4")
 	}
 
-	lSettings := map[string]interface{}{}
+	lSettings := map[string]any{}
 	lSettings["base_dir"] = os.TempDir()
 	lSettings["filename"] = fmt.Sprintf("%s.log", fakeJobID)
 	defer func() {
@@ -71,7 +71,7 @@ func TestGetLoggerSingleFile(t *testing.T) {
 
 // Test getting multi loggers
 func TestGetLoggersMulti(t *testing.T) {
-	lSettings := map[string]interface{}{}
+	lSettings := map[string]any{}
 	lSettings["base_dir"] = os.TempDir()
 	lSettings["filename"] = fmt.Sprintf("%s.log", fakeJobID2)
 	defer func() {
@@ -110,7 +110,7 @@ func TestGetSweeper(t *testing.T) {
 		t.Fatalf("expect non nil error but got nil error when getting sweeper with name 'STD_OUTPUT': %s", "case_8")
 	}
 
-	sSettings := map[string]interface{}{}
+	sSettings := map[string]any{}
 	sSettings["work_dir"] = os.TempDir()
 	s, err := GetSweeper(ctx, SweeperOption("FILE", 5, sSettings))
 	if err != nil {
@@ -136,7 +136,7 @@ func TestGetGetter(t *testing.T) {
 		t.Fatalf("nil interface with nil error should be returned if no log data getter configured: %s", "case_11")
 	}
 
-	lSettings := map[string]interface{}{}
+	lSettings := map[string]any{}
 	_, err = GetLogDataGetter(GetterOption("FILE", lSettings))
 	if err == nil {
 		t.Fatalf("expect non nil error but got nil one: %s", "case_12")
@@ -184,19 +184,19 @@ func TestLoggerInit(t *testing.T) {
 		{
 			Name:  "STD_OUTPUT",
 			Level: "DEBUG",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"output": backend.StdErr,
 			},
 		},
 		{
 			Name:  "FILE",
 			Level: "ERROR",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"base_dir": os.TempDir(),
 			},
 			Sweeper: &config.LogSweeperConfig{
 				Duration: 5,
-				Settings: map[string]interface{}{
+				Settings: map[string]any{
 					"work_dir": os.TempDir(),
 				},
 			},

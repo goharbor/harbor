@@ -65,15 +65,15 @@ func (p *PolicyTestSuite) TestValidateRetentionPolicy() {
 	p.NoError(p.policy.ValidateRetentionPolicy())
 
 	// cron value is an empty string
-	p.policy.Trigger.Settings = map[string]interface{}{"cron": ""}
+	p.policy.Trigger.Settings = map[string]any{"cron": ""}
 	p.NoError(p.policy.ValidateRetentionPolicy())
 
 	//  the 1st field of cron value is not 0
-	p.policy.Trigger.Settings = map[string]interface{}{"cron": "1 0 0 1 1 *"}
+	p.policy.Trigger.Settings = map[string]any{"cron": "1 0 0 1 1 *"}
 	p.Error(p.policy.ValidateRetentionPolicy())
 
 	// valid cron value
-	p.policy.Trigger.Settings = map[string]interface{}{"cron": "0 0 0 1 1 *"}
+	p.policy.Trigger.Settings = map[string]any{"cron": "0 0 0 1 1 *"}
 	p.NoError(p.policy.ValidateRetentionPolicy())
 }
 
@@ -109,7 +109,7 @@ func TestRule(t *testing.T) {
 		},
 		Trigger: &Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "* 22 11 * * *",
 			},
 		},
@@ -162,7 +162,7 @@ func TestParamValid(t *testing.T) {
 		},
 		Trigger: &Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "* 22 11 * * *",
 			},
 		},
@@ -209,7 +209,7 @@ func TestParamValid(t *testing.T) {
 		},
 		Trigger: &Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "* 22 11 * * *",
 			},
 		},

@@ -157,7 +157,7 @@ func (suite *gcTestSuite) TestInit() {
 	gc := &GarbageCollector{
 		registryCtlClient: suite.registryCtlClient,
 	}
-	params := map[string]interface{}{
+	params := map[string]any{
 		"delete_untagged": true,
 		"redis_url_reg":   "redis url",
 		"time_window":     1,
@@ -169,21 +169,21 @@ func (suite *gcTestSuite) TestInit() {
 	suite.True(gc.deleteUntagged)
 	suite.Equal(3, gc.workers)
 
-	params = map[string]interface{}{
+	params = map[string]any{
 		"delete_untagged": "unsupported",
 		"redis_url_reg":   "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
 
-	params = map[string]interface{}{
+	params = map[string]any{
 		"delete_untagged": false,
 		"redis_url_reg":   "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.False(gc.deleteUntagged)
 
-	params = map[string]interface{}{
+	params = map[string]any{
 		"redis_url_reg": "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
@@ -281,7 +281,7 @@ func (suite *gcTestSuite) TestRun() {
 		blobMgr:           suite.blobMgr,
 		registryCtlClient: suite.registryCtlClient,
 	}
-	params := map[string]interface{}{
+	params := map[string]any{
 		"delete_untagged": false,
 		"redis_url_reg":   tests.GetRedisURL(),
 		"time_window":     1,

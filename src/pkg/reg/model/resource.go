@@ -27,10 +27,10 @@ const (
 
 // Resource represents the general replicating content
 type Resource struct {
-	Type         string                 `json:"type"`
-	Metadata     *ResourceMetadata      `json:"metadata"`
-	Registry     *Registry              `json:"registry"`
-	ExtendedInfo map[string]interface{} `json:"extended_info"`
+	Type         string            `json:"type"`
+	Metadata     *ResourceMetadata `json:"metadata"`
+	Registry     *Registry         `json:"registry"`
+	ExtendedInfo map[string]any    `json:"extended_info"`
 	// Indicate if the resource is a deleted resource
 	Deleted bool `json:"deleted"`
 	// indicate the resource is a tag deletion
@@ -51,8 +51,8 @@ type ResourceMetadata struct {
 
 // Repository info of the resource
 type Repository struct {
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
+	Name     string         `json:"name"`
+	Metadata map[string]any `json:"metadata"`
 }
 
 // Artifact is the individual unit that can be replicated

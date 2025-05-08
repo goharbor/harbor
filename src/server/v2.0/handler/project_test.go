@@ -151,7 +151,7 @@ func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(0), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return(nil, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/projects/1/scanner/candidates", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -163,7 +163,7 @@ func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(3), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/projects/1/scanner/candidates?page_size=1&page=2&name=n&description=d&url=u&ex_name=n&ex_url=u", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -183,7 +183,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		// get project failed
 		mock.OnAnything(suite.projectCtl, "Get").Return(nil, fmt.Errorf("failed to get project")).Once()
 
-		res, err := suite.PutJSON("/projects/1/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/1/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(500, res.StatusCode)
 	}
@@ -192,7 +192,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "SetRegistrationByProject").Return(nil).Once()
 
-		res, err := suite.PutJSON("/projects/1/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/1/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 	}
@@ -202,7 +202,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "SetRegistrationByProject").Return(nil).Once()
 
-		res, err := suite.PutJSON("/projects/library/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/library/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 	}

@@ -58,7 +58,7 @@ type scanDataExportAPI struct {
 	userMgr           user.Manager
 }
 
-func (se *scanDataExportAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (se *scanDataExportAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 

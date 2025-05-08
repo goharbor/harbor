@@ -368,7 +368,7 @@ func (dd *DragonflyDriver) getCred() *auth.Credential {
 	}
 }
 
-func headerToMapString(header map[string]interface{}) map[string]string {
+func headerToMapString(header map[string]any) map[string]string {
 	m := make(map[string]string)
 	for k, v := range header {
 		if s, ok := v.(string); ok {
