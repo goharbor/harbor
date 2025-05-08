@@ -36,9 +36,19 @@
     *ngIf="isTagMode"
     [disabled]="!hasPullCommandForTag(artifact)">
     <hbr-copy-input
-        *ngIf="isImage(artifact)"
+        *ngIf="isImage(artifact) && !asLink"
         [title]="getPullCommandForRuntimeByTag(artifact)"
         [iconMode]="true"
+        (onCopySuccess)="onCpSuccess(getPullCommandForRuntimeByTag(artifact))"
+        [defaultValue]="
+            getPullCommandForRuntimeByTag(artifact)
+        "></hbr-copy-input>
+
+    <hbr-copy-input
+        *ngIf="isImage(artifact) && asLink"
+        [title]="getPullCommandForRuntimeByTag(artifact)"
+        [linkMode]="true"
+        [linkName]="selectedTag"
         (onCopySuccess)="onCpSuccess(getPullCommandForRuntimeByTag(artifact))"
         [defaultValue]="
             getPullCommandForRuntimeByTag(artifact)

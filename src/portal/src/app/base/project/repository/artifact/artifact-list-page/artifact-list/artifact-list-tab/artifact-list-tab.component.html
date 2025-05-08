@@ -325,18 +325,15 @@
                                         #tagsSpan
                                         class="truncated width-p-75">
                                         <ng-container
-                                            *ngIf="
-                                                artifact?.tags?.length > 0;
-                                                else noTags
-                                            ">
+                                            *ngIf="artifact?.tags?.length > 0">
                                             <ng-container
                                                 *ngFor="
                                                     let tag of artifact.tags;
                                                     let i = index
-                                                "
-                                                class="kumar">
+                                                ">
                                                 <app-pull-command
                                                     [isTagMode]="true"
+                                                    [asLink]="true"
                                                     [artifact]="artifact"
                                                     [registryUrl]="registryUrl"
                                                     [projectName]="projectName"
@@ -344,7 +341,7 @@
                                                     [selectedTag]="
                                                         tag.name
                                                     "></app-pull-command>
-                                                {{ tag.name }}
+                                                <!-- {{ tag.name }} -->
                                                 <!-- Add comma if not last -->
                                                 <span
                                                     *ngIf="
