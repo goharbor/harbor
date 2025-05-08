@@ -22,6 +22,7 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -155,7 +156,12 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 		// The "strings.SplitN()" here is a workaround for the incorrect usage of query which should be avoided
 		// e.g. use the query with the knowledge of underlying ORM implementation, the "OrList" should be used instead:
 		// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/project/controller.go#L348
-		k := strings.SplitN(key, orm.ExprSep, 2)[0]
+		keyPieces := strings.Split(key, orm.ExprSep)
+		if len(keyPieces) > 2 {
+			log.Warningf("The separator '%s' is not valid in the query parameter '%s__%s'. Please use the correct field name.", orm.ExprSep, keyPieces[0], keyPieces[1])
+			continue
+		}
+		k := keyPieces[0]
 		mk, filterable := meta.Filterable(k)
 		if !filterable {
 			// This is a workaround for the unsuitable usage of query, the keyword format for field and method should be consistent

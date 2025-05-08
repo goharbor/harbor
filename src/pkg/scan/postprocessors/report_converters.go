@@ -143,8 +143,8 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	}
 
 	for _, record := range outOfDateRecords {
-		// Update the severity of the record when it's changed in the scanner, closes #14745
-		if err := c.dao.Update(ctx, record, "severity"); err != nil {
+		// Update the severity, fixed_version, and cvss_score_v3 of the record when it's changed in the scanner, closes #14745 #21463
+		if err := c.dao.Update(ctx, record, "severity", "fixed_version", "cvss_score_v3"); err != nil {
 			return err
 		}
 	}
