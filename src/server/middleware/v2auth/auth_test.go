@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 	ctl := &projecttesting.Controller{}
 
 	mockGet := func(ctx context.Context,
-		projectIDOrName interface{}, options ...project.Option) (*proModels.Project, error) {
+		projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 		name := projectIDOrName.(string)
 		id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
 		if id == 0 {
@@ -59,12 +59,12 @@ func TestMain(m *testing.M) {
 	}
 	mock.OnAnything(ctl, "Get").Return(
 		func(ctx context.Context,
-			projectIDOrName interface{}, options ...project.Option) *proModels.Project {
+			projectIDOrName any, options ...project.Option) *proModels.Project {
 			p, _ := mockGet(ctx, projectIDOrName, options...)
 			return p
 		},
 		func(ctx context.Context,
-			projectIDOrName interface{}, options ...project.Option) error {
+			projectIDOrName any, options ...project.Option) error {
 			_, err := mockGet(ctx, projectIDOrName, options...)
 			return err
 		},
@@ -73,7 +73,7 @@ func TestMain(m *testing.M) {
 	checker = reqChecker{
 		ctl: ctl,
 	}
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.ExtEndpoint: "https://harbor.test",
 		common.CoreURL:     "https://harbor.core:8443",
 	}

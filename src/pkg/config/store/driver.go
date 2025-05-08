@@ -20,7 +20,7 @@ import "context"
 // Driver the interface to save/load config
 type Driver interface {
 	// Load - load config item from config driver
-	Load(ctx context.Context) (map[string]interface{}, error)
+	Load(ctx context.Context) (map[string]any, error)
 	// Save - save config item into config driver
-	Save(ctx context.Context, cfg map[string]interface{}) error
+	Save(ctx context.Context, cfg map[string]any) error
 }

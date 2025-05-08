@@ -64,7 +64,7 @@ func (suite *BasicManagerTestSuite) TearDownSuite() {
 
 // TestList tests list registrations
 func (suite *BasicManagerTestSuite) TestList() {
-	m := make(map[string]interface{}, 1)
+	m := make(map[string]any, 1)
 	m["name"] = "forUT"
 
 	l, err := suite.mgr.List(suite.Context(), &q.Query{

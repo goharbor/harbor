@@ -73,7 +73,7 @@ func (t *taskDAOTestSuite) TearDownTest() {
 
 func (t *taskDAOTestSuite) TestCount() {
 	count, err := t.taskDAO.Count(t.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID":    t.executionID,
 			"ExtraAttrs.key": "value",
 		},
@@ -82,7 +82,7 @@ func (t *taskDAOTestSuite) TestCount() {
 	t.Equal(int64(1), count)
 
 	count, err = t.taskDAO.Count(t.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID":    t.executionID,
 			"ExtraAttrs.key": "incorrect-value",
 		},
@@ -93,7 +93,7 @@ func (t *taskDAOTestSuite) TestCount() {
 
 func (t *taskDAOTestSuite) TestList() {
 	tasks, err := t.taskDAO.List(t.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID":    t.executionID,
 			"ExtraAttrs.key": "value",
 		},
@@ -103,7 +103,7 @@ func (t *taskDAOTestSuite) TestList() {
 	t.Equal(t.taskID, tasks[0].ID)
 
 	tasks, err = t.taskDAO.List(t.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID":    t.executionID,
 			"ExtraAttrs.key": "incorrect-value",
 		},

@@ -39,7 +39,7 @@ func (*cacheClient) Delete(ctx context.Context, key string) error {
 	return cache.LayerCache().Delete(ctx, key)
 }
 
-func (*cacheClient) Fetch(ctx context.Context, key string, value interface{}) error {
+func (*cacheClient) Fetch(ctx context.Context, key string, value any) error {
 	return cache.LayerCache().Fetch(ctx, key, value)
 }
 
@@ -47,7 +47,7 @@ func (*cacheClient) Ping(ctx context.Context) error {
 	return cache.LayerCache().Ping(ctx)
 }
 
-func (*cacheClient) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (*cacheClient) Save(ctx context.Context, key string, value any, expiration ...time.Duration) error {
 	// intercept here
 	// it should ignore save cache if this request is wrapped by orm.Transaction,
 	// because if tx rollback, we can not rollback cache,

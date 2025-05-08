@@ -46,7 +46,7 @@ var (
 type BaseAPI struct{}
 
 // Prepare default prepare for operation
-func (*BaseAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (*BaseAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -75,7 +75,7 @@ func (b *BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resourc
 }
 
 // HasProjectPermission returns true when the request has action permission on project subresource
-func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
+func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) bool {
 	projectID, projectName, err := utils.ParseProjectIDOrName(projectIDOrName)
 	if err != nil {
 		return false
@@ -105,7 +105,7 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 
 // RequireProjectAccess checks the permission against the resources according to the context
 // An error will be returned if it doesn't meet the requirement
-func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) error {
+func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) error {
 	if b.HasProjectPermission(ctx, projectIDOrName, action, subresource...) {
 		return nil
 	}

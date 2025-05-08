@@ -194,15 +194,15 @@ func TestPrepareForPush(t *testing.T) {
 
 func TestParsePublic(t *testing.T) {
 	cases := []struct {
-		metadata map[string]interface{}
+		metadata map[string]any
 		result   bool
 	}{
 		{nil, false},
-		{map[string]interface{}{}, false},
-		{map[string]interface{}{"public": true}, true},
-		{map[string]interface{}{"public": "not_bool"}, false},
-		{map[string]interface{}{"public": "true"}, true},
-		{map[string]interface{}{"public": struct{}{}}, false},
+		{map[string]any{}, false},
+		{map[string]any{"public": true}, true},
+		{map[string]any{"public": "not_bool"}, false},
+		{map[string]any{"public": "true"}, true},
+		{map[string]any{"public": struct{}{}}, false},
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.result, parsePublic(c.metadata))
@@ -211,33 +211,33 @@ func TestParsePublic(t *testing.T) {
 
 func TestMergeMetadata(t *testing.T) {
 	cases := []struct {
-		m1     map[string]interface{}
-		m2     map[string]interface{}
+		m1     map[string]any
+		m2     map[string]any
 		public bool
 	}{
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "true",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "true",
 			},
 			public: true,
 		},
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "false",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "true",
 			},
 			public: false,
 		},
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "false",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "false",
 			},
 			public: false,
@@ -255,14 +255,14 @@ func TestAbstractPublicMetadata(t *testing.T) {
 	assert.Nil(t, meta)
 
 	// contains no public metadata
-	metadata := map[string]interface{}{
+	metadata := map[string]any{
 		"other": "test",
 	}
 	meta = abstractPublicMetadata(metadata)
 	assert.Nil(t, meta)
 
 	// contains public metadata
-	metadata = map[string]interface{}{
+	metadata = map[string]any{
 		"other":  "test",
 		"public": "true",
 	}

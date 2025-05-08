@@ -94,7 +94,7 @@ There is also a `restapi.Config`:
 type Config struct {
 	PetAPI
 	StoreAPI
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 	// InnerMiddleware is for the handler executors. These do not apply to the swagger.json document.
 	// The middleware executes after routing but before authentication, binding and validation
 	InnerMiddleware func(http.Handler) http.Handler
@@ -265,12 +265,12 @@ Once we created a security definition named "token", a function called "AuthToke
 type Config struct {
     ...
 	// AuthToken Applies when the "Cookie" header is set
-	AuthToken func(token string) (interface{}, error)
+	AuthToken func(token string) (any, error)
 }
 ```
 
-This function gets the content of the Cookie header, and should return an `interface{}` and `error`.
-The `interface{}` is the object that should represent the user that performed the request, it should
+This function gets the content of the Cookie header, and should return an `any` and `error`.
+The `any` is the object that should represent the user that performed the request, it should
 be nil to return an unauthorized 401 HTTP response. If the returned `error` is not nil, an HTTP 500,
 internal server error will be returned.
 

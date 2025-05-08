@@ -144,7 +144,7 @@ func (suite *defaultCleanupCriteriaTestSuite) TestListWithFilters() {
 
 		actualSysArtifactIds := make(map[int64]bool)
 
-		query := q.Query{Keywords: map[string]interface{}{"vendor": "test_vendor37000", "repository": "test_repo37000"}}
+		query := q.Query{Keywords: map[string]any{"vendor": "test_vendor37000", "repository": "test_repo37000"}}
 		sysArtifactList, err := suite.cleanupCriteria.ListWithFilters(suite.ctx, &query)
 
 		for _, sysArtifact := range sysArtifactList {
