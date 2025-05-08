@@ -3,6 +3,7 @@
         *ngIf="isImage(artifact)"
         [title]="getPullCommandForRuntimeByDigest(artifact)"
         [iconMode]="true"
+        id="pullCommandForDigest"
         (onCopySuccess)="
             onCpSuccess(getPullCommandForRuntimeByDigest(artifact))
         "
@@ -12,6 +13,7 @@
     <div
         *ngIf="isCNAB(artifact)"
         class="flex"
+        id="pullCommandForCNAB"
         aria-label="Dropdown header Action">
         <hbr-copy-input
             [title]="getPullCommandForCNAB(artifact)"
@@ -22,6 +24,7 @@
     <div
         *ngIf="isChart(artifact) && artifact.tagNumber > 0"
         class="flex"
+        id="pullCommandForChart"
         aria-label="Dropdown header Action">
         <hbr-copy-input
             [title]="getPullCommandForChart(artifact)"
