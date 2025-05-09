@@ -1,6 +1,7 @@
 services:
   log:
-    image: goharbor/harbor-log:{{version}}
+    image: ranichowdary/log-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-log
     restart: always
     cap_drop:
@@ -23,7 +24,8 @@ services:
     networks:
       - harbor
   registry:
-    image: goharbor/registry-photon:{{reg_version}}
+    image: ranichowdary/registry-harbor:{{reg_version}}
+    platform: {{ platform }}
     container_name: registry
     restart: always
     cap_drop:
@@ -67,7 +69,8 @@ services:
         syslog-address: "tcp://localhost:1514"
         tag: "registry"
   registryctl:
-    image: goharbor/harbor-registryctl:{{version}}
+    image: ranichowdary/registryctl-harbor:{{version}}
+    platform: {{ platform }}
     container_name: registryctl
     env_file:
       - ./common/config/registryctl/env
@@ -111,7 +114,8 @@ services:
         tag: "registryctl"
 {% if external_database == False %}
   postgresql:
-    image: goharbor/harbor-db:{{version}}
+    image: ranichowdary/db-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-db
     restart: always
     cap_drop:
@@ -137,7 +141,8 @@ services:
     shm_size: '1gb'
 {% endif %}
   core:
-    image: goharbor/harbor-core:{{version}}
+    image: ranichowdary/core-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-core
     env_file:
       - ./common/config/core/env
@@ -193,7 +198,8 @@ services:
         syslog-address: "tcp://localhost:1514"
         tag: "core"
   portal:
-    image: goharbor/harbor-portal:{{version}}
+    image: ranichowdary/portal-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-portal
     restart: always
     cap_drop:
@@ -226,7 +232,8 @@ services:
         tag: "portal"
 
   jobservice:
-    image: goharbor/harbor-jobservice:{{version}}
+    image: ranichowdary/jobservice-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-jobservice
     env_file:
       - ./common/config/jobservice/env
@@ -264,7 +271,8 @@ services:
         tag: "jobservice"
 {% if external_redis == False %}
   redis:
-    image: goharbor/redis-photon:{{redis_version}}
+    image: ranichowdary/redis-harbor:{{redis_version}}
+    platform: {{ platform }}
     container_name: redis
     restart: always
     cap_drop:
@@ -286,7 +294,8 @@ services:
         tag: "redis"
 {% endif %}
   proxy:
-    image: goharbor/nginx-photon:{{version}}
+    image: ranichowdary/nginx-harbor:{{version}}
+    platform: {{ platform }}
     container_name: nginx
     restart: always
     cap_drop:
@@ -335,7 +344,8 @@ services:
 {% if with_trivy %}
   trivy-adapter:
     container_name: trivy-adapter
-    image: goharbor/trivy-adapter-photon:{{trivy_adapter_version}}
+    image: ranichowdary/trivy-adapter-harbor:{{trivy_adapter_version}}
+    platform: {{ platform }}
     restart: always
     cap_drop:
       - ALL
@@ -374,7 +384,8 @@ services:
 {% endif %}
 {% if metric.enabled %}
   exporter:
-    image: goharbor/harbor-exporter:{{version}}
+    image: ranichowdary/exporter-harbor:{{version}}
+    platform: {{ platform }}
     container_name: harbor-exporter
     env_file:
       - ./common/config/exporter/env
