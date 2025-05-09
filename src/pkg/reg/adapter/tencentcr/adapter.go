@@ -154,10 +154,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	client.Init(*instanceInfo.RegionName).
 		WithCredential(tcrCredential).
 		WithProfile(cfp).
-		WithHttpTransport(newRateLimitedTransport(tcrQPSLimit, http.DefaultTransport))
-	if err != nil {
-		return
-	}
+		WithHttpTransport(util.NewRateLimitedTransport(tcrQPSLimit, http.DefaultTransport))
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
 	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
