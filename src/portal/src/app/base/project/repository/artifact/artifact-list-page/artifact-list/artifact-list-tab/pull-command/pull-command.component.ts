@@ -100,14 +100,18 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChart(artifact: Artifact): string {
-        return getPullCommandByTag(
-            artifact.type,
-            `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                this.projectName
-            }/${this.repoName}`,
-            artifact.tags[0].name,
-            Clients.CHART
-        );
+        if (artifact.tagNumber > 0) {
+            return getPullCommandByTag(
+                artifact.type,
+                `${this.registryUrl ? this.registryUrl : location.hostname}/${
+                    this.projectName
+                }/${this.repoName}`,
+                artifact.tags[0].name,
+                Clients.CHART
+            );
+        } else {
+            return '';
+        }
     }
 
     // For tagMode
