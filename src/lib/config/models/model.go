@@ -96,6 +96,7 @@ type GroupConf struct {
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
 	AttachParallel      bool   `json:"ldap_group_attach_parallel,omitempty"`
+	NestedGroup         bool   `json:"ldap_nested_group,omitempty"`
 }
 
 type GDPRSetting struct {

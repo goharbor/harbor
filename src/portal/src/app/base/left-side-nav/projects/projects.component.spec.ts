@@ -147,6 +147,10 @@ describe('ProjectComponent', () => {
                     value: true,
                     editable: true,
                 },
+                ldap_nested_group: {
+                    value: false,
+                    editable: true,
+                },
                 notification_enable: {
                     value: true,
                     editable: true,
