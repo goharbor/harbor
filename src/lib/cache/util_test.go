@@ -26,7 +26,7 @@ func TestKeyMutex(t *testing.T) {
 	key := "key"
 
 	var wg sync.WaitGroup
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		wg.Add(1)
 
 		go func() {
