@@ -129,7 +129,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 	}
 
 	pattern := rds.KeyJobStats(bm.namespace, "*")
-	args := []interface{}{cursor, "MATCH", pattern, "COUNT", count}
+	args := []any{cursor, "MATCH", pattern, "COUNT", count}
 
 	conn := bm.pool.Get()
 	defer func() {
@@ -148,7 +148,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 	if err != nil {
 		return nil, 0, err
 	}
-	list := values[1].([]interface{})
+	list := values[1].([]any)
 
 	results := make([]*job.Stats, 0)
 	for _, v := range list {
@@ -227,7 +227,7 @@ func (bm *basicManager) GetPeriodicExecution(pID string, q *query.Parameter) (re
 		}
 
 		minVal, maxVal := (pageNumber-1)*pageSize, pageNumber*pageSize-1
-		args := []interface{}{key, minVal, maxVal}
+		args := []any{key, minVal, maxVal}
 		list, err := redis.Values(conn.Do("ZREVRANGE", args...))
 		if err != nil {
 			return nil, 0, err
@@ -334,7 +334,7 @@ func queryExecutions(conn redis.Conn, dataKey string, q *query.Parameter) ([]str
 	}
 
 	offset := (pageNumber - 1) * pageSize
-	args := []interface{}{dataKey, "+inf", 0, "LIMIT", offset, pageSize}
+	args := []any{dataKey, "+inf", 0, "LIMIT", offset, pageSize}
 
 	eIDs, err := redis.Values(conn.Do("ZREVRANGEBYSCORE", args...))
 	if err != nil {

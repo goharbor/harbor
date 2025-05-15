@@ -42,7 +42,7 @@ func (si *Handler) Name() string {
 }
 
 // Handle preprocess chart event data and then publish hook event
-func (si *Handler) Handle(ctx context.Context, value interface{}) error {
+func (si *Handler) Handle(ctx context.Context, value any) error {
 	if value == nil {
 		return errors.New("empty scan artifact event")
 	}
@@ -142,7 +142,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	scanSummaries := map[string]interface{}{}
+	scanSummaries := map[string]any{}
 	if event.ScanType == v1.ScanTypeVulnerability {
 		scanSummaries, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport})
 		if err != nil {
@@ -150,7 +150,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 		}
 	}
 
-	sbomOverview := map[string]interface{}{}
+	sbomOverview := map[string]any{}
 	if event.ScanType == v1.ScanTypeSbom {
 		sbomOverview, err = scan.DefaultController.GetSummary(ctx, art, event.ScanType, []string{v1.MimeTypeSBOMReport})
 		if err != nil {

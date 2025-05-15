@@ -57,7 +57,7 @@ func (s *schedulerTestSuite) SetupTest() {
 
 func (s *schedulerTestSuite) TestSchedule() {
 	// empty vendor type
-	extras := make(map[string]interface{})
+	extras := make(map[string]any)
 	id, err := s.scheduler.Schedule(s.ctx, "", 0, "", "0 * * * * *", "callback", nil, extras)
 	s.NotNil(err)
 

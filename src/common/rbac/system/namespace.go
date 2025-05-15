@@ -38,7 +38,7 @@ func (ns *systemNamespace) Resource(subresources ...types.Resource) types.Resour
 	return types.Resource("/system/").Subresource(subresources...)
 }
 
-func (ns *systemNamespace) Identity() interface{} {
+func (ns *systemNamespace) Identity() any {
 	return nil
 }
 

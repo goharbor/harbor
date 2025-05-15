@@ -318,7 +318,7 @@ func (rAPI *robotAPI) requireAccess(ctx context.Context, r *robot.Robot, action 
 	if r.Level == robot.LEVELSYSTEM {
 		return rAPI.RequireSystemAccess(ctx, action, rbac.ResourceRobot)
 	} else if r.Level == robot.LEVELPROJECT {
-		var ns interface{}
+		var ns any
 		if r.ProjectNameOrID != nil {
 			ns = r.ProjectNameOrID
 		} else if r.ProjectID > 0 {

@@ -30,7 +30,7 @@ import (
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	config.InitWithSettings(map[string]interface{}{
+	config.InitWithSettings(map[string]any{
 		"ldap_group_search_filter":        "objectClass=groupOfNames",
 		"ldap_group_attribute_name":       "",
 		"ldap_group_membership_attribute": "memberof",
@@ -47,7 +47,7 @@ func TestLdapGroupValidateRule_Validate(t *testing.T) {
 	type args struct {
 		ctx    context.Context
 		cfgMgr config.Manager
-		cfgs   map[string]interface{}
+		cfgs   map[string]any
 	}
 	cases := []struct {
 		name string
@@ -56,17 +56,17 @@ func TestLdapGroupValidateRule_Validate(t *testing.T) {
 	}{
 		{
 			name: `nothing updated, no error`,
-			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]interface{}{}},
+			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]any{}},
 			want: nil,
 		},
 		{
 			name: `empty ldap group membership attribute, update all`,
-			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]interface{}{"ldap_group_search_filter": "objectClass=groupOfNames", "ldap_group_attribute_name": "cn", "ldap_group_membership_attribute": ""}},
+			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]any{"ldap_group_search_filter": "objectClass=groupOfNames", "ldap_group_attribute_name": "cn", "ldap_group_membership_attribute": ""}},
 			want: errors.New("ldap group membership attribute can not be empty"),
 		},
 		{
 			name: `empty ldap group attribute name, update partially`,
-			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]interface{}{"ldap_group_search_filter": "objectClass=groupOfNames", "ldap_group_membership_attribute": "memberof"}},
+			in:   args{ctx: orm.Context(), cfgMgr: mgr, cfgs: map[string]any{"ldap_group_search_filter": "objectClass=groupOfNames", "ldap_group_membership_attribute": "memberof"}},
 			want: errors.New("ldap group name attribute can not be empty"),
 		},
 	}

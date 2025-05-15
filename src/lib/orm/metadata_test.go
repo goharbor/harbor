@@ -32,7 +32,7 @@ type foo struct {
 	Field4 string `sort:"default:desc"`
 }
 
-func (f *foo) FilterByField5(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter {
+func (f *foo) FilterByField5(context.Context, orm.QuerySeter, string, any) orm.QuerySeter {
 	return nil
 }
 

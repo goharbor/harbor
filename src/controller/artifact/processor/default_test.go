@@ -268,7 +268,7 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadata() {
 	manifestMediaType, content, err := manifest.Payload()
 	d.Require().Nil(err)
 
-	metadata := map[string]interface{}{}
+	metadata := map[string]any{}
 	configBlob := io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	d.Require().Nil(err)
@@ -289,7 +289,7 @@ func (d *defaultProcessorTestSuite) TestAbstractMetadataOfOCIManifesttWithUnknow
 	d.Require().Nil(err)
 
 	configBlob := io.NopCloser(strings.NewReader(UnknownJsonConfig))
-	metadata := map[string]interface{}{}
+	metadata := map[string]any{}
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	d.Require().Nil(err)
 

@@ -284,6 +284,6 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     }
 
     shouldShowDetails(status: string): boolean {
-        return status !== JOB_STATUS.PENDING && status !== JOB_STATUS.RUNNING;
+        return status !== JOB_STATUS.PENDING;
     }
 }

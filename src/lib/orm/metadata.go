@@ -34,7 +34,7 @@ var (
 type key struct {
 	Name       string
 	Filterable bool
-	FilterFunc func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter
+	FilterFunc func(context.Context, orm.QuerySeter, string, any) orm.QuerySeter
 	Sortable   bool
 }
 
@@ -60,7 +60,7 @@ func (m *metadata) Sortable(key string) bool {
 }
 
 // parse the definition of the provided model(fields/methods/annotations) and return the parsed metadata
-func parseModel(model interface{}) *metadata {
+func parseModel(model any) *metadata {
 	// pointer type
 	ptr := reflect.TypeOf(model)
 	// struct type
@@ -116,7 +116,7 @@ func parseModel(model interface{}) *metadata {
 		if !methodValue.IsValid() {
 			continue
 		}
-		filterFunc, ok := methodValue.Interface().(func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter)
+		filterFunc, ok := methodValue.Interface().(func(context.Context, orm.QuerySeter, string, any) orm.QuerySeter)
 		if !ok {
 			continue
 		}

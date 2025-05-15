@@ -28,7 +28,7 @@ type LdapGroupValidateRule struct {
 }
 
 // Validate validate the ldap group config settings, cfgs is the config items need to be updated, the final config should be merged with the cfgMgr
-func (l LdapGroupValidateRule) Validate(ctx context.Context, cfgMgr config.Manager, cfgs map[string]interface{}) error {
+func (l LdapGroupValidateRule) Validate(ctx context.Context, cfgMgr config.Manager, cfgs map[string]any) error {
 	cfg := &cfgModels.GroupConf{
 		Filter:              cfgMgr.Get(ctx, common.LDAPGroupSearchFilter).GetString(),
 		AdminFilter:         cfgMgr.Get(ctx, common.LDAPGroupAdminFilter).GetString(),

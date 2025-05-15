@@ -36,13 +36,13 @@ func NewRESTDriver(configRESTURL string, modifiers ...modifier.Modifier) *Driver
 
 // Value ...
 type Value struct {
-	Val      interface{} `json:"value"`
-	Editable bool        `json:"editable"`
+	Val      any  `json:"value"`
+	Editable bool `json:"editable"`
 }
 
 // Load - load config data from REST server
-func (h *Driver) Load(_ context.Context) (map[string]interface{}, error) {
-	cfgMap := map[string]interface{}{}
+func (h *Driver) Load(_ context.Context) (map[string]any, error) {
+	cfgMap := map[string]any{}
 	origMap := map[string]*Value{}
 	log.Infof("get configuration from url: %+v", h.configRESTURL)
 	err := h.client.Get(h.configRESTURL, &origMap)
@@ -59,6 +59,6 @@ func (h *Driver) Load(_ context.Context) (map[string]interface{}, error) {
 }
 
 // Save - Save config data to REST server by PUT method
-func (h *Driver) Save(_ context.Context, cfg map[string]interface{}) error {
+func (h *Driver) Save(_ context.Context, cfg map[string]any) error {
 	return h.client.Put(h.configRESTURL, cfg)
 }

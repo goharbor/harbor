@@ -75,8 +75,8 @@ func (c *CfgManager) LoadSystemConfigFromEnv() {
 }
 
 // GetAll get all settings.
-func (c *CfgManager) GetAll(ctx context.Context) map[string]interface{} {
-	resultMap := map[string]interface{}{}
+func (c *CfgManager) GetAll(ctx context.Context) map[string]any {
+	resultMap := map[string]any{}
 	if err := c.Store.Load(ctx); err != nil {
 		log.Errorf("AllConfigs failed, error %v", err)
 		return resultMap
@@ -96,8 +96,8 @@ func (c *CfgManager) GetAll(ctx context.Context) map[string]interface{} {
 }
 
 // GetUserCfgs retrieve all user configs
-func (c *CfgManager) GetUserCfgs(ctx context.Context) map[string]interface{} {
-	resultMap := map[string]interface{}{}
+func (c *CfgManager) GetUserCfgs(ctx context.Context) map[string]any {
+	resultMap := map[string]any{}
 	if err := c.Store.Load(ctx); err != nil {
 		log.Errorf("UserConfigs failed, error %v", err)
 		return resultMap
@@ -146,7 +146,7 @@ func (c *CfgManager) Get(_ context.Context, key string) *metadata.ConfigureValue
 }
 
 // Set ...
-func (c *CfgManager) Set(_ context.Context, key string, value interface{}) {
+func (c *CfgManager) Set(_ context.Context, key string, value any) {
 	configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
 	if err != nil {
 		log.Errorf("error when setting key: %v,  error %v", key, err)
@@ -176,12 +176,12 @@ func (c *CfgManager) GetDatabaseCfg() *models.Database {
 }
 
 // UpdateConfig - Update config Store with a specified configuration and also save updated configure.
-func (c *CfgManager) UpdateConfig(ctx context.Context, cfgs map[string]interface{}) error {
+func (c *CfgManager) UpdateConfig(ctx context.Context, cfgs map[string]any) error {
 	return c.Store.Update(ctx, cfgs)
 }
 
 // ValidateCfg validate config by metadata. return the first error if exist.
-func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]interface{}) error {
+func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]any) error {
 	for key, value := range cfgs {
 		item, exist := metadata.Instance().GetByName(key)
 		if !exist {

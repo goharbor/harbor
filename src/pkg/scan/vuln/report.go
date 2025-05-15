@@ -35,7 +35,7 @@ type Report struct {
 	vulnerabilityItemList *VulnerabilityItemList
 
 	// SBOM sbom content
-	SBOM map[string]interface{} `json:"sbom,omitempty"`
+	SBOM map[string]any `json:"sbom,omitempty"`
 }
 
 // GetVulnerabilityItemList returns VulnerabilityItemList from the Vulnerabilities of report
@@ -225,7 +225,7 @@ type VulnerabilityItem struct {
 	CWEIds []string `json:"cwe_ids"`
 	// A collection of vendor specific attributes for the vulnerability item
 	// with each attribute represented as a key-value pair.
-	VendorAttributes map[string]interface{} `json:"vendor_attributes"`
+	VendorAttributes map[string]any `json:"vendor_attributes"`
 }
 
 // Key returns the uniq key for the item
