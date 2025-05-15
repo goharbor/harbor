@@ -213,6 +213,24 @@ func (_m *ExecutionManager) MarkError(ctx context.Context, id int64, message str
 	return r0
 }
 
+// MarkSkipped provides a mock function with given fields: ctx, id, message
+func (_m *ExecutionManager) MarkSkipped(ctx context.Context, id int64, message string) error {
+	ret := _m.Called(ctx, id, message)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkSkipped")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) error); ok {
+		r0 = rf(ctx, id, message)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Stop provides a mock function with given fields: ctx, id
 func (_m *ExecutionManager) Stop(ctx context.Context, id int64) error {
 	ret := _m.Called(ctx, id)
