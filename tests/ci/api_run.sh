@@ -3,7 +3,7 @@ set -x
 
 #source gskey.sh
 
-sudo gsutil version -l
+sudo aws --version
 
 harbor_logs_bucket="harbor-ci-logs"
 
@@ -12,8 +12,7 @@ E2E_IMAGE="goharbor/harbor-e2e-engine:latest-api"
 
 # GS util
 function uploader {
-   sudo gsutil cp $1 gs://$2/$1
-   sudo gsutil acl ch -u AllUsers:R gs://$2/$1
+   sudo aws s3 cp $1 s3://$2/$1
 }
 
 set +e
@@ -38,18 +37,18 @@ else
 fi
 rc=$?
 ## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
-timestamp=$(date +%s)
-GIT_COMMIT=$(git rev-parse --short "$GITHUB_SHA")
-outfile="integration_logs_$timestamp$GIT_COMMIT.tar.gz"
-sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
-if [ -f "$outfile" ]; then
-   uploader $outfile $harbor_logs_bucket
-   echo "----------------------------------------------"
-   echo "Download test logs:"
-   echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
-   echo "----------------------------------------------"
-else
-   echo "No log output file to upload"
-fi
+#timestamp=$(date +%s)
+#GIT_COMMIT=$(git rev-parse --short "$GITHUB_SHA")
+#outfile="integration_logs_$timestamp$GIT_COMMIT.tar.gz"
+#sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
+#if [ -f "$outfile" ]; then
+#   uploader $outfile $harbor_logs_bucket
+#   echo "----------------------------------------------"
+#   echo "Download test logs:"
+#   echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
+#   echo "----------------------------------------------"
+#else
+#   echo "No log output file to upload"
+#fi
 
 exit $rc
