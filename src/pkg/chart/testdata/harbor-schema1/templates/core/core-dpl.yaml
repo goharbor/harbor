@@ -178,8 +178,6 @@ spec:
         - name: core-internal-certs
           mountPath: /etc/harbor/ssl/core
         {{- end }}
-        - name: psc
-          mountPath: /etc/core/token
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
@@ -235,8 +233,6 @@ spec:
         secret:
           secretName: {{ template "harbor.internalTLS.core.secretName" . }}
       {{- end }}
-      - name: psc
-        emptyDir: {}
       {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolume" . | indent 6 }}
       {{- end }}
