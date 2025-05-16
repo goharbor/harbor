@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var _ adp.Adapter = &adapter{}
@@ -143,4 +144,12 @@ func (a *adapter) CanBeMount(digest string) (bool, string, error) {
 		return false, "", nil
 	}
 	return true, repository, nil
+}
+
+func (a adapter) HealthCheck() (string, error) {
+	if err := a.Ping(); err != nil {
+		log.Errorf("failed to ping registry %s: %v", a.Registry.URL, err)
+		return model.Unhealthy, nil
+	}
+	return model.Healthy, nil
 }

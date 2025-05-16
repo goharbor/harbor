@@ -232,7 +232,6 @@ func (c *controller) StartRegularHealthCheck(ctx context.Context, closing, done 
 				isHealthy, err := c.IsHealthy(ctx, registry)
 				if err != nil {
 					log.Errorf("failed to check health of registry %d: %v", registry.ID, err)
-					continue
 				}
 				status := model.Healthy
 				if !isHealthy {
