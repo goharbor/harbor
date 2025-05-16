@@ -73,7 +73,7 @@ type artifactAPI struct {
 	labelMgr label.Manager
 }
 
-func (a *artifactAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
+func (a *artifactAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		a.SendError(ctx, err)
 	}
@@ -238,7 +238,8 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
-			WithTag: true,
+			WithTag:   true,
+			WithLabel: true,
 		})
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -256,6 +257,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	notification.AddEvent(ctx, &metadata.CreateTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              tag.Name,
+		Labels:           art.AbstractLabelNames(),
 		AttachedArtifact: &art.Artifact,
 	})
 
@@ -281,7 +283,8 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	}
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
-			WithTag: true,
+			WithTag:   true,
+			WithLabel: true,
 		})
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -307,6 +310,7 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 	notification.AddEvent(ctx, &metadata.DeleteTagEventMetadata{
 		Ctx:              ctx,
 		Tag:              params.TagName,
+		Labels:           artifact.AbstractLabelNames(),
 		AttachedArtifact: &artifact.Artifact,
 	})
 
@@ -402,7 +406,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 		return a.SendError(ctx, err)
 	}
 
-	vulnerabilities := make(map[string]interface{})
+	vulnerabilities := make(map[string]any)
 
 	for _, mimeType := range parseScanReportMimeTypes(params.XAcceptVulnerabilities) {
 		reports, err := a.scanCtl.GetReport(ctx, artifact, []string{mimeType})

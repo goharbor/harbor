@@ -73,21 +73,21 @@ func (s *ControllerTestSuite) TestPolicy() {
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}, nil)
 	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}}, nil)
 	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"total":    1,
 			"retained": 1,
 		},
@@ -160,7 +160,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 22 11 * * *",
 			},
 		},
@@ -208,7 +208,7 @@ func (s *ControllerTestSuite) TestExecution() {
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}, nil)
@@ -216,14 +216,14 @@ func (s *ControllerTestSuite) TestExecution() {
 	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}}, nil)
 	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"total":    1,
 			"retained": 1,
 		},
@@ -272,7 +272,7 @@ func (s *ControllerTestSuite) TestExecution() {
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 22 11 * * *",
 			},
 		},
@@ -316,7 +316,7 @@ func (f *fakeRetentionScheduler) CountSchedules(ctx context.Context, query *q.Qu
 	panic("implement me")
 }
 
-func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params any, extras map[string]any) (int64, error) {
 	return 111, nil
 }
 

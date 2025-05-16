@@ -403,11 +403,6 @@ func (t *transfer) copyBlobByMonolithic(srcRepo, dstRepo, digest string, sizeFro
 // copyBlobByChunk copy blob by chunk with specified start and end range.
 // The <range> refers to the byte range of the chunk, and MUST be inclusive on both ends. The first chunk's range MUST begin with 0.
 func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, start, end *int64, location *string, speed int32) error {
-	// fallback to copy by monolithic if the blob size is equal or less than chunk size.
-	if sizeFromDescriptor <= replicationChunkSize {
-		return t.copyBlobByMonolithic(srcRepo, dstRepo, digest, sizeFromDescriptor, speed)
-	}
-
 	mounted, err := t.tryMountBlob(srcRepo, dstRepo, digest)
 	if err != nil {
 		return err
@@ -415,6 +410,11 @@ func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDesc
 	// return earlier if it is mounted.
 	if mounted {
 		return nil
+	}
+
+	// fallback to copy by monolithic if the blob size is equal or less than chunk size.
+	if sizeFromDescriptor <= replicationChunkSize {
+		return t.copyBlobByMonolithic(srcRepo, dstRepo, digest, sizeFromDescriptor, speed)
 	}
 
 	// end range should equal (blobSize - 1)

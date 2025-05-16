@@ -44,7 +44,6 @@ func New() http.Handler {
 		PreheatAPI:            newPreheatAPI(),
 		IconAPI:               newIconAPI(),
 		RobotAPI:              newRobotAPI(),
-		Robotv1API:            newRobotV1API(),
 		ReplicationAPI:        newReplicationAPI(),
 		RegistryAPI:           newRegistryAPI(),
 		SysteminfoAPI:         newSystemInfoAPI(),
@@ -87,7 +86,7 @@ func New() http.Handler {
 }
 
 // function is called before the Prepare of the operation
-func beforePrepare(ctx context.Context, operation string, _ interface{}) rmiddleware.Responder {
+func beforePrepare(ctx context.Context, operation string, _ any) rmiddleware.Responder {
 	metric.SetMetricOpID(ctx, operation)
 	return nil
 }

@@ -57,6 +57,9 @@
         <clr-datagrid
             [clrDgLoading]="loading"
             (clrDgRefresh)="retrieve($event)">
+            <clr-dg-column class="width-140">{{
+                'AUDIT_LOG.TIMESTAMP' | translate
+            }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.USERNAME' | translate
             }}</clr-dg-column>
@@ -70,16 +73,22 @@
                 'AUDIT_LOG.OPERATION' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{
-                'AUDIT_LOG.TIMESTAMP' | translate
+                'AUDIT_LOG.OPERATION_DESCRIPTION' | translate
             }}</clr-dg-column>
+            <clr-dg-column>{{ 'AUDIT_LOG.RESULT' | translate }}</clr-dg-column>
+            <clr-dg-placeholder>{{
+                'AUDIT_LOG.NOT_FOUND' | translate
+            }}</clr-dg-placeholder>
             <clr-dg-row *ngFor="let l of auditLogs">
+                <clr-dg-cell>{{
+                    l.op_time | harborDatetime : 'short'
+                }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.username }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource_type }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.operation }}</clr-dg-cell>
-                <clr-dg-cell>{{
-                    l.op_time | harborDatetime : 'short'
-                }}</clr-dg-cell>
+                <clr-dg-cell>{{ l.operation_description }}</clr-dg-cell>
+                <clr-dg-cell>{{ l.operation_result }}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <clr-dg-pagination
@@ -87,9 +96,12 @@
                     [clrDgPageSize]="pageSize"
                     [(clrDgPage)]="currentPage"
                     [clrDgTotalItems]="totalRecordCount">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span *ngIf="showPaginationIndex"
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}

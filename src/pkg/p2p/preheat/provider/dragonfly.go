@@ -39,6 +39,25 @@ const (
 )
 
 const (
+	// preheatTypeImage represents the image to the dragonfly cluster.
+	preheatTypeImage = "image"
+
+	// preheatTypeFile represents the file to the dragonfly cluster.
+	preheatTypeFile = "file"
+)
+
+const (
+	// scopeTypeSingleSeedPeer represents preheat image to single seed peer in p2p cluster.
+	scopeTypeSingleSeedPeer = "single_seed_peer"
+
+	// scopeTypeAllSeedPeers represents preheat image to all seed peers in p2p cluster.
+	scopeTypeAllSeedPeers = "all_seed_peers"
+
+	// scopeTypeAllPeers represents preheat image to all peers in p2p cluster.
+	scopeTypeAllPeers = "all_peers"
+)
+
+const (
 	// dragonflyJobPendingState is the pending state of the job, which means
 	// the job is waiting to be processed and running.
 	dragonflyJobPendingState = "PENDING"
@@ -54,13 +73,13 @@ const (
 
 type dragonflyCreateJobRequest struct {
 	// Type is the job type, support preheat.
-	Type string `json:"type" binding:"required"`
+	Type string `json:"type"`
 
 	// Args is the preheating args.
-	Args dragonflyCreateJobRequestArgs `json:"args" binding:"omitempty"`
+	Args dragonflyCreateJobRequestArgs `json:"args"`
 
 	// SchedulerClusterIDs is the scheduler cluster ids for preheating.
-	SchedulerClusterIDs []uint `json:"scheduler_cluster_ids" binding:"omitempty"`
+	SchedulerClusterIDs []uint `json:"scheduler_cluster_ids"`
 }
 
 type dragonflyCreateJobRequestArgs struct {
@@ -150,6 +169,14 @@ type dragonflyJobResponse struct {
 	} `json:"result"`
 }
 
+// dragonflyExtraAttrs is the extra attributes model definition for dragonfly provider.
+type dragonflyExtraAttrs struct {
+	// Scope is the scope for preheating, default behavior is single_peer.
+	Scope string `json:"scope"`
+	// ClusterIDs is the cluster ids for dragonfly provider.
+	ClusterIDs []uint `json:"cluster_ids"`
+}
+
 // DragonflyDriver implements the provider driver interface for Alibaba dragonfly.
 // More details, please refer to https://github.com/alibaba/Dragonfly
 type DragonflyDriver struct {
@@ -201,16 +228,41 @@ func (dd *DragonflyDriver) Preheat(preheatingImage *PreheatImage) (*PreheatingSt
 		return nil, errors.New("no image specified")
 	}
 
+	var extraAttrs dragonflyExtraAttrs
+	if len(preheatingImage.ExtraAttrs) > 0 {
+		extraAttrsStr, err := json.Marshal(preheatingImage.ExtraAttrs)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to marshal extra attributes")
+		}
+
+		if err := json.Unmarshal(extraAttrsStr, &extraAttrs); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal extra attributes")
+		}
+	}
+
 	// Construct the preheat job request by the given parameters of the preheating image .
 	req := &dragonflyCreateJobRequest{
 		Type: "preheat",
-		// TODO: Support set SchedulerClusterIDs, FilteredQueryParam, ConcurrentCount and Timeout.
+		// TODO: Support set FilteredQueryParam, ConcurrentCount and Timeout.
 		Args: dragonflyCreateJobRequestArgs{
-			Type:    preheatingImage.Type,
+			Type:    preheatTypeImage,
 			URL:     preheatingImage.URL,
 			Headers: headerToMapString(preheatingImage.Headers),
-			Scope:   preheatingImage.Scope,
 		},
+	}
+
+	// Set the scope if it is specified.
+	if extraAttrs.Scope != "" {
+		if err := isScopeValid(extraAttrs.Scope); err != nil {
+			return nil, errors.Wrap(err, "specify the invalid scope")
+		}
+
+		req.Args.Scope = extraAttrs.Scope
+	}
+
+	// Set the cluster ids if it is specified.
+	if len(extraAttrs.ClusterIDs) > 0 {
+		req.SchedulerClusterIDs = extraAttrs.ClusterIDs
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(dd.instance.Endpoint, "/"), dragonflyJobPath)
@@ -316,7 +368,7 @@ func (dd *DragonflyDriver) getCred() *auth.Credential {
 	}
 }
 
-func headerToMapString(header map[string]interface{}) map[string]string {
+func headerToMapString(header map[string]any) map[string]string {
 	m := make(map[string]string)
 	for k, v := range header {
 		if s, ok := v.(string); ok {
@@ -325,4 +377,16 @@ func headerToMapString(header map[string]interface{}) map[string]string {
 	}
 
 	return m
+}
+
+// isScopeValid checks whether the scope is valid.
+func isScopeValid(scope string) error {
+	switch scope {
+	case scopeTypeSingleSeedPeer,
+		scopeTypeAllSeedPeers,
+		scopeTypeAllPeers:
+		return nil
+	default:
+		return errors.Errorf("invalid scope: %s", scope)
+	}
 }

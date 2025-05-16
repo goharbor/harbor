@@ -382,6 +382,96 @@ func TestValidPermissionScope(t *testing.T) {
 			},
 			expected: false,
 		},
+		{
+			name: "System - subset project",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - cover all",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "*",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - cover all 2",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "update", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "*",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

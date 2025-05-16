@@ -40,7 +40,7 @@ func (artifact *Artifact) UnmarshalJSON(data []byte) error {
 	type Alias Artifact
 	ali := &struct {
 		*Alias
-		AccessoryItems []interface{} `json:"accessories,omitempty"`
+		AccessoryItems []any `json:"accessories,omitempty"`
 	}{
 		Alias: (*Alias)(artifact),
 	}
@@ -92,6 +92,16 @@ func (artifact *Artifact) SetSBOMAdditionLink(sbomDgst string, version string) {
 	href := fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/sbom", version, projectName, repo, sbomDgst)
 
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
+}
+
+// AbstractLabelNames abstracts the label names from the artifact.
+func (artifact *Artifact) AbstractLabelNames() []string {
+	var names []string
+	for _, label := range artifact.Labels {
+		names = append(names, label.Name)
+	}
+
+	return names
 }
 
 // AdditionLink is a link via that the addition can be fetched

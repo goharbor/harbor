@@ -34,17 +34,17 @@ import (
 // Controller defines the operation related to project member
 type Controller interface {
 	// Get gets the project member with ID
-	Get(ctx context.Context, projectNameOrID interface{}, memberID int) (*models.Member, error)
+	Get(ctx context.Context, projectNameOrID any, memberID int) (*models.Member, error)
 	// Create add project member to project
-	Create(ctx context.Context, projectNameOrID interface{}, req Request) (int, error)
+	Create(ctx context.Context, projectNameOrID any, req Request) (int, error)
 	// Delete member from project
-	Delete(ctx context.Context, projectNameOrID interface{}, memberID int) error
+	Delete(ctx context.Context, projectNameOrID any, memberID int) error
 	// List lists all project members with condition
-	List(ctx context.Context, projectNameOrID interface{}, entityName string, query *q.Query) ([]*models.Member, error)
+	List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error)
 	// UpdateRole update the project member role
-	UpdateRole(ctx context.Context, projectNameOrID interface{}, memberID int, role int) error
+	UpdateRole(ctx context.Context, projectNameOrID any, memberID int, role int) error
 	// Count get the total amount of project members
-	Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error)
+	Count(ctx context.Context, projectNameOrID any, query *q.Query) (int, error)
 	// IsProjectAdmin judges if the user is a project admin of any project
 	IsProjectAdmin(ctx context.Context, member commonmodels.User) (bool, error)
 }
@@ -89,7 +89,7 @@ func NewController() Controller {
 	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New(), groupManager: usergroup.Mgr}
 }
 
-func (c *controller) Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error) {
+func (c *controller) Count(ctx context.Context, projectNameOrID any, query *q.Query) (int, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return 0, err
@@ -97,7 +97,7 @@ func (c *controller) Count(ctx context.Context, projectNameOrID interface{}, que
 	return c.mgr.GetTotalOfProjectMembers(ctx, p.ProjectID, query)
 }
 
-func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}, memberID int, role int) error {
+func (c *controller) UpdateRole(ctx context.Context, projectNameOrID any, memberID int, role int) error {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}
 	return c.mgr.UpdateRole(ctx, p.ProjectID, memberID, role)
 }
 
-func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, memberID int) (*models.Member, error) {
+func (c *controller) Get(ctx context.Context, projectNameOrID any, memberID int) (*models.Member, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, membe
 	return c.mgr.Get(ctx, p.ProjectID, memberID)
 }
 
-func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, req Request) (int, error) {
+func (c *controller) Create(ctx context.Context, projectNameOrID any, req Request) (int, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return 0, err
@@ -239,7 +239,7 @@ func isValidRole(role int) bool {
 	}
 }
 
-func (c *controller) List(ctx context.Context, projectNameOrID interface{}, entityName string, query *q.Query) ([]*models.Member, error) {
+func (c *controller) List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return nil, err
@@ -254,7 +254,7 @@ func (c *controller) List(ctx context.Context, projectNameOrID interface{}, enti
 	return c.mgr.List(ctx, pm, query)
 }
 
-func (c *controller) Delete(ctx context.Context, projectNameOrID interface{}, memberID int) error {
+func (c *controller) Delete(ctx context.Context, projectNameOrID any, memberID int) error {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return err

@@ -123,7 +123,7 @@ type MetricConfig struct {
 }
 
 // CustomizedSettings keeps the customized settings of logger
-type CustomizedSettings map[string]interface{}
+type CustomizedSettings map[string]any
 
 // LogSweeperConfig keeps settings of log sweeper
 type LogSweeperConfig struct {

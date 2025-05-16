@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { CronScheduleComponent } from '../../../../../shared/components/cron-schedule';
@@ -10,13 +23,14 @@ import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-his
 import {
     JOB_STATUS,
     REFRESH_STATUS_TIME_DIFFERENCE,
-    RETENTION_OPERATIONS,
-    RETENTION_OPERATIONS_I18N_MAP,
+    RESOURCE_TYPES,
     RetentionTimeUnit,
 } from '../../clearing-job-interfact';
 import { clone } from '../../../../../shared/units/utils';
 import { PurgeHistoryComponent } from '../history/purge-history.component';
 import { NgForm } from '@angular/forms';
+import { AuditlogService } from 'ng-swagger-gen/services';
+import { AuditLogEventType } from 'ng-swagger-gen/models';
 
 const ONE_MINUTE: number = 60000;
 const ONE_DAY: number = 24;
@@ -30,6 +44,7 @@ const MAX_RETENTION_DAYS: number = 10000;
 export class SetJobComponent implements OnInit, OnDestroy {
     originCron: OriginCron;
     disableGC: boolean = false;
+    loading: boolean = false;
     getLabelCurrent = 'CLEARANCES.SCHEDULE_TO_PURGE';
     loadingGcStatus = false;
     @ViewChild(CronScheduleComponent)
@@ -43,20 +58,23 @@ export class SetJobComponent implements OnInit, OnDestroy {
 
     retentionTime: number;
     retentionUnit: string = RetentionTimeUnit.DAYS;
-    operations: string[] = clone(RETENTION_OPERATIONS);
-    selectedOperations: string[] = clone(RETENTION_OPERATIONS);
+
+    eventTypes: Record<string, string>[] = [];
+    selectedEventTypes: string[] = clone([]);
     @ViewChild(PurgeHistoryComponent)
     purgeHistoryComponent: PurgeHistoryComponent;
     @ViewChild('purgeForm')
     purgeForm: NgForm;
     constructor(
         private purgeService: PurgeService,
+        private logService: AuditlogService,
         private errorHandler: ErrorHandler
     ) {}
 
     ngOnInit() {
         this.getCurrentSchedule(true);
         this.getStatus();
+        this.initEventTypes();
     }
     ngOnDestroy() {
         if (this.statusTimeout) {
@@ -64,6 +82,43 @@ export class SetJobComponent implements OnInit, OnDestroy {
             this.statusTimeout = null;
         }
     }
+
+    initEventTypes() {
+        this.loading = true;
+        this.logService
+            .listAuditLogEventTypesResponse()
+            .pipe(finalize(() => (this.loading = false)))
+            .subscribe(
+                response => {
+                    const auditLogEventTypes =
+                        response.body as AuditLogEventType[];
+                    this.eventTypes = [
+                        ...auditLogEventTypes
+                            .filter(item =>
+                                RESOURCE_TYPES.includes(item.event_type)
+                            )
+                            .map(event => ({
+                                label:
+                                    event.event_type.charAt(0).toUpperCase() +
+                                    event.event_type
+                                        .slice(1)
+                                        .replace(/_/g, ' '),
+                                value: event.event_type,
+                                id: event.event_type,
+                            })),
+                        {
+                            label: 'Other events',
+                            value: 'other',
+                            id: 'other_events',
+                        },
+                    ];
+                },
+                error => {
+                    this.errorHandler.error(error);
+                }
+            );
+    }
+
     // get the latest non-dry-run execution to get the status
     getStatus() {
         this.loadingLastCompletedTime = true;
@@ -122,11 +177,11 @@ export class SetJobComponent implements OnInit, OnDestroy {
             };
             if (purgeHistory && purgeHistory.job_parameters) {
                 const obj = JSON.parse(purgeHistory.job_parameters);
-                if (obj?.include_operations) {
-                    this.selectedOperations =
-                        obj?.include_operations?.split(',');
+                if (obj?.include_event_types) {
+                    this.selectedEventTypes =
+                        obj?.include_event_types?.split(',');
                 } else {
-                    this.selectedOperations = [];
+                    this.selectedEventTypes = [];
                 }
                 if (
                     obj?.audit_retention_hour > ONE_DAY &&
@@ -140,7 +195,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 }
             } else {
                 this.retentionTime = null;
-                this.selectedOperations = clone(RETENTION_OPERATIONS);
+                this.selectedEventTypes = clone([]);
                 this.retentionUnit = RetentionTimeUnit.DAYS;
             }
         } else {
@@ -165,7 +220,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         audit_retention_hour: +retentionTime,
-                        include_operations: this.selectedOperations.join(','),
+                        include_event_types: this.selectedEventTypes.join(','),
                         dry_run: false,
                     },
                     schedule: {
@@ -195,7 +250,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         audit_retention_hour: +retentionTime,
-                        include_operations: this.selectedOperations.join(','),
+                        include_event_types: this.selectedEventTypes.join(','),
                         dry_run: true,
                     },
                     schedule: {
@@ -231,8 +286,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             audit_retention_hour: +retentionTime,
-                            include_operations:
-                                this.selectedOperations.join(','),
+                            include_event_types:
+                                this.selectedEventTypes.join(','),
                             dry_run: false,
                         },
                         schedule: {
@@ -259,8 +314,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             audit_retention_hour: +retentionTime,
-                            include_operations:
-                                this.selectedOperations.join(','),
+                            include_event_types:
+                                this.selectedEventTypes.join(','),
                             dry_run: false,
                         },
                         schedule: {
@@ -283,21 +338,16 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 });
         }
     }
-    hasOperation(operation: string): boolean {
-        return this.selectedOperations?.indexOf(operation) !== -1;
+    hasEventType(eventType: string): boolean {
+        return this.selectedEventTypes?.indexOf(eventType) !== -1;
     }
-    operationsToText(operation: string): string {
-        if (RETENTION_OPERATIONS_I18N_MAP[operation]) {
-            return RETENTION_OPERATIONS_I18N_MAP[operation];
-        }
-        return operation;
-    }
-    setOperation(operation: string) {
-        if (this.selectedOperations.indexOf(operation) === -1) {
-            this.selectedOperations.push(operation);
+
+    setEventType(eventType: string) {
+        if (this.selectedEventTypes.indexOf(eventType) === -1) {
+            this.selectedEventTypes.push(eventType);
         } else {
-            this.selectedOperations.splice(
-                this.selectedOperations.findIndex(item => item === operation),
+            this.selectedEventTypes.splice(
+                this.selectedEventTypes.findIndex(item => item === eventType),
                 1
             );
         }
@@ -311,7 +361,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
             return true;
         }
         return !(
-            this.purgeForm?.invalid || !(this.selectedOperations?.length > 0)
+            this.purgeForm?.invalid || !(this.selectedEventTypes?.length > 0)
         );
     }
     isRetentionTimeValid() {

@@ -74,7 +74,8 @@ func (l *localInterfaceMock) PushManifestList(ctx context.Context, repo string, 
 }
 
 func (l *localInterfaceMock) CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor {
-	panic("implement me")
+	args := l.Called(ctx, repo, man)
+	return args.Get(0).([]distribution.Descriptor)
 }
 
 func (l *localInterfaceMock) DeleteManifest(repo, ref string) {

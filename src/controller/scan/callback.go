@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -56,11 +57,14 @@ func init() {
 	if err := task.RegisterTaskStatusChangePostFunc(job.ImageScanJobVendorType, scanTaskStatusChange); err != nil {
 		log.Fatalf("failed to register the task status change post for the scan job, error %v", err)
 	}
+	if err := task.RegisterTaskStatusChangePostFunc(job.SBOMJobVendorType, scanTaskStatusChange); err != nil {
+		log.Fatalf("failed to register the task status change post for the scan job, error %v", err)
+	}
 }
 
 func scanAllCallback(ctx context.Context, param string) error {
 	if param != "" {
-		params := make(map[string]interface{})
+		params := make(map[string]any)
 		if err := json.Unmarshal([]byte(param), &params); err != nil {
 			return err
 		}
@@ -92,7 +96,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 
 		robotID := getRobotID(t.ExtraAttrs)
 		if robotID > 0 {
-			if err := robotCtl.Delete(ctx, robotID); err != nil {
+			if err := robotCtl.Delete(ctx, robotID, &robot.Option{Operator: secret.JobserviceUser}); err != nil {
 				// Should not block the main flow, just logged
 				logger.WithFields(log.Fields{"robot_id": robotID, "error": err}).Error("delete robot account failed")
 			} else {
@@ -122,7 +126,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 				}
 
 				// extract ScanType if exist in ExtraAttrs
-				if c, ok := exec.ExtraAttrs["enabled_capabilities"].(map[string]interface{}); ok {
+				if c, ok := exec.ExtraAttrs["enabled_capabilities"].(map[string]any); ok {
 					if Type, ok := c["type"].(string); ok {
 						e.ScanType = Type
 					}

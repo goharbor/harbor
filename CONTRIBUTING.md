@@ -167,6 +167,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 | 2.10   | 1.21.8      |
 | 2.11   | 1.22.3      |
 | 2.12   | 1.23.2      |
+| 2.13   | 1.23.8      |
+| 2.14   | 1.24.3      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
@@ -312,7 +314,7 @@ The commit message should follow the convention on [How to Write a Git Commit Me
 To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
 ```sh
-curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+curl https://cdn.jsdelivr.net/gh/tommarshall/git-good-commit@v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
 ```
 
 ### Automated Testing

@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
-        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number"
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -151,8 +152,15 @@
         "SAVE_SUCCESS": "User password changed successfully.",
         "PASS_TIPS": "8-128 characters long with at least 1 uppercase, 1 lowercase and 1 number"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "User Profile",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Change Password",
         "ABOUT": "About",
         "LOGOUT": "Log Out"
@@ -179,6 +187,8 @@
             "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Logs",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "Tasks",
         "API_EXPLORER": "Api Explorer",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -246,7 +256,7 @@
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
-        "PROXY_CACHE_BANDWIDTH":"Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "of",
@@ -486,7 +496,6 @@
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "Payload Data",
         "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
-
     },
     "GROUP": {
         "GROUP": "Group",
@@ -527,9 +536,16 @@
         "REPOSITORY_NAME": "Repository Name",
         "TAGS": "Tags",
         "OPERATION": "Operation",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "Operations",
         "TIMESTAMP": "Timestamp",
         "ALL_OPERATIONS": "All Operations",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Pull",
         "PUSH": "Push",
         "CREATE": "Create",
@@ -538,6 +554,7 @@
         "ADVANCED": "Advanced",
         "SIMPLE": "Simple",
         "ITEMS": "items",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "Filter Logs",
         "INVALID_DATE": "Invalid date.",
         "OF": "of",
@@ -587,8 +604,8 @@
         "FILTER_EXECUTIONS_PLACEHOLDER": "Filter Executions",
         "DELETION_TITLE": "Confirm Replication Rule Deletion",
         "DELETION_SUMMARY": "Do you want to delete replication rule {{param}}?",
-        "REPLICATION_TITLE": "Confirm Rule Replication",
-        "REPLICATION_SUMMARY": "Do you want to replicate the rule {{param}}?",
+        "REPLICATION_TITLE": "Confirm Replication Rule Execution",
+        "REPLICATION_SUMMARY": "Do you want to execute replication rule {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
         "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
         "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
@@ -764,7 +781,7 @@
         "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Pull Command",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "IMMUTABLE": "Immutable",
@@ -936,10 +953,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-          "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
-          "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
-          "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
-
+            "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
+            "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -972,7 +988,8 @@
             "OIDC_ADMIN_GROUP": "OIDC Admin Group",
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
@@ -1140,8 +1157,7 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Tag an image for this project:",
         "PUSH_COMMAND": "Push an image to this project:",
-        "COPY_ERROR": "Copy failed, please try to manually copy the command references.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Copy failed, please try to manually copy the command references."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1159,6 +1175,8 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Summary",
+        "LICENSE": "License",
+        "FILES": "Files",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
         "NAME": "Name",
@@ -1166,6 +1184,10 @@
         "OF": "of",
         "VERSION": "Version",
         "NO_README": "No readme file provided by this chart.",
+        "NO_LICENSE": "No license file provided by this model.",
+        "NO_FILES": "No file provided by this model.",
+        "MODEL_NO_README": "No readme file provided by this model.",
+        "FILE_TOO_LARGE": "The file is too large to be processed.",
         "ITEMS": "items",
         "SHOW_KV": "Key Value Pairs",
         "SHOW_YAML": "YAML File"
@@ -1313,7 +1335,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Schedule to GC",
@@ -1626,6 +1647,14 @@
         "CREATE_INSTANCE": "Create instance"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "Scope",
+            "SCOPE_SINGLE_SEED_PEER": "Single Seed Peer",
+            "SCOPE_ALL_SEED_PEERS": "All Seed Peers",
+            "SCOPE_ALL_PEERS": "All Peers",
+            "CLUSTER_IDS": "Cluster IDs",
+            "CLUSTER_IDS_SEPARATOR": "Enter multiple comma separated cluster ids, eg., 1,2,3 (If empty, preheat all clusters)"
+        },
         "P2P_PROVIDER": "P2P Preheat",
         "POLICIES": "Policies",
         "NEW_POLICY": "NEW POLICY",
@@ -1636,9 +1665,6 @@
         "TRIGGER": "Trigger",
         "CREATED": "Creation Time",
         "DESCRIPTION": "Description",
-        "SCOPE": "Scope",
-        "SCOPE_SINGLE_PEER": "Single Peer",
-        "SCOPE_ALL_PEERS": "All Peers",
         "NO_POLICY": "No policy",
         "ENABLED_POLICY_SUMMARY": "Do you want to enable policy {{name}}?",
         "DISABLED_POLICY_SUMMARY": "Do you want to deactivate policy {{name}}?",
@@ -1809,13 +1835,19 @@
         "HOURS": "Hours",
         "INCLUDED_OPERATIONS": "Included operations",
         "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
-        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+        "INCLUDED_OPERATION_ERROR": "Please select at least one operation",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "PURGE NOW",
         "PURGE_NOW_SUCCESS": "Purge triggered successfully",
         "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
         "PURGE_HISTORY": "Purge History",
         "FORWARD_ENDPOINT": "Audit Log Forward Syslog Endpoint",
         "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE": "Disable Audit Log Event Type",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be disabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "Skip Audit Log Database",
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
         "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",

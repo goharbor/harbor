@@ -58,7 +58,7 @@ type scanDataExportAPI struct {
 	userMgr           user.Manager
 }
 
-func (se *scanDataExportAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (se *scanDataExportAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -97,10 +97,6 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 
 	userContext := context.WithValue(ctx, export.CsvJobVendorIDKey, usr.UserID)
 
-	if err != nil {
-		return se.SendError(ctx, err)
-	}
-
 	jobID, err := se.scanDataExportCtl.Start(userContext, se.convertToCriteria(params.Criteria, secContext.GetUsername(), usr.UserID))
 	if err != nil {
 		return se.SendError(ctx, err)
@@ -134,9 +130,6 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 		return se.SendError(ctx, err)
 	}
 
-	if err != nil {
-		return se.SendError(ctx, err)
-	}
 	sdeExec := models.ScanDataExportExecution{
 		EndTime:     strfmt.DateTime(execution.EndTime),
 		ID:          execution.ID,
