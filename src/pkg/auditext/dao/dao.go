@@ -16,11 +16,11 @@ package dao
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	beegorm "github.com/beego/beego/v2/client/orm"
 
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -197,7 +197,7 @@ func permitEventTypes(includeEventTypes []string) []string {
 	var filterEvents []string
 	for _, e := range includeEventTypes {
 		event := strings.ToLower(e)
-		if utils.StringInSlice(event, model.EventTypes) {
+		if slices.Contains(model.EventTypes, event) {
 			filterEvents = append(filterEvents, e)
 		} else if event == model.OtherEvents { // include all other events
 			filterEvents = append(filterEvents, model.OtherEventTypes...)

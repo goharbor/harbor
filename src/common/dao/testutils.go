@@ -142,7 +142,7 @@ func ArrayEqual(arrayA, arrayB []int) bool {
 		return false
 	}
 	size := len(arrayA)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		if arrayA[i] != arrayB[i] {
 			return false
 		}

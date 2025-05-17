@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path"
@@ -97,8 +96,7 @@ func TestGetLoggersMulti(t *testing.T) {
 
 // Test getting sweepers
 func TestGetSweeper(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	_, err := GetSweeper(ctx)
 	if err == nil {
@@ -170,8 +168,7 @@ func TestGetGetter(t *testing.T) {
 
 // Test init
 func TestLoggerInit(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	oldJobLoggerCfg := config.DefaultConfig.JobLoggerConfigs
 	oldLoggerCfg := config.DefaultConfig.LoggerConfigs

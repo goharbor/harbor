@@ -224,7 +224,7 @@ func (e *executionDAO) GetMetrics(ctx context.Context, id int64) (*Metrics, erro
 func (e *executionDAO) RefreshStatus(ctx context.Context, id int64) (bool, string, error) {
 	// as the status of the execution can be refreshed by multiple operators concurrently
 	// we use the optimistic locking to avoid the conflict and retry 5 times at most
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		statusChanged, currentStatus, retry, err := e.refreshStatus(ctx, id)
 		if err != nil {
 			return false, "", err
