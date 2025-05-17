@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/migration"
 )
@@ -35,6 +36,9 @@ var defaultAttrs = map[string]string{
 }
 
 func main() {
+	// Start pprof server
+	lib.PprofStart()
+
 	p, _ := strconv.Atoi(getAttr("POSTGRESQL_PORT"))
 	db := &models.Database{
 		Type: "postgresql",
