@@ -24,7 +24,7 @@ import (
 func TestNewInMemoryManager(t *testing.T) {
 	ctx := context.Background()
 	inMemoryManager := NewInMemoryManager()
-	inMemoryManager.UpdateConfig(ctx, map[string]interface{}{
+	inMemoryManager.UpdateConfig(ctx, map[string]any{
 		"ldap_url":         "ldaps://ldap.vmware.com",
 		"ldap_timeout":     5,
 		"ldap_verify_cert": true,

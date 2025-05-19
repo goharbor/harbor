@@ -133,7 +133,7 @@ var (
 	}
 )
 
-func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ interface{}) middleware.Responder {
+func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ any) middleware.Responder {
 	if err := r.RequireAuthenticated(ctx); err != nil {
 		return r.SendError(ctx, err)
 	}

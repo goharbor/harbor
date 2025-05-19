@@ -42,8 +42,8 @@ type listQuery struct {
 	ReferenceIDs []string `json:"reference_ids"`
 }
 
-func listConditions(query *q.Query) (string, []interface{}) {
-	params := []interface{}{}
+func listConditions(query *q.Query) (string, []any) {
+	params := []any{}
 	sql := ""
 	if query == nil {
 		return sql, params

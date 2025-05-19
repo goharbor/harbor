@@ -39,7 +39,7 @@ import (
 //
 // // support filter by "Field6", "field6"
 //
-//	func (f *Foo) FilterByField6(ctx context.Context, qs orm.QuerySetter, key string, value interface{}) orm.QuerySetter {
+//	func (f *Foo) FilterByField6(ctx context.Context, qs orm.QuerySetter, key string, value any) orm.QuerySetter {
 //	  ...
 //		 return qs
 //	}
@@ -72,7 +72,7 @@ type Config struct {
 
 type Option func(*Config)
 
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query, options ...Option) (orm.QuerySeter, error) {
+func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Option) (orm.QuerySeter, error) {
 	t := reflect.TypeOf(model)
 	if t.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("<orm.QuerySetter> cannot use non-ptr model struct `%s`", getFullName(t.Elem()))
@@ -128,7 +128,7 @@ func newConfig(opts ...Option) *Config {
 // select a, b, c from mytable order by a limit ? offset ?
 // it appends the " limit ? offset ? " to sql,
 // and appends the limit value and offset value to the params of this query
-func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (string, []interface{}) {
+func PaginationOnRawSQL(query *q.Query, sql string, params []any) (string, []any) {
 	if query != nil && query.PageSize > 0 {
 		sql += ` limit ?`
 		params = append(params, query.PageSize)
@@ -142,7 +142,7 @@ func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (strin
 }
 
 // QuerySetterForCount creates the query setter used for count with the sort and pagination information ignored
-func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query, _ ...string) (orm.QuerySeter, error) {
+func QuerySetterForCount(ctx context.Context, model any, query *q.Query, _ ...string) (orm.QuerySeter, error) {
 	query = q.MustClone(query)
 	query.Sorts = nil
 	query.PageSize = 0

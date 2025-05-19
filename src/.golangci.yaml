@@ -30,7 +30,7 @@ linters:
       - third_party$
       - builtin$
       - examples$
-      - _test\.go
+      - .*_test\.go
       - .*test\.go
       - testing
       - src/jobservice/mgt/mock_manager.go
@@ -50,7 +50,7 @@ formatters:
       - third_party$
       - builtin$
       - examples$
-      - _test\.go
+      - .*_test\.go
       - .*test\.go
       - testing
       - src/jobservice/mgt/mock_manager.go
