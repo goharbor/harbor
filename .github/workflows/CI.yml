@@ -149,6 +149,65 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
 
+  APITEST_DB_AND_PROXY_CACHE:
+    name: Run both DB and Proxy Cache API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      matrix:
+        TEST_TYPE: [ DB, DB_PROXY_CACHE ] # <-- matrix strategy to avoid duplication
+    steps:
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.2
+        id: go
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: src/github.com/goharbor/harbor
+
+      - name: Set up environment variables
+        run: |
+          cd src/github.com/goharbor/harbor
+          pwd
+          go env
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          IP=$(hostname -I | awk '{print $1}')
+          echo "IP=$IP" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Install docker-compose
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          pwd
+          env
+          df -h
+          curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+
+      - name: Install Harbor Dependencies
+        run: |
+          cd src/github.com/goharbor/harbor
+          env
+          df -h
+          docker system prune -a -f
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP ${{ matrix.TEST_TYPE }}
+
+      - name: Run API Tests
+        run: |
+          cd src/github.com/goharbor/harbor
+          echo "Running tests with IP: $IP"
+          df -h
+          bash ./tests/showtime.sh ./tests/ci/api_run.sh ${{ matrix.TEST_TYPE }} $IP
+          df -h
+
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
