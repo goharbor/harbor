@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
@@ -45,6 +46,8 @@ type DAO interface {
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 	// ListAdminRolesOfUser returns the roles of user for the all projects
 	ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error)
+	// DeleteRetentionId deletes the project metatdata entry
+	DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error
 }
 
 // New returns an instance of the default DAO
@@ -124,6 +127,31 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	}
 
 	_, err = o.Update(project, "deleted", "name")
+	return err
+}
+
+func (d *dao) DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error {
+	project, err := d.Get(ctx, projectId)
+	if err != nil {
+		return err
+	}
+
+	retentionIdStr := strconv.Itoa(int(retentionId))
+
+	for k, v := range project.Metadata {
+		if v == retentionIdStr {
+			delete(project.Metadata, k)
+		}
+	}
+
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	project.UpdateTime = time.Now()
+
+	_, err = o.Update(project, "update_time", "metadata")
 	return err
 }
 

@@ -214,6 +214,13 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
+
+	projectId := p.Scope.Reference
+	err = r.projectManager.DeleteRetentionId(ctx, projectId, id)
+	if err != nil {
+		return err
+	}
+
 	return r.manager.DeletePolicy(ctx, id)
 }
 
