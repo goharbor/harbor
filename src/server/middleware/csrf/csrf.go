@@ -16,6 +16,7 @@ package csrf
 
 import (
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -72,13 +73,23 @@ func Middleware() func(handler http.Handler) http.Handler {
 			key = utils.GenerateRandomString()
 		}
 		secureFlag = secureCookie()
+		exturl, err := config.ExtEndpoint()
+		u, _ := url.Parse(exturl)
+		if err != nil {
+			log.Warningf("Failed to get external endpoint: %v, set cookie secure flag to true", err)
+		}
 		protect = csrf.Protect([]byte(key), csrf.RequestHeader(tokenHeader),
 			csrf.Secure(secureFlag),
 			csrf.ErrorHandler(http.HandlerFunc(handleError)),
 			csrf.SameSite(csrf.SameSiteStrictMode),
+			csrf.TrustedOrigins([]string{u.Host}),
 			csrf.Path("/"))
 	})
 	return middleware.New(func(rw http.ResponseWriter, req *http.Request, next http.Handler) {
+		useTLS := secureCookie()
+		if !useTLS {
+			req = csrf.PlaintextHTTPRequest(req)
+		}
 		protect(attach(next)).ServeHTTP(rw, req)
 	}, csrfSkipper)
 }
