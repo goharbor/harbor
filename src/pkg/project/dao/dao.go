@@ -46,8 +46,8 @@ type DAO interface {
 	ListRoles(ctx context.Context, projectID int64, userID int, groupIDs ...int) ([]int, error)
 	// ListAdminRolesOfUser returns the roles of user for the all projects
 	ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error)
-	// DeleteRetentionId deletes the project metatdata entry
-	DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error
+	// DeleteRetentionID deletes the project metatdata entry
+	DeleteRetentionID(ctx context.Context, projectID, retentionID int64) error
 }
 
 // New returns an instance of the default DAO
@@ -130,16 +130,16 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (d *dao) DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error {
-	project, err := d.Get(ctx, projectId)
+func (d *dao) DeleteRetentionID(ctx context.Context, projectID, retentionID int64) error {
+	project, err := d.Get(ctx, projectID)
 	if err != nil {
 		return err
 	}
 
-	retentionIdStr := strconv.Itoa(int(retentionId))
+	retentionIDStr := strconv.Itoa(int(retentionID))
 
 	for k, v := range project.Metadata {
-		if v == retentionIdStr {
+		if v == retentionIDStr {
 			delete(project.Metadata, k)
 		}
 	}

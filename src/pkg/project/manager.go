@@ -50,8 +50,8 @@ type Manager interface {
 	// ListAdminRolesOfUser returns the roles of user for the all projects
 	ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) ([]models.Member, error)
 
-	// DeleteRetentionId deletes retention policy from the project
-	DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error
+	// DeleteRetentionID deletes retention policy from the project
+	DeleteRetentionID(ctx context.Context, projectID, retentionID int64) error
 }
 
 // New returns a default implementation of Manager
@@ -132,6 +132,6 @@ func (m *manager) ListAdminRolesOfUser(ctx context.Context, user commonmodels.Us
 	return m.dao.ListAdminRolesOfUser(ctx, user)
 }
 
-func (m *manager) DeleteRetentionId(ctx context.Context, projectId, retentionId int64) error {
-	return m.dao.DeleteRetentionId(ctx, projectId, retentionId)
+func (m *manager) DeleteRetentionID(ctx context.Context, projectID, retentionID int64) error {
+	return m.dao.DeleteRetentionID(ctx, projectID, retentionID)
 }
