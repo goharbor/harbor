@@ -250,7 +250,7 @@ backup_redis() {
       exit 1
     fi
   else
-    log "Not backing up redis (${REDIS_DATA_PATH} not found"
+    log "Not backing up redis ${REDIS_DATA_PATH} not found"
   fi
 }
 
