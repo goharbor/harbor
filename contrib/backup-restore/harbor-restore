@@ -198,13 +198,9 @@ restore_database() {
   for db in $databases; do
     log "- $db"
     dump_file="/backup/${db}.sql"
-    $DOCKER_CMD exec harbor-db psql -U postgres -d template1 -c "drop database ${db};"
-    $DOCKER_CMD exec harbor-db psql -U postgres -d template1 -c "create database ${db};"
-    ${DOCKER_CMD} exec harbor-db sh -c "psql -U postgres -d ${db} < ${dump_file}"
-    if [[ $? -ne 0 ]]; then
-      log ERROR "Failed to restore database $db: $pg_restore_error"
-      exit 1
-    fi
+    ${DOCKER_CMD} exec harbor-db psql -U postgres -d template1 -c "drop database ${db}; exit \$?"
+    ${DOCKER_CMD} exec harbor-db psql -U postgres -d template1 -c "create database ${db}; exit \$?"
+    ${DOCKER_CMD} exec harbor-db sh -c "psql -U postgres -d ${db} > /dev/null < ${dump_file}; exit \$?"
   done
 
 }
