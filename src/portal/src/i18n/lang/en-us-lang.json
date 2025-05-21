@@ -955,7 +955,9 @@
             "GROUP_SCOPE": "LDAP Group Search Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default.",
             "GROUP_ATTACH_PARALLEL": "LDAP Group Attached In Parallel",
-            "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially."
+            "GROUP_ATTACH_PARALLEL_INFO": "Enable this option to attach group in parallel to avoid timeout when there are too many groups. If disabled, the LDAP group information will be attached sequentially.",
+            "LDAP_NESTED_GROUP": "LDAP Nested Group",
+            "LDAP_NESTED_GROUP_INFO": "Enable nested group membership support."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
