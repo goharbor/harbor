@@ -64,6 +64,6 @@ func (cleanupCriteria *defaultSelector) List(ctx context.Context) ([]*model.Syst
 	duration := time.Duration(DefaultCleanupWindowSeconds) * time.Second
 	timeRange := q.Range{Max: currentTime.Add(-duration).Format(time.RFC3339)}
 	logger.Debugf("Cleaning up system artifacts with range: %v", timeRange)
-	query := q.New(map[string]interface{}{"create_time": &timeRange})
+	query := q.New(map[string]any{"create_time": &timeRange})
 	return cleanupCriteria.dao.List(ctx, query)
 }

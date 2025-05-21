@@ -15,7 +15,7 @@
 package q
 
 // KeyWords ...
-type KeyWords = map[string]interface{}
+type KeyWords = map[string]any
 
 // Query parameters
 type Query struct {
@@ -51,7 +51,7 @@ func New(kw KeyWords) *Query {
 // or returns a new Query instance
 func MustClone(query *Query) *Query {
 	q := &Query{
-		Keywords: map[string]interface{}{},
+		Keywords: map[string]any{},
 	}
 	if query != nil {
 		q.PageNumber = query.PageNumber
@@ -77,18 +77,18 @@ type Sort struct {
 
 // Range query
 type Range struct {
-	Min interface{}
-	Max interface{}
+	Min any
+	Max any
 }
 
 // AndList query
 type AndList struct {
-	Values []interface{}
+	Values []any
 }
 
 // OrList query
 type OrList struct {
-	Values []interface{}
+	Values []any
 }
 
 // FuzzyMatchValue query
@@ -105,7 +105,7 @@ func NewSort(key string, desc bool) *Sort {
 }
 
 // NewRange creates a new range
-func NewRange(minVal, maxVal interface{}) *Range {
+func NewRange(minVal, maxVal any) *Range {
 	return &Range{
 		Min: minVal,
 		Max: maxVal,
@@ -113,14 +113,14 @@ func NewRange(minVal, maxVal interface{}) *Range {
 }
 
 // NewAndList creates a new and list
-func NewAndList(values []interface{}) *AndList {
+func NewAndList(values []any) *AndList {
 	return &AndList{
 		Values: values,
 	}
 }
 
 // NewOrList creates a new or list
-func NewOrList(values []interface{}) *OrList {
+func NewOrList(values []any) *OrList {
 	return &OrList{
 		Values: values,
 	}

@@ -153,41 +153,41 @@ func (frc *fakeRetentionClient) DeleteRepository(repo *selector.Repository) erro
 type fakeLogger struct{}
 
 // For debuging
-func (l *fakeLogger) Debug(v ...interface{}) {}
+func (l *fakeLogger) Debug(v ...any) {}
 
 // For debuging with format
-func (l *fakeLogger) Debugf(format string, v ...interface{}) {}
+func (l *fakeLogger) Debugf(format string, v ...any) {}
 
 // For logging info
-func (l *fakeLogger) Info(v ...interface{}) {
+func (l *fakeLogger) Info(v ...any) {
 	fmt.Println(v...)
 }
 
 // For logging info with format
-func (l *fakeLogger) Infof(format string, v ...interface{}) {
+func (l *fakeLogger) Infof(format string, v ...any) {
 	fmt.Printf(format+"\n", v...)
 }
 
 // For warning
-func (l *fakeLogger) Warning(v ...interface{}) {}
+func (l *fakeLogger) Warning(v ...any) {}
 
 // For warning with format
-func (l *fakeLogger) Warningf(format string, v ...interface{}) {}
+func (l *fakeLogger) Warningf(format string, v ...any) {}
 
 // For logging error
-func (l *fakeLogger) Error(v ...interface{}) {
+func (l *fakeLogger) Error(v ...any) {
 	fmt.Println(v...)
 }
 
 // For logging error with format
-func (l *fakeLogger) Errorf(format string, v ...interface{}) {
+func (l *fakeLogger) Errorf(format string, v ...any) {
 }
 
 // For fatal error
-func (l *fakeLogger) Fatal(v ...interface{}) {}
+func (l *fakeLogger) Fatal(v ...any) {}
 
 // For fatal error with error
-func (l *fakeLogger) Fatalf(format string, v ...interface{}) {}
+func (l *fakeLogger) Fatalf(format string, v ...any) {}
 
 type fakeJobContext struct{}
 
@@ -195,7 +195,7 @@ func (c *fakeJobContext) Build(tracker job.Tracker) (job.Context, error) {
 	return nil, nil
 }
 
-func (c *fakeJobContext) Get(prop string) (interface{}, bool) {
+func (c *fakeJobContext) Get(prop string) (any, bool) {
 	return nil, false
 }
 

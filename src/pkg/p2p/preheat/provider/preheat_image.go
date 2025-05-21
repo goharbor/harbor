@@ -39,7 +39,7 @@ type PreheatImage struct {
 	URL string `json:"url"`
 
 	// The headers which will be sent to the above URL of preheating image
-	Headers map[string]interface{} `json:"headers"`
+	Headers map[string]any `json:"headers"`
 
 	// The image name
 	ImageName string `json:"image,omitempty"`
@@ -51,7 +51,7 @@ type PreheatImage struct {
 	Digest string `json:"digest"`
 
 	// ExtraAttrs contains extra attributes for the preheating image.
-	ExtraAttrs map[string]interface{} `json:"extra_attrs,omitempty"`
+	ExtraAttrs map[string]any `json:"extra_attrs,omitempty"`
 }
 
 // FromJSON build preheating image from the given data.

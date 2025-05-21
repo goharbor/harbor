@@ -63,7 +63,7 @@ func TestScanImagePreprocessHandler(t *testing.T) {
 // SetupSuite prepares env for test suite.
 func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	common_dao.PrepareTestForPostgresSQL()
-	cfg := map[string]interface{}{
+	cfg := map[string]any{
 		common.NotificationEnable: true,
 	}
 	config.InitWithSettings(cfg)
@@ -92,7 +92,7 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 	mc := &scantesting.Controller{}
 
 	var options []report.Option
-	s := make(map[string]interface{})
+	s := make(map[string]any)
 	mc.On("GetSummary", a, []string{v1.MimeTypeNativeReport}, options).Return(s, nil)
 	mock.OnAnything(mc, "GetSummary").Return(s, nil)
 	mock.OnAnything(mc, "GetReport").Return(reports, nil)
@@ -153,7 +153,7 @@ func (m *MockHTTPHandler) Name() string {
 }
 
 // Handle ...
-func (m *MockHTTPHandler) Handle(ctx context.Context, value interface{}) error {
+func (m *MockHTTPHandler) Handle(ctx context.Context, value any) error {
 	return nil
 }
 

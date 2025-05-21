@@ -31,7 +31,7 @@ type Type interface {
 	// validate the configure value
 	validate(str string) error
 	// get the real type of current value, if it is int, return int, if it is string return string etc.
-	get(str string) (interface{}, error)
+	get(str string) (any, error)
 }
 
 // StringType ...
@@ -42,7 +42,7 @@ func (t *StringType) validate(_ string) error {
 	return nil
 }
 
-func (t *StringType) get(str string) (interface{}, error) {
+func (t *StringType) get(str string) (any, error) {
 	return str, nil
 }
 
@@ -95,7 +95,7 @@ func (t *IntType) validate(str string) error {
 	return err
 }
 
-func (t *IntType) get(str string) (interface{}, error) {
+func (t *IntType) get(str string) (any, error) {
 	return parseInt(str)
 }
 
@@ -145,7 +145,7 @@ func (t *Int64Type) validate(str string) error {
 	return err
 }
 
-func (t *Int64Type) get(str string) (interface{}, error) {
+func (t *Int64Type) get(str string) (any, error) {
 	return parseInt64(str)
 }
 
@@ -156,7 +156,7 @@ func (f *Float64Type) validate(str string) error {
 	return err
 }
 
-func (f *Float64Type) get(str string) (interface{}, error) {
+func (f *Float64Type) get(str string) (any, error) {
 	return parseFloat64(str)
 }
 
@@ -169,7 +169,7 @@ func (t *BoolType) validate(str string) error {
 	return err
 }
 
-func (t *BoolType) get(str string) (interface{}, error) {
+func (t *BoolType) get(str string) (any, error) {
 	return strconv.ParseBool(str)
 }
 
@@ -181,7 +181,7 @@ func (t *PasswordType) validate(_ string) error {
 	return nil
 }
 
-func (t *PasswordType) get(str string) (interface{}, error) {
+func (t *PasswordType) get(str string) (any, error) {
 	return str, nil
 }
 
@@ -190,13 +190,13 @@ type MapType struct {
 }
 
 func (t *MapType) validate(str string) error {
-	result := map[string]interface{}{}
+	result := map[string]any{}
 	err := json.Unmarshal([]byte(str), &result)
 	return err
 }
 
-func (t *MapType) get(str string) (interface{}, error) {
-	result := map[string]interface{}{}
+func (t *MapType) get(str string) (any, error) {
+	result := map[string]any{}
 	err := json.Unmarshal([]byte(str), &result)
 	return result, err
 }
@@ -211,7 +211,7 @@ func (t *StringToStringMapType) validate(str string) error {
 	return err
 }
 
-func (t *StringToStringMapType) get(str string) (interface{}, error) {
+func (t *StringToStringMapType) get(str string) (any, error) {
 	result := map[string]string{}
 	err := json.Unmarshal([]byte(str), &result)
 	return result, err
@@ -244,7 +244,7 @@ func (t *DurationType) validate(str string) error {
 	return err
 }
 
-func (t *DurationType) get(str string) (interface{}, error) {
+func (t *DurationType) get(str string) (any, error) {
 	// should not parse the duration to avoid duplicate parse.
 	return str, nil
 }

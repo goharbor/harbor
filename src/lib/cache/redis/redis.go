@@ -52,7 +52,7 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
+func (c *Cache) Fetch(ctx context.Context, key string, value any) error {
 	data, err := c.Client.Get(ctx, c.opts.Key(key)).Bytes()
 	if err != nil {
 		// convert internal or Timeout error to be ErrNotFound
@@ -78,7 +78,7 @@ func (c *Cache) Ping(ctx context.Context) error {
 }
 
 // Save cache the value by key
-func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(ctx context.Context, key string, value any, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return errors.Errorf("failed to encode value, key %s, error: %v", key, err)
