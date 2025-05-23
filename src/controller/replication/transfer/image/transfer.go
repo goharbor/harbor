@@ -218,7 +218,7 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 
 	// check the existence of the artifact on the destination registry
 	exist, digest2, err := t.exist(dstRepo, dstRef)
-	if err != nil {
+	if err != nil && !override {
 		return err
 	}
 	if exist {
