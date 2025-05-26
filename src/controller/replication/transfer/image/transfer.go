@@ -218,6 +218,12 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 
 	// check the existence of the artifact on the destination registry
 	exist, digest2, err := t.exist(dstRepo, dstRef)
+	/*
+	Existence-checks with errosr will be treated as returning `false`, if override is enabled.
+	If override is enabled, the existence-check is only used to not push an image that is already existing (with the same digest)
+	This performance-optimisation will be ignored, but the basic function will be restored.  
+	The Consequences of returning this error include the Bug detailed in https://github.com/goharbor/harbor/issues/15283
+	*/
 	if err != nil && !override {
 		return err
 	}
