@@ -17,12 +17,16 @@ package aliacr
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -32,7 +36,17 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 )
 
+var rateLimiterTransport http.RoundTripper
+
+const acrQPSLimit = 15
+
 func init() {
+	var envAcrQPSLimit, _ = strconv.Atoi(os.Getenv("REG_ADAPTER_ACR_QPS_LIMIT"))
+	if envAcrQPSLimit > acrQPSLimit || envAcrQPSLimit < 1 {
+		envAcrQPSLimit = acrQPSLimit
+	}
+	rateLimiterTransport = lib.NewRateLimitedTransport(envAcrQPSLimit, commonhttp.NewTransport())
+
 	if err := adp.RegisterFactory(model.RegistryTypeAliAcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeAliAcr, err)
 		return
@@ -101,12 +115,12 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 	var acrAPI openapi
 	if !info.IsACREE {
-		acrAPI, err = newAcrOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID)
+		acrAPI, err = newAcrOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, rateLimiterTransport)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		acrAPI, err = newAcreeOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, info.InstanceID)
+		acrAPI, err = newAcreeOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, info.InstanceID, rateLimiterTransport)
 		if err != nil {
 			return nil, err
 		}
