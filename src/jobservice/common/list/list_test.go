@@ -55,3 +55,9 @@ func (suite *ListSuite) TestIterate() {
 
 	suite.Equal(3, suite.l.l.Len())
 }
+
+func (suite *ListSuite) TestPushNil() {
+	initialLen := suite.l.l.Len()
+	suite.l.Push(nil)
+	suite.Equal(initialLen, suite.l.l.Len(), "pushing nil should not increase the length")
+}
