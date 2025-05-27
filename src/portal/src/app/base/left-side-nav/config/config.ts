@@ -73,7 +73,7 @@ export class Configuration {
     ldap_group_membership_attribute: StringValueItem;
     ldap_group_admin_dn: StringValueItem;
     ldap_group_attach_parallel: BoolValueItem;
-    ldap_nested_group: BoolValueItem;
+    ldap_ad_nested_group: BoolValueItem;
     uaa_client_id: StringValueItem;
     uaa_client_secret?: StringValueItem;
     uaa_endpoint: StringValueItem;
@@ -142,7 +142,7 @@ export class Configuration {
         this.ldap_group_search_scope = new NumberValueItem(0, true);
         this.ldap_group_membership_attribute = new StringValueItem('', true);
         this.ldap_group_admin_dn = new StringValueItem('', true);
-        this.ldap_nested_group = new BoolValueItem(false, true);
+        this.ldap_ad_nested_group = new BoolValueItem(false, true);
         this.uaa_client_id = new StringValueItem('', true);
         this.uaa_client_secret = new StringValueItem('', true);
         this.uaa_endpoint = new StringValueItem('', true);

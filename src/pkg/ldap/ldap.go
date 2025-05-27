@@ -180,10 +180,10 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 			u.GroupDNList = groupDNList
 		}
 
-		if s.groupCfg.NestedGroup {
+		if s.groupCfg.ADNestedGroup {
 			log.Debugf("Searching for nested groups")
 			nestedGroupDNList := make([]string, 0)
-			nestedGroupFilter, err := createNestedGroupFilter(s.groupCfg.Filter, ldapEntry.DN)
+			nestedGroupFilter, err := createADNestedGroupFilter(s.groupCfg.Filter, ldapEntry.DN)
 			if err != nil {
 				return nil, err
 			}
@@ -196,7 +196,7 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 				log.Debugf("Found group %v", groupEntry.DN)
 			}
 			u.GroupDNList = nestedGroupDNList
-			log.Debugf("Done searching for nested groups")		
+			log.Debugf("Done searching for nested groups")
 		}
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
@@ -450,8 +450,8 @@ func createGroupSearchFilter(baseFilter, groupName, groupNameAttr string) (strin
 	return fb.String()
 }
 
-// createNestedGroupFilter - Create nested group search filter for user
-func createNestedGroupFilter(baseFilter, userDN string) (string, error) {
+// createADNestedGroupFilter - Create nested group search filter for user
+func createADNestedGroupFilter(baseFilter, userDN string) (string, error) {
 	base, err := NewFilterBuilder(baseFilter)
 	if err != nil {
 		log.Errorf("failed to create group search filter:%v", baseFilter)

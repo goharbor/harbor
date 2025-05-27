@@ -147,7 +147,7 @@ describe('ProjectComponent', () => {
                     value: true,
                     editable: true,
                 },
-                ldap_nested_group: {
+                ldap_ad_nested_group: {
                     value: false,
                     editable: true,
                 },

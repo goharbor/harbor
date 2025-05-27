@@ -8966,9 +8966,9 @@ definitions:
       ldap_group_attach_parallel:
         $ref: '#/definitions/BoolConfigItem'
         description: Attach LDAP user group information in parallel.
-      ldap_nested_group:
+      ldap_ad_nested_group:
         $ref: '#/definitions/BoolConfigItem'
-        description: Enable LDAP NestedGroup feature.
+        description: Enable LDAP Active Directory NestedGroup feature.
       ldap_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap users,'0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
@@ -9170,9 +9170,9 @@ definitions:
         description: Attach LDAP user group information in parallel, the parallel worker count is 5
         x-omitempty: true
         x-isnullable: true
-      ldap_nested_group:
+      ldap_ad_nested_group:
         type: boolean
-        description: Enable nested group membership support
+        description: Enable Active Directory nested group membership resolution
         x-omitempty: true
         x-isnullable: true
       ldap_scope:

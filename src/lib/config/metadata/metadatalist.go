@@ -97,7 +97,7 @@ var (
 		{Name: common.LDAPVerifyCert, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_VERIFY_CERT", DefaultValue: "true", ItemType: &BoolType{}, Editable: false, Description: `Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.`},
 		{Name: common.LDAPGroupMembershipAttribute, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_GROUP_MEMBERSHIP_ATTRIBUTE", DefaultValue: "memberof", ItemType: &StringType{}, Editable: true, Description: `The user attribute to identify the group membership`},
 		{Name: common.LDAPGroupAttachParallel, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_GROUP_ATTACH_PARALLEL", DefaultValue: "false", ItemType: &BoolType{}, Editable: true, Description: `Attach LDAP group information to Harbor in parallel`},
-		{Name: common.LDAPNestedGroup, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_NESTED_GROUP", DefaultValue: "false", ItemType: &BoolType{}, Editable: true, Description: `Enable nested group membership`},
+		{Name: common.LDAPADNestedGroup, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_AD_NESTED_GROUP", DefaultValue: "false", ItemType: &BoolType{}, Editable: true, Description: `Enable Active Directory nested group membership resolution`},
 
 		{Name: common.MaxJobWorkers, Scope: SystemScope, Group: BasicGroup, EnvKey: "MAX_JOB_WORKERS", DefaultValue: "10", ItemType: &IntType{}, Editable: false},
 		{Name: common.ScanAllPolicy, Scope: UserScope, Group: BasicGroup, EnvKey: "", DefaultValue: "", ItemType: &MapType{}, Editable: false, Description: `The policy to scan images`},
