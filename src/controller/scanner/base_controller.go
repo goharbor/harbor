@@ -362,7 +362,7 @@ func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Contex
 	key := fmt.Sprintf("reg:%d:metadata", registration.ID)
 
 	var result MetadataResult
-	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (interface{}, error) {
+	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (any, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
 			return &MetadataResult{Error: err.Error()}, nil

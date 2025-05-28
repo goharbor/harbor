@@ -27,7 +27,7 @@ Test Case - Main Menu Routing
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     &{routing}=	 Create Dictionary  harbor/projects=//projects//div//h2[contains(.,'Projects')]
-    ...  harbor/logs=//hbr-log//div//h2[contains(.,'Logs')]
+    ...  harbor/logs=//app-logs/h2[contains(.,'Logs')]
     ...  harbor/users=//harbor-user//div//h2[contains(.,'Users')]
     ...  harbor/robot-accounts=//system-robot-accounts//h2[contains(.,'Robot Accounts')]
     ...  harbor/registries=//hbr-endpoint//h2[contains(.,'Registries')]
@@ -65,7 +65,7 @@ Test Case - Project Tab Routing
     ...  harbor/projects/1/tag-strategy/immutable-tag=//project-detail//app-tag-feature-integration//app-immutable-tag
     ...  harbor/projects/1/robot-account=//project-detail//app-robot-account
     ...  harbor/projects/1/webhook=//project-detail//ng-component//button//span[contains(.,'New Webhook')]
-    ...  harbor/projects/1/logs=//project-detail//audit-log
+    ...  harbor/projects/1/logs=//project-detail/project-logs
     ...  harbor/projects/1/configs=//project-detail//app-project-config//hbr-project-policy-config
     FOR  ${key}  IN  @{routing.keys()}
         Retry Double Keywords When Error  Go To  ${HARBOR_URL}/${key}  Retry Wait Element  ${routing['${key}']}

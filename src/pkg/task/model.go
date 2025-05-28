@@ -47,10 +47,10 @@ type Execution struct {
 	// trigger type: manual/schedule/event
 	Trigger string `json:"trigger"`
 	// the customized attributes for different kinds of consumers
-	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
-	StartTime  time.Time              `json:"start_time"`
-	UpdateTime time.Time              `json:"update_time"`
-	EndTime    time.Time              `json:"end_time"`
+	ExtraAttrs map[string]any `json:"extra_attrs"`
+	StartTime  time.Time      `json:"start_time"`
+	UpdateTime time.Time      `json:"update_time"`
+	EndTime    time.Time      `json:"end_time"`
 }
 
 // IsOnGoing returns true when the execution is running
@@ -78,7 +78,7 @@ type Task struct {
 	// the ID of jobservice job
 	JobID string `json:"job_id"`
 	// the customized attributes for different kinds of consumers
-	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
+	ExtraAttrs map[string]any `json:"extra_attrs"`
 	// the time that the task record created
 	CreationTime time.Time `json:"creation_time"`
 	// the time that the underlying job starts
@@ -103,7 +103,7 @@ func (t *Task) From(task *dao.Task) {
 	t.EndTime = task.EndTime
 	t.StatusRevision = task.StatusRevision
 	if len(task.ExtraAttrs) > 0 {
-		extras := map[string]interface{}{}
+		extras := map[string]any{}
 		if err := json.Unmarshal([]byte(task.ExtraAttrs), &extras); err != nil {
 			log.Errorf("failed to unmarshal the extra attributes of task %d: %v", task.ID, err)
 			return

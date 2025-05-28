@@ -143,7 +143,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignature() {
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"SubjectArtifactDigest": subArtDigest,
 			},
 		})
@@ -173,7 +173,7 @@ func (suite *MiddlewareTestSuite) TestCosignSignatureDup() {
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"ID": accID,
 			},
 		})

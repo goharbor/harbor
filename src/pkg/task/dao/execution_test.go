@@ -66,7 +66,7 @@ func (e *executionDAOTestSuite) TearDownTest() {
 
 func (e *executionDAOTestSuite) TestCount() {
 	count, err := e.executionDAO.Count(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "value",
 		},
@@ -75,7 +75,7 @@ func (e *executionDAOTestSuite) TestCount() {
 	e.Equal(int64(1), count)
 
 	count, err = e.executionDAO.Count(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "incorrect-value",
 		},
@@ -86,7 +86,7 @@ func (e *executionDAOTestSuite) TestCount() {
 
 func (e *executionDAOTestSuite) TestList() {
 	executions, err := e.executionDAO.List(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "value",
 		},
@@ -96,7 +96,7 @@ func (e *executionDAOTestSuite) TestList() {
 	e.Equal(e.executionID, executions[0].ID)
 
 	executions, err = e.executionDAO.List(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "incorrect-value",
 		},

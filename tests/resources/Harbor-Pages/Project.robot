@@ -164,7 +164,7 @@ Project Should Be Deleted
     Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
 
 Advanced Search Should Display
-    Retry Wait Until Page Contains Element  xpath=//audit-log//div[@class='flex-xs-middle']/button
+    Retry Wait Until Page Contains Element  xpath=//project-audit-log//button[contains(., 'Advanced')]
 
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
@@ -173,24 +173,24 @@ Do Log Advanced Search
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'project') and contains(.,'create')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'repository') and contains(.,'delete')]
-    Retry Element Click  xpath=//audit-log//div[@class='flex-xs-middle']/button
-    Retry Element Click  xpath=//project-detail//audit-log//clr-dropdown/button
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Advanced')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
     #pull log
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Pull')]
+    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Pull')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
     #create log
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Create')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Create')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'create')]
     #delete log
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Delete')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Delete')]
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'delete')]
     #others
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Others')]
-    Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
-    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor-jobservice
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Others')]
+    Retry Element Click  xpath=//project-audit-log//hbr-filter//clr-icon
+    Retry Text Input  xpath=//project-audit-log//hbr-filter//input  harbor-jobservice
     Retry Wait Until Page Not Contains Element   //audit-log//clr-dg-row[2]
 
 Retry Click Repo Name

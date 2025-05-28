@@ -99,7 +99,7 @@ func (a *ArtifactEventHandler) Name() string {
 }
 
 // Handle ...
-func (a *ArtifactEventHandler) Handle(ctx context.Context, value interface{}) error {
+func (a *ArtifactEventHandler) Handle(ctx context.Context, value any) error {
 	switch v := value.(type) {
 	case *event.PullArtifactEvent:
 		return a.onPull(ctx, v.ArtifactEvent)
@@ -190,7 +190,7 @@ func (a *ArtifactEventHandler) syncFlushPullTime(ctx context.Context, artifactID
 
 	if tagName != "" {
 		tags, err := tag.Ctl.List(ctx, q.New(
-			map[string]interface{}{
+			map[string]any{
 				"ArtifactID": artifactID,
 				"Name":       tagName,
 			}), nil)

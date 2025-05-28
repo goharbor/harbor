@@ -83,7 +83,7 @@ type jobData struct {
 	TaskID     int64
 	Repository selector.Repository
 	JobName    string
-	JobParams  map[string]interface{}
+	JobParams  map[string]any
 }
 
 type launcher struct {
@@ -211,7 +211,7 @@ func createJobs(repositoryRules map[selector.Repository]*lwp.Metadata, isDryRun 
 		jobData := &jobData{
 			Repository: repository,
 			JobName:    job.RetentionVendorType,
-			JobParams:  make(map[string]interface{}, 3),
+			JobParams:  make(map[string]any, 3),
 		}
 		// set dry run
 		jobData.JobParams[ParamDryRun] = isDryRun
@@ -241,7 +241,7 @@ func (l *launcher) submitTasks(ctx context.Context, executionID int64, jobDatas 
 				JobKind: job.KindGeneric,
 			},
 		},
-			map[string]interface{}{
+			map[string]any{
 				"repository": jobData.Repository.Name,
 				"dry_run":    jobData.JobParams[ParamDryRun],
 			})
@@ -288,7 +288,7 @@ func getRepositories(ctx context.Context, _ project.Manager, repositoryMgr repos
 	*/
 	// get image repositories
 	imageRepositories, err := repositoryMgr.List(ctx, &pq.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": projectID,
 		},
 	})

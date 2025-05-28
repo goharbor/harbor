@@ -62,14 +62,14 @@ type Processor struct {
 }
 
 func (m *Processor) AbstractMetadata(ctx context.Context, art *artifact.Artifact, manifestBody []byte) error {
-	art.ExtraAttrs = map[string]interface{}{}
+	art.ExtraAttrs = map[string]any{}
 	manifest := &v1.Manifest{}
 	if err := json.Unmarshal(manifestBody, manifest); err != nil {
 		return err
 	}
 
 	if art.ExtraAttrs == nil {
-		art.ExtraAttrs = map[string]interface{}{}
+		art.ExtraAttrs = map[string]any{}
 	}
 	if manifest.Annotations[AnnotationVariantKey] == AnnotationVariantValue || manifest.Annotations[AnnotationHandlerKey] == AnnotationHandlerValue {
 		// for annotation way

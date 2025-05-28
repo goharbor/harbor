@@ -53,7 +53,7 @@ func TestQuotaPreprocessHandler(t *testing.T) {
 // SetupSuite prepares env for test suite.
 func (suite *QuotaPreprocessHandlerSuite) SetupSuite() {
 	common_dao.PrepareTestForPostgresSQL()
-	cfg := map[string]interface{}{
+	cfg := map[string]any{
 		common.NotificationEnable: true,
 	}
 	config.InitWithSettings(cfg)
@@ -110,7 +110,7 @@ func (m *MockHandler) Name() string {
 }
 
 // Handle ...
-func (m *MockHandler) Handle(ctx context.Context, value interface{}) error {
+func (m *MockHandler) Handle(ctx context.Context, value any) error {
 	return nil
 }
 

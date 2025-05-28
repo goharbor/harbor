@@ -144,7 +144,7 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Log All  image1:${image1}
     ${image2}=  Get From Dictionary  ${image2_with_tag}  image
     @{target_images}=  Create List  '&{image1_with_tag}'  '&{image2_with_tag}'
-    Body Of Replication Of Pull Images from Registry To Self   docker-hub  https://hub.docker.com/  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{${image1}*,${image2}}  ${null}  N  Flatten 1 Level  @{target_images}
+    Body Of Replication Of Pull Images from Registry To Self   docker-hub  ${null}  ${DOCKER_USER}    ${DOCKER_PWD}  ${DOCKER_USER}/{${image1}*,${image2}}  ${null}  N  Flatten 1 Level  @{target_images}
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver

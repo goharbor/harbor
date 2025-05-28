@@ -214,11 +214,11 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 }
 
 type filter struct {
-	Type       string      `json:"type"`
-	Value      interface{} `json:"value"`
-	Decoration string      `json:"decoration"`
-	Kind       string      `json:"kind"`
-	Pattern    string      `json:"pattern"`
+	Type       string `json:"type"`
+	Value      any    `json:"value"`
+	Decoration string `json:"decoration"`
+	Kind       string `json:"kind"`
+	Pattern    string `json:"pattern"`
 }
 
 type trigger struct {
@@ -290,7 +290,7 @@ func parseFilters(str string) ([]*model.Filter, error) {
 		}
 		if filter.Type == model.FilterTypeLabel {
 			labels := []string{}
-			for _, label := range filter.Value.([]interface{}) {
+			for _, label := range filter.Value.([]any) {
 				labels = append(labels, label.(string))
 			}
 			filter.Value = labels

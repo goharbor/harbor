@@ -94,7 +94,7 @@ func toCommonUser(u *User) *commonmodels.User {
 }
 
 // FilterByUsernameOrEmail generates the query setter to match username or email column to the same value
-func (u *User) FilterByUsernameOrEmail(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
+func (u *User) FilterByUsernameOrEmail(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	usernameOrEmail, ok := value.(string)
 	if !ok {
 		return qs

@@ -82,7 +82,7 @@ func (s *selector) Select(artifacts []*sl.Candidate) (selected []*sl.Candidate, 
 }
 
 // New is factory method for vulnerability severity selector
-func New(decoration string, pattern interface{}, _ string) sl.Selector {
+func New(decoration string, pattern any, _ string) sl.Selector {
 	var sev int
 	if pattern != nil {
 		sev, _ = pattern.(int)

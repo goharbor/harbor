@@ -111,7 +111,7 @@ func (c *Client) getTags(projectID int64, repositoryID int64) ([]*Tag, error) {
 
 // GetAndIteratePagination iterates the pagination header and returns all resources
 // The parameter "v" must be a pointer to a slice
-func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err

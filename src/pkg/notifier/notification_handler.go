@@ -24,7 +24,7 @@ type NotificationHandler interface {
 
 	// Handle the event when it coming.
 	// value might be optional, it depends on usages.
-	Handle(ctx context.Context, value interface{}) error
+	Handle(ctx context.Context, value any) error
 
 	// IsStateful returns whether the handler is stateful or not.
 	// If handler is stateful, it will not be triggered in parallel.

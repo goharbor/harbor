@@ -70,8 +70,8 @@ func (ce *ConfigEntry) TableName() string {
 
 // Value ...
 type Value struct {
-	Val      interface{} `json:"value"`
-	Editable bool        `json:"editable"`
+	Val      any  `json:"value"`
+	Editable bool `json:"editable"`
 }
 
 // LdapConf holds information about ldap configuration

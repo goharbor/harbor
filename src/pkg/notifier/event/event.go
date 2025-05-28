@@ -27,7 +27,7 @@ import (
 // Event to publish
 type Event struct {
 	Topic string
-	Data  interface{}
+	Data  any
 }
 
 // TopicEvent - Events that contains topic information

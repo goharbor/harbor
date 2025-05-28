@@ -50,6 +50,7 @@ src/portal/cypress/screenshots
 **/aot
 **/dist
 **/.bin
+**/robotvars.py
 src/core/conf/app.conf
 
 src/server/v2.0/models/

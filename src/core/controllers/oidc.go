@@ -430,7 +430,7 @@ func getSessionType(refreshToken string) (string, error) {
 	if err != nil {
 		return "", errors.Errorf("failed to decode refresh token: %v", err)
 	}
-	var claims map[string]interface{}
+	var claims map[string]any
 	if err := json.Unmarshal(payload, &claims); err != nil {
 		return "", errors.Errorf("failed to unmarshal refresh token: %v", err)
 	}

@@ -66,7 +66,7 @@ func (suite *ScannerTestSuite) SetupSuite() {
 }
 
 func (suite *ScannerTestSuite) TestAuthorization() {
-	newBody := func(body interface{}) io.Reader {
+	newBody := func(body any) io.Reader {
 		if body == nil {
 			return nil
 		}
@@ -79,7 +79,7 @@ func (suite *ScannerTestSuite) TestAuthorization() {
 	reqs := []struct {
 		method string
 		url    string
-		body   interface{}
+		body   any
 	}{
 		{http.MethodGet, "/scanners", nil},
 		{http.MethodPost, "/scanners", suite.reg},
@@ -87,7 +87,7 @@ func (suite *ScannerTestSuite) TestAuthorization() {
 		{http.MethodGet, "/scanners/uuid1", nil},
 		{http.MethodPut, "/scanners/uuid1", suite.reg},
 		{http.MethodDelete, "/scanners/uuid1", nil},
-		{http.MethodPatch, "/scanners/uuid1", map[string]interface{}{"is_default": true}},
+		{http.MethodPatch, "/scanners/uuid1", map[string]any{"is_default": true}},
 		{http.MethodGet, "/scanners/uuid1/metadata", nil},
 	}
 
@@ -124,7 +124,7 @@ func (suite *ScannerTestSuite) TestCreateScannerWithInvalidBody() {
 
 	{
 		// name missing
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"url": "http://reg:8080",
 		})
 		suite.NoError(err)
@@ -133,7 +133,7 @@ func (suite *ScannerTestSuite) TestCreateScannerWithInvalidBody() {
 
 	{
 		// url missing
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name": "reg",
 		})
 		suite.NoError(err)
@@ -142,7 +142,7 @@ func (suite *ScannerTestSuite) TestCreateScannerWithInvalidBody() {
 
 	{
 		// invalid url
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name": "reg",
 			"url":  "invalid url",
 		})
@@ -158,7 +158,7 @@ func (suite *ScannerTestSuite) TestCreateScanner() {
 
 	{
 		mock.OnAnything(suite.scannerCtl, "CreateRegistration").Return("", fmt.Errorf("failed to create registration")).Once()
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -168,7 +168,7 @@ func (suite *ScannerTestSuite) TestCreateScanner() {
 
 	{
 		mock.OnAnything(suite.scannerCtl, "CreateRegistration").Return("uuid", nil).Once()
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -179,7 +179,7 @@ func (suite *ScannerTestSuite) TestCreateScanner() {
 
 	{
 		// access_credential missing
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 			"auth": "Basic",
@@ -190,7 +190,7 @@ func (suite *ScannerTestSuite) TestCreateScanner() {
 
 	{
 		mock.OnAnything(suite.scannerCtl, "CreateRegistration").Return("uuid", nil).Once()
-		res, err := suite.PostJSON("/scanners", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners", map[string]any{
 			"name":              "reg",
 			"url":               "http://reg:8080",
 			"auth":              "Basic",
@@ -268,7 +268,7 @@ func (suite *ScannerTestSuite) TestGetScanner() {
 		// scanner not found
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(nil, nil).Once()
 
-		var scanner map[string]interface{}
+		var scanner map[string]any
 		res, err := suite.GetJSON("/scanners/uuid", &scanner)
 		suite.NoError(err)
 		suite.Equal(404, res.StatusCode)
@@ -278,7 +278,7 @@ func (suite *ScannerTestSuite) TestGetScanner() {
 		// scanner found
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(suite.reg, nil).Once()
 
-		var scanner map[string]interface{}
+		var scanner map[string]any
 		res, err := suite.GetJSON("/scanners/uuid", &scanner)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -340,7 +340,7 @@ func (suite *ScannerTestSuite) TestListScanners() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(0), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return(nil, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/scanners", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -352,7 +352,7 @@ func (suite *ScannerTestSuite) TestListScanners() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(3), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/scanners?page_size=1&page=2", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -370,7 +370,7 @@ func (suite *ScannerTestSuite) TestPingScanner() {
 
 	{
 		// bad req
-		res, err := suite.PostJSON("/scanners/ping", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners/ping", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 			"auth": "Basic",
@@ -383,7 +383,7 @@ func (suite *ScannerTestSuite) TestPingScanner() {
 		// ping failed
 		mock.OnAnything(suite.scannerCtl, "Ping").Return(nil, fmt.Errorf("failed to ping scanner")).Once()
 
-		res, err := suite.PostJSON("/scanners/ping", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners/ping", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -395,7 +395,7 @@ func (suite *ScannerTestSuite) TestPingScanner() {
 		// ping
 		mock.OnAnything(suite.scannerCtl, "Ping").Return(&suite.metadata, nil).Once()
 
-		res, err := suite.PostJSON("/scanners/ping", map[string]interface{}{
+		res, err := suite.PostJSON("/scanners/ping", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -410,7 +410,7 @@ func (suite *ScannerTestSuite) TestSetScannerAsDefault() {
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 
 	{
-		res, err := suite.PatchJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PatchJSON("/scanners/uuid", map[string]any{
 			"is_default": false,
 		})
 		suite.NoError(err)
@@ -421,7 +421,7 @@ func (suite *ScannerTestSuite) TestSetScannerAsDefault() {
 		// set default failed
 		mock.OnAnything(suite.scannerCtl, "SetDefaultRegistration").Return(fmt.Errorf("failed to set default")).Once()
 
-		res, err := suite.PatchJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PatchJSON("/scanners/uuid", map[string]any{
 			"is_default": true,
 		})
 		suite.NoError(err)
@@ -432,7 +432,7 @@ func (suite *ScannerTestSuite) TestSetScannerAsDefault() {
 		// set default
 		mock.OnAnything(suite.scannerCtl, "SetDefaultRegistration").Return(nil).Once()
 
-		res, err := suite.PatchJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PatchJSON("/scanners/uuid", map[string]any{
 			"is_default": true,
 		})
 		suite.NoError(err)
@@ -456,7 +456,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		// get scanner failed
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(nil, fmt.Errorf("failed to get registration")).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -468,7 +468,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		// scanner not found
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(nil, nil).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -480,7 +480,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		// immutable scanner
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(&scanner.Registration{Immutable: true}, nil).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -492,7 +492,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		// bad req
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(suite.reg, nil).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 			"auth": "Basic",
@@ -506,7 +506,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(suite.reg, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "UpdateRegistration").Return(fmt.Errorf("failed to update the scanner")).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})
@@ -519,7 +519,7 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(suite.reg, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "UpdateRegistration").Return(nil).Once()
 
-		res, err := suite.PutJSON("/scanners/uuid", map[string]interface{}{
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
 		})

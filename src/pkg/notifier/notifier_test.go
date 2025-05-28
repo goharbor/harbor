@@ -24,7 +24,7 @@ func (fsh *fakeStatefulHandler) IsStateful() bool {
 	return true
 }
 
-func (fsh *fakeStatefulHandler) Handle(ctx context.Context, v interface{}) error {
+func (fsh *fakeStatefulHandler) Handle(ctx context.Context, v any) error {
 	increment := 0
 	if v != nil && reflect.TypeOf(v).Kind() == reflect.Int {
 		increment = v.(int)
@@ -43,7 +43,7 @@ func (fsh *fakeStatelessHandler) Name() string {
 	return "fakeStateless"
 }
 
-func (fsh *fakeStatelessHandler) Handle(ctx context.Context, v interface{}) error {
+func (fsh *fakeStatelessHandler) Handle(ctx context.Context, v any) error {
 	return nil
 }
 

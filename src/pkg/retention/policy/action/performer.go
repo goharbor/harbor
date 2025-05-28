@@ -43,7 +43,7 @@ type Performer interface {
 }
 
 // PerformerFactory is factory method for creating Performer
-type PerformerFactory func(params interface{}, isDryRun bool) Performer
+type PerformerFactory func(params any, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
@@ -110,7 +110,7 @@ func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 }
 
 // NewRetainAction is factory method for RetainAction
-func NewRetainAction(params interface{}, isDryRun bool) Performer {
+func NewRetainAction(params any, isDryRun bool) Performer {
 	if params != nil {
 		if all, ok := params.([]*selector.Candidate); ok {
 			return &retainAction{

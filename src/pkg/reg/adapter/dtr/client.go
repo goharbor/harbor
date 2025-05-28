@@ -53,7 +53,7 @@ func NewClient(registry *model.Registry) *Client {
 }
 
 // getAndIteratePagination will iterator over a paginated response from DTR
-func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) getAndIteratePagination(endpoint string, v any) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err

@@ -76,7 +76,7 @@ type controller struct {
 // Ensure ...
 func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) (int64, error) {
 	query := &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"repository_id": repositoryID,
 			"name":          name,
 		},

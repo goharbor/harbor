@@ -80,7 +80,7 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 
-	execAttrs := make(map[string]interface{})
+	execAttrs := make(map[string]any)
 	execAttrs[export.JobNameAttribute] = "test-job"
 	execAttrs[export.UserNameAttribute] = "test-user"
 	mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil)
@@ -88,7 +88,7 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	params := job.Parameters{}
 	params[export.JobModeKey] = export.JobModeExport
 	params["JobId"] = JobId
-	params["Request"] = map[string]interface{}{
+	params["Request"] = map[string]any{
 		"projects": []int64{1},
 	}
 	ctx := &mockjobservice.MockJobContext{}
@@ -100,11 +100,11 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 	})
 	suite.sysArtifactMgr.AssertCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m[export.DigestKey] = MockDigest
 	m[export.CreateTimestampKey] = mock.Anything
 
-	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]any) bool {
 		_, ok := m[export.CreateTimestampKey]
 		return attrsMap[export.DigestKey] == MockDigest && ok && attrsMap[export.JobNameAttribute] == "test-job" && attrsMap[export.UserNameAttribute] == "test-user"
 	})
@@ -119,7 +119,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithEmptyData() {
 	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 
-	execAttrs := make(map[string]interface{})
+	execAttrs := make(map[string]any)
 	execAttrs[export.JobNameAttribute] = "test-job"
 	execAttrs[export.UserNameAttribute] = "test-user"
 	mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil)
@@ -132,7 +132,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithEmptyData() {
 	err := suite.job.Run(ctx, params)
 	suite.NoError(err)
 
-	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]any) bool {
 		return attrsMap["status_message"] == "No vulnerabilities found or matched" && attrsMap[export.JobNameAttribute] == "test-job" && attrsMap[export.UserNameAttribute] == "test-user"
 	})
 	suite.execMgr.AssertCalled(suite.T(), "UpdateExtraAttrs", mock.Anything, ExecID, extraAttrsMatcher)
@@ -147,7 +147,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 
-	execAttrs := make(map[string]interface{})
+	execAttrs := make(map[string]any)
 	execAttrs[export.JobNameAttribute] = "test-job"
 	execAttrs[export.UserNameAttribute] = "test-user"
 	mock.OnAnything(suite.execMgr, "Get").Return(nil, errors.New("test-error"))
@@ -155,7 +155,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 	params := job.Parameters{}
 	params[export.JobModeKey] = export.JobModeExport
 	params["JobId"] = JobId
-	params["Request"] = map[string]interface{}{
+	params["Request"] = map[string]any{
 		"projects": []int{1},
 	}
 	ctx := &mockjobservice.MockJobContext{}
@@ -167,11 +167,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 	})
 	suite.sysArtifactMgr.AssertCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	m[export.DigestKey] = MockDigest
 	m[export.CreateTimestampKey] = mock.Anything
 
-	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+	extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]any) bool {
 		_, ok := m[export.CreateTimestampKey]
 		return attrsMap[export.DigestKey] == MockDigest && ok && attrsMap[export.JobNameAttribute] == "test-job" && attrsMap[export.UserNameAttribute] == "test-user"
 	})
@@ -189,7 +189,7 @@ func (suite *ScanDataExportJobTestSuite) TestExtractCriteria() {
 	_, err = suite.job.extractCriteria(job.Parameters{"Request": ""})
 	suite.Error(err)
 	// valid request should not return error and trim space
-	c, err := suite.job.extractCriteria(job.Parameters{"Request": map[string]interface{}{
+	c, err := suite.job.extractCriteria(job.Parameters{"Request": map[string]any{
 		"CVEIds":       "CVE-123, CVE-456 ",
 		"Repositories": " test-repo1 ",
 		"Tags":         "test-tag1, test-tag2",
@@ -207,7 +207,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -225,7 +225,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 			Repositories: "test-repo",
 			Tags:         "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}
@@ -243,11 +243,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		})
 		suite.sysArtifactMgr.AssertCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
 
-		m := make(map[string]interface{})
+		m := make(map[string]any)
 		m[export.DigestKey] = MockDigest
 		m[export.CreateTimestampKey] = mock.Anything
 
-		extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+		extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]any) bool {
 			_, ok := m[export.CreateTimestampKey]
 			return attrsMap[export.DigestKey] == MockDigest && ok
 		})
@@ -271,7 +271,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -287,7 +287,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 			Projects: []int64{1},
 			Tags:     "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}
@@ -304,11 +304,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 			return sa.Repository == "scandata_export_1000000" && sa.Vendor == strings.ToLower(export.Vendor) && sa.Digest == MockDigest
 		})
 		suite.sysArtifactMgr.AssertCalled(suite.T(), "Create", mock.Anything, sysArtifactRecordMatcher, mock.Anything)
-		m := make(map[string]interface{})
+		m := make(map[string]any)
 		m[export.DigestKey] = MockDigest
 		m[export.CreateTimestampKey] = mock.Anything
 
-		extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]interface{}) bool {
+		extraAttrsMatcher := testifymock.MatchedBy(func(attrsMap map[string]any) bool {
 			_, ok := m[export.CreateTimestampKey]
 			return attrsMap[export.DigestKey] == MockDigest && ok
 		})
@@ -334,7 +334,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -349,7 +349,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 			Repositories: "test-repo",
 			Tags:         "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}
@@ -384,7 +384,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -399,7 +399,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 			Repositories: "test-repo",
 			Tags:         "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}
@@ -436,7 +436,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -451,7 +451,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 			Repositories: "test-repo",
 			Tags:         "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}
@@ -486,7 +486,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
 		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		execAttrs := make(map[string]interface{})
+		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
 		execAttrs[export.UserNameAttribute] = "test-user"
 		mock.OnAnything(suite.execMgr, "Get").Return(&task.Execution{ID: ExecID, ExtraAttrs: execAttrs}, nil).Once()
@@ -501,7 +501,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 			Repositories: "test-repo",
 			Tags:         "test-tag",
 		}
-		criteriaMap := make(map[string]interface{})
+		criteriaMap := make(map[string]any)
 		bytes, _ := json.Marshal(criteria)
 		json.Unmarshal(bytes, &criteriaMap)
 		params := job.Parameters{}

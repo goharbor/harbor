@@ -73,8 +73,8 @@ type testingRequest struct {
 	method      string
 	url         string
 	header      http.Header
-	queryStruct interface{}
-	bodyJSON    interface{}
+	queryStruct any
+	bodyJSON    any
 	credential  *usrInfo
 }
 
@@ -139,7 +139,7 @@ func handle(r *testingRequest) (*httptest.ResponseRecorder, error) {
 	return resp, nil
 }
 
-func handleAndParse(r *testingRequest, v interface{}) error {
+func handleAndParse(r *testingRequest, v any) error {
 	resp, err := handle(r)
 	if err != nil {
 		return err

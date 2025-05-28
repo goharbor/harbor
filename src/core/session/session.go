@@ -41,12 +41,12 @@ type Store struct {
 	c           cache.Cache
 	sid         string
 	lock        sync.RWMutex
-	values      map[interface{}]interface{}
+	values      map[any]any
 	maxlifetime int64
 }
 
 // Set value in redis session
-func (rs *Store) Set(_ context.Context, key, value interface{}) error {
+func (rs *Store) Set(_ context.Context, key, value any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	rs.values[key] = value
@@ -54,7 +54,7 @@ func (rs *Store) Set(_ context.Context, key, value interface{}) error {
 }
 
 // Get value in redis session
-func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
+func (rs *Store) Get(_ context.Context, key any) any {
 	rs.lock.RLock()
 	defer rs.lock.RUnlock()
 	if v, ok := rs.values[key]; ok {
@@ -64,7 +64,7 @@ func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
 }
 
 // Delete value in redis session
-func (rs *Store) Delete(_ context.Context, key interface{}) error {
+func (rs *Store) Delete(_ context.Context, key any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	delete(rs.values, key)
@@ -75,7 +75,7 @@ func (rs *Store) Delete(_ context.Context, key interface{}) error {
 func (rs *Store) Flush(_ context.Context) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
-	rs.values = make(map[interface{}]interface{})
+	rs.values = make(map[any]any)
 	return nil
 }
 
@@ -144,7 +144,7 @@ func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url stri
 
 // SessionRead read redis session by sid
 func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store, error) {
-	kv := make(map[interface{}]interface{})
+	kv := make(map[any]any)
 	if ctx == nil {
 		ctx = context.TODO()
 	}
@@ -182,7 +182,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 			rdb.Rename(ctx, oldsid, sid)
 			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
-			kv := make(map[interface{}]interface{})
+			kv := make(map[any]any)
 			err := rp.c.Fetch(ctx, sid, &kv)
 			if err != nil && !errors.Is(err, cache.ErrNotFound) {
 				return nil, err

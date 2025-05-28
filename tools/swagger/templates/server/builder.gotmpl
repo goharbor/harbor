@@ -185,7 +185,7 @@ type {{ pascalize .Name }}API struct {
   PreServerShutdown func()
 
   // ServerShutdown is called when the HTTP(S) server is shut down and done
-  // handling all active connections and does not accept connections any more
+  // handling all active connections and does not accept connections interface{} more
   ServerShutdown func()
 
   // Custom command line argument groups with their descriptions

@@ -45,7 +45,7 @@ type Interface interface {
 	// The related arguments will be injected by the workerpool.
 	//
 	// ctx Context                   : Job execution context.
-	// params map[string]interface{} : parameters with key-pair style for the job execution.
+	// params map[string]any : parameters with key-pair style for the job execution.
 	//
 	// Returns:
 	//  error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned

@@ -64,7 +64,7 @@ func init() {
 
 func scanAllCallback(ctx context.Context, param string) error {
 	if param != "" {
-		params := make(map[string]interface{})
+		params := make(map[string]any)
 		if err := json.Unmarshal([]byte(param), &params); err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err
 				}
 
 				// extract ScanType if exist in ExtraAttrs
-				if c, ok := exec.ExtraAttrs["enabled_capabilities"].(map[string]interface{}); ok {
+				if c, ok := exec.ExtraAttrs["enabled_capabilities"].(map[string]any); ok {
 					if Type, ok := c["type"].(string); ok {
 						e.ScanType = Type
 					}

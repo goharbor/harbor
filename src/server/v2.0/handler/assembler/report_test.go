@@ -45,7 +45,7 @@ func (suite *VulAssemblerTestSuite) TestScannable() {
 
 	mock.OnAnything(checker, "IsScannable").Return(true, nil)
 
-	summary := map[string]interface{}{"key": "value"}
+	summary := map[string]any{"key": "value"}
 	mock.OnAnything(scanCtl, "GetSummary").Return(summary, nil)
 
 	var artifact model.Artifact
@@ -67,7 +67,7 @@ func (suite *VulAssemblerTestSuite) TestNotScannable() {
 
 	mock.OnAnything(checker, "IsScannable").Return(false, nil)
 
-	summary := map[string]interface{}{"key": "value"}
+	summary := map[string]any{"key": "value"}
 	mock.OnAnything(scanCtl, "GetSummary").Return(summary, nil)
 
 	var art model.Artifact
@@ -89,7 +89,7 @@ func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverview() {
 	}
 
 	mock.OnAnything(checker, "IsScannable").Return(true, nil)
-	overview := map[string]interface{}{
+	overview := map[string]any{
 		"sbom_digest": "sha256:123456",
 		"scan_status": "Success",
 	}
@@ -117,7 +117,7 @@ func (suite *VulAssemblerTestSuite) TestAssembleSBOMOverviewImageIndex() {
 	}
 
 	mock.OnAnything(checker, "IsScannable").Return(true, nil)
-	overview := map[string]interface{}{}
+	overview := map[string]any{}
 	mock.OnAnything(scanCtl, "GetSummary").Return(overview, nil)
 	execs := []*task.Execution{
 		{ID: 1, Status: "Error"},

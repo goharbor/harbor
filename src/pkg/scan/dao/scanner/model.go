@@ -66,9 +66,9 @@ type Registration struct {
 	Metadata *v1.ScannerAdapterMetadata `orm:"-" json:"-"`
 
 	// Timestamps
-	CreateTime   time.Time              `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
-	UpdateTime   time.Time              `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
-	Capabilities map[string]interface{} `orm:"-" json:"capabilities,omitempty"`
+	CreateTime   time.Time      `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
+	UpdateTime   time.Time      `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
+	Capabilities map[string]any `orm:"-" json:"capabilities,omitempty"`
 }
 
 // TableName for Endpoint

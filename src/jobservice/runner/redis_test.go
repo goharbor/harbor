@@ -120,19 +120,19 @@ func (suite *RedisRunnerTestSuite) TestJobWrapper() {
 		{
 			Name:  "STD_OUTPUT",
 			Level: "DEBUG",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"output": backend.StdErr,
 			},
 		},
 		{
 			Name:  "FILE",
 			Level: "ERROR",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"base_dir": os.TempDir(),
 			},
 			Sweeper: &config.LogSweeperConfig{
 				Duration: 5,
-				Settings: map[string]interface{}{
+				Settings: map[string]any{
 					"work_dir": os.TempDir(),
 				},
 			},

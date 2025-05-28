@@ -29,7 +29,7 @@ import (
 
 var testCtx context.Context
 
-func execUpdate(o orm.TxOrmer, sql string, params ...interface{}) error {
+func execUpdate(o orm.TxOrmer, sql string, params ...any) error {
 	p, err := o.Raw(sql).Prepare()
 	if err != nil {
 		return err

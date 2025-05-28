@@ -33,7 +33,7 @@ type Namespace interface {
 	// Resource returns new resource for subresources with the namespace
 	Resource(subresources ...Resource) Resource
 	// Identity returns identity attached with namespace
-	Identity() interface{}
+	Identity() any
 	// GetPolicies returns all policies of the namespace
 	GetPolicies() []*Policy
 }

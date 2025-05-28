@@ -194,7 +194,7 @@ func (r *replicationTestSuite) TestListTasks() {
 			ID:          1,
 			ExecutionID: 1,
 			Status:      job.RunningStatus.String(),
-			ExtraAttrs: map[string]interface{}{
+			ExtraAttrs: map[string]any{
 				"resource_type":        "artifact",
 				"source_resource":      "library/hello-world",
 				"destination_resource": "library/hello-world",
@@ -222,7 +222,7 @@ func (r *replicationTestSuite) TestGetTask() {
 			ID:          1,
 			ExecutionID: 1,
 			Status:      job.RunningStatus.String(),
-			ExtraAttrs: map[string]interface{}{
+			ExtraAttrs: map[string]any{
 				"resource_type":        "artifact",
 				"source_resource":      "library/hello-world",
 				"destination_resource": "library/hello-world",

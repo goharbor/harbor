@@ -167,7 +167,7 @@ func (bm *basicManager) GetBy(ctx context.Context, digest string, registrationUU
 		return nil, errors.New("empty digest to get report data")
 	}
 
-	kws := make(map[string]interface{})
+	kws := make(map[string]any)
 	kws["digest"] = digest
 	if len(registrationUUID) > 0 {
 		kws["registration_uuid"] = registrationUUID

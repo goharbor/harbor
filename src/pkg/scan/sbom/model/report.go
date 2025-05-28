@@ -42,5 +42,5 @@ type RawSBOMReport struct {
 	// MediaType the media type of the report, e.g. application/spdx+json
 	MediaType string `json:"media_type"`
 	// SBOM sbom content
-	SBOM map[string]interface{} `json:"sbom,omitempty"`
+	SBOM map[string]any `json:"sbom,omitempty"`
 }

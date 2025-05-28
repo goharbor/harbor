@@ -82,7 +82,7 @@ func (suite *PreheatTestSuite) TestName() {
 // TestHandle ...
 func (suite *PreheatTestSuite) TestHandle() {
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string

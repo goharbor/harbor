@@ -90,7 +90,7 @@ func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 	return nil
 }
 
-func retentionHour(m map[string]interface{}) (int, error) {
+func retentionHour(m map[string]any) (int, error) {
 	if ret, ok := m[common.PurgeAuditRetentionHour]; ok {
 		if rh, ok := ret.(json.Number); ok {
 			ret, err := rh.Int64()
@@ -106,9 +106,9 @@ func retentionHour(m map[string]interface{}) (int, error) {
 	return 0, nil
 }
 
-func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string, cron string, parameters map[string]any) (int64, error) {
 	if parameters == nil {
-		parameters = make(map[string]interface{})
+		parameters = make(map[string]any)
 	}
 	var err error
 	var id int64
@@ -140,7 +140,7 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 	return id, err
 }
 
-func (p *purgeAPI) updateSchedule(ctx context.Context, vendorType, cronType, cron string, policy pg.JobPolicy, extraParams map[string]interface{}) error {
+func (p *purgeAPI) updateSchedule(ctx context.Context, vendorType, cronType, cron string, policy pg.JobPolicy, extraParams map[string]any) error {
 	if err := utils.ValidateCronString(cron); err != nil {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessagef("invalid cron string for scheduled log rotation purge: %s, error: %v", cron, err)
@@ -318,7 +318,7 @@ func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 	return nil
 }
 
-func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronType string, cron string, policy pg.JobPolicy, extraParam map[string]interface{}) error {
+func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronType string, cron string, policy pg.JobPolicy, extraParam map[string]any) error {
 	_, err := p.schedulerCtl.Create(ctx, vendorType, cronType, cron, pg.SchedulerCallback, policy, extraParam)
 	if err != nil {
 		return err

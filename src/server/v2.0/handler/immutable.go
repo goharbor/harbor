@@ -163,7 +163,7 @@ func (ia *immutableAPI) ListImmuRules(ctx context.Context, params operation.List
 		WithPayload(results)
 }
 
-func (ia *immutableAPI) getProjectID(ctx context.Context, projectNameOrID interface{}) (int64, error) {
+func (ia *immutableAPI) getProjectID(ctx context.Context, projectNameOrID any) (int64, error) {
 	projectName, ok := projectNameOrID.(string)
 	if ok {
 		p, err := ia.projectCtr.Get(ctx, projectName, project.Metadata(false))

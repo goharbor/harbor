@@ -147,7 +147,7 @@ func (c *controller) attachTags(ctx context.Context, vuls []*secHubModel.Vulnera
 	}
 
 	// get tags in the artifact list
-	var artifactIDs []interface{}
+	var artifactIDs []any
 	for k := range artifactTagMap {
 		artifactIDs = append(artifactIDs, k)
 	}

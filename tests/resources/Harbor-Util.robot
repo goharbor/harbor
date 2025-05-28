@@ -55,8 +55,8 @@ Package Harbor Offline
     [Arguments]  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} EXPORTERFLAG=true HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=%{Harbor_Build_Base_Tag} NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} EXPORTERFLAG=true HTTPPROXY=
     Log To Console  ${rc}
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -65,8 +65,8 @@ Package Harbor Online
     [Arguments]  ${with_trivy}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} HTTPPROXY=
+    Log To Console  \nmake package_online GOBUILDTAGS="include_oss include_gcs"  VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} EXPORTERFLAG=true HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online GOBUILDTAGS="include_oss include_gcs" VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} TRIVYFLAG=${with_trivy} EXPORTERFLAG=true HTTPPROXY=
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

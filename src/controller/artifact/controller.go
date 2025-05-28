@@ -313,7 +313,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 		return nil, err
 	}
 	tags, err := c.tagCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": repo.RepositoryID,
 			"Name":         tag,
 		},
@@ -356,7 +356,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return nil
 	}
 	parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ChildID": id,
 		},
 	})
@@ -385,7 +385,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		if acc.IsHard() {
 			// if this acc artifact has parent(is child), set isRoot to false
 			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"ChildID": acc.GetData().ArtifactID,
 				},
 			})
@@ -752,7 +752,7 @@ func (c *controller) populateIcon(art *Artifact) {
 
 func (c *controller) populateTags(ctx context.Context, art *Artifact, option *tag.Option) {
 	tags, err := c.tagCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"artifact_id": art.ID,
 		},
 	}, option)

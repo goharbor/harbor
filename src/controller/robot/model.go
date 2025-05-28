@@ -40,7 +40,7 @@ const (
 type Robot struct {
 	model.Robot
 	ProjectName     string
-	ProjectNameOrID interface{}
+	ProjectNameOrID any
 	Level           string
 	Editable        bool          `json:"editable"`
 	Permissions     []*Permission `json:"permissions"`

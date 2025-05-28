@@ -33,7 +33,7 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 		Return(&metadata.ConfigureValue{Name: common.SkipAuditLogDatabase, Value: "true"})
 	type args struct {
 		ctx  context.Context
-		cfgs map[string]interface{}
+		cfgs map[string]any
 		mgr  config.Manager
 	}
 	tests := []struct {
@@ -42,17 +42,17 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "both configured", args: args{ctx: context.TODO(),
-			cfgs: map[string]interface{}{common.AuditLogForwardEndpoint: "harbor-log:15041",
+			cfgs: map[string]any{common.AuditLogForwardEndpoint: "harbor-log:15041",
 				common.SkipAuditLogDatabase: true},
 			mgr: cfgManager}, wantErr: false},
 		{name: "no forward endpoint config", args: args{ctx: context.TODO(),
-			cfgs: map[string]interface{}{common.SkipAuditLogDatabase: true},
+			cfgs: map[string]any{common.SkipAuditLogDatabase: true},
 			mgr:  cfgManager}, wantErr: true},
 		{name: "none configured", args: args{ctx: context.TODO(),
-			cfgs: map[string]interface{}{},
+			cfgs: map[string]any{},
 			mgr:  cfgManager}, wantErr: false},
 		{name: "enabled skip audit log database, but change log forward endpoint to empty", args: args{ctx: context.TODO(),
-			cfgs: map[string]interface{}{common.AuditLogForwardEndpoint: ""},
+			cfgs: map[string]any{common.AuditLogForwardEndpoint: ""},
 			mgr:  cfgManager}, wantErr: true},
 	}
 	for _, tt := range tests {
@@ -89,24 +89,24 @@ func Test_maxValueLimitedByLength(t *testing.T) {
 func Test_verifyValueLengthCfg(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		cfgs map[string]interface{}
+		cfgs map[string]any
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
 	}{
-		{name: "valid config", args: args{context.TODO(), map[string]interface{}{
+		{name: "valid config", args: args{context.TODO(), map[string]any{
 			common.TokenExpiration:    float64(100),
 			common.RobotTokenDuration: float64(100),
 			common.SessionTimeout:     float64(100),
 		}}, wantErr: false},
-		{name: "invalid config with negative value", args: args{context.TODO(), map[string]interface{}{
+		{name: "invalid config with negative value", args: args{context.TODO(), map[string]any{
 			common.TokenExpiration:    float64(-1),
 			common.RobotTokenDuration: float64(100),
 			common.SessionTimeout:     float64(100),
 		}}, wantErr: true},
-		{name: "invalid config with value over length limit", args: args{context.TODO(), map[string]interface{}{
+		{name: "invalid config with value over length limit", args: args{context.TODO(), map[string]any{
 			common.TokenExpiration:    float64(100),
 			common.RobotTokenDuration: float64(100000000000000000),
 			common.SessionTimeout:     float64(100),

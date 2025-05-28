@@ -32,8 +32,8 @@ type Database struct {
 }
 
 // Load - load config from database, only user setting will be load from database.
-func (d *Database) Load(ctx context.Context) (map[string]interface{}, error) {
-	resultMap := map[string]interface{}{}
+func (d *Database) Load(ctx context.Context) (map[string]any, error) {
+	resultMap := map[string]any{}
 	configEntries, err := d.cfgDAO.GetConfigEntries(ctx)
 	if err != nil {
 		return resultMap, err
@@ -60,7 +60,7 @@ func (d *Database) Load(ctx context.Context) (map[string]interface{}, error) {
 }
 
 // Save - Only save user config items in the cfgs map
-func (d *Database) Save(ctx context.Context, cfgs map[string]interface{}) error {
+func (d *Database) Save(ctx context.Context, cfgs map[string]any) error {
 	var configEntries []models.ConfigEntry
 	for key, value := range cfgs {
 		if item, ok := metadata.Instance().GetByName(key); ok {

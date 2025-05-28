@@ -35,11 +35,11 @@ var (
 type Arguments = mock.Arguments
 
 type mockable interface {
-	On(methodName string, arguments ...interface{}) *mock.Call
+	On(methodName string, arguments ...any) *mock.Call
 }
 
 // OnAnything mock method on obj which match any args
-func OnAnything(obj interface{}, methodName string) *mock.Call {
+func OnAnything(obj any, methodName string) *mock.Call {
 	m, ok := obj.(mockable)
 	if !ok {
 		panic("obj not mockable")
@@ -52,7 +52,7 @@ func OnAnything(obj interface{}, methodName string) *mock.Call {
 		panic(fmt.Sprintf("assert: arguments: %s is not a func", v))
 	}
 
-	args := []interface{}{}
+	args := []any{}
 	for i := 0; i < fnType.NumIn(); i++ {
 		args = append(args, mock.Anything)
 	}

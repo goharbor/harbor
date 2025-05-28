@@ -136,7 +136,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},
-			Parameters: map[string]interface{}{
+			Parameters: map[string]any{
 				"src_resource":  string(src),
 				"dst_resource":  string(dest),
 				"speed":         speed,
@@ -144,7 +144,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			},
 		}
 
-		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]interface{}{
+		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]any{
 			"operation":            "copy",
 			"resource_type":        string(srcResource.Type),
 			"source_resource":      getResourceName(srcResource),

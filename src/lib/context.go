@@ -41,14 +41,14 @@ type ArtifactInfo struct {
 	BlobMountDigest      string
 }
 
-func setToContext(ctx context.Context, key contextKey, value interface{}) context.Context {
+func setToContext(ctx context.Context, key contextKey, value any) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	return context.WithValue(ctx, key, value)
 }
 
-func getFromContext(ctx context.Context, key contextKey) interface{} {
+func getFromContext(ctx context.Context, key contextKey) any {
 	if ctx == nil {
 		return nil
 	}

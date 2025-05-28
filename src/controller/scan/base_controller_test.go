@@ -224,7 +224,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rname := fmt.Sprintf("%s-%s-%s", config.ScannerRobotPrefix(context.TODO()), suite.registration.Name, "the-uuid-123")
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotTokenDuration: "30",
 	}
 	config.InitWithSettings(conf)
@@ -299,7 +299,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	robotJSON, err := rb.ToJSON()
 	require.NoError(suite.T(), err)
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
@@ -672,10 +672,10 @@ func (suite *ControllerTestSuite) TestStopScanAll() {
 	suite.NoError(err)
 }
 
-func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]interface{} {
-	b, _ := json.Marshal(map[string]interface{}{reportUUIDsKey: reportUUIDs})
+func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]any {
+	b, _ := json.Marshal(map[string]any{reportUUIDsKey: reportUUIDs})
 
-	extraAttrs := map[string]interface{}{}
+	extraAttrs := map[string]any{}
 	json.Unmarshal(b, &extraAttrs)
 	extraAttrs[artifactIDKey] = float64(artifactID)
 

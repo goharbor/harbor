@@ -149,7 +149,7 @@ func (is *instanceSuite) TestList() {
 	assert.Equal(t, defaultInstance.ID, instances[0].ID)
 
 	// keyword search
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	keywords["name"] = "kraken-us-1"
 	instances, err = is.dao.List(is.ctx, &q.Query{Keywords: keywords})
 	assert.Nil(t, err)
