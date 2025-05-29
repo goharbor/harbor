@@ -221,13 +221,11 @@ restore_registry() {
 # Restore chart museum data
 restore_chart_museum() {
   if [ -d "${BACKUP_DIR}/harbor/chart_storage" ]; then
-    log "Restoring chartmuseum data"
+    log WARNING "Deprecated feature detected - Restoring chartmuseum data"
     if ! rsync -a --delete "${BACKUP_DIR}/harbor/chart_storage/" "${CHART_MUSEUM_PATH}/"; then
       log ERROR "Failed to restore chartmuseum data using rsync"
       exit 1
     fi
-  else
-    log WARNING "No chartmuseum backup found, skipping restore."
   fi
 }
 
