@@ -218,7 +218,6 @@ dump_database() {
 # Backup registry data
 backup_registry() {
   log "Backing up registry data"
-#  cp -rf "${REGISTRY_DATA_PATH}" "${BACKUP_DIR}/harbor/registry"
   if ! rsync -a --delete "${REGISTRY_DATA_PATH}/" "${BACKUP_DIR}/harbor/registry/"; then
     log ERROR "Failed to backup registry data using rsync"
     exit 1
@@ -229,14 +228,11 @@ backup_registry() {
 # Backup chart museum data
 backup_chart_museum() {
   if [ -d "${CHART_MUSEUM_PATH}" ]; then
-    log "Backing up chartmuseum data"
-#    cp -rf "${CHART_MUSEUM_PATH}" "${BACKUP_DIR}/harbor/"
+    log WARNING "Deprecated feature detected - Backing up chartmuseum data"
     if ! rsync -a --delete "${CHART_MUSEUM_PATH}/" "${BACKUP_DIR}/harbor/chart_storage/"; then
       log ERROR "Failed to backup chartmuseum data using rsync"
       exit 1
     fi
-  else
-    log "Not backing up chartmuseum data ${CHART_MUSEUM_PATH} not found"
   fi
 }
 
@@ -244,7 +240,6 @@ backup_chart_museum() {
 backup_redis() {
   if [ -d "${REDIS_DATA_PATH}" ]; then
     log "Backing up redis"
-#    cp -rf "${REDIS_DATA_PATH}" "${BACKUP_DIR}/harbor/"
     if ! rsync -a --delete "${REDIS_DATA_PATH}/" "${BACKUP_DIR}/harbor/redis/"; then
       log ERROR "Failed to backup redis data using rsync"
       exit 1
@@ -258,19 +253,6 @@ backup_redis() {
 backup_secret() {
   # Pre 1.8
   OLD_SECRET_PATH=`basename "${SECRET_PATH}"`
-#  if [ -f "${OLD_SECRET_PATH}/secretkey" ]; then
-#    log "Backing up secrets in pre 1,8 path"
-#    cp "${OLD_SECRET_PATH}/secretkey"  "${BACKUP_DIR}/harbor/secret/"
-#  fi
-#  if [ -f "${OLD_SECRET_PATH}/defaultalias" ]; then
-#    cp "${OLD_SECRET_PATH}/defaultalias"  "${BACKUP_DIR}/harbor/secret/"
-#  fi
-#
-#  # 1.8 and later
-#  if [ -d "${SECRET_PATH}" ]; then
-#    log "Backing up secrets"
-#    cp -r "${SECRET_PATH}"/* "${BACKUP_DIR}/harbor/secret/"
-#  fi
   if [ -f "${OLD_SECRET_PATH}/secretkey" ]; then
     log INFO "Backing up secretkey (pre 1.8)"
     if ! cp "${OLD_SECRET_PATH}/secretkey" "${BACKUP_DIR}/harbor/secret/"; then
