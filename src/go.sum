@@ -40,8 +40,8 @@ github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358/go.mod h1:chxPXzS
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/CloudNativeAI/model-spec v0.0.3 h1:5mvgFQ+3pyupzxYjtV5XAeg9zRe6+46pLPBFNHlOrqE=
-github.com/CloudNativeAI/model-spec v0.0.3/go.mod h1:3U/4zubBfbUkW59ATSg41HnkYyKrKUcKFH/cVdoPQnk=
+github.com/CloudNativeAI/model-spec v0.0.5 h1:gVwvpiVJgGZynvIi+xy0Hp/zh+g1EuWa6x6Czm4P0uA=
+github.com/CloudNativeAI/model-spec v0.0.5/go.mod h1:3U/4zubBfbUkW59ATSg41HnkYyKrKUcKFH/cVdoPQnk=
 github.com/FZambia/sentinel v1.1.0 h1:qrCBfxc8SvJihYNjBWgwUI93ZCvFe/PJIPTHKmlp8a8=
 github.com/FZambia/sentinel v1.1.0/go.mod h1:ytL1Am/RLlAoAXG6Kj5LNuw/TRRQrv2rt2FT26vP5gI=
 github.com/HdrHistogram/hdrhistogram-go v1.1.2/go.mod h1:yDgFjdqOqDEKOvasDdhWNXYg9BVp4O+o5f6V/ehm6Oo=
