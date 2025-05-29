@@ -529,6 +529,37 @@
                     type="checkbox" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="ldapADNestedGroup">
+                {{ 'CONFIG.LDAP.LDAP_AD_NESTED_GROUP' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        *clrIfOpen
+                        clrPosition="top-right"
+                        clrSize="lg">
+                        <span>{{
+                            'CONFIG.LDAP.LDAP_AD_NESTED_GROUP_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    (ngModelChange)="setLdapADNestedGroupValue($event)"
+                    [disabled]="
+                        disabled(currentConfig.ldap_ad_nested_group)
+                    "
+                    [ngModel]="currentConfig.ldap_ad_nested_group.value"
+                    clrCheckbox
+                    id="ldapADNestedGroup"
+                    name="ldapADNestedGroup"
+                    type="checkbox" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
     </section>
     <clr-checkbox-container *ngIf="showSelfReg">
         <label for="selfReg"
