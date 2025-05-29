@@ -53,7 +53,7 @@ func OnAnything(obj any, methodName string) *mock.Call {
 	}
 
 	args := []any{}
-	for i := 0; i < fnType.NumIn(); i++ {
+	for range fnType.NumIn() {
 		args = append(args, mock.Anything)
 	}
 

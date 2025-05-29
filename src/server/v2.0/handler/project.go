@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -795,13 +796,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if err != nil {
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
 		}
+
 		permitted := false
-		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
-			if string(registry.Type) == t {
-				permitted = true
-				break
-			}
+		if slices.Contains(config.GetPermittedRegistryTypesForProxyCache(), string(registry.Type)) {
+			permitted = true
 		}
+
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
 		}

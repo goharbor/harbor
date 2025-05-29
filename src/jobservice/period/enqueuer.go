@@ -17,6 +17,7 @@ package period
 import (
 	"context"
 	"fmt"
+	"maps"
 	"math/rand"
 	"time"
 
@@ -303,9 +304,7 @@ func cloneParameters(params job.Parameters, epoch int64) job.Parameters {
 	p := make(job.Parameters)
 
 	// Clone parameters to a new param map
-	for k, v := range params {
-		p[k] = v
-	}
+	maps.Copy(p, params)
 
 	p[PeriodicExecutionMark] = fmt.Sprintf("%d", epoch)
 

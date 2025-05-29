@@ -329,7 +329,7 @@ func compileRegexpEveryTime(url string) (string, string, error) {
 }
 
 func BenchmarkGetAccountRegion(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, url := range urlForBenchmark {
 			parseAccountRegion(url)
 		}
@@ -337,7 +337,7 @@ func BenchmarkGetAccountRegion(b *testing.B) {
 }
 
 func BenchmarkCompileRegexpEveryTime(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, url := range urlForBenchmark {
 			compileRegexpEveryTime(url)
 		}

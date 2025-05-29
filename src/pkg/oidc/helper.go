@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -392,11 +393,8 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 	}
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
 	if len(setting.AdminGroup) > 0 {
-		for _, g := range res.Groups {
-			if g == setting.AdminGroup {
-				res.AdminGroupMember = true
-				break
-			}
+		if slices.Contains(res.Groups, setting.AdminGroup) {
+			res.AdminGroupMember = true
 		}
 	}
 	return res, nil

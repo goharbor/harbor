@@ -15,6 +15,7 @@
 package index
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -80,11 +81,9 @@ func Get(kind, decoration, pattern, extras string) (selector.Selector, error) {
 	}
 
 	item := v.(*indexedItem)
-	for _, dec := range item.Meta.Decorations {
-		if dec == decoration {
-			factory := item.Factory
-			return factory(decoration, pattern, extras), nil
-		}
+	if slices.Contains(item.Meta.Decorations, decoration) {
+		factory := item.Factory
+		return factory(decoration, pattern, extras), nil
 	}
 
 	return nil, errors.Errorf("decoration %s of selector %s is not supported", decoration, kind)
