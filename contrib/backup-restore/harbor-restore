@@ -1,0 +1,335 @@
+#!/bin/bash
+#
+# Harbor Restore Script
+#
+
+# Default values (match the backup script)
+DOCKER_CMD="docker"
+HARBOR_DB_IMAGE="$(docker images goharbor/harbor-db --format "{{.Repository}}:{{.Tag}}" | head -1)" # Use a specific tag in production
+HARBOR_DB_PATH="/data/database"
+REGISTRY_DATA_PATH="/data/registry"
+CHART_MUSEUM_PATH="/data/chart_storage"
+REDIS_DATA_PATH="/data/redis"
+SECRET_PATH="/data/secret"
+BACKUP_DIR="harbor_backup"
+BACKUP_FILE="harbor_backup.tar.gz"
+HARBOR_YML="/etc/harbor/harbor.yml"
+NO_ARCHIVE="false"
+# Default log level
+LOG_LEVEL="INFO"
+USE_SYSLOG="false"
+POSTGRES_UID=999
+POSTGRES_GID=999
+
+# Log levels (syslog-compatible)
+declare -A LOG_LEVELS=(
+  [DEBUG]=7
+  [INFO]=6
+  [NOTICE]=5
+  [WARNING]=4
+  [ERROR]=3
+  [CRITICAL]=2
+  [ALERT]=1
+  [EMERGENCY]=0
+)
+
+usage() {
+  echo "Usage: $0 [OPTIONS]"
+  echo ""
+  echo "Restores a Harbor instance."
+  echo ""
+  echo "Options:"
+  echo "  --docker-cmd <command>      Docker command (default: docker)"
+  echo "  --db-image <image>         Harbor DB image (default: auto-detected)"
+  echo "  --db-path <path>          Harbor DB data path (default: /data/database)"
+  echo "  --registry-path <path>     Registry data path (default: /data/registry)"
+  echo "  --chart-museum-path <path> Chart Museum data path (default: /data/chart_storage)"
+  echo "  --redis-path <path>        Redis data path (default: /data/redis)"
+  echo "  --secret-path <path>       Secret data path (default: /data/secret)"
+  echo "  --config-path <path>       Harbor configuration file path (default: /etc/harbor/harbor.yml)"
+  echo "  --backup-dir <path>       Backup directory (default: harbor_backup)"
+  echo "  --no-archive              Do not unpack a tarball (source file tree already in place in ${backup_dir}/harbor)"
+  echo "  --use-syslog              Use syslog for logging"
+  echo "  --log-level <level>        Log level (default: INFO, options: DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY)"
+  echo "  --help                    Display this help message"
+  exit 0
+}
+
+# exit immediately if any command fails, an unset variable is used, or a pipe fails
+set -euo pipefail
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --docker-cmd)
+      DOCKER_CMD="$2"
+      shift 2
+      ;;
+    --db-image)
+      HARBOR_DB_IMAGE="$2"
+      shift 2
+      ;;
+    --db-path)
+      HARBOR_DB_PATH="$2"
+      shift 2
+      ;;
+    --registry-path)
+      REGISTRY_DATA_PATH="$2"
+      shift 2
+      ;;
+    --chart-museum-path)
+      CHART_MUSEUM_PATH="$2"
+      shift 2
+      ;;
+    --redis-path)
+      REDIS_DATA_PATH="$2"
+      shift 2
+      ;;
+    --secret-path)
+      SECRET_PATH="$2"
+      shift 2
+      ;;
+    --config-path)
+      HARBOR_YML="$2"
+      shift 2
+      ;;
+    --backup-dir)
+      BACKUP_DIR="$2"
+      shift 2
+      ;;
+    --no-archive)
+      NO_ARCHIVE="true"
+      shift
+      ;;
+    --use-syslog)
+      USE_SYSLOG="true"
+      shift
+      ;;
+    --log-level)
+      LOG_LEVEL="$2"
+      shift 2
+      ;;
+    --help)
+      usage
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# log() will prepend datetime and log the message to stderr and optionally to syslog
+# if the optional log level (defaults to INFO) is equal to higher than
+# $LOG_LEVEL
+log() {
+  local level
+  local message
+
+  if [[ $# -eq 1 ]]; then # Check if only one argument is provided
+    level="INFO" # Default level if not provided
+    message="$1"
+  elif [[ $# -eq 2 ]]; then # Check if two arguments are provided
+    level="$1"
+    message="$2"
+  else
+    echo "Usage: log [LEVEL] MESSAGE" >&2
+    return 1 # Return error code
+  fi
+
+  # Check if logging level is valid
+  if [[ ! "${LOG_LEVELS[$level]+_}" ]]; then
+    echo "Invalid log level: $level" >&2 # Log error to stderr
+    level="INFO" # Fallback to INFO
+  fi
+
+  # Check minimum log level
+  if (( ${LOG_LEVELS[$level]} > ${LOG_LEVELS[$LOG_LEVEL]} )); then
+    return # Don't log if below the threshold
+  fi
+
+  local formatted_message="[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $message"
+
+  echo "$formatted_message"
+
+  if [[ "$USE_SYSLOG" == "true" ]]; then
+    local syslog_priority="local0.${level,,}" # Convert level to lowercase for syslog
+    logger -t "harbor-restore" -p "$syslog_priority" "$message"
+  fi
+}
+
+# Wait for database to be ready
+wait_for_db_ready() {
+  local TIMEOUT=12
+  set +e
+  while [ $TIMEOUT -gt 0 ]; do
+    docker exec harbor-db pg_isready | grep "accepting connections"
+    if [ $? -eq 0 ]; then
+      break
+    fi
+    TIMEOUT=$(( $TIMEOUT - 1 ))
+    log "... waiting for database"
+    sleep 5
+  done
+  set -e
+  if [ $TIMEOUT -eq 0 ]; then
+    log CRITICAL "Harbor DB cannot reach within one minute."
+    exit 1
+  fi
+}
+
+# Launch and wait for database
+launch_db() {
+  if [ -n "$($DOCKER_CMD ps -q)" ]; then
+    log CRITICAL "There are running containers, please stop and remove before backup"
+    exit 1
+  fi
+  log "Starting database container for restore"
+  docker run -d --name harbor-db -v "${BACKUP_DIR}/harbor/db":/backup -v "${HARBOR_DB_PATH}":/var/lib/postgresql/data "${HARBOR_DB_IMAGE}" "postgres"
+  wait_for_db_ready
+}
+
+# Restore database
+restore_database() {
+  log "Restoring databases"
+
+  databases=$(ls "${BACKUP_DIR}/harbor/db"/*.sql | xargs -n1 basename | cut -d '.' -f 1) # Find .sql files
+
+  for db in $databases; do
+    log "- $db"
+    dump_file="/backup/${db}.sql"
+    ${DOCKER_CMD} exec harbor-db psql -U postgres -d template1 -c "drop database ${db}; exit \$?"
+    ${DOCKER_CMD} exec harbor-db psql -U postgres -d template1 -c "create database ${db}; exit \$?"
+    ${DOCKER_CMD} exec harbor-db sh -c "psql -U postgres -d ${db} > /dev/null < ${dump_file}; exit \$?"
+  done
+
+}
+
+# Restore registry data
+restore_registry() {
+  if [ -d "${BACKUP_DIR}/harbor/registry" ]; then
+    log "Restoring registry data"
+    if ! rsync -a --delete "${BACKUP_DIR}/harbor/registry/" "${REGISTRY_DATA_PATH}/"; then
+      log ERROR "Failed to restore registry data using rsync"
+      exit 1
+    fi
+  else
+    log WARNING "No registry data found (${BACKUP_DIR}/harbor/registry/), skipping restore"
+  fi
+}
+
+# Restore chart museum data
+restore_chart_museum() {
+  if [ -d "${BACKUP_DIR}/harbor/chart_storage" ]; then
+    log WARNING "Deprecated feature detected - Restoring chartmuseum data"
+    if ! rsync -a --delete "${BACKUP_DIR}/harbor/chart_storage/" "${CHART_MUSEUM_PATH}/"; then
+      log ERROR "Failed to restore chartmuseum data using rsync"
+      exit 1
+    fi
+  fi
+}
+
+# Restore redis data
+restore_redis() {
+  if [ -d "${BACKUP_DIR}/harbor/redis" ]; then
+    log "Restoring redis"
+    if ! rsync -a --delete "${BACKUP_DIR}/harbor/redis/" "${REDIS_DATA_PATH}/"; then
+      log ERROR "Failed to restore redis data using rsync"
+      exit 1
+    fi
+  else
+    log "No redis backup found, skipping restore."
+  fi
+}
+
+# Restore secrets
+restore_secret() {
+  if [ -d "${BACKUP_DIR}/harbor/secret" ]; then
+    log "Restoring secrets"
+    if ! rsync -a --delete "${BACKUP_DIR}/harbor/secret/" "${SECRET_PATH}/"; then
+      log ERROR "Failed to restore secrets"
+      exit 1
+    fi
+  else
+    log "No secrets backup found, skipping restore."
+  fi
+}
+
+
+
+restore_config() {
+  if [ -f "${BACKUP_DIR}/harbor/harbor.yml" ]; then
+    log "Restoring configuration file"
+    cp "${BACKUP_DIR}/harbor/harbor.yml" "${HARBOR_YML}"
+  else
+    log "No configuration backup found, skipping restore."
+  fi
+}
+
+# Clean up database container
+clean_db() {
+  log "Clean up temporary database container for backup"
+  docker stop harbor-db
+  docker rm harbor-db
+}
+
+
+extract_tarball() {
+  if [ ${NO_ARCHIVE} == "false" ]; then
+    if [ -f "${BACKUP_DIR}/${BACKUP_FILE}" ]; then
+      cd "${BACKUP_DIR}"
+      if [ -d harbor ] ; then
+        log "Removing existing  ${BACKUP_DIR}/harbor"
+        rm -rf harbor
+      fi
+      log "Extracting tarball ${BACKUP_DIR}/${BACKUP_FILE}"
+      tar -xzf "${BACKUP_DIR}/${BACKUP_FILE}"
+    else
+      log ERROR "No tarball found, Exiting."
+      exit 1
+    fi
+  else
+    log "Not extracting tarball"
+  fi
+}
+
+
+#
+# main
+#
+
+log "Starting restore of harbor"
+
+# Create backup directory if it doesn't exist (for extracted backups)
+if [[ ! -d "$BACKUP_DIR" ]]; then
+  mkdir -p "$BACKUP_DIR"
+fi
+
+# Trap signals for cleanup
+trap clean_db EXIT ERR INT TERM
+
+# Launch container for database backup
+launch_db
+
+# Extract the tarball (if it exists)
+extract_tarball
+
+# Restore the databases
+restore_database
+
+# Restore the registry
+restore_registry
+
+# Restore the Chart Museum
+restore_chart_museum
+
+# Restore Redis
+restore_redis
+
+# Restore the secrets
+restore_secret
+
+# Restore the configuration
+restore_config
+
+log "Ending restore of harbor"
