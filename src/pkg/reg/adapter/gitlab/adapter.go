@@ -15,6 +15,7 @@
 package gitlab
 
 import (
+	"errors"
 	"net/url"
 	"strings"
 
@@ -228,6 +229,7 @@ func existPatterns(path string, patterns []string) bool {
 	correct := false
 	if len(patterns) > 0 {
 		for _, pathPattern := range patterns {
+			log.Debug("Checking pathPattern: ", pathPattern, " against path: ", path)
 			if ok, _ := util.Match(strings.ToLower(pathPattern), strings.ToLower(path)); ok {
 				correct = true
 				break
@@ -237,4 +239,84 @@ func existPatterns(path string, patterns []string) bool {
 		correct = true
 	}
 	return correct
+}
+
+// Delete a manifest using the GitLab API.
+// If the reference is a tag, we will delete the tag. Otherwise, we will delete the
+// repository.
+// This function also runs garbage collection to remove the blobs from the registry.
+// See: https://docs.gitlab.com/api/container_registry/#delete-a-registry-repository-tag
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	// mmoreiradj2/images/debian + bookworm-slim
+	log.Errorf("DeleteManifest called with repository: %s, reference: %s", repository, reference)
+
+	searchPattern := strings.Split(repository, "/")
+	if len(searchPattern) < 2 {
+		log.Errorf("Invalid repository format: %s", repository)
+		return errors.New("invalid repository format")
+	}
+
+	projectName := strings.Join(searchPattern[:len(searchPattern)-1], "/")
+	log.Debugf("Searching for project: %s", projectName)
+
+	projects, err := a.clientGitlabAPI.getProjectsByName(projectName)
+	if err != nil {
+		log.Errorf("Failed to get projects by pattern %s: %v", projectName, err)
+	}
+	if len(projects) == 0 {
+		log.Errorf("No projects found for pattern %s", projectName)
+		return errors.New("no projects found")
+	}
+	projectID := projects[0].ID
+
+	log.Debugf("Project ID: %d", projectID)
+
+	repositories, err := a.clientGitlabAPI.getRepositories(projectID)
+	if err != nil {
+		log.Errorf("Failed to get repositories for project %s: %v", projectName, err)
+	}
+	if len(repositories) == 0 {
+		log.Errorf("No repositories found for project %s", projectName)
+		return errors.New("no repositories found")
+	}
+
+	// Filter by hand because the API does not support filtering by repository name
+	repositoryID := int64(-1)
+	for _, repo := range repositories {
+		if repo.Path == repository {
+			log.Debugf("Found repository ID: %d for path: %s", repositoryID, repo.Path)
+			repositoryID = repo.ID
+			break
+		} else {
+			log.Debugf("Skipping repository path=%s and id=%d", repo.Path, repo.ID)
+		}
+	}
+
+	if repositoryID == -1 {
+		log.Errorf("No repository found for path %s", repository)
+		return errors.New("no repository found")
+	}
+
+	if strings.Contains(reference, ":") {
+		// If the reference is a tag, delete the tag
+		tagName := strings.Split(reference, ":")[1]
+		log.Debugf("Deleting tag %s from repository %s with ID %d", tagName, repository, repositoryID)
+
+		err = a.clientGitlabAPI.deleteTag(projectID, repositoryID, tagName)
+		if err != nil {
+			log.Errorf("Failed to delete tag %s from repository %s with ID %d: %v", tagName, repository, repositoryID, err)
+			return err
+		}
+		log.Debugf("Tag %s deleted successfully from repository %s with ID %d", tagName, repository, repositoryID)
+	} else {
+		// If the reference is not a tag, delete the repository
+		log.Debugf("Deleting repository %s with ID %d", repository, repositoryID)
+		err := a.clientGitlabAPI.deleteRepository(projectID, repositoryID)
+		if err != nil {
+			log.Errorf("Failed to delete repository %s with ID %d: %v", repository, repositoryID, err)
+			return err
+		}
+	}
+
+	return nil
 }
