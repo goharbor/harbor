@@ -261,9 +261,12 @@ export class AddImmutableRuleComponent {
         ) {
             return false;
         }
-        return (
-            this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern
-        );
+        if (
+            this.rule.tag_selectors[0].pattern !== rule.tag_selectors[0].pattern
+        ) {
+            return false;
+        }
+        return this.rule.template === rule.template;
     }
 
     getI18nKey(str: string) {
