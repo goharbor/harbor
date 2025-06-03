@@ -297,26 +297,14 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 		return errors.New("no repository found")
 	}
 
-	if strings.Contains(reference, ":") {
-		// If the reference is a tag, delete the tag
-		tagName := strings.Split(reference, ":")[1]
-		log.Debugf("Deleting tag %s from repository %s with ID %d", tagName, repository, repositoryID)
+	log.Debugf("Deleting tag %s from repository %s with ID %d", reference, repository, repositoryID)
 
-		err = a.clientGitlabAPI.deleteTag(projectID, repositoryID, tagName)
-		if err != nil {
-			log.Errorf("Failed to delete tag %s from repository %s with ID %d: %v", tagName, repository, repositoryID, err)
-			return err
-		}
-		log.Debugf("Tag %s deleted successfully from repository %s with ID %d", tagName, repository, repositoryID)
-	} else {
-		// If the reference is not a tag, delete the repository
-		log.Debugf("Deleting repository %s with ID %d", repository, repositoryID)
-		err := a.clientGitlabAPI.deleteRepository(projectID, repositoryID)
-		if err != nil {
-			log.Errorf("Failed to delete repository %s with ID %d: %v", repository, repositoryID, err)
-			return err
-		}
+	err = a.clientGitlabAPI.deleteTag(projectID, repositoryID, reference)
+	if err != nil {
+		log.Errorf("Failed to delete tag %s from repository %s with ID %d: %v", reference, repository, repositoryID, err)
+		return err
 	}
+	log.Debugf("Tag %s deleted successfully from repository %s with ID %d", reference, repository, repositoryID)
 
 	return nil
 }
