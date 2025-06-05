@@ -8960,6 +8960,9 @@ definitions:
       ldap_group_search_filter:
         $ref: '#/definitions/StringConfigItem'
         description: The filter to search the ldap group
+      ldap_group_admin_filter:
+        $ref: '#/definitions/StringConfigItem'
+        description: The filter for ldap admin search
       ldap_group_search_scope:
         $ref: '#/definitions/IntegerConfigItem'
         description: The scope to search ldap group. ''0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE''
@@ -9155,6 +9158,11 @@ definitions:
       ldap_group_search_filter:
         type: string
         description: The filter to search the ldap group
+        x-omitempty: true
+        x-isnullable: true
+      ldap_group_admin_filter:
+        type: string
+        description: The filter for LDAP Admin search
         x-omitempty: true
         x-isnullable: true
       ldap_group_search_scope:
@@ -9399,7 +9407,7 @@ definitions:
         x-isnullable: true
       disabled_audit_log_event_types:
         type: string
-        description: the list to disable log audit event types. 
+        description: the list to disable log audit event types.
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:

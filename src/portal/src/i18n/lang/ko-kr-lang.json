@@ -941,6 +941,8 @@
             "VERIFY_CERT": "LDAP 확인 인증서",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "LDAP/AD에서 그룹을 조회할 기본 DN입니다. LDAP 그룹 관련 기능을 활성화해야 하는 경우 이 필드를 비워둘 수 없습니다.",
+            "LDAP_GROUP_ADMIN_FILTER": "LDAP Group Admin Filter",
+            "LDAP_GROUP_ADMIN_FILTER_INFO": "The filter for LDAP Admin search.",
             "LDAP_GROUP_FILTER": "LDAP 그룹 필터",
             "LDAP_GROUP_FILTER_INFO": "LDAP/AD 그룹을 검색하기 위한 필터입니다. OpenLDAP의 경우: objectclass=groupOfNames. Active Directory의 경우: objectclass=group. LDAP 그룹 관련 기능이 필요한 경우 이 필드를 비워둘 수 없습니다.",
             "LDAP_GROUP_GID": "LDAP Group GID",
