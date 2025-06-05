@@ -299,10 +299,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	blobChunkCount := (total + blobChunkSize - 1) / blobChunkSize
 	blobChunks := make([][]*blobModels.Blob, blobChunkCount)
 	for i, start := 0, 0; i < blobChunkCount; i, start = i+1, start+blobChunkSize {
-		end := start + blobChunkSize
-		if end > total {
-			end = total
-		}
+		end := min(start+blobChunkSize, total)
 		blobChunks[i] = gc.deleteSet[start:end]
 	}
 
