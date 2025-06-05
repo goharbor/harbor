@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Represents a problem or potential problem in Harbor
 ---
 
 If you are reporting a problem, please make sure the following information are provided:
