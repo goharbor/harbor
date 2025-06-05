@@ -62,14 +62,14 @@ type Processor struct {
 }
 
 func (m *Processor) AbstractMetadata(ctx context.Context, art *artifact.Artifact, manifestBody []byte) error {
-	art.ExtraAttrs = map[string]interface{}{}
+	art.ExtraAttrs = map[string]any{}
 	manifest := &v1.Manifest{}
 	if err := json.Unmarshal(manifestBody, manifest); err != nil {
 		return err
 	}
 
 	if art.ExtraAttrs == nil {
-		art.ExtraAttrs = map[string]interface{}{}
+		art.ExtraAttrs = map[string]any{}
 	}
 	if manifest.Annotations[AnnotationVariantKey] == AnnotationVariantValue || manifest.Annotations[AnnotationHandlerKey] == AnnotationHandlerValue {
 		// for annotation way
@@ -103,7 +103,7 @@ func (m *Processor) AbstractMetadata(ctx context.Context, art *artifact.Artifact
 func (m *Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
 	if addition != AdditionTypeBuildHistory {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeWASM)
+			WithMessagef("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeWASM)
 	}
 
 	mani, _, err := m.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)

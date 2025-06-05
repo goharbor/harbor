@@ -22,20 +22,20 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 
 RUN pwd && mkdir /tool/binary && \
     # Install CONTAINERD
-    CONTAINERD_VERSION=1.7.14 &&  \
+    CONTAINERD_VERSION=1.7.20 &&  \
     wget https://github.com/containerd/containerd/releases/download/v$CONTAINERD_VERSION/containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
     tar zxvf containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
     cd bin && cp -f containerd ctr /tool/binary/ && \
     # docker compose
-    curl -L "https://github.com/docker/compose/releases/download/v2.26.1/docker-compose-$(uname -s)-$(uname -m)" -o /tool/binary/docker-compose && \
+    curl -L "https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /tool/binary/docker-compose && \
     chmod +x /tool/binary/docker-compose && \
     # Install helm
-    HELM_VERSION=3.14.3 && wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
+    HELM_VERSION=3.15.3 && wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
     tar zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
     ls || pwd && \
     mv linux-amd64/helm /tool/binary/helm && \
     # Install ORAS
-    ORAS_VERSION=1.1.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_amd64.tar.gz && \
+    ORAS_VERSION=1.2.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_amd64.tar.gz && \
     mkdir -p oras-install/  && \
     tar -zxf oras_${ORAS_VERSION}_*.tar.gz -C oras-install/  && \
     mv oras-install/oras /tool/binary/ && \
@@ -54,13 +54,13 @@ RUN pwd && mkdir /tool/binary && \
     WASM_TO_OCI_VERSION=0.1.2 && wget https://github.com/engineerd/wasm-to-oci/releases/download/v${WASM_TO_OCI_VERSION}/linux-amd64-wasm-to-oci && \
     chmod +x linux-amd64-wasm-to-oci && mv linux-amd64-wasm-to-oci /tool/binary/wasm-to-oci && \
     # Install imgpkg
-    IMGPKG_VERSION=0.41.1 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
+    IMGPKG_VERSION=0.43.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
     mv imgpkg-linux-amd64 /tool/binary/imgpkg && chmod +x /tool/binary/imgpkg && \
     # Install cosign
-    COSIGN_VERSION=2.2.3 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
+    COSIGN_VERSION=2.4.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
     mv cosign-linux-amd64 /tool/binary/cosign && chmod +x /tool/binary/cosign && \
     # # Install notation
-    NOTATION_VERSION=1.1.0 && wget https://github.com/notaryproject/notation/releases/download/v$NOTATION_VERSION/notation_${NOTATION_VERSION}_linux_amd64.tar.gz && \
+    NOTATION_VERSION=1.1.1 && wget https://github.com/notaryproject/notation/releases/download/v$NOTATION_VERSION/notation_${NOTATION_VERSION}_linux_amd64.tar.gz && \
     tar zxvf notation_${NOTATION_VERSION}_linux_amd64.tar.gz && \
     mv notation /tool/binary/notation && chmod +x /tool/binary/notation && \
     pwd

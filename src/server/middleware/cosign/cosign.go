@@ -99,7 +99,7 @@ PUT /v2/library/goharbor/harbor-db/manifests/sha256:aabea2bdd5a6fb79c13837b88c7b
 
 */
 func SignatureMiddleware() func(http.Handler) http.Handler {
-	return middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+	return middleware.AfterResponse(func(_ http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {
 			return nil
 		}

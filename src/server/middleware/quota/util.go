@@ -61,7 +61,7 @@ var (
 )
 
 func projectResourcesEvent(level int) func(*http.Request, string, string, string) event.Metadata {
-	return func(r *http.Request, reference, referenceID string, message string) event.Metadata {
+	return func(r *http.Request, _, referenceID string, message string) event.Metadata {
 		ctx := r.Context()
 
 		logger := log.G(ctx).WithFields(log.Fields{"middleware": "quota", "action": "request", "url": r.URL.Path})

@@ -1,10 +1,15 @@
 package handler
 
 import (
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
 func TestValidLevel(t *testing.T) {
@@ -204,6 +209,274 @@ func TestContainsAccess(t *testing.T) {
 			if ok != tt.expected {
 				t.Errorf("name: %s, containsAccess() = %#v, want %#v", tt.name, tt.acc, tt.expected)
 			}
+		})
+	}
+}
+
+func TestValidPermissionScope(t *testing.T) {
+	tests := []struct {
+		name          string
+		creatingPerms []*models.RobotPermission
+		creatorPerms  []*robot.Permission
+		expected      bool
+	}{
+		{
+			name: "Project - subset",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "testSubset",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "project",
+					Namespace: "testSubset",
+					Access: []*types.Policy{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+						{Resource: "repository", Action: "push", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Project - not Subset",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "testNotSubset",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "push", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "project",
+					Namespace: "testNotSubset",
+					Access: []*types.Policy{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Project - equal",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "Project - different",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "project",
+					Namespace: "other",
+					Access: []*types.Policy{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Project - empty creator",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{},
+			expected:     false,
+		},
+		{
+			name:          "Project - empty creating",
+			creatingPerms: []*models.RobotPermission{},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "project",
+					Namespace: "library",
+					Access: []*types.Policy{
+						{Resource: "repository", Action: "pull", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - subset",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "system",
+					Namespace: "admin",
+					Access: []*models.Access{
+						{Resource: "user", Action: "create", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "admin",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - not subset",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "system",
+					Namespace: "admin",
+					Access: []*models.Access{
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "admin",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+					},
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "System - subset project",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - cover all",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "*",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "System - cover all 2",
+			creatingPerms: []*models.RobotPermission{
+				{
+					Kind:      "project",
+					Namespace: "test1",
+					Access: []*models.Access{
+						{Resource: "user", Action: "update", Effect: "allow"},
+					},
+				},
+			},
+			creatorPerms: []*robot.Permission{
+				{
+					Kind:      "system",
+					Namespace: "/",
+					Access: []*types.Policy{
+						{Resource: "robot", Action: "create", Effect: "allow"},
+					},
+				},
+				{
+					Kind:      "project",
+					Namespace: "*",
+					Access: []*types.Policy{
+						{Resource: "user", Action: "create", Effect: "allow"},
+						{Resource: "user", Action: "delete", Effect: "allow"},
+					},
+				},
+			},
+			expected: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isValidPermissionScope(tt.creatingPerms, tt.creatorPerms)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

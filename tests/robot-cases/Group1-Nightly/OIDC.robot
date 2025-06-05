@@ -120,7 +120,7 @@ Test Case - OIDC Group User
     ${pwd}=  Set Variable  ${admin_pwd}
     Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin_user}  password=${admin_pwd}  login_with_provider=ldap
     Switch To Registries
-    Create A New Endpoint    harbor    test_oidc_admin    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
+    Create A New Endpoint    harbor    test_oidc_admin    https://${LOCAL_REGISTRY}    ${null}    ${null}    Y
     ${secret}=  Get Secrete By API  ${HARBOR_URL}  username=${admin_user}
     Push image  ${ip}  ${admin_user}  ${secret}  library  ${image}
     Logout Harbor

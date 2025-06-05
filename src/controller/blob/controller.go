@@ -225,10 +225,10 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 
 	opts := newOptions(options...)
 
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	if digest != "" {
 		ol := q.OrList{
-			Values: []interface{}{
+			Values: []any{
 				digest,
 			},
 		}
@@ -248,7 +248,7 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 	if err != nil {
 		return nil, err
 	} else if len(blobs) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("blob %s not found", digest)
+		return nil, errors.NotFoundError(nil).WithMessagef("blob %s not found", digest)
 	}
 
 	return blobs[0], nil
@@ -363,7 +363,7 @@ func (c *controller) Touch(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
@@ -375,7 +375,7 @@ func (c *controller) Fail(ctx context.Context, blob *blob.Blob) error {
 		return err
 	}
 	if count == 0 {
-		return errors.New(nil).WithMessage(fmt.Sprintf("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest)).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("no blob item is updated to StatusDeleteFailed, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

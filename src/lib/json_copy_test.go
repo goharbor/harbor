@@ -29,7 +29,7 @@ func TestJSONCopy(t *testing.T) {
 	assert := assert.New(t)
 
 	{
-		var m map[string]interface{}
+		var m map[string]any
 		foo := &jsonCopyFoo{
 			Name: "foo",
 			Age:  1,
@@ -42,7 +42,7 @@ func TestJSONCopy(t *testing.T) {
 	}
 
 	{
-		var m map[string]interface{}
+		var m map[string]any
 		var foo *jsonCopyFoo
 
 		assert.Nil(m)
@@ -51,7 +51,7 @@ func TestJSONCopy(t *testing.T) {
 	}
 
 	{
-		m := map[string]interface{}{
+		m := map[string]any{
 			"name": "foo",
 			"age":  1,
 		}

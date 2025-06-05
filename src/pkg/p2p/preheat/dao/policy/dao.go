@@ -91,7 +91,7 @@ func (d *dao) Update(ctx context.Context, schema *policy.Schema, props ...string
 	}
 
 	if id == 0 {
-		return errors.NotFoundError(nil).WithMessage("policy %d not found", schema.ID)
+		return errors.NotFoundError(nil).WithMessagef("policy %d not found", schema.ID)
 	}
 
 	return nil
@@ -148,7 +148,7 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 	}
 
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("policy %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("policy %d not found", id)
 	}
 
 	return nil

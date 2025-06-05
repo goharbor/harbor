@@ -39,7 +39,7 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) error
 
 	// Get the project specified by the ID or name
-	Get(ctx context.Context, idOrName interface{}) (*models.Project, error)
+	Get(ctx context.Context, idOrName any) (*models.Project, error)
 
 	// List projects according to the query
 	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
@@ -71,12 +71,12 @@ type manager struct {
 // Create creates project instance
 func (m *manager) Create(ctx context.Context, project *models.Project) (int64, error) {
 	if project.OwnerID <= 0 {
-		return 0, errors.BadRequestError(nil).WithMessage("Owner is missing when creating project %s", project.Name)
+		return 0, errors.BadRequestError(nil).WithMessagef("Owner is missing when creating project %s", project.Name)
 	}
 
 	if utils.IsIllegalLength(project.Name, projectNameMinLen, projectNameMaxLen) {
 		format := "Project name %s is illegal in length. (greater than %d or less than %d)"
-		return 0, errors.BadRequestError(nil).WithMessage(format, project.Name, projectNameMaxLen, projectNameMinLen)
+		return 0, errors.BadRequestError(nil).WithMessagef(format, project.Name, projectNameMaxLen, projectNameMinLen)
 	}
 
 	legal := validProjectName.MatchString(project.Name)
@@ -98,7 +98,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 }
 
 // Get the project specified by the ID
-func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
+func (m *manager) Get(ctx context.Context, idOrName any) (*models.Project, error) {
 	id, ok := idOrName.(int64)
 	if ok {
 		return m.dao.Get(ctx, id)
@@ -107,7 +107,7 @@ func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Projec
 	if ok {
 		// check white space in project name
 		if strings.Contains(name, " ") {
-			return nil, errors.BadRequestError(nil).WithMessage("invalid project name: '%s'", name)
+			return nil, errors.BadRequestError(nil).WithMessagef("invalid project name: '%s'", name)
 		}
 		return m.dao.GetByName(ctx, name)
 	}

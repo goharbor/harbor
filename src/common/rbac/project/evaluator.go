@@ -58,7 +58,7 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 // NewBuilderForPolicies create a builder for the policies
 func NewBuilderForPolicies(username string, policies []*types.Policy,
 	filters ...func(*proModels.Project, []*types.Policy) []*types.Policy) RBACUserBuilder {
-	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
+	return func(_ context.Context, p *proModels.Project) types.RBACUser {
 		for _, filter := range filters {
 			policies = filter(p, policies)
 		}

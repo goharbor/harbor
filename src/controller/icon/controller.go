@@ -77,6 +77,10 @@ var (
 			path:   "./icons/default.png",
 			resize: true,
 		},
+		icon.DigestOfIconCNAI: {
+			path:   "./icons/cnai.png",
+			resize: true,
+		},
 	}
 	// Ctl is a global icon controller instance
 	Ctl = NewController()
@@ -134,7 +138,7 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 	} else {
 		// read icon from blob
 		artifacts, err := c.artMgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"Icon": digest,
 			},
 		})
@@ -143,7 +147,7 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		}
 		if len(artifacts) == 0 {
 			return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-				WithMessage("the icon %s not found", digest)
+				WithMessagef("the icon %s not found", digest)
 		}
 		_, iconFile, err = c.regCli.PullBlob(artifacts[0].RepositoryName, digest)
 		if err != nil {

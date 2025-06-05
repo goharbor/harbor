@@ -119,7 +119,7 @@ Test Case - Ldap Group Admin DN Setting
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Switch To Registries
-    Create A New Endpoint    harbor    edp1${d}    https://cicd.harbor.vmwarecna.net    ${null}    ${null}    Y
+    Create A New Endpoint    harbor    edp1${d}    https://${LOCAL_REGISTRY}    ${null}    ${null}    Y
 
 
 Test Case - Run LDAP Group Related API Test

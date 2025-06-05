@@ -42,7 +42,7 @@ type scanAPI struct {
 	scanCtl scan.Controller
 }
 
-func (s *scanAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
+func (s *scanAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		s.SendError(ctx, err)
 	}
@@ -123,7 +123,7 @@ func (s *scanAPI) GetReportLog(ctx context.Context, params operation.GetReportLo
 
 	if bytes == nil {
 		// Not found
-		return s.SendError(ctx, errors.NotFoundError(nil).WithMessage("report with uuid %s does not exist", params.ReportID))
+		return s.SendError(ctx, errors.NotFoundError(nil).WithMessagef("report with uuid %s does not exist", params.ReportID))
 	}
 
 	return operation.NewGetReportLogOK().WithPayload(string(bytes))

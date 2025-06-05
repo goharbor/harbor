@@ -31,7 +31,7 @@ var (
 	Ctl = NewController()
 
 	// webhookJobVendors represents webhook(http) or slack.
-	webhookJobVendors = q.NewOrList([]interface{}{job.WebhookJobVendorType, job.SlackJobVendorType})
+	webhookJobVendors = q.NewOrList([]any{job.WebhookJobVendorType, job.SlackJobVendorType})
 )
 
 type Controller interface {
@@ -146,7 +146,7 @@ func (c *controller) GetTask(ctx context.Context, taskID int64) (*task.Task, err
 
 	if len(tasks) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("webhook task %d not found", taskID)
+			WithMessagef("webhook task %d not found", taskID)
 	}
 	return tasks[0], nil
 }

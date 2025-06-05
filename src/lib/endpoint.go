@@ -35,10 +35,10 @@ func ValidateHTTPURL(s string) (string, error) {
 	}
 	url, err := url.Parse(s)
 	if err != nil {
-		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid URL: %s", err.Error())
+		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid URL: %s", err.Error())
 	}
 	if url.Scheme != "http" && url.Scheme != "https" {
-		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("invalid HTTP scheme: %s", url.Scheme)
+		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid HTTP scheme: %s", url.Scheme)
 	}
 	// To avoid SSRF security issue, refer to #3755 for more detail
 	return fmt.Sprintf("%s://%s%s", url.Scheme, url.Host, url.Path), nil

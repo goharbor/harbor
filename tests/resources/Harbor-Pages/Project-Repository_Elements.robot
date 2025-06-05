@@ -24,5 +24,8 @@ ${build_history_data}  //clr-dg-row
 ${push_image_command_btn}  //hbr-push-image-button//button
 ${scan_artifact_btn}  //button[@id='scan-btn']
 ${stop_scan_artifact_btn}  //button[@id='stop-scan']
-${stopped_label}  //span[@class='label stopped']
+${scan_stopped_label}  //span[normalize-space()='Scan stopped']
+${gen_sbom_stopped_label}  //span[normalize-space()='Generation stopped']
+${gen_artifact_sbom_btn}  //button[@id='generate-sbom-btn']
+${stop_gen_artifact_sbom_btn}  //button[@id='stop-sbom-btn']
 ${refresh_repositories_xpath}  //hbr-repository-gridview//span[contains(@class,'refresh-btn')]

@@ -15,18 +15,18 @@
 package aliacr
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
-
-	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
-	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -36,7 +36,17 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 )
 
+var rateLimiterTransport http.RoundTripper
+
+const acrQPSLimit = 15
+
 func init() {
+	var envAcrQPSLimit, _ = strconv.Atoi(os.Getenv("REG_ADAPTER_ACR_QPS_LIMIT"))
+	if envAcrQPSLimit > acrQPSLimit || envAcrQPSLimit < 1 {
+		envAcrQPSLimit = acrQPSLimit
+	}
+	rateLimiterTransport = lib.NewRateLimitedTransport(envAcrQPSLimit, commonhttp.NewTransport())
+
 	if err := adp.RegisterFactory(model.RegistryTypeAliAcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeAliAcr, err)
 		return
@@ -45,48 +55,80 @@ func init() {
 }
 
 // example:
-// https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-// https://registry-vpc.%s.aliyuncs.com
-// https://registry-internal.%s.aliyuncs.com
-var regRegion = regexp.MustCompile(`https://(registry|cr|registry-vpc|registry-internal)\.([\w\-]+)\.aliyuncs\.com`)
+var regACRServiceURL = regexp.MustCompile(`https://cr\.([\w\-]+)\.aliyuncs\.com`)
 
-func getRegion(url string) (region string, err error) {
+func getRegistryURL(url string) (string, error) {
 	if url == "" {
 		return "", errors.New("empty url")
 	}
-	rs := regRegion.FindStringSubmatch(url)
+	rs := regACRServiceURL.FindStringSubmatch(url)
 	if rs == nil {
-		return "", errors.New("invalid Rgistry|CR service url")
+		return url, nil
 	}
-	// fmt.Println(rs)
-	return rs[2], nil
+	return fmt.Sprintf(registryEndpointTpl, rs[1]), nil
+}
+
+// example:
+// registry.aliyuncs.com:cn-hangzhou:china:cri-xxxxxxxxx
+// registry.aliyuncs.com:cn-hangzhou:26842
+func parseRegistryService(service string) (*registryServiceInfo, error) {
+	parts := strings.Split(service, ":")
+	length := len(parts)
+	if length < 2 {
+		return nil, errors.New("invalid service format: expected 'registry.aliyuncs.com:region:xxxxx'")
+	}
+
+	if !strings.EqualFold(parts[0], registryACRService) {
+		return nil, errors.New("not a acr service")
+	}
+
+	if strings.HasPrefix(parts[length-1], "cri-") {
+		return &registryServiceInfo{
+			IsACREE:    true,
+			RegionID:   parts[1],
+			InstanceID: parts[length-1],
+		}, nil
+	}
+	return &registryServiceInfo{
+		IsACREE:  false,
+		RegionID: parts[1],
+	}, nil
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	region, err := getRegion(registry.URL)
+	url, err := getRegistryURL(registry.URL)
 	if err != nil {
 		return nil, err
 	}
-	switch true {
-	case strings.Contains(registry.URL, "registry-vpc"):
-		registry.URL = fmt.Sprintf(registryVPCEndpointTpl, region)
-	case strings.Contains(registry.URL, "registry-internal"):
-		registry.URL = fmt.Sprintf(registryInternalEndpointTpl, region)
-	default:
-		// fix url (allow user input cr service url)
-		registry.URL = fmt.Sprintf(registryEndpointTpl, region)
-	}
+	registry.URL = url
+
 	realm, service, err := util.Ping(registry)
 	if err != nil {
 		return nil, err
 	}
-	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
-	authorizer := bearer.NewAuthorizer(realm, service, credential, commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
+
+	info, err := parseRegistryService(service)
+	if err != nil {
+		return nil, err
+	}
+
+	var acrAPI openapi
+	if !info.IsACREE {
+		acrAPI, err = newAcrOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, rateLimiterTransport)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		acrAPI, err = newAcreeOpenapi(registry.Credential.AccessKey, registry.Credential.AccessSecret, info.RegionID, info.InstanceID, rateLimiterTransport)
+		if err != nil {
+			return nil, err
+		}
+	}
+	authorizer := bearer.NewAuthorizer(realm, service, NewAuth(acrAPI), commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
 	return &adapter{
-		region:   region,
+		acrAPI:   acrAPI,
 		registry: registry,
-		domain:   fmt.Sprintf(endpointTpl, region),
 		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
 	}, nil
 }
@@ -112,16 +154,15 @@ var (
 // adapter for to aliyun docker registry
 type adapter struct {
 	*native.Adapter
-	region   string
-	domain   string
+	acrAPI   openapi
 	registry *model.Registry
 }
 
 var _ adp.Adapter = &adapter{}
 
 // Info ...
-func (a *adapter) Info() (info *model.RegistryInfo, err error) {
-	info = &model.RegistryInfo{
+func (a *adapter) Info() (*model.RegistryInfo, error) {
+	info := &model.RegistryInfo{
 		Type: model.RegistryTypeAliAcr,
 		SupportedResourceTypes: []string{
 			model.ResourceTypeImage,
@@ -141,7 +182,7 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeScheduled,
 		},
 	}
-	return
+	return info, nil
 }
 
 func getAdapterInfo() *model.AdapterPattern {
@@ -184,6 +225,16 @@ func getAdapterInfo() *model.AdapterPattern {
 			Key:   e + "-internal",
 			Value: fmt.Sprintf("https://registry-internal.%s.aliyuncs.com", e),
 		})
+
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e + "-ee-vpc",
+			Value: fmt.Sprintf("https://instanceName-registry-vpc.%s.cr.aliyuncs.com", e),
+		})
+
+		endpoints = append(endpoints, &model.Endpoint{
+			Key:   e + "-ee",
+			Value: fmt.Sprintf("https://instanceName-registry.%s.cr.aliyuncs.com", e),
+		})
 	}
 	info := &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
@@ -194,30 +245,8 @@ func getAdapterInfo() *model.AdapterPattern {
 	return info
 }
 
-func (a *adapter) listNamespaces(c *cr.Client) (namespaces []string, err error) {
-	// list namespaces
-	var nsReq = cr.CreateGetNamespaceListRequest()
-	var nsResp *cr.GetNamespaceListResponse
-	nsReq.SetDomain(a.domain)
-	nsResp, err = c.GetNamespaceList(nsReq)
-	if err != nil {
-		return
-	}
-	var resp = &aliACRNamespaceResp{}
-	err = json.Unmarshal(nsResp.GetHttpContentBytes(), resp)
-	if err != nil {
-		return
-	}
-	for _, ns := range resp.Data.Namespaces {
-		namespaces = append(namespaces, ns.Namespace)
-	}
-
-	log.Debugf("FetchArtifacts.listNamespaces: %#v\n", namespaces)
-
-	return
-}
-
-func (a *adapter) listCandidateNamespaces(c *cr.Client, namespacePattern string) (namespaces []string, err error) {
+func (a *adapter) listCandidateNamespaces(namespacePattern string) ([]string, error) {
+	var namespaces []string
 	if len(namespacePattern) > 0 {
 		if nms, ok := util.IsSpecificPathComponent(namespacePattern); ok {
 			namespaces = append(namespaces, nms...)
@@ -228,19 +257,22 @@ func (a *adapter) listCandidateNamespaces(c *cr.Client, namespacePattern string)
 		}
 	}
 
-	return a.listNamespaces(c)
+	if a.acrAPI == nil {
+		return nil, errors.New("acr api is nil")
+	}
+
+	return a.acrAPI.ListNamespace()
 }
 
 // FetchArtifacts AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API
-func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Resource, err error) {
+func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, error) {
 	log.Debugf("FetchArtifacts.filters: %#v\n", filters)
 
-	var client *cr.Client
-	client, err = cr.NewClientWithAccessKey(a.region, a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
-	if err != nil {
-		return
+	if a.acrAPI == nil {
+		return nil, errors.New("acr api is nil")
 	}
 
+	var resources []*model.Resource
 	// get filter pattern
 	var repoPattern string
 	var tagsPattern string
@@ -254,31 +286,29 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 	log.Debugf("\nrepoPattern=%s tagsPattern=%s\n\n", repoPattern, tagsPattern)
 
 	// get namespaces
-	var namespaces []string
-	namespaces, err = a.listCandidateNamespaces(client, namespacePattern)
+	namespaces, err := a.listCandidateNamespaces(namespacePattern)
 	if err != nil {
-		return
+		return nil, err
 	}
 	log.Debugf("got namespaces: %v \n", namespaces)
 
 	// list repos
-	var repositories []aliRepo
+	var repositories []*repository
 	for _, namespace := range namespaces {
-		var repos []aliRepo
-		repos, err = a.listReposByNamespace(a.region, namespace, client)
+		repos, err := a.acrAPI.ListRepository(namespace)
 		if err != nil {
-			return
+			return nil, err
 		}
 
 		log.Debugf("\nnamespace: %s \t repositories: %#v\n\n", namespace, repos)
 
 		for _, repo := range repos {
 			var ok bool
-			var repoName = filepath.Join(repo.RepoNamespace, repo.RepoName)
+			var repoName = filepath.Join(repo.Namespace, repo.Name)
 			ok, err = util.Match(repoPattern, repoName)
 			log.Debugf("\n Repository: %s\t repoPattern: %s\t Match: %v\n", repoName, repoPattern, ok)
 			if err != nil {
-				return
+				return nil, err
 			}
 			if ok {
 				repositories = append(repositories, repo)
@@ -295,9 +325,9 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 		repo := r
 		runner.AddTask(func() error {
 			var tags []string
-			tags, err = a.getTags(repo, client)
+			tags, err = a.acrAPI.ListRepoTag(repo)
 			if err != nil {
-				return fmt.Errorf("list tags for repo '%s' error: %v", repo.RepoName, err)
+				return fmt.Errorf("list tags for repo '%s' error: %v", repo.Name, err)
 			}
 
 			var artifacts []*model.Artifact
@@ -317,13 +347,12 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
-							Name: filepath.Join(repo.RepoNamespace, repo.RepoName),
+							Name: filepath.Join(repo.Namespace, repo.Name),
 						},
 						Artifacts: filterArtifacts,
 					},
 				}
 			}
-
 			return nil
 		})
 	}
@@ -336,65 +365,5 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) (resources []*model.Re
 		}
 	}
 
-	return
-}
-
-func (a *adapter) listReposByNamespace(_ string, namespace string, c *cr.Client) (repos []aliRepo, err error) {
-	var reposReq = cr.CreateGetRepoListByNamespaceRequest()
-	var reposResp = cr.CreateGetRepoListByNamespaceResponse()
-	reposReq.SetDomain(a.domain)
-	reposReq.RepoNamespace = namespace
-	var page = 1
-	for {
-		reposReq.Page = requests.NewInteger(page)
-		reposResp, err = c.GetRepoListByNamespace(reposReq)
-		if err != nil {
-			return
-		}
-		var resp = &aliReposResp{}
-		err = json.Unmarshal(reposResp.GetHttpContentBytes(), resp)
-		if err != nil {
-			return
-		}
-		repos = append(repos, resp.Data.Repos...)
-
-		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
-			break
-		}
-		page++
-	}
-	return
-}
-
-func (a *adapter) getTags(repo aliRepo, c *cr.Client) (tags []string, err error) {
-	log.Debugf("[ali-acr.getTags]%s: %#v\n", a.domain, repo)
-	var tagsReq = cr.CreateGetRepoTagsRequest()
-	var tagsResp = cr.CreateGetRepoTagsResponse()
-	tagsReq.SetDomain(a.domain)
-	tagsReq.RepoNamespace = repo.RepoNamespace
-	tagsReq.RepoName = repo.RepoName
-	var page = 1
-	for {
-		tagsReq.Page = requests.NewInteger(page)
-		tagsResp, err = c.GetRepoTags(tagsReq)
-		if err != nil {
-			return
-		}
-
-		var resp = &aliTagResp{}
-		err = json.Unmarshal(tagsResp.GetHttpContentBytes(), resp)
-		if err != nil {
-			return
-		}
-		for _, tag := range resp.Data.Tags {
-			tags = append(tags, tag.Tag)
-		}
-
-		if resp.Data.Total-(resp.Data.Page*resp.Data.PageSize) <= 0 {
-			break
-		}
-		page++
-	}
-
-	return
+	return resources, nil
 }

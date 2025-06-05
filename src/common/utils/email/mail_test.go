@@ -38,7 +38,7 @@ func TestSend(t *testing.T) {
 	err := Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
 		subject, message)
-	// bypass the check due to securty policy change on gmail
+	// bypass the check due to security policy change on gmail
 	// TODO
 	// assert.Nil(t, err)
 
@@ -78,7 +78,7 @@ func TestPing(t *testing.T) {
 	// tls connection
 	err := Ping(addr, identity, username, password,
 		timeout, tls, insecure)
-	// bypass the check due to securty policy change on gmail
+	// bypass the check due to security policy change on gmail
 	// TODO
 	// assert.Nil(t, err)
 

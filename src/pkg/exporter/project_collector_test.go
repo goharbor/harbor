@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -22,6 +20,7 @@ import (
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/user"
+	"github.com/stretchr/testify/suite"
 )
 
 var (
@@ -41,8 +40,8 @@ var (
 
 func setupTest(t *testing.T) {
 	test.InitDatabaseFromEnv()
-	ctx := orm.Context()
 
+	ctx := orm.Context()
 	// register projAdmin and assign project admin role
 	aliceID, err := user.Mgr.Create(ctx, &alice)
 	if err != nil {
@@ -137,11 +136,11 @@ func tearDownTest(t *testing.T) {
 	dao.GetOrmer().Raw("delete from harbor_user where user_id in (?, ?, ?)", []int{alice.UserID, bob.UserID, eve.UserID}).Exec()
 }
 
-type PorjectCollectorTestSuite struct {
+type ProjectCollectorTestSuite struct {
 	suite.Suite
 }
 
-func (c *PorjectCollectorTestSuite) TestProjectCollector() {
+func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	pMap := make(map[int64]*projectInfo)
 	updateProjectBasicInfo(pMap)
 	updateProjectMemberInfo(pMap)
@@ -168,10 +167,4 @@ func (c *PorjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 
-}
-
-func TestPorjectCollectorTestSuite(t *testing.T) {
-	setupTest(t)
-	defer tearDownTest(t)
-	suite.Run(t, new(PorjectCollectorTestSuite))
 }

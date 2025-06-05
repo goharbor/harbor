@@ -18,7 +18,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"errors"
-	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -50,11 +49,11 @@ func New(opt *Options, claims jwt.Claims) (*Token, error) {
 func (tk *Token) Raw() (string, error) {
 	key, err := tk.Opt.GetKey()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	raw, err := tk.Token.SignedString(key)
 	if err != nil {
-		log.Debugf(fmt.Sprintf("failed to issue token %v", err))
+		log.Debugf("failed to issue token %v", err)
 		return "", err
 	}
 	return raw, err
@@ -67,7 +66,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		return nil, err
 	}
 	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
-	token, err := parser.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := parser.ParseWithClaims(rawToken, claims, func(_ *jwt.Token) (any, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:
 			return &k.PublicKey, nil
@@ -78,12 +77,12 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		}
 	})
 	if err != nil {
-		log.Errorf(fmt.Sprintf("parse token error, %v", err))
+		log.Errorf("parse token error, %v", err)
 		return nil, err
 	}
 
 	if !token.Valid {
-		log.Errorf(fmt.Sprintf("invalid jwt token, %v", token))
+		log.Errorf("invalid jwt token, %v", token)
 		return nil, errors.New("invalid jwt token")
 	}
 	return &Token{

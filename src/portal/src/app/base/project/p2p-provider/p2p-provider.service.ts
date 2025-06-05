@@ -77,6 +77,18 @@ export const TRIGGER_I18N_MAP = {
     'scheduled(paused)': 'JOB_SERVICE_DASHBOARD.SCHEDULE_PAUSED',
 };
 
+export enum DRAGONFLY_SCOPE {
+    SINGLE_SEED_PEER = 'single_seed_peer',
+    ALL_SEED_PEERS = 'all_seed_peers',
+    ALL_PEERS = 'all_peers',
+}
+
+export const DRAGONFLY_SCOPE_I18N_MAP = {
+    single_seed_peer: 'P2P_PROVIDER.DRAGONFLY.SCOPE_SINGLE_SEED_PEER',
+    all_seed_peers: 'P2P_PROVIDER.DRAGONFLY.SCOPE_ALL_SEED_PEERS',
+    all_peers: 'P2P_PROVIDER.DRAGONFLY.SCOPE_ALL_PEERS',
+};
+
 export const TIME_OUT: number = 7000;
 
 export const PROJECT_SEVERITY_LEVEL_MAP = {

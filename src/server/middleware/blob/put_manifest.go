@@ -49,7 +49,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		return probeBlob(r, descriptor.Digest.String())
 	})
 
-	after := middleware.AfterResponse(func(w http.ResponseWriter, r *http.Request, statusCode int) error {
+	after := middleware.AfterResponse(func(_ http.ResponseWriter, r *http.Request, statusCode int) error {
 		if statusCode != http.StatusCreated {
 			return nil
 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../shared/entities/shared.const';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import {
@@ -94,13 +95,14 @@ export class ListReplicationRuleComponent implements OnInit, OnDestroy {
         PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
         5
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     totalCount: number = 0;
     loading: boolean = true;
 
     paused: boolean = false;
     hiddenArray: boolean[] = getHiddenArrayFromLocalStorage(
         PageSizeMapKeys.LIST_REPLICATION_RULE_COMPONENT,
-        [false, false, false, false, false, false, false, true, true]
+        [false, false, false, false, false, false, true, true, false]
     );
     @ViewChild('datagrid')
     datagrid: ClrDatagrid;

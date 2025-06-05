@@ -277,7 +277,7 @@ func (suite *APIHandlerTestSuite) TestGetPeriodicExecutionsWithQuery() {
 	assert.Equal(suite.T(), 200, code, "expected 200 ok but got %d", code)
 }
 
-// TestScheduledJobs ...
+// TestGetJobs ...
 func (suite *APIHandlerTestSuite) TestGetJobs() {
 	q := &query.Parameter{
 		PageNumber: 2,

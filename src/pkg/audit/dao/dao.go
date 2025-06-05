@@ -51,7 +51,7 @@ func New() DAO {
 	return &dao{}
 }
 
-var allowedMaps = map[string]interface{}{
+var allowedMaps = map[string]any{
 	strings.ToLower(rbac.ActionPull.String()):   struct{}{},
 	strings.ToLower(rbac.ActionCreate.String()): struct{}{},
 	strings.ToLower(rbac.ActionDelete.String()): struct{}{},
@@ -207,7 +207,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("access %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("access %d not found", id)
 	}
 	return nil
 }

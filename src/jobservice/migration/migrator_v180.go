@@ -84,7 +84,7 @@ func (pm *PolicyMigrator) Migrate() error {
 		return errors.Wrap(err, "get job stats list error")
 	}
 
-	args := []interface{}{
+	args := []any{
 		"id_placeholder",
 		"id",
 		"kind",
@@ -126,7 +126,7 @@ func (pm *PolicyMigrator) Migrate() error {
 					logger.Errorf("send command MULTI failed with error: %s", err)
 					continue
 				}
-				setArgs := []interface{}{
+				setArgs := []any{
 					fullID,
 					"status",
 					job.ScheduledStatus.String(), // make sure the status of periodic job is "Scheduled"
@@ -146,7 +146,7 @@ func (pm *PolicyMigrator) Migrate() error {
 				}
 
 				// Remove useless fields
-				rmArgs := []interface{}{
+				rmArgs := []any{
 					fullID,
 					"status_hook",
 					"multiple_executions",
@@ -210,7 +210,7 @@ func (pm *PolicyMigrator) Migrate() error {
 // getAllJobStatsIDs get all the IDs of the existing jobs
 func getAllJobStatsIDs(conn redis.Conn, ns string) ([]string, error) {
 	pattern := rds.KeyJobStats(ns, "*")
-	args := []interface{}{
+	args := []any{
 		0,
 		"MATCH",
 		pattern,
@@ -218,7 +218,7 @@ func getAllJobStatsIDs(conn redis.Conn, ns string) ([]string, error) {
 		100,
 	}
 
-	allFullIDs := make([]interface{}, 0)
+	allFullIDs := make([]any, 0)
 
 	for {
 		// Use SCAN to iterate the IDs
@@ -232,7 +232,7 @@ func getAllJobStatsIDs(conn redis.Conn, ns string) ([]string, error) {
 			return nil, errors.Errorf("Invalid result returned for the SCAN command: %#v", values)
 		}
 
-		if fullIDs, ok := values[1].([]interface{}); ok {
+		if fullIDs, ok := values[1].([]any); ok {
 			allFullIDs = append(allFullIDs, fullIDs...)
 		}
 
@@ -301,7 +301,7 @@ func getPeriodicPolicy(numericID int64, conn redis.Conn, ns string) (*period.Pol
 
 // Clear the duplicated policy entries for the job "IMAGE_GC" and "IMAGE_SCAN_ALL"
 func clearDuplicatedPolicies(conn redis.Conn, ns string) error {
-	hash := make(map[string]interface{})
+	hash := make(map[string]any)
 
 	bytes, err := redis.Values(conn.Do("ZREVRANGE", rds.KeyPeriodicPolicy(ns), 0, -1, "WITHSCORES"))
 	if err != nil {
@@ -362,7 +362,7 @@ func delScoreZset(conn redis.Conn, ns string) {
 	}
 }
 
-func toString(v interface{}) string {
+func toString(v any) string {
 	if v == nil {
 		return ""
 	}
@@ -374,7 +374,7 @@ func toString(v interface{}) string {
 	return ""
 }
 
-func toInt(v interface{}) int64 {
+func toInt(v any) int64 {
 	if v == nil {
 		return -1
 	}
@@ -390,7 +390,7 @@ func toInt(v interface{}) int64 {
 
 func hashKey(p *period.Policy) string {
 	key := p.JobName
-	if p.JobParameters != nil && len(p.JobParameters) > 0 {
+	if len(p.JobParameters) > 0 {
 		if bytes, err := json.Marshal(p.JobParameters); err == nil {
 			key = fmt.Sprintf("%s:%s", key, string(bytes))
 		}

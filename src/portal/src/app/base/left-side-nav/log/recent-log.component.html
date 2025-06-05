@@ -1,7 +1,4 @@
 <div>
-    <h2 class="custom-h2" sub-header-title>
-        {{ 'SIDE_NAV.LOGS' | translate }}
-    </h2>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
@@ -77,9 +74,12 @@
                     [(clrDgPage)]="currentPage"
                     [clrDgPageSize]="pageSize"
                     [clrDgTotalItems]="totalCount">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span *ngIf="totalCount"
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}

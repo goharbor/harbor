@@ -62,8 +62,6 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 	}
 	return &adapter{
 		Adapter:  native.NewAdapter(registry),
-		region:   "test-region",
-		domain:   server.URL,
 		registry: registry,
 	}, server
 }
@@ -79,46 +77,91 @@ func TestAdapter_Info(t *testing.T) {
 	assert.EqualValues(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 }
 
-func Test_getRegion(t *testing.T) {
+func Test_getRegistryURL(t *testing.T) {
 	tests := []struct {
-		name       string
-		url        string
-		wantRegion string
-		wantErr    bool
+		name    string
+		url     string
+		want    string
+		wantErr bool
 	}{
-		{"registry shanghai", "https://registry.cn-shanghai.aliyuncs.com", "cn-shanghai", false},
-		{"invalid registry shanghai", "http://registry.cn-shanghai.aliyuncs.com", "", true},
-		{"registry hangzhou", "https://registry.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
-		{"registry hangzhou vpc", "https://registry-vpc.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
-		{"registry hangzhou internal", "https://registry-internal.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
-		{"cr shanghai", "https://cr.cn-shanghai.aliyuncs.com", "cn-shanghai", false},
-		{"cr hangzhou", "https://cr.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
-		{"invalid cr url", "https://acr.cn-hangzhou.aliyuncs.com", "", true},
-		{"invalid registry url", "https://registry.cn-hangzhou.ali.com", "", true},
+		{
+			"empty url",
+			"",
+			"",
+			true,
+		},
+		{
+			"just return url",
+			"https://cr.cn-hangzhou.aliyun.com",
+			"https://cr.cn-hangzhou.aliyun.com",
+			false,
+		},
+		{
+			"change match url",
+			"https://cr.cn-hangzhou.aliyuncs.com",
+			"https://registry.cn-hangzhou.aliyuncs.com",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotRegion, err := getRegion(tt.url)
+			got, err := getRegistryURL(tt.url)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			}
-			assert.Equal(t, tt.wantRegion, gotRegion)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-var urlForBenchmark = []string{
-	"https://cr.cn-hangzhou.aliyuncs.com",
-	"https://registry.cn-shanghai.aliyuncs.com",
-	"https://registry-vpc.cn-shanghai.aliyuncs.com",
-	"https://registry-internal.cn-shanghai.aliyuncs.com",
-}
-
-func BenchmarkGetRegion(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		for _, url := range urlForBenchmark {
-			getRegion(url)
-		}
+func Test_parseRegistryService(t *testing.T) {
+	tests := []struct {
+		name     string
+		service  string
+		wantInfo *registryServiceInfo
+		wantErr  bool
+	}{
+		{
+			"not acr Service",
+			"otherregistry.cn-hangzhou:china",
+			nil,
+			true,
+		},
+		{
+			"empty Service",
+			"",
+			nil,
+			true,
+		},
+		{
+			"acr ee service",
+			"registry.aliyuncs.com:cn-hangzhou:china:cri-xxxxxxxxx",
+			&registryServiceInfo{
+				IsACREE:    true,
+				RegionID:   "cn-hangzhou",
+				InstanceID: "cri-xxxxxxxxx",
+			},
+			false,
+		},
+		{
+			"acr service",
+			"registry.aliyuncs.com:cn-hangzhou:26842",
+			&registryServiceInfo{
+				IsACREE:    false,
+				RegionID:   "cn-hangzhou",
+				InstanceID: "",
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info, err := parseRegistryService(tt.service)
+			if tt.wantErr {
+				assert.NotNil(t, err)
+			}
+			assert.Equal(t, tt.wantInfo, info)
+		})
 	}
 }
 
@@ -132,9 +175,6 @@ func Test_adapter_FetchArtifacts(t *testing.T) {
 }
 func Test_aliyunAuthCredential_isCacheTokenValid(t *testing.T) {
 	type fields struct {
-		region              string
-		accessKey           string
-		secretKey           string
 		cacheToken          *registryTemporaryToken
 		cacheTokenExpiredAt time.Time
 	}
@@ -145,23 +185,22 @@ func Test_aliyunAuthCredential_isCacheTokenValid(t *testing.T) {
 		fields fields
 		want   bool
 	}{
-		{"nil cacheTokenExpiredAt", fields{"test-region", "MockAccessKey", "MockSecretKey", nil, nilTime}, false},
-		{"nil cacheToken", fields{"test-region", "MockAccessKey", "MockSecretKey", nil, time.Time{}}, false},
-		{"expired", fields{"test-region", "MockAccessKey", "MockSecretKey", &registryTemporaryToken{}, time.Now().AddDate(0, 0, -1)}, false},
-		{"ok", fields{"test-region", "MockAccessKey", "MockSecretKey", &registryTemporaryToken{}, time.Now().AddDate(0, 0, 1)}, true},
+		{"nil cacheTokenExpiredAt", fields{nil, nilTime}, false},
+		{"nil cacheToken", fields{nil, time.Time{}}, false},
+		{"expired", fields{&registryTemporaryToken{}, time.Now().AddDate(0, 0, -1)}, false},
+		{"ok", fields{&registryTemporaryToken{}, time.Now().AddDate(0, 0, 1)}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &aliyunAuthCredential{
-				region:              tt.fields.region,
-				accessKey:           tt.fields.accessKey,
-				secretKey:           tt.fields.secretKey,
 				cacheToken:          tt.fields.cacheToken,
 				cacheTokenExpiredAt: tt.fields.cacheTokenExpiredAt,
 			}
 			if got := a.isCacheTokenValid(); got != tt.want {
+				fmt.Println(got)
 				assert.Equal(t, got, tt.want)
 			}
 		})
 	}
+
 }

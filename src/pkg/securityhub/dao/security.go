@@ -105,7 +105,7 @@ type filterMetaData struct {
 	// ColumnName is the column name in the database, if it is empty, the key will be used as the column name
 	ColumnName string
 	// FilterFunc is the function to generate the filter sql, default is exactMatchFilter
-	FilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
+	FilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []any)
 }
 
 // filterMap define the query condition
@@ -120,9 +120,9 @@ var filterMap = map[string]*filterMetaData{
 	"digest":          &filterMetaData{DataType: stringType, ColumnName: "a.digest"},
 }
 
-var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []interface{})
+var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []any)
 
-func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []any) {
 	if query == nil {
 		return
 	}
@@ -138,7 +138,7 @@ func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr str
 	return
 }
 
-func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []interface{}) {
+func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []any) {
 	if query == nil {
 		return
 	}
@@ -151,7 +151,7 @@ func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, 
 	return
 }
 
-func tagFilter(ctx context.Context, _ string, query *q.Query) (sqlStr string, params []interface{}) {
+func tagFilter(ctx context.Context, _ string, query *q.Query) (sqlStr string, params []any) {
 	if query == nil {
 		return
 	}
@@ -272,7 +272,7 @@ func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string,
 		return 0, err
 	}
 	sqlStr := vulnerabilitySQL
-	params := []interface{}{registrationUUID}
+	params := []any{registrationUUID}
 	if err := checkQFilter(query, filterMap); err != nil {
 		return 0, err
 	}
@@ -293,7 +293,7 @@ func (d *dao) CountVulnerabilities(ctx context.Context, registrationUUID string,
 }
 
 // countExceedLimit check if the count is exceed to limit 1000, avoid count all record for large table
-func (d *dao) countExceedLimit(ctx context.Context, sqlStr string, params []interface{}) (bool, error) {
+func (d *dao) countExceedLimit(ctx context.Context, sqlStr string, params []any) (bool, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return false, err
@@ -313,7 +313,7 @@ func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, 
 		return nil, err
 	}
 	sqlStr := vulnerabilitySQL
-	params := []interface{}{registrationUUID}
+	params := []any{registrationUUID}
 	if err := checkQFilter(query, filterMap); err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func (d *dao) ListVulnerabilities(ctx context.Context, registrationUUID string, 
 	return vulnRecs, err
 }
 
-func applyVulFilter(ctx context.Context, sqlStr string, query *q.Query, params []interface{}) (queryStr string, newParam []interface{}) {
+func applyVulFilter(ctx context.Context, sqlStr string, query *q.Query, params []any) (queryStr string, newParam []any) {
 	if query == nil {
 		return sqlStr, params
 	}
@@ -342,7 +342,7 @@ func applyVulFilter(ctx context.Context, sqlStr string, query *q.Query, params [
 }
 
 // applyVulPagination apply pagination to the query and sort by cvss_score_v3 desc
-func applyVulPagination(sqlStr string, query *q.Query, params []interface{}) (string, []interface{}) {
+func applyVulPagination(sqlStr string, query *q.Query, params []any) (string, []any) {
 	offSet := int64(0)
 	pageSize := int64(15)
 	if query != nil && query.PageNumber > 1 {

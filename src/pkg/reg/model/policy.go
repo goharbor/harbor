@@ -35,9 +35,9 @@ const (
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type       string      `json:"type"`
-	Value      interface{} `json:"value"`
-	Decoration string      `json:"decoration,omitempty"`
+	Type       string `json:"type"`
+	Value      any    `json:"value"`
+	Decoration string `json:"decoration,omitempty"`
 }
 
 func (f *Filter) Validate() error {
@@ -52,7 +52,7 @@ func (f *Filter) Validate() error {
 			rt := value
 			if !(rt == ResourceTypeArtifact || rt == ResourceTypeImage) {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("invalid resource filter: %s", value)
+					WithMessagef("invalid resource filter: %s", value)
 			}
 		}
 		if f.Type == FilterTypeName || f.Type == FilterTypeResource {
@@ -62,7 +62,7 @@ func (f *Filter) Validate() error {
 			}
 		}
 	case FilterTypeLabel:
-		labels, ok := f.Value.([]interface{})
+		labels, ok := f.Value.([]any)
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("the type of label filter value isn't string slice")
@@ -81,7 +81,7 @@ func (f *Filter) Validate() error {
 
 	if f.Decoration != "" && f.Decoration != Matches && f.Decoration != Excludes {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("invalid filter decoration, :%s", f.Decoration)
+			WithMessagef("invalid filter decoration, :%s", f.Decoration)
 	}
 
 	return nil

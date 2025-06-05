@@ -498,6 +498,37 @@
                 </option>
             </select>
         </clr-select-container>
+        <clr-checkbox-container>
+            <label for="ldapGroupAttachParallel">
+                {{ 'CONFIG.LDAP.GROUP_ATTACH_PARALLEL' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        *clrIfOpen
+                        clrPosition="top-right"
+                        clrSize="lg">
+                        <span>{{
+                            'CONFIG.LDAP.GROUP_ATTACH_PARALLEL_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    (ngModelChange)="setLdapGroupAttachParallelValue($event)"
+                    [disabled]="
+                        disabled(currentConfig.ldap_group_attach_parallel)
+                    "
+                    [ngModel]="currentConfig.ldap_group_attach_parallel.value"
+                    clrCheckbox
+                    id="ldapGroupAttachParallel"
+                    name="ldapGroupAttachParallel"
+                    type="checkbox" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
     </section>
     <clr-checkbox-container *ngIf="showSelfReg">
         <label for="selfReg"
@@ -875,7 +906,7 @@
                 size="40"
                 required
                 [disabled]="disabled(currentConfig.oidc_scope)"
-                pattern="^([\w.]+,){0,}openid(,[\w.]+){0,}$" />
+                pattern='^(((?!["\\ ])[ -~])+,){0,}openid(,((?!["\\ ])[ -~])+){0,}$' />
             <clr-control-error>{{
                 'TOOLTIP.SCOPE_REQUIRED' | translate
             }}</clr-control-error>
@@ -933,6 +964,32 @@
                     [disabled]="disabled(currentConfig.oidc_auto_onboard)"
                     (change)="changeAutoOnBoard()"
                     [(ngModel)]="currentConfig.oidc_auto_onboard.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="oidcLogout"
+                >{{ 'CONFIG.OIDC.OIDC_LOGOUT' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{ 'TOOLTIP.OIDC_LOGOUT' | translate }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="oidcLogout"
+                    id="oidcLogout"
+                    [disabled]="disabled(currentConfig.oidc_logout)"
+                    [(ngModel)]="currentConfig.oidc_logout.value" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
         <clr-input-container>

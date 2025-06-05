@@ -243,12 +243,12 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 
 	// In case it does not exist
 	if r == nil {
-		return errors.PreconditionFailedError(nil).WithMessage("no available scanner for project: %d", artifact.ProjectID)
+		return errors.PreconditionFailedError(nil).WithMessagef("no available scanner for project: %d", artifact.ProjectID)
 	}
 
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.PreconditionFailedError(nil).WithMessage("scanner %s is deactivated", r.Name)
+		return errors.PreconditionFailedError(nil).WithMessagef("scanner %s is deactivated", r.Name)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -266,7 +266,7 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 			// skip to return err for event related scan
 			return nil
 		}
-		return errors.BadRequestError(nil).WithMessage("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
+		return errors.BadRequestError(nil).WithMessagef("the configured scanner %s does not support scanning artifact with mime type %s", r.Name, artifact.ManifestMediaType)
 	}
 
 	var (
@@ -315,18 +315,18 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	}
 
 	if opts.ExecutionID == 0 {
-		extraAttrs := map[string]interface{}{
-			artfiactKey: map[string]interface{}{
+		extraAttrs := map[string]any{
+			artfiactKey: map[string]any{
 				"id":              artifact.ID,
 				"project_id":      artifact.ProjectID,
 				"repository_name": artifact.RepositoryName,
 				"digest":          artifact.Digest,
 			},
-			registrationKey: map[string]interface{}{
+			registrationKey: map[string]any{
 				"id":   r.ID,
 				"name": r.Name,
 			},
-			enabledCapabilities: map[string]interface{}{
+			enabledCapabilities: map[string]any{
 				"type": opts.GetScanType(),
 			},
 		}
@@ -376,15 +376,14 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 	}
 
 	if len(executions) == 0 {
-		message := fmt.Sprintf("no scan job for artifact digest=%v", artifact.Digest)
-		return errors.BadRequestError(nil).WithMessage(message)
+		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact digest=%v", artifact.Digest)
 	}
 	execution := executions[0]
 	return bc.execMgr.Stop(ctx, execution.ID)
 }
 
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	extra := make(map[string]interface{})
+	extra := make(map[string]any)
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
@@ -512,7 +511,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 
 	extraAttrs := exec.ExtraAttrs
 	if extraAttrs == nil {
-		extraAttrs = map[string]interface{}{"summary": summary}
+		extraAttrs = map[string]any{"summary": summary}
 	} else {
 		extraAttrs["summary"] = summary
 	}
@@ -590,7 +589,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if r == nil {
-		return nil, errors.NotFoundError(nil).WithMessage("no scanner registration configured for project: %d", artifact.ProjectID)
+		return nil, errors.NotFoundError(nil).WithMessagef("no scanner registration configured for project: %d", artifact.ProjectID)
 	}
 
 	artifacts, scannable, err := bc.collectScanningArtifacts(ctx, r, artifact)
@@ -599,7 +598,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 	}
 
 	if !scannable {
-		return nil, errors.NotFoundError(nil).WithMessage("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
+		return nil, errors.NotFoundError(nil).WithMessagef("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
 	groupReports := make([][]*scan.Report, len(artifacts))
@@ -645,7 +644,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 }
 
 // GetSummary ...
-func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, scanType string, mimeTypes []string) (map[string]interface{}, error) {
+func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, scanType string, mimeTypes []string) (map[string]any, error) {
 	handler := sca.GetScanHandler(scanType)
 	return handler.GetSummary(ctx, artifact, mimeTypes)
 }
@@ -664,7 +663,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	if err != nil {
 		return nil, err
 	}
-	artifactMap := map[int64]interface{}{}
+	artifactMap := map[int64]any{}
 	for _, a := range artifacts {
 		artifactMap[a.ID] = struct{}{}
 	}
@@ -681,7 +680,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	reportUUIDToTasks := map[string]*task.Task{}
 	for _, t := range tasks {
 		if !scanTaskForArtifacts(t, artifactMap) {
-			return nil, errors.NotFoundError(nil).WithMessage("scan log with uuid: %s not found", uuid)
+			return nil, errors.NotFoundError(nil).WithMessagef("scan log with uuid: %s not found", uuid)
 		}
 		for _, reportUUID := range GetReportUUIDs(t.ExtraAttrs) {
 			reportUUIDToTasks[reportUUID] = t
@@ -752,7 +751,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	return b.Bytes(), nil
 }
 
-func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bool {
+func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]any) bool {
 	if task == nil {
 		return false
 	}
@@ -864,8 +863,11 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 			Description: "for scan",
 			ProjectID:   projectID,
 			Duration:    -1,
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
-		Level: robot.LEVELPROJECT,
+		ProjectName: projectName,
+		Level:       robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
 			{
 				Kind:      "project",
@@ -959,7 +961,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 		reportUUIDs[i] = report.UUID
 	}
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[sca.JobParamRegistration] = rJSON
 	params[sca.JobParameterAuthType] = param.Registration.GetRegistryAuthorizationType()
 	params[sca.JobParameterRequest] = sJSON
@@ -977,7 +979,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 
 	// keep the report uuids in array so that when ?| operator support by the FilterRaw method of beego's orm
 	// we can list the tasks of the scan reports by one SQL
-	extraAttrs := map[string]interface{}{
+	extraAttrs := map[string]any{
 		artifactIDKey:  param.Artifact.ID,
 		artifactTagKey: param.Tag,
 		robotIDKey:     robot.ID,
@@ -1040,7 +1042,7 @@ func (bc *basicController) getScanTask(ctx context.Context, reportUUID string) (
 	}
 
 	if len(tasks) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("task for report %s not found", reportUUID)
+		return nil, errors.NotFoundError(nil).WithMessagef("task for report %s not found", reportUUID)
 	}
 
 	return tasks[0], nil
@@ -1108,7 +1110,7 @@ func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (b
 	return false, nil
 }
 
-func getArtifactID(extraAttrs map[string]interface{}) int64 {
+func getArtifactID(extraAttrs map[string]any) int64 {
 	var artifactID float64
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[artifactIDKey]; ok {
@@ -1119,7 +1121,7 @@ func getArtifactID(extraAttrs map[string]interface{}) int64 {
 	return int64(artifactID)
 }
 
-func getArtifactTag(extraAttrs map[string]interface{}) string {
+func getArtifactTag(extraAttrs map[string]any) string {
 	var tag string
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[artifactTagKey]; ok {
@@ -1131,13 +1133,13 @@ func getArtifactTag(extraAttrs map[string]interface{}) string {
 }
 
 // GetReportUUIDs returns the report UUIDs from the extra attributes
-func GetReportUUIDs(extraAttrs map[string]interface{}) []string {
+func GetReportUUIDs(extraAttrs map[string]any) []string {
 	var reportUUIDs []string
 
 	if extraAttrs != nil {
 		value, ok := extraAttrs[reportUUIDsKey]
 		if ok {
-			arr, _ := value.([]interface{})
+			arr, _ := value.([]any)
 			for _, el := range arr {
 				if s, ok := el.(string); ok {
 					reportUUIDs = append(reportUUIDs, s)
@@ -1149,7 +1151,7 @@ func GetReportUUIDs(extraAttrs map[string]interface{}) []string {
 	return reportUUIDs
 }
 
-func getRobotID(extraAttrs map[string]interface{}) int64 {
+func getRobotID(extraAttrs map[string]any) int64 {
 	var trackID float64
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[robotIDKey]; ok {

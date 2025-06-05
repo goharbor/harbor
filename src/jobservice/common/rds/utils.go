@@ -29,7 +29,7 @@ import (
 var ErrNoElements = errors.New("no elements got from the backend")
 
 // HmSet sets the properties of hash map
-func HmSet(conn redis.Conn, key string, fieldAndValues ...interface{}) error {
+func HmSet(conn redis.Conn, key string, fieldAndValues ...any) error {
 	if conn == nil {
 		return errors.New("nil redis connection")
 	}
@@ -42,7 +42,7 @@ func HmSet(conn redis.Conn, key string, fieldAndValues ...interface{}) error {
 		return errors.New("no properties specified to do HMSET")
 	}
 
-	args := make([]interface{}, 0, len(fieldAndValues)+2)
+	args := make([]any, 0, len(fieldAndValues)+2)
 
 	args = append(args, key)
 	args = append(args, fieldAndValues...)
@@ -55,7 +55,7 @@ func HmSet(conn redis.Conn, key string, fieldAndValues ...interface{}) error {
 
 // HmGet gets values of multiple fields
 // Values have same order with the provided fields
-func HmGet(conn redis.Conn, key string, fields ...interface{}) ([]interface{}, error) {
+func HmGet(conn redis.Conn, key string, fields ...any) ([]any, error) {
 	if conn == nil {
 		return nil, errors.New("nil redis connection")
 	}
@@ -68,7 +68,7 @@ func HmGet(conn redis.Conn, key string, fields ...interface{}) ([]interface{}, e
 		return nil, errors.New("no fields specified to do HMGET")
 	}
 
-	args := make([]interface{}, 0, len(fields)+1)
+	args := make([]any, 0, len(fields)+1)
 	args = append(args, key)
 	args = append(args, fields...)
 
@@ -111,7 +111,7 @@ func GetZsetByScore(conn redis.Conn, key string, scores []int64) ([]JobScore, er
 
 // AcquireLock acquires a redis lock with specified expired time
 func AcquireLock(conn redis.Conn, lockerKey string, lockerID string, expireTime int64) error {
-	args := []interface{}{lockerKey, lockerID, "NX", "EX", expireTime}
+	args := []any{lockerKey, lockerID, "NX", "EX", expireTime}
 	res, err := conn.Do("SET", args...)
 	if err != nil {
 		return err

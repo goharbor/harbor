@@ -30,7 +30,7 @@ var (
 
 // FetchOrSave retrieves the value for the key if present in the cache.
 // Otherwise, it saves the value from the builder and retrieves the value for the key again.
-func FetchOrSave(ctx context.Context, c Cache, key string, value interface{}, builder func() (interface{}, error), expiration ...time.Duration) error {
+func FetchOrSave(ctx context.Context, c Cache, key string, value any, builder func() (any, error), expiration ...time.Duration) error {
 	err := c.Fetch(ctx, key, value)
 	// value found from the cache
 	if err == nil {

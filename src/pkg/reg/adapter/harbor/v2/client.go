@@ -30,6 +30,7 @@ import (
 
 type client struct {
 	*base.Client
+	pageSize int64
 }
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
@@ -51,8 +52,12 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 	project, repo := utils.ParseRepository(repo)
 	repo = repository.Encode(repo)
-	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true&with_accessory=true",
-		c.BasePath(), project, repo)
+	// set the default value to equal the value specified when the UI submits the request
+	if c.pageSize == 0 {
+		c.pageSize = 15
+	}
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?page_size=%d&with_label=true&with_accessory=true",
+		c.BasePath(), project, repo, c.pageSize)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
 		return nil, err

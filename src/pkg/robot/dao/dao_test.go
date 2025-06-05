@@ -52,6 +52,8 @@ func (suite *DaoTestSuite) robots() {
 		Description: "test3 description",
 		ProjectID:   1,
 		Secret:      suite.RandString(10),
+		CreatorType: "local",
+		CreatorRef:  int64(1),
 	})
 	suite.Nil(err)
 
@@ -87,7 +89,7 @@ func (suite *DaoTestSuite) TestDelete() {
 
 func (suite *DaoTestSuite) TestList() {
 	robots, err := suite.dao.List(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"name": "test3",
 		},
 	})
@@ -104,7 +106,7 @@ func (suite *DaoTestSuite) TestList() {
 	_, err = suite.dao.Create(orm.Context(), r)
 	suite.Nil(err)
 	robots, err = suite.dao.List(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"name":    "testvisible",
 			"visible": true,
 		},
@@ -120,6 +122,7 @@ func (suite *DaoTestSuite) TestGet() {
 	r, err := suite.dao.Get(orm.Context(), suite.robotID3)
 	suite.Nil(err)
 	suite.Equal("test3", r.Name)
+	suite.Equal("local", r.CreatorType)
 }
 
 func (suite *DaoTestSuite) TestCount() {
@@ -130,7 +133,7 @@ func (suite *DaoTestSuite) TestCount() {
 
 	// query by name
 	total, err = suite.dao.Count(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"name": "test3",
 		},
 	})
@@ -153,7 +156,7 @@ func (suite *DaoTestSuite) TestUpdate() {
 
 func (suite *DaoTestSuite) TestDeleteByProjectID() {
 	robots, err := suite.dao.List(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"project_id": 2,
 		},
 	})
@@ -163,7 +166,7 @@ func (suite *DaoTestSuite) TestDeleteByProjectID() {
 	suite.Nil(err)
 
 	robots, err = suite.dao.List(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"project_id": 2,
 		},
 	})

@@ -92,7 +92,7 @@ func (u *userGroupAPI) GetUserGroup(ctx context.Context, params operation.GetUse
 		return u.SendError(ctx, err)
 	}
 	if ug == nil {
-		return u.SendError(ctx, errors.NotFoundError(nil).WithMessage("the user group with id %v is not found", params.GroupID))
+		return u.SendError(ctx, errors.NotFoundError(nil).WithMessagef("the user group with id %v is not found", params.GroupID))
 	}
 	userGroup := &models.UserGroup{
 		GroupName:   ug.GroupName,

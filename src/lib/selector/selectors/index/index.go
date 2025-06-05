@@ -94,7 +94,7 @@ func Get(kind, decoration, pattern, extras string) (selector.Selector, error) {
 func Index() []*IndexedMeta {
 	all := make([]*IndexedMeta, 0)
 
-	index.Range(func(k, v interface{}) bool {
+	index.Range(func(_, v any) bool {
 		if item, ok := v.(*indexedItem); ok {
 			all = append(all, item.Meta)
 			return true

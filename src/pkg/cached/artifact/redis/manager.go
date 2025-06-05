@@ -65,6 +65,10 @@ func (m *Manager) List(ctx context.Context, query *q.Query) ([]*artifact.Artifac
 	return m.delegator.List(ctx, query)
 }
 
+func (m *Manager) ListWithLatest(ctx context.Context, query *q.Query) ([]*artifact.Artifact, error) {
+	return m.delegator.ListWithLatest(ctx, query)
+}
+
 func (m *Manager) Create(ctx context.Context, artifact *artifact.Artifact) (int64, error) {
 	return m.delegator.Create(ctx, artifact)
 }

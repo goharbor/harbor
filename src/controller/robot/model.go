@@ -39,10 +39,11 @@ const (
 // Robot ...
 type Robot struct {
 	model.Robot
-	ProjectName string
-	Level       string
-	Editable    bool          `json:"editable"`
-	Permissions []*Permission `json:"permissions"`
+	ProjectName     string
+	ProjectNameOrID any
+	Level           string
+	Editable        bool          `json:"editable"`
+	Permissions     []*Permission `json:"permissions"`
 }
 
 // IsSysLevel, true is a system level robot, others are project level.
@@ -83,4 +84,5 @@ func (p *Permission) IsCoverAll() bool {
 // Option ...
 type Option struct {
 	WithPermission bool
+	Operator       string
 }

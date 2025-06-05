@@ -25,13 +25,16 @@ import (
 
 	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnai"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -44,7 +47,7 @@ import (
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
-	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	trashmodel "github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
@@ -78,6 +81,7 @@ var (
 		cnab.ArtifactTypeCNAB:   icon.DigestOfIconCNAB,
 		wasm.ArtifactTypeWASM:   icon.DigestOfIconWASM,
 		sbom.ArtifactTypeSBOM:   icon.DigestOfIconAccSBOM,
+		cnai.ArtifactTypeCNAI:   icon.DigestOfIconCNAI,
 	}
 )
 
@@ -118,6 +122,8 @@ type Controller interface {
 	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
 	// HasUnscannableLayer check artifact with digest if has unscannable layer
 	HasUnscannableLayer(ctx context.Context, dgst string) (bool, error)
+	// ListWithLatest list the artifacts when the latest_in_repository in the query was set
+	ListWithLatest(ctx context.Context, query *q.Query, option *Option) (artifacts []*Artifact, err error)
 }
 
 // NewController creates an instance of the default artifact controller
@@ -133,6 +139,7 @@ func NewController() Controller {
 		regCli:       registry.Cli,
 		abstractor:   NewAbstractor(),
 		accessoryMgr: accessory.Mgr,
+		proCtl:       project.Ctl,
 	}
 }
 
@@ -147,6 +154,7 @@ type controller struct {
 	regCli       registry.Client
 	abstractor   Abstractor
 	accessoryMgr accessory.Manager
+	proCtl       project.Controller
 }
 
 type ArtOption struct {
@@ -171,7 +179,19 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 			}
 		}
 	}
-	// fire event
+
+	projectName, _ := utils.ParseRepository(repository)
+	p, err := c.proCtl.GetByName(ctx, projectName)
+	if err != nil {
+		return false, 0, err
+	}
+
+	// Does not fire event only when the current project is a proxy-cache project and the artifact already exists.
+	if p.IsProxy() && !created {
+		return created, artifact.ID, nil
+	}
+
+	// fire event for create
 	e := &metadata.PushArtifactEventMetadata{
 		Ctx:      ctx,
 		Artifact: artifact,
@@ -215,7 +235,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	}
 
 	// populate the artifact type
-	artifact.Type = processor.Get(artifact.MediaType).GetArtifactType(ctx, artifact)
+	artifact.Type = processor.Get(artifact.ResolveArtifactType()).GetArtifactType(ctx, artifact)
 
 	// create it
 	// use orm.WithTransaction here to avoid the issue:
@@ -293,7 +313,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 		return nil, err
 	}
 	tags, err := c.tagCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": repo.RepositoryID,
 			"Name":         tag,
 		},
@@ -303,7 +323,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 	}
 	if len(tags) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("artifact %s:%s not found", repository, tag)
+			WithMessagef("artifact %s:%s not found", repository, tag)
 	}
 	return c.Get(ctx, tags[0].ArtifactID, option)
 }
@@ -322,7 +342,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 // the error handling logic for the root parent artifact and others is different
 // "isAccessory" is used to specify whether the artifact is an accessory.
 func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAccessory bool) error {
-	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true})
+	art, err := c.Get(ctx, id, &Option{WithTag: true, WithAccessory: true, WithLabel: true})
 	if err != nil {
 		// return nil if the nonexistent artifact isn't the root parent
 		if !isRoot && errors.IsErr(err, errors.NotFoundCode) {
@@ -336,7 +356,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		return nil
 	}
 	parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ChildID": id,
 		},
 	})
@@ -365,7 +385,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 		if acc.IsHard() {
 			// if this acc artifact has parent(is child), set isRoot to false
 			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"ChildID": acc.GetData().ArtifactID,
 				},
 			})
@@ -433,7 +453,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	if err = orm.WithTransaction(func(ctx context.Context) error {
-		_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
+		_, err = c.artrashMgr.Create(ctx, &trashmodel.ArtifactTrash{
 			MediaType:         art.MediaType,
 			ManifestMediaType: art.ManifestMediaType,
 			RepositoryName:    art.RepositoryName,
@@ -446,14 +466,20 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 
 	// only fire event for the root parent artifact
 	if isRoot {
-		var tags []string
+		var tags, labels []string
 		for _, tag := range art.Tags {
 			tags = append(tags, tag.Name)
 		}
+
+		for _, label := range art.Labels {
+			labels = append(labels, label.Name)
+		}
+
 		notification.AddEvent(ctx, &metadata.DeleteArtifactEventMetadata{
 			Ctx:      ctx,
 			Artifact: &art.Artifact,
 			Tags:     tags,
+			Labels:   labels,
 		})
 	}
 
@@ -589,7 +615,7 @@ func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition
 	if err != nil {
 		return nil, err
 	}
-	return processor.Get(artifact.MediaType).AbstractAddition(ctx, artifact, addition)
+	return processor.Get(artifact.ResolveArtifactType()).AbstractAddition(ctx, artifact, addition)
 }
 
 func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error) {
@@ -726,7 +752,7 @@ func (c *controller) populateIcon(art *Artifact) {
 
 func (c *controller) populateTags(ctx context.Context, art *Artifact, option *tag.Option) {
 	tags, err := c.tagCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"artifact_id": art.ID,
 		},
 	}, option)
@@ -747,7 +773,7 @@ func (c *controller) populateLabels(ctx context.Context, art *Artifact) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types := processor.Get(artifact.MediaType).ListAdditionTypes(ctx, &artifact.Artifact)
+	types := processor.Get(artifact.ResolveArtifactType()).ListAdditionTypes(ctx, &artifact.Artifact)
 	if len(types) > 0 {
 		version := lib.GetAPIVersion(ctx)
 		for _, t := range types {
@@ -781,4 +807,17 @@ func (c *controller) HasUnscannableLayer(ctx context.Context, dgst string) (bool
 		}
 	}
 	return false, nil
+}
+
+// ListWithLatest ...
+func (c *controller) ListWithLatest(ctx context.Context, query *q.Query, option *Option) (artifacts []*Artifact, err error) {
+	arts, err := c.artMgr.ListWithLatest(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var res []*Artifact
+	for _, art := range arts {
+		res = append(res, c.assembleArtifact(ctx, art, option))
+	}
+	return res, nil
 }

@@ -166,7 +166,7 @@ func (t *taskDAO) Update(ctx context.Context, task *Task, props ...string) error
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("task %d not found", task.ID)
+		return errors.NotFoundError(nil).WithMessagef("task %d not found", task.ID)
 	}
 	return nil
 }
@@ -217,7 +217,7 @@ func (t *taskDAO) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("task %d not found", id)
+		return errors.NotFoundError(nil).WithMessagef("task %d not found", id)
 	}
 	return nil
 }
@@ -261,7 +261,7 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...or
 		var (
 			key       string
 			keyPrefix string
-			value     interface{}
+			value     any
 		)
 		for key, value = range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {

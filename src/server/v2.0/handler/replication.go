@@ -46,7 +46,7 @@ type replicationAPI struct {
 	ctl replication.Controller
 }
 
-func (r *replicationAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (r *replicationAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -362,14 +362,14 @@ func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operat
 	}
 	query.Keywords["ExecutionID"] = params.ID
 	if params.Status != nil {
-		var status interface{} = *params.Status
+		var status any = *params.Status
 		// as we convert the status when responding requests to keep the backward compatibility,
 		// here we need to reverse-convert the status
 		// the status "pending" and "stopped" is same with jobservice, no need to convert
 		switch status {
 		case "InProgress":
 			status = &q.OrList{
-				Values: []interface{}{
+				Values: []any{
 					job.ScheduledStatus.String(),
 					job.RunningStatus.String(),
 				},
@@ -421,7 +421,7 @@ func (r *replicationAPI) GetReplicationLog(ctx context.Context, params operation
 	if execution.ID != task.ExecutionID {
 		return r.SendError(ctx, errors.New(nil).
 			WithCode(errors.NotFoundCode).
-			WithMessage("execution %d contains no task with ID %d", params.ID, params.TaskID))
+			WithMessagef("execution %d contains no task with ID %d", params.ID, params.TaskID))
 	}
 	log, err := r.ctl.GetTaskLog(ctx, params.TaskID)
 	if err != nil {

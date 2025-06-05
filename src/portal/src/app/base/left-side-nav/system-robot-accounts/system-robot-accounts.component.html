@@ -241,9 +241,12 @@
                     [clrDgPageSize]="pageSize"
                     [(clrDgPage)]="currentPage"
                     [clrDgTotalItems]="total">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span *ngIf="total"
                         >{{ pagination.firstItem + 1 }}
                         -

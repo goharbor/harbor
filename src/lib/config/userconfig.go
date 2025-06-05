@@ -28,7 +28,7 @@ import (
 // It contains all user related configurations, each of user related settings requires a context provided
 
 // GetSystemCfg returns the all configurations
-func GetSystemCfg(ctx context.Context) (map[string]interface{}, error) {
+func GetSystemCfg(ctx context.Context) (map[string]any, error) {
 	sysCfg := DefaultMgr().GetAll(ctx)
 	if len(sysCfg) == 0 {
 		return nil, errors.New("can not load system config, the database might be down")
@@ -81,6 +81,7 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 		SearchScope:         mgr.Get(ctx, common.LDAPGroupSearchScope).GetInt(),
 		AdminDN:             mgr.Get(ctx, common.LDAPGroupAdminDn).GetString(),
 		MembershipAttribute: mgr.Get(ctx, common.LDAPGroupMembershipAttribute).GetString(),
+		AttachParallel:      mgr.Get(ctx, common.LDAPGroupAttachParallel).GetBool(),
 	}, nil
 }
 
@@ -176,6 +177,7 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 		Scope:              scope,
 		UserClaim:          mgr.Get(ctx, common.OIDCUserClaim).GetString(),
 		ExtraRedirectParms: mgr.Get(ctx, common.OIDCExtraRedirectParms).GetStringToStringMap(),
+		Logout:             mgr.Get(ctx, common.OIDCLogout).GetBool(),
 	}, nil
 }
 
@@ -259,4 +261,20 @@ func ScannerSkipUpdatePullTime(ctx context.Context) bool {
 // BannerMessage returns the customized banner message
 func BannerMessage(ctx context.Context) string {
 	return DefaultMgr().Get(ctx, common.BannerMessage).GetString()
+}
+
+// AuditLogEventEnabled returns the audit log enabled setting for a specific event_type, such as delete_user, create_user
+func AuditLogEventEnabled(ctx context.Context, eventType string) bool {
+	if DefaultMgr() == nil || DefaultMgr().Get(ctx, common.AuditLogEventsDisabled) == nil {
+		return true
+	}
+	disableListStr := DefaultMgr().Get(ctx, common.AuditLogEventsDisabled).GetString()
+	disableList := strings.Split(disableListStr, ",")
+	for _, t := range disableList {
+		tName := strings.TrimSpace(t)
+		if strings.EqualFold(tName, eventType) {
+			return false
+		}
+	}
+	return true
 }

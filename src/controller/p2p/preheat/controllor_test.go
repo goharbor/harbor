@@ -31,8 +31,8 @@ type preheatSuite struct {
 	suite.Suite
 	ctx                context.Context
 	controller         Controller
-	fakeInstanceMgr    *instance.FakeManager
-	fakePolicyMgr      *pmocks.FakeManager
+	fakeInstanceMgr    *instance.Manager
+	fakePolicyMgr      *pmocks.Manager
 	fakeScheduler      *smocks.Scheduler
 	mockInstanceServer *httptest.Server
 	fakeExecutionMgr   *tmocks.ExecutionManager
@@ -40,8 +40,8 @@ type preheatSuite struct {
 
 func TestPreheatSuite(t *testing.T) {
 	t.Log("Start TestPreheatSuite")
-	fakeInstanceMgr := &instance.FakeManager{}
-	fakePolicyMgr := &pmocks.FakeManager{}
+	fakeInstanceMgr := &instance.Manager{}
+	fakePolicyMgr := &pmocks.Manager{}
 	fakeScheduler := &smocks.Scheduler{}
 	fakeExecutionMgr := &tmocks.ExecutionManager{}
 
@@ -82,7 +82,7 @@ func (s *preheatSuite) SetupSuite() {
 		},
 	}, nil)
 	s.fakeInstanceMgr.On("Save", mock.Anything, mock.Anything).Return(int64(1), nil)
-	s.fakeInstanceMgr.On("Count", mock.Anything, &q.Query{Keywords: map[string]interface{}{
+	s.fakeInstanceMgr.On("Count", mock.Anything, &q.Query{Keywords: map[string]any{
 		"endpoint": "http://localhost",
 	}}).Return(int64(1), nil)
 	s.fakeInstanceMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
@@ -117,7 +117,7 @@ func (s *preheatSuite) TearDownSuite() {
 func (s *preheatSuite) TestGetAvailableProviders() {
 	providers, err := s.controller.GetAvailableProviders()
 	s.Equal(2, len(providers))
-	expectProviders := map[string]interface{}{}
+	expectProviders := map[string]any{}
 	expectProviders["dragonfly"] = nil
 	expectProviders["kraken"] = nil
 	_, ok := expectProviders[providers[0].ID]
@@ -177,7 +177,7 @@ func (s *preheatSuite) TestCreateInstance() {
 func (s *preheatSuite) TestDeleteInstance() {
 	// instance be used should not be deleted
 	s.fakeInstanceMgr.On("Get", s.ctx, int64(1)).Return(&providerModel.Instance{ID: 1}, nil)
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1)}}).Return([]*policy.Schema{
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]any{"provider_id": int64(1)}}).Return([]*policy.Schema{
 		{
 			ProviderID: 1,
 		},
@@ -186,7 +186,7 @@ func (s *preheatSuite) TestDeleteInstance() {
 	s.Error(err, "instance should not be deleted")
 
 	s.fakeInstanceMgr.On("Get", s.ctx, int64(2)).Return(&providerModel.Instance{ID: 2}, nil)
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(2)}}).Return([]*policy.Schema{}, nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]any{"provider_id": int64(2)}}).Return([]*policy.Schema{}, nil)
 	s.fakeInstanceMgr.On("Delete", s.ctx, int64(2)).Return(nil)
 	err = s.controller.DeleteInstance(s.ctx, int64(2))
 	s.NoError(err, "instance can be deleted")
@@ -202,7 +202,7 @@ func (s *preheatSuite) TestUpdateInstance() {
 	// disable instance should error due to with policy used
 	s.fakeInstanceMgr.On("Get", s.ctx, int64(1001)).Return(&providerModel.Instance{ID: 1001}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1001}).Return(nil)
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1001)}}).Return([]*policy.Schema{
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]any{"provider_id": int64(1001)}}).Return([]*policy.Schema{
 		{ProviderID: 1001},
 	}, nil)
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1001})
@@ -211,14 +211,14 @@ func (s *preheatSuite) TestUpdateInstance() {
 	// disable instance can be deleted if no policy used
 	s.fakeInstanceMgr.On("Get", s.ctx, int64(1002)).Return(&providerModel.Instance{ID: 1002}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1002}).Return(nil)
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1002)}}).Return([]*policy.Schema{}, nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]any{"provider_id": int64(1002)}}).Return([]*policy.Schema{}, nil)
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1002})
 	s.NoError(err, "instance can be disabled")
 
 	// not support change vendor type
 	s.fakeInstanceMgr.On("Get", s.ctx, int64(1003)).Return(&providerModel.Instance{ID: 1003, Vendor: "dragonfly"}, nil)
 	s.fakeInstanceMgr.On("Update", s.ctx, &providerModel.Instance{ID: 1003, Vendor: "kraken"}).Return(nil)
-	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]interface{}{"provider_id": int64(1003)}}).Return([]*policy.Schema{}, nil)
+	s.fakePolicyMgr.On("ListPolicies", s.ctx, &q.Query{Keywords: map[string]any{"provider_id": int64(1003)}}).Return([]*policy.Schema{}, nil)
 	err = s.controller.UpdateInstance(s.ctx, &providerModel.Instance{ID: 1003, Vendor: "kraken"})
 	s.Error(err, "provider vendor cannot be changed")
 }
@@ -347,7 +347,7 @@ func (s *preheatSuite) TestDeletePoliciesOfProject() {
 	for _, p := range fakePolicies {
 		s.fakePolicyMgr.On("Get", s.ctx, p.ID).Return(p, nil)
 		s.fakePolicyMgr.On("Delete", s.ctx, p.ID).Return(nil)
-		s.fakeExecutionMgr.On("List", s.ctx, &q.Query{Keywords: map[string]interface{}{"VendorID": p.ID, "VendorType": "P2P_PREHEAT"}}).Return([]*taskModel.Execution{}, nil)
+		s.fakeExecutionMgr.On("List", s.ctx, &q.Query{Keywords: map[string]any{"VendorID": p.ID, "VendorType": "P2P_PREHEAT"}}).Return([]*taskModel.Execution{}, nil)
 	}
 
 	err := s.controller.DeletePoliciesOfProject(s.ctx, 10)

@@ -81,7 +81,7 @@ func (c *controller) Update(ctx context.Context, id int, groupName string) error
 		return err
 	}
 	if len(ug) == 0 {
-		return errors.NotFoundError(nil).WithMessage("the user group with id %v is not found", id)
+		return errors.NotFoundError(nil).WithMessagef("the user group with id %v is not found", id)
 	}
 	return c.mgr.UpdateName(ctx, id, groupName)
 }
@@ -90,10 +90,10 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 	if group.GroupType == common.LDAPGroupType {
 		ldapGroup, err := auth.SearchGroup(ctx, group.LdapGroupDN)
 		if err == ldap.ErrNotFound || ldapGroup == nil {
-			return 0, errors.BadRequestError(nil).WithMessage("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
+			return 0, errors.BadRequestError(nil).WithMessagef("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
 		}
 		if err == ldap.ErrDNSyntax {
-			return 0, errors.BadRequestError(nil).WithMessage("invalid DN syntax. DN: %v", group.LdapGroupDN)
+			return 0, errors.BadRequestError(nil).WithMessagef("invalid DN syntax. DN: %v", group.LdapGroupDN)
 		}
 		if err != nil {
 			return 0, err
@@ -102,7 +102,7 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 	id, err := c.mgr.Create(ctx, group)
 	if err != nil && err == usergroup.ErrDupUserGroup {
 		return 0, errors.ConflictError(nil).
-			WithMessage("duplicate user group, group name:%v, group type: %v, ldap group DN: %v",
+			WithMessagef("duplicate user group, group name:%v, group type: %v, ldap group DN: %v",
 				group.GroupName, group.GroupType, group.LdapGroupDN)
 	}
 

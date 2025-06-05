@@ -114,12 +114,30 @@ func (dm *manager) Update(ctx context.Context, inst *provider.Instance, props ..
 
 // Get implements @Manager.Get
 func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error) {
-	return dm.dao.Get(ctx, id)
+	ins, err := dm.dao.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ins.Decode(); err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 // Get implements @Manager.GetByName
 func (dm *manager) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
-	return dm.dao.GetByName(ctx, name)
+	ins, err := dm.dao.GetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ins.Decode(); err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 // Count implements @Manager.Count
@@ -129,5 +147,16 @@ func (dm *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // List implements @Manager.List
 func (dm *manager) List(ctx context.Context, query *q.Query) ([]*provider.Instance, error) {
-	return dm.dao.List(ctx, query)
+	inss, err := dm.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range inss {
+		if err := inss[i].Decode(); err != nil {
+			return nil, err
+		}
+	}
+
+	return inss, nil
 }

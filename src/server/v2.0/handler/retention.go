@@ -133,7 +133,7 @@ var (
 	}
 )
 
-func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ interface{}) middleware.Responder {
+func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ any) middleware.Responder {
 	if err := r.RequireAuthenticated(ctx); err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -438,13 +438,13 @@ func (r *retentionAPI) requireExecutionInProject(ctx context.Context, p *policy.
 		return err
 	}
 	if exec == nil {
-		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	if exec.PolicyID != p.ID {
-		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	if exec.Type != job.RetentionVendorType {
-		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }
@@ -458,10 +458,10 @@ func (r *retentionAPI) requireTaskInProject(ctx context.Context, p *policy.Metad
 		return err
 	}
 	if task == nil {
-		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	if task.ExecutionID != executionID {
-		return errors.New(nil).WithMessage("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
+		return errors.New(nil).WithMessagef("project: %d, execution id %d not found", p.Scope.Reference, executionID).WithCode(errors.NotFoundCode)
 	}
 	return nil
 }

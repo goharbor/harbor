@@ -46,11 +46,11 @@ type Controller interface {
 	// UserConfigs get the user scope configurations
 	UserConfigs(ctx context.Context) (map[string]*models.Value, error)
 	// UpdateUserConfigs update the user scope configurations
-	UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error
+	UpdateUserConfigs(ctx context.Context, conf map[string]any) error
 	// AllConfigs get all configurations, used by internal, should include the system config items
-	AllConfigs(ctx context.Context) (map[string]interface{}, error)
+	AllConfigs(ctx context.Context) (map[string]any, error)
 	// ConvertForGet - delete sensitive attrs and add editable field to every attr
-	ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error)
+	ConvertForGet(ctx context.Context, cfg map[string]any, internal bool) (map[string]*models.Value, error)
 	// OverwriteConfig overwrite config in the database and set all configure read only when CONFIG_OVERWRITE_JSON is provided
 	OverwriteConfig(ctx context.Context) error
 }
@@ -70,13 +70,13 @@ func (c *controller) UserConfigs(ctx context.Context) (map[string]*models.Value,
 	return c.ConvertForGet(ctx, configs, false)
 }
 
-func (c *controller) AllConfigs(ctx context.Context) (map[string]interface{}, error) {
+func (c *controller) AllConfigs(ctx context.Context) (map[string]any, error) {
 	mgr := config.GetCfgManager(ctx)
 	configs := mgr.GetAll(ctx)
 	return configs, nil
 }
 
-func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]interface{}) error {
+func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]any) error {
 	if readOnlyForAll {
 		return errors.ForbiddenError(nil).WithMessage("current config is init by env variable: CONFIG_OVERWRITE_JSON, it cannot be updated")
 	}
@@ -97,7 +97,7 @@ func (c *controller) UpdateUserConfigs(ctx context.Context, conf map[string]inte
 	return c.updateLogEndpoint(ctx, conf)
 }
 
-func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]interface{}) error {
+func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]any) error {
 	// check if the audit log forward endpoint updated
 	if _, ok := cfgs[common.AuditLogForwardEndpoint]; ok {
 		auditEP := config.AuditLogForwardEndpoint(ctx)
@@ -112,7 +112,7 @@ func (c *controller) updateLogEndpoint(ctx context.Context, cfgs map[string]inte
 	return nil
 }
 
-func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{}) error {
+func (c *controller) validateCfg(ctx context.Context, cfgs map[string]any) error {
 	mgr := config.GetCfgManager(ctx)
 
 	// check if auth can be modified
@@ -146,7 +146,7 @@ func (c *controller) validateCfg(ctx context.Context, cfgs map[string]interface{
 	return nil
 }
 
-func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr config.Manager) error {
+func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]any, mgr config.Manager) error {
 	updated := false
 	endPoint := mgr.Get(ctx, common.AuditLogForwardEndpoint).GetString()
 	skipAuditDB := mgr.Get(ctx, common.SkipAuditLogDatabase).GetBool()
@@ -169,7 +169,7 @@ func verifySkipAuditLogCfg(ctx context.Context, cfgs map[string]interface{}, mgr
 }
 
 // verifyValueLengthCfg verifies the cfgs which need to check the value max length to align with frontend.
-func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error {
+func verifyValueLengthCfg(_ context.Context, cfgs map[string]any) error {
 	maxValue := maxValueLimitedByLength(common.UIMaxLengthLimitedOfNumber)
 	validateCfgs := []string{
 		common.TokenExpiration,
@@ -182,11 +182,11 @@ func verifyValueLengthCfg(_ context.Context, cfgs map[string]interface{}) error 
 			// the cfgs is unmarshal from json string, the number type will be float64
 			if vf, ok := v.(float64); ok {
 				if vf <= 0 {
-					return errors.BadRequestError(nil).WithMessage("the %s value must be positive", c)
+					return errors.BadRequestError(nil).WithMessagef("the %s value must be positive", c)
 				}
 
 				if int64(vf) > maxValue {
-					return errors.BadRequestError(nil).WithMessage(fmt.Sprintf("the %s value is over the limit value: %d", c, maxValue))
+					return errors.BadRequestError(nil).WithMessagef("the %s value is over the limit value: %d", c, maxValue)
 				}
 			}
 		}
@@ -217,11 +217,11 @@ func maxValueLimitedByLength(length int) int64 {
 // ScanAllPolicy is represent the json request and object for scan all policy
 // Only for migrating from the legacy schedule.
 type ScanAllPolicy struct {
-	Type  string                 `json:"type"`
-	Param map[string]interface{} `json:"parameter,omitempty"`
+	Type  string         `json:"type"`
+	Param map[string]any `json:"parameter,omitempty"`
 }
 
-func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface{}, internal bool) (map[string]*models.Value, error) {
+func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]any, internal bool) (map[string]*models.Value, error) {
 	result := map[string]*models.Value{}
 
 	mList := metadata.Instance().GetAll()
@@ -270,7 +270,7 @@ func (c *controller) ConvertForGet(ctx context.Context, cfg map[string]interface
 }
 
 func (c *controller) OverwriteConfig(ctx context.Context) error {
-	cfgMap := map[string]interface{}{}
+	cfgMap := map[string]any{}
 	if v, ok := os.LookupEnv(configOverwriteJSON); ok {
 		err := json.Unmarshal([]byte(v), &cfgMap)
 		if err != nil {

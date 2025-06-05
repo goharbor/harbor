@@ -88,7 +88,7 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 	})
 	if errors.IsNotFoundErr(err) {
 		// artifact not found, discontinue the API request
-		return nil, errors.BadRequestError(nil).WithMessage("artifact %s not found", from)
+		return nil, errors.BadRequestError(nil).WithMessagef("artifact %s not found", from)
 	} else if err != nil {
 		logger.Errorf("get artifact %s failed, error: %v", from, err)
 		return nil, err

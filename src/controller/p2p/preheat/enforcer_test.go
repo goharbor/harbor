@@ -70,7 +70,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 	suite.server.StartTLS()
 
 	fakePolicies := mockPolicies()
-	fakePolicyManager := &policy.FakeManager{}
+	fakePolicyManager := &policy.Manager{}
 	fakePolicyManager.On("Get",
 		context.TODO(),
 		mock.AnythingOfType("int64")).
@@ -130,7 +130,7 @@ func (suite *EnforcerTestSuite) SetupSuite() {
 		},
 	}, nil)
 
-	fakeInstanceMgr := &instance.FakeManager{}
+	fakeInstanceMgr := &instance.Manager{}
 	fakeInstanceMgr.On("Get",
 		context.TODO(),
 		mock.AnythingOfType("int64"),

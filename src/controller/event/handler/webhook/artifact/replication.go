@@ -45,7 +45,7 @@ func (r *ReplicationHandler) Name() string {
 }
 
 // Handle ...
-func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
+func (r *ReplicationHandler) Handle(ctx context.Context, value any) error {
 	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
@@ -163,6 +163,8 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 				OverrideMode:       rpPolicy.Override,
 				TriggerType:        string(execution.Trigger),
 				ExecutionTimestamp: execution.StartTime.Unix(),
+				ExecutionID:        execution.ID,
+				TaskID:             task.ID,
 			},
 		},
 	}

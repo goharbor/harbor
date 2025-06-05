@@ -16,7 +16,7 @@
         "HEADER_LINK": "Einloggen",
         "OR": "ODER",
         "VIA_LOCAL_DB": "LOGIN MIT LOKALER DB",
-	"CORE_SERVICE_NOT_AVAILABLE": "Core Service ist nicht verfügbar"
+        "CORE_SERVICE_NOT_AVAILABLE": "Core Service ist nicht verfügbar"
     },
     "SIGN_UP": {
         "TITLE": "Registrieren"
@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "Box deaktivieren, falls der OIDC Server mit selbstsignierten Zertifikaten betrieben wird.",
         "OIDC_AUTOONBOARD": "Überspringe die Startseite, hierdurch können Nutzer ihren Nutzernamen nicht ändern. Der Nutzername wird aus dem ID Token übernommen.",
         "OIDC_USER_CLAIM": "Der Name des Claims im ID Token, aus dem der Nutzername stammt. Falls das Feld leer ist, wird 'name' verwendet.",
-        "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer."
+        "NEW_SECRET": "Das Secret muss länger als 8 Zeichen sein, mit jeweils einem Groß-, einem Kleinbuchstaben und einer Ziffer.",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Aktuelles Passwort eingeben",
@@ -151,8 +152,15 @@
         "SAVE_SUCCESS": "Nutzerpasswort erfolgreich geändert.",
         "PASS_TIPS": "8-128 Zeichen mit einem Groß-, einem Kleinbuchstaben und einer Ziffer"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Nutzerprofil",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Passwort ändern",
         "ABOUT": "Info",
         "LOGOUT": "Ausloggen"
@@ -179,6 +187,8 @@
             "INTERROGATION_SERVICES": "Schwachstellen Scan"
         },
         "LOGS": "Logs",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "Aufgaben",
         "API_EXPLORER": "Api Explorer",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -246,6 +256,9 @@
         "TOGGLED_SUCCESS": "Projekt erfolgreich geändert.",
         "FAILED_TO_DELETE_PROJECT": "Das Projekt enthält Repositories, Replikations-Regeln oder Helm-Charts und kann daher nicht gelöscht werden.",
         "INLINE_HELP_PUBLIC": "Wenn ein Projekt öffentlich ist, hat jeder lesenden Zugriff auf die Repositories innerhalb des Projekts. Der Nutzer muss nicht \"docker login\" vor dem Pull eines Images durchführen.",
+        "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
+        "BANDWIDTH": "Bandwidth",
+        "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
         "OF": "von",
         "COUNT_QUOTA": "Anzahlbeschränkung",
         "STORAGE_QUOTA": "Project quota limits",
@@ -254,7 +267,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
+        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
         "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
@@ -382,7 +395,7 @@
         "INVALID_VALUE": "Der Wert der Ablaufzeit ist ungültig",
         "NEVER_EXPIRED": "Läuft nie ab",
         "NAME_PREFIX": "Prefix für den Namen der Robot-Zugänge",
-	    "NAME_PREFIX_REQUIRED": "Es ist ein Prefix für den Robot-Zugang erforderlich",
+        "NAME_PREFIX_REQUIRED": "Es ist ein Prefix für den Robot-Zugang erforderlich",
         "UPDATE": "Update",
         "AUDIT_LOG": "Audit Log",
         "PREHEAT_INSTANCE": "Preheat Instance",
@@ -423,7 +436,12 @@
         "SELECT_PERMISSIONS": "Select Permissions",
         "SELECT_SYSTEM_PERMISSIONS": "Select System Permissions",
         "SELECT_PROJECT_PERMISSIONS": "Select Project Permissions",
-        "SYSTEM_PERMISSIONS": "System Permissions"
+        "SYSTEM_PERMISSIONS": "System Permissions",
+        "ROBOT": "Robot Account",
+        "USER": "User",
+        "LDAPUSER": "LDAP User",
+        "GROUP": "User Group",
+        "MEMBER": "Project Member"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -518,9 +536,16 @@
         "REPOSITORY_NAME": "Repository Name",
         "TAGS": "Tags",
         "OPERATION": "Operation",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "Operations",
         "TIMESTAMP": "Zeitstempel",
         "ALL_OPERATIONS": "Alle Operations",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Pull",
         "PUSH": "Push",
         "CREATE": "Erstellen",
@@ -529,6 +554,7 @@
         "ADVANCED": "Erweitert",
         "SIMPLE": "Einfach",
         "ITEMS": "Einträge",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "Filter Logs",
         "INVALID_DATE": "Fehlerhaftes Datum.",
         "OF": "von",
@@ -755,7 +781,7 @@
         "ARTIFACT_TOOTIP": "Klicken um die Artefakt-Liste des OCI index zu sehen",
         "ARTIFACTS_COUNT": "Artefakte",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Pull Befehl",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Pull Zeit",
         "PUSH_TIME": "Push Zeit",
         "IMMUTABLE": "Immutable",
@@ -928,7 +954,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
             "GROUP_SCOPE": "LDAP Gruppen Search Scope",
             "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Endpunkt",
@@ -958,10 +983,11 @@
             "OIDC_USERNAME": "Nutzername",
             "GROUP_CLAIM_NAME": "Group Claim Name",
             "GROUP_CLAIM_NAME_INFO": "The name of a custom group claim that you have configured in your OIDC provider",
-	        "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
-	        "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
+            "OIDC_ADMIN_GROUP": "OIDC Administratorengruppe",
+            "OIDC_ADMIN_GROUP_INFO": "Spezifiziere den Namen einer OIDC Administratorengruppe. Alle Mitglieder dieser Gruppe haben in Harbor administrative Berechtigungen. Falls dies nicht gewünscht ist, kann das Feld leer gelassen werden.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Alle Scans erfolgreich zum Anhalten aufgefordert!",
@@ -1129,8 +1155,7 @@
         "TOOLTIP": "Befehlreferenz um ein Artefakt in das Projekt zu pushen.",
         "TAG_COMMAND": "Tag ein Image für dieses Projekt:",
         "PUSH_COMMAND": "Push ein Image für dieses Projekt:",
-        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",
@@ -1148,6 +1173,8 @@
         "SCAN_UNSUPPORTED": "Nicht unterstützt",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Zusammenfassung",
+        "LICENSE": "License",
+        "FILES": "Files",
         "DEPENDENCIES": "Dependencies",
         "VALUES": "Values",
         "NAME": "Name",
@@ -1155,6 +1182,10 @@
         "OF": "von",
         "VERSION": "Version",
         "NO_README": "Kein Readme für dieses Chart verfügbar.",
+        "NO_LICENSE": "Kein License für dieses Model verfügbar.",
+        "NO_FILES": "Kein für dieses Model verfügbar.",
+        "MODEL_NO_README": "Kein Readme für dieses Model verfügbar.",
+        "FILE_TOO_LARGE": "Die Datei ist zu groß, um verarbeitet zu werden.",
         "ITEMS": "Einträge",
         "SHOW_KV": "Key/Value-Paare",
         "SHOW_YAML": "YAML Datei"
@@ -1302,7 +1333,6 @@
         "ON": "am",
         "AT": "um",
         "NOSCHEDULE": "Ein Fehler ist aufgetreten beim setzen des Intervalls"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Speicherbereinigungs-Intervall",
@@ -1436,8 +1466,8 @@
         "DAYS_LARGE": "Parameter \"TAGE\" ist zu hoch",
         "EXECUTION_TYPE": "Ausführungstyp",
         "ACTION": "AKTION",
-	"YES": "Ja",
-	"NO": "Nein"
+        "YES": "Ja",
+        "NO": "Nein"
     },
     "IMMUTABLE_TAG": {
         "IMMUTABLE_RULES": "Immutability Regeln",
@@ -1615,6 +1645,14 @@
         "CREATE_INSTANCE": "Instanz erstellen"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "Scope",
+            "SCOPE_SINGLE_SEED_PEER": "Single Seed Peer",
+            "SCOPE_ALL_SEED_PEERS": "All Seed Peers",
+            "SCOPE_ALL_PEERS": "All Peers",
+            "CLUSTER_IDS": "Cluster IDs",
+            "CLUSTER_IDS_SEPARATOR": "Enter multiple comma separated cluster ids, eg., 1,2,3 (If empty, preheat all clusters)"
+        },
         "P2P_PROVIDER": "P2P-Verteilung",
         "POLICIES": "REGELWERKE",
         "NEW_POLICY": "NEUES REGELWERK",
@@ -1796,12 +1834,18 @@
         "INCLUDED_OPERATIONS": "Eingeschlossene Aktionen",
         "INCLUDED_OPERATION_TOOLTIP": "Entferne Audit-Logs für die ausgewählten Aktionen",
         "INCLUDED_OPERATION_ERROR": "Bitte wähle mindestens eine Aktion",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "JETZT SÄUBERN",
         "PURGE_NOW_SUCCESS": "Signal zur Bereinigung erfolgreich gesendet",
         "PURGE_SCHEDULE_RESET": "Bereinigungsplan wurde zurückgesetzt",
         "PURGE_HISTORY": "Bereinigungshistorie",
         "FORWARD_ENDPOINT": "Syslog Endpunkt für die Weiterleitung des Audit-Logs",
         "FORWARD_ENDPOINT_TOOLTIP": "Leite Audit-Logs an einen Syslog-Endpunkt, zum Beispiel: harbor-log:10514",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE": "Disable Audit Log Event Type",
+        "DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be disabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "Datenbank für Audit-Logs übergehen",
         "SKIP_DATABASE_TOOLTIP": "Audit-Logs werden nicht in die Datenbank geschrieben. Nur verfügbar, wenn die Weiterleitung für Audit-Logs konfiguriert ist.",
         "STOP_GC_SUCCESS": "Signal zum stoppen der Speicherbereinigungs-Aktion erfolgreich",

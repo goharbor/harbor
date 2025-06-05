@@ -72,6 +72,7 @@ export class Configuration {
     ldap_group_search_scope: NumberValueItem;
     ldap_group_membership_attribute: StringValueItem;
     ldap_group_admin_dn: StringValueItem;
+    ldap_group_attach_parallel: BoolValueItem;
     uaa_client_id: StringValueItem;
     uaa_client_secret?: StringValueItem;
     uaa_endpoint: StringValueItem;
@@ -104,6 +105,7 @@ export class Configuration {
     oidc_auto_onboard?: BoolValueItem;
     oidc_scope?: StringValueItem;
     oidc_user_claim?: StringValueItem;
+    oidc_logout?: BoolValueItem;
     count_per_project: NumberValueItem;
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -111,6 +113,7 @@ export class Configuration {
     oidc_admin_group: StringValueItem;
     oidc_group_filter: StringValueItem;
     audit_log_forward_endpoint: StringValueItem;
+    disabled_audit_log_event_types: StringValueItem;
     skip_audit_log_database: BoolValueItem;
     session_timeout: NumberValueItem;
     scanner_skip_update_pulltime: BoolValueItem;
@@ -185,9 +188,11 @@ export class Configuration {
         this.oidc_admin_group = new StringValueItem('', true);
         this.oidc_group_filter = new StringValueItem('', true);
         this.oidc_user_claim = new StringValueItem('', true);
+        this.oidc_logout = new BoolValueItem(false, true);
         this.count_per_project = new NumberValueItem(-1, true);
         this.storage_per_project = new NumberValueItem(-1, true);
         this.audit_log_forward_endpoint = new StringValueItem('', true);
+        this.disabled_audit_log_event_types = new StringValueItem('', true);
         this.skip_audit_log_database = new BoolValueItem(false, true);
         this.session_timeout = new NumberValueItem(60, true);
         this.scanner_skip_update_pulltime = new BoolValueItem(false, true);

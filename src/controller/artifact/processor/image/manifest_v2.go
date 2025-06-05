@@ -59,7 +59,7 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 		return err
 	}
 	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
+		artifact.ExtraAttrs = map[string]any{}
 	}
 	artifact.ExtraAttrs["created"] = config.Created
 	artifact.ExtraAttrs["architecture"] = config.Architecture
@@ -87,7 +87,7 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
 	if addition != AdditionTypeBuildHistory {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
+			WithMessagef("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
 
 	mani, _, err := m.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)

@@ -128,7 +128,7 @@ func (c *controller) Update(ctx context.Context, registry *model.Registry, props
 func (c *controller) Delete(ctx context.Context, id int64) error {
 	// referenced by replication policy as source registry
 	count, err := c.repMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"src_registry_id": id,
 		},
 	})
@@ -136,11 +136,11 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by replication policies, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by replication policies, cannot delete it", id)
 	}
 	// referenced by replication policy as destination registry
 	count, err = c.repMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"dest_registry_id": id,
 		},
 	})
@@ -148,11 +148,11 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by replication policies, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by replication policies, cannot delete it", id)
 	}
 	// referenced by proxy cache project
 	count, err = c.proMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"registry_id": id,
 		},
 	})
@@ -160,7 +160,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if count > 0 {
-		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessage("the registry %d is referenced by proxy cache project, cannot delete it", id)
+		return errors.New(nil).WithCode(errors.PreconditionCode).WithMessagef("the registry %d is referenced by proxy cache project, cannot delete it", id)
 	}
 
 	return c.regMgr.Delete(ctx, id)

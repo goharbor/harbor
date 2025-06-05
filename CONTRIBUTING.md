@@ -142,30 +142,33 @@ The folder graph below shows the structure of the source code folder `harbor/src
 #### Go
 Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbor backend service development environment, please [set one up](https://golang.org/doc/install).
 
-|  Harbor  |  Requires Go  |
-|----------|---------------|
-|   1.1    |    1.7.3      |
-|   1.2    |    1.7.3      |
-|   1.3    |    1.9.2      |
-|   1.4    |    1.9.2      |
-|   1.5    |    1.9.2      |
-|   1.6    |    1.9.2      |
-|   1.7    |    1.9.2      |
-|   1.8    |    1.11.2     |
-|   1.9    |    1.12.12    |
-|   1.10   |    1.12.12    |
-|   2.0    |    1.13.15    |
-|   2.1    |    1.14.13    |
-|   2.2    |    1.15.6     |
-|   2.3    |    1.15.12    |
-|   2.4    |    1.17.7     |
-|   2.5    |    1.17.7     |
-|   2.6    |    1.18.6     |
-|   2.7    |    1.19.4     |
-|   2.8    |    1.20.6     |
-|   2.9    |    1.21.3     |
-|   2.10   |    1.21.8     |
-|   2.11   |    1.22.3     |
+| Harbor | Requires Go |
+|--------|-------------|
+| 1.1    | 1.7.3       |
+| 1.2    | 1.7.3       |
+| 1.3    | 1.9.2       |
+| 1.4    | 1.9.2       |
+| 1.5    | 1.9.2       |
+| 1.6    | 1.9.2       |
+| 1.7    | 1.9.2       |
+| 1.8    | 1.11.2      |
+| 1.9    | 1.12.12     |
+| 1.10   | 1.12.12     |
+| 2.0    | 1.13.15     |
+| 2.1    | 1.14.13     |
+| 2.2    | 1.15.6      |
+| 2.3    | 1.15.12     |
+| 2.4    | 1.17.7      |
+| 2.5    | 1.17.7      |
+| 2.6    | 1.18.6      |
+| 2.7    | 1.19.4      |
+| 2.8    | 1.20.6      |
+| 2.9    | 1.21.3      |
+| 2.10   | 1.21.8      |
+| 2.11   | 1.22.3      |
+| 2.12   | 1.23.2      |
+| 2.13   | 1.23.8      |
+| 2.14   | 1.24.3      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
@@ -276,7 +279,7 @@ To build the code, please refer to [build](https://goharbor.io/docs/edge/build-c
 
 **Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
 
-As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add `//go:generate mockery xxx` comment with mockery command in the subpackages of `src/testing`, then run `make gen_mocks` to generate mocks.
+As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add mock config in the `src/.mockery.yaml`, then run `make gen_mocks` to generate mocks.
 
 ###  Keep sync with upstream
 
@@ -311,7 +314,7 @@ The commit message should follow the convention on [How to Write a Git Commit Me
 To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
 ```sh
-curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+curl https://cdn.jsdelivr.net/gh/tommarshall/git-good-commit@v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
 ```
 
 ### Automated Testing

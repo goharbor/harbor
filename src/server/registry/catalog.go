@@ -16,7 +16,6 @@ package registry
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -82,7 +81,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	if lastEntry != "" {
 		lastEntryIndex := util.IndexString(repoNames, lastEntry)
 		if lastEntryIndex == -1 {
-			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(fmt.Sprintf("the last: %s should be a valid repository name.", lastEntry))
+			err := errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("the last: %s should be a valid repository name.", lastEntry)
 			lib_http.SendError(w, err)
 			return
 		}

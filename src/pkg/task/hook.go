@@ -69,7 +69,7 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 		jobID = sc.Metadata.UpstreamJobID
 	}
 	tasks, err := h.taskDAO.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"JobID": jobID,
 		},
 	})
@@ -78,7 +78,7 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 	}
 	if len(tasks) == 0 {
 		return errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("task with job ID %s not found", sc.JobID)
+			WithMessagef("task with job ID %s not found", sc.JobID)
 	}
 	task := tasks[0]
 	execution, err := h.executionDAO.Get(ctx, task.ExecutionID)

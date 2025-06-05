@@ -102,10 +102,10 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	logger := log.GetLogger(ctx)
 	if !policy.Enabled {
 		return 0, errors.New(nil).WithCode(errors.PreconditionCode).
-			WithMessage("the policy %d is disabled", policy.ID)
+			WithMessagef("the policy %d is disabled", policy.ID)
 	}
 	// create an execution record
-	extra := make(map[string]interface{})
+	extra := make(map[string]any)
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
@@ -203,7 +203,7 @@ func (c *controller) buildExecutionQuery(query *q.Query) *q.Query {
 
 func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, error) {
 	execs, err := c.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.ReplicationVendorType,
 		},
@@ -213,7 +213,7 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 	}
 	if len(execs) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("replication execution %d not found", id)
+			WithMessagef("replication execution %d not found", id)
 	}
 	return convertExecution(execs[0]), nil
 }
@@ -240,7 +240,7 @@ func (c *controller) ListTasks(ctx context.Context, query *q.Query) ([]*Task, er
 
 func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	tasks, err := c.taskMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.ReplicationVendorType,
 		},
@@ -250,7 +250,7 @@ func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	}
 	if len(tasks) == 0 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("replication task %d not found", id)
+			WithMessagef("replication task %d not found", id)
 	}
 	return convertTask(tasks[0]), nil
 }

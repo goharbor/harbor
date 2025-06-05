@@ -29,8 +29,8 @@ import (
 type Artifact struct {
 	artifact.Artifact
 	// TODO: rename to VulOverview
-	ScanOverview map[string]interface{} `json:"scan_overview"`
-	SBOMOverView map[string]interface{} `json:"sbom_overview"`
+	ScanOverview map[string]any `json:"scan_overview"`
+	SBOMOverView map[string]any `json:"sbom_overview"`
 }
 
 // ToSwagger converts the artifact to the swagger model
@@ -49,6 +49,8 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		PushTime:          strfmt.DateTime(a.PushTime),
 		ExtraAttrs:        a.ExtraAttrs,
 		Annotations:       a.Annotations,
+		ArtifactType:      a.ArtifactType,
+		RepositoryName:    a.RepositoryName,
 	}
 
 	for _, reference := range a.References {

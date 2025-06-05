@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ import {
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
+import { PreferenceSettingsComponent } from '../base/preference-settings/preference-settings.component';
 
 // register necessary components
 echarts.use([
@@ -168,6 +169,7 @@ ClarityIcons.add({
         InlineAlertComponent,
         NewUserFormComponent,
         MessageComponent,
+        PreferenceSettingsComponent,
         NavigatorComponent,
         SearchResultComponent,
         GlobalSearchComponent,
@@ -211,6 +213,7 @@ ClarityIcons.add({
         InlineAlertComponent,
         NewUserFormComponent,
         MessageComponent,
+        PreferenceSettingsComponent,
         NavigatorComponent,
         SearchResultComponent,
         GlobalSearchComponent,

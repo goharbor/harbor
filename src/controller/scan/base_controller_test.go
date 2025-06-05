@@ -82,7 +82,7 @@ type ControllerTestSuite struct {
 	reportMgr       *reporttesting.Manager
 	ar              artifact.Controller
 	c               *basicController
-	reportConverter *postprocessorstesting.ScanReportV1ToV2Converter
+	reportConverter *postprocessorstesting.NativeScanReportConverter
 	cache           *mockcache.Cache
 }
 
@@ -224,7 +224,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rname := fmt.Sprintf("%s-%s-%s", config.ScannerRobotPrefix(context.TODO()), suite.registration.Name, "the-uuid-123")
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotTokenDuration: "30",
 	}
 	config.InitWithSettings(conf)
@@ -235,8 +235,11 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
 			Duration:    -1,
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
-		Level: robot.LEVELPROJECT,
+		ProjectName: "library",
+		Level:       robot.LEVELPROJECT,
 		Permissions: []*robot.Permission{
 			{
 				Kind:      "project",
@@ -266,6 +269,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 			Description: "for scan",
 			ProjectID:   suite.artifact.ProjectID,
 			Duration:    -1,
+			CreatorType: "local",
+			CreatorRef:  int64(0),
 		},
 		Level: "project",
 	}, nil)
@@ -294,7 +299,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	robotJSON, err := rb.ToJSON()
 	require.NoError(suite.T(), err)
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
@@ -339,7 +344,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 		execMgr:         suite.execMgr,
 		taskMgr:         suite.taskMgr,
-		reportConverter: &postprocessorstesting.ScanReportV1ToV2Converter{},
+		reportConverter: &postprocessorstesting.NativeScanReportConverter{},
 		cache:           func() cache.Cache { return suite.cache },
 	}
 	mock.OnAnything(suite.scanHandler, "JobVendorType").Return("IMAGE_SCAN")
@@ -486,6 +491,7 @@ func (suite *ControllerTestSuite) TestScanControllerGetReport() {
 		{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001")},
 	}, nil).Once()
 	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil)
+	mock.OnAnything(suite.c.reportConverter, "FromRelationalSchema").Return("", nil)
 	rep, err := suite.c.GetReport(ctx, suite.artifact, []string{v1.MimeTypeNativeReport})
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(rep))
@@ -666,10 +672,10 @@ func (suite *ControllerTestSuite) TestStopScanAll() {
 	suite.NoError(err)
 }
 
-func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]interface{} {
-	b, _ := json.Marshal(map[string]interface{}{reportUUIDsKey: reportUUIDs})
+func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]any {
+	b, _ := json.Marshal(map[string]any{reportUUIDsKey: reportUUIDs})
 
-	extraAttrs := map[string]interface{}{}
+	extraAttrs := map[string]any{}
 	json.Unmarshal(b, &extraAttrs)
 	extraAttrs[artifactIDKey] = float64(artifactID)
 

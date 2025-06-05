@@ -41,9 +41,9 @@ type ExecutionManager interface {
 	// and the "vendorID" specifies the ID of vendor if needed(e.g. policy ID for replication and retention).
 	// The "extraAttrs" can be used to set the customized attributes
 	Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
-		extraAttrs ...map[string]interface{}) (id int64, err error)
+		extraAttrs ...map[string]any) (id int64, err error)
 	// Update the extra attributes of the specified execution
-	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]any) (err error)
 	// MarkDone marks the status of the specified execution as success.
 	// It must be called to update the execution status if the created execution contains no tasks.
 	// In other cases, the execution status can be calculated from the referenced tasks automatically
@@ -96,8 +96,8 @@ func (e *executionManager) Count(ctx context.Context, query *q.Query) (int64, er
 }
 
 func (e *executionManager) Create(ctx context.Context, vendorType string, vendorID int64, trigger string,
-	extraAttrs ...map[string]interface{}) (int64, error) {
-	extras := map[string]interface{}{}
+	extraAttrs ...map[string]any) (int64, error) {
+	extras := map[string]any{}
 	if len(extraAttrs) > 0 && extraAttrs[0] != nil {
 		extras = extraAttrs[0]
 	}
@@ -124,7 +124,7 @@ func (e *executionManager) Create(ctx context.Context, vendorType string, vendor
 	return id, nil
 }
 
-func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+func (e *executionManager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]any) error {
 	data, err := json.Marshal(extraAttrs)
 	if err != nil {
 		return err
@@ -170,7 +170,7 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 	// when an execution is in final status, if it contains task that is a periodic or retrying job it will
 	// run again in the near future, so we must operate the stop action no matter the status is final or not
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID": id,
 		},
 	})
@@ -264,7 +264,7 @@ func (e *executionManager) StopAndWaitWithError(ctx context.Context, id int64, t
 
 func (e *executionManager) Delete(ctx context.Context, id int64) error {
 	tasks, err := e.taskDAO.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ExecutionID": id,
 		},
 	})
@@ -275,7 +275,7 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 	for _, task := range tasks {
 		if !job.Status(task.Status).Final() {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("the execution %d has tasks that aren't in final status, stop the tasks first", id)
+				WithMessagef("the execution %d has tasks that aren't in final status, stop the tasks first", id)
 		}
 
 		log.Debugf("delete task %d as execution %d has been deleted", task.ID, task.ExecutionID)
@@ -294,7 +294,7 @@ func (e *executionManager) Delete(ctx context.Context, id int64) error {
 
 func (e *executionManager) DeleteByVendor(ctx context.Context, vendorType string, vendorID int64) error {
 	executions, err := e.executionDAO.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": vendorType,
 			"VendorID":   vendorID,
 		}})
@@ -305,7 +305,7 @@ func (e *executionManager) DeleteByVendor(ctx context.Context, vendorType string
 	for _, execution := range executions {
 		if !job.Status(execution.Status).Final() {
 			return errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("contains executions that aren't in final status, stop the execution first")
+				WithMessagef("contains executions that aren't in final status, stop the execution first")
 		}
 	}
 	// delete the executions
@@ -355,7 +355,7 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 	}
 
 	if len(execution.ExtraAttrs) > 0 {
-		extras := map[string]interface{}{}
+		extras := map[string]any{}
 		if err := json.Unmarshal([]byte(execution.ExtraAttrs), &extras); err != nil {
 			log.Errorf("failed to unmarshal the extra attributes of execution %d: %v", execution.ID, err)
 		} else {

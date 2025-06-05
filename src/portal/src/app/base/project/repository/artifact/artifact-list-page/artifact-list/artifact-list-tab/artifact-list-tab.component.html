@@ -139,6 +139,7 @@
                                         }}</label>
                                         <app-label-selector
                                             [usedInDropdown]="true"
+                                            [dropdownOpened]="true"
                                             [width]="200"
                                             [ownedLabels]="
                                                 selectedRow[0]?.labels
@@ -179,12 +180,6 @@
                     </clr-dropdown>
                 </div>
                 <div class="right-pos">
-                    <app-pull-command
-                        [registryUrl]="registryUrl"
-                        [projectName]="projectName"
-                        [repoName]="repoName"
-                        [selectedRow]="selectedRow"
-                        class="mr-1"></app-pull-command>
                     <app-artifact-filter
                         [withDivider]="true"
                         (filterEvent)="filterEvent($event)"
@@ -195,7 +190,7 @@
                 </div>
             </clr-dg-action-bar>
 
-            <clr-dg-column class="flex-max-width" [clrDgSortBy]="'digest'"
+            <clr-dg-column [clrDgSortBy]="'digest'"
                 ><ng-template
                     [clrDgHideableColumn]="{ hidden: hiddenArray[0] }">
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
@@ -258,7 +253,7 @@
             <clr-dg-row
                 *ngFor="let artifact of artifactList; let i = index"
                 [clrDgItem]="artifact">
-                <clr-dg-cell class="flex-max-width truncated">
+                <clr-dg-cell>
                     <div class="cell white-normal">
                         <div
                             class="artifact-icon clr-display-inline-block"
@@ -278,6 +273,7 @@
                             {{ artifact.digest | slice : 0 : 15 }}</a
                         >
                         <clr-tooltip
+                            class="fix-width"
                             *ngIf="
                                 artifact?.references &&
                                 artifact?.references?.length
@@ -301,6 +297,12 @@
                                 {{ 'REPOSITORY.ARTIFACT_TOOTIP' | translate }}
                             </clr-tooltip-content>
                         </clr-tooltip>
+                        <app-pull-command
+                            [registryUrl]="registryUrl"
+                            [projectName]="projectName"
+                            [repoName]="repoName"
+                            [artifact]="artifact"
+                            class="fix-width"></app-pull-command>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="depth">
@@ -463,7 +465,9 @@
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
                             *ngIf="
-                                hasSbom(artifact) && !artifact?.accessoryLoading
+                                hasSbom(artifact) &&
+                                !artifact?.accessoryLoading &&
+                                !hasChild(artifact)
                             "
                             [inputScanner]="
                                 handleSbomOverview(artifact.sbom_overview)
@@ -587,9 +591,12 @@
                     [clrDgTotalItems]="totalCount"
                     [(clrDgPage)]="currentPage"
                     [clrDgPageSize]="pageSize">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span *ngIf="totalCount"
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}

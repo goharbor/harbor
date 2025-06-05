@@ -136,7 +136,7 @@ func (r *reaper) syncOutdatedStats() error {
 
 	// Loop all the in progress jobs to check if they're really in progress or
 	// status is hung.
-	h := func(k string, v int64) (err error) {
+	h := func(k string, _ int64) (err error) {
 		defer func() {
 			if errs.IsObjectNotFoundError(err) {
 				// As the job stats is lost and we don't have chance to restore it, then directly discard it.
@@ -250,7 +250,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 			return errors.Wrap(err, "scan locks")
 		}
 
-		if values, ok := reply[1].([]interface{}); ok {
+		if values, ok := reply[1].([]any); ok {
 			for i := 0; i < len(values); i += 2 {
 				k := string(values[i].([]uint8))
 				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 64)
@@ -317,7 +317,7 @@ func (r *reaper) getCurrentWorkerPools() (map[string]bool, error) {
 func (r *reaper) requeueInProgressJobs(poolID string, jobTypes []string) error {
 	numKeys := len(jobTypes)
 	redisRequeueScript := rds.RedisLuaReenqueueScript(numKeys)
-	var scriptArgs = make([]interface{}, 0, numKeys+1)
+	var scriptArgs = make([]any, 0, numKeys+1)
 
 	for _, jobType := range jobTypes {
 		// pops from in progress, push into job queue and decrement the queue lock

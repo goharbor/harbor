@@ -54,7 +54,7 @@ class TestProxyCache(unittest.TestCase):
             2. Delete user(UA).
         """
         user_id, user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
-        USER_CLIENT=dict(with_signature = True, endpoint = self.url, username = user_name, password = self.user_password)
+        USER_CLIENT=dict(endpoint = self.url, username = user_name, password = self.user_password)
 
         image_for_docker = dict(image = "for_proxy", tag = "1.0")
         image_for_ctr = dict(image = "redis", tag = "latest")
@@ -72,7 +72,7 @@ class TestProxyCache(unittest.TestCase):
             index_for_ctr = dict(image = "alpine", tag = "3.12.0")
         else:
             user_namespace = "nightly"
-            registry = "https://cicd.harbor.vmwarecna.net"
+            registry = "https://registry.goharbor.io"
             index_for_ctr = dict(image = "busybox", tag = "1.32.0")
 
         registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=True, **ADMIN_CLIENT)

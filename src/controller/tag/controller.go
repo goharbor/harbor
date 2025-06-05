@@ -76,7 +76,7 @@ type controller struct {
 // Ensure ...
 func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64, name string) (int64, error) {
 	query := &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"repository_id": repositoryID,
 			"name":          name,
 		},
@@ -97,7 +97,7 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		// existing tag must check the immutable status and signature
 		if tag.Immutable {
 			return 0, errors.New(nil).WithCode(errors.PreconditionCode).
-				WithMessage("the tag %s configured as immutable, cannot be updated", tag.Name)
+				WithMessagef("the tag %s configured as immutable, cannot be updated", tag.Name)
 		}
 		// the tag exists under the repository, but it is attached to other artifact
 		// update it to point to the provided artifact
@@ -189,7 +189,7 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 	}
 	if tag.Immutable {
 		return errors.New(nil).WithCode(errors.PreconditionCode).
-			WithMessage("the tag %s configured as immutable, cannot be deleted", tag.Name)
+			WithMessagef("the tag %s configured as immutable, cannot be deleted", tag.Name)
 	}
 	return c.tagMgr.Delete(ctx, id)
 }

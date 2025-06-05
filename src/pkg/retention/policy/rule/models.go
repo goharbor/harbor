@@ -84,4 +84,4 @@ type Selector struct {
 type Parameters map[string]Parameter
 
 // Parameter of rule
-type Parameter interface{}
+type Parameter any

@@ -32,8 +32,12 @@ const (
 	Memory = "memory"
 	// Redis the cache name of redis
 	Redis = "redis"
+	// Redis the cache name of redis TLS
+	RedisTLS = "rediss"
 	// RedisSentinel the cache name of redis sentinel
 	RedisSentinel = "redis+sentinel"
+	// RedisSentinel with TLS connection
+	RedisSentinelTLS = "rediss+sentinel"
 )
 
 var (
@@ -47,8 +51,6 @@ type Iterator interface {
 	Val() string
 }
 
-//go:generate mockery --name Cache --output . --outpkg cache --filename mock_cache_test.go --structname mockCache --inpackage
-
 // Cache cache interface
 type Cache interface {
 	// Contains returns true if key exists
@@ -58,13 +60,13 @@ type Cache interface {
 	Delete(ctx context.Context, key string) error
 
 	// Fetch retrieve the cached key value
-	Fetch(ctx context.Context, key string, value interface{}) error
+	Fetch(ctx context.Context, key string, value any) error
 
 	// Ping ping the cache
 	Ping(ctx context.Context) error
 
 	// Save cache the value by key
-	Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error
+	Save(ctx context.Context, key string, value any, expiration ...time.Duration) error
 
 	// Scan scans the keys matched by match string
 	// NOTICE: memory cache does not support use wildcard, compared by strings.Contains

@@ -182,7 +182,7 @@ func (m *manager) Get(ctx context.Context, id int) (*commonmodels.User, error) {
 	}
 
 	if len(users) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("user %d not found", id)
+		return nil, errors.NotFoundError(nil).WithMessagef("user %d not found", id)
 	}
 
 	return users[0], nil
@@ -196,7 +196,7 @@ func (m *manager) GetByName(ctx context.Context, username string) (*commonmodels
 	}
 
 	if len(users) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessage("user %s not found", username)
+		return nil, errors.NotFoundError(nil).WithMessagef("user %s not found", username)
 	}
 
 	return users[0], nil

@@ -84,7 +84,7 @@ func NewHTTPClient(insecure bool) *HTTPClient {
 // Get content from the url
 func (hc *HTTPClient) Get(url string, cred *auth.Credential, parmas map[string]string, options map[string]string) ([]byte, error) {
 	bytes, err := hc.get(url, cred, parmas, options)
-	logMsg := fmt.Sprintf("Get %s with cred=%v, params=%v, options=%v", url, cred, parmas, options)
+	logMsg := fmt.Sprintf("Get %s with params=%v, options=%v", url, parmas, options)
 	if err != nil {
 		log.Errorf("%s: %s", logMsg, err)
 	} else {
@@ -147,7 +147,7 @@ func (hc *HTTPClient) get(url string, cred *auth.Credential, parmas map[string]s
 }
 
 // Post content to the service specified by the url
-func (hc *HTTPClient) Post(url string, cred *auth.Credential, body interface{}, options map[string]string) ([]byte, error) {
+func (hc *HTTPClient) Post(url string, cred *auth.Credential, body any, options map[string]string) ([]byte, error) {
 	bytes, err := hc.post(url, cred, body, options)
 	logMsg := fmt.Sprintf("Post %s with cred=%v, options=%v", url, cred, options)
 	if err != nil {
@@ -159,7 +159,7 @@ func (hc *HTTPClient) Post(url string, cred *auth.Credential, body interface{}, 
 	return bytes, err
 }
 
-func (hc *HTTPClient) post(url string, cred *auth.Credential, body interface{}, options map[string]string) ([]byte, error) {
+func (hc *HTTPClient) post(url string, cred *auth.Credential, body any, options map[string]string) ([]byte, error) {
 	if len(url) == 0 {
 		return nil, errors.New("empty url")
 	}

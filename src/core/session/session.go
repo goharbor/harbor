@@ -41,12 +41,12 @@ type Store struct {
 	c           cache.Cache
 	sid         string
 	lock        sync.RWMutex
-	values      map[interface{}]interface{}
+	values      map[any]any
 	maxlifetime int64
 }
 
 // Set value in redis session
-func (rs *Store) Set(_ context.Context, key, value interface{}) error {
+func (rs *Store) Set(_ context.Context, key, value any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	rs.values[key] = value
@@ -54,7 +54,7 @@ func (rs *Store) Set(_ context.Context, key, value interface{}) error {
 }
 
 // Get value in redis session
-func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
+func (rs *Store) Get(_ context.Context, key any) any {
 	rs.lock.RLock()
 	defer rs.lock.RUnlock()
 	if v, ok := rs.values[key]; ok {
@@ -64,7 +64,7 @@ func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
 }
 
 // Delete value in redis session
-func (rs *Store) Delete(_ context.Context, key interface{}) error {
+func (rs *Store) Delete(_ context.Context, key any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	delete(rs.values, key)
@@ -75,7 +75,7 @@ func (rs *Store) Delete(_ context.Context, key interface{}) error {
 func (rs *Store) Flush(_ context.Context) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
-	rs.values = make(map[interface{}]interface{})
+	rs.values = make(map[any]any)
 	return nil
 }
 
@@ -84,23 +84,42 @@ func (rs *Store) SessionID(_ context.Context) string {
 	return rs.sid
 }
 
-// SessionRelease save session values to redis
-func (rs *Store) SessionRelease(ctx context.Context, _ http.ResponseWriter) {
-	b, err := session.EncodeGob(rs.values)
+func (rs *Store) releaseSession(ctx context.Context, _ http.ResponseWriter, requirePresent bool) {
+	rs.lock.RLock()
+	values := rs.values
+	rs.lock.RUnlock()
+	b, err := session.EncodeGob(values)
 	if err != nil {
 		return
 	}
-
 	if ctx == nil {
 		ctx = context.TODO()
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
 	if rdb, ok := rs.c.(*redis.Cache); ok {
-		cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
-		if cmd.Err() != nil {
-			log.Debugf("release session error: %v", err)
+		if requirePresent {
+			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), maxlifetime)
+			if cmd.Err() != nil {
+				log.Debugf("release session error: %v", err)
+			}
+		} else {
+			cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
+			if cmd.Err() != nil {
+				log.Debugf("release session error: %v", err)
+			}
 		}
 	}
+}
+
+// SessionRelease save session values to redis
+func (rs *Store) SessionRelease(ctx context.Context, w http.ResponseWriter) {
+	rs.releaseSession(ctx, w, false)
+}
+
+// added by beego version v2.3.4, commit https://github.com/beego/beego/commit/06d869664a9c55aea6c2bb6ac3866f8a39b1100c#diff-bc81cfdba9f5250f9bf95ccaae2e4e34b37af87e2091dda11ef49dc58bd91c2c
+// SessionReleaseIfPresent save session values to redis when key is present
+func (rs *Store) SessionReleaseIfPresent(ctx context.Context, w http.ResponseWriter) {
+	rs.releaseSession(ctx, w, true)
 }
 
 // Provider redis session provider
@@ -125,7 +144,7 @@ func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url stri
 
 // SessionRead read redis session by sid
 func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store, error) {
-	kv := make(map[interface{}]interface{})
+	kv := make(map[any]any)
 	if ctx == nil {
 		ctx = context.TODO()
 	}
@@ -163,7 +182,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 			rdb.Rename(ctx, oldsid, sid)
 			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
-			kv := make(map[interface{}]interface{})
+			kv := make(map[any]any)
 			err := rp.c.Fetch(ctx, sid, &kv)
 			if err != nil && !errors.Is(err, cache.ErrNotFound) {
 				return nil, err

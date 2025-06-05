@@ -44,6 +44,7 @@ type OIDCSetting struct {
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
 	ExtraRedirectParms map[string]string `json:"extra_redirect_parms"`
+	Logout             bool              `json:"logout"`
 }
 
 // QuotaSetting wraps the settings for Quota
@@ -69,8 +70,8 @@ func (ce *ConfigEntry) TableName() string {
 
 // Value ...
 type Value struct {
-	Val      interface{} `json:"value"`
-	Editable bool        `json:"editable"`
+	Val      any  `json:"value"`
+	Editable bool `json:"editable"`
 }
 
 // LdapConf holds information about ldap configuration
@@ -94,6 +95,7 @@ type GroupConf struct {
 	SearchScope         int    `json:"ldap_group_search_scope"`
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
+	AttachParallel      bool   `json:"ldap_group_attach_parallel,omitempty"`
 }
 
 type GDPRSetting struct {

@@ -67,7 +67,7 @@ func (m *manager) Get(ctx context.Context, projectID int64, memberID int) (*mode
 	}
 	if len(pm) == 0 {
 		return nil, errors.NotFoundError(nil).
-			WithMessage("the project member is not found, project id %v, member id %v", projectID, memberID)
+			WithMessagef("the project member is not found, project id %v, member id %v", projectID, memberID)
 	}
 	return pm[0], nil
 }

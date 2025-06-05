@@ -60,10 +60,30 @@ func BlobGetMiddleware() func(http.Handler) http.Handler {
 
 func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
-	art, p, proxyCtl, err := preCheck(ctx)
+	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
 	}
+
+	// go will panic if the network connection is ever interrupted, despite recovering successfully
+	// it will return an error type of http.ErrAbortHandler if it recovers. Middleware is expected to suppress this.
+	// golang/go#28239
+	defer func() {
+		r := recover()
+		err, ok := r.(error)
+
+		switch {
+		case r == nil:
+			return
+
+		case ok && errors.Is(err, http.ErrAbortHandler):
+			log.Debugf("Suppressed HttpAbortHandler: %s", err)
+			return // suppress
+
+		default:
+			panic(r)
+		}
+	}()
 
 	// Handle dockerhub request without library prefix
 	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
@@ -96,14 +116,14 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	return nil
 }
 
-func preCheck(ctx context.Context) (art lib.ArtifactInfo, p *proModels.Project, ctl proxy.Controller, err error) {
+func preCheck(ctx context.Context, withProjectMetadata bool) (art lib.ArtifactInfo, p *proModels.Project, ctl proxy.Controller, err error) {
 	none := lib.ArtifactInfo{}
 	art = lib.GetArtifactInfo(ctx)
 	if art == none {
 		return none, nil, nil, errors.New("artifactinfo is not found").WithCode(errors.NotFoundCode)
 	}
 	ctl = proxy.ControllerInstance()
-	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(false))
+	p, err = project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(withProjectMetadata))
 	return
 }
 
@@ -155,7 +175,7 @@ func defaultBlobURL(projectName string, name string, digest string) string {
 
 func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
-	art, p, proxyCtl, err := preCheck(ctx)
+	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
 	}
@@ -174,12 +194,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID)
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return err
 	}
 	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
-
 	if err != nil {
 		return err
 	}

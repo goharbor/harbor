@@ -102,7 +102,7 @@ func (d *DefaultAuthenticateHelper) OnBoardUser(_ context.Context, _ *models.Use
 // SearchUser - Get user information from account repository
 func (d *DefaultAuthenticateHelper) SearchUser(_ context.Context, username string) (*models.User, error) {
 	log.Errorf("Not support searching user, username: %s", username)
-	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", username)
+	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessagef("%s not found", username)
 }
 
 // PostAuthenticate - Update user information after authenticate, such as OnBoard or sync info etc
@@ -118,7 +118,7 @@ func (d *DefaultAuthenticateHelper) OnBoardGroup(_ context.Context, _ *model.Use
 // SearchGroup - Search ldap group by group key, groupKey is the unique attribute of group in authenticator, for LDAP, the key is group DN
 func (d *DefaultAuthenticateHelper) SearchGroup(_ context.Context, groupKey string) (*model.UserGroup, error) {
 	log.Errorf("Not support searching group, group key: %s", groupKey)
-	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessage("%s not found", groupKey)
+	return nil, libErrors.NotFoundError(ErrNotSupported).WithMessagef("%s not found", groupKey)
 }
 
 var registry = make(map[string]AuthenticateHelper)
@@ -222,7 +222,7 @@ func SearchAndOnBoardUser(ctx context.Context, username string) (int, error) {
 		return 0, err
 	}
 	if user == nil {
-		return 0, libErrors.NotFoundError(nil).WithMessage(fmt.Sprintf("user %s is not found", username))
+		return 0, libErrors.NotFoundError(nil).WithMessagef("user %s is not found", username)
 	}
 	err = OnBoardUser(ctx, user)
 	if err != nil {

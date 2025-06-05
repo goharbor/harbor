@@ -16,12 +16,10 @@ package policy
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/validation"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -72,10 +70,13 @@ type Schema struct {
 	FiltersStr string   `orm:"column(filters)" json:"-"`
 	Trigger    *Trigger `orm:"-" json:"trigger"`
 	// Use JSON data format (query by trigger type should be supported)
-	TriggerStr  string    `orm:"column(trigger)" json:"-"`
-	Enabled     bool      `orm:"column(enabled)" json:"enabled"`
-	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
+	TriggerStr string `orm:"column(trigger)" json:"-"`
+	Enabled    bool   `orm:"column(enabled)" json:"enabled"`
+	// ExtraAttrs is used to store extra attributes provided by vendor.
+	ExtraAttrsStr string         `orm:"column(extra_attrs)" json:"-"`
+	ExtraAttrs    map[string]any `orm:"-" json:"extra_attrs"`
+	CreatedAt     time.Time      `orm:"column(creation_time)" json:"creation_time"`
+	UpdatedTime   time.Time      `orm:"column(update_time)" json:"update_time"`
 }
 
 // TableName specifies the policy schema table name.
@@ -101,8 +102,8 @@ type FilterType = string
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type  FilterType  `json:"type"`
-	Value interface{} `json:"value"`
+	Type  FilterType `json:"type"`
+	Value any        `json:"value"`
 }
 
 // TriggerType represents the type of trigger.
@@ -124,68 +125,11 @@ func (s *Schema) ValidatePreheatPolicy() error {
 	if s.Trigger != nil && s.Trigger.Type == TriggerTypeScheduled && len(s.Trigger.Settings.Cron) > 0 {
 		if err := utils.ValidateCronString(s.Trigger.Settings.Cron); err != nil {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessage("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
+				WithMessagef("invalid cron string for scheduled preheat: %s, error: %v", s.Trigger.Settings.Cron, err)
 		}
 	}
+
 	return nil
-}
-
-// Valid the policy
-func (s *Schema) Valid(v *validation.Validation) {
-	if len(s.Name) == 0 {
-		_ = v.SetError("name", "cannot be empty")
-	}
-
-	// valid the filters
-	for _, filter := range s.Filters {
-		switch filter.Type {
-		case FilterTypeRepository, FilterTypeTag, FilterTypeVulnerability:
-			_, ok := filter.Value.(string)
-			if !ok {
-				_ = v.SetError("filters", "the type of filter value isn't string")
-				break
-			}
-		case FilterTypeSignature:
-			_, ok := filter.Value.(bool)
-			if !ok {
-				_ = v.SetError("filers", "the type of signature filter value isn't bool")
-				break
-			}
-		case FilterTypeLabel:
-			labels, ok := filter.Value.([]interface{})
-			if !ok {
-				_ = v.SetError("filters", "the type of label filter value isn't string slice")
-				break
-			}
-			for _, label := range labels {
-				_, ok := label.(string)
-				if !ok {
-					_ = v.SetError("filters", "the type of label filter value isn't string slice")
-					break
-				}
-			}
-		default:
-			_ = v.SetError("filters", "invalid filter type")
-		}
-	}
-
-	// valid trigger
-	if s.Trigger != nil {
-		switch s.Trigger.Type {
-		case TriggerTypeManual, TriggerTypeEventBased:
-		case TriggerTypeScheduled:
-			if len(s.Trigger.Settings.Cron) == 0 {
-				_ = v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
-			} else {
-				_, err := utils.CronParser().Parse(s.Trigger.Settings.Cron)
-				if err != nil {
-					_ = v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", s.Trigger.Settings.Cron))
-				}
-			}
-		default:
-			_ = v.SetError("trigger", "invalid trigger type")
-		}
-	}
 }
 
 // Encode encodes policy schema.
@@ -206,6 +150,14 @@ func (s *Schema) Encode() error {
 		s.TriggerStr = string(triggerStr)
 	}
 
+	if s.ExtraAttrs != nil {
+		extraAttrsStr, err := json.Marshal(s.ExtraAttrs)
+		if err != nil {
+			return err
+		}
+		s.ExtraAttrsStr = string(extraAttrsStr)
+	}
+
 	return nil
 }
 
@@ -224,6 +176,13 @@ func (s *Schema) Decode() error {
 		return err
 	}
 	s.Trigger = trigger
+
+	// parse extra attributes
+	extraAttrs, err := decodeExtraAttrs(s.ExtraAttrsStr)
+	if err != nil {
+		return err
+	}
+	s.ExtraAttrs = extraAttrs
 
 	return nil
 }
@@ -273,4 +232,18 @@ func decodeTrigger(triggerStr string) (*Trigger, error) {
 	}
 
 	return trigger, nil
+}
+
+// decodeExtraAttrs parse extraAttrsStr to extraAttrs.
+func decodeExtraAttrs(extraAttrsStr string) (map[string]any, error) {
+	if len(extraAttrsStr) == 0 {
+		return nil, nil
+	}
+
+	extraAttrs := make(map[string]any)
+	if err := json.Unmarshal([]byte(extraAttrsStr), &extraAttrs); err != nil {
+		return nil, err
+	}
+
+	return extraAttrs, nil
 }

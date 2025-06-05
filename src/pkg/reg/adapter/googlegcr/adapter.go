@@ -212,7 +212,7 @@ func (a adapter) DeleteManifest(repository, reference string) error {
 
 	if d == "" {
 		return errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessage("%s:%s not found", repository, reference)
+			WithMessagef("%s:%s not found", repository, reference)
 	}
 	for _, t := range append(tags, d) {
 		req, err := http.NewRequest(http.MethodDelete, buildManifestURL(a.registry.URL, repository, t), nil)

@@ -14,7 +14,10 @@
 
 package logger
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Entry provides unique interfaces on top of multiple logger backends.
 // Entry also implements @Interface.
@@ -30,70 +33,70 @@ func NewEntry(loggers []Interface) *Entry {
 }
 
 // Debug ...
-func (e *Entry) Debug(v ...interface{}) {
+func (e *Entry) Debug(v ...any) {
 	for _, l := range e.loggers {
 		l.Debug(v...)
 	}
 }
 
 // Debugf with format
-func (e *Entry) Debugf(format string, v ...interface{}) {
+func (e *Entry) Debugf(format string, v ...any) {
 	for _, l := range e.loggers {
 		l.Debugf(format, v...)
 	}
 }
 
 // Info ...
-func (e *Entry) Info(v ...interface{}) {
+func (e *Entry) Info(v ...any) {
 	for _, l := range e.loggers {
 		l.Info(v...)
 	}
 }
 
 // Infof with format
-func (e *Entry) Infof(format string, v ...interface{}) {
+func (e *Entry) Infof(format string, v ...any) {
 	for _, l := range e.loggers {
 		l.Infof(format, v...)
 	}
 }
 
 // Warning ...
-func (e *Entry) Warning(v ...interface{}) {
+func (e *Entry) Warning(v ...any) {
 	for _, l := range e.loggers {
 		l.Warning(v...)
 	}
 }
 
 // Warningf with format
-func (e *Entry) Warningf(format string, v ...interface{}) {
+func (e *Entry) Warningf(format string, v ...any) {
 	for _, l := range e.loggers {
 		l.Warningf(format, v...)
 	}
 }
 
 // Error ...
-func (e *Entry) Error(v ...interface{}) {
+func (e *Entry) Error(v ...any) {
 	for _, l := range e.loggers {
 		l.Error(v...)
 	}
 }
 
 // Errorf with format
-func (e *Entry) Errorf(format string, v ...interface{}) {
+func (e *Entry) Errorf(format string, v ...any) {
 	for _, l := range e.loggers {
 		l.Errorf(format, v...)
 	}
 }
 
 // Fatal error
-func (e *Entry) Fatal(v ...interface{}) {
+func (e *Entry) Fatal(v ...any) {
 	for _, l := range e.loggers {
 		l.Fatal(v...)
 	}
 }
 
 // Fatalf error
-func (e *Entry) Fatalf(format string, v ...interface{}) {
+func (e *Entry) Fatalf(format string, v ...any) {
 	for _, l := range e.loggers {
 		l.Fatalf(format, v...)
 	}
@@ -115,7 +118,7 @@ func (e *Entry) Close() error {
 		}
 	}
 	if errMsg != "" {
-		return fmt.Errorf(errMsg)
+		return errors.New(errMsg)
 	}
 	return nil
 }

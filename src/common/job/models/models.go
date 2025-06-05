@@ -15,7 +15,7 @@
 package models
 
 // Parameters for job execution.
-type Parameters map[string]interface{}
+type Parameters map[string]any
 
 // JobRequest is the request of launching a job.
 type JobRequest struct {
@@ -62,7 +62,7 @@ type StatsInfo struct {
 	UpstreamJobID string     `json:"upstream_job_id,omitempty"`   // Ref the upstream job if existing
 	NumericPID    int64      `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
 	Parameters    Parameters `json:"parameters,omitempty"`
-	Revision      int64      `json:"revision,omitempty"` // For differentiating the each retry of the same job
+	Revision      int64      `json:"revision,omitempty"` // For differentiating each retry of the same job
 }
 
 // JobPoolStats represents the healthy and status of all the running worker pools.
@@ -70,7 +70,7 @@ type JobPoolStats struct {
 	Pools []*JobPoolStatsData `json:"worker_pools"`
 }
 
-// JobPoolStatsData represent the healthy and status of the worker worker.
+// JobPoolStatsData represent the healthy and status of the worker.
 type JobPoolStatsData struct {
 	WorkerPoolID string   `json:"worker_pool_id"`
 	StartedAt    int64    `json:"started_at"`
@@ -96,5 +96,5 @@ type JobStatusChange struct {
 // Message is designed for sub/pub messages
 type Message struct {
 	Event string
-	Data  interface{} // generic format
+	Data  any // generic format
 }

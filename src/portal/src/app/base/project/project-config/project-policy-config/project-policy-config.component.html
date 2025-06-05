@@ -16,6 +16,84 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        <clr-checkbox-container *ngIf="isSystemAdmin" clrInline>
+            <label class="label-color-input">
+                {{ 'PROJECT.PROXY_CACHE' | translate }}
+            </label>
+            <clr-checkbox-wrapper id="is-project-proxy-cache-enabled">
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [(ngModel)]="projectPolicy.ProxyCacheEnabled"
+                    name="project-proxy-cache-enabled" />
+            </clr-checkbox-wrapper>
+            <clr-control-helper class="config-subtext">
+                {{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}
+            </clr-control-helper>
+        </clr-checkbox-container>
+        <div
+            *ngIf="isSystemAdmin && projectPolicy.ProxyCacheEnabled"
+            class="clr-form-control mt-0">
+            <label class="clr-control-label"></label>
+            <div class="clr-select-wrapper row-inline">
+                <label class="clr-control-label">
+                    {{ 'PROJECT.ENDPOINT' | translate }}
+                </label>
+                <select
+                    class="width-164 ml-1"
+                    id="registry"
+                    name="registry"
+                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [(ngModel)]="projectPolicy.RegistryId">
+                    <option class="display-none" value=""></option>
+                    <option *ngFor="let r of registries" [value]="r.id">
+                        {{ r.name }}-{{ r.url }}
+                    </option>
+                </select>
+            </div>
+            <div class="row-inline ml-2" clrInline>
+                <label class="clr-control-label">
+                    {{ 'PROJECT.BANDWIDTH' | translate }}
+                </label>
+                <div
+                    class="clr-control-container ml-1"
+                    [class.clr-error]="bandwidthError">
+                    <input
+                        type="number"
+                        id="bandwidth"
+                        [(ngModel)]="projectPolicy.ProxySpeedKb"
+                        name="bandwidth"
+                        disabled="!allowUpdateProxyCacheConfiguration"
+                        class="clr-input width-164 mr-10 clr-input-underline"
+                        autocomplete="off"
+                        (ngModelChange)="validateBandwidth()" />
+                    <clr-icon
+                        *ngIf="bandwidthError"
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <div class="clr-select-wrapper mr-10 margin-left-05">
+                        <select
+                            id="bandwidth_unit"
+                            name="bandwidth_unit"
+                            disabled="!allowUpdateProxyCacheConfiguration"
+                            [(ngModel)]="speedUnit">
+                            <option
+                                *ngFor="let unit of speedUnits"
+                                [value]="unit.UNIT">
+                                {{ unit.UNIT }}
+                            </option>
+                        </select>
+                    </div>
+                    <clr-control-error
+                        *ngIf="bandwidthError"
+                        class="tooltip-content">
+                        {{ 'PROJECT.SPEED_LIMIT_TIP' | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
+        </div>
+
         <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
             <label
                 ><span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label

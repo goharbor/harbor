@@ -32,13 +32,15 @@ type Robot struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(name)" json:"name" sort:"default"`
 	Description  string    `orm:"column(description)" json:"description"`
-	Secret       string    `orm:"column(secret)" json:"secret"`
-	Salt         string    `orm:"column(salt)" json:"-"`
+	Secret       string    `orm:"column(secret)" filter:"false" json:"secret"`
+	Salt         string    `orm:"column(salt)" filter:"false" json:"-"`
 	Duration     int64     `orm:"column(duration)" json:"duration"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	ExpiresAt    int64     `orm:"column(expiresat)" json:"expires_at"`
 	Disabled     bool      `orm:"column(disabled)" json:"disabled"`
 	Visible      bool      `orm:"column(visible)" json:"-"`
+	CreatorRef   int64     `orm:"column(creator_ref)" json:"creator_ref"`
+	CreatorType  string    `orm:"column(creator_type)" json:"creator_type"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }

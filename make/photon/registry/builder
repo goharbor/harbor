@@ -7,7 +7,14 @@ if [ -z $1 ]; then
   exit 1
 fi
 
+if [ -z $2 ]; then
+  error "Please set the 'distribution_src' variable"
+  exit 1
+fi
+
 VERSION="$1"
+DISTRIBUTION_SRC="$2"
+GOBUILDIMAGE="$3"
 
 set -e
 
@@ -20,16 +27,13 @@ cur=$PWD
 
 # the temp folder to store distribution source code...
 TEMP=`mktemp -d ${TMPDIR-/tmp}/distribution.XXXXXX`
-git clone -b $VERSION https://github.com/distribution/distribution.git $TEMP
+git clone -b $VERSION $DISTRIBUTION_SRC $TEMP
 
-# add patch redis
-cd $TEMP
-git apply $cur/redis.patch
 cd $cur
 
 echo 'build the registry binary ...'
 cp Dockerfile.binary $TEMP
-docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
+docker build --build-arg golang_image=$GOBUILDIMAGE -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 
 echo 'copy the registry binary to local...'
 ID=$(docker create registry-golang)

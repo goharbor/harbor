@@ -39,7 +39,7 @@ type Options struct {
 }
 
 // GetKey ...
-func (o *Options) GetKey() (interface{}, error) {
+func (o *Options) GetKey() (any, error) {
 	var err error
 	var privateKey *rsa.PrivateKey
 	var publicKey *rsa.PublicKey
@@ -69,7 +69,7 @@ func (o *Options) GetKey() (interface{}, error) {
 		}
 		return privateKey, nil
 	default:
-		return nil, fmt.Errorf(fmt.Sprintf("unsupported sign method, %s", o.SignMethod))
+		return nil, fmt.Errorf("unsupported sign method, %s", o.SignMethod)
 	}
 }
 
@@ -83,7 +83,7 @@ func DefaultTokenOptions() *Options {
 func NewOptions(sm, iss, keyPath string) (*Options, error) {
 	pk, err := os.ReadFile(keyPath)
 	if err != nil {
-		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
+		log.Errorf("failed to read private key %v", err)
 		return nil, err
 	}
 	return &Options{

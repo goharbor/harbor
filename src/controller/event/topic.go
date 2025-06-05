@@ -21,8 +21,9 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/audit/model"
+	"github.com/goharbor/harbor/src/pkg/auditext/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	robotModel "github.com/goharbor/harbor/src/pkg/robot/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -42,11 +43,19 @@ const (
 	TopicScanningStopped   = "SCANNING_STOPPED"
 	TopicScanningCompleted = "SCANNING_COMPLETED"
 	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
-	TopicQuotaWarning    = "QUOTA_WARNING"
-	TopicQuotaExceed     = "QUOTA_EXCEED"
-	TopicReplication     = "REPLICATION"
-	TopicArtifactLabeled = "ARTIFACT_LABELED"
-	TopicTagRetention    = "TAG_RETENTION"
+	TopicQuotaWarning      = "QUOTA_WARNING"
+	TopicQuotaExceed       = "QUOTA_EXCEED"
+	TopicReplication       = "REPLICATION"
+	TopicArtifactLabeled   = "ARTIFACT_LABELED"
+	TopicTagRetention      = "TAG_RETENTION"
+	TopicCreateRobot       = "CREATE_ROBOT"
+	TopicDeleteRobot       = "DELETE_ROBOT"
+	TopicCommonEvent       = "COMMON_API"
+	ResourceTypeProject    = "project"
+	ResourceTypeArtifact   = "artifact"
+	ResourceTypeRepository = "repository"
+	ResourceTypeRobot      = "robot"
+	ResourceTypeTag        = "tag"
 )
 
 // CreateProjectEvent is the creating project event
@@ -59,14 +68,16 @@ type CreateProjectEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (c *CreateProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    c.ProjectID,
-		OpTime:       c.OccurAt,
-		Operation:    rbac.ActionCreate.String(),
-		Username:     c.Operator,
-		ResourceType: "project",
-		Resource:     c.Project}
+func (c *CreateProjectEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.ProjectID,
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionCreate.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeProject,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("create project: %s", c.Project),
+		Resource:             c.Project}
 	return auditLog, nil
 }
 
@@ -85,14 +96,16 @@ type DeleteProjectEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (d *DeleteProjectEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    d.ProjectID,
-		OpTime:       d.OccurAt,
-		Operation:    rbac.ActionDelete.String(),
-		Username:     d.Operator,
-		ResourceType: "project",
-		Resource:     d.Project}
+func (d *DeleteProjectEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            d.ProjectID,
+		OpTime:               d.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             d.Operator,
+		ResourceType:         ResourceTypeProject,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete project: %s", d.Project),
+		Resource:             d.Project}
 	return auditLog, nil
 }
 
@@ -111,14 +124,16 @@ type DeleteRepositoryEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (d *DeleteRepositoryEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    d.ProjectID,
-		OpTime:       d.OccurAt,
-		Operation:    rbac.ActionDelete.String(),
-		Username:     d.Operator,
-		ResourceType: "repository",
-		Resource:     d.Repository,
+func (d *DeleteRepositoryEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            d.ProjectID,
+		OpTime:               d.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             d.Operator,
+		ResourceType:         ResourceTypeRepository,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete repository: %s", d.Repository),
+		Resource:             d.Repository,
 	}
 	return auditLog, nil
 }
@@ -134,6 +149,7 @@ type ArtifactEvent struct {
 	Repository string
 	Artifact   *artifact.Artifact
 	Tags       []string // when the artifact is pushed by digest, the tag here will be null
+	Labels     []string
 	Operator   string
 	OccurAt    time.Time
 }
@@ -150,13 +166,15 @@ type PushArtifactEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (p *PushArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    p.Artifact.ProjectID,
-		OpTime:       p.OccurAt,
-		Operation:    rbac.ActionCreate.String(),
-		Username:     p.Operator,
-		ResourceType: "artifact"}
+func (p *PushArtifactEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            p.Artifact.ProjectID,
+		OpTime:               p.OccurAt,
+		Operation:            rbac.ActionCreate.String(),
+		Username:             p.Operator,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("push artifact: %s@%s", p.Artifact.RepositoryName, p.Artifact.Digest),
+		ResourceType:         ResourceTypeArtifact}
 
 	if len(p.Tags) == 0 {
 		auditLog.Resource = fmt.Sprintf("%s@%s",
@@ -179,13 +197,15 @@ type PullArtifactEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    p.Artifact.ProjectID,
-		OpTime:       p.OccurAt,
-		Operation:    rbac.ActionPull.String(),
-		Username:     p.Operator,
-		ResourceType: "artifact"}
+func (p *PullArtifactEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            p.Artifact.ProjectID,
+		OpTime:               p.OccurAt,
+		Operation:            rbac.ActionPull.String(),
+		Username:             p.Operator,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("pull artifact: %s@%s", p.Artifact.RepositoryName, p.Artifact.Digest),
+		ResourceType:         ResourceTypeArtifact}
 
 	if len(p.Tags) == 0 {
 		auditLog.Resource = fmt.Sprintf("%s@%s",
@@ -215,14 +235,16 @@ type DeleteArtifactEvent struct {
 }
 
 // ResolveToAuditLog ...
-func (d *DeleteArtifactEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    d.Artifact.ProjectID,
-		OpTime:       d.OccurAt,
-		Operation:    rbac.ActionDelete.String(),
-		Username:     d.Operator,
-		ResourceType: "artifact",
-		Resource:     fmt.Sprintf("%s@%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
+func (d *DeleteArtifactEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            d.Artifact.ProjectID,
+		OpTime:               d.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             d.Operator,
+		ResourceType:         ResourceTypeArtifact,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete artifact: %s@%s", d.Artifact.RepositoryName, d.Artifact.Digest),
+		Resource:             fmt.Sprintf("%s@%s", d.Artifact.RepositoryName, d.Artifact.Digest)}
 	return auditLog, nil
 }
 
@@ -235,20 +257,23 @@ type CreateTagEvent struct {
 	EventType        string
 	Repository       string
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 	Operator         string
 	OccurAt          time.Time
 }
 
 // ResolveToAuditLog ...
-func (c *CreateTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    c.AttachedArtifact.ProjectID,
-		OpTime:       c.OccurAt,
-		Operation:    rbac.ActionCreate.String(),
-		Username:     c.Operator,
-		ResourceType: "tag",
-		Resource:     fmt.Sprintf("%s:%s", c.Repository, c.Tag)}
+func (c *CreateTagEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.AttachedArtifact.ProjectID,
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionCreate.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeTag,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("create tag: %s:%s", c.Repository, c.Tag),
+		Resource:             fmt.Sprintf("%s:%s", c.Repository, c.Tag)}
 	return auditLog, nil
 }
 
@@ -263,20 +288,23 @@ type DeleteTagEvent struct {
 	EventType        string
 	Repository       string
 	Tag              string
+	Labels           []string
 	AttachedArtifact *artifact.Artifact
 	Operator         string
 	OccurAt          time.Time
 }
 
 // ResolveToAuditLog ...
-func (d *DeleteTagEvent) ResolveToAuditLog() (*model.AuditLog, error) {
-	auditLog := &model.AuditLog{
-		ProjectID:    d.AttachedArtifact.ProjectID,
-		OpTime:       d.OccurAt,
-		Operation:    rbac.ActionDelete.String(),
-		Username:     d.Operator,
-		ResourceType: "tag",
-		Resource:     fmt.Sprintf("%s:%s", d.Repository, d.Tag)}
+func (d *DeleteTagEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            d.AttachedArtifact.ProjectID,
+		OpTime:               d.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             d.Operator,
+		ResourceType:         ResourceTypeTag,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete tag: %s:%s", d.Repository, d.Tag),
+		Resource:             fmt.Sprintf("%s:%s", d.Repository, d.Tag)}
 	return auditLog, nil
 }
 
@@ -368,4 +396,58 @@ func (r *RetentionEvent) String() string {
 
 	return fmt.Sprintf("TaskID-%d Status-%s Deleted-%s OccurAt-%s",
 		r.TaskID, r.Status, candidates, r.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// CreateRobotEvent is the creating robot event
+type CreateRobotEvent struct {
+	EventType string
+	Robot     *robotModel.Robot
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (c *CreateRobotEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.Robot.ProjectID,
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionCreate.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeRobot,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("create robot: %s", c.Robot.Name),
+		Resource:             c.Robot.Name}
+	return auditLog, nil
+}
+
+func (c *CreateRobotEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// DeleteRobotEvent is the deleting robot event
+type DeleteRobotEvent struct {
+	EventType string
+	Robot     *robotModel.Robot
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (c *DeleteRobotEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.Robot.ProjectID,
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeRobot,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete robot: %s", c.Robot.Name),
+		Resource:             c.Robot.Name}
+	return auditLog, nil
+}
+
+func (c *DeleteRobotEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
 }

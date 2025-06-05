@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -65,6 +66,9 @@ func (md *metaDAO) GetByUsername(ctx context.Context, username string) (*models.
 	}
 	res := &models.OIDCUser{}
 	if err := ormer.Raw(sql, username).QueryRow(res); err != nil {
+		if errors.Is(err, orm.ErrNoRows) {
+			return nil, fmt.Errorf("oidc user data with username %s not found", username)
+		}
 		return nil, err
 	}
 	return res, nil
@@ -80,7 +84,7 @@ func (md *metaDAO) Update(ctx context.Context, oidcUser *models.OIDCUser, props 
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("oidc user data with id %d not found", oidcUser.ID)
+		return errors.NotFoundError(nil).WithMessagef("oidc user data with id %d not found", oidcUser.ID)
 	}
 	return nil
 }

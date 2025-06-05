@@ -51,7 +51,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		return handleError(err)
 	}
 
-	var ownerIDs []interface{}
+	var ownerIDs []any
 	var projectsMap = make(map[int64]*proModels.Project, len(projectIDs))
 	for _, project := range projects {
 		ownerIDs = append(ownerIDs, project.OwnerID)
@@ -75,7 +75,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 	for _, projectID := range projectIDs {
 		project, ok := projectsMap[projectID]
 		if !ok {
-			err := errors.NotFoundError(nil).WithMessage("project %d not found", projectID)
+			err := errors.NotFoundError(nil).WithMessagef("project %d not found", projectID)
 			return handleError(err)
 		}
 

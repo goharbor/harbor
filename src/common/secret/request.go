@@ -25,7 +25,7 @@ import (
 const HeaderPrefix = "Harbor-Secret "
 
 // FromRequest tries to get Harbor Secret from request header.
-// It will return empty string if the reqeust is nil.
+// It will return empty string if the request is nil.
 func FromRequest(req *http.Request) string {
 	if req == nil {
 		return ""

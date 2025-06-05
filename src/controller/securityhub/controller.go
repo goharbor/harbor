@@ -147,11 +147,11 @@ func (c *controller) attachTags(ctx context.Context, vuls []*secHubModel.Vulnera
 	}
 
 	// get tags in the artifact list
-	var artifactIds []interface{}
+	var artifactIDs []any
 	for k := range artifactTagMap {
-		artifactIds = append(artifactIds, k)
+		artifactIDs = append(artifactIDs, k)
 	}
-	query := q.New(q.KeyWords{"artifact_id": q.NewOrList(artifactIds)})
+	query := q.New(q.KeyWords{"artifact_id": q.NewOrList(artifactIDs)})
 	tags, err := c.tagMgr.List(ctx, query)
 	if err != nil {
 		return vuls, err

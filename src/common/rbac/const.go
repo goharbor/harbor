@@ -14,7 +14,9 @@
 
 package rbac
 
-import "github.com/goharbor/harbor/src/pkg/permission/types"
+import (
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+)
 
 // const action variables
 const (
@@ -81,9 +83,86 @@ const (
 	ResourceSecurityHub        = Resource("security-hub")
 )
 
+type scope string
+
+const (
+	ScopeSystem  = scope("System")
+	ScopeProject = scope("Project")
+)
+
+// RobotPermissionProvider defines the permission provider for robot account
+type RobotPermissionProvider interface {
+	GetPermissions(s scope) []*types.Policy
+}
+
+// GetPermissionProvider gives the robot permission provider
+func GetPermissionProvider() RobotPermissionProvider {
+	// TODO will determine by the ui configuration
+	return &NolimitProvider{}
+}
+
+// BaseProvider ...
+type BaseProvider struct {
+}
+
+// GetPermissions ...
+func (d *BaseProvider) GetPermissions(s scope) []*types.Policy {
+	return PoliciesMap[s]
+}
+
+// NolimitProvider ...
+type NolimitProvider struct {
+	BaseProvider
+}
+
+// GetPermissions ...
+func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
+	if s == ScopeSystem {
+		return append(n.BaseProvider.GetPermissions(ScopeSystem),
+			&types.Policy{Resource: ResourceRobot, Action: ActionCreate},
+			&types.Policy{Resource: ResourceRobot, Action: ActionRead},
+			&types.Policy{Resource: ResourceRobot, Action: ActionList},
+			&types.Policy{Resource: ResourceRobot, Action: ActionDelete},
+
+			&types.Policy{Resource: ResourceUser, Action: ActionCreate},
+			&types.Policy{Resource: ResourceUser, Action: ActionRead},
+			&types.Policy{Resource: ResourceUser, Action: ActionUpdate},
+			&types.Policy{Resource: ResourceUser, Action: ActionList},
+			&types.Policy{Resource: ResourceUser, Action: ActionDelete},
+
+			&types.Policy{Resource: ResourceLdapUser, Action: ActionCreate},
+			&types.Policy{Resource: ResourceLdapUser, Action: ActionList},
+
+			&types.Policy{Resource: ResourceQuota, Action: ActionUpdate},
+
+			&types.Policy{Resource: ResourceUserGroup, Action: ActionCreate},
+			&types.Policy{Resource: ResourceUserGroup, Action: ActionRead},
+			&types.Policy{Resource: ResourceUserGroup, Action: ActionUpdate},
+			&types.Policy{Resource: ResourceUserGroup, Action: ActionList},
+			&types.Policy{Resource: ResourceUserGroup, Action: ActionDelete})
+	}
+	if s == ScopeProject {
+		return append(n.BaseProvider.GetPermissions(ScopeProject),
+			&types.Policy{Resource: ResourceRobot, Action: ActionCreate},
+			&types.Policy{Resource: ResourceRobot, Action: ActionRead},
+			&types.Policy{Resource: ResourceRobot, Action: ActionList},
+			&types.Policy{Resource: ResourceRobot, Action: ActionDelete},
+
+			&types.Policy{Resource: ResourceExportCVE, Action: ActionCreate},
+			&types.Policy{Resource: ResourceExportCVE, Action: ActionRead},
+
+			&types.Policy{Resource: ResourceMember, Action: ActionCreate},
+			&types.Policy{Resource: ResourceMember, Action: ActionRead},
+			&types.Policy{Resource: ResourceMember, Action: ActionUpdate},
+			&types.Policy{Resource: ResourceMember, Action: ActionList},
+			&types.Policy{Resource: ResourceMember, Action: ActionDelete})
+	}
+	return []*types.Policy{}
+}
+
 var (
-	PoliciesMap = map[string][]*types.Policy{
-		"System": {
+	PoliciesMap = map[scope][]*types.Policy{
+		ScopeSystem: {
 			{Resource: ResourceAuditLog, Action: ActionList},
 
 			{Resource: ResourcePreatInstance, Action: ActionRead},
@@ -154,7 +233,7 @@ var (
 			{Resource: ResourceQuota, Action: ActionRead},
 			{Resource: ResourceQuota, Action: ActionList},
 		},
-		"Project": {
+		ScopeProject: {
 			{Resource: ResourceLog, Action: ActionList},
 
 			{Resource: ResourceProject, Action: ActionRead},

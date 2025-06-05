@@ -30,8 +30,8 @@ import (
 )
 
 type FilterProcessor interface {
-	ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error)
-	ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error)
+	ProcessRepositoryFilter(ctx context.Context, filter string, projectIDs []int64) ([]int64, error)
+	ProcessTagFilter(ctx context.Context, filter string, repositoryIDs []int64) ([]*artifact.Artifact, error)
 	ProcessLabelFilter(ctx context.Context, labelIDs []int64, arts []*artifact.Artifact) ([]*artifact.Artifact, error)
 }
 
@@ -52,12 +52,12 @@ func NewFilterProcessor() FilterProcessor {
 	}
 }
 
-func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIds []int64) ([]int64, error) {
+func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, filter string, projectIDs []int64) ([]int64, error) {
 	sel := doublestar.New(doublestar.RepoMatches, filter, "")
 	candidates := make([]*selector.Candidate, 0)
 	allRepoIDs := make([]int64, 0)
 
-	for _, projectID := range projectIds {
+	for _, projectID := range projectIDs {
 		query := q.New(q.KeyWords{"ProjectID": projectID})
 		allRepos, err := dfp.repoMgr.List(ctx, query)
 		if err != nil {
@@ -87,7 +87,7 @@ func (dfp *DefaultFilterProcessor) ProcessRepositoryFilter(ctx context.Context, 
 	return repoIDs, nil
 }
 
-func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter string, repositoryIds []int64) ([]*artifact.Artifact, error) {
+func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter string, repositoryIDs []int64) ([]*artifact.Artifact, error) {
 	arts := make([]*artifact.Artifact, 0)
 	opts := &artifact.Option{
 		WithTag:   true,
@@ -96,7 +96,7 @@ func (dfp *DefaultFilterProcessor) ProcessTagFilter(ctx context.Context, filter 
 		// WithAccessory: true
 	}
 	// list all artifacts by repository id
-	for _, repoID := range repositoryIds {
+	for _, repoID := range repositoryIDs {
 		repoArts, err := dfp.artCtl.List(ctx, q.New(q.KeyWords{"RepositoryID": repoID}), opts)
 		if err != nil {
 			return nil, err

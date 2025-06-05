@@ -152,7 +152,7 @@ func (suite *Suite) NextHandler(statusCode int, headers map[string]string) http.
 }
 
 // ExecSQL ...
-func (suite *Suite) ExecSQL(query string, args ...interface{}) {
+func (suite *Suite) ExecSQL(query string, args ...any) {
 	o := o.NewOrm()
 
 	_, err := o.Raw(query, args...).Exec()

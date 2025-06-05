@@ -61,7 +61,7 @@ type processor struct {
 func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artifact, addition string) (*ps.Addition, error) {
 	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
+			WithMessagef("addition %s isn't supported for %s", addition, ArtifactTypeChart)
 	}
 
 	m, _, err := p.RegCli.PullManifest(artifact.RepositoryName, artifact.Digest)

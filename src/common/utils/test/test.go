@@ -55,11 +55,11 @@ type Response struct {
 	StatusCode int
 	// Headers are the headers of the response
 	Headers map[string]string
-	// Boby is the body of the response
+	// Body is the body of the response
 	Body []byte
 }
 
-// Handler returns a handler function which handle requst according to
+// Handler returns a handler function which handle request according to
 // the response provided
 func Handler(resp *Response) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func Handler(resp *Response) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-// NewServer creates a HTTP server for unit test
+// NewServer creates an HTTP server for unit test
 func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 	r := mux.NewRouter()
 
@@ -94,9 +94,9 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 }
 
 // GetUnitTestConfig ...
-func GetUnitTestConfig() map[string]interface{} {
+func GetUnitTestConfig() map[string]any {
 	ipAddress := os.Getenv("IP")
-	return map[string]interface{}{
+	return map[string]any{
 		common.ExtEndpoint:            fmt.Sprintf("https://%s", ipAddress),
 		common.AUTHMode:               "db_auth",
 		common.DatabaseType:           "postgresql",
@@ -130,7 +130,7 @@ func GetUnitTestConfig() map[string]interface{} {
 }
 
 // TraceCfgMap ...
-func TraceCfgMap(cfgs map[string]interface{}) {
+func TraceCfgMap(cfgs map[string]any) {
 	var keys []string
 	for k := range cfgs {
 		keys = append(keys, k)

@@ -105,7 +105,7 @@ func (m *manager) AddTo(ctx context.Context, labelID int64, artifactID int64) er
 }
 func (m *manager) RemoveFrom(ctx context.Context, labelID int64, artifactID int64) error {
 	n, err := m.dao.DeleteReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"LabelID":    labelID,
 			"ArtifactID": artifactID,
 		},
@@ -114,14 +114,14 @@ func (m *manager) RemoveFrom(ctx context.Context, labelID int64, artifactID int6
 		return err
 	}
 	if n == 0 {
-		return errors.NotFoundError(nil).WithMessage("reference with label %d and artifact %d not found", labelID, artifactID)
+		return errors.NotFoundError(nil).WithMessagef("reference with label %d and artifact %d not found", labelID, artifactID)
 	}
 	return nil
 }
 
 func (m *manager) RemoveAllFrom(ctx context.Context, artifactID int64) error {
 	_, err := m.dao.DeleteReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ArtifactID": artifactID,
 		},
 	})
@@ -130,7 +130,7 @@ func (m *manager) RemoveAllFrom(ctx context.Context, artifactID int64) error {
 
 func (m *manager) RemoveFromAllArtifacts(ctx context.Context, labelID int64) error {
 	_, err := m.dao.DeleteReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"LabelID": labelID,
 		},
 	})

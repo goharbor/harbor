@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -175,5 +175,12 @@ export class SearchResultComponent implements OnInit, OnDestroy {
                 this.msgHandler.handleError(error);
             }
         );
+    }
+    getTopValue(): number {
+        const headerHeight: number =
+            document.querySelector('navigator')?.clientHeight || 0;
+        const bannerHeight: number =
+            document.querySelector('app-app-level-alerts')?.clientHeight || 0;
+        return headerHeight + bannerHeight;
     }
 }
