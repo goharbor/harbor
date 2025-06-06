@@ -519,9 +519,7 @@
             <clr-checkbox-wrapper>
                 <input
                     (ngModelChange)="setLdapGroupAttachParallelValue($event)"
-                    [disabled]="
-                        disabled(currentConfig.ldap_group_attach_parallel)
-                    "
+                    [disabled]="disabled(currentConfig.ldap_group_attach_parallel)"
                     [ngModel]="currentConfig.ldap_group_attach_parallel.value"
                     clrCheckbox
                     id="ldapGroupAttachParallel"
@@ -550,9 +548,7 @@
             <clr-checkbox-wrapper>
                 <input
                     (ngModelChange)="setLdapADNestedGroupValue($event)"
-                    [disabled]="
-                        disabled(currentConfig.ldap_ad_nested_group)
-                    "
+                    [disabled]="disabled(currentConfig.ldap_ad_nested_group)"
                     [ngModel]="currentConfig.ldap_ad_nested_group.value"
                     clrCheckbox
                     id="ldapADNestedGroup"
