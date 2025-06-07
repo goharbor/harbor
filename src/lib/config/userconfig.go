@@ -82,6 +82,7 @@ func LDAPGroupConf(ctx context.Context) (*cfgModels.GroupConf, error) {
 		AdminDN:             mgr.Get(ctx, common.LDAPGroupAdminDn).GetString(),
 		MembershipAttribute: mgr.Get(ctx, common.LDAPGroupMembershipAttribute).GetString(),
 		AttachParallel:      mgr.Get(ctx, common.LDAPGroupAttachParallel).GetBool(),
+		ADNestedGroup:       mgr.Get(ctx, common.LDAPADNestedGroup).GetBool(),
 	}, nil
 }
 
