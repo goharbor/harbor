@@ -114,7 +114,6 @@ func (c *Client) deleteTag(projectID int64, repositoryID int64, tagName string) 
 	urlAPI := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d/tags/%s", c.url, projectID, repositoryID, tagName)
 	req, err := c.newRequest(http.MethodDelete, urlAPI, nil)
 	if err != nil {
-		log.Errorf("Failed to create request for deleting tag: %v", err)
 		return err
 	}
 	resp, err := c.client.Do(req)
@@ -125,33 +124,9 @@ func (c *Client) deleteTag(projectID int64, repositoryID int64, tagName string) 
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		data, _ := io.ReadAll(resp.Body)
-		log.Errorf("Failed to delete tag with status code %d: %s", resp.StatusCode, string(data))
-		return nil
+		return fmt.Errorf("failed to delete tag with status code %d: %s", resp.StatusCode, string(data))
 	}
 	log.Debugf("Successfully deleted tag in project %d and repository %d", projectID, repositoryID)
-
-	return nil
-}
-
-func (c *Client) deleteRepository(projectID int64, repositoryID int64) error {
-	urlAPI := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d", c.url, projectID, repositoryID)
-	req, err := c.newRequest(http.MethodDelete, urlAPI, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		data, _ := io.ReadAll(resp.Body)
-		return &common_http.Error{
-			Code:    resp.StatusCode,
-			Message: string(data),
-		}
-	}
-	log.Debugf("Successfully deleted repository %d in project %d", repositoryID, projectID)
 	return nil
 }
 
