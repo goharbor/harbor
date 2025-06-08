@@ -241,30 +241,36 @@ func existPatterns(path string, patterns []string) bool {
 	return correct
 }
 
-// Delete a manifest using the GitLab API.
-// If the reference is a tag, we will delete the tag. Otherwise, we will delete the
-// repository.
-// This function also runs garbage collection to remove the blobs from the registry.
-// See: https://docs.gitlab.com/api/container_registry/#delete-a-registry-repository-tag
+func (a *adapter) getProjectsByRepositoryName(repository string) ([]*Project, error) {
+	repositoriesToTry := []string{repository}
+
+	components := strings.Split(repository, "/")
+	for i := len(components) - 1; i >= 2; i-- {
+		repositoriesToTry = append(repositoriesToTry, strings.Join(components[:i], "/"))
+	}
+
+	for _, repo := range repositoriesToTry {
+		projects, err := a.clientGitlabAPI.getProjectsByName(url.QueryEscape(repo))
+		if err != nil {
+			continue
+		}
+		if len(projects) > 0 {
+			return projects, nil
+		}
+	}
+
+	return []*Project{}, nil
+}
+
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	// mmoreiradj2/images/debian + bookworm-slim
 	log.Errorf("DeleteManifest called with repository: %s, reference: %s", repository, reference)
 
-	searchPattern := strings.Split(repository, "/")
-	if len(searchPattern) < 2 {
-		log.Errorf("Invalid repository format: %s", repository)
-		return errors.New("invalid repository format")
-	}
-
-	projectName := strings.Join(searchPattern[:len(searchPattern)-1], "/")
-	log.Debugf("Searching for project: %s", projectName)
-
-	projects, err := a.clientGitlabAPI.getProjectsByName(projectName)
+	projects, err := a.getProjectsByRepositoryName(repository)
 	if err != nil {
-		log.Errorf("Failed to get projects by pattern %s: %v", projectName, err)
+		log.Errorf("Failed to get projects by pattern %s: %v", repository, err)
 	}
 	if len(projects) == 0 {
-		log.Errorf("No projects found for pattern %s", projectName)
+		log.Errorf("No projects found for pattern %s", repository)
 		return errors.New("no projects found")
 	}
 	projectID := projects[0].ID
@@ -273,10 +279,10 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 
 	repositories, err := a.clientGitlabAPI.getRepositories(projectID)
 	if err != nil {
-		log.Errorf("Failed to get repositories for project %s: %v", projectName, err)
+		log.Errorf("Failed to get repositories for project %s: %v", repository, err)
 	}
 	if len(repositories) == 0 {
-		log.Errorf("No repositories found for project %s", projectName)
+		log.Errorf("No repositories found for project %s", repository)
 		return errors.New("no repositories found")
 	}
 
