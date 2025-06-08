@@ -1,0 +1,12 @@
+[
+  {
+    "name": "latest",
+    "path": "library/docker/harbor:latest",
+    "location": "registry.gitlab.com/library/docker/harbor:latest"
+  },
+  {
+    "name": "v1.0.0",
+    "path": "library/docker/harbor:v1.0.0",
+    "location": "registry.gitlab.com/library/docker/harbor:v1.0.0"
+  }
+]

@@ -1,0 +1,7 @@
+[
+  {
+    "name": "v0.1.2",
+    "path": "library/docker/harbor/jobservice:v0.1.2",
+    "location": "registry.gitlab.com/library/docker/harbor/jobservice:v0.1.2"
+  }
+]

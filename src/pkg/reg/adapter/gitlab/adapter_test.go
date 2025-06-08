@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,11 +27,12 @@ func mustWriteHTTPResponse(t *testing.T, w io.Writer, fixturePath string) {
 }
 func getServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("/v2/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Www-Authenticate", "Bearer realm=\"http://"+r.Host+"/jwt/auth\",service=\"container_registry\"")
 		w.WriteHeader(http.StatusUnauthorized)
-
 	})
+
 	mux.HandleFunc("/api/v4/projects", func(w http.ResponseWriter, r *http.Request) {
 		search := r.URL.Query().Get("search")
 		w.Header().Set("X-Next-Page", "")
@@ -40,40 +40,42 @@ func getServer(t *testing.T) *httptest.Server {
 		switch search {
 		case "library/dev-docker", "library", "library/", "dev-docker/", "dev-docker":
 			mustWriteHTTPResponse(t, w, "testdata/projects/dev-docker.json")
-			break
 		case "", "library/dockers":
 			mustWriteHTTPResponse(t, w, "testdata/projects/all.json")
-			break
 		default:
-			w.Header().Set("X-Next-Page", "")
 			w.Write([]byte(`[]`))
-			break
 		}
-
 	})
-	for projectID := 1; projectID <= 5; projectID++ {
-		mux.HandleFunc("/api/v4/projects/"+strconv.Itoa(projectID)+"/registry/repositories", func(w http.ResponseWriter, r *http.Request) {
 
+	mux.HandleFunc("/api/v4/projects/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		reRepo := regexp.MustCompile(`/api/v4/projects/(\d+)/registry/repositories/?$`)
+		if match := reRepo.FindStringSubmatch(path); match != nil {
+			projectID := match[1]
 			w.Header().Set("X-Next-Page", "")
-			re := regexp.MustCompile(`projects/(?P<id>\d+)/registry`)
-			match := re.FindStringSubmatch(r.RequestURI)
-			mustWriteHTTPResponse(t, w, "testdata/repositories/"+match[1]+".json")
-
-		})
-		for repositoryID := 1; repositoryID <= 5; repositoryID++ {
-			mux.HandleFunc("/api/v4/projects/"+strconv.Itoa(projectID)+"/registry/repositories/"+strconv.Itoa(repositoryID)+"1/tags", func(w http.ResponseWriter, r *http.Request) {
-
-				w.Header().Set("X-Next-Page", "")
-				re := regexp.MustCompile(`repositories/(?P<id>\d+)/tags`)
-				match := re.FindStringSubmatch(r.RequestURI)
-				mustWriteHTTPResponse(t, w, "testdata/tags/"+match[1]+".json")
-
-			})
-
+			mustWriteHTTPResponse(t, w, "testdata/repositories/"+projectID+".json")
+			return
 		}
-	}
-	server := httptest.NewServer(mux)
-	return server
+
+		reTags := regexp.MustCompile(`/api/v4/projects/(\d+)/registry/repositories/(\d+)/tags$`)
+		if match := reTags.FindStringSubmatch(path); match != nil {
+			repoID := match[2]
+			w.Header().Set("X-Next-Page", "")
+			mustWriteHTTPResponse(t, w, "testdata/tags/"+repoID+".json")
+			return
+		}
+
+		reDeleteTag := regexp.MustCompile(`/api/v4/projects/(\d+)/registry/repositories/(\d+)/tags/([^/]+)$`)
+		if match := reDeleteTag.FindStringSubmatch(path); match != nil {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		http.NotFound(w, r)
+	})
+
+	return httptest.NewServer(mux)
 }
 
 func getAdapter(t *testing.T) adp.Adapter {
@@ -131,4 +133,37 @@ func TestFetchImages(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 1, len(resources))
 	require.Equal(t, 2, len(resources[0].Metadata.Vtags))
+}
+
+func TestDeleteManifest(t *testing.T) {
+	assertions := assert.New(t)
+	ad := getAdapter(t)
+	adapter := ad.(*adapter)
+
+	t.Run("successful deletion", func(t *testing.T) {
+		err := adapter.DeleteManifest("library/dockers", "harbor")
+		require.Nil(t, err)
+	})
+
+	t.Run("successful deletion 1 level nested registry", func(t *testing.T) {
+		err := adapter.DeleteManifest("library/dockers/harbor", "v0.1.1")
+		require.Nil(t, err)
+	})
+
+	t.Run("successful deletion with dev-docker", func(t *testing.T) {
+		err := adapter.DeleteManifest("library/dev-docker", "latest")
+		require.Nil(t, err)
+	})
+
+	t.Run("no projects found", func(t *testing.T) {
+		err := adapter.DeleteManifest("nonexistent/repository", "v1.0.0")
+		require.NotNil(t, err)
+		assertions.Contains(err.Error(), "no projects found")
+	})
+
+	t.Run("no repository found in project", func(t *testing.T) {
+		err := adapter.DeleteManifest("library/nonexistent-repo", "v1.0.0")
+		require.NotNil(t, err)
+		assertions.Contains(err.Error(), "no projects found")
+	})
 }
