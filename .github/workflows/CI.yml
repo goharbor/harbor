@@ -91,7 +91,7 @@ jobs:
       - name: Codecov For BackEnd
         uses: codecov/codecov-action@v5
         with:
-          file: ./src/github.com/goharbor/harbor/profile.cov
+          files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
 
   APITEST_DB:
@@ -333,5 +333,5 @@ jobs:
       - name: Codecov For UI
         uses: codecov/codecov-action@v5
         with:
-          file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
+          files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
