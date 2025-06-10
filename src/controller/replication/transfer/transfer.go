@@ -40,21 +40,21 @@ type Transfer interface {
 // Logger defines an interface for logging
 type Logger interface {
 	// For debuging
-	Debug(v ...interface{})
+	Debug(v ...any)
 	// For debuging with format
-	Debugf(format string, v ...interface{})
+	Debugf(format string, v ...any)
 	// For logging info
-	Info(v ...interface{})
+	Info(v ...any)
 	// For logging info with format
-	Infof(format string, v ...interface{})
+	Infof(format string, v ...any)
 	// For warning
-	Warning(v ...interface{})
+	Warning(v ...any)
 	// For warning with format
-	Warningf(format string, v ...interface{})
+	Warningf(format string, v ...any)
 	// For logging error
-	Error(v ...interface{})
+	Error(v ...any)
 	// For logging error with format
-	Errorf(format string, v ...interface{})
+	Errorf(format string, v ...any)
 }
 
 // StopFunc is a function used to check whether the transfer

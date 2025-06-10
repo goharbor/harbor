@@ -261,7 +261,7 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...or
 		var (
 			key       string
 			keyPrefix string
-			value     interface{}
+			value     any
 		)
 		for key, value = range query.Keywords {
 			if strings.HasPrefix(key, "ExtraAttrs.") {

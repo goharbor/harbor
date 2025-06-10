@@ -9,12 +9,12 @@ function getAssets {
     local prerelease=$5
     local assetsPath=$6
     mkdir $assetsPath && pushd $assetsPath
-    gsutil cp gs://$bucket/$branch/$offlinePackage .
+    aws s3 cp s3://$bucket/$branch/$offlinePackage .
     md5sum $offlinePackage > md5sum
     # Pre-release does not handle online installer packages
     if [ $prerelease = "false" ]
     then
-        gsutil cp gs://$bucket/$branch/$onlinePackage .
+        aws s3 cp s3://$bucket/$branch/$onlinePackage .
         md5sum $onlinePackage >> md5sum
     fi
     popd

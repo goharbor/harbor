@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -413,3 +413,5 @@ export enum BandwidthUnit {
     MB = 'Mbps',
     KB = 'Kbps',
 }
+
+export const PAGE_SIZE_OPTIONS = [15, 25, 50, 100];

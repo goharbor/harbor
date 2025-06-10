@@ -33,7 +33,7 @@ type robotEventTestSuite struct {
 }
 
 func (t *tagEventTestSuite) TestResolveOfCreateRobotEventMetadata() {
-	cfg := map[string]interface{}{
+	cfg := map[string]any{
 		common.RobotPrefix: "robot$",
 	}
 	config.InitWithSettings(cfg)
@@ -57,7 +57,7 @@ func (t *tagEventTestSuite) TestResolveOfCreateRobotEventMetadata() {
 }
 
 func (t *tagEventTestSuite) TestResolveOfDeleteRobotEventMetadata() {
-	cfg := map[string]interface{}{
+	cfg := map[string]any{
 		common.RobotPrefix: "robot$",
 	}
 	config.InitWithSettings(cfg)

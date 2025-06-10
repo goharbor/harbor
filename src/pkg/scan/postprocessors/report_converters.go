@@ -105,7 +105,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 		return err
 	}
 
-	var cveIDs []interface{}
+	var cveIDs []any
 	for _, v := range vulnReport.Vulnerabilities {
 		v.Severity = vuln.ParseSeverityVersion3(v.Severity.String())
 		cveIDs = append(cveIDs, v.ID)
@@ -143,8 +143,8 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	}
 
 	for _, record := range outOfDateRecords {
-		// Update the severity of the record when it's changed in the scanner, closes #14745
-		if err := c.dao.Update(ctx, record, "severity"); err != nil {
+		// Update the severity, fixed_version, and cvss_score_v3 of the record when it's changed in the scanner, closes #14745 #21463
+		if err := c.dao.Update(ctx, record, "severity", "fixed_version", "cvss_score_v3"); err != nil {
 			return err
 		}
 	}
@@ -226,7 +226,7 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(_ context.Context, _ stri
 
 // GetNativeV1ReportFromResolvedData returns the native V1 scan report from the resolved
 // interface data.
-func (c *nativeToRelationalSchemaConverter) getNativeV1ReportFromResolvedData(ctx job.Context, rp interface{}) (*vuln.Report, error) {
+func (c *nativeToRelationalSchemaConverter) getNativeV1ReportFromResolvedData(ctx job.Context, rp any) (*vuln.Report, error) {
 	report, ok := rp.(*vuln.Report)
 	if !ok {
 		return nil, errors.New("Data cannot be converted to v1 report format")
@@ -295,7 +295,7 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 	item.Links = append(item.Links, urls...)
 	item.Severity = vuln.ParseSeverityVersion3(record.Severity)
 	item.Package = record.Package
-	var vendorAttributes map[string]interface{}
+	var vendorAttributes map[string]any
 	_ = json.Unmarshal([]byte(record.VendorAttributes), &vendorAttributes)
 	item.VendorAttributes = vendorAttributes
 
@@ -356,7 +356,7 @@ func (c *nativeToRelationalSchemaConverter) updateReport(ctx context.Context, vu
 
 // CVS ...
 type CVS struct {
-	CVSS map[string]map[string]interface{} `json:"CVSS"`
+	CVSS map[string]map[string]any `json:"CVSS"`
 }
 
 func parseScoreFromVendorAttribute(ctx context.Context, vendorAttribute string) float64 {

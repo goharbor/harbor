@@ -26,11 +26,11 @@ type Interface interface {
 
 	// Register multiple jobs.
 	//
-	// jobs	map[string]interface{}: job map, key is job name and value is job handler.
+	// jobs	map[string]any: job map, key is job name and value is job handler.
 	//
 	// Return:
 	//  error if failed to register
-	RegisterJobs(jobs map[string]interface{}) error
+	RegisterJobs(jobs map[string]any) error
 
 	// Get the worker pool ID
 	//
@@ -88,19 +88,19 @@ type Interface interface {
 	// name string : name of job
 	//
 	// Returns:
-	// interface{} : the job type of the known job if it's existing
+	// any : the job type of the known job if it's existing
 	// bool        : if the known job requires parameters
-	IsKnownJob(name string) (interface{}, bool)
+	IsKnownJob(name string) (any, bool)
 
 	// Validate the parameters of the known job
 	//
-	// jobType interface{}            : type of known job
-	// params map[string]interface{} : parameters of known job
+	// jobType any            : type of known job
+	// params map[string]any : parameters of known job
 	//
 	// Return:
 	//  error if parameters are not valid
 
-	ValidateJobParameters(jobType interface{}, params job.Parameters) error
+	ValidateJobParameters(jobType any, params job.Parameters) error
 
 	// Stop the job
 	//

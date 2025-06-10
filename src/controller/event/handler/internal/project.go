@@ -53,7 +53,7 @@ func (a *ProjectEventHandler) onProjectDelete(ctx context.Context, event *event.
 }
 
 // Handle handle project event
-func (a *ProjectEventHandler) Handle(ctx context.Context, value interface{}) error {
+func (a *ProjectEventHandler) Handle(ctx context.Context, value any) error {
 	switch v := value.(type) {
 	case *event.DeleteProjectEvent:
 		return a.onProjectDelete(ctx, v)

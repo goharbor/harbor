@@ -118,7 +118,7 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 				if len(execs) == 0 {
 					continue
 				}
-				artifact.SBOMOverView = map[string]interface{}{
+				artifact.SBOMOverView = map[string]any{
 					sbomModel.ScanStatus: execs[0].Status,
 					sbomModel.StartTime:  execs[0].StartTime,
 					sbomModel.EndTime:    execs[0].EndTime,
@@ -127,7 +127,7 @@ func (assembler *ScanReportAssembler) Assemble(ctx context.Context) error {
 				continue
 			}
 
-			artifact.SBOMOverView = map[string]interface{}{
+			artifact.SBOMOverView = map[string]any{
 				sbomModel.StartTime:  overview[sbomModel.StartTime],
 				sbomModel.EndTime:    overview[sbomModel.EndTime],
 				sbomModel.ScanStatus: overview[sbomModel.ScanStatus],

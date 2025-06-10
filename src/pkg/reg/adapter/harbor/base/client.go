@@ -81,10 +81,10 @@ func (c *Client) ListLabels() ([]string, error) {
 }
 
 // CreateProject creates project
-func (c *Client) CreateProject(name string, metadata map[string]interface{}) error {
+func (c *Client) CreateProject(name string, metadata map[string]any) error {
 	project := struct {
-		Name     string                 `json:"project_name"`
-		Metadata map[string]interface{} `json:"metadata"`
+		Name     string         `json:"project_name"`
+		Metadata map[string]any `json:"metadata"`
 	}{
 		Name:     name,
 		Metadata: metadata,

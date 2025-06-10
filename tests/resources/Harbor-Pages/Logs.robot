@@ -26,10 +26,10 @@ Refresh Logs
 Verify Log
     [Arguments]  ${username}  ${resource}  ${resource_type}  ${operation}  ${row_num}=1
     Refresh Logs
-    ${real_username}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[1]
-    ${real_resource}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[2]
-    ${real_resource_type}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[3]
-    ${real_operation}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[4]
+    ${real_username}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[2]
+    ${real_resource}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[3]
+    ${real_resource_type}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[4]
+    ${real_operation}=  Get Text  //clr-datagrid//clr-dg-row[${row_num}]//clr-dg-cell[5]
     Should Be Equal  ${real_username}  ${username}
     Should Be Equal  ${real_resource}  ${resource}
     Should Be Equal  ${real_resource_type}  ${resource_type}

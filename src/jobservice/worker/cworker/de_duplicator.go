@@ -83,7 +83,7 @@ func (rdd *redisDeDuplicator) MustUnique(jobName string, params job.Parameters) 
 		_ = conn.Close()
 	}()
 
-	args := []interface{}{
+	args := []any{
 		uniqueKey,
 		1,
 		"NX",
@@ -127,7 +127,7 @@ func (rdd *redisDeDuplicator) DelUniqueSign(jobName string, params job.Parameter
 }
 
 // Same key with upstream framework
-func redisKeyUniqueJob(namespace, jobName string, args map[string]interface{}) (string, error) {
+func redisKeyUniqueJob(namespace, jobName string, args map[string]any) (string, error) {
 	var buf bytes.Buffer
 
 	buf.WriteString(rds.KeyNamespacePrefix(namespace))

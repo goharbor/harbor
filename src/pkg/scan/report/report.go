@@ -22,7 +22,7 @@ import (
 )
 
 // Merger is a helper function to merge report together
-type Merger func(r1, r2 interface{}) (interface{}, error)
+type Merger func(r1, r2 any) (any, error)
 
 // SupportedMergers declares mappings between mime type and report merger func.
 var SupportedMergers = map[string]Merger{
@@ -31,7 +31,7 @@ var SupportedMergers = map[string]Merger{
 }
 
 // Merge merge report r1 and r2
-func Merge(mimeType string, r1, r2 interface{}) (interface{}, error) {
+func Merge(mimeType string, r1, r2 any) (any, error) {
 	m, ok := SupportedMergers[mimeType]
 	if !ok {
 		return nil, errors.Errorf("no report merger bound with mime type %s", mimeType)
@@ -41,7 +41,7 @@ func Merge(mimeType string, r1, r2 interface{}) (interface{}, error) {
 }
 
 // MergeNativeReport merge report r1 and r2
-func MergeNativeReport(r1, r2 interface{}) (interface{}, error) {
+func MergeNativeReport(r1, r2 any) (any, error) {
 	nr1, ok := r1.(*vuln.Report)
 	if !ok {
 		return nil, errors.New("native report required")
@@ -59,8 +59,8 @@ func MergeNativeReport(r1, r2 interface{}) (interface{}, error) {
 type Reports []*scan.Report
 
 // ResolveData resolve the data from the reports and merge them together
-func (l Reports) ResolveData(mimeType string) (interface{}, error) {
-	var result interface{}
+func (l Reports) ResolveData(mimeType string) (any, error) {
+	var result any
 
 	for _, rp := range l {
 		// Resolve scan report data only when it is ready and its mime type equal the given one

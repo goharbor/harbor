@@ -45,7 +45,7 @@ type ParamsList = orm.ParamsList
 type QuerySeter = orm.QuerySeter
 
 // RegisterModel ...
-func RegisterModel(models ...interface{}) {
+func RegisterModel(models ...any) {
 	orm.RegisterModel(models...)
 }
 
@@ -176,7 +176,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 }
 
 // ReadOrCreate read or create instance to database, retry to read when met a duplicate key error after the creating
-func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...string) (created bool, id int64, err error) {
+func ReadOrCreate(ctx context.Context, md any, col1 string, cols ...string) (created bool, id int64, err error) {
 	getter, ok := md.(interface {
 		GetID() int64
 	})
@@ -237,7 +237,7 @@ func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...stri
 // The sql should return the ID list with the specific condition(e.g. select id from table1 where column1=?)
 // The sql runs as a prepare statement with the "?" be populated rather than concat string directly
 // The returning in clause is a string like "IN (id1, id2, id3, ...)"
-func CreateInClause(ctx context.Context, sql string, args ...interface{}) (string, error) {
+func CreateInClause(ctx context.Context, sql string, args ...any) (string, error) {
 	ormer, err := FromContext(ctx)
 	if err != nil {
 		return "", err

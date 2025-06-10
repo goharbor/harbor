@@ -51,7 +51,7 @@ func New() DAO {
 	return &dao{}
 }
 
-var allowedMaps = map[string]interface{}{
+var allowedMaps = map[string]any{
 	strings.ToLower(rbac.ActionPull.String()):   struct{}{},
 	strings.ToLower(rbac.ActionCreate.String()): struct{}{},
 	strings.ToLower(rbac.ActionDelete.String()): struct{}{},

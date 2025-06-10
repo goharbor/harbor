@@ -149,7 +149,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 
 func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	var resource model.Resource
-	info := make(map[string]interface{})
+	info := make(map[string]any)
 	info["category"] = repo.Category
 	info["description"] = repo.Description
 	info["size"] = repo.Size

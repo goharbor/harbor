@@ -56,7 +56,7 @@ func (suite *IteratorTestSuite) TeardownSuite() {
 
 func (suite *IteratorTestSuite) TestIterator() {
 	suite.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
-	q1 := &q.Query{PageNumber: 1, PageSize: 5, Keywords: map[string]interface{}{}}
+	q1 := &q.Query{PageNumber: 1, PageSize: 5, Keywords: map[string]any{}}
 	suite.artMgr.On("List", mock.Anything, q1).Return([]*artifact.Artifact{
 		{ID: 1},
 		{ID: 2},
@@ -65,7 +65,7 @@ func (suite *IteratorTestSuite) TestIterator() {
 		{ID: 5},
 	}, nil)
 
-	q2 := &q.Query{PageNumber: 2, PageSize: 5, Keywords: map[string]interface{}{}}
+	q2 := &q.Query{PageNumber: 2, PageSize: 5, Keywords: map[string]any{}}
 	suite.artMgr.On("List", mock.Anything, q2).Return([]*artifact.Artifact{
 		{ID: 6},
 		{ID: 7},

@@ -67,7 +67,7 @@ type sweepController struct {
 }
 
 func (sc *sweepController) Start(ctx context.Context, params *SweepParams, trigger string) error {
-	jobParams := make(map[string]interface{})
+	jobParams := make(map[string]any)
 	jobParams[task.ExecRetainCounts] = params.ExecRetainCounts
 
 	execID, err := sc.execMgr.Create(ctx, job.ExecSweepVendorType, systemVendorID, trigger, jobParams)
@@ -129,7 +129,7 @@ func ScheduleSweepJob(ctx context.Context) error {
 
 // getScheduledSweepJob gets sweep job which already scheduled.
 func getScheduledSweepJob(ctx context.Context) (*scheduler.Schedule, error) {
-	query := q.New(map[string]interface{}{"vendor_type": job.ExecSweepVendorType})
+	query := q.New(map[string]any{"vendor_type": job.ExecSweepVendorType})
 	schedules, err := scheduler.Sched.ListSchedules(ctx, query)
 	if err != nil {
 		return nil, err

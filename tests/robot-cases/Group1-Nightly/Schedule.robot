@@ -230,7 +230,7 @@ Test Case - Log Rotation Schedule Job
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Log Rotation
-    ${exclude_operations}  Create List  Pull
+    ${exclude_operations}  Create List  Pull artifact
     Set Log Rotation Schedule  2  Days  Custom  0 */2 * * * *  ${exclude_operations}
     Sleep  480
     Set Log Rotation Schedule  2  Days  None

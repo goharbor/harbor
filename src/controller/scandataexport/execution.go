@@ -57,7 +57,7 @@ type controller struct {
 }
 
 func (c *controller) ListExecutions(ctx context.Context, userName string) ([]*export.Execution, error) {
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords[fmt.Sprintf("ExtraAttrs.%s", export.UserNameAttribute)] = userName
 
@@ -78,7 +78,7 @@ func (c *controller) GetTask(ctx context.Context, executionID int64) (*task.Task
 	logger := log.GetLogger(ctx)
 	query := q2.New(q2.KeyWords{})
 
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	keywords["VendorType"] = job.ScanDataExportVendorType
 	keywords["ExecutionID"] = executionID
 	query.Keywords = keywords
@@ -125,7 +125,7 @@ func (c *controller) DeleteExecution(ctx context.Context, executionID int64) err
 func (c *controller) Start(ctx context.Context, request export.Request) (executionID int64, err error) {
 	logger := log.GetLogger(ctx)
 	vendorID := int64(ctx.Value(export.CsvJobVendorIDKey).(int))
-	extraAttrs := make(map[string]interface{})
+	extraAttrs := make(map[string]any)
 	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
 	extraAttrs[export.UserNameAttribute] = request.UserName
@@ -137,7 +137,7 @@ func (c *controller) Start(ctx context.Context, request export.Request) (executi
 	}
 
 	// create a job object and fill with metadata and parameters
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[export.JobID] = fmt.Sprintf("%d", id)
 	params[export.JobRequest] = request
 	params[export.JobModeKey] = export.JobModeExport
@@ -184,7 +184,7 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 		EndTime:       exec.EndTime,
 	}
 	if pids, ok := exec.ExtraAttrs[export.ProjectIDsAttribute]; ok {
-		for _, pid := range pids.([]interface{}) {
+		for _, pid := range pids.([]any) {
 			execStatus.ProjectIDs = append(execStatus.ProjectIDs, int64(pid.(float64)))
 		}
 	}

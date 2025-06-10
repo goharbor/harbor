@@ -58,7 +58,7 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		return errors.Errorf("invalid event target type: %s", event.Target.Type)
 	}
 
-	extraAttrs := map[string]interface{}{
+	extraAttrs := map[string]any{
 		"event_type": event.EventType,
 		"payload":    data.Parameters["payload"],
 	}
@@ -73,7 +73,7 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		Metadata: &job.Metadata{
 			JobKind: data.Metadata.JobKind,
 		},
-		Parameters: map[string]interface{}(data.Parameters),
+		Parameters: map[string]any(data.Parameters),
 	})
 	if err != nil {
 		return errors.Errorf("failed to create task for webhook based on policy %d: %v", event.PolicyID, err)

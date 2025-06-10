@@ -28,12 +28,12 @@ import (
 	htesting "github.com/goharbor/harbor/src/testing"
 )
 
-var TestDBConfig = map[string]interface{}{
+var TestDBConfig = map[string]any{
 	common.LDAPBaseDN: "dc=example,dc=com",
 	common.LDAPURL:    "ldap.example.com",
 }
 
-var TestConfigWithScanAll = map[string]interface{}{
+var TestConfigWithScanAll = map[string]any{
 	"postgresql_host":     "localhost",
 	"postgresql_database": "registry",
 	"postgresql_password": "root123",
@@ -67,7 +67,7 @@ func (c *controllerTestSuite) TestGetUserCfg() {
 }
 
 func (c *controllerTestSuite) TestConvertForGet() {
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		"ldap_url":             "ldaps.myexample,com",
 		"ldap_base_dn":         "dc=myexample,dc=com",
 		"auth_mode":            "ldap_auth",
@@ -83,7 +83,7 @@ func (c *controllerTestSuite) TestConvertForGet() {
 	c.False(exist)
 
 	// password type should be sent to internal api call
-	conf2 := map[string]interface{}{
+	conf2 := map[string]any{
 		"ldap_url":             "ldaps.myexample,com",
 		"ldap_base_dn":         "dc=myexample,dc=com",
 		"auth_mode":            "ldap_auth",
@@ -109,7 +109,7 @@ func (c *controllerTestSuite) TestGetAll() {
 
 func (c *controllerTestSuite) TestUpdateUserCfg() {
 
-	userConf := map[string]interface{}{
+	userConf := map[string]any{
 		common.LDAPURL:    "ldaps.myexample,com",
 		common.LDAPBaseDN: "dc=myexample,dc=com",
 	}
@@ -121,7 +121,7 @@ func (c *controllerTestSuite) TestUpdateUserCfg() {
 	}
 	c.Equal("dc=myexample,dc=com", cfgResp["ldap_base_dn"].Val)
 	c.Equal("ldaps.myexample,com", cfgResp["ldap_url"].Val)
-	badCfg := map[string]interface{}{
+	badCfg := map[string]any{
 		common.LDAPScope: 5,
 	}
 	err2 := c.controller.UpdateUserConfigs(ctx, badCfg)
@@ -130,7 +130,7 @@ func (c *controllerTestSuite) TestUpdateUserCfg() {
 }
 
 /*func (c *controllerTestSuite) TestCheckUnmodifiable() {
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		"ldap_url":     "ldaps.myexample,com",
 		"ldap_base_dn": "dc=myexample,dc=com",
 		"auth_mode":    "ldap_auth",

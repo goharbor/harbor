@@ -143,7 +143,7 @@ func (c *controller) GetByName(ctx context.Context, name string) (*model.RepoRec
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
 	candidates, err := c.artCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": id,
 		},
 	}, nil)
@@ -155,7 +155,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 		candidates = nil
 		for _, artifact := range artifacts {
 			parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"ChildID": artifact.ID,
 				},
 			})

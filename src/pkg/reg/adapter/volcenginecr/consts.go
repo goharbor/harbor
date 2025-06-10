@@ -17,7 +17,7 @@ package volcenginecr
 import "errors"
 
 var (
-	regionRegs = map[string]interface{}{
+	regionRegs = map[string]any{
 		"(.*)-(cn-.*)": nil,
 	}
 	errListNamespaceResp    = errors.New("[VolcengineCR adapt] ListNamespaces resp nil")

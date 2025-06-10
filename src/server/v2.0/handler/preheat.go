@@ -65,7 +65,7 @@ type preheatAPI struct {
 	taskCtl      taskCtl.Controller
 }
 
-func (api *preheatAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (api *preheatAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -332,7 +332,7 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 		}
 		return nil
 	}
-	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]interface{}{
+	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]any{
 		"vendor_type": job.P2PPreheatVendorType,
 		"vendor_id":   policy.ID,
 	}})
@@ -786,7 +786,7 @@ func (api *preheatAPI) GetPreheatLog(ctx context.Context, params operation.GetPr
 	return operation.NewGetPreheatLogOK().WithPayload(string(l))
 }
 
-func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID, taskID int64) error {
+func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID any, policyName string, executionID, taskID int64) error {
 	projectID, err := getProjectID(ctx, projectNameOrID)
 	notFoundErr := fmt.Errorf("project id %d, task id %d not found", projectID, taskID)
 	if err != nil {
@@ -809,7 +809,7 @@ func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID
 	return errors.NotFoundError(notFoundErr)
 }
 
-func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID int64) error {
+func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID any, policyName string, executionID int64) error {
 	projectID, err := getProjectID(ctx, projectNameOrID)
 	notFoundErr := fmt.Errorf("project id %d, execution id %d not found", projectID, executionID)
 	if err != nil {

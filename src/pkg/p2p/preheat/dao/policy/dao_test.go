@@ -182,7 +182,7 @@ func (d *daoTestSuite) TestList() {
 
 	// list policy filter by project
 	query := &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"project_id": 1,
 		},
 	}

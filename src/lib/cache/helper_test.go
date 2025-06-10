@@ -46,7 +46,7 @@ func (suite *FetchOrSaveTestSuite) TestFetchInternalError() {
 	mock.OnAnything(c, "Fetch").Return(fmt.Errorf("oops"))
 
 	var str string
-	err := FetchOrSave(suite.ctx, c, "key", &str, func() (interface{}, error) {
+	err := FetchOrSave(suite.ctx, c, "key", &str, func() (any, error) {
 		return "str", nil
 	})
 
@@ -59,7 +59,7 @@ func (suite *FetchOrSaveTestSuite) TestBuildError() {
 	mock.OnAnything(c, "Fetch").Return(ErrNotFound)
 
 	var str string
-	err := FetchOrSave(suite.ctx, c, "key", &str, func() (interface{}, error) {
+	err := FetchOrSave(suite.ctx, c, "key", &str, func() (any, error) {
 		return nil, fmt.Errorf("oops")
 	})
 
@@ -73,7 +73,7 @@ func (suite *FetchOrSaveTestSuite) TestSaveError() {
 	mock.OnAnything(c, "Save").Return(fmt.Errorf("oops"))
 
 	var str string
-	err := FetchOrSave(suite.ctx, c, "key", &str, func() (interface{}, error) {
+	err := FetchOrSave(suite.ctx, c, "key", &str, func() (any, error) {
 		return "str", nil
 	})
 
@@ -86,7 +86,7 @@ func (suite *FetchOrSaveTestSuite) TestSaveCalledOnlyOneTime() {
 
 	var data sync.Map
 
-	mock.OnAnything(c, "Fetch").Return(func(ctx context.Context, key string, value interface{}) error {
+	mock.OnAnything(c, "Fetch").Return(func(ctx context.Context, key string, value any) error {
 		_, ok := data.Load(key)
 		if ok {
 			return nil
@@ -95,7 +95,7 @@ func (suite *FetchOrSaveTestSuite) TestSaveCalledOnlyOneTime() {
 		return ErrNotFound
 	})
 
-	mock.OnAnything(c, "Save").Return(func(ctx context.Context, key string, value interface{}, exp ...time.Duration) error {
+	mock.OnAnything(c, "Save").Return(func(ctx context.Context, key string, value any, exp ...time.Duration) error {
 		data.Store(key, value)
 
 		return nil
@@ -110,7 +110,7 @@ func (suite *FetchOrSaveTestSuite) TestSaveCalledOnlyOneTime() {
 			defer wg.Done()
 
 			var str string
-			FetchOrSave(suite.ctx, c, "key", &str, func() (interface{}, error) {
+			FetchOrSave(suite.ctx, c, "key", &str, func() (any, error) {
 				return "str", nil
 			})
 		}()

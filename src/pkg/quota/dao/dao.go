@@ -186,12 +186,12 @@ func (d *dao) Update(ctx context.Context, quota *models.Quota) error {
 
 	var (
 		sql    string
-		params []interface{}
+		params []any
 	)
 
 	if quota.UsedChanged {
 		sql = "UPDATE quota_usage SET used = ?, update_time = ?, version = ? WHERE id = ? AND version = ?"
-		params = []interface{}{
+		params = []any{
 			quota.Used,
 			time.Now(),
 			getVersion(quota.UsedVersion),
@@ -200,7 +200,7 @@ func (d *dao) Update(ctx context.Context, quota *models.Quota) error {
 		}
 	} else {
 		sql = "UPDATE quota SET hard = ?, update_time = ?, version = ? WHERE id = ? AND version = ?"
-		params = []interface{}{
+		params = []any{
 			quota.Hard,
 			time.Now(),
 			getVersion(quota.HardVersion),

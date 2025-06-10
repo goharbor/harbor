@@ -32,8 +32,8 @@ type Robot struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(name)" json:"name" sort:"default"`
 	Description  string    `orm:"column(description)" json:"description"`
-	Secret       string    `orm:"column(secret)" json:"secret"`
-	Salt         string    `orm:"column(salt)" json:"-"`
+	Secret       string    `orm:"column(secret)" filter:"false" json:"secret"`
+	Salt         string    `orm:"column(salt)" filter:"false" json:"-"`
 	Duration     int64     `orm:"column(duration)" json:"duration"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	ExpiresAt    int64     `orm:"column(expiresat)" json:"expires_at"`

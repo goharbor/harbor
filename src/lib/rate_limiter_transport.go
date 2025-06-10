@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tencentcr
+package lib
 
 import (
 	"net/http"
-	"sync"
 
 	"go.uber.org/ratelimit"
 )
@@ -33,19 +32,9 @@ func (t limitTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.RoundTripper.RoundTrip(req)
 }
 
-var limiterOnce sync.Once
-var limiter ratelimit.Limiter
-
-func newLimiter(rate int) ratelimit.Limiter {
-	limiterOnce.Do(func() {
-		limiter = ratelimit.New(rate)
-	})
-	return limiter
-}
-
-func newRateLimitedTransport(rate int, transport http.RoundTripper) http.RoundTripper {
+func NewRateLimitedTransport(rate int, transport http.RoundTripper) http.RoundTripper {
 	return &limitTransport{
 		RoundTripper: transport,
-		limiter:      newLimiter(rate),
+		limiter:      ratelimit.New(rate),
 	}
 }

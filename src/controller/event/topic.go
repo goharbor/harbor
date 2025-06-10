@@ -297,13 +297,14 @@ type DeleteTagEvent struct {
 // ResolveToAuditLog ...
 func (d *DeleteTagEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 	auditLog := &model.AuditLogExt{
-		ProjectID:    d.AttachedArtifact.ProjectID,
-		OpTime:       d.OccurAt,
-		Operation:    rbac.ActionDelete.String(),
-		Username:     d.Operator,
-		ResourceType: ResourceTypeTag,
-		IsSuccessful: true,
-		Resource:     fmt.Sprintf("%s:%s", d.Repository, d.Tag)}
+		ProjectID:            d.AttachedArtifact.ProjectID,
+		OpTime:               d.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             d.Operator,
+		ResourceType:         ResourceTypeTag,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete tag: %s:%s", d.Repository, d.Tag),
+		Resource:             fmt.Sprintf("%s:%s", d.Repository, d.Tag)}
 	return auditLog, nil
 }
 

@@ -154,7 +154,7 @@ func (bc *basicController) retryLoop() {
 	}()
 
 	// Check the list
-	bc.retryList.Iterate(func(ele interface{}) bool {
+	bc.retryList.Iterate(func(ele any) bool {
 		if change, ok := ele.(job.SimpleStatusChange); ok {
 			err := retry(conn, bc.namespace, change)
 			if err != nil {

@@ -51,7 +51,7 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		return handleError(err)
 	}
 
-	var ownerIDs []interface{}
+	var ownerIDs []any
 	var projectsMap = make(map[int64]*proModels.Project, len(projectIDs))
 	for _, project := range projects {
 		ownerIDs = append(ownerIDs, project.OwnerID)

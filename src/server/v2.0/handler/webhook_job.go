@@ -89,7 +89,7 @@ func (n *webhookJobAPI) ListWebhookJobs(ctx context.Context, params webhookjob.L
 }
 
 // requirePolicyAccess checks whether the project has the permission to the policy.
-func (n *webhookJobAPI) requirePolicyAccess(ctx context.Context, projectNameIrID interface{}, policy *policyModel.Policy) error {
+func (n *webhookJobAPI) requirePolicyAccess(ctx context.Context, projectNameIrID any, policy *policyModel.Policy) error {
 	p, err := n.projectMgr.Get(ctx, projectNameIrID)
 	if err != nil {
 		return err

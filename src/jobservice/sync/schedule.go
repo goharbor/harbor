@@ -362,7 +362,7 @@ func (w *Worker) validate() error {
 func (w *Worker) getTask(ctx context.Context, schedule *scheduler.Schedule) (*task.Task, error) {
 	// Get associated execution first.
 	executions, err := w.coreExecutionManager.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"vendor_type": scheduler.JobNameScheduler,
 			"vendor_id":   schedule.ID,
 		},
@@ -379,7 +379,7 @@ func (w *Worker) getTask(ctx context.Context, schedule *scheduler.Schedule) (*ta
 	theOne := executions[0]
 	// Now get the execution.
 	tasks, err := w.coreTaskManager.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"execution_id": theOne.ID,
 		},
 	})

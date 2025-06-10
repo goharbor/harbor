@@ -159,8 +159,8 @@ func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapabil
 }
 
 // ConvertCapability converts the capability to map, used in get scanner API
-func (md *ScannerAdapterMetadata) ConvertCapability() map[string]interface{} {
-	capabilities := make(map[string]interface{})
+func (md *ScannerAdapterMetadata) ConvertCapability() map[string]any {
+	capabilities := make(map[string]any)
 	oldScanner := true
 	for _, c := range md.Capabilities {
 		if len(c.Type) > 0 {
@@ -228,7 +228,7 @@ type ScanType struct {
 	// ProducesMimeTypes defines scanreport should be
 	ProducesMimeTypes []string `json:"produces_mime_types"`
 	// Parameters extra parameters
-	Parameters map[string]interface{} `json:"parameters"`
+	Parameters map[string]any `json:"parameters"`
 }
 
 // FromJSON parses ScanRequest from json data

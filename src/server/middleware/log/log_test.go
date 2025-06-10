@@ -48,7 +48,7 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 
 	type args struct {
 		headers        map[string]string
-		fields         map[string]interface{}
+		fields         map[string]any
 		ctxTraceparent string
 	}
 	tests := []struct {

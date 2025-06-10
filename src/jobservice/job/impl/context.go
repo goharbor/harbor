@@ -44,7 +44,7 @@ type Context struct {
 	// Logger for job
 	logger logger.Interface
 	// other required information
-	properties map[string]interface{}
+	properties map[string]any
 	// admin server client
 	cfgMgr libCfg.Manager
 	// job life cycle tracker
@@ -58,7 +58,7 @@ func NewContext(sysCtx context.Context, cfgMgr libCfg.Manager) *Context {
 	return &Context{
 		sysContext: libCfg.NewContext(sysCtx, cfgMgr),
 		cfgMgr:     cfgMgr,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 	}
 }
 
@@ -110,7 +110,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	jContext := &Context{
 		sysContext: orm.NewContext(c.sysContext, o.NewOrm()),
 		cfgMgr:     c.cfgMgr,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 		tracker:    tracker,
 	}
 
@@ -145,7 +145,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 }
 
 // Get implements the same method in env.JobContext interface
-func (c *Context) Get(prop string) (interface{}, bool) {
+func (c *Context) Get(prop string) (any, bool) {
 	v, ok := c.properties[prop]
 	return v, ok
 }
@@ -192,13 +192,13 @@ func createLoggers(jobID string) (logger.Interface, error) {
 		// For running job, the depth should be 5
 		if lc.Name == logger.NameFile || lc.Name == logger.NameStdOutput || lc.Name == logger.NameDB {
 			if lc.Settings == nil {
-				lc.Settings = map[string]interface{}{}
+				lc.Settings = map[string]any{}
 			}
 			lc.Settings["depth"] = 5
 		}
 		if lc.Name == logger.NameFile || lc.Name == logger.NameDB {
 			// Need extra param
-			fSettings := map[string]interface{}{}
+			fSettings := map[string]any{}
 			for k, v := range lc.Settings {
 				// Copy settings
 				fSettings[k] = v

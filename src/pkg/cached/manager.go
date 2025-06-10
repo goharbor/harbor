@@ -68,7 +68,7 @@ func NewObjectKey(ns string) *ObjectKey {
 // Format formats fields to string.
 // eg. namespace: 'artifact'
 // Format("id", 100, "digest", "aaa"): "artifact:id:100:digest:aaa"
-func (ok *ObjectKey) Format(keysAndValues ...interface{}) (string, error) {
+func (ok *ObjectKey) Format(keysAndValues ...any) (string, error) {
 	// keysAndValues must be paired.
 	if len(keysAndValues)%2 != 0 {
 		return "", errors.Errorf("invalid keysAndValues: %v", keysAndValues...)

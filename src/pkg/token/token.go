@@ -49,7 +49,7 @@ func New(opt *Options, claims jwt.Claims) (*Token, error) {
 func (tk *Token) Raw() (string, error) {
 	key, err := tk.Opt.GetKey()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	raw, err := tk.Token.SignedString(key)
 	if err != nil {
@@ -66,7 +66,7 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		return nil, err
 	}
 	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
-	token, err := parser.ParseWithClaims(rawToken, claims, func(_ *jwt.Token) (interface{}, error) {
+	token, err := parser.ParseWithClaims(rawToken, claims, func(_ *jwt.Token) (any, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:
 			return &k.PublicKey, nil

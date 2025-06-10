@@ -195,7 +195,7 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 	}
 
 	var newVersion int64
-	params := []interface{}{time.Now(), blob.Status, blob.ID, blob.Version}
+	params := []any{time.Now(), blob.Status, blob.ID, blob.Version}
 	stats := models.StatusMap[blob.Status]
 	for _, stat := range stats {
 		params = append(params, stat)
@@ -247,7 +247,7 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 	}
 
 	sql := `SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob IN (%s)`
-	params := []interface{}{projectID}
+	params := []any{projectID}
 	for _, blob := range blobs {
 		params = append(params, blob.Digest)
 	}
@@ -279,10 +279,10 @@ func (d *dao) SumBlobsSizeByProject(ctx context.Context, projectID int64, exclud
 		return 0, err
 	}
 
-	params := []interface{}{projectID}
+	params := []any{projectID}
 	sql := `SELECT SUM(size) FROM blob JOIN project_blob ON blob.id = project_blob.blob_id AND project_id = ?`
 	if excludeForeignLayer {
-		foreignLayerTypes := []interface{}{
+		foreignLayerTypes := []any{
 			schema2.MediaTypeForeignLayer,
 		}
 
@@ -305,10 +305,10 @@ func (d *dao) SumBlobsSize(ctx context.Context, excludeForeignLayer bool) (int64
 		return 0, err
 	}
 
-	params := []interface{}{}
+	params := []any{}
 	sql := `SELECT SUM(size) FROM blob`
 	if excludeForeignLayer {
-		foreignLayerTypes := []interface{}{
+		foreignLayerTypes := []any{
 			schema2.MediaTypeForeignLayer,
 		}
 		sql = fmt.Sprintf(`%s Where content_type NOT IN (%s)`, sql, orm.ParamPlaceholderForIn(len(foreignLayerTypes)))

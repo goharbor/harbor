@@ -191,7 +191,7 @@ type badRequestError struct {
 }
 
 // BadRequestError returns the error of handing bad request case
-func BadRequestError(object interface{}) error {
+func BadRequestError(object any) error {
 	return badRequestError{
 		baseError{
 			Code:        BadRequestErrorCode,

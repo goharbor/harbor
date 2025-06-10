@@ -69,7 +69,7 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 		jobID = sc.Metadata.UpstreamJobID
 	}
 	tasks, err := h.taskDAO.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"JobID": jobID,
 		},
 	})

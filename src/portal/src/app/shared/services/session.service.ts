@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ export class SessionService {
                 // Destroy current session cache
                 // this.currentUser = null;
             }), // Nothing returned
-            catchError(error => this.handleError(error))
+            catchError(error => observableThrowError(error))
         );
     }
 

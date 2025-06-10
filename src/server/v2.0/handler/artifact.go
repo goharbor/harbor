@@ -73,7 +73,7 @@ type artifactAPI struct {
 	labelMgr label.Manager
 }
 
-func (a *artifactAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
+func (a *artifactAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		a.SendError(ctx, err)
 	}
@@ -406,7 +406,7 @@ func (a *artifactAPI) GetVulnerabilitiesAddition(ctx context.Context, params ope
 		return a.SendError(ctx, err)
 	}
 
-	vulnerabilities := make(map[string]interface{})
+	vulnerabilities := make(map[string]any)
 
 	for _, mimeType := range parseScanReportMimeTypes(params.XAcceptVulnerabilities) {
 		reports, err := a.scanCtl.GetReport(ctx, artifact, []string{mimeType})

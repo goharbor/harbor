@@ -37,8 +37,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/label/model"
+	projectModel "github.com/goharbor/harbor/src/pkg/project/models"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	accessorytesting "github.com/goharbor/harbor/src/testing/pkg/accessory"
@@ -75,6 +77,7 @@ type controllerTestSuite struct {
 	immutableMtr *immutable.FakeMatcher
 	regCli       *registry.Client
 	accMgr       *accessorytesting.Manager
+	proCtl       *projecttesting.Controller
 }
 
 func (c *controllerTestSuite) SetupTest() {
@@ -88,6 +91,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.immutableMtr = &immutable.FakeMatcher{}
 	c.accMgr = &accessorytesting.Manager{}
 	c.regCli = &registry.Client{}
+	c.proCtl = &projecttesting.Controller{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
@@ -99,6 +103,7 @@ func (c *controllerTestSuite) SetupTest() {
 		immutableMtr: c.immutableMtr,
 		regCli:       c.regCli,
 		accessoryMgr: c.accMgr,
+		proCtl:       c.proCtl,
 	}
 }
 
@@ -267,6 +272,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.tagCtl.On("Ensure").Return(int64(1), nil)
 	c.accMgr.On("Ensure").Return(nil)
+	c.proCtl.On("GetByName", mock.Anything, mock.Anything).Return(&projectModel.Project{ProjectID: 1, Name: "library", RegistryID: 0}, nil)
 	_, id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, &ArtOption{
 		Tags: []string{"latest"},
 	})
@@ -589,6 +595,7 @@ func (c *controllerTestSuite) TestCopy() {
 		ID:     1,
 		Digest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
 	}, nil)
+	c.proCtl.On("GetByName", mock.Anything, mock.Anything).Return(&projectModel.Project{ProjectID: 1, Name: "library", RegistryID: 0}, nil)
 	c.repoMgr.On("GetByName", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
 		RepositoryID: 1,
 		Name:         "library/hello-world",

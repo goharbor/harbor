@@ -58,7 +58,7 @@ func TestConfigureValue_GetStringToStringMap(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, val, map[string]interface{}{"sample": "abc"})
+	assert.Equal(t, val, map[string]any{"sample": "abc"})
 	Instance().init()
 }
 

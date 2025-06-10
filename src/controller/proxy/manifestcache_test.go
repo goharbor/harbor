@@ -29,17 +29,41 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/testing/mock"
+
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
+
+const ociManifest = `{ 
+	"schemaVersion": 2,
+	"mediaType": "application/vnd.oci.image.manifest.v1+json",
+	"config": {
+			"mediaType": "application/vnd.example.config.v1+json",
+			"digest": "sha256:5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+			"size": 123
+	},
+	"layers": [
+			{
+				"mediaType": "application/vnd.example.data.v1.tar+gzip",
+				"digest": "sha256:e258d248fda94c63753607f7c4494ee0fcbe92f1a76bfdac795c9d84101eb317",
+				"size": 1234
+			}
+	],
+	"annotations": {
+			"com.example.key1": "value1"
+	}
+}`
 
 type CacheTestSuite struct {
 	suite.Suite
-	mHandler *ManifestListCache
-	local    localInterfaceMock
+	mCache     *ManifestCache
+	mListCache *ManifestListCache
+	local      localInterfaceMock
 }
 
 func (suite *CacheTestSuite) SetupSuite() {
 	suite.local = localInterfaceMock{}
-	suite.mHandler = &ManifestListCache{local: &suite.local}
+	suite.mListCache = &ManifestListCache{local: &suite.local}
+	suite.mCache = &ManifestCache{local: &suite.local}
 }
 
 func (suite *CacheTestSuite) TearDownSuite() {
@@ -89,7 +113,7 @@ func (suite *CacheTestSuite) TestUpdateManifestList() {
 	suite.local.On("GetManifest", ctx, artInfo1).Return(ar, nil)
 	suite.local.On("GetManifest", ctx, mock.Anything).Return(nil, nil)
 
-	newMan, err := suite.mHandler.updateManifestList(ctx, "library/hello-world", manList)
+	newMan, err := suite.mListCache.updateManifestList(ctx, "library/hello-world", manList)
 	suite.Require().Nil(err)
 	suite.Assert().Equal(len(newMan.References()), 1)
 }
@@ -147,8 +171,83 @@ func (suite *CacheTestSuite) TestPushManifestList() {
 	suite.local.On("PushManifest", repo, originDigest, mock.Anything).Return(fmt.Errorf("wrong digest"))
 	suite.local.On("PushManifest", repo, mock.Anything, mock.Anything).Return(nil)
 
-	err = suite.mHandler.push(ctx, "library/hello-world", string(originDigest), manList)
+	err = suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
 	suite.Require().Nil(err)
+}
+
+func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
+	defer suite.local.AssertExpectations(suite.T())
+
+	manifest := ociManifest
+	man, desc, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
+	suite.Require().NoError(err)
+
+	ctx := context.Background()
+	repo := "library/hello-world"
+
+	artInfo := lib.ArtifactInfo{
+		Repository: repo,
+		Digest:     string(desc.Digest),
+		Tag:        "latest",
+	}
+
+	suite.local.On("CheckDependencies", ctx, artInfo.Repository, man).Once().Return([]distribution.Descriptor{})
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
+
+	suite.mCache.CacheContent(ctx, repo, man, artInfo, nil, "")
+}
+
+func (suite *CacheTestSuite) TestManifestCache_push_succeeds() {
+	defer suite.local.AssertExpectations(suite.T())
+
+	manifest := ociManifest
+	man, desc, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
+	suite.Require().NoError(err)
+
+	repo := "library/hello-world"
+
+	artInfo := lib.ArtifactInfo{
+		Repository: repo,
+		Digest:     string(desc.Digest),
+		Tag:        "latest",
+	}
+
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
+
+	err = suite.mCache.push(artInfo, man)
+	suite.Assert().NoError(err)
+}
+
+func (suite *CacheTestSuite) TestManifestCache_push_fails() {
+	defer suite.local.AssertExpectations(suite.T())
+
+	manifest := ociManifest
+	man, desc, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(manifest))
+	suite.Require().NoError(err)
+
+	repo := "library/hello-world"
+
+	artInfo := lib.ArtifactInfo{
+		Repository: repo,
+		Digest:     string(desc.Digest),
+		Tag:        "latest",
+	}
+
+	digestErr := fmt.Errorf("error during manifest push referencing digest")
+	tagErr := fmt.Errorf("error during manifest push referencing tag")
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(digestErr)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(tagErr)
+
+	err = suite.mCache.push(artInfo, man)
+	suite.Assert().Error(err)
+	wrappedErr, isWrappedErr := err.(interface{ Unwrap() []error })
+	suite.Assert().True(isWrappedErr)
+	errs := wrappedErr.Unwrap()
+	suite.Assert().Len(errs, 2)
+	suite.Assert().Contains(errs, digestErr)
+	suite.Assert().Contains(errs, tagErr)
 }
 
 func TestCacheTestSuite(t *testing.T) {

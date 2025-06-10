@@ -60,7 +60,7 @@ func (e *executionManagerTestSuite) TestCount() {
 func (e *executionManagerTestSuite) TestCreate() {
 	e.execDAO.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	id, err := e.execMgr.Create(nil, "vendor", 0, ExecutionTriggerManual,
-		map[string]interface{}{"k": "v"})
+		map[string]any{"k": "v"})
 	e.Require().Nil(err)
 	e.Equal(int64(1), id)
 	// sleep to make sure the function in the goroutine run
@@ -70,7 +70,7 @@ func (e *executionManagerTestSuite) TestCreate() {
 
 func (e *executionManagerTestSuite) TestUpdateExtraAttrs() {
 	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := e.execMgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{"key": "value"})
+	err := e.execMgr.UpdateExtraAttrs(nil, 1, map[string]any{"key": "value"})
 	e.Require().Nil(err)
 	e.execDAO.AssertExpectations(e.T())
 }

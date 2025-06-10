@@ -47,6 +47,8 @@ const (
 	MANIFESTINVALID = "MANIFEST_INVALID"
 	// UNSUPPORTED is for digest UNSUPPORTED error
 	UNSUPPORTED = "UNSUPPORTED"
+	// RequestEntityTooLargeCode is the error code for request entity too large error.
+	RequestEntityTooLargeCode = "REQUEST_ENTITY_TOO_LARGE"
 )
 
 // NotFoundError is error for the case of object not found
@@ -92,6 +94,11 @@ func PreconditionFailedError(err error) *Error {
 // UnknownError ...
 func UnknownError(err error) *Error {
 	return New("unknown").WithCode(GeneralCode).WithCause(err)
+}
+
+// RequestEntityTooLargeError is error for the case of request entity too large.
+func RequestEntityTooLargeError(err error) *Error {
+	return New("request entity too large").WithCode(RequestEntityTooLargeCode).WithCause(err)
 }
 
 // IsNotFoundErr returns true when the error is NotFoundError

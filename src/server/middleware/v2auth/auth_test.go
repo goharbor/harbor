@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 	ctl := &projecttesting.Controller{}
 
 	mockGet := func(ctx context.Context,
-		projectIDOrName interface{}, options ...project.Option) (*proModels.Project, error) {
+		projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 		name := projectIDOrName.(string)
 		id, _ := strconv.Atoi(strings.TrimPrefix(name, "project_"))
 		if id == 0 {
@@ -59,12 +59,12 @@ func TestMain(m *testing.M) {
 	}
 	mock.OnAnything(ctl, "Get").Return(
 		func(ctx context.Context,
-			projectIDOrName interface{}, options ...project.Option) *proModels.Project {
+			projectIDOrName any, options ...project.Option) *proModels.Project {
 			p, _ := mockGet(ctx, projectIDOrName, options...)
 			return p
 		},
 		func(ctx context.Context,
-			projectIDOrName interface{}, options ...project.Option) error {
+			projectIDOrName any, options ...project.Option) error {
 			_, err := mockGet(ctx, projectIDOrName, options...)
 			return err
 		},
@@ -73,7 +73,7 @@ func TestMain(m *testing.M) {
 	checker = reqChecker{
 		ctl: ctl,
 	}
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.ExtEndpoint: "https://harbor.test",
 		common.CoreURL:     "https://harbor.core:8443",
 	}
@@ -222,70 +222,107 @@ func TestMiddleware(t *testing.T) {
 }
 
 func TestGetChallenge(t *testing.T) {
-	req1, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/", nil)
-	req1x := req1.Clone(req1.Context())
-	req1x.SetBasicAuth("u", "p")
-	req2, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/_catalog", nil)
-	req2x := req2.Clone(req2.Context())
-	req2x.Header.Set("Authorization", "Bearer xx")
-	req3, _ := http.NewRequest(http.MethodPost, "https://registry.test/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
-	req3 = req3.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
-		Repository:           "project_1/ubuntu",
-		Reference:            "14.04",
-		ProjectName:          "project_1",
-		BlobMountRepository:  "project_2/ubuntu",
-		BlobMountProjectName: "project_2",
-		BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
-	}))
-	req3x := req3.Clone(req3.Context())
-	req3x.SetBasicAuth("", "")
-	req3x.Host = "harbor.test"
-	req4, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/project_1/hello-world/manifests/v1", nil)
-	req4 = req4.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
-		Repository:  "project_1/hello-world",
-		Reference:   "v1",
-		ProjectName: "project_1",
-	}))
-	req4.Host = "harbor.core:8443"
-
 	cases := []struct {
+		name      string
 		request   *http.Request
 		challenge string
 	}{
 		{
-			request:   req1,
+			name: "Regular login request to '/v2' should return challenge whose realm is token URL with the Host header in Request",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/", nil)
+				return req
+			}(),
+			challenge: `Bearer realm="https://registry.test/service/token",service="harbor-registry"`,
+		},
+		{
+			name: "Regular login request to '/v2' without 'Host', should return challenge whose realm is token URL with Ext endpoint",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/", nil)
+				req.Host = ""
+				return req
+			}(),
 			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry"`,
 		},
 		{
-			request:   req1x,
+			name: "Request to 'v2' carrying basic auth header, the challenge should not have token service URI as realm b/c it's not from OCI client",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/", nil)
+				req.SetBasicAuth("u", "p")
+				return req
+			}(),
 			challenge: `Basic realm="harbor"`,
 		},
 		{
-			request:   req2,
+			name: "Request to '/v2/_catalog' should return the challenge should not have token service URI as realm",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/_catalog", nil)
+				return req
+			}(),
 			challenge: `Basic realm="harbor"`,
 		},
 		{
-			request:   req2x,
+			name: "Request to '/v2/_catalog' should return the challenge should not have token service URI as realm, disregarding the auth header in request",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://registry.test/v2/_catalog", nil)
+				req.Header.Set("Authorization", "Bearer xx")
+				return req
+			}(),
 			challenge: `Basic realm="harbor"`,
 		},
 		{
-			request:   req3,
+			name: "Request to mount a blob from one repo to another should return challenge with scope according to the artifact info in the context of the request",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodPost, "https://harbor.test/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
+				req = req.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
+					Repository:           "project_1/ubuntu",
+					Reference:            "14.04",
+					ProjectName:          "project_1",
+					BlobMountRepository:  "project_2/ubuntu",
+					BlobMountProjectName: "project_2",
+					BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
+				}))
+				return req
+			}(),
 			challenge: `Bearer realm="https://harbor.test/service/token",service="harbor-registry",scope="repository:project_1/ubuntu:pull,push repository:project_2/ubuntu:pull"`,
 		},
 		{
-			request:   req3x,
+			name: "Request to be passed to registry, if it has basic auth header, it should return challenge without token URI as realm",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodPost, "https://harbor.test/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
+				req = req.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
+					Repository:           "project_1/ubuntu",
+					Reference:            "14.04",
+					ProjectName:          "project_1",
+					BlobMountRepository:  "project_2/ubuntu",
+					BlobMountProjectName: "project_2",
+					BlobMountDigest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
+				}))
+				req.SetBasicAuth("user", "password")
+				return req
+			}(),
 			challenge: `Basic realm="harbor"`,
 		},
 		{
-			request:   req4,
+			name: "Request to be passed to registry, if it is sent from internal, the token service URI in the realm of the challenge should also point to the internal URI",
+			request: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "https://harbor.core:8443/v2/project_1/hello-world/manifests/v1", nil)
+				req = req.WithContext(lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
+					Repository:  "project_1/hello-world",
+					Reference:   "v1",
+					ProjectName: "project_1",
+				}))
+				return req
+			}(),
 			challenge: `Bearer realm="https://harbor.core:8443/service/token",service="harbor-registry",scope="repository:project_1/hello-world:pull"`,
 		},
 	}
 	for _, c := range cases {
-		acs := accessList(c.request)
-		assert.Equal(t, c.challenge, getChallenge(c.request, acs))
+		t.Run(c.name, func(t *testing.T) {
+			acs := accessList(c.request)
+			assert.Equal(t, c.challenge, getChallenge(c.request, acs))
+		})
 	}
-
 }
 
 func TestMatch(t *testing.T) {

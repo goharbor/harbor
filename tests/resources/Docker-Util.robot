@@ -184,8 +184,6 @@ Prepare Docker Cert In Ubuntu
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp ${cert} /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp ${cert} /usr/local/share/ca-certificates/
-    #Add pivotal ecs cert for docker manifest push test.
-    Wait Unitl Command Success  cp /ecs_ca/vmwarecert.crt /usr/local/share/ca-certificates/
     Wait Unitl Command Success  update-ca-certificates
 
 Prepare Docker Cert In Photon

@@ -73,7 +73,7 @@ func TestReplicationHandler_Handle(t *testing.T) {
 	handler := &ReplicationHandler{}
 
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string

@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/scan"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -341,13 +342,18 @@ func (de *defaultEnforcer) PreheatArtifact(ctx context.Context, art *artifact.Ar
 
 // getCandidates get the initial candidates by evaluating the policy
 func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p *proModels.Project) ([]*selector.Candidate, error) {
+	// Filter the candidates by supported types.
+	var supportedTypes []any
+	for _, t := range lib.SliceToUpper(pr.SupportedTypes) {
+		supportedTypes = append(supportedTypes, t)
+	}
 	// Get the initial candidates
 	// Here we have a hidden filter, the artifact type filter.
 	// Only get the image type at this moment.
 	arts, err := de.artCtl.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": ps.ProjectID,
-			"Type":      strings.ToUpper(pr.SupportedType),
+			"Type":      q.NewOrList(supportedTypes),
 		},
 	}, &artifact.Option{
 		WithLabel: true,
@@ -365,7 +371,7 @@ func (de *defaultEnforcer) getCandidates(ctx context.Context, ps *pol.Schema, p 
 // launchExecutions create execution record and launch tasks to preheat the filtered artifacts.
 func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*selector.Candidate, pl *pol.Schema, inst *provider.Instance) (int64, error) {
 	// Create execution first anyway
-	attrs := map[string]interface{}{
+	attrs := map[string]any{
 		extraAttrTotal:          len(candidates),
 		extraAttrTrigger:        pl.Trigger.Type,
 		extraAttrTriggerSetting: pl.Trigger.Settings.Cron,
@@ -421,7 +427,7 @@ func (de *defaultEnforcer) launchExecutions(ctx context.Context, candidates []*s
 }
 
 // startTask starts the preheat task(job) for the given candidate
-func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, candidate *selector.Candidate, instance string, extraAttrs map[string]interface{}) (int64, error) {
+func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, candidate *selector.Candidate, instance string, extraAttrs map[string]any) (int64, error) {
 	u, err := de.fullURLGetter(candidate)
 	if err != nil {
 		return -1, err
@@ -433,9 +439,9 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 	}
 
 	pi := &pr.PreheatImage{
-		Type: pr.SupportedType,
+		Type: candidate.Kind,
 		URL:  u,
-		Headers: map[string]interface{}{
+		Headers: map[string]any{
 			accessCredHeaderKey: cred,
 		},
 		ImageName:  fmt.Sprintf("%s/%s", candidate.Namespace, candidate.Repository),
@@ -461,7 +467,7 @@ func (de *defaultEnforcer) startTask(ctx context.Context, executionID int64, can
 		},
 	}
 
-	tid, err := de.taskMgr.Create(ctx, executionID, j, map[string]interface{}{
+	tid, err := de.taskMgr.Create(ctx, executionID, j, map[string]any{
 		extraAttrArtifact: fmt.Sprintf("%s:%s", pi.ImageName, pi.Tag),
 		extraAttrDigest:   candidate.Digest,
 		extraAttrKind:     pi.Type,
@@ -517,7 +523,7 @@ func (de *defaultEnforcer) toCandidates(ctx context.Context, p *proModels.Projec
 				NamespaceID:           p.ProjectID,
 				Namespace:             p.Name,
 				Repository:            pureRepository(p.Name, a.RepositoryName),
-				Kind:                  pr.SupportedType,
+				Kind:                  strings.ToLower(a.Type),
 				Digest:                a.Digest,
 				Tags:                  []string{t.Name},
 				Labels:                getLabels(a.Labels),
@@ -590,12 +596,12 @@ func checkProviderHealthy(inst *provider.Instance) error {
 // Check the project security settings and override the related settings in the policy if necessary.
 // NOTES: if the security settings (relevant with signature and vulnerability) are set at the project configuration,
 // the corresponding filters of P2P preheat policy will be set using the relevant settings of project configurations.
-func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interface{} {
+func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]any {
 	if p == nil || pro == nil {
 		return nil
 	}
 
-	override := make([][]interface{}, 0)
+	override := make([][]any, 0)
 	filters := make([]*pol.Filter, 0)
 	for _, fl := range p.Filters {
 		if fl.Type != pol.FilterTypeSignature && fl.Type != pol.FilterTypeVulnerability {
@@ -611,7 +617,7 @@ func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interfa
 		})
 
 		// Record this is a override case
-		r1 := []interface{}{pro.Name, p.Name, pol.FilterTypeSignature, fmt.Sprintf("%v", true)}
+		r1 := []any{pro.Name, p.Name, pol.FilterTypeSignature, fmt.Sprintf("%v", true)}
 		override = append(override, r1)
 	}
 	// Append vulnerability filter if vulnerability severity config is set at project configurations
@@ -626,7 +632,7 @@ func overrideSecuritySettings(p *pol.Schema, pro *proModels.Project) [][]interfa
 			})
 
 			// Record this is a override case
-			r2 := []interface{}{pro.Name, p.Name, pol.FilterTypeVulnerability, fmt.Sprintf("%v:%d", se, code)}
+			r2 := []any{pro.Name, p.Name, pol.FilterTypeVulnerability, fmt.Sprintf("%v:%d", se, code)}
 			override = append(override, r2)
 		}
 	}

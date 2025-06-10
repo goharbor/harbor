@@ -18,9 +18,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	testsec "github.com/goharbor/harbor/src/testing/common/security"
 )
 
 func Test_logout_Resolve(t *testing.T) {
@@ -70,6 +72,9 @@ func Test_logout_Resolve(t *testing.T) {
 }
 
 func Test_logout_PreCheck(t *testing.T) {
+	secCtx := &testsec.Context{}
+	secCtx.On("GetUsername").Return("security-context-user")
+	ctx := security.NewContext(context.Background(), secCtx)
 	type args struct {
 		ctx    context.Context
 		url    string
@@ -82,8 +87,8 @@ func Test_logout_PreCheck(t *testing.T) {
 		wantMatched      bool
 		wantResourceName string
 	}{
-		{"test normal", &logoutResolver{}, args{context.Background(), "/c/log_out", "GET"}, true, ""},
-		{"test fail wrong url", &logoutResolver{}, args{context.Background(), "/c/logout", "DELETE"}, false, ""},
+		{"test normal", &logoutResolver{}, args{ctx, "/c/log_out", "GET"}, true, ""},
+		{"test fail wrong url", &logoutResolver{}, args{ctx, "/c/logout", "DELETE"}, false, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

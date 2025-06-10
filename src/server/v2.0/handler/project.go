@@ -187,7 +187,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// in most case, it's 1
 	if _, ok := secCtx.(*robotSec.SecurityContext); ok || secCtx.IsSolutionUser() {
 		q := &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"sysadmin_flag": true,
 			},
 			Sorts: []*q.Sort{
@@ -753,7 +753,7 @@ func (a *projectAPI) ListArtifactsOfProject(ctx context.Context, params operatio
 		WithPayload(artifacts)
 }
 
-func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
+func (a *projectAPI) deletable(ctx context.Context, projectNameOrID any) (*project.Project, *models.ProjectDeletable, error) {
 	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
 		return nil, nil, err
@@ -768,7 +768,7 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	return p, result, nil
 }
 
-func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}, options ...project.Option) (*project.Project, error) {
+func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, options ...project.Option) (*project.Project, error) {
 	p, err := a.projectCtl.Get(ctx, projectNameOrID, options...)
 	if err != nil {
 		return nil, err

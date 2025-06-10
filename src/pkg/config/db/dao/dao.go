@@ -47,7 +47,7 @@ func (d *dao) GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, erro
 	}
 	var p []*models.ConfigEntry
 	sql := "select * from properties"
-	n, err := o.Raw(sql, []interface{}{}).QueryRows(&p)
+	n, err := o.Raw(sql, []any{}).QueryRows(&p)
 
 	if err != nil {
 		return nil, err

@@ -69,7 +69,7 @@ func (suite *ReportTestSuite) TestReportList() {
 	query1 := &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"digest":            "digest1001",
 			"registration_uuid": "ruuid",
 			"mime_type":         v1.MimeTypeNativeReport,
@@ -82,7 +82,7 @@ func (suite *ReportTestSuite) TestReportList() {
 	query2 := &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"digest": "digest1002",
 		},
 	}

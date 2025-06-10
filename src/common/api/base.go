@@ -78,7 +78,7 @@ func (b *BaseAPI) RenderError(code int, text string) {
 }
 
 // DecodeJSONReq decodes a json request
-func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
+func (b *BaseAPI) DecodeJSONReq(v any) error {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<35), v)
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
@@ -89,7 +89,7 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
 }
 
 // Validate validates v if it implements interface validation.ValidFormer
-func (b *BaseAPI) Validate(v interface{}) (bool, error) {
+func (b *BaseAPI) Validate(v any) (bool, error) {
 	validator := validation.Validation{}
 	isValid, err := validator.Valid(v)
 	if err != nil {
@@ -108,7 +108,7 @@ func (b *BaseAPI) Validate(v interface{}) (bool, error) {
 }
 
 // DecodeJSONReqAndValidate does both decoding and validation
-func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) (bool, error) {
+func (b *BaseAPI) DecodeJSONReqAndValidate(v any) (bool, error) {
 	if err := b.DecodeJSONReq(v); err != nil {
 		return false, err
 	}

@@ -66,9 +66,9 @@ func (suite *CacheTestSuite) TestDelete() {
 func (suite *CacheTestSuite) TestFetch() {
 	key := "fetch"
 
-	suite.cache.Save(suite.ctx, key, map[string]interface{}{"name": "harbor", "version": "1.10"})
+	suite.cache.Save(suite.ctx, key, map[string]any{"name": "harbor", "version": "1.10"})
 
-	mp := map[string]interface{}{}
+	mp := map[string]any{}
 	suite.cache.Fetch(suite.ctx, key, &mp)
 	suite.Len(mp, 2)
 	suite.Equal("harbor", mp["name"])

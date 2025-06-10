@@ -110,6 +110,7 @@ Test Case - Project Quotas Control Under GC
     Close Browser
 
 Test Case - Garbage Collection Accessory
+    [Tags]  garbage_collection_accessory
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${image}=  Set Variable  hello-world

@@ -196,7 +196,7 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 		if err != nil {
 			return errors.Wrap(err, "unable to get user information")
 		}
-		params := map[string]interface{}{
+		params := map[string]any{
 			gdpr.UserNameParam: userDb.Username,
 		}
 		execID, err := c.exeMgr.Create(ctx, job.AuditLogsGDPRCompliantVendorType, -1, task.ExecutionTriggerEvent, params)

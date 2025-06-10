@@ -167,7 +167,7 @@ func (s *searchAPI) filterRepositories(ctx context.Context, projects []*project.
 
 // searchOK ...
 type searchOK struct {
-	Payload interface{}
+	Payload any
 }
 
 func (o *searchOK) WithPayload(payload *models.Search) *searchOK {

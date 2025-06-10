@@ -41,7 +41,9 @@ func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 		syslog.LOG_INFO, "audit")
 	a.initialized = true
 	if err != nil {
-		log.Errorf("failed to create audit log, error %v", err)
+		if len(logEndpoint) > 0 {
+			log.Errorf("failed to create audit log, error %v", err)
+		}
 		w = os.Stdout
 		a.initialized = false
 	}

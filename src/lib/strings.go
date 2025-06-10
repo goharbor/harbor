@@ -33,3 +33,13 @@ func Title(s string) string {
 	title := cases.Title(language.Und)
 	return title.String(strings.ToLower(s))
 }
+
+// SliceToUpper converts a slice of strings to uppercase.
+func SliceToUpper(s []string) []string {
+	result := make([]string, len(s))
+	for i, str := range s {
+		result[i] = strings.ToUpper(str)
+	}
+
+	return result
+}

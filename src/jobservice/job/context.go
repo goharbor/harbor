@@ -40,7 +40,7 @@ type Context interface {
 	// Returns:
 	//  The data of the specified context property if have
 	//  bool to indicate if the property existing
-	Get(prop string) (interface{}, bool)
+	Get(prop string) (any, bool)
 
 	// SystemContext returns the system context
 	//

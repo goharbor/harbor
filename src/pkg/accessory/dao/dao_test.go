@@ -110,7 +110,7 @@ func (d *daoTestSuite) TestCount() {
 	d.Require().Nil(err)
 	d.True(total > 0)
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"SubjectArtifactDigest": d.subArtifactDigest,
 		},
 	})
@@ -132,7 +132,7 @@ func (d *daoTestSuite) TestList() {
 	d.True(found)
 
 	accs, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"SubjectArtifactDigest": d.subArtifactDigest,
 		},
 	})
@@ -254,7 +254,7 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Nil(err)
 
 	accs, err := d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"SubjectArtifactDigest": art.Digest,
 		},
 	})
@@ -265,14 +265,14 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Len(accs, 2)
 
 	_, err = d.dao.DeleteAccessories(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName,
 		},
 	})
 	d.Require().Nil(err)
 
 	accs, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"SubjectArtifactDigest": art.Digest, "SubjectArtifactRepo": art.RepositoryName,
 		},
 	})

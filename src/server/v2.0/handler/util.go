@@ -64,7 +64,7 @@ func parseScanReportMimeTypes(header *string) []string {
 	return mimeTypes
 }
 
-func unescapePathParams(params interface{}, fieldNames ...string) error {
+func unescapePathParams(params any, fieldNames ...string) error {
 	val := reflect.ValueOf(params)
 	if val.Kind() != reflect.Ptr {
 		return fmt.Errorf("params must be ptr")
@@ -102,7 +102,7 @@ func unescapePathParams(params interface{}, fieldNames ...string) error {
 	return nil
 }
 
-func parseProjectNameOrID(str string, isResourceName *bool) interface{} {
+func parseProjectNameOrID(str string, isResourceName *bool) any {
 	if lib.BoolValue(isResourceName) {
 		// always as projectName
 		return str
@@ -117,7 +117,7 @@ func parseProjectNameOrID(str string, isResourceName *bool) interface{} {
 	return v // projectID
 }
 
-func getProjectID(ctx context.Context, projectNameOrID interface{}) (int64, error) {
+func getProjectID(ctx context.Context, projectNameOrID any) (int64, error) {
 	projectName, ok := projectNameOrID.(string)
 	if ok {
 		p, err := project.Ctl.Get(ctx, projectName, project.Metadata(false))

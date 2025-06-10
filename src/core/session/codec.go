@@ -35,26 +35,26 @@ var (
 
 type gobCodec struct{}
 
-func (*gobCodec) Encode(v interface{}) ([]byte, error) {
-	if vm, ok := v.(map[interface{}]interface{}); ok {
+func (*gobCodec) Encode(v any) ([]byte, error) {
+	if vm, ok := v.(map[any]any); ok {
 		return session.EncodeGob(vm)
 	}
 
 	return nil, errors.Errorf("object type invalid, %#v", v)
 }
 
-func (*gobCodec) Decode(data []byte, v interface{}) error {
+func (*gobCodec) Decode(data []byte, v any) error {
 	vm, err := session.DecodeGob(data)
 	if err != nil {
 		return err
 	}
 
 	switch in := v.(type) {
-	case map[interface{}]interface{}:
+	case map[any]any:
 		for k, v := range vm {
 			in[k] = v
 		}
-	case *map[interface{}]interface{}:
+	case *map[any]any:
 		m := *in
 		for k, v := range vm {
 			m[k] = v

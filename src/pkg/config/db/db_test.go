@@ -26,7 +26,7 @@ import (
 
 func TestDatabase_Load(t *testing.T) {
 
-	cfgs := map[string]interface{}{
+	cfgs := map[string]any{
 		common.AUTHMode: "db_auth",
 		common.LDAPURL:  "ldap://ldap.vmware.com",
 	}
@@ -50,7 +50,7 @@ func TestDatabase_Save(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to load config %v", err)
 	}
-	cfgMap := map[string]interface{}{"ldap_url": ldapURL}
+	cfgMap := map[string]any{"ldap_url": ldapURL}
 	driver.Save(testCtx, cfgMap)
 	updatedMap, err := driver.Load(testCtx)
 	if err != nil {
@@ -62,7 +62,7 @@ func TestDatabase_Save(t *testing.T) {
 }
 
 func BenchmarkDatabaseLoad(b *testing.B) {
-	cfgs := map[string]interface{}{}
+	cfgs := map[string]any{}
 	for _, item := range metadata.Instance().GetAll() {
 		cfgs[item.Name] = item.DefaultValue
 	}

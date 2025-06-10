@@ -79,7 +79,7 @@ func (d *dao) GetProjectMember(ctx context.Context, queryMember models.Member, q
 		on pm.project_id = ? and u.user_id = pm.entity_id
 		join role r on pm.role = r.role_id where pm.entity_type = 'u') as a where a.project_id = ? `
 
-	queryParam := make([]interface{}, 1)
+	queryParam := make([]any, 1)
 	// used ProjectID already
 	queryParam = append(queryParam, queryMember.ProjectID)
 	queryParam = append(queryParam, queryMember.ProjectID)
@@ -119,7 +119,7 @@ func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, _ *
 
 	sql := "SELECT COUNT(1) FROM project_member WHERE project_id = ?"
 
-	queryParam := []interface{}{projectID}
+	queryParam := []any{projectID}
 
 	if len(roles) > 0 {
 		sql += " AND role = ?"
@@ -223,7 +223,7 @@ func (d *dao) SearchMemberByName(ctx context.Context, projectID int64, entityNam
 	     left join role r on pm.role = r.role_id
 			 where pm.project_id = ? and ug.group_name like ?
 			 order by entity_name  `
-	queryParam := make([]interface{}, 4)
+	queryParam := make([]any, 4)
 	queryParam = append(queryParam, projectID)
 	queryParam = append(queryParam, "%"+orm.Escape(entityName)+"%")
 	queryParam = append(queryParam, projectID)
@@ -238,7 +238,7 @@ func (d *dao) ListRoles(ctx context.Context, user *models.User, projectID int64)
 	if user == nil {
 		return nil, nil
 	}
-	var params []interface{}
+	var params []any
 	sql := `
 		select role
 			from project_member

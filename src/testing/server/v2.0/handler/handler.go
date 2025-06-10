@@ -94,7 +94,7 @@ func (suite *Suite) Get(url string, headers ...map[string]string) (*http.Respons
 }
 
 // GetJSON ...
-func (suite *Suite) GetJSON(url string, js interface{}, headers ...map[string]string) (*http.Response, error) {
+func (suite *Suite) GetJSON(url string, js any, headers ...map[string]string) (*http.Response, error) {
 	res, err := suite.Get(url, headers...)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (suite *Suite) Patch(url string, body io.Reader, headers ...map[string]stri
 }
 
 // PatchJSON ...
-func (suite *Suite) PatchJSON(url string, js interface{}) (*http.Response, error) {
+func (suite *Suite) PatchJSON(url string, js any) (*http.Response, error) {
 	buf, err := json.Marshal(js)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (suite *Suite) Post(url string, body io.Reader, headers ...map[string]strin
 }
 
 // PostJSON ...
-func (suite *Suite) PostJSON(url string, js interface{}) (*http.Response, error) {
+func (suite *Suite) PostJSON(url string, js any) (*http.Response, error) {
 	buf, err := json.Marshal(js)
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (suite *Suite) Put(url string, body io.Reader, headers ...map[string]string
 }
 
 // PutJSON ...
-func (suite *Suite) PutJSON(url string, js interface{}) (*http.Response, error) {
+func (suite *Suite) PutJSON(url string, js any) (*http.Response, error) {
 	buf, err := json.Marshal(js)
 	if err != nil {
 		return nil, err

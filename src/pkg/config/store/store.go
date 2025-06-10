@@ -51,8 +51,8 @@ func (c *ConfigStore) Get(key string) (*metadata.ConfigureValue, error) {
 	return nil, metadata.ErrValueNotSet
 }
 
-// GetAnyType get interface{} type for config items
-func (c *ConfigStore) GetAnyType(key string) (interface{}, error) {
+// GetAnyType get any type for config items
+func (c *ConfigStore) GetAnyType(key string) (any, error) {
 	if value, ok := c.cfgValues.Load(key); ok {
 		if result, ok := value.(metadata.ConfigureValue); ok {
 			return result.GetAnyType()
@@ -96,8 +96,8 @@ func (c *ConfigStore) Load(ctx context.Context) error {
 
 // Save - Save all data in current store
 func (c *ConfigStore) Save(ctx context.Context) error {
-	cfgMap := map[string]interface{}{}
-	c.cfgValues.Range(func(key, value interface{}) bool {
+	cfgMap := map[string]any{}
+	c.cfgValues.Range(func(key, value any) bool {
 		keyStr := fmt.Sprintf("%v", key)
 		if configValue, ok := value.(metadata.ConfigureValue); ok {
 			valueStr := configValue.Value
@@ -118,7 +118,7 @@ func (c *ConfigStore) Save(ctx context.Context) error {
 }
 
 // Update - Only update specified settings in cfgMap in store and driver
-func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]interface{}) error {
+func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]any) error {
 	// Update to store
 	for key, value := range cfgMap {
 		configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
@@ -137,7 +137,7 @@ func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]interface{})
 }
 
 // ToString ...
-func ToString(value interface{}) (string, error) {
+func ToString(value any) (string, error) {
 	if value == nil {
 		return "nil", nil
 	}

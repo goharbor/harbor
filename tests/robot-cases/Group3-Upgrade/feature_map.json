@@ -35,6 +35,10 @@
         {
             "branch":3,
             "version":"2.2"
+        },
+        {
+            "branch":3,
+            "version":"2.12"
         }
     ],
     "populate_projects":[
@@ -73,6 +77,10 @@
         {
             "branch":3,
             "version":"2.2"
+        },
+        {
+            "branch":3,
+            "version":"2.12"
         }
     ],
     "add_member":[
@@ -111,6 +119,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "set_user_admin":[
@@ -149,6 +161,10 @@
         {
             "branch":3,
             "version":"2.2"
+        },
+        {
+            "branch":3,
+            "version":"2.12"
         }
     ],
     "add_endpoint":[
@@ -187,6 +203,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "add_replication_rule":[
@@ -225,6 +245,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "add_sys_allowlist":[
@@ -247,6 +271,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "update_project_setting_allowlist":[
@@ -269,6 +297,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "add_project_robot_account":[
@@ -295,6 +327,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "add_tag_retention_rule":[
@@ -317,6 +353,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "add_tag_immutability_rule":[
@@ -335,6 +375,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "add_webhook":[
@@ -357,6 +401,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "update_interrogation_services":[
@@ -379,6 +427,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "push_artifact_index":[
@@ -393,6 +445,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "add_distribution":[
@@ -403,6 +459,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "add_p2p_preheat_policy":[
@@ -413,6 +473,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ],
     "get_ca":[
@@ -451,6 +515,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "set_url":[
@@ -489,6 +557,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "update_systemsetting":[
@@ -515,6 +587,10 @@
         {
             "branch":2,
             "version":"2.2"
+        },
+        {
+            "branch":2,
+            "version":"2.12"
         }
     ],
     "populate_quotas":[
@@ -533,6 +609,10 @@
         {
             "branch":1,
             "version":"2.2"
+        },
+        {
+            "branch":1,
+            "version":"2.12"
         }
     ]
  }

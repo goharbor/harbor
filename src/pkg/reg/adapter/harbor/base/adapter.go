@@ -160,12 +160,15 @@ func (a *Adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 	}
 
+	// Create a list of the project names.
 	var ps []string
 	for p := range projects {
-		ps = append(ps, p)
+		// Surround name in 'quotes' to force the server to parse as a string.
+		// Handles the case where a project name consists entirely of numbers.
+		ps = append(ps, fmt.Sprintf("'%s'", p))
 	}
-	// query by project name, decorate the name as string to avoid parsed as int by server in case of pure numbers as project name
-	q := fmt.Sprintf("name={'%s'}", strings.Join(ps, " "))
+	// query by project names
+	q := fmt.Sprintf("name={%s}", strings.Join(ps, " "))
 	// get exist projects
 	queryProjects, err := a.Client.ListProjectsWithQuery(q, false)
 	if err != nil {
@@ -253,7 +256,7 @@ func (a *Adapter) ListProjects(filters []*model.Filter) ([]*Project, error) {
 	return a.Client.ListProjects("")
 }
 
-func abstractPublicMetadata(metadata map[string]interface{}) map[string]interface{} {
+func abstractPublicMetadata(metadata map[string]any) map[string]any {
 	if metadata == nil {
 		return nil
 	}
@@ -261,20 +264,20 @@ func abstractPublicMetadata(metadata map[string]interface{}) map[string]interfac
 	if !exist {
 		return nil
 	}
-	return map[string]interface{}{
+	return map[string]any{
 		"public": public,
 	}
 }
 
 // currently, mergeMetadata only handles the public metadata
-func mergeMetadata(metadata1, metadata2 map[string]interface{}) map[string]interface{} {
+func mergeMetadata(metadata1, metadata2 map[string]any) map[string]any {
 	public := parsePublic(metadata1) && parsePublic(metadata2)
-	return map[string]interface{}{
+	return map[string]any{
 		"public": strconv.FormatBool(public),
 	}
 }
 
-func parsePublic(metadata map[string]interface{}) bool {
+func parsePublic(metadata map[string]any) bool {
 	if metadata == nil {
 		return false
 	}
@@ -300,10 +303,10 @@ func parsePublic(metadata map[string]interface{}) bool {
 
 // Project model
 type Project struct {
-	ID         int64                  `json:"project_id"`
-	Name       string                 `json:"name"`
-	Metadata   map[string]interface{} `json:"metadata"`
-	RegistryID int64                  `json:"registry_id"`
+	ID         int64          `json:"project_id"`
+	Name       string         `json:"name"`
+	Metadata   map[string]any `json:"metadata"`
+	RegistryID int64          `json:"registry_id"`
 }
 
 func isLocalHarbor(url string) bool {
