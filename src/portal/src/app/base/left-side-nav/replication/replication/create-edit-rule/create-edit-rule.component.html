@@ -825,7 +825,7 @@
                             'REPLICATION.ENABLED_RULE' | translate
                         }}</label>
                     </div>
-                    <div class="clr-checkbox-wrapper">
+                    <div class="clr-checkbox-wrapper" [hidden]="!isNotEventBased()">
                         <input
                             type="checkbox"
                             class="clr-checkbox"

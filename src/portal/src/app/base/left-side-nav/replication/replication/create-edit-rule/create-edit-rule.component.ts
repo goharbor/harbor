@@ -513,6 +513,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
 
     onSubmit() {
+        if (this.ruleForm.value.trigger.type === 'event_based') {
+            this.ruleForm
+                .get('single_active_replication')
+                .setValue(false);
+        }
         if (this.ruleForm.value.trigger.type !== 'scheduled') {
             this.ruleForm
                 .get('trigger')
