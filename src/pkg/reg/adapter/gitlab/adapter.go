@@ -293,9 +293,8 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 			log.Debugf("Found repository ID: %d for path: %s", repositoryID, repo.Path)
 			repositoryID = repo.ID
 			break
-		} else {
-			log.Debugf("Skipping repository path=%s and id=%d", repo.Path, repo.ID)
 		}
+		log.Debugf("Skipping repository path=%s and id=%d", repo.Path, repo.ID)
 	}
 
 	if repositoryID == -1 {
