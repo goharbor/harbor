@@ -83,15 +83,18 @@ function check_docker {
 	fi
 
 	# docker has been installed and check its version
-	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
+	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)\.?([0-9]*)) ]]
 	then
 		docker_version=${BASH_REMATCH[1]}
 		docker_version_part1=${BASH_REMATCH[2]}
 		docker_version_part2=${BASH_REMATCH[3]}
+		docker_version_part3=${BASH_REMATCH[4]}
 
 		note "docker version: $docker_version"
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
+		if [ "$docker_version_part1" -lt 20 ] || \
+           ([ "$docker_version_part1" -eq 20 ] && [ "$docker_version_part2" -lt 10 ]) || \
+           ([ "$docker_version_part1" -eq 20 ] && [ "$docker_version_part2" -eq 10 ] && [ "$docker_version_part3" -lt 10 ])
 		then
 			error "Need to upgrade docker package to 20.10.10+."
 			exit 1
