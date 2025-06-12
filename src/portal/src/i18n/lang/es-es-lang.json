@@ -1569,7 +1569,6 @@
         "SET_UNHEALTHY_SCANNER": "Escaner seleccionado :{{name}} es unhealthy",
         "SCANNED_BY": "Escaneado por:",
         "IMAGE_SCANNERS": "Imágenes Escaners",
-        "VIEW_DOC": "ver documentación",
         "ALL_SCANNERS": "Todos los escaners",
         "HELP_INFO_1": "El default escaner ha sido instalado. Para instalar otros escaners refierase a la ",
         "HELP_INFO_2": "documentación.",

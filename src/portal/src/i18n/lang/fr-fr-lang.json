@@ -1574,7 +1574,6 @@
         "SET_UNHEALTHY_SCANNER": "Scanneurs sélectionnés : {{name}} est en mauvaise santé",
         "SCANNED_BY": "Scanné par :",
         "IMAGE_SCANNERS": "Scanneurs d'images",
-        "VIEW_DOC": "Voir la documentation",
         "ALL_SCANNERS": "Tous les scanneurs",
         "HELP_INFO_1": "Le scanneur par défaut a été installé. Pour installer d'autres scanneurs,",
         "HELP_INFO_2": "référez-vous à la documentation.",
