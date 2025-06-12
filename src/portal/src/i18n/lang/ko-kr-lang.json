@@ -1563,7 +1563,6 @@
         "SET_UNHEALTHY_SCANNER": "스캐너 선택:{{name}} 이 위험한 상태입니다",
         "SCANNED_BY": "스캔한 사람:",
         "IMAGE_SCANNERS": "이미지 스캐너",
-        "VIEW_DOC": "문서 보기",
         "ALL_SCANNERS": "모든 스캐너",
         "HELP_INFO_1": "기본 스캐너가 설치되었습니다. 다른 스캐너를 설치하려면 다음을 참조하십시오",
         "HELP_INFO_2": "문서.",
