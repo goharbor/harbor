@@ -32,21 +32,25 @@ func newProxy() http.Handler {
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse the URL of registry: %v", err))
 	}
-	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(r *httputil.ProxyRequest) {
+			r.SetURL(url)
+		},
+	}
 	if commonhttp.InternalTLSEnabled() {
 		proxy.Transport = commonhttp.GetHTTPTransport()
 	}
 
-	proxy.Director = basicAuthDirector(proxy.Director)
+	proxy.Rewrite = basicAuthRewrite(proxy.Rewrite)
 	return proxy
 }
 
-func basicAuthDirector(d func(*http.Request)) func(*http.Request) {
-	return func(r *http.Request) {
-		d(r)
-		if r != nil {
+func basicAuthRewrite(r func(*httputil.ProxyRequest)) func(*httputil.ProxyRequest) {
+	return func(req *httputil.ProxyRequest) {
+		r(req)
+		if req != nil {
 			u, p := config.RegistryCredential()
-			r.SetBasicAuth(u, p)
+			req.Out.SetBasicAuth(u, p)
 		}
 	}
 }
