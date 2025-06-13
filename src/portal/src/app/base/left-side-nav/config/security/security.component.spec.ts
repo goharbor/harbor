@@ -99,4 +99,38 @@ describe('SecurityComponent', () => {
             'CVE-2019-789'
         );
     });
+    it('should not allow empty and whitespace CVEs', async () => {
+        // set cveIds with mix empty and whitespace
+        component.cveIds = `
+
+      ,   , \n ,  \t, ,
+    `;
+        component.addToSystemAllowlist();
+        const finalIds = component.systemAllowlist.items.map(i => i.cve_id);
+        expect(finalIds).not.toContain(' ');
+        expect(finalIds).not.toContain('\n');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+
+        // modal should be closed
+        expect(component.cveIds).toBeNull();
+        expect(component.showAddModal).toBeFalse();
+    });
+    it('should add only unique CVEs to the allowlist', () => {
+        // set cveIds with duplicates and valid
+        component.cveIds = `
+      CVE-2024-0002,
+      CVE-2024-0002,
+      CVE-2024-0004
+    `;
+
+        component.addToSystemAllowlist();
+        const finalIds = component.systemAllowlist.items.map(i => i.cve_id);
+        expect(finalIds).toContain('CVE-2024-0004');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+        expect(finalIds.filter(id => id === 'CVE-2024-0002').length).toBe(1); // no duplicates
+
+        // modal should be closed
+        expect(component.cveIds).toBeNull();
+        expect(component.showAddModal).toBeFalse();
+    });
 });
