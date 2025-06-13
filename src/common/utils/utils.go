@@ -75,7 +75,7 @@ func GenerateRandomStringWithLen(length int) string {
 	if err != nil {
 		log.Warningf("Error reading random bytes: %v", err)
 	}
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
 	return string(result)
@@ -336,14 +336,4 @@ func MostMatchSorter(a, b string, matchWord string) bool {
 // IsLocalPath checks if path is local, includes the empty path
 func IsLocalPath(path string) bool {
 	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
-}
-
-// StringInSlice check if the string is in the slice
-func StringInSlice(str string, slice []string) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
-	}
-	return false
 }

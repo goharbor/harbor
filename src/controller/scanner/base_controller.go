@@ -17,6 +17,7 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -383,13 +384,7 @@ var (
 )
 
 func isReservedName(name string) bool {
-	for _, reservedName := range reservedNames {
-		if name == reservedName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(reservedNames, name)
 }
 
 // MetadataResult metadata or error saved in cache

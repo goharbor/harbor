@@ -75,7 +75,7 @@ func (ok *ObjectKey) Format(keysAndValues ...any) (string, error) {
 	}
 
 	s := ok.namespace
-	for i := 0; i < len(keysAndValues); i++ {
+	for i := range len(keysAndValues) {
 		// even is key
 		if i%2 == 0 {
 			key, match := keysAndValues[i].(string)
