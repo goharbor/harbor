@@ -16,6 +16,7 @@ package or
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action/performer"
 	"testing"
 	"time"
 
@@ -29,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
@@ -87,8 +87,7 @@ func (suite *ProcessorTestSuite) TearDownSuite() {
 // TestProcess tests process method
 func (suite *ProcessorTestSuite) TestProcess() {
 
-	perf := action.NewRetainAction(suite.all, false)
-
+	perf := performer.NewRetainAction(suite.all, false)
 	params := make([]*alg.Parameter, 0)
 	lastxParams := make(map[string]rule.Parameter)
 	lastxParams[lastx.ParameterX] = 10
@@ -129,7 +128,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 
 // TestProcess2 ...
 func (suite *ProcessorTestSuite) TestProcess2() {
-	perf := action.NewRetainAction(suite.all, false)
+	perf := performer.NewRetainAction(suite.all, false)
 
 	params := make([]*alg.Parameter, 0)
 	alwaysParams := make(map[string]rule.Parameter)

@@ -23,6 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	policyindex "github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 )
 
 // Matcher ...
@@ -82,7 +84,23 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		if len(tagCandidates) == 0 {
 			continue
 		}
+		params := rule.Parameters{}
+		for k, v := range r.Parameters {
+			params[k] = v
+		}
 
+		evaluator, err := policyindex.Get(r.Template, params)
+		if err != nil {
+			return false, err
+		}
+
+		ruleCandidates, err := evaluator.Process(cands)
+		if err != nil {
+			return false, err
+		}
+		if len(ruleCandidates) == 0 {
+			continue
+		}
 		return true, nil
 	}
 	return false, nil
