@@ -135,6 +135,10 @@ export class ConfigurationAuthComponent implements OnInit {
     setLdapGroupAttachParallelValue($event: any) {
         this.currentConfig.ldap_group_attach_parallel.value = $event;
     }
+
+    setLdapADNestedGroupValue($event: any) {
+        this.currentConfig.ldap_ad_nested_group.value = $event;
+    }
     public pingTestServer(): void {
         if (this.testingOnGoing) {
             return; // Should not come here
