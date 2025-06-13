@@ -13,7 +13,10 @@
 // limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { compareValue, clone } from '../../../../shared/units/utils';
-import { ProjectService } from '../../../../shared/services';
+import {
+    ProjectCVEAllowlist,
+    ProjectService,
+} from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { State, SystemCVEAllowlist } from '../../../../shared/services';
 import {
@@ -133,8 +136,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
     userProjectAllowlist = false;
     systemAllowlistOrProjectAllowlist: string;
     systemAllowlistOrProjectAllowlistOrigin: string;
-    projectAllowlist;
-    projectAllowlistOrigin;
+    projectAllowlist: ProjectCVEAllowlist;
+    projectAllowlistOrigin: ProjectCVEAllowlist;
     speedUnit = BandwidthUnit.KB;
     speedUnits = [
         {
