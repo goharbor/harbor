@@ -60,3 +60,19 @@ src/server/v2.0/restapi/
 harborclient/
 openapi-generator-cli.jar
 tests/e2e_setup/robotvars.py
+
+# Ignore all log files
+*.log
+
+# Ignore all generated harbor binaries
+# This is a robust way to ignore them wherever they appear
+harbor_core
+harbor_jobservice
+harbor_registryctl
+
+# Ignore the generated registry config
+# Be specific if there are other config.yml files you DO want to track
+make/photon/registry/config.yml
+
+# You might even ignore the entire input directory if it's always temporary
+make/input/
