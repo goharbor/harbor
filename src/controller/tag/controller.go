@@ -17,6 +17,7 @@ package tag
 import (
 	"context"
 	"regexp"
+	"sort"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -194,15 +195,37 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 	return c.tagMgr.Delete(ctx, id)
 }
 
-// DeleteTags ...
+// DeleteTags deletes multiple tags in a single transaction to prevent deadlocks
 func (c *controller) DeleteTags(ctx context.Context, ids []int64) (err error) {
-	// in order to leverage the signature and immutable status check
+	if len(ids) == 0 {
+		return nil
+	}
+
+	// Sort IDs to ensure consistent lock ordering
+	sort.Slice(ids, func(i, j int) bool {
+		return ids[i] < ids[j]
+	})
+
 	for _, id := range ids {
-		if err := c.Delete(ctx, id); err != nil {
+		tag, err := c.Get(ctx, id, &Option{WithImmutableStatus: true})
+		if err != nil {
 			return err
 		}
+		if tag.Immutable {
+			return errors.New(nil).WithCode(errors.PreconditionCode).
+				WithMessage("the tag %s configured as immutable, cannot be deleted", tag.Name)
+		}
 	}
-	return nil
+
+	// Use a single transaction for all deletions
+	return orm.WithTransaction(func(ctx context.Context) error {
+		for _, id := range ids {
+			if err := c.tagMgr.Delete(ctx, id); err != nil {
+				return err
+			}
+		}
+		return nil
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-tags-batch"))
 }
 
 // assemble several part into a single tag
