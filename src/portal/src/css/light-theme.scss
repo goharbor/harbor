@@ -1,7 +1,8 @@
 // Variables for light theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui.min.css";
+// @import "../../node_modules/@clr/ui/clr-ui.min.css";
+@import "../../node_modules/@clr/ui/legacy-clr-ui.min.css";
 
-  
+
 $mode-background-color: #fff;
 $mode-background-color1: $mode-background-color;
 $mode-background-color2: #fafafa;
