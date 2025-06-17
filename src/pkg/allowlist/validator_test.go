@@ -55,6 +55,22 @@ func TestValidate(t *testing.T) {
 	}{
 		{
 			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{
+					{CVEID: ""},
+				},
+			},
+			noError: false,
+		},
+		{
+			l: models2.CVEAllowlist{
+				Items: []models2.CVEAllowlistItem{
+					{CVEID: "     "},
+				},
+			},
+			noError: false,
+		},
+		{
+			l: models2.CVEAllowlist{
 				Items: nil,
 			},
 			noError: true,
