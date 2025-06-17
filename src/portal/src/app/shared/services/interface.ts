@@ -433,6 +433,11 @@ export interface ProjectRootInterface {
     VALUE: number;
     LABEL: string;
 }
+export interface ProjectCVEAllowlist {
+    id?: number;
+    expires_at?: number;
+    items?: Array<{ cve_id: string }>;
+}
 export interface SystemCVEAllowlist {
     id?: number;
     project_id?: number;
