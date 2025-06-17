@@ -1572,7 +1572,6 @@
         "SET_UNHEALTHY_SCANNER": "Der gewählte Scanner:{{name}} ist nicht gesund",
         "SCANNED_BY": "Gescannt von:",
         "IMAGE_SCANNERS": "Image Scanner",
-        "VIEW_DOC": "Siehe Dokumentation",
         "ALL_SCANNERS": "Alle Scanner",
         "HELP_INFO_1": "Der Standardscanner wurde installiert. Um andere Scanner zu installieren, siehe ",
         "HELP_INFO_2": "Dokumentation.",
