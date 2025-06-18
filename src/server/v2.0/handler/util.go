@@ -48,7 +48,7 @@ func parseScanReportMimeTypes(header *string) []string {
 	var mimeTypes []string
 
 	if header != nil {
-		for _, mimeType := range strings.Split(*header, ",") {
+		for mimeType := range strings.SplitSeq(*header, ",") {
 			mimeType = strings.TrimSpace(mimeType)
 			switch mimeType {
 			case v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport:

@@ -129,7 +129,7 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 	// Wait for reasonable time to make sure the report is ready
 	// Interval=500ms and total time = 5s
 	// If the report is still not ready in the total time, then failed at then
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		// First check in case it is ready
 		if re, err := scan.DefaultController.GetReport(ctx, art, []string{v1.MimeTypeNativeReport, v1.MimeTypeGenericVulnerabilityReport}); err == nil {
 			if len(re) > 0 && len(re[0].Report) > 0 {

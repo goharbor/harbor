@@ -88,10 +88,7 @@ func (r *redisClientImpl) StopPendingJobs(ctx context.Context, jobType string) (
 
 	// use batch to list the job in queue, because the too many object load from a list might cause the redis crash
 	for startIndex := int64(0); startIndex < int64(size); startIndex += batchSize {
-		endIndex := startIndex + batchSize
-		if endIndex > int64(size) {
-			endIndex = int64(size)
-		}
+		endIndex := min(startIndex+batchSize, int64(size))
 		jobs, err := redis.Strings(conn.Do("LRANGE", redisKeyJobQueue, startIndex, endIndex))
 		if err != nil {
 			return []string{}, err

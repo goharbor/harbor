@@ -423,10 +423,7 @@ func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDesc
 		// update the start and end for upload
 		*start = *end + 1
 		// since both ends are closed intervals, it is necessary to subtract one byte
-		*end = *start + replicationChunkSize - 1
-		if *end >= endRange {
-			*end = endRange
-		}
+		*end = min(*start+replicationChunkSize-1, endRange)
 
 		t.logger.Infof("copying the blob chunk: %d-%d/%d", *start, *end, sizeFromDescriptor)
 		_, data, err := t.src.PullBlobChunk(srcRepo, digest, sizeFromDescriptor, *start, *end)
