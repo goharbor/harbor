@@ -1571,7 +1571,6 @@
         "SET_UNHEALTHY_SCANNER": "所選擇的掃描器：{{name}} 是不健康的",
         "SCANNED_BY": "由此掃描：",
         "IMAGE_SCANNERS": "映像檔掃描器",
-        "VIEW_DOC": "檢視文件",
         "ALL_SCANNERS": "全部掃描器",
         "HELP_INFO_1": "預設掃描器已安裝。如需其他掃描器的安裝說明，請參閱",
         "HELP_INFO_2": "說明文件。",

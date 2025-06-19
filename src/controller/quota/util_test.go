@@ -78,13 +78,13 @@ func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
 
 	startProjectID := rand.Int63()
 	var firstPageProjects, secondPageProjects []*models.Project
-	for i := 0; i < 50; i++ {
+	for i := range 50 {
 		firstPageProjects = append(firstPageProjects, &models.Project{
 			ProjectID: startProjectID + int64(i),
 		})
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		secondPageProjects = append(secondPageProjects, &models.Project{
 			ProjectID: startProjectID + 50 + int64(i),
 		})

@@ -221,7 +221,7 @@ func RobotPrefix(ctx context.Context) string {
 // SplitAndTrim ...
 func SplitAndTrim(s, sep string) []string {
 	res := make([]string, 0)
-	for _, s := range strings.Split(s, sep) {
+	for s := range strings.SplitSeq(s, sep) {
 		if e := strings.TrimSpace(s); len(e) > 0 {
 			res = append(res, e)
 		}
@@ -270,8 +270,7 @@ func AuditLogEventEnabled(ctx context.Context, eventType string) bool {
 		return true
 	}
 	disableListStr := DefaultMgr().Get(ctx, common.AuditLogEventsDisabled).GetString()
-	disableList := strings.Split(disableListStr, ",")
-	for _, t := range disableList {
+	for t := range strings.SplitSeq(disableListStr, ",") {
 		tName := strings.TrimSpace(t)
 		if strings.EqualFold(tName, eventType) {
 			return false

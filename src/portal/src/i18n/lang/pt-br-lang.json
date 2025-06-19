@@ -1571,7 +1571,6 @@
         "SET_UNHEALTHY_SCANNER": "Examinador selecionado '{{name}}' está com problemas",
         "SCANNED_BY": "Analisado por:",
         "IMAGE_SCANNERS": "Examinadores de Imagens",
-        "VIEW_DOC": "Aprender mais a respeito",
         "ALL_SCANNERS": "Todos os examinadores",
         "HELP_INFO_1": "O examinador padrão foi instalado. Para incluir outros, confira a ",
         "HELP_INFO_2": "documentação.",
