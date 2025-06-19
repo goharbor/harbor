@@ -138,6 +138,8 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 		if record.Severity != v.Severity.String() {
 			record.Severity = v.Severity.String()
+			record.CVE3Score = v.CVSSDetails.ScoreV3
+			record.Fix = v.FixVersion
 			outOfDateRecords = append(outOfDateRecords, record)
 		}
 	}
