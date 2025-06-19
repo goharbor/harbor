@@ -29,6 +29,8 @@ const (
 	SuccessStatus Status = "Success"
 	// ScheduledStatus : job status scheduled
 	ScheduledStatus Status = "Scheduled"
+	// SkippedStatus   : job status skipped
+	SkippedStatus Status = "Skipped"
 )
 
 // Status of job
@@ -61,6 +63,8 @@ func (s Status) Code() int {
 	case "Error":
 		return 3
 	case "Success":
+		return 3
+	case "Skipped":
 		return 3
 	default:
 	}
