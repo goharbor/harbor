@@ -38,6 +38,7 @@ select
     artifact.digest as artifact_digest,
     artifact.repository_id,
     artifact.repository_name,
+    string_agg(tag.name, ',') as tags,
     vulnerability_record.cve_id,
     vulnerability_record.package,
     vulnerability_record.severity,
@@ -50,6 +51,7 @@ from
     report_vulnerability_record
     inner join scan_report on report_vulnerability_record.report_uuid = scan_report.uuid
     inner join artifact on scan_report.digest = artifact.digest
+    left join tag on artifact.id = tag.artifact_id
     left outer join artifact_reference on artifact.id = artifact_reference.child_id
     inner join vulnerability_record on report_vulnerability_record.vuln_record_id = vulnerability_record.id
     inner join scanner_registration on scan_report.registration_uuid = scanner_registration.uuid
