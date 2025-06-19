@@ -37,7 +37,9 @@
     </clr-alert>
     <clr-alert
         (clrAlertClosedChange)="closeHealthWarning()"
-        *ngIf="showJobServiceDashboardHealthCheck() && isLogin()"
+        *ngIf="
+            showJobServiceDashboardHealthCheck() && isLogin() && hasAdminRole()
+        "
         [clrAlertType]="'warning'"
         [clrAlertAppLevel]="true">
         <clr-alert-item>
@@ -68,7 +70,7 @@
         [clrAlertType]="'info'"
         [clrAlertAppLevel]="true"
         (clrAlertClosedChange)="closeInfo()"
-        *ngIf="shouldShowScannerInfo() && isLogin()">
+        *ngIf="shouldShowScannerInfo() && isLogin() && hasAdminRole()">
         <clr-alert-item>
             <span class="alert-text">
                 {{ 'SCANNER.HELP_INFO_1' | translate }}
