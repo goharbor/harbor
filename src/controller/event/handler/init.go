@@ -44,6 +44,7 @@ func init() {
 	_ = notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
 	_ = notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
 	_ = notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
+	_ = notifier.Subscribe(event.TopicRobotExpired, &artifact.RobotHandler{})
 
 	// replication
 	_ = notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
@@ -67,6 +68,7 @@ func init() {
 	_ = notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicCreateRobot, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicDeleteRobot, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicRobotExpired, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicCommonEvent, &auditlog.Handler{})
 
 	// internal
