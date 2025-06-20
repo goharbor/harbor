@@ -17,6 +17,7 @@ package log
 import (
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"runtime"
 	"sort"
@@ -122,12 +123,8 @@ func (l *Logger) WithFields(fields Fields) *Logger {
 
 	if len(fields) > 0 {
 		copyFields := make(map[string]any, len(l.fields)+len(fields))
-		for key, value := range l.fields {
-			copyFields[key] = value
-		}
-		for key, value := range fields {
-			copyFields[key] = value
-		}
+		maps.Copy(copyFields, l.fields)
+		maps.Copy(copyFields, fields)
 
 		sortedKeys := make([]string, 0, len(copyFields))
 		for key := range copyFields {

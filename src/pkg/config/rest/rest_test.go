@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -66,9 +67,7 @@ func ConfigPutHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for k, v := range cfgs {
-		configMapForTest[k] = v
-	}
+	maps.Copy(configMapForTest, cfgs)
 }
 
 func TestHTTPDriver_Save(t *testing.T) {
