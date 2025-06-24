@@ -51,7 +51,7 @@ type Resource struct {
 	Digest       string         `json:"digest,omitempty"`
 	Tag          string         `json:"tag,omitempty"`
 	ResourceURL  string         `json:"resource_url,omitempty"`
-	ScanOverview map[string]any `json:"scan_overview,omitempty"`
+	ScanOverview map[string]any `json:"scan_overview"`
 	SBOMOverview map[string]any `json:"sbom_overview,omitempty"`
 }
 
