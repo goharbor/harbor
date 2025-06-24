@@ -69,7 +69,7 @@ func TestDefault_Format(t *testing.T) {
 				},
 			}},
 			want:    http.Header{"Content-Type": []string{"application/json"}},
-			want1:   []byte(`{"type":"PULL_ARTIFACT","occur_at":1678082303,"operator":"admin","event_data":{"resources":[{"digest":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","tag":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","resource_url":"harbor.dev/library/busybox@sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c"}],"repository":{"date_created":1677053165,"name":"busybox","namespace":"library","repo_full_name":"library/busybox","repo_type":"public"}}}`),
+			want1:   []byte(`{"type":"PULL_ARTIFACT","occur_at":1678082303,"operator":"admin","event_data":{"resources":[{"digest":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","tag":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","resource_url":"harbor.dev/library/busybox@sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","scan_overview":null}],"repository":{"date_created":1677053165,"name":"busybox","namespace":"library","repo_full_name":"library/busybox","repo_type":"public"}}}`),
 			wantErr: false,
 		},
 	}

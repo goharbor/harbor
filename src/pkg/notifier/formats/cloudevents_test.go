@@ -81,6 +81,6 @@ func TestCloudEvents_Format(t *testing.T) {
 		assert.Equal(t, "application/json", event.DataContentType())
 		assert.Equal(t, "2023-03-06T06:08:43Z", event.Time().Format(time.RFC3339))
 		assert.Equal(t, "admin", event.Extensions()["operator"])
-		assert.Equal(t, `{"resources":[{"digest":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","tag":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","resource_url":"harbor.dev/library/busybox@sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c"}],"repository":{"date_created":1677053165,"name":"busybox","namespace":"library","repo_full_name":"library/busybox","repo_type":"public"}}`, string(event.Data()))
+		assert.Equal(t, `{"resources":[{"digest":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","tag":"sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","resource_url":"harbor.dev/library/busybox@sha256:dde8e930c7b6a490f728e66292bc9bce42efc9bbb5278bae40e4f30f6e00fe8c","scan_overview":null}],"repository":{"date_created":1677053165,"name":"busybox","namespace":"library","repo_full_name":"library/busybox","repo_type":"public"}}`, string(event.Data()))
 	}
 }
