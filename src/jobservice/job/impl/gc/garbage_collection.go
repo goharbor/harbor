@@ -171,22 +171,6 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 
 	gc.logger.Infof("start to run gc in job.")
 
-	// test code for UI change in GC
-	sweepSz := 0
-	blobs := 0
-	mans := 0
-	for i := 0; i < 1000; i++ {
-		sweepSz += 1024
-		blobs += 1
-		if i%5 == 0 {
-			mans += 1
-		}
-		gc.logger.Infof("running GC now, i: %v", i)
-		saveGCRes(ctx, int64(sweepSz), int64(blobs), int64(mans))
-		time.Sleep(time.Minute)
-	}
-	//saveGCRes(ctx, int64(0), int64(0), int64(0))
-
 	// mark
 	if err := gc.mark(ctx); err != nil {
 		if err == errGcStop {
