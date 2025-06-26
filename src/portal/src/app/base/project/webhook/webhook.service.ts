@@ -28,6 +28,7 @@ const EVENT_TYPES_TEXT_MAP = {
     SCANNING_STOPPED: 'Scanning stopped',
     SCANNING_COMPLETED: 'Scanning finished',
     TAG_RETENTION: 'Tag retention finished',
+    ROBOT_EXPIRED: 'Robot account expired',
 };
 
 export const PAYLOAD_FORMATS: string[] = ['Default', 'CloudEvents'];

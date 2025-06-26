@@ -92,6 +92,7 @@ func initSupportedNotifyType() {
 		event.TopicScanningCompleted,
 		event.TopicReplication,
 		event.TopicTagRetention,
+		event.TopicRobotExpired,
 	}
 	for _, eventType := range eventTypes {
 		supportedEventTypes = append(supportedEventTypes, EventType(eventType))
