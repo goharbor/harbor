@@ -9,6 +9,8 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
   push:
     paths:
       - 'docs/**'
@@ -17,6 +19,8 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
 
 jobs:
   UTTEST:
