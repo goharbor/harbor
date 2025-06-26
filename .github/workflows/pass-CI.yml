@@ -5,18 +5,10 @@ on:
     paths:
       - 'docs/**'
       - '**.md'
-      - 'tests/**'
-      - '!tests/**.sh'
-      - '!tests/apitests/**'
-      - '!tests/ci/**'
   push:
     paths:
       - 'docs/**'
       - '**.md'
-      - 'tests/**'
-      - '!tests/**.sh'
-      - '!tests/apitests/**'
-      - '!tests/ci/**'
 
 jobs:
   UTTEST:

@@ -18,6 +18,7 @@ Library  SeleniumLibrary
 Library  OperatingSystem
 
 *** Variables ***
+${HARBOR_ADMIN}    admin
 
 *** Keywords ***
 Install Harbor to Test Server
