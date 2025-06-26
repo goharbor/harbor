@@ -943,6 +943,8 @@
             "VERIFY_CERT": "LDAP检查证书",
             "LDAP_GROUP_BASE_DN": "LDAP组基础DN",
             "LDAP_GROUP_BASE_DN_INFO": "LDAP/AD中，用于查找组的基础DN。如果要开启LDAP组功能，则此项必填",
+            "LDAP_GROUP_ADMIN_FILTER": "LDAP Group Admin Filter",
+            "LDAP_GROUP_ADMIN_FILTER_INFO": "The filter for LDAP Admin search.",
             "LDAP_GROUP_FILTER": "LDAP组过滤器",
             "LDAP_GROUP_FILTER_INFO": "搜索LDAP组的过滤器. 对于 OpenLDAP，请将值设为: objectclass=groupOfNames. 对于 Active Directory，请将值设为: objectclass=group。如果要开启LDAP组功能，则此项必填",
             "LDAP_GROUP_GID": "LDAP组ID属性",
