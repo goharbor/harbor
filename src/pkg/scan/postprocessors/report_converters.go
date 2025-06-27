@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -33,6 +32,8 @@ import (
 var (
 	// Converter is the global native scan report converter
 	Converter = NewNativeToRelationalSchemaConverter()
+	// Max scan report data size is 100 MB
+	reportDataSizeLimit = 100 * 1024 * 1024
 )
 
 // NativeScanReportConverter is an interface that establishes the contract for the conversion process of a harbor native vulnerability report
@@ -60,7 +61,11 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 		log.G(ctx).Infof("There is no vulnerability report to toSchema for report UUID : %s", reportUUID)
 		return reportUUID, "", nil
 	}
-
+	// to avoid the jobservice container oom, limit the size of the scan report data
+	if len(reportData) > reportDataSizeLimit {
+		log.Errorf("the scan report data too large to process, current size: %v bytes, limit size: %v bytes, will skip to process the scan report", len(reportData), reportDataSizeLimit)
+		return reportUUID, "", nil
+	}
 	// parse the raw report with the V1 schema of the report to the normalized structures
 	rawReport := new(vuln.Report)
 	if err := json.Unmarshal([]byte(reportData), &rawReport); err != nil {
@@ -103,6 +108,11 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 	err := json.Unmarshal([]byte(rawReportData), &vulnReport)
 	if err != nil {
 		return err
+	}
+
+	// set a upper limit of vulnerability number to 60000 because of the limit of postgresql query parameters count limit is 65535
+	if len(vulnReport.Vulnerabilities) > 60000 {
+		vulnReport.Vulnerabilities = vulnReport.Vulnerabilities[:60000]
 	}
 
 	var cveIDs []any
@@ -222,17 +232,6 @@ func (c *nativeToRelationalSchemaConverter) fromSchema(_ context.Context, _ stri
 		return "", err
 	}
 	return string(data), nil
-}
-
-// GetNativeV1ReportFromResolvedData returns the native V1 scan report from the resolved
-// interface data.
-func (c *nativeToRelationalSchemaConverter) getNativeV1ReportFromResolvedData(ctx job.Context, rp any) (*vuln.Report, error) {
-	report, ok := rp.(*vuln.Report)
-	if !ok {
-		return nil, errors.New("Data cannot be converted to v1 report format")
-	}
-	ctx.GetLogger().Infof("Converted raw data to report. Count of Vulnerabilities in report : %d", len(report.Vulnerabilities))
-	return report, nil
 }
 
 func toVulnerabilityRecord(ctx context.Context, item *vuln.VulnerabilityItem, registrationUUID string) *scan.VulnerabilityRecord {
