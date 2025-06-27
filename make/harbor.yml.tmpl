@@ -9,13 +9,20 @@ http:
   # port for http, default is 80. If https enabled, this port will redirect to https port
   port: 80
 
-# https related config
+  # https related config
 https:
   # https port for harbor, default is 443
   port: 443
   # The path of cert and key files for nginx
+  # For Let's Encrypt, this is typically /etc/letsencrypt/live/<your-domain>/fullchain.pem
   certificate: /your/certificate/path
+  # The path of private key for nginx
+  # For Let's Encrypt, this is typically /etc/letsencrypt/live/<your-domain>/privkey.pem
   private_key: /your/private/key/path
+
+  # When set to true, Harbor will only support strong SSL ciphers.
+  # No special prerequisites are required from Harbor's side. However, ensure your clients
+  # (e.g., Docker CLI, web browsers) support modern TLS 1.2+ ciphers to avoid connection issues.
   # enable strong ssl ciphers (default: false)
   # strong_ssl_ciphers: false
 
