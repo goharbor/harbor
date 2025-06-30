@@ -302,7 +302,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		}
 		myLogger.Debugf("Converting report ID %s to the new V2 schema", rp.UUID)
 		if len(rawReports[i]) == 0 {
-			myLogger.Warning("current raw report is empty, skip to handler it")
+			myLogger.Warning("Current raw report is empty, skipping processing.")
 			continue
 		}
 
@@ -312,7 +312,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 			return err
 		}
 		if len(reportData) == 0 {
-			myLogger.Warning("current reportData is empty, skip to handler it")
+			myLogger.Warning("Report data is empty, skipping processing.")
 			continue
 		}
 		// update the original report with the new summarized report with all vulnerability data removed.
