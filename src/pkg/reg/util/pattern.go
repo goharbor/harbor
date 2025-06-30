@@ -40,7 +40,7 @@ func IsSpecificPath(path string) ([]string, bool) {
 		return nil, false
 	}
 	components := [][]string{}
-	for _, component := range strings.Split(path, "/") {
+	for component := range strings.SplitSeq(path, "/") {
 		strs, ok := IsSpecificPathComponent(component)
 		if !ok {
 			return nil, false
@@ -113,8 +113,7 @@ func IsSpecificPathComponent(component string) ([]string, bool) {
 		suffix = component[j+1:]
 	}
 	components := []string{}
-	strs := strings.Split(component[i+1:j], ",")
-	for _, str := range strs {
+	for str := range strings.SplitSeq(component[i+1:j], ",") {
 		components = append(components, prefix+str+suffix)
 	}
 	return components, true

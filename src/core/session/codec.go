@@ -16,6 +16,7 @@ package session
 
 import (
 	"encoding/gob"
+	"maps"
 
 	"github.com/beego/beego/v2/server/web/session"
 
@@ -51,14 +52,10 @@ func (*gobCodec) Decode(data []byte, v any) error {
 
 	switch in := v.(type) {
 	case map[any]any:
-		for k, v := range vm {
-			in[k] = v
-		}
+		maps.Copy(in, vm)
 	case *map[any]any:
 		m := *in
-		for k, v := range vm {
-			m[k] = v
-		}
+		maps.Copy(m, vm)
 	default:
 		return errors.Errorf("object type invalid, %#v", v)
 	}
