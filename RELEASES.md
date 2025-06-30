@@ -16,9 +16,9 @@ Patch releases are based on the major/minor release branch, the release cadence 
 ### Minor Release Support Matrix
 | Version        | Supported          |
 |----------------| ------------------ |
+| Harbor v2.13.x | :white_check_mark: |
 | Harbor v2.12.x | :white_check_mark: |
 | Harbor v2.11.x | :white_check_mark: |
-| Harbor v2.10.x | :white_check_mark: |
 
 
 ### Upgrade path and support policy
