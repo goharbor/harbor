@@ -100,18 +100,24 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChart(artifact: Artifact): string {
-        if (artifact.tagNumber > 0) {
-            return getPullCommandByTag(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.tags[0].name,
-                Clients.CHART
-            );
-        } else {
+        // Early return if artifact has no tags
+        if (
+            typeof artifact.tagNumber !== 'number' ||
+            artifact.tagNumber <= 0 ||
+            !Array.isArray(artifact.tags) ||
+            artifact.tags.length === 0 ||
+            !artifact.tags[0]?.name
+        ) {
             return '';
         }
+        return getPullCommandByTag(
+            artifact.type,
+            `${this.registryUrl ? this.registryUrl : location.hostname}/${
+                this.projectName
+            }/${this.repoName}`,
+            artifact.tags[0].name,
+            Clients.CHART
+        );
     }
 
     // For tagMode

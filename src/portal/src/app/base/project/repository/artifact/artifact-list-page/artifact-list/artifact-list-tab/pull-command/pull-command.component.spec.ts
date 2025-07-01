@@ -82,6 +82,25 @@ describe('PullCommandComponent', () => {
         expect(modal).toBeTruthy();
     });
 
+    it('should not display when tag is undefined', async () => {
+        // Mock the artifact input with a valid value
+        component.artifact = {
+            type: ArtifactType.CHART,
+            tagNumber: undefined,
+            digest: 'sha256@digest',
+            tags: undefined,
+        };
+        component.getPullCommandForChart(component.artifact);
+        expect(
+            component.getPullCommandForChart(component.artifact).length
+        ).toBe(0);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const modal =
+            fixture.nativeElement.querySelector(`#pullCommandForChart`);
+        expect(modal).toBeFalsy();
+    });
+
     it('should display when pull command for digest is available', async () => {
         // Mock the artifact input with a valid value
         component.artifact = {
