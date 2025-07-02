@@ -100,14 +100,8 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChart(artifact: Artifact): string {
-        // Early return if artifact has no tags
-        if (
-            typeof artifact.tagNumber !== 'number' ||
-            artifact.tagNumber <= 0 ||
-            !Array.isArray(artifact.tags) ||
-            artifact.tags.length === 0 ||
-            !artifact.tags[0]?.name
-        ) {
+        // early return if artifact has no tags
+        if (!this.isArtifactTagValid(artifact)) {
             return '';
         }
         return getPullCommandByTag(
@@ -133,6 +127,10 @@ export class PullCommandComponent {
     }
 
     getPullCommandForRuntimeByTag(artifact: Artifact): string {
+        // early return if artifact has no tags
+        if (!this.isArtifactTagValid(artifact)) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -144,6 +142,10 @@ export class PullCommandComponent {
     }
 
     getPullCommandForCNABByTag(artifact: Artifact): string {
+        // early return if artifact has no tags
+        if (!this.isArtifactTagValid(artifact)) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -155,6 +157,10 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChartByTag(artifact: Artifact): string {
+        // early return if artifact has no tags
+        if (!this.isArtifactTagValid(artifact)) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -162,6 +168,16 @@ export class PullCommandComponent {
             }/${this.repoName}`,
             this.selectedTag,
             Clients.CHART
+        );
+    }
+
+    private isArtifactTagValid(artifact: Artifact): boolean {
+        return (
+            typeof artifact.tagNumber === 'number' &&
+            artifact.tagNumber > 0 &&
+            Array.isArray(artifact.tags) &&
+            artifact.tags.length > 0 &&
+            typeof artifact.tags[0]?.name === 'string'
         );
     }
 
