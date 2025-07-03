@@ -944,6 +944,8 @@
             "VERIFY_CERT": "LDAP Zertifikat prüfen. Box deaktivieren, falls der LDAP Server mit selbstsignierten Zertifikaten betrieben wird.",
             "LDAP_GROUP_BASE_DN": "LDAP Gruppen Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "Der Base DN von dem Gruppen im LDAP/AD gesucht werden. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
+            "LDAP_GROUP_ADMIN_FILTER": "LDAP Group Admin Filter",
+            "LDAP_GROUP_ADMIN_FILTER_INFO": "The filter for LDAP Admin search.",
             "LDAP_GROUP_FILTER": "LDAP Gruppen Filter",
             "LDAP_GROUP_FILTER_INFO": "Der Filter für die Suche nach LDAP/AD Gruppen. Für OpenLDAP: objectclass=groupOfNames. Für Active Directory: objectclass=group. Dieses Feld darf nicht leer sein, wenn die Gruppenbezogenen LDAP-Features benötigt werden.",
             "LDAP_GROUP_GID": "LDAP Gruppen GID",
