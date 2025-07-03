@@ -93,7 +93,12 @@ VERSIONTAG=dev
 BUILD_BASE=true
 PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BUILDBASETARGET=trivy-adapter core db jobservice log nginx portal prepare redis registry registryctl exporter
+# for skip build prepare and log container while BUILD_INSTALLER=false
+BUILD_INSTALLER=true
+BUILDBASETARGET=trivy-adapter core db jobservice nginx portal redis registry registryctl exporter
+ifeq ($(BUILD_INSTALLER), true)
+	BUILDBASETARGET += prepare log
+endif
 IMAGENAMESPACE=goharbor
 BASEIMAGENAMESPACE=goharbor
 # #input true/false only
@@ -240,16 +245,26 @@ REGISTRYUSER=
 REGISTRYPASSWORD=
 
 # cmds
-DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
+
+ifeq ($(BUILD_INSTALLER), true)
+	DOCKERSAVE_PARA+= $(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
+endif
+
+ifeq ($(TRIVYFLAG), true)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
+endif
+ifeq ($(EXPORTERFLAG), true)
+	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG)
+endif
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -266,13 +281,6 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/harbor.yml.tmpl
 
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-
-ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
-endif
-ifeq ($(EXPORTERFLAG), true)
-	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG)
-endif
 
 RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
 
@@ -398,6 +406,7 @@ build:
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e DOCKERNETWORK=$(DOCKERNETWORK) \
 	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
+	 -e BUILD_INSTALLER=$(BUILD_INSTALLER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
@@ -444,7 +453,14 @@ package_online: update_prepare_version
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-package_offline: update_prepare_version compile build
+.PHONY: check_buildinstaller
+check_buildinstaller:
+	@if [ "$(BUILD_INSTALLER)" != "true" ]; then \
+		echo "Must set BUILD_INSTALLER as true while triggering package_offline build" ; \
+		exit 1; \
+	fi
+
+package_offline: check_buildinstaller update_prepare_version compile build
 
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
