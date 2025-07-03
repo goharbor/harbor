@@ -111,7 +111,27 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 		cveIDs = append(cveIDs, v.ID)
 	}
 
-	records, err := c.dao.List(ctx, q.New(q.KeyWords{"cve_id": q.NewOrList(cveIDs), "registration_uuid": registrationUUID}))
+	// Fetch the existing records for the cveIDs and registrationUUID
+	// to check if the severity has changed and update the score.
+	// Select only the columns that are needed.
+	// The columns are:
+	// 1. id for ID
+	// 2. cve_id for Key
+	// 3. package for Key
+	// 4. package_version for Key
+	// 5. severity to compare with the new severity
+	cols := []string{
+		"id",
+		"cve_id",
+		"package",
+		"package_version",
+		"severity",
+	}
+	records, err := c.dao.List(
+		ctx,
+		q.New(q.KeyWords{"cve_id": q.NewOrList(cveIDs), "registration_uuid": registrationUUID}),
+		cols...,
+	)
 	if err != nil {
 		return err
 	}
