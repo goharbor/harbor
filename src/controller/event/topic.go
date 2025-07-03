@@ -50,6 +50,7 @@ const (
 	TopicTagRetention      = "TAG_RETENTION"
 	TopicCreateRobot       = "CREATE_ROBOT"
 	TopicDeleteRobot       = "DELETE_ROBOT"
+	TopicRobotExpired      = "ROBOT_EXPIRED"
 	TopicCommonEvent       = "COMMON_API"
 	ResourceTypeProject    = "project"
 	ResourceTypeArtifact   = "artifact"
@@ -448,6 +449,33 @@ func (c *DeleteRobotEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 }
 
 func (c *DeleteRobotEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// RobotExpiredEvent is the robot expiration event
+type RobotExpiredEvent struct {
+	EventType string
+	Robot     *robotModel.Robot
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (c *RobotExpiredEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.Robot.ProjectID,
+		OpTime:               c.OccurAt,
+		Operation:            "expired",
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeRobot,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("robot expired: %s", c.Robot.Name),
+		Resource:             c.Robot.Name}
+	return auditLog, nil
+}
+
+func (c *RobotExpiredEvent) String() string {
 	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
 		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
 }
