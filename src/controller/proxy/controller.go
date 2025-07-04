@@ -188,15 +188,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
-		dig, err := c.getManifestDigestInLocal(ctx, art)
-		if err != nil {
-			// skip to delete when error, use debug level log to avoid too many logs when the manifest is removed from upstream
-			log.Debugf("failed to get manifest digest in local, error: %v, skip to delete it, art %+v", err, art)
-		} else {
-			go func() {
-				c.local.DeleteManifest(art.Repository, dig)
-				log.Infof("delete manifest %s with digest %s", art.Repository, dig)
-			}()
+		if a != nil { // if not found, use local if it exists, because a exist, otherwise return error
+			log.Errorf("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
+			return true, nil, nil
 		}
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
