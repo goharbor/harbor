@@ -169,13 +169,13 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
 			return true, nil, nil
 		}
-		if errors.IsNotFoundErr(err) && a != nil { // if not found, use local if it exists, otherwise return error
-			log.Errorf("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
-			return true, nil, nil
-		}
 		return false, nil, err
 	}
 	if !exist || desc == nil {
+		if a != nil { // if not found, use local if it exists, because a exist, otherwise return error
+			log.Errorf("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
+			return true, nil, nil
+		}
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 
