@@ -48,20 +48,20 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-         path: src/github.com/goharbor/harbor
+         path: src/github.com/groq/harbor
       - name: setup env
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           go env
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/groq/harbor/tests/private_key.pem" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           #sudo apt install -y xvfb
@@ -77,7 +77,7 @@ jobs:
           sudo service docker restart
       - name: install
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
@@ -85,13 +85,13 @@ jobs:
         run: |
           echo IP: $IP
           df -h
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
         uses: codecov/codecov-action@v5
         with:
-          file: ./src/github.com/goharbor/harbor/profile.cov
+          files: ./src/github.com/groq/harbor/profile.cov
           flags: unittests
 
   APITEST_DB:
@@ -109,23 +109,23 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: setup env
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           go env
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/groq/harbor/tests/private_key.pem" >> $GITHUB_ENV
           IP=`hostname -I | awk '{print $1}'`
           echo "IP=$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           df -h
@@ -136,14 +136,14 @@ jobs:
           sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           env
           df -h
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           echo IP: $IP
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
@@ -164,23 +164,23 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: setup env
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           go env
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/groq/harbor/tests/private_key.pem" >> $GITHUB_ENV
           IP=`hostname -I | awk '{print $1}'`
           echo "IP=$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           df -h
@@ -191,14 +191,14 @@ jobs:
           sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           env
           df -h
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           echo IP: $IP
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh PROXY_CACHE $IP
@@ -219,22 +219,22 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: setup env
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           go env
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/groq/harbor/tests/private_key.pem" >> $GITHUB_ENV
           IP=`hostname -I | awk '{print $1}'`
           echo "IP=$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           df -h
@@ -245,7 +245,7 @@ jobs:
           sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
@@ -253,7 +253,7 @@ jobs:
         run: |
           echo IP: $IP
           df -h
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
           df -h
 
@@ -272,21 +272,21 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: setup env
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           docker version
           go env
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/groq/harbor/tests/private_key.pem" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           df -h
@@ -305,7 +305,7 @@ jobs:
         run: |
           echo IP: $IP
           df -h
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
           df -h
 
@@ -322,16 +322,16 @@ jobs:
           node-version: '18'
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: script
         run: |
           echo IP: $IP
           df -h
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
         uses: codecov/codecov-action@v5
         with:
-          file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
+          files: ./src/github.com/groq/harbor/src/portal/coverage/lcov.info
           flags: unittests

@@ -5,80 +5,66 @@ on:
     tags:
       - 'v*.*.*'
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   release:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           echo "BASE_TAG=$(cat ./VERSION)" >> $GITHUB_ENV
-          release=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/goharbor/harbor/releases/tags/${{ github.ref_name }})
-          echo "BUILD_NO=$(echo $release | jq -r '.body' | jq -r '.buildNo')" >> $GITHUB_ENV
-          echo "PRE_TAG=$(echo $release | jq -r '.body' | jq -r '.preTag')" >> $GITHUB_ENV
-          echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
-          echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
+          echo "PRERELEASE=$(echo ${{ github.ref_name }} | grep -q 'rc\|alpha\|beta' && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Prepare Assets
-        run: |
-          if [ ! ${{ env.BUILD_NO }} -o ${{ env.BUILD_NO }} = "null" ]
-          then
-              echo "missing required parameter buildNo."
-              exit 1
-          fi
-          echo "buildNo:${{ env.BUILD_NO }}"
-          echo "preTag:${{ env.PRE_TAG }}"
+          go-version: 1.23.2
 
-          src_offline_package=harbor-offline-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
-          src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
-          dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
-          dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
-          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
-          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-          assets_path=$(pwd)/assets
-          source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path
-          echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
-          echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
-          echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@master
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
-          docker_version: 20.10
-          docker_channel: stable
-      - name: Publish Images
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Build Environment
         run: |
-          tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
-          docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
-          source tools/release/release_utils.sh
-          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
-          publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
-      - name: Generate release notes
+          sudo make versions_prepare check_environment
+
+      - name: Compile Harbor binaries
         run: |
-          release_notes_path=$(pwd)/release-notes.txt
-          source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
-          echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
-      - name: RC Release
-        uses: softprops/action-gh-release@v2
-        if: ${{ env.PRERELEASE == 'true' }}
-        with:
-          body_path: ${{ env.RELEASE_NOTES_PATH }}
-          files: |
-            ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.MD5SUM_PATH }}
-      - name: GA Release
-        uses: softprops/action-gh-release@v2
-        if: ${{ env.PRERELEASE == 'false' }}
-        with:
-          body_path: ${{ env.RELEASE_NOTES_PATH }}
-          files: |
-            ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.ONLINE_PACKAGE_PATH }}
-            ${{ env.MD5SUM_PATH }}
+          sudo make compile \
+            GOBUILDTAGS="include_oss include_gcs"
+
+      - name: Build Harbor Images
+        run: |
+          sudo make build \
+            GOBUILDTAGS="include_oss include_gcs" \
+            BASEIMAGETAG=${{ env.BASE_TAG }} \
+            VERSIONTAG=${{ env.CUR_TAG }} \
+            TRIVYFLAG=true \
+            EXPORTERFLAG=true \
+            BUILD_BASE=false \
+            PULL_BASE_FROM_DOCKERHUB=true \
+            IMAGENAMESPACE=${{ env.REGISTRY }}/${{ github.repository }}
+
+      - name: Push Harbor Images to GHCR
+        run: |
+          # Get list of built images
+          images=$(docker images --format "table {{.Repository}}:{{.Tag}}" | grep "${{ env.REGISTRY }}/${{ github.repository }}" | grep "${{ env.CUR_TAG }}" | awk '{print $1}')
+          
+          # Push each image
+          for image in $images; do
+            echo "Pushing $image"
+            docker push $image
+          done

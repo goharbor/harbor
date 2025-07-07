@@ -17,12 +17,6 @@ jobs:
       #- self-hosted
       - ubuntu-latest
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
       - name: Set up Go 1.21
         uses: actions/setup-go@v5
         with:
@@ -30,11 +24,11 @@ jobs:
         id: go
       - uses: actions/checkout@v3
         with:
-          path: src/github.com/goharbor/harbor
+          path: src/github.com/groq/harbor
       - name: before_install
         run: |
           set -x
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           pwd
           env
           df -h
@@ -49,7 +43,7 @@ jobs:
           sudo service docker restart
       - name: install
         run: |
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
@@ -57,11 +51,6 @@ jobs:
         run: |
           echo IP: $IP
           df -h
-          cd src/github.com/goharbor/harbor
+          cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/conformance_test.sh $IP
           df -h
-      - name: upload test result to gs
-        run: |
-          cd src/github.com/goharbor/harbor
-          aws s3 cp ./distribution-spec/conformance/report.html s3://harbor-conformance-test/report.html
-        if: always()
