@@ -1,5 +1,7 @@
 # Harbor
 
+> Specific details for Groq [here](./GROQ.md).
+
 [![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/goharbor/harbor/actions?query=event%3Apush+branch%3Amain+workflow%3ACI+)
 [![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/main/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goharbor/harbor)](https://goreportcard.com/report/github.com/goharbor/harbor)
