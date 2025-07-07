@@ -93,6 +93,7 @@ type GroupConf struct {
 	Filter              string `json:"ldap_group_filter,omitempty"`
 	NameAttribute       string `json:"ldap_group_name_attribute,omitempty"`
 	SearchScope         int    `json:"ldap_group_search_scope"`
+	AdminFilter         string `json:"ldap_group_admin_filter"`
 	AdminDN             string `json:"ldap_group_admin_dn,omitempty"`
 	MembershipAttribute string `json:"ldap_group_membership_attribute,omitempty"`
 	AttachParallel      bool   `json:"ldap_group_attach_parallel,omitempty"`
