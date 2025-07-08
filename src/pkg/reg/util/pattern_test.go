@@ -83,11 +83,63 @@ func TestMatch(t *testing.T) {
 			str:     "v2.7.0",
 			match:   true,
 		},
+		// New regex-based tests
+		{
+			pattern: "regex:^v1\\.[0-9]+$",
+			str:     "v1.0",
+			match:   true,
+		},
+		{
+			pattern: "regex:^v1\\.[0-9]+$",
+			str:     "v1.10",
+			match:   true,
+		},
+		{
+			pattern: "regex:^v1\\.[0-9]+$",
+			str:     "v2.0",
+			match:   false,
+		},
+		{
+			pattern: "regex:^feature/.+$",
+			str:     "feature/abc",
+			match:   true,
+		},
+		{
+			pattern: "regex:^feature/.+$",
+			str:     "bugfix/abc",
+			match:   false,
+		},
+		{
+			pattern: "regex:^(v|release)-\\d+\\.\\d+(\\.\\d+)?$",
+			str:     "v-1.2.3",
+			match:   true,
+		},
+		{
+			pattern: "regex:^(v|release)-\\d+\\.\\d+(\\.\\d+)?$",
+			str:     "release-2.0",
+			match:   true,
+		},
+		{
+			pattern: "regex:^(v|release)-\\d+\\.\\d+(\\.\\d+)?$",
+			str:     "v-2",
+			match:   false,
+		},
+		{
+			pattern: "regex:^hotfix-(issue|bug)-[0-9]{4,}$",
+			str:     "hotfix-bug-1234",
+			match:   true,
+		},
+		{
+			pattern: "regex:^hotfix-(issue|bug)-[0-9]{4,}$",
+			str:     "hotfix-feature-1234",
+			match:   false,
+		},
 	}
-	for _, c := range cases {
+	for i, c := range cases {
+		fmt.Printf("running case %d ...\n", i)
 		match, err := Match(c.pattern, c.str)
-		require.Nil(t, err)
-		assert.Equal(t, c.match, match)
+		require.Nil(t, err, "unexpected error for pattern: %s", c.pattern)
+		assert.Equal(t, c.match, match, "pattern: %s, str: %s", c.pattern, c.str)
 	}
 }
 
@@ -141,6 +193,21 @@ func TestIsSpecificPathComponent(t *testing.T) {
 		for i := range components {
 			assert.Equal(t, c.resultComponents[i], components[i])
 		}
+	}
+}
+
+func TestMatch_InvalidRegex(t *testing.T) {
+	invalidPatterns := []string{
+		"regex:^v[0-9+$",     // missing closing bracket
+		"regex:(abc",         // unclosed group
+		"regex:*abc",         // invalid quantifier at start
+		"regex:[a-z",         // incomplete character class
+	}
+
+	for i, pattern := range invalidPatterns {
+		fmt.Printf("[TestMatch_InvalidRegex case %d] pattern=%q\n", i, pattern)
+		_, err := Match(pattern, "test-tag")
+		assert.Error(t, err, "expected error for invalid pattern: %s", pattern)
 	}
 }
 
