@@ -65,6 +65,26 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return err
 	}
 
+	// go will panic if the network connection is ever interrupted, despite recovering successfully
+	// it will return an error type of http.ErrAbortHandler if it recovers. Middleware is expected to suppress this.
+	// golang/go#28239
+	defer func() {
+		r := recover()
+		err, ok := r.(error)
+
+		switch {
+		case r == nil:
+			return
+
+		case ok && errors.Is(err, http.ErrAbortHandler):
+			log.Debugf("Suppressed HttpAbortHandler: %s", err)
+			return // suppress
+
+		default:
+			panic(r)
+		}
+	}()
+
 	// Handle dockerhub request without library prefix
 	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
 	if err != nil {
@@ -179,7 +199,6 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return err
 	}
 	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
-
 	if err != nil {
 		return err
 	}
@@ -310,7 +329,7 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 		// Then GET the image by digest, in order to associate the tag with the digest
 		// Ensure tag after head request, make sure tags in proxy cache keep update
 		bCtx := orm.Context()
-		for i := 0; i < ensureTagMaxRetry; i++ {
+		for range ensureTagMaxRetry {
 			time.Sleep(ensureTagInterval)
 			bArt := lib.ArtifactInfo{ProjectName: art.ProjectName, Repository: art.Repository, Digest: string(desc.Digest)}
 			err := ctl.EnsureTag(bCtx, bArt, art.Tag)

@@ -16,6 +16,7 @@ package inmemory
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common"
@@ -31,35 +32,31 @@ func init() {
 // Driver driver for unit testing
 type Driver struct {
 	sync.Mutex
-	cfgMap map[string]interface{}
+	cfgMap map[string]any
 }
 
 // Load load data from driver, for example load from database,
 // it should be invoked before get any user scope config
 // for system scope config, because it is immutable, no need to call this method
-func (d *Driver) Load(context.Context) (map[string]interface{}, error) {
+func (d *Driver) Load(context.Context) (map[string]any, error) {
 	d.Lock()
 	defer d.Unlock()
-	res := make(map[string]interface{})
-	for k, v := range d.cfgMap {
-		res[k] = v
-	}
+	res := make(map[string]any)
+	maps.Copy(res, d.cfgMap)
 	return res, nil
 }
 
 // Save only save user config setting to driver, for example: database, REST
-func (d *Driver) Save(_ context.Context, cfg map[string]interface{}) error {
+func (d *Driver) Save(_ context.Context, cfg map[string]any) error {
 	d.Lock()
 	defer d.Unlock()
-	for k, v := range cfg {
-		d.cfgMap[k] = v
-	}
+	maps.Copy(d.cfgMap, cfg)
 	return nil
 }
 
 // NewInMemoryManager create a manager for unit testing, doesn't involve database or REST
 func NewInMemoryManager() *config.CfgManager {
-	manager := &config.CfgManager{Store: store.NewConfigStore(&Driver{cfgMap: map[string]interface{}{}})}
+	manager := &config.CfgManager{Store: store.NewConfigStore(&Driver{cfgMap: map[string]any{}})}
 	// load default Value
 	manager.LoadDefault()
 	// load system config from env

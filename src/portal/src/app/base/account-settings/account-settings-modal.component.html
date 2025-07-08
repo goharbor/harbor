@@ -264,10 +264,10 @@
                             #inputSecret="ngModel"
                             class="clr-input pwd-input"
                             type="password"
-                            maxlength="30"
+                            maxlength="128"
                             size="30"
                             required
-                            pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$"
+                            pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
                             name="input_secret"
                             [(ngModel)]="resetForms.input_secret"
                             id="input-secret" />
@@ -309,7 +309,7 @@
                             [type]="showConfirmSecret ? 'text' : 'password'"
                             class="clr-input pwd-input"
                             type="password"
-                            maxlength="30"
+                            maxlength="128"
                             size="30"
                             [(ngModel)]="resetForms.confirm_secret"
                             name="confirm_secret"

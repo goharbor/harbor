@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
@@ -30,7 +43,10 @@ import {
     getArtifactSbom,
 } from '../../artifact';
 import { ArtifactService } from 'ng-swagger-gen/services';
-import { ScanTypes } from '../../../../../../shared/entities/shared.const';
+import {
+    PAGE_SIZE_OPTIONS,
+    ScanTypes,
+} from '../../../../../../shared/entities/shared.const';
 
 @Component({
     selector: 'hbr-artifact-sbom',
@@ -60,6 +76,7 @@ export class ArtifactSbomComponent implements OnInit, OnDestroy {
         PageSizeMapKeys.ARTIFACT_SBOM_COMPONENT,
         25
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     readonly severityText = severityText;
     constructor(
         private errorHandler: ErrorHandler,

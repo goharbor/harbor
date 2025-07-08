@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,6 +47,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
+	"github.com/goharbor/harbor/src/pkg/auditext"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -66,6 +68,7 @@ func newProjectAPI() *projectAPI {
 	return &projectAPI{
 		auditMgr:      audit.Mgr,
 		artCtl:        artifact.Ctl,
+		auditextMgr:   auditext.Mgr,
 		metadataMgr:   pkg.ProjectMetaMgr,
 		userCtl:       user.Ctl,
 		repositoryCtl: repository.Ctl,
@@ -82,6 +85,7 @@ func newProjectAPI() *projectAPI {
 type projectAPI struct {
 	BaseAPI
 	auditMgr      audit.Manager
+	auditextMgr   auditext.Manager
 	artCtl        artifact.Controller
 	metadataMgr   metadata.Manager
 	userCtl       user.Controller
@@ -184,7 +188,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// in most case, it's 1
 	if _, ok := secCtx.(*robotSec.SecurityContext); ok || secCtx.IsSolutionUser() {
 		q := &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"sysadmin_flag": true,
 			},
 			Sorts: []*q.Sort{
@@ -750,7 +754,7 @@ func (a *projectAPI) ListArtifactsOfProject(ctx context.Context, params operatio
 		WithPayload(artifacts)
 }
 
-func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
+func (a *projectAPI) deletable(ctx context.Context, projectNameOrID any) (*project.Project, *models.ProjectDeletable, error) {
 	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
 		return nil, nil, err
@@ -765,7 +769,7 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	return p, result, nil
 }
 
-func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}, options ...project.Option) (*project.Project, error) {
+func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, options ...project.Option) (*project.Project, error) {
 	p, err := a.projectCtl.Get(ctx, projectNameOrID, options...)
 	if err != nil {
 		return nil, err
@@ -792,13 +796,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if err != nil {
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
 		}
+
 		permitted := false
-		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
-			if string(registry.Type) == t {
-				permitted = true
-				break
-			}
+		if slices.Contains(config.GetPermittedRegistryTypesForProxyCache(), string(registry.Type)) {
+			permitted = true
 		}
+
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
 		}
@@ -940,9 +943,29 @@ func highestRole(roles []int) int {
 }
 
 func (a *projectAPI) GetLogExts(ctx context.Context, params operation.GetLogExtsParams) middleware.Responder {
-	// TODO: implement the function
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceLog); err != nil {
+		return a.SendError(ctx, err)
+	}
+	pro, err := a.projectCtl.GetByName(ctx, params.ProjectName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	query.Keywords["ProjectID"] = pro.ProjectID
+
+	total, err := a.auditextMgr.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	logs, err := a.auditextMgr.List(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
 	return operation.NewGetLogExtsOK().
-		WithXTotalCount(0).
-		WithLink(a.Links(ctx, params.HTTPRequest.URL, 0, 0, 15).String()).
-		WithPayload(nil)
+		WithXTotalCount(total).
+		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(convertToModelAuditLogExt(logs))
 }

@@ -17,6 +17,7 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -362,7 +363,7 @@ func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Contex
 	key := fmt.Sprintf("reg:%d:metadata", registration.ID)
 
 	var result MetadataResult
-	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (interface{}, error) {
+	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (any, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
 			return &MetadataResult{Error: err.Error()}, nil
@@ -383,13 +384,7 @@ var (
 )
 
 func isReservedName(name string) bool {
-	for _, reservedName := range reservedNames {
-		if name == reservedName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(reservedNames, name)
 }
 
 // MetadataResult metadata or error saved in cache

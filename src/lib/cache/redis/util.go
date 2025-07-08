@@ -15,6 +15,7 @@
 package redis
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"sort"
@@ -35,6 +36,7 @@ var (
 // ParseSentinelURL parses sentinel url to redis FailoverOptions.
 // It's a modified version of go-redis ParseURL(https://github.com/go-redis/redis/blob/997118894af9d4244d4a471f2b317eead9c9ca62/options.go#L222) because official version does
 // not support parse sentinel mode.
+// redis+sentinel://user:pass@redis_sentinel1:port1,redis_sentinel2:port2/monitor_name/db?idle_timeout_seconds=100
 func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 	u, err := url.Parse(redisURL)
 	if err != nil {
@@ -62,6 +64,13 @@ func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 		}
 	default:
 		return nil, errors.Errorf("redis: invalid redis URL path: %s", u.Path)
+	}
+
+	// set tls config for redis+sentinel client use tls connections
+	if u.Scheme == "rediss+sentinel" {
+		o.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
 	}
 
 	return setupConnParams(u, o)

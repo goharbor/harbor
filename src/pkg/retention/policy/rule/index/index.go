@@ -253,7 +253,7 @@ func Get(templateID string, parameters rule.Parameters) (rule.Evaluator, error) 
 func Index() []*Metadata {
 	res := make([]*Metadata, 0)
 
-	index.Range(func(_, v interface{}) bool {
+	index.Range(func(_, v any) bool {
 		if item, ok := v.(*indexedItem); ok {
 			res = append(res, item.Meta)
 			return true

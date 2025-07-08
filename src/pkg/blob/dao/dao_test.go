@@ -206,7 +206,7 @@ func (suite *DaoTestSuite) TestListBlobs() {
 	suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest2})
 
 	ol := q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			digest1,
 		},
 	}
@@ -216,7 +216,7 @@ func (suite *DaoTestSuite) TestListBlobs() {
 	}
 
 	ol = q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			digest1,
 			digest2,
 		},

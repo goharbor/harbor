@@ -33,7 +33,7 @@ func TestCacheLoadAndSave(t *testing.T) {
 	cache, _ := cache.New("redis")
 	driver := NewCacheDriver(cache, &Database{cfgDAO: dao.New()})
 
-	cfgs := map[string]interface{}{
+	cfgs := map[string]any{
 		common.AUTHMode: "db_auth",
 		common.LDAPURL:  "ldap://ldap.vmware.com",
 	}
@@ -50,7 +50,7 @@ func TestCacheLoadAndSave(t *testing.T) {
 
 func BenchmarkCacheLoad(b *testing.B) {
 	ctx := orm.Context()
-	cfgs := map[string]interface{}{}
+	cfgs := map[string]any{}
 	for _, item := range metadata.Instance().GetAll() {
 		cfgs[item.Name] = item.DefaultValue
 	}

@@ -354,8 +354,12 @@ class HarborAPI:
     def add_project_robot_account(self, project, robot_account, **kwargs):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
-
+        create_url = url
+        print("robot_account:", robot_account)
+        print("branch:", kwargs["branch"])
+        print("version:", kwargs["version"])
         if kwargs["branch"] == 1:
+            create_url = url+"projects/"+projectid+"/robots"
             if len(robot_account["access"]) == 1:
                 robot_account_ac = robot_account["access"][0]
                 payload = {
@@ -383,10 +387,34 @@ class HarborAPI:
                 }
             else:
                 raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
+        elif kwargs["branch"] == 2:
+            create_url = url+"/robots"
+            if len(robot_account["access"]) == 1:
+                robot_account_ac = robot_account["access"][0]
+                payload = {
+                        "name":robot_account["name"],
+                        "level":"project",
+                        "duration": -1,
+                        "permissions":[
+                            {"access":[{"resource":"repository","action":robot_account_ac["action"]}],
+                                        "kind":"project","namespace":project}]
+                        }
+            elif len(robot_account["access"]) == 2:
+                payload = {
+                        "name":robot_account["name"],
+                        "level":"project",
+                        "duration": -1,
+                        "permissions":[
+                            {"access":[{"resource":"repository","action":"pull"},
+                                        {"resource":"repository","action":"push"}],
+                                        "kind":"project","namespace":project}]
+                        }
+            else:
+                                raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
         body=dict(body=payload)
-        request(url+"projects/"+projectid+"/robots", 'post', **body)
+        request(create_url, 'post', **body)
 
     @get_feature_branch
     def add_tag_retention_rule(self, project, tag_retention_rule, **kwargs):

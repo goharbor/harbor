@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "Décocher cette case si votre serveur OIDC est hébergé avec un certificat auto-signé.",
         "OIDC_AUTOONBOARD": "Ignorer l'écran d'accueil afin que l'utilisateur ne puisse pas modifier son nom d'utilisateur. Le nom d'utilisateur est fourni à partir du Token ID.",
         "OIDC_USER_CLAIM": "Le nom du claim dans le ID Token à partir duquel le nom d'utilisateur est récupéré. S'il n'est pas spécifié, la valeur par défaut sera 'name'.",
-        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre."
+        "NEW_SECRET": "Le secret doit être composé de 8 à 128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre.",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -151,8 +152,15 @@
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
         "PASS_TIPS": "8-128 caractères avec au moins 1 majuscule, 1 minuscule et 1 chiffre"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Modifier le mot de passe",
         "ABOUT": "À propos",
         "LOGOUT": "Se déconnecter"
@@ -179,6 +187,8 @@
             "INTERROGATION_SERVICES": "Services d'analyse"
         },
         "LOGS": "Logs",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "Tâches",
         "API_EXPLORER": "Explorateur d'API",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -526,9 +536,16 @@
         "REPOSITORY_NAME": "Nom du dépôt",
         "TAGS": "Etiquettes",
         "OPERATION": "Opération",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "Opérations",
         "TIMESTAMP": "Horodatage",
         "ALL_OPERATIONS": "Toutes les opérations",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Pull",
         "PUSH": "Push",
         "CREATE": "Créer",
@@ -537,6 +554,7 @@
         "ADVANCED": "Avancé",
         "SIMPLE": "Simple",
         "ITEMS": "entrées",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "Filtrer les logs",
         "INVALID_DATE": "Date invalide.",
         "OF": "sur",
@@ -763,7 +781,7 @@
         "ARTIFACT_TOOTIP": "Cliquez pour voir la liste des index des artefacts de cet OCI",
         "ARTIFACTS_COUNT": "Artefacts",
         "PULL_COUNT": "Pulls",
-        "PULL_COMMAND": "Commande de pull",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "Date/Heure de pull",
         "PUSH_TIME": "Date/Heure de push",
         "IMMUTABLE": "Immutable",
@@ -970,7 +988,8 @@
             "OIDC_ADMIN_GROUP": "Groupe d'admin OIDC",
             "OIDC_ADMIN_GROUP_INFO": "Spécifie le nom d'un groupe d'admin OIDC. Tous les utilisateurs OIDC de ce groupe auront les droits d'admin dans Harbor. Laisser vide pour ne pas l'utiliser.",
             "OIDC_GROUP_FILTER": "Filtre de groupe OIDC",
-            "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser."
+            "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Déclenchement avec succès de l'arrêt de l'analyse globale !",
@@ -1138,8 +1157,7 @@
         "TOOLTIP": "Commandes pour push un artefact dans ce projet.",
         "TAG_COMMAND": "Taguer une image pour ce projet :",
         "PUSH_COMMAND": "Push une image dans ce projet :",
-        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence.",
-        "COPY_PULL_COMMAND": "COMMANDE COPY PULL"
+        "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filtrer les artefacts",
@@ -1157,6 +1175,8 @@
         "SCAN_UNSUPPORTED": "Non supporté",
         "SBOM_UNSUPPORTED": "Non supporté",
         "SUMMARY": "Résumé",
+        "LICENSE": "License",
+        "FILES": "Fichiers",
         "DEPENDENCIES": "Dépendances",
         "VALUES": "Valeurs",
         "NAME": "Nom",
@@ -1164,6 +1184,10 @@
         "OF": "sur",
         "VERSION": "Version",
         "NO_README": "Pas de README fourni pour ce chart.",
+        "NO_LICENSE": "Aucune licence n'est fournie pour ce modèle.",
+        "NO_FILES": "Aucun fichier fourni pour ce modèle.",
+        "MODEL_NO_README": "Aucun fichier README n'est fourni pour ce modèle.",
+        "FILE_TOO_LARGE": "Le fichier est trop volumineux pour être traité.",
         "ITEMS": "entrées",
         "SHOW_KV": "Paires Clé/Valeur",
         "SHOW_YAML": "Fichier YAML"
@@ -1550,7 +1574,6 @@
         "SET_UNHEALTHY_SCANNER": "Scanneurs sélectionnés : {{name}} est en mauvaise santé",
         "SCANNED_BY": "Scanné par :",
         "IMAGE_SCANNERS": "Scanneurs d'images",
-        "VIEW_DOC": "Voir la documentation",
         "ALL_SCANNERS": "Tous les scanneurs",
         "HELP_INFO_1": "Le scanneur par défaut a été installé. Pour installer d'autres scanneurs,",
         "HELP_INFO_2": "référez-vous à la documentation.",
@@ -1812,12 +1835,18 @@
         "INCLUDED_OPERATIONS": "Opérations incluses",
         "INCLUDED_OPERATION_TOOLTIP": "Supprimer les logs d'audit pour les opérations sélectionnées",
         "INCLUDED_OPERATION_ERROR": "Sélectionner au moins une opération",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "Purger maintenant",
         "PURGE_NOW_SUCCESS": "La purge s'est déclenchée avec succès",
         "PURGE_SCHEDULE_RESET": "Le programme de purge a été réinitialisé",
         "PURGE_HISTORY": "Historique de purges",
         "FORWARD_ENDPOINT": "Endpoint Syslog de transfert de logs d'audit",
         "FORWARD_ENDPOINT_TOOLTIP": "Transfère les logs d'audit à l'endpoint Syslog, par exemple : harbor-log:10514",
+        "ENABLE_AUDIT_LOG_EVENT_TYPE": "Enable Audit Log Event Type",
+        "ENABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be enabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "Ne pas enregistrer les logs d'audit dans la base de données",
         "SKIP_DATABASE_TOOLTIP": "Ne pas enregistrer les logs d'audit dans la base de données, disponible uniquement lorsque l'endpoint de transfert de logs d'audit est configuré",
         "STOP_GC_SUCCESS": "Déclenchement avec succès de l'arrêt de l'exécution du GC",

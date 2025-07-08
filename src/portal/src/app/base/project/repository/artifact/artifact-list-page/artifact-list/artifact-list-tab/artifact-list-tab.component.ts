@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -98,11 +99,13 @@ const FALSE: string = 'false';
     styleUrls: ['./artifact-list-tab.component.scss'],
 })
 export class ArtifactListTabComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     projectName: string;
     repoName: string;
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
+    artifact: ArtifactFront;
     availableTime = AVAILABLE_TIME;
     inprogress: boolean;
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
@@ -909,6 +912,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             artifact &&
             artifact.addition_links &&
             artifact.addition_links[ADDITIONS.SBOMS]
+        );
+    }
+
+    hasChild(artifact: Artifact): boolean {
+        return !!(
+            artifact &&
+            artifact.references &&
+            artifact.references.some(ref => ref['child_digest'])
         );
     }
 

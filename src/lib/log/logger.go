@@ -17,6 +17,7 @@ package log
 import (
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"runtime"
 	"sort"
@@ -46,8 +47,8 @@ func init() {
 	logger.setLevel(level)
 }
 
-// Fields type alias to map[string]interface{}
-type Fields = map[string]interface{}
+// Fields type alias to map[string]any
+type Fields = map[string]any
 
 // Logger provides a struct with fields that describe the details of logger.
 type Logger struct {
@@ -56,14 +57,14 @@ type Logger struct {
 	lvl       Level
 	callDepth int
 	skipLine  bool
-	fields    map[string]interface{}
+	fields    map[string]any
 	fieldsStr string
 	mu        *sync.Mutex // ptr here to share one sync.Mutex for clone method
 	fallback  *Logger     // fallback logger when current out fail
 }
 
 // New returns a customized Logger
-func New(out io.Writer, fmtter Formatter, lvl Level, options ...interface{}) *Logger {
+func New(out io.Writer, fmtter Formatter, lvl Level, options ...any) *Logger {
 	// Default set to be 3
 	depth := 3
 	// If passed in as option, then reset depth
@@ -80,7 +81,7 @@ func New(out io.Writer, fmtter Formatter, lvl Level, options ...interface{}) *Lo
 		fmtter:    fmtter,
 		lvl:       lvl,
 		callDepth: depth,
-		fields:    map[string]interface{}{},
+		fields:    map[string]any{},
 		mu:        &sync.Mutex{},
 	}
 }
@@ -121,13 +122,9 @@ func (l *Logger) WithFields(fields Fields) *Logger {
 	r := l.clone()
 
 	if len(fields) > 0 {
-		copyFields := make(map[string]interface{}, len(l.fields)+len(fields))
-		for key, value := range l.fields {
-			copyFields[key] = value
-		}
-		for key, value := range fields {
-			copyFields[key] = value
-		}
+		copyFields := make(map[string]any, len(l.fields)+len(fields))
+		maps.Copy(copyFields, l.fields)
+		maps.Copy(copyFields, fields)
 
 		sortedKeys := make([]string, 0, len(copyFields))
 		for key := range copyFields {
@@ -148,7 +145,7 @@ func (l *Logger) WithFields(fields Fields) *Logger {
 }
 
 // WithField returns cloned logger which fields merged with field key=value
-func (l *Logger) WithField(key string, value interface{}) *Logger {
+func (l *Logger) WithField(key string, value any) *Logger {
 	return l.WithFields(Fields{key: value})
 }
 
@@ -196,7 +193,7 @@ func (l *Logger) output(record *Record) (err error) {
 }
 
 // Debug ...
-func (l *Logger) Debug(v ...interface{}) {
+func (l *Logger) Debug(v ...any) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), DebugLevel)
 		_ = l.output(record)
@@ -204,7 +201,7 @@ func (l *Logger) Debug(v ...interface{}) {
 }
 
 // Debugf ...
-func (l *Logger) Debugf(format string, v ...interface{}) {
+func (l *Logger) Debugf(format string, v ...any) {
 	if l.lvl <= DebugLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), DebugLevel)
 		_ = l.output(record)
@@ -212,7 +209,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 }
 
 // Info ...
-func (l *Logger) Info(v ...interface{}) {
+func (l *Logger) Info(v ...any) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), InfoLevel)
 		_ = l.output(record)
@@ -220,7 +217,7 @@ func (l *Logger) Info(v ...interface{}) {
 }
 
 // Infof ...
-func (l *Logger) Infof(format string, v ...interface{}) {
+func (l *Logger) Infof(format string, v ...any) {
 	if l.lvl <= InfoLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), InfoLevel)
 		_ = l.output(record)
@@ -228,7 +225,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 }
 
 // Warning ...
-func (l *Logger) Warning(v ...interface{}) {
+func (l *Logger) Warning(v ...any) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), WarningLevel)
 		_ = l.output(record)
@@ -236,7 +233,7 @@ func (l *Logger) Warning(v ...interface{}) {
 }
 
 // Warningf ...
-func (l *Logger) Warningf(format string, v ...interface{}) {
+func (l *Logger) Warningf(format string, v ...any) {
 	if l.lvl <= WarningLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), WarningLevel)
 		_ = l.output(record)
@@ -244,7 +241,7 @@ func (l *Logger) Warningf(format string, v ...interface{}) {
 }
 
 // Error ...
-func (l *Logger) Error(v ...interface{}) {
+func (l *Logger) Error(v ...any) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), ErrorLevel)
 		_ = l.output(record)
@@ -252,7 +249,7 @@ func (l *Logger) Error(v ...interface{}) {
 }
 
 // Errorf ...
-func (l *Logger) Errorf(format string, v ...interface{}) {
+func (l *Logger) Errorf(format string, v ...any) {
 	if l.lvl <= ErrorLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), ErrorLevel)
 		_ = l.output(record)
@@ -260,7 +257,7 @@ func (l *Logger) Errorf(format string, v ...interface{}) {
 }
 
 // Fatal ...
-func (l *Logger) Fatal(v ...interface{}) {
+func (l *Logger) Fatal(v ...any) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), FatalLevel)
 		_ = l.output(record)
@@ -269,7 +266,7 @@ func (l *Logger) Fatal(v ...interface{}) {
 }
 
 // Fatalf ...
-func (l *Logger) Fatalf(format string, v ...interface{}) {
+func (l *Logger) Fatalf(format string, v ...any) {
 	if l.lvl <= FatalLevel {
 		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), FatalLevel)
 		_ = l.output(record)
@@ -298,52 +295,52 @@ func (l *Logger) getLine() string {
 }
 
 // Debug ...
-func Debug(v ...interface{}) {
+func Debug(v ...any) {
 	logger.WithDepth(4).Debug(v...)
 }
 
 // Debugf ...
-func Debugf(format string, v ...interface{}) {
+func Debugf(format string, v ...any) {
 	logger.WithDepth(4).Debugf(format, v...)
 }
 
 // Info ...
-func Info(v ...interface{}) {
+func Info(v ...any) {
 	logger.WithDepth(4).Info(v...)
 }
 
 // Infof ...
-func Infof(format string, v ...interface{}) {
+func Infof(format string, v ...any) {
 	logger.WithDepth(4).Infof(format, v...)
 }
 
 // Warning  ...
-func Warning(v ...interface{}) {
+func Warning(v ...any) {
 	logger.WithDepth(4).Warning(v...)
 }
 
 // Warningf ...
-func Warningf(format string, v ...interface{}) {
+func Warningf(format string, v ...any) {
 	logger.WithDepth(4).Warningf(format, v...)
 }
 
 // Error ...
-func Error(v ...interface{}) {
+func Error(v ...any) {
 	logger.WithDepth(4).Error(v...)
 }
 
 // Errorf ...
-func Errorf(format string, v ...interface{}) {
+func Errorf(format string, v ...any) {
 	logger.WithDepth(4).Errorf(format, v...)
 }
 
 // Fatal ...
-func Fatal(v ...interface{}) {
+func Fatal(v ...any) {
 	logger.WithDepth(4).Fatal(v...)
 }
 
 // Fatalf ...
-func Fatalf(format string, v ...interface{}) {
+func Fatalf(format string, v ...any) {
 	logger.WithDepth(4).Fatalf(format, v...)
 }
 

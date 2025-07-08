@@ -1,17 +1,6 @@
 # Harbor
 
 
-
-> [!NOTE]
-> The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).
-
-> [!IMPORTANT]  
-> Harbor Next is the place
-> where the community can already use features and capabiliites
-> that are not yet upstream.
-> Harbor Next is a stable and backwards API compatible outlook on wha'ts next. 
-
-
 <img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
 Harbor is a CNCF graduated open-source container registry to store and manage container images and other OCI artifacts securely with policies, role-based access control, vulnerability scans and signing.
@@ -65,7 +54,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 
 **On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 

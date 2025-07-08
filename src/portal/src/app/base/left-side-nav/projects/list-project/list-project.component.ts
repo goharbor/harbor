@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     RoleInfo,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
@@ -67,6 +68,7 @@ const INTERVAL: number = 30000;
     templateUrl: 'list-project.component.html',
 })
 export class ListProjectComponent implements OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     loading = true;
     projects: Project[] = [];
     filteredType = 0; // All projects

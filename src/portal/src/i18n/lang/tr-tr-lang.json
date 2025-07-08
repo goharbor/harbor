@@ -106,7 +106,8 @@
         "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın.",
         "OIDC_AUTOONBOARD": "Skip the onboarding screen, so user cannot change its username. Username is provided from ID Token",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
-        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number.",
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Güncel şifrenizi giriniz",
@@ -143,6 +144,12 @@
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
+    "CHANGE_PREF": {
+        "TITLE": "Preferences",
+        "LANGUAGE": "Language",
+        "DATE_TIME_FORMAT": "Date/Time Format",
+        "PULL_CMD_PREFIX": "Pull Command Prefix"
+    },
     "CHANGE_PWD": {
         "TITLE": "Şifreyi değiştir",
         "CURRENT_PWD": "Mevcut Şifre",
@@ -151,8 +158,10 @@
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
         "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
+
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
+        "PREFERENCES": "Preferences",
         "CHANGE_PWD": "Şifreyi Değiştir",
         "ABOUT": "Hakkında",
         "LOGOUT": "Çıkış"
@@ -179,6 +188,8 @@
             "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Kayıtlar",
+        "AUDIT_LOGS": "Audit Logs",
+        "LEGACY_LOGS": "Audit Logs (Legacy)",
         "TASKS": "Görevler",
         "API_EXPLORER": "Api Explorer",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
@@ -526,9 +537,16 @@
         "REPOSITORY_NAME": "Depo İsmi",
         "TAGS": "Etiketler",
         "OPERATION": "Operasyon",
+        "OPERATION_DESCRIPTION": "Operation Description",
         "OPERATIONS": "Operasyonlar",
         "TIMESTAMP": "Zaman Damgası",
         "ALL_OPERATIONS": "Tüm Operasyonlar",
+        "ARTIFACT": "Artifact",
+        "USER": "User",
+        "PROJECT": "Project",
+        "CONFIGURATION": "Configuration",
+        "PROJECT_MEMBER": "Project Member",
+        "USER_LOGIN_LOGOUT": "User Login/Logout",
         "PULL": "Çek",
         "PUSH": "Yükle",
         "CREATE": "Oluştur",
@@ -537,6 +555,7 @@
         "ADVANCED": "Gelişmiş",
         "SIMPLE": "Basit",
         "ITEMS": "adet",
+        "RESULT": "Success",
         "FILTER_PLACEHOLDER": "Günlükleri Filtrele",
         "INVALID_DATE": "Geçersiz tarih.",
         "OF": "of",
@@ -763,7 +782,7 @@
         "ARTIFACT_TOOTIP": "Click to view this OCI index's artifact list",
         "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
-        "PULL_COMMAND": "İndirme Komutu",
+        "COPY_SUCCESS": "{{ param }} copied to Clipboard",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
         "IMMUTABLE": "Immutable",
@@ -968,7 +987,8 @@
             "OIDC_ADMIN_GROUP": "OIDC Admin Group",
             "OIDC_ADMIN_GROUP_INFO": "Specify an OIDC admin group name. All OIDC users in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "OIDC_GROUP_FILTER": "OIDC Group Filter",
-            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups."
+            "OIDC_GROUP_FILTER_INFO": "Filter OIDC groups who match the provided regular expression.Keep it blank to match all the groups.",
+            "OIDC_LOGOUT": "OIDC Session Logout"
         },
         "SCANNING": {
             "STOP_SCAN_ALL_SUCCESS": "Trigger stopping scan all successfully!",
@@ -1136,8 +1156,7 @@
         "TOOLTIP": "Command references for pushing an artifact to this project.",
         "TAG_COMMAND": "Bu proje için bir imaj etiketleyin:",
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
-        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin.",
-        "COPY_PULL_COMMAND": "COPY PULL COMMAND"
+        "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
@@ -1155,6 +1174,8 @@
         "SCAN_UNSUPPORTED": "Unsupported",
         "SBOM_UNSUPPORTED": "Unsupported",
         "SUMMARY": "Özet",
+        "LICENSE": "Lisans",
+        "FILES": "Dosyalar",
         "DEPENDENCIES": "Bağımlılıklar",
         "VALUES": "Değerler",
         "NAME": "İsim",
@@ -1162,6 +1183,10 @@
         "OF": "of",
         "VERSION": "Versiyon",
         "NO_README": "Bu tablo tarafından sağlanan beni oku dosyası yok.",
+        "NO_LICENSE": "Bu tablo bir lisans dosyası sağlamamaktadır.",
+        "NO_FILES": "Bu Model için dosya sağlanmadı.",
+        "FILE_TOO_LARGE": "Dosya işlenemeyecek kadar büyük.",
+        "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",
         "SHOW_YAML": "YAML Dosyası"
@@ -1548,7 +1573,6 @@
         "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
         "SCANNED_BY": "Scanned by:",
         "IMAGE_SCANNERS": "Image Scanners",
-        "VIEW_DOC": "view documentation",
         "ALL_SCANNERS": "All scanners",
         "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
         "HELP_INFO_2": "documentation.",
@@ -1809,13 +1833,19 @@
         "HOURS": "Hours",
         "INCLUDED_OPERATIONS": "Included operations",
         "INCLUDED_OPERATION_TOOLTIP": "Remove audit logs for the selected operations",
-        "INCLUDED_OPERATION_ERROR": "Please select at lease one operation",
+        "INCLUDED_OPERATION_ERROR": "Please select at least one operation",
+        "INCLUDED_EVENT_TYPES": "Event types to purge",
+        "INCLUDED_EVENT_TYPE_TOOLTIP": "Remove audit logs for the selected event types, checkbox \"Other events\" include all events not listed here ",
+        "INCLUDED_EVENT_TYPE_ERROR": "Please select at least one event type",
         "PURGE_NOW": "PURGE NOW",
         "PURGE_NOW_SUCCESS": "Purge triggered successfully",
         "PURGE_SCHEDULE_RESET": "Purge schedule has been reset",
         "PURGE_HISTORY": "Purge History",
         "FORWARD_ENDPOINT": "Audit Log Forward Syslog Endpoint",
         "FORWARD_ENDPOINT_TOOLTIP": "Forward audit logs to the syslog endpoint, for example: harbor-log:10514",
+        "ENABLE_AUDIT_LOG_EVENT_TYPE": "Enable Audit Log Event Type",
+        "ENABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP": "The comma-separated name of the audit log event to be enabled.",
+        "AUDIT_LOG_EVENT_TYPE_EMPTY": "No audit log event type exists.",
         "SKIP_DATABASE": "Skip Audit Log Database",
         "SKIP_DATABASE_TOOLTIP": "Skip to log audit log in the database, only available when audit log forward endpoint is configured",
         "STOP_GC_SUCCESS": "Trigger stopping GC operation successfully",

@@ -59,7 +59,7 @@ type Client interface {
 
 	// GetScanReport gets the scan result for the corresponding ScanRequest identifier.
 	// Note that this is a blocking method which either returns a non `nil` scan report or error.
-	// A caller is supposed to cast the returned interface{} to a structure that corresponds
+	// A caller is supposed to cast the returned any to a structure that corresponds
 	// to the specified MIME type.
 	//
 	//   Arguments:

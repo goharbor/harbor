@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import logging
 import os
 import yaml
@@ -354,6 +355,11 @@ def parse_yaml_config(config_file_path, with_trivy):
 
     return config_dict
 
+def get_redis_schema(redis=None):
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        return redis.get('sentinel_master_set', None) and 'rediss+sentinel' or 'rediss'
+    else:
+        return redis.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
 
 def get_redis_url(db, redis=None):
     """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index?idle_timeout_seconds=30`
@@ -373,7 +379,7 @@ def get_redis_url(db, redis=None):
         'password': '',
     }
     kwargs.update(redis or {})
-    kwargs['scheme'] = kwargs.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
+    kwargs['scheme'] = get_redis_schema(kwargs)
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
     kwargs['password_part'] = quote(str(kwargs.get('password', None)), safe='') and (':%s@' % quote(str(kwargs['password']), safe='')) or ''
@@ -458,5 +464,8 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
+    
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
     return configs

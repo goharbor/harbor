@@ -77,6 +77,10 @@ var (
 			path:   "./icons/default.png",
 			resize: true,
 		},
+		icon.DigestOfIconCNAI: {
+			path:   "./icons/cnai.png",
+			resize: true,
+		},
 	}
 	// Ctl is a global icon controller instance
 	Ctl = NewController()
@@ -134,7 +138,7 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 	} else {
 		// read icon from blob
 		artifacts, err := c.artMgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"Icon": digest,
 			},
 		})

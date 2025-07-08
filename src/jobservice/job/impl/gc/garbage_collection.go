@@ -299,10 +299,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	blobChunkCount := (total + blobChunkSize - 1) / blobChunkSize
 	blobChunks := make([][]*blobModels.Blob, blobChunkCount)
 	for i, start := 0, 0; i < blobChunkCount; i, start = i+1, start+blobChunkSize {
-		end := start + blobChunkSize
-		if end > total {
-			end = total
-		}
+		end := min(start+blobChunkSize, total)
 		blobChunks[i] = gc.deleteSet[start:end]
 	}
 
@@ -536,7 +533,7 @@ func (gc *GarbageCollector) deletedArt(ctx job.Context) (map[string][]model.Arti
 	// handle the optional ones, and the artifact controller will move them into trash.
 	if gc.deleteUntagged {
 		untaggedArts, err := gc.artCtl.List(ctx.SystemContext(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"Tags": "nil",
 			},
 		}, &artifact.Option{WithAccessory: true})
@@ -639,7 +636,7 @@ func (gc *GarbageCollector) markOrSweepUntaggedBlobs(ctx job.Context) ([]*blobMo
 				Min: lastBlobID,
 			}
 			query := &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"update_time": &timeRG,
 					"projectID":   p.ProjectID,
 					"id":          &blobRG,

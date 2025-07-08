@@ -27,7 +27,7 @@ func TestAddTask(t *testing.T) {
 
 	taskNum := 3
 	taskInterval := time.Duration(0)
-	for i := 0; i < taskNum; i++ {
+	for i := range taskNum {
 		fn := func(ctx context.Context) {
 			t.Logf("Task %d is running...", i)
 		}
@@ -64,8 +64,7 @@ func TestStartAndStop(t *testing.T) {
 
 		pool.tasks = []*task{t1, t2}
 
-		ctx1, cancel1 := context.WithCancel(context.Background())
-		defer cancel1()
+		ctx1 := t.Context()
 		pool.Start(ctx1)
 
 		// Let it run for a bit

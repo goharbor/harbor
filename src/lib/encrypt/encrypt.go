@@ -37,7 +37,7 @@ type Encryptor interface {
 // AESEncryptor uses AES to encrypt or decrypt string
 type AESEncryptor struct {
 	keyProvider KeyProvider
-	keyParams   map[string]interface{}
+	keyParams   map[string]any
 }
 
 // NewAESEncryptor returns an instance of an AESEncryptor

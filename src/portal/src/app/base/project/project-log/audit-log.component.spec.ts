@@ -1,11 +1,24 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuditLogComponent } from './audit-log.component';
+import { ProjectAuditLogComponent } from './audit-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, LOCALE_ID } from '@angular/core';
 import { delay } from 'rxjs/operators';
-import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
+import { AuditLogExt } from '../../../../../ng-swagger-gen/models/audit-log-ext';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { click } from '../../../shared/units/utils';
@@ -14,17 +27,19 @@ import { registerLocaleData } from '@angular/common';
 import locale_en from '@angular/common/locales/en';
 import { DatePickerComponent } from '../../../shared/components/datetime-picker/datetime-picker.component';
 
-describe('AuditLogComponent', () => {
-    let component: AuditLogComponent;
-    let fixture: ComponentFixture<AuditLogComponent>;
+describe('ProjectAuditLogComponent', () => {
+    let component: ProjectAuditLogComponent;
+    let fixture: ComponentFixture<ProjectAuditLogComponent>;
     const mockMessageHandlerService = {
         handleError: () => {},
     };
     const mockActivatedRoute = {
         parent: {
             parent: {
-                snapshot: {
-                    data: null,
+                parent: {
+                    snapshot: {
+                        data: null,
+                    },
                 },
             },
         },
@@ -36,9 +51,9 @@ describe('AuditLogComponent', () => {
         }).pipe(delay(0)),
     };
     const mockRouter = null;
-    const mockedAuditLogs: AuditLog[] = [];
+    const mockedAuditLogExts: AuditLogExt[] = [];
     for (let i = 0; i < 18; i++) {
-        let item: AuditLog = {
+        let item: AuditLogExt = {
             id: 234 + i,
             resource: 'myProject/Demo' + i,
             resource_type: 'N/A',
@@ -46,14 +61,14 @@ describe('AuditLogComponent', () => {
             op_time: '2017-04-11T10:26:22Z',
             username: 'user91' + i,
         };
-        mockedAuditLogs.push(item);
+        mockedAuditLogExts.push(item);
     }
-    const fakedAuditlogService = {
-        getLogsResponse(params: ProjectService.GetLogsParams) {
+    const fakedAuditlogExtService = {
+        getLogExtsResponse(params: ProjectService.GetLogsParams) {
             if (params.q && params.q.indexOf('Demo0') !== -1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(0, 1),
+                        body: mockedAuditLogExts.slice(0, 1),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -63,7 +78,7 @@ describe('AuditLogComponent', () => {
             if (params.page <= 1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(0, 15),
+                        body: mockedAuditLogExts.slice(0, 15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -72,7 +87,7 @@ describe('AuditLogComponent', () => {
             } else {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(15),
+                        body: mockedAuditLogExts.slice(15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -96,11 +111,11 @@ describe('AuditLogComponent', () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [SharedTestingModule],
-            declarations: [AuditLogComponent],
+            declarations: [ProjectAuditLogComponent],
             providers: [
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: Router, useValue: mockRouter },
-                { provide: ProjectService, useValue: fakedAuditlogService },
+                { provide: ProjectService, useValue: fakedAuditlogExtService },
                 {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
@@ -110,7 +125,7 @@ describe('AuditLogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(AuditLogComponent);
+        fixture = TestBed.createComponent(ProjectAuditLogComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

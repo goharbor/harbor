@@ -32,12 +32,12 @@ type Cache struct {
 }
 
 // Load - load config from database, only user setting will be load from database.
-func (d *Cache) Load(ctx context.Context) (map[string]interface{}, error) {
-	f := func() (interface{}, error) {
+func (d *Cache) Load(ctx context.Context) (map[string]any, error) {
+	f := func() (any, error) {
 		return d.driver.Load(ctx)
 	}
 
-	result := map[string]interface{}{}
+	result := map[string]any{}
 
 	// let the cache expired after one minute
 	// because the there no way to rollback the config items been saved when invalidate the cache failed
@@ -49,7 +49,7 @@ func (d *Cache) Load(ctx context.Context) (map[string]interface{}, error) {
 }
 
 // Save - Only save user config items in the cfgs map
-func (d *Cache) Save(ctx context.Context, cfg map[string]interface{}) error {
+func (d *Cache) Save(ctx context.Context, cfg map[string]any) error {
 	if err := d.driver.Save(ctx, cfg); err != nil {
 		return err
 	}

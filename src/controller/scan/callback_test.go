@@ -168,10 +168,10 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 	}
 }
 
-func (suite *CallbackTestSuite) makeExtraAttrs(artifactID, robotID int64) map[string]interface{} {
-	b, _ := json.Marshal(map[string]interface{}{artifactIDKey: artifactID, robotIDKey: robotID})
+func (suite *CallbackTestSuite) makeExtraAttrs(artifactID, robotID int64) map[string]any {
+	b, _ := json.Marshal(map[string]any{artifactIDKey: artifactID, robotIDKey: robotID})
 
-	extraAttrs := map[string]interface{}{}
+	extraAttrs := map[string]any{}
 	json.Unmarshal(b, &extraAttrs)
 
 	return extraAttrs

@@ -176,7 +176,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.12.0
+_version: 2.13.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -215,6 +215,14 @@ _version: 2.12.0
 #   # username:
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:
+#   # tls configuration for redis connection
+#   # only server-authentication is supported
+#   # mtls for redis connection is not supported
+#   # tls connection will be disable by default 
+#   tlsOptions:
+#     enable: false
+#   # if it is a self-signed ca, please set the ca path specifically.
+#     rootCA:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2
