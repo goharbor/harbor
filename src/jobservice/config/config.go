@@ -42,6 +42,7 @@ const (
 	jobServiceRedisIdleConnTimeoutSecond = "JOB_SERVICE_POOL_REDIS_CONN_IDLE_TIMEOUT_SECOND"
 	jobServiceAuthSecret                 = "JOBSERVICE_SECRET"
 	coreURL                              = "CORE_URL"
+	maxJobDurationSeconds                = "MAX_JOB_DURATION_SECONDS"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -182,7 +183,19 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	}
 
 	// Validate settings
-	return c.validate()
+	if err := c.validate(); err != nil {
+		return err
+	}
+	initMaxJobDurationEnv()
+	return nil
+}
+
+func initMaxJobDurationEnv() {
+	// set environment for gocraft/work if not present in env, it will be used to expire the job service redis key
+	if len(os.Getenv(maxJobDurationSeconds)) == 0 {
+		duration := MaxUpdateDuration()
+		os.Setenv(maxJobDurationSeconds, fmt.Sprintf("%v", duration.Seconds()))
+	}
 }
 
 // GetAuthSecret get the auth secret from the env
