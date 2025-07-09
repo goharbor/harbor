@@ -336,6 +336,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -3560,6 +3562,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -3998,6 +4002,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
