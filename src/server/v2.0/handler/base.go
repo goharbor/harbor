@@ -75,10 +75,10 @@ func (b *BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resourc
 }
 
 // HasProjectPermission returns true when the request has action permission on project subresource
-func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) bool {
+func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
 	projectID, projectName, err := utils.ParseProjectIDOrName(projectIDOrName)
 	if err != nil {
-		return false
+		return false, err
 	}
 
 	if projectName != "" {
@@ -88,25 +88,29 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName any,
 			if errors.IsNotFoundErr(err) {
 				p = &project.Project{}
 			} else {
-				return false
+				return false, err
 			}
 		}
 		if p == nil {
 			log.Warningf("project %s not found", projectName)
-			return false
+			return false, nil
 		}
 
 		projectID = p.ProjectID
 	}
 
 	resource := rbac_project.NewNamespace(projectID).Resource(subresource...)
-	return b.HasPermission(ctx, action, resource)
+	return b.HasPermission(ctx, action, resource), nil
 }
 
 // RequireProjectAccess checks the permission against the resources according to the context
 // An error will be returned if it doesn't meet the requirement
 func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) error {
-	if b.HasProjectPermission(ctx, projectIDOrName, action, subresource...) {
+	has, err := b.HasProjectPermission(ctx, projectIDOrName, action, subresource...)
+	if err != nil {
+		return err
+	}
+	if has {
 		return nil
 	}
 	secCtx, err := b.GetSecurityContext(ctx)
