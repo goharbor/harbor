@@ -22,10 +22,12 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	robot_ctl "github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
 type robot struct{}
@@ -65,6 +67,13 @@ func (r *robot) Generate(req *http.Request) security.Context {
 	now := time.Now().Unix()
 	if robot.ExpiresAt != -1 && robot.ExpiresAt <= now {
 		log.Errorf("the robot account is expired: %s", name)
+
+		// Fire robot expiration event for webhook notification
+		notification.AddEvent(req.Context(), &metadata.RobotExpiredEventMetadata{
+			Ctx:   req.Context(),
+			Robot: &robot.Robot,
+		})
+
 		return nil
 	}
 
