@@ -172,6 +172,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
+		go func() {
+			c.local.DeleteManifestQuiet(ctx, art.Repository, art.Tag)
+		}()
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 

@@ -105,6 +105,8 @@ type Client interface {
 	PushManifest(repository, reference, mediaType string, payload []byte) (digest string, err error)
 	// DeleteManifest deletes the specified manifest. The "reference" can be "tag" or "digest"
 	DeleteManifest(repository, reference string) (err error)
+	// DeleteManifestQuiet deletes the specified manifest without existing check
+	DeleteManifestQuiet(repository, reference string) (err error)
 	// BlobExist checks the existence of the specified blob
 	BlobExist(repository, digest string) (exist bool, err error)
 	// PullBlob pulls the specified blob. The caller must close the returned "blob"
@@ -344,6 +346,19 @@ func (c *client) DeleteManifest(repository, reference string) error {
 		}
 		reference = string(desc.Digest)
 	}
+	req, err := http.NewRequest(http.MethodDelete, buildManifestURL(c.url, repository, reference), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}
+
+func (c *client) DeleteManifestQuiet(repository, reference string) error {
 	req, err := http.NewRequest(http.MethodDelete, buildManifestURL(c.url, repository, reference), nil)
 	if err != nil {
 		return err

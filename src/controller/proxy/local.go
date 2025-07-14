@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/registry"
@@ -49,6 +50,8 @@ type localInterface interface {
 	CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor
 	// DeleteManifest cleanup delete tag from local cache
 	DeleteManifest(repo, ref string)
+	// DeleteManifestQuiet delete manifest without existing check
+	DeleteManifestQuiet(ctx context.Context, repo, ref string)
 }
 
 func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error) {
@@ -130,6 +133,27 @@ func (l *localHelper) PushManifest(repo string, ref string, manifest distributio
 func (l *localHelper) DeleteManifest(repo, ref string) {
 	log.Debugf("Remove tag from repo if it is exist, repo: %v ref: %v", repo, ref)
 	if err := l.registry.DeleteManifest(repo, ref); err != nil {
+		// sometimes user pull a non-exist image
+		log.Warningf("failed to remove artifact, error %v", err)
+	}
+}
+
+// DeleteManifestQuiet delete manifest without existing check
+func (l *localHelper) DeleteManifestQuiet(ctx context.Context, repo, ref string) {
+	log.Infof("Remove tag from repo if it is exist, repo: %v ref: %v", repo, ref)
+	// convert tag to digest
+	bCtx := orm.Copy(ctx)
+	opt := &artifact.Option{}
+	art, err := l.artifactCtl.GetByReference(bCtx, repo, ref, opt)
+	if err != nil {
+		log.Debug("failed to get digest, skip to delete it")
+		return
+	}
+	if art == nil {
+		return
+	}
+	log.Infof("artifact does not exist in remote registry, going to remove it in local, artifact: %v@%v", repo, art.Digest)
+	if err := l.registry.DeleteManifestQuiet(repo, art.Digest); err != nil {
 		// sometimes user pull a non-exist image
 		log.Warningf("failed to remove artifact, error %v", err)
 	}
