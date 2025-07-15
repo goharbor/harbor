@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -99,7 +100,13 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
+
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, reg.Mgr, proxy.WithSpeed(p.ProxyCacheSpeed()))
+	if err != nil {
+		return err
+	}
+
+	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art, remote)
 	if err != nil {
 		return err
 	}
@@ -194,7 +201,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
+	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, reg.Mgr, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return err
 	}

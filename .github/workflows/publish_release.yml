@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  pull_request:
+    types: [labeled]
 
 env:
   REGISTRY: ghcr.io
@@ -14,13 +16,20 @@ jobs:
     permissions:
       contents: write
       packages: write
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'build-release'))
     steps:
       - uses: actions/checkout@v4
       - name: Setup env
         run: |
-          echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-          echo "BASE_TAG=$(cat ./VERSION)" >> $GITHUB_ENV
-          echo "PRERELEASE=$(echo ${{ github.ref_name }} | grep -q 'rc\|alpha\|beta' && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "CUR_TAG=pr-${{ github.event.number }}" >> $GITHUB_ENV
+            echo "BASE_TAG=$(cat ./VERSION)" >> $GITHUB_ENV
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "BASE_TAG=$(cat ./VERSION)" >> $GITHUB_ENV
+            echo "PRERELEASE=$(echo ${{ github.ref_name }} | grep -q 'rc\|alpha\|beta' && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          fi
           
       - name: Set up Go
         uses: actions/setup-go@v5

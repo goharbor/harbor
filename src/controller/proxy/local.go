@@ -19,6 +19,7 @@ import (
 	"io"
 
 	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
@@ -43,6 +44,8 @@ type localInterface interface {
 	GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error)
 	// PushBlob push blob to local repo
 	PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error
+	// PullBlob pull blob from local repo
+	PullBlob(localRepo string, digest digest.Digest) (int64, io.ReadCloser, error)
 	// PushManifest push manifest to local repo, ref can be digest or tag
 	PushManifest(repo string, ref string, manifest distribution.Manifest) error
 	// CheckDependencies check if the manifest's dependency is ready
@@ -107,6 +110,11 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 	defer inflightChecker.removeRequest(artName)
 	err := l.registry.PushBlob(localRepo, ref, desc.Size, bReader)
 	return err
+}
+
+func (l *localHelper) PullBlob(localRepo string, digest digest.Digest) (int64, io.ReadCloser, error) {
+	ref := string(digest)
+	return l.registry.PullBlob(localRepo, ref)
 }
 
 func (l *localHelper) PushManifest(repo string, ref string, manifest distribution.Manifest) error {

@@ -251,6 +251,16 @@ func ScannerRobotPrefix(ctx context.Context) string {
 	return os.Getenv("ROBOT_SCANNER_NAME_PREFIX")
 }
 
+// EnableAsyncLocalCaching returns whether enable async local caching for proxy cache blobs.
+func EnableAsyncLocalCaching() bool {
+	if DefaultMgr() != nil {
+		return DefaultMgr().Get(backgroundCtx, common.EnableAsyncLocalCaching).GetBool()
+	}
+	// backoff read from env, default to true to preserve current behavior
+	env := os.Getenv("ENABLE_ASYNC_LOCAL_CACHING")
+	return env == "" || env == "true"
+}
+
 // Database returns database settings
 func Database() (*models.Database, error) {
 	database := &models.Database{}

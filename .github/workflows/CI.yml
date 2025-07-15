@@ -93,6 +93,16 @@ jobs:
         with:
           files: ./src/github.com/groq/harbor/profile.cov
           flags: unittests
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore
 
   APITEST_DB:
     env:
@@ -148,6 +158,16 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore
 
   APITEST_DB_PROXY_CACHE:
     env:
@@ -203,6 +223,16 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh PROXY_CACHE $IP
           df -h
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore
 
   APITEST_LDAP:
     env:
@@ -256,6 +286,16 @@ jobs:
           cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
           df -h
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore
 
   OFFLINE:
     env:
@@ -308,6 +348,16 @@ jobs:
           cd src/github.com/groq/harbor
           bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
           df -h
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore
 
   UI_UT:
     env:
@@ -335,3 +385,13 @@ jobs:
         with:
           files: ./src/github.com/groq/harbor/src/portal/coverage/lcov.info
           flags: unittests
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apitest-db-outputs
+          path: |
+            /drone/output.xml
+            /drone/log.html
+            /drone/report.html
+          if-no-files-found: ignore

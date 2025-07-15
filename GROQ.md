@@ -23,4 +23,4 @@ We saw it important to maintain a separate fork of Harbor to handle a couple of 
 
 1. We need to add support for Google GAR and GCP Workload Identity Federation ([upstream PR](https://github.com/goharbor/harbor/pull/22091)).
 
-2. We're concerned that Harbor does not currenty coalesce concurrent remote requests for the same image reference (upstream PR WIP). 
+2. We're concerned that Harbor does not currenty coalesce concurrent remote requests for the same image reference (upstream PR WIP). As such, we've introduced a `ENABLE_ASYNC_LOCAL_CACHING` setting, which forces concurrent requests for the same artifact to queue and wait for a single remote registry request. This incurs a slight performance penalty on the initial pull, but is much more bandwidth efficient.
