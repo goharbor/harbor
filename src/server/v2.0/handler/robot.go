@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -100,6 +101,19 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 
 	if err := robot.SetProject(ctx, r); err != nil {
 		return rAPI.SendError(ctx, err)
+	}
+
+	existing, err := rAPI.robotCtl.List(ctx, q.New(q.KeyWords{
+		"name":       r.Name,
+		"project_id": r.ProjectID,
+	}), nil)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	if len(existing) > 0 {
+		return rAPI.SendError(ctx, errors.New(nil).
+			WithCode(strconv.Itoa(http.StatusConflict)).
+			WithMessagef("robot account %s already exists", r.Name))
 	}
 
 	if _, ok := sc.(*robotSc.SecurityContext); ok {
