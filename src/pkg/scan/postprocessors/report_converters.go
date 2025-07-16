@@ -60,7 +60,6 @@ func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Conte
 		log.G(ctx).Infof("There is no vulnerability report to toSchema for report UUID : %s", reportUUID)
 		return reportUUID, "", nil
 	}
-
 	// parse the raw report with the V1 schema of the report to the normalized structures
 	rawReport := new(vuln.Report)
 	if err := json.Unmarshal([]byte(reportData), &rawReport); err != nil {
@@ -136,7 +135,8 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 		recordIDs = append(recordIDs, record.ID)
 
-		if record.Severity != v.Severity.String() {
+		if record.Severity != v.Severity.String() || record.Status != v.Status {
+			record.Status = v.Status
 			record.Severity = v.Severity.String()
 			record.CVE3Score = v.CVSSDetails.ScoreV3
 			record.Fix = v.FixVersion
@@ -146,7 +146,7 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 
 	for _, record := range outOfDateRecords {
 		// Update the severity, fixed_version, and cvss_score_v3 of the record when it's changed in the scanner, closes #14745 #21463
-		if err := c.dao.Update(ctx, record, "severity", "fixed_version", "cvss_score_v3"); err != nil {
+		if err := c.dao.Update(ctx, record, "severity", "fixed_version", "cvss_score_v3", "status"); err != nil {
 			return err
 		}
 	}
@@ -249,6 +249,7 @@ func toVulnerabilityRecord(ctx context.Context, item *vuln.VulnerabilityItem, re
 	record.URLs = strings.Join(item.Links, "|")
 	record.RegistrationUUID = registrationUUID
 	record.Severity = item.Severity.String()
+	record.Status = item.Status
 
 	// process the CVSS scores if the data is available
 	if (vuln.CVSS{} != item.CVSSDetails) {
@@ -296,6 +297,7 @@ func toVulnerabilityItem(record *scan.VulnerabilityRecord, artifactDigest string
 	urls := strings.Split(record.URLs, "|")
 	item.Links = append(item.Links, urls...)
 	item.Severity = vuln.ParseSeverityVersion3(record.Severity)
+	item.Status = record.Status
 	item.Package = record.Package
 	var vendorAttributes map[string]any
 	_ = json.Unmarshal([]byte(record.VendorAttributes), &vendorAttributes)

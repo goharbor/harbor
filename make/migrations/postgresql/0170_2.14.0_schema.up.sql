@@ -6,3 +6,4 @@ ALTER SEQUENCE permission_policy_id_seq AS BIGINT;
 
 ALTER TABLE role_permission ALTER COLUMN permission_policy_id TYPE BIGINT;
 
+ALTER TABLE vulnerability_record ADD COLUMN IF NOT EXISTS status text;
