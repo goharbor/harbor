@@ -54,8 +54,11 @@ var (
 	ctl  Controller
 	once sync.Once
 
-	// manifestGroup handles singleflight for manifest requests
-	manifestGroup = &singleflight.Group{}
+	// manifestExistGroup handles manifest HEAD/exist requests
+	manifestExistGroup = &singleflight.Group{}
+
+	// manifestFetchGroup handles manifest GET/fetch requests
+	manifestFetchGroup = &singleflight.Group{}
 
 	// blobGroup handles singleflight for blob requests
 	blobGroup = &singleflight.Group{}
@@ -174,12 +177,12 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	artifactKey := remoteRepo + ":" + ref
-	rawResult, err, _ := manifestGroup.Do(artifactKey, func() (any, error) {
+	rawResult, err, _ := manifestExistGroup.Do(artifactKey, func() (any, error) {
 		exists, descriptor, err := remote.ManifestExist(remoteRepo, ref)
-		return &manifestResult{exists, descriptor}, err
+		return &manifestExistResult{exists, descriptor}, err
 	})
 
-	result := rawResult.(*manifestResult)
+	result := rawResult.(*manifestExistResult)
 	desc := result.descriptor
 	exist := result.exists
 
@@ -235,7 +238,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	artifactKey := remoteRepo + ":" + ref
 
 	// This singleflight group is used to deduplicate concurrent manifest requests
-	result, err, _ := manifestGroup.Do(artifactKey, func() (any, error) {
+	result, err, _ := manifestFetchGroup.Do(artifactKey, func() (any, error) {
 		log.Debugf("Fetching manifest from remote registry, url:%v", remoteRepo)
 
 		man, dig, err := remote.Manifest(remoteRepo, ref)
@@ -285,7 +288,7 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	return result.(distribution.Manifest), nil
 }
 
-type manifestResult struct {
+type manifestExistResult struct {
 	exists     bool
 	descriptor *distribution.Descriptor
 }
@@ -294,11 +297,11 @@ func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remot
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
 	artifactKey := remoteRepo + ":" + ref
-	rawResult, err, _ := manifestGroup.Do(artifactKey, func() (any, error) {
+	rawResult, err, _ := manifestExistGroup.Do(artifactKey, func() (any, error) {
 		exists, descriptor, err := remote.ManifestExist(remoteRepo, ref)
-		return &manifestResult{exists, descriptor}, err
+		return &manifestExistResult{exists, descriptor}, err
 	})
-	result := rawResult.(*manifestResult)
+	result := rawResult.(*manifestExistResult)
 	return result.exists, result.descriptor, err
 }
 
