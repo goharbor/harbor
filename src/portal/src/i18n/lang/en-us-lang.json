@@ -1106,6 +1106,7 @@
             "PLACEHOLDER": "We couldn't find any scanning results!",
             "COLUMN_ID": "Vulnerability",
             "COLUMN_SEVERITY": "Severity",
+            "COLUMN_STATUS": "Status",
             "COLUMN_PACKAGE": "Package",
             "COLUMN_PACKAGES": "Packages",
             "COLUMN_VERSION": "Current version",

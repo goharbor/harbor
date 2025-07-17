@@ -83,7 +83,7 @@ ORDER BY vr.cvss_score_v3 DESC, severity_level DESC
 LIMIT 5`
 
 	// sql to query vulnerabilities
-	vulnerabilitySQL = `select  vr.cve_id, vr.cvss_score_v3, vr.package, a.repository_name, a.id artifact_id, a.digest, vr.package, vr.package_version, vr.severity, vr.fixed_version, vr.description, vr.urls, a.project_id
+	vulnerabilitySQL = `select  vr.cve_id, vr.cvss_score_v3, vr.package, a.repository_name, a.id artifact_id, a.digest, vr.package, vr.package_version, vr.severity, vr.status, vr.fixed_version, vr.description, vr.urls, a.project_id
 from artifact a,
      scan_report s,
      report_vulnerability_record rvr,
@@ -112,6 +112,7 @@ type filterMetaData struct {
 var filterMap = map[string]*filterMetaData{
 	"cve_id":          &filterMetaData{DataType: stringType},
 	"severity":        &filterMetaData{DataType: stringType},
+	"status":          &filterMetaData{DataType: stringType},
 	"cvss_score_v3":   &filterMetaData{DataType: rangeType, FilterFunc: rangeFilter},
 	"project_id":      &filterMetaData{DataType: stringType},
 	"repository_name": &filterMetaData{DataType: stringType},

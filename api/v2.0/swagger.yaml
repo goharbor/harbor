@@ -6144,6 +6144,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -10072,6 +10073,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float
