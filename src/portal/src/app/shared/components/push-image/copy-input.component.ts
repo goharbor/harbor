@@ -30,6 +30,8 @@ export class CopyInputComponent {
     @Input() headerTitle: string = 'Copy Input';
     @Input() defaultValue: string = 'N/A';
     @Input() iconMode: boolean = false;
+    @Input() linkMode: boolean = false;
+    @Input() linkName: string = 'N/A';
 
     state: CopyStatus = CopyStatus.NORMAL;
 
