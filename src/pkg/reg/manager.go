@@ -16,10 +16,14 @@ package reg
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
@@ -61,8 +65,12 @@ import (
 
 var (
 	// Mgr is the global registry manager instance
-	Mgr = NewManager()
+	Mgr Manager
 )
+
+func init() {
+	Mgr = NewManager()
+}
 
 // Manager defines the registry related operations
 type Manager interface {
@@ -89,12 +97,30 @@ type Manager interface {
 // NewManager creates an instance of registry manager
 func NewManager() Manager {
 	return &manager{
-		dao: dao.NewDAO(),
+		dao:          dao.NewDAO(),
+		cacheEnabled: config.CacheEnabled(),
+		cacheExpire:  time.Duration(config.CacheExpireHours()) * time.Hour,
 	}
 }
 
 type manager struct {
-	dao dao.DAO
+	dao          dao.DAO
+	cacheEnabled bool
+	cacheExpire  time.Duration
+	cache        cache.Cache // for testing, nil means use default cache
+}
+
+// getCacheClient returns the cache client for testing or default cache
+func (m *manager) getCacheClient() cache.Cache {
+	if m.cache != nil {
+		return m.cache
+	}
+	return cache.LayerCache()
+}
+
+// setCacheClient sets the cache client for testing
+func (m *manager) setCacheClient(c cache.Cache) {
+	m.cache = c
 }
 
 func (m *manager) Create(ctx context.Context, registry *model.Registry) (int64, error) {
@@ -129,11 +155,37 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.Registry, error) {
 	if id == 0 {
 		return getLocalRegistry(), nil
 	}
+
+	// Try cache first if enabled
+	if m.cacheEnabled {
+		cacheKey := fmt.Sprintf("registry:id:%d", id)
+		r := &model.Registry{}
+		fetchErr := m.getCacheClient().Fetch(ctx, cacheKey, r)
+		if fetchErr == nil {
+			return r, nil
+		}
+		log.Warningf("get registry %d from cache error: %v, will query from database.", id, fetchErr)
+	}
+
 	registry, err := m.dao.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return fromDaoModel(registry)
+
+	r, err := fromDaoModel(registry)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save to cache if enabled
+	if m.cacheEnabled {
+		cacheKey := fmt.Sprintf("registry:id:%d", id)
+		if saveErr := m.getCacheClient().Save(ctx, cacheKey, r, m.cacheExpire); saveErr != nil {
+			log.Warningf("save registry %d to cache error: %v", r.ID, saveErr)
+		}
+	}
+
+	return r, nil
 }
 
 func (m *manager) Update(ctx context.Context, registry *model.Registry, props ...string) error {
@@ -141,11 +193,38 @@ func (m *manager) Update(ctx context.Context, registry *model.Registry, props ..
 	if err != nil {
 		return err
 	}
-	return m.dao.Update(ctx, reg, props...)
+
+	err = m.dao.Update(ctx, reg, props...)
+	if err != nil {
+		return err
+	}
+
+	// Invalidate cache if enabled
+	if m.cacheEnabled {
+		cacheKey := fmt.Sprintf("registry:id:%d", registry.ID)
+		if delErr := m.getCacheClient().Delete(ctx, cacheKey); delErr != nil {
+			log.Warningf("delete registry cache key %s error: %v", cacheKey, delErr)
+		}
+	}
+
+	return nil
 }
 
 func (m *manager) Delete(ctx context.Context, id int64) error {
-	return m.dao.Delete(ctx, id)
+	err := m.dao.Delete(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	// Invalidate cache if enabled
+	if m.cacheEnabled {
+		cacheKey := fmt.Sprintf("registry:id:%d", id)
+		if delErr := m.getCacheClient().Delete(ctx, cacheKey); delErr != nil {
+			log.Warningf("delete registry cache key %s error: %v", cacheKey, delErr)
+		}
+	}
+
+	return nil
 }
 
 func (m *manager) CreateAdapter(_ context.Context, registry *model.Registry) (adapter.Adapter, error) {

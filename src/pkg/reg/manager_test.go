@@ -15,27 +15,39 @@
 package reg
 
 import (
+	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/pkg/reg/dao"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingdao "github.com/goharbor/harbor/src/testing/pkg/reg/dao"
 )
 
 type managerTestSuite struct {
 	suite.Suite
-	mgr *manager
-	dao *testingdao.DAO
+	mgr   *manager
+	dao   *testingdao.DAO
+	cache *testcache.Cache
+	ctx   context.Context
 }
 
 func (m *managerTestSuite) SetupTest() {
 	m.dao = &testingdao.DAO{}
+	m.cache = &testcache.Cache{}
+	m.ctx = context.TODO()
 	m.mgr = &manager{
-		dao: m.dao,
+		dao:          m.dao,
+		cacheEnabled: true,
+		cacheExpire:  time.Hour,
 	}
+	m.mgr.setCacheClient(m.cache)
 }
 
 func (m *managerTestSuite) TestCount() {
@@ -60,13 +72,12 @@ func (m *managerTestSuite) TestList() {
 }
 
 func (m *managerTestSuite) TestGet() {
-	mock.OnAnything(m.dao, "Get").Return(&dao.Registry{
-		ID: 1,
-	}, nil)
-	registry, err := m.mgr.Get(nil, 1)
+	// Test local registry (id=0) - should not use cache
+	registry, err := m.mgr.Get(m.ctx, 0)
 	m.Require().Nil(err)
-	m.Equal(int64(1), registry.ID)
-	m.dao.AssertExpectations(m.T())
+	m.Equal("Local", registry.Name)
+	m.cache.AssertNotCalled(m.T(), "Fetch")
+	m.dao.AssertNotCalled(m.T(), "Get")
 }
 
 func (m *managerTestSuite) TestCreate() {
@@ -78,16 +89,139 @@ func (m *managerTestSuite) TestCreate() {
 
 func (m *managerTestSuite) TestDelete() {
 	mock.OnAnything(m.dao, "Delete").Return(nil)
-	err := m.mgr.Delete(nil, 1)
+	m.cache.On("Delete", mock.Anything, "registry:id:1").Return(nil)
+	err := m.mgr.Delete(m.ctx, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
 
 func (m *managerTestSuite) TestUpdate() {
 	mock.OnAnything(m.dao, "Update").Return(nil)
-	err := m.mgr.Update(nil, &model.Registry{})
+	m.cache.On("Delete", mock.Anything, "registry:id:0").Return(nil)
+	err := m.mgr.Update(m.ctx, &model.Registry{})
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestGetWithCache() {
+	// Test cache hit - should return from cache directly
+	m.cache.On("Fetch", mock.Anything, "registry:id:1", mock.Anything).Return(nil).Once().Run(func(args mock.Arguments) {
+		registry := args.Get(2).(*model.Registry)
+		registry.ID = 1
+		registry.Name = "cached-registry"
+	})
+
+	registry, err := m.mgr.Get(m.ctx, 1)
+	m.Require().Nil(err)
+	m.Equal(int64(1), registry.ID)
+	m.Equal("cached-registry", registry.Name)
+	m.dao.AssertNotCalled(m.T(), "Get")
+}
+
+func (m *managerTestSuite) TestGetWithCacheMiss() {
+	// Test cache miss - should query database and save to cache
+	m.cache.On("Fetch", mock.Anything, "registry:id:1", mock.Anything).Return(cache.ErrNotFound).Once()
+	m.cache.On("Save", mock.Anything, "registry:id:1", mock.Anything, mock.Anything).Return(nil).Once()
+
+	mock.OnAnything(m.dao, "Get").Return(&dao.Registry{
+		ID:   1,
+		Name: "test-registry",
+	}, nil).Once()
+
+	registry, err := m.mgr.Get(m.ctx, 1)
+	m.Require().Nil(err)
+	m.Equal(int64(1), registry.ID)
+	m.Equal("test-registry", registry.Name)
+	m.dao.AssertCalled(m.T(), "Get", mock.Anything, int64(1))
+	m.cache.AssertCalled(m.T(), "Save", mock.Anything, "registry:id:1", mock.Anything, mock.Anything)
+}
+
+func (m *managerTestSuite) TestGetCacheDisabled() {
+	// Test with cache disabled
+	m.mgr.cacheEnabled = false
+
+	mock.OnAnything(m.dao, "Get").Return(&dao.Registry{
+		ID:   1,
+		Name: "test-registry",
+	}, nil).Once()
+
+	registry, err := m.mgr.Get(m.ctx, 1)
+	m.Require().Nil(err)
+	m.Equal(int64(1), registry.ID)
+	m.Equal("test-registry", registry.Name)
+	m.dao.AssertCalled(m.T(), "Get", mock.Anything, int64(1))
+	m.cache.AssertNotCalled(m.T(), "Fetch")
+	m.cache.AssertNotCalled(m.T(), "Save")
+}
+
+func (m *managerTestSuite) TestUpdateWithCacheInvalidation() {
+	// Test update with cache invalidation
+	mock.OnAnything(m.dao, "Update").Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, "registry:id:1").Return(nil).Once()
+
+	registry := &model.Registry{
+		ID:   1,
+		Name: "updated-registry",
+	}
+
+	err := m.mgr.Update(m.ctx, registry)
+	m.Require().Nil(err)
+	m.dao.AssertCalled(m.T(), "Update", mock.Anything, mock.Anything)
+	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, "registry:id:1")
+}
+
+func (m *managerTestSuite) TestUpdateWithDaoError() {
+	// Test update with dao error - should not invalidate cache
+	updateErr := errors.New("update failed")
+	mock.OnAnything(m.dao, "Update").Return(updateErr).Once()
+
+	registry := &model.Registry{
+		ID:   1,
+		Name: "updated-registry",
+	}
+
+	err := m.mgr.Update(m.ctx, registry)
+	m.Require().Equal(updateErr, err)
+	m.dao.AssertCalled(m.T(), "Update", mock.Anything, mock.Anything)
+	m.cache.AssertNotCalled(m.T(), "Delete")
+}
+
+func (m *managerTestSuite) TestDeleteWithCacheInvalidation() {
+	// Test delete with cache invalidation
+	mock.OnAnything(m.dao, "Delete").Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, "registry:id:1").Return(nil).Once()
+
+	err := m.mgr.Delete(m.ctx, 1)
+	m.Require().Nil(err)
+	m.dao.AssertCalled(m.T(), "Delete", mock.Anything, int64(1))
+	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, "registry:id:1")
+}
+
+func (m *managerTestSuite) TestDeleteWithDaoError() {
+	// Test delete with dao error - should not invalidate cache
+	deleteErr := errors.New("delete failed")
+	mock.OnAnything(m.dao, "Delete").Return(deleteErr).Once()
+
+	err := m.mgr.Delete(m.ctx, 1)
+	m.Require().Equal(deleteErr, err)
+	m.dao.AssertCalled(m.T(), "Delete", mock.Anything, int64(1))
+	m.cache.AssertNotCalled(m.T(), "Delete")
+}
+
+func (m *managerTestSuite) TestCacheKeyFormat() {
+	// Test that cache keys are formatted correctly
+	m.cache.On("Fetch", mock.Anything, "registry:id:123", mock.Anything).Return(cache.ErrNotFound).Once()
+	m.cache.On("Save", mock.Anything, "registry:id:123", mock.Anything, mock.Anything).Return(nil).Once()
+
+	mock.OnAnything(m.dao, "Get").Return(&dao.Registry{
+		ID:   123,
+		Name: "test-registry",
+	}, nil).Once()
+
+	_, err := m.mgr.Get(m.ctx, 123)
+	m.Require().Nil(err)
+	m.cache.AssertCalled(m.T(), "Fetch", mock.Anything, "registry:id:123", mock.Anything)
+	m.cache.AssertCalled(m.T(), "Save", mock.Anything, "registry:id:123", mock.Anything, mock.Anything)
 }
 
 func TestManager(t *testing.T) {
