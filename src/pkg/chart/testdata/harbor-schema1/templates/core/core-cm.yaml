@@ -52,7 +52,7 @@ data:
   HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
   NO_PROXY: "{{ template "harbor.noProxy" . }}"
   {{- end }}
-  PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "docker-hub,harbor,azure-acr,aws-ecr,google-gcr,quay,docker-registry,github-ghcr,jfrog-artifactory"
+  PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "docker-hub,harbor,azure-acr,aws-ecr,google-gcr,google-gar,quay,docker-registry,github-ghcr,jfrog-artifactory"
   {{- if .Values.metrics.enabled}}
   METRIC_ENABLE: "true"
   METRIC_PATH: "{{ .Values.metrics.core.path }}"
