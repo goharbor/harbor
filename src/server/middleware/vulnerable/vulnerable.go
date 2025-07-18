@@ -77,33 +77,29 @@ func Middleware() func(http.Handler) http.Handler {
 			logger.Debugf("artifact %s@%s is pulling by the scanner/cosign, skip the checking", info.Repository, info.Digest)
 			return nil
 		}
-
-		checker := scanChecker()
-		scannable, err := checker.IsScannable(ctx, art)
-		if err != nil {
-			logger.Errorf("check the scannable status of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
-			return err
-		}
-
-		if !scannable {
-			// the artifact is not scannable, skip the checking
-			logger.Debugf("artifact %s@%s is not scannable, skip the checking", art.RepositoryName, art.Digest)
-			return nil
-		}
-
 		allowlist := proj.CVEAllowlist.CVESet()
 
 		projectSeverity := vuln.ParseSeverityVersion3(proj.Severity())
 
 		vulnerable, err := scanController.GetVulnerable(ctx, art, allowlist, proj.CVEAllowlist.IsExpired())
-		if err != nil {
-			if errors.IsNotFoundErr(err) {
-				// No report yet?
-				msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-					`To continue with pull, please contact your project administrator for help.`, projectSeverity)
-				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+		if errors.IsNotFoundErr(err) {
+			// When the scanner is disconnected the artifact will be considered not scannable.
+			// We'll try to check the existing scan report even when it's not scannable, and only if there is no report, we will skip checking the vulnerability.
+			checker := scanChecker()
+			scannable, err := checker.IsScannable(ctx, art)
+			if err != nil {
+				logger.Errorf("check the scannable status of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
+				return err
 			}
-
+			if !scannable {
+				logger.Debugf("artifact %s@%s does not have a scan report, and it is not scannable, skip the checking", art.RepositoryName, art.Digest)
+				return nil
+			}
+			// If the artifact is scannable but there's no report, it's a violation.
+			msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+				`To continue with pull, please contact your project administrator for help.`, projectSeverity)
+			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+		} else if err != nil {
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
 			return err
 		}
