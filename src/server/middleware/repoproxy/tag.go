@@ -26,6 +26,7 @@ import (
 	libhttp "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/registry/util"
 )
@@ -69,7 +70,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 			util.SendListTagsResponse(w, r, tags)
 		}()
 
-		remote, err := proxy.NewRemoteHelper(ctx, p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
+		remote, err := proxy.NewRemoteHelper(ctx, p.RegistryID, reg.Mgr, proxy.WithSpeed(p.ProxyCacheSpeed()))
 		if err != nil {
 			logger.Warningf("failed to get remote interface, error: %v, fallback to local tags", err)
 			return

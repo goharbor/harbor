@@ -15,20 +15,30 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"sync"
 	"testing"
+	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution"
+	schema1 "github.com/docker/distribution/manifest/schema1"
+	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/blob"
 	"github.com/goharbor/harbor/src/lib"
 	_ "github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/config/inmemory"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
 )
@@ -61,7 +71,21 @@ func (l *localInterfaceMock) BlobExist(ctx context.Context, art lib.ArtifactInfo
 }
 
 func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
-	panic("implement me")
+	args := l.Called(localRepo, desc, bReader)
+	return args.Error(0)
+}
+
+func (l *localInterfaceMock) PullBlob(localRepo string, digest digest.Digest) (int64, io.ReadCloser, error) {
+	args := l.Called(localRepo, digest)
+	var size int64
+	var bReader io.ReadCloser
+	if args.Get(0) != nil {
+		size = args.Get(0).(int64)
+	}
+	if args.Get(1) != nil {
+		bReader = io.NopCloser(bytes.NewReader(args.Get(1).([]byte)))
+	}
+	return size, bReader, args.Error(2)
 }
 
 func (l *localInterfaceMock) PushManifest(repo string, tag string, manifest distribution.Manifest) error {
@@ -83,13 +107,40 @@ func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
 
 type proxyControllerTestSuite struct {
 	suite.Suite
+	cfg    config.Manager
 	local  *localInterfaceMock
 	remote *testproxy.RemoteInterface
 	ctr    Controller
 	proj   *proModels.Project
 }
 
+func (p *proxyControllerTestSuite) SetupSuite() {
+	// Register a global in memory config manager for testing
+	config.Register(common.InMemoryCfgManager, inmemory.NewInMemoryManager())
+	config.DefaultCfgManager = common.InMemoryCfgManager
+
+	// This doesn't really do anything other than allow us to run `orm.Copy` in the background
+	// prior to submitting events that depend on a database connection. The database connection
+	// is not actually used in these proxy controller tests.
+	if err := orm.RegisterDriver("pgx", orm.DRPostgres); err != nil {
+		p.T().Fatalf("Failed to register test database driver: %v", err)
+	}
+	db, _, err := sqlmock.New()
+	if err != nil {
+		p.T().Fatalf("Failed to create sqlmock: %v", err)
+	}
+	if err := orm.AddAliasWthDB("default", "pgx", db); err != nil {
+		p.T().Fatalf("Failed to add alias with db: %v", err)
+	}
+}
+
 func (p *proxyControllerTestSuite) SetupTest() {
+	cfg, err := config.GetManager(config.DefaultCfgManager)
+	if err != nil {
+		p.T().Fatalf("Failed to get config manager: %v", err)
+	}
+
+	p.cfg = cfg
 	p.local = &localInterfaceMock{}
 	p.remote = &testproxy.RemoteInterface{}
 	p.proj = &proModels.Project{RegistryID: 1}
@@ -163,6 +214,7 @@ func (p *proxyControllerTestSuite) TestUseLocalBlob_True() {
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.local.On("BlobExist", mock.Anything, mock.Anything).Return(true, nil)
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 	result := p.ctr.UseLocalBlob(ctx, art)
 	p.Assert().True(result)
 }
@@ -172,8 +224,188 @@ func (p *proxyControllerTestSuite) TestUseLocalBlob_False() {
 	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.local.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil).Maybe()
 	result := p.ctr.UseLocalBlob(ctx, art)
 	p.Assert().False(result)
+}
+
+func (p *proxyControllerTestSuite) TestUseLocalManifest_EnsureSingleRemoteRequest() {
+	ctx := context.Background()
+	artInfo := lib.ArtifactInfo{
+		Repository:  "library/hello-world",
+		ProjectName: "library",
+		Digest:      "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b",
+	}
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
+
+	// force a not_found error
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		// wait for requests to queue up
+		time.Sleep(10 * time.Millisecond)
+	}).Return(false, nil, nil).Once()
+
+	// run 10 concurrent requests
+	wg := sync.WaitGroup{}
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, _, err := p.ctr.UseLocalManifest(ctx, artInfo, p.remote)
+			p.Assert().True(errors.IsNotFoundErr(err))
+		}()
+	}
+
+	wg.Wait()
+
+	// expect only one remote request
+	p.remote.AssertExpectations(p.T())
+}
+
+func (p *proxyControllerTestSuite) TestProxyManifest_EnsureSingleRemoteRequest() {
+	ctx := context.Background()
+	artInfo := lib.ArtifactInfo{
+		Repository:  "library/hello-world",
+		ProjectName: "library",
+		Digest:      "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b",
+	}
+	man := &schema1.SignedManifest{
+		Manifest: schema1.Manifest{
+			Name: "library/hello-world",
+			Tag:  "latest",
+		},
+	}
+
+	// Set up mock expectations for methods called by background goroutines
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
+
+	// return a valid manifest
+	p.remote.On("Manifest", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		// wait for requests to queue up
+		time.Sleep(10 * time.Millisecond)
+	}).Return(man, "", nil).Once()
+
+	// run 10 concurrent requests
+	wg := sync.WaitGroup{}
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			actualMan, err := p.ctr.ProxyManifest(ctx, artInfo, p.remote)
+			p.Assert().Nil(err)
+			p.Assert().Equal(man, actualMan)
+		}()
+	}
+
+	wg.Wait()
+
+	// expect only one remote request
+	p.remote.AssertExpectations(p.T())
+}
+
+func (p *proxyControllerTestSuite) TestHeadManifest_EnsureSingleRemoteRequest() {
+	ctx := context.Background()
+	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	artInfo := lib.ArtifactInfo{
+		Repository:  "library/hello-world",
+		ProjectName: "library",
+		Digest:      dig,
+	}
+
+	// return a valid manifest
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		time.Sleep(10 * time.Millisecond)
+	}).Return(true, &distribution.Descriptor{Digest: digest.Digest(dig)}, nil).Once()
+
+	// run 10 concurrent requests
+	wg := sync.WaitGroup{}
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			exists, desc, err := p.ctr.HeadManifest(ctx, artInfo, p.remote)
+			p.Assert().Nil(err)
+			p.Assert().True(exists)
+			p.Assert().Equal(digest.Digest(dig), desc.Digest)
+		}()
+	}
+
+	wg.Wait()
+
+	// expect only one remote request
+	p.remote.AssertExpectations(p.T())
+}
+
+func (p *proxyControllerTestSuite) TestProxyBlob_EnableAsyncLocalCaching_True() {
+	p.cfg.Set(context.Background(), common.EnableAsyncLocalCaching, true)
+
+	enabled := config.EnableAsyncLocalCaching()
+	p.Assert().True(enabled)
+
+	// expect blob to be pulled from remote
+	p.local.On("PushBlob", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	p.remote.On("BlobReader", mock.Anything, mock.Anything).Return(int64(100), io.NopCloser(bytes.NewReader([]byte("test"))), nil)
+
+	size, bReader, err := p.ctr.ProxyBlob(
+		context.Background(),
+		&proModels.Project{},
+		lib.ArtifactInfo{
+			Repository: "library/hello-world",
+			Digest:     "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b",
+		},
+		p.remote,
+	)
+	p.Assert().Nil(err)
+	p.Assert().Equal(int64(100), size)
+	blob, _ := io.ReadAll(bReader)
+	p.Assert().Equal([]byte("test"), blob)
+
+	// expect blob to be pushed to local in background eventually
+	p.Eventually(func() bool {
+		return p.local.AssertExpectations(p.T())
+	}, 1*time.Second, 100*time.Millisecond, "expecting PushBlob to be called once")
+}
+
+func (p *proxyControllerTestSuite) TestProxyBlob_EnableAsyncLocalCaching_False() {
+	p.cfg.Set(context.Background(), common.EnableAsyncLocalCaching, false)
+
+	enabled := config.EnableAsyncLocalCaching()
+	p.Assert().False(enabled)
+
+	// only expect remote requests to be made once
+	p.local.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
+	p.local.On("PullBlob", mock.Anything, mock.Anything).Return(int64(100), []byte("test"), nil)
+	p.local.On("PushBlob", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	p.remote.On("BlobReader", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		// wait for requests to queue up
+		time.Sleep(10 * time.Millisecond)
+	}).Return(int64(100), io.NopCloser(bytes.NewReader([]byte("test"))), nil).Once()
+
+	wg := sync.WaitGroup{}
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			size, bReader, err := p.ctr.ProxyBlob(
+				context.Background(),
+				&proModels.Project{},
+				lib.ArtifactInfo{
+					Repository: "library/hello-world",
+					Digest:     "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b",
+				},
+				p.remote,
+			)
+			p.Assert().Nil(err)
+			p.Assert().Equal(int64(100), size)
+
+			blob, _ := io.ReadAll(bReader)
+			p.Assert().Equal([]byte("test"), blob)
+		}()
+	}
+
+	wg.Wait()
+
+	// expect only one remote request
+	p.remote.AssertExpectations(p.T())
 }
 
 func TestProxyControllerTestSuite(t *testing.T) {

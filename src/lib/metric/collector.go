@@ -26,6 +26,7 @@ func RegisterCollectors() {
 		TotalInFlightGauge,
 		TotalReqCnt,
 		TotalReqDurSummary,
+		TotalRemoteRegistryReqCnt,
 	}...)
 }
 
@@ -61,4 +62,15 @@ var (
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"method", "operation"})
+
+	// TotalRemoteReqCnt tracks the number of remote requests by method, path, and registry
+	TotalRemoteRegistryReqCnt = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: os.Getenv(NamespaceEnvKey),
+			Subsystem: os.Getenv(SubsystemEnvKey),
+			Name:      "remote_registry_request_total",
+			Help:      "Total number of remote registry requests",
+		},
+		[]string{"operation", "registry_name", "success"},
+	)
 )
