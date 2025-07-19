@@ -42,7 +42,7 @@ local function compare(status, revision)
   local aCode = stCode(ARGV[1])
   local aRev = tonumber(ARGV[2]) or 0
   local aCheckInT = tonumber(ARGV[3]) or 0
-  if revision < aRev or
+  if revision < aRev or 
     ( revision == aRev and sCode <= aCode ) or
     ( revision == aRev and aCheckInT ~= 0 )
   then
@@ -96,7 +96,7 @@ if res then
         redis.call('persist', KEYS[1])
       end
     end
-
+    
     return 'ok'
   end
 end
