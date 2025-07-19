@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
-import { Scanner, SCANNERS_DOC } from './scanner';
+import { Scanner } from './scanner';
 import { NewScannerModalComponent } from './new-scanner-modal/new-scanner-modal.component';
 import { finalize } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
@@ -52,7 +52,6 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     @ViewChild(NewScannerModalComponent)
     newScannerDialog: NewScannerModalComponent;
     deletionSubscription: any;
-    scannerDocUrl: string = SCANNERS_DOC;
     page: number = 1;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.SYSTEM_SCANNER_COMPONENT

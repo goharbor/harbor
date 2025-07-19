@@ -19,7 +19,7 @@ import (
 )
 
 func BenchmarkDefaultCodecEncode(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		codec.Encode("abcdefghigklmopqrztuvwxyz")
 	}
 }
@@ -27,7 +27,7 @@ func BenchmarkDefaultCodecEncode(b *testing.B) {
 func BenchmarkDefaultCodecDecode(b *testing.B) {
 	data := []byte("abcdefghigklmopqrztuvwxyz")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		var str string
 		codec.Decode(data, &str)
 	}

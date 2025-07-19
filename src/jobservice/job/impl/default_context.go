@@ -17,6 +17,7 @@ package impl
 import (
 	"context"
 	"errors"
+	"maps"
 
 	o "github.com/beego/beego/v2/client/orm"
 
@@ -61,9 +62,7 @@ func (dc *DefaultContext) Build(t job.Tracker) (job.Context, error) {
 
 	// Copy properties
 	if len(dc.properties) > 0 {
-		for k, v := range dc.properties {
-			jContext.properties[k] = v
-		}
+		maps.Copy(jContext.properties, dc.properties)
 	}
 
 	// Set loggers for job

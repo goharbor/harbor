@@ -150,7 +150,7 @@ func (l *Auth) attachGroupParallel(ctx context.Context, ldapUsers []model.User, 
 	g := new(errgroup.Group)
 	g.SetLimit(workerCount)
 
-	for i := 0; i < workerCount; i++ {
+	for i := range workerCount {
 		curIndex := i
 		g.Go(func() error {
 			userGroups := make([]ugModel.UserGroup, 0)

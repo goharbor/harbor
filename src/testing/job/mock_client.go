@@ -3,6 +3,7 @@ package job
 import (
 	"fmt"
 	"math/rand"
+	"slices"
 
 	"github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job/models"
@@ -54,10 +55,5 @@ func (mjc *MockJobClient) GetExecutions(uuid string) ([]job.Stats, error) {
 }
 
 func (mjc *MockJobClient) validUUID(uuid string) bool {
-	for _, u := range mjc.JobUUID {
-		if uuid == u {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(mjc.JobUUID, uuid)
 }

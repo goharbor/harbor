@@ -232,7 +232,7 @@ func (suite *ControllerTestSuite) TestGet() {
 
 func (suite *ControllerTestSuite) TestSync() {
 	var references []distribution.Descriptor
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		references = append(references, distribution.Descriptor{
 			MediaType: fmt.Sprintf("media type %d", i),
 			Digest:    suite.Digest(),

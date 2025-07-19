@@ -387,7 +387,7 @@ func (suite *OrmSuite) TestReadOrCreateParallel() {
 	arr := make([]int, count)
 
 	var wg sync.WaitGroup
-	for i := 0; i < count; i++ {
+	for i := range count {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()

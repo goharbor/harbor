@@ -17,6 +17,7 @@ package vulnerable
 import (
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -110,12 +111,10 @@ func Middleware() func(http.Handler) http.Handler {
 		if art.IsImageIndex() {
 			// artifact is image index, skip the checking when it is in the allowlist
 			skippingAllowlist := []string{image.ArtifactTypeImage, cnab.ArtifactTypeCNAB}
-			for _, t := range skippingAllowlist {
-				if art.Type == t {
-					logger.Debugf("artifact %s@%s is image index and its type is %s in skipping allowlist, "+
-						"skip the vulnerability prevention checking", art.RepositoryName, art.Digest, art.Type)
-					return nil
-				}
+			if slices.Contains(skippingAllowlist, art.Type) {
+				logger.Debugf("artifact %s@%s is image index and its type is %s in skipping allowlist, "+
+					"skip the vulnerability prevention checking", art.RepositoryName, art.Digest, art.Type)
+				return nil
 			}
 		}
 
