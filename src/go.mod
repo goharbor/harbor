@@ -74,7 +74,7 @@ require (
 	golang.org/x/time v0.11.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.17.3
+	helm.sh/helm/v3 v3.17.4
 	k8s.io/api v0.32.2
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
