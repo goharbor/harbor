@@ -336,6 +336,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -3560,6 +3562,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -3998,6 +4002,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -6138,6 +6144,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -10066,6 +10073,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float
