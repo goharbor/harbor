@@ -16,6 +16,7 @@ package util
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
@@ -25,6 +26,14 @@ import (
 func Match(pattern, str string) (bool, error) {
 	if len(pattern) == 0 {
 		return true, nil
+	}
+	if strings.HasPrefix(pattern, "regex:") {
+		regexPattern := strings.TrimPrefix(pattern, "regex:")
+		reg, err := regexp.Compile(regexPattern)
+		if err != nil {
+			return false, fmt.Errorf("invalid regex pattern: %w", err)
+		}
+		return reg.MatchString(str), nil
 	}
 	return doublestar.Match(pattern, str)
 }
