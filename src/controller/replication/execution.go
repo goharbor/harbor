@@ -125,7 +125,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 			},
 		})
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to count running executions for policy ID: %d: %v", policy.ID, err)
 		}
 
 		if count > 1 {

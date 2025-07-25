@@ -136,7 +136,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},
-			Parameters: map[string]interface{}{
+			Parameters: map[string]any{
 				"src_resource":  string(src),
 				"dst_resource":  string(dest),
 				"speed":         speed,
