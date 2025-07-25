@@ -3031,6 +3031,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
