@@ -110,24 +110,28 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 		extra["operator"] = op
 	}
 
-	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
-	if err != nil {
-		return 0, err
-	}
-
+	var count int64
 	// If running executions are found, skip the current execution and mark it as skipped.
 	if policy.SingleActiveReplication {
-		count, err := c.execMgr.Count(ctx, &q.Query{
-			Keywords: map[string]interface{}{
+		var err error
+		count, err = c.execMgr.Count(ctx, &q.Query{
+			Keywords: map[string]any{
 				"VendorType": job.ReplicationVendorType,
 				"VendorID":   policy.ID,
 				"Status":     job.RunningStatus.String(),
 			},
 		})
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to count running executions for policy ID: %d: %v", policy.ID, err)
 		}
+	}
 
+	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
+	if err != nil {
+		return 0, err
+	}
+
+	if policy.SingleActiveReplication {
 		if count > 1 {
 			if err = c.execMgr.MarkSkipped(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
 				return 0, err
