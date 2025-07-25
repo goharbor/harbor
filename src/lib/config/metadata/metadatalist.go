@@ -185,6 +185,7 @@ var (
 
 		{Name: common.CacheEnabled, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_ENABLED", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `Enable cache`},
 		{Name: common.CacheExpireHours, Scope: SystemScope, Group: BasicGroup, EnvKey: "CACHE_EXPIRE_HOURS", DefaultValue: "24", ItemType: &IntType{}, Editable: false, Description: `The expire hours for cache`},
+		{Name: common.EnableAsyncLocalCaching, Scope: SystemScope, Group: BasicGroup, EnvKey: "ENABLE_ASYNC_LOCAL_CACHING", DefaultValue: "true", ItemType: &BoolType{}, Editable: false, Description: `Enable async local caching for proxy cache blobs`},
 
 		{Name: common.GDPRDeleteUser, Scope: SystemScope, Group: GDPRGroup, EnvKey: "GDPR_DELETE_USER", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag indicates if a user should be deleted compliant with GDPR.`},
 		{Name: common.GDPRAuditLogs, Scope: SystemScope, Group: GDPRGroup, EnvKey: "GDPR_AUDIT_LOGS", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag indicates if an audit logs of a deleted user should be GDPR compliant.`},

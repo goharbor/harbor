@@ -18,10 +18,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/docker/distribution"
 
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -41,17 +43,18 @@ type RemoteInterface interface {
 
 // remoteHelper defines operations related to remote repository under proxy
 type remoteHelper struct {
-	regID       int64
-	registry    adapter.ArtifactRegistry
-	registryMgr reg.Manager
-	opts        *Options
+	regID        int64
+	registryName string
+	registry     adapter.ArtifactRegistry
+	registryMgr  reg.Manager
+	opts         *Options
 }
 
 // NewRemoteHelper create a remote interface
-func NewRemoteHelper(ctx context.Context, regID int64, opts ...Option) (RemoteInterface, error) {
+func NewRemoteHelper(ctx context.Context, regID int64, mgr reg.Manager, opts ...Option) (RemoteInterface, error) {
 	r := &remoteHelper{
 		regID:       regID,
-		registryMgr: reg.Mgr,
+		registryMgr: mgr,
 		opts:        NewOptions(opts...),
 	}
 	if err := r.init(ctx); err != nil {
@@ -82,14 +85,18 @@ func (r *remoteHelper) init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	r.registryName = reg.Name
 	r.registry = adp.(adapter.ArtifactRegistry)
 	return nil
 }
 
-func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error) {
+func (r *remoteHelper) BlobReader(repo, dig string) (size int64, bReader io.ReadCloser, err error) {
+	defer func() {
+		recordRemoteRequest("blob", r.registryName, err == nil)
+	}()
 	sz, bReader, err := r.registry.PullBlob(repo, dig)
 	if err != nil {
-		return 0, nil, err
+		return
 	}
 	if r.opts != nil && r.opts.Speed > 0 {
 		bReader = lib.NewReader(bReader, r.opts.Speed)
@@ -97,14 +104,28 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 	return sz, bReader, err
 }
 
-func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
+func (r *remoteHelper) Manifest(repo string, ref string) (manifest distribution.Manifest, digest string, err error) {
+	defer func() {
+		recordRemoteRequest("manifest", r.registryName, err == nil)
+	}()
 	return r.registry.PullManifest(repo, ref)
 }
 
-func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
+func (r *remoteHelper) ManifestExist(repo string, ref string) (exists bool, descriptor *distribution.Descriptor, err error) {
+	defer func() {
+		recordRemoteRequest("manifest_exist", r.registryName, err == nil)
+	}()
 	return r.registry.ManifestExist(repo, ref)
 }
 
-func (r *remoteHelper) ListTags(repo string) ([]string, error) {
+func (r *remoteHelper) ListTags(repo string) (tags []string, err error) {
+	defer func() {
+		recordRemoteRequest("list_tags", r.registryName, err == nil)
+	}()
 	return r.registry.ListTags(repo)
+}
+
+// recordRemoteRequest increments the remote request counter
+func recordRemoteRequest(operation, registryName string, success bool) {
+	metric.TotalRemoteRegistryReqCnt.WithLabelValues(operation, registryName, strconv.FormatBool(success)).Inc()
 }
