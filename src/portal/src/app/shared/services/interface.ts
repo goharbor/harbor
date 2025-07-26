@@ -197,6 +197,7 @@ export enum VulnerabilitySeverity {
 export interface VulnerabilityBase {
     id: string;
     severity: string;
+    status: string;
     package: string;
     version: string;
 }

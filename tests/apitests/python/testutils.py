@@ -15,7 +15,7 @@ print(sys.path)
 
 files_directory = os.getcwd() + "/tests/files/"
 
-import v2_swagger_client
+import importlib
 
 admin_user = "admin"
 admin_pwd = "Harbor12345"
@@ -35,9 +35,12 @@ ES_ENDPOINT = os.environ.get('ES_ENDPOINT', '')
 BASE_IMAGE = dict(name='busybox', tag='latest')
 BASE_IMAGE_ABS_PATH_NAME = '/' + BASE_IMAGE['name'] + '.tar'
 
-
+def swagger_module():
+        module = importlib.import_module("v2_swagger_client")
+        return module
+ 
 def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
-
+    v2_swagger_client = swagger_module()
     cfg = v2_swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api/v2.0"
     cfg.username = username
@@ -49,6 +52,7 @@ def GetRepositoryApi(username, password, harbor_server= os.environ.get("HARBOR_H
     return api_instance
 
 def GetUserGroupApi(username, password, harbor_server= os.environ.get("HARBOR_HOST", '')):
+    v2_swagger_client = swagger_module()
     cfg = v2_swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api/v2.0"
     cfg.username = username

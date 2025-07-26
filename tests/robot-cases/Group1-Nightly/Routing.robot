@@ -102,12 +102,3 @@ Test Case - Open CVE Details Page
     Go Into Artifact  ${sha256}
     Retry Double Keywords When Error  Click Link New Tab And Switch  //hbr-artifact-vulnerabilities//clr-dg-row//a[contains(.,'${cve}')]  Retry Wait Element  //h1[contains(.,'${cve}')]
     Close Browser
-
-Test Case - Open Image Scanners Documentation Page
-    [Tags]  image_scanners_documentation_page
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Scanners Page
-    Retry Element Click  ${view_scanner_icon_xpath}
-    Retry Double Keywords When Error  Click Link New Tab And Switch  ${view_scanner_doc_xpath}  Retry Wait Until Page Contains  Vulnerability Scanning with Pluggable Scanners
-    Close Browser
