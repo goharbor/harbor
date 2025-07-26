@@ -207,6 +207,7 @@ Prepare Docker Cert In Photon
     Log All  Prepare Docker Cert In Photon ${cert}
     ${rc}  ${output}=  Run And Return Rc and Output  cat ${cert}
     Log All  CA output: ${output}
+    Wait Unitl Command Success  mkdir -p /etc/pki/tls/certs
     Wait Unitl Command Success  cat ${cert} >> /etc/pki/tls/certs/ca-bundle.crt
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
     Wait Unitl Command Success  cp ${cert} /etc/docker/certs.d/${ip}
