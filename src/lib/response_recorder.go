@@ -14,7 +14,10 @@
 
 package lib
 
-import "net/http"
+import (
+	"net/http"
+	"html"
+)
 
 // NewResponseRecorder creates a response recorder
 func NewResponseRecorder(w http.ResponseWriter) *ResponseRecorder {
@@ -35,7 +38,8 @@ func (r *ResponseRecorder) Write(data []byte) (int, error) {
 	if !r.wroteHeader {
 		r.WriteHeader(http.StatusOK)
 	}
-	return r.ResponseWriter.Write(data)
+	escaped := html.EscapeString(string(data))
+	return r.ResponseWriter.Write([]byte(escaped))
 }
 
 // WriteHeader records the status code before writing the code to the underlying writer
