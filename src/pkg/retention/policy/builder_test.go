@@ -15,6 +15,7 @@
 package policy
 
 import (
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action/performer"
 	"testing"
 	"time"
 
@@ -88,7 +89,7 @@ func (suite *TestBuilderSuite) SetupSuite() {
 		doublestar.NSExcludes,
 	}, doublestar.New)
 	index.Register(label.Kind, []string{label.With, label.Without}, label.New)
-	index3.Register(action.Retain, action.NewRetainAction)
+	index3.Register(action.Retain, performer.NewRetainAction)
 
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}
