@@ -41,6 +41,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/gitlab"
 	// register the Google Gcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
+	// register the Google GAR adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegar"
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
 	// register the huawei adapter
