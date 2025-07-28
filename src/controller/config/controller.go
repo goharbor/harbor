@@ -206,7 +206,7 @@ func maxValueLimitedByLength(length int) int64 {
 	var value int64
 	// the times for multiple, should *10 for every time
 	times := 1
-	for i := 0; i < length; i++ {
+	for range length {
 		value = value + int64(9*times)
 		times = times * 10
 	}
