@@ -76,3 +76,23 @@ func (d *DeleteRobotEventMetadata) Resolve(event *event.Event) error {
 	event.Data = data
 	return nil
 }
+
+// RobotExpiredEventMetadata is the metadata from which the robot expired event can be resolved
+type RobotExpiredEventMetadata struct {
+	Ctx   context.Context
+	Robot *model.Robot
+}
+
+// Resolve to the event from the metadata
+func (r *RobotExpiredEventMetadata) Resolve(event *event.Event) error {
+	data := &event2.RobotExpiredEvent{
+		EventType: event2.TopicRobotExpired,
+		Robot:     r.Robot,
+		OccurAt:   time.Now(),
+		Operator:  "system", // System-triggered expiration
+	}
+	data.Robot.Name = fmt.Sprintf("%s%s", config.RobotPrefix(r.Ctx), data.Robot.Name)
+	event.Topic = event2.TopicRobotExpired
+	event.Data = data
+	return nil
+}

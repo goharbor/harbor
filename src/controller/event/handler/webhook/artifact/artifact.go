@@ -151,3 +151,87 @@ func (a *Handler) constructArtifactPayload(ctx context.Context, event *event.Art
 
 	return payload, nil
 }
+
+// RobotHandler preprocess robot event data
+type RobotHandler struct {
+}
+
+// Name ...
+func (r *RobotHandler) Name() string {
+	return "RobotWebhook"
+}
+
+// Handle preprocess robot event data and then publish hook event
+func (r *RobotHandler) Handle(ctx context.Context, value any) error {
+	if !config.NotificationEnable(ctx) {
+		log.Debug("notification feature is not enabled")
+		return nil
+	}
+
+	switch v := value.(type) {
+	case *event.RobotExpiredEvent:
+		return r.handleRobotExpired(ctx, v)
+	default:
+		log.Errorf("Can not handler this event type! %#v", v)
+	}
+	return nil
+}
+
+// IsStateful ...
+func (r *RobotHandler) IsStateful() bool {
+	return false
+}
+
+func (r *RobotHandler) handleRobotExpired(ctx context.Context, event *event.RobotExpiredEvent) error {
+	// For robot expiration, we use project ID 0 for system-level webhooks
+	// or the robot's project ID for project-level webhooks
+	projectID := event.Robot.ProjectID
+	if projectID == 0 {
+		projectID = 0 // System-level robot
+	}
+
+	policies, err := notification.PolicyMgr.GetRelatedPolices(ctx, projectID, event.EventType)
+	if err != nil {
+		log.Errorf("failed to find policy for %s event: %v", event.EventType, err)
+		return err
+	}
+
+	log.Debugf("find %d policies for %s event", len(policies), event.EventType)
+
+	if len(policies) == 0 {
+		log.Debugf("cannot find policy for %s event: %v", event.EventType, event)
+		return nil
+	}
+
+	payload, err := r.constructRobotPayload(ctx, event)
+	if err != nil {
+		return err
+	}
+
+	err = util.SendHookWithPolicies(ctx, policies, payload, event.EventType)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *RobotHandler) constructRobotPayload(ctx context.Context, event *event.RobotExpiredEvent) (*notifyModel.Payload, error) {
+	payload := &notifyModel.Payload{
+		Type:    event.EventType,
+		OccurAt: event.OccurAt.Unix(),
+		EventData: &notifyModel.EventData{
+			Custom: map[string]string{
+				"robot_name":    event.Robot.Name,
+				"robot_id":      fmt.Sprintf("%d", event.Robot.ID),
+				"project_id":    fmt.Sprintf("%d", event.Robot.ProjectID),
+				"expires_at":    fmt.Sprintf("%d", event.Robot.ExpiresAt),
+				"creation_time": event.Robot.CreationTime.Format("2006-01-02 15:04:05"),
+				"disabled_time": event.OccurAt.Format("2006-01-02 15:04:05"),
+				"description":   event.Robot.Description,
+			},
+		},
+		Operator: event.Operator,
+	}
+
+	return payload, nil
+}

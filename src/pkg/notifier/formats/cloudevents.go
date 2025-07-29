@@ -61,6 +61,7 @@ var (
 		event.TopicScanningCompleted: eventType("scan.completed"),
 		event.TopicScanningStopped:   eventType("scan.stopped"),
 		event.TopicTagRetention:      eventType("tag_retention.finished"),
+		event.TopicRobotExpired:      eventType("robot.expired"),
 	}
 )
 
