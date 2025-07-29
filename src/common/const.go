@@ -217,6 +217,9 @@ const (
 	AuditLogForwardEndpoint = "audit_log_forward_endpoint"
 	// SkipAuditLogDatabase skip to log audit log in database
 	SkipAuditLogDatabase = "skip_audit_log_database"
+	// EnableAsyncLocalCaching indicate whether enable async local caching for proxy cache blobs.
+	EnableAsyncLocalCaching = "enable_async_local_caching"
+
 	// MaxAuditRetentionHour allowed in audit log purge
 	MaxAuditRetentionHour = 240000
 	// ScannerSkipUpdatePullTime
