@@ -1,76 +1,56 @@
-linters-settings:
-  gofmt:
-    # Simplify code: gofmt with `-s` option.
-    # Default: true
-    simplify: false
-  misspell:
-    locale: US,UK
-  goimports:
-    local-prefixes: github.com/goharbor/harbor
-  stylecheck:
-    checks: [
-      "ST1019",  # Importing the same package multiple times.
-    ]
-  goheader:
-    template-path: copyright.tmpl
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    - gofmt
-    - goheader
-    - misspell
-    - typecheck
-    # - dogsled
-    # - dupl
-    # - depguard
-    # - funlen
-    # - goconst
-    # - gocritic
-    # - gocyclo
-    # - goimports
-    # - goprintffuncname
-    - ineffassign
-    # - nakedret
-    # - nolintlint
-    - revive
-    - whitespace
     - bodyclose
     - errcheck
-    # - gosec
-    - gosimple
-    - goimports
+    - goheader
     - govet
-    # - noctx
-    # - rowserrcheck
+    - ineffassign
+    - misspell
+    - revive
     - staticcheck
-    - stylecheck
-    # - unconvert
-    # - unparam
-    # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282
- 
-run:
-  skip-files:
-    - ".*_test.go"
-    - ".*test.go"
-  skip-dirs:
-    - "testing"
-  timeout: 20m
-
-issue:
-  max-same-issues: 0
-  max-per-linter: 0
-
-issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - goimports
-    - path: src/testing/*.go
-      linters:
-        - goimports
-    - path: src/jobservice/mgt/mock_manager.go
-      linters:
-        - goimports
+    - whitespace
+  settings:
+    goheader:
+      template-path: copyright.tmpl
+    misspell:
+      locale: US,UK
+    staticcheck:
+      checks:
+        - ST1019
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - _test\.go
+      - .*test\.go
+      - testing
+      - src/jobservice/mgt/mock_manager.go
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: false
+    goimports:
+      local-prefixes:
+        - github.com/goharbor/harbor
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - _test\.go
+      - .*test\.go
+      - testing
+      - src/jobservice/mgt/mock_manager.go

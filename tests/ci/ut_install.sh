@@ -18,7 +18,7 @@ set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
