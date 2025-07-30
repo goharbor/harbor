@@ -36,7 +36,7 @@ func TestIsNotFoundError(t *testing.T) {
 
 	// pass
 	message := "message"
-	err = AsNotFoundError(orm.ErrNoRows, message)
+	err = AsNotFoundError(orm.ErrNoRows, "%s", "message")
 	require.NotNil(t, err)
 	assert.Equal(t, errors.NotFoundCode, err.Code)
 	assert.Equal(t, message, err.Message)
@@ -55,7 +55,7 @@ func TestIsConflictError(t *testing.T) {
 	message := "message"
 	err = AsConflictError(&pgconn.PgError{
 		Code: "23505",
-	}, message)
+	}, "%s", message)
 	require.NotNil(t, err)
 	assert.Equal(t, errors.ConflictCode, err.Code)
 	assert.Equal(t, message, err.Message)
@@ -74,7 +74,7 @@ func TestIsForeignKeyError(t *testing.T) {
 	message := "message"
 	err = AsForeignKeyError(&pgconn.PgError{
 		Code: "23503",
-	}, message)
+	}, "%s", message)
 	require.NotNil(t, err)
 	assert.Equal(t, errors.ViolateForeignKeyConstraintCode, err.Code)
 	assert.Equal(t, message, err.Message)
