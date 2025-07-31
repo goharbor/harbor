@@ -107,7 +107,7 @@ func (r *replicationTestSuite) TestStart() {
 	// run replication flow with SingleActiveReplication, flow should not start
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(2), nil) // Simulate an existing running execution
+	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil) // Simulate an existing running execution
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
@@ -125,7 +125,7 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.ormCreator.On("Create").Return(nil)
-	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil) // Simulate no running execution
+	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil) // Simulate no running execution
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
