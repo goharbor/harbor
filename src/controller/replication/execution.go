@@ -132,7 +132,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	}
 
 	if policy.SingleActiveReplication {
-		if count > 1 {
+		if count > 0 {
 			if err = c.execMgr.MarkSkipped(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
 				return 0, err
 			}
