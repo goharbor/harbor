@@ -548,8 +548,6 @@ func convertExecution(execution *replication.Execution) *models.ReplicationExecu
 		exec.Status = "Stopped"
 	case job.ErrorStatus.String():
 		exec.Status = "Failed"
-	case job.SkippedStatus.String():
-		exec.Status = "Skipped"
 	}
 
 	return exec

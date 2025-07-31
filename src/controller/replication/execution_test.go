@@ -106,14 +106,14 @@ func (r *replicationTestSuite) TestStart() {
 
 	// run replication flow with SingleActiveReplication, flow should not start
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
-	r.execMgr.On("MarkSkipped", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(2), nil) // Simulate an existing running execution
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
 	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
 	r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 0)
-	r.execMgr.AssertNumberOfCalls(r.T(), "MarkSkipped", 1) // Ensure execution marked as skipped
+	r.execMgr.AssertNumberOfCalls(r.T(), "MarkError", 1) // Ensure execution marked as final status error
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
