@@ -644,7 +644,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
     }
 
-    getStatusStr(status: string): string {
+    getStatusStr(status: string, status_text: string): string {
+        // If status is Failed and status_text has 'Execution skipped', it means the replication task is skipped.
+        if (status === 'Failed' && status_text.startsWith('Execution skipped'))
+            return 'Skipped';
+
         if (STATUS_MAP && STATUS_MAP[status]) {
             return STATUS_MAP[status];
         }
