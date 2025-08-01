@@ -172,6 +172,11 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
+		a, err := c.local.GetManifest(ctx, art) // get artifact digest and delete manifest with digest to avoid send head request to harbor core in DeleteManifest method
+		if err == nil && a != nil && len(a.Digest) > 0 {
+			c.local.DeleteManifest(art.Repository, a.Digest)
+			log.Infof("delete manifest %s with digest %s", art.Repository, a.Digest)
+		}
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 

@@ -72,7 +72,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 
 // Can returns true only when requesting pull/push operation against the specific project
 func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
-	if !(action == rbac.ActionPull || action == rbac.ActionPush) {
+	if !(action == rbac.ActionPull || action == rbac.ActionPush || action == rbac.ActionDelete) {
 		log.Debugf("unauthorized for action %s", action)
 		return false
 	}
