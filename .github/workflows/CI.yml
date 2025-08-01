@@ -81,6 +81,11 @@ jobs:
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          role-to-assume: arn:aws:iam::781782321381:role/github_upload_build_log_role
+          aws-region: us-west-1
       - name: script
         run: |
           echo IP: $IP
