@@ -81,11 +81,6 @@ jobs:
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4.2.1
-        with:
-          role-to-assume: arn:aws:iam::781782321381:role/github_upload_build_log_role
-          aws-region: us-west-1
       - name: script
         run: |
           echo IP: $IP
@@ -105,6 +100,8 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
+    permissions:
+      id-token: write    # ✅ Required for OIDC to work
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -146,6 +143,11 @@ jobs:
           df -h
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          role-to-assume: arn:aws:iam::781782321381:role/github_upload_build_log_role
+          aws-region: us-west-1
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
@@ -160,6 +162,8 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
+    permissions:
+      id-token: write    # ✅ Required for OIDC to work
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -201,6 +205,11 @@ jobs:
           df -h
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          role-to-assume: arn:aws:iam::781782321381:role/github_upload_build_log_role
+          aws-region: us-west-1          
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
@@ -215,6 +224,8 @@ jobs:
     runs-on:
       #- self-hosted
       - ubuntu-latest
+    permissions:
+      id-token: write    # ✅ Required for OIDC to work
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -254,6 +265,11 @@ jobs:
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          role-to-assume: arn:aws:iam::781782321381:role/github_upload_build_log_role
+          aws-region: us-west-1
       - name: script
         run: |
           echo IP: $IP
