@@ -1,6 +1,7 @@
 services:
   log:
     image: goharbor/harbor-log:{{version}}
+    platform: {{platform}}
     container_name: harbor-log
     restart: always
     cap_drop:
@@ -24,6 +25,7 @@ services:
       - harbor
   registry:
     image: goharbor/registry-photon:{{reg_version}}
+    platform: {{platform}}
     container_name: registry
     restart: always
     cap_drop:
@@ -68,6 +70,7 @@ services:
         tag: "registry"
   registryctl:
     image: goharbor/harbor-registryctl:{{version}}
+    platform: {{platform}}
     container_name: registryctl
     env_file:
       - ./common/config/registryctl/env
@@ -112,6 +115,7 @@ services:
 {% if external_database == False %}
   postgresql:
     image: goharbor/harbor-db:{{version}}
+    platform: {{platform}}
     container_name: harbor-db
     restart: always
     cap_drop:
@@ -138,6 +142,7 @@ services:
 {% endif %}
   core:
     image: goharbor/harbor-core:{{version}}
+    platform: {{platform}}
     container_name: harbor-core
     env_file:
       - ./common/config/core/env
@@ -194,6 +199,7 @@ services:
         tag: "core"
   portal:
     image: goharbor/harbor-portal:{{version}}
+    platform: {{platform}}
     container_name: harbor-portal
     restart: always
     cap_drop:
@@ -227,6 +233,7 @@ services:
 
   jobservice:
     image: goharbor/harbor-jobservice:{{version}}
+    platform: {{platform}}
     container_name: harbor-jobservice
     env_file:
       - ./common/config/jobservice/env
@@ -265,6 +272,7 @@ services:
 {% if external_redis == False %}
   redis:
     image: goharbor/redis-photon:{{redis_version}}
+    platform: {{platform}}
     container_name: redis
     restart: always
     cap_drop:
@@ -287,6 +295,7 @@ services:
 {% endif %}
   proxy:
     image: goharbor/nginx-photon:{{version}}
+    platform: {{platform}}
     container_name: nginx
     restart: always
     cap_drop:
@@ -336,6 +345,7 @@ services:
   trivy-adapter:
     container_name: trivy-adapter
     image: goharbor/trivy-adapter-photon:{{trivy_adapter_version}}
+    platform: {{platform}}
     restart: always
     cap_drop:
       - ALL
@@ -375,6 +385,7 @@ services:
 {% if metric.enabled %}
   exporter:
     image: goharbor/harbor-exporter:{{version}}
+    platform: {{platform}}
     container_name: harbor-exporter
     env_file:
       - ./common/config/exporter/env
