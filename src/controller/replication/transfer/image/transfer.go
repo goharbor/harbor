@@ -22,10 +22,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	distribution "github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -263,8 +262,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	// when the media type of pulled manifest is index,
 	// the contents it contains are a few manifests/indexes
 	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
-		v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
-		schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
+		v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
 		return t.copyArtifact(srcRepo, digest, dstRepo, digest, true, opts)
 	// handle foreign layer
@@ -273,7 +271,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 		return nil
 	// copy layer or artifact config
 	// the media type of the layer or config can be "application/octet-stream",
-	// schema1.MediaTypeManifestLayer, schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
+	// schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
 	default:
 		if opts.CopyByChunk {
 			// copy by chunk

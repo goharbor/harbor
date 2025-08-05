@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
-	"github.com/docker/distribution/testutil"
+	"github.com/distribution/distribution/v3/registry/storage/driver/inmemory"
+	"github.com/distribution/distribution/v3/testutil"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 

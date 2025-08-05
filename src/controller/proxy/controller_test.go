@@ -19,7 +19,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

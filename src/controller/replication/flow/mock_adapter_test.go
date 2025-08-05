@@ -3,7 +3,7 @@
 package flow
 
 import (
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution/v3"
 
 	io "io"
 
@@ -274,7 +274,7 @@ func (_m *mockAdapter) ListTags(repository string) ([]string, error) {
 }
 
 // ManifestExist provides a mock function with given fields: repository, reference
-func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool, *distribution.Descriptor, error) {
+func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool, *v1.Descriptor, error) {
 	ret := _m.Called(repository, reference)
 
 	if len(ret) == 0 {
@@ -282,9 +282,9 @@ func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool,
 	}
 
 	var r0 bool
-	var r1 *distribution.Descriptor
+	var r1 *v1.Descriptor
 	var r2 error
-	if rf, ok := ret.Get(0).(func(string, string) (bool, *distribution.Descriptor, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, string) (bool, *v1.Descriptor, error)); ok {
 		return rf(repository, reference)
 	}
 	if rf, ok := ret.Get(0).(func(string, string) bool); ok {
@@ -293,11 +293,11 @@ func (_m *mockAdapter) ManifestExist(repository string, reference string) (bool,
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string) *distribution.Descriptor); ok {
+	if rf, ok := ret.Get(1).(func(string, string) *v1.Descriptor); ok {
 		r1 = rf(repository, reference)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(*distribution.Descriptor)
+			r1 = ret.Get(1).(*v1.Descriptor)
 		}
 	}
 
