@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	digest "github.com/opencontainers/go-digest"
 
 	"github.com/goharbor/harbor/src/controller/artifact"

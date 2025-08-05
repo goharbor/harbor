@@ -17,7 +17,7 @@ package gc
 import (
 	"testing"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/stretchr/testify/suite"
 
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"

@@ -26,11 +26,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/manifestlist"
-	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	distribution "github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
+	_ "github.com/distribution/distribution/v3/manifest/ocischema" // register oci manifest unmarshal function
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
@@ -57,8 +56,6 @@ var (
 		manifestlist.MediaTypeManifestList,
 		v1.MediaTypeImageManifest,
 		schema2.MediaTypeManifest,
-		schema1.MediaTypeSignedManifest,
-		schema1.MediaTypeManifest,
 	}
 )
 
@@ -609,8 +606,7 @@ func (c *client) Copy(srcRepo, srcRef, dstRepo, dstRef string, override bool) er
 			continue
 		// manifest or index
 		case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
-			v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
-			schema1.MediaTypeSignedManifest, schema1.MediaTypeManifest:
+			v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
 			if err = c.Copy(srcRepo, digest, dstRepo, digest, false); err != nil {
 				return err
 			}

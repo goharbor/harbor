@@ -18,8 +18,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/docker/distribution/registry/storage"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/distribution/distribution/v3/registry/storage"
+	storagedriver "github.com/distribution/distribution/v3/registry/storage/driver"
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"

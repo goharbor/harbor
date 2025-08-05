@@ -7,7 +7,7 @@ sudo apt-get update && sudo apt-get install -y libldap2-dev
 sudo go env -w GO111MODULE=auto
 pwd
 # cd ./src
-# go get github.com/docker/distribution@latest
+# go get github.com/distribution/distribution@latest
 # go get github.com/docker/libtrust@latest
 # set +e
 # go get github.com/stretchr/testify@v1.8.4

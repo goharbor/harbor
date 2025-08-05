@@ -19,8 +19,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

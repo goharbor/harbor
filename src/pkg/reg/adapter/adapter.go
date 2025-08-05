@@ -20,7 +20,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
