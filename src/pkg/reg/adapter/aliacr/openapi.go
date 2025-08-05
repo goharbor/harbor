@@ -17,12 +17,17 @@ package aliacr
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr_ee"
+
+	"github.com/goharbor/harbor/src/pkg/registry"
 )
 
 type repository struct {
@@ -57,8 +62,13 @@ type acrOpenapi struct {
 var _ openapi = &acrOpenapi{}
 
 // newAcrOpenapi creates a new acrOpenapi instance.
-func newAcrOpenapi(accessKeyID string, accessKeySecret string, regionID string) (openapi, error) {
-	client, err := cr.NewClientWithAccessKey(regionID, accessKeyID, accessKeySecret)
+func newAcrOpenapi(accessKeyID string, accessKeySecret string, regionID string, rateLimiter http.RoundTripper) (openapi, error) {
+	config := sdk.NewConfig().
+		WithUserAgent(registry.UserAgent).
+		WithAutoRetry(true)
+	config.Transport = rateLimiter
+
+	client, err := cr.NewClientWithOptions(regionID, config, credentials.NewAccessKeyCredential(accessKeyID, accessKeySecret))
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +192,13 @@ type acreeOpenapi struct {
 var _ openapi = &acreeOpenapi{}
 
 // newAcreeOpenapi creates a new acreeOpenapi instance.
-func newAcreeOpenapi(accessKeyID string, accessKeySecret string, regionID string, instanceID string) (openapi, error) {
-	client, err := cr_ee.NewClientWithAccessKey(regionID, accessKeyID, accessKeySecret)
+func newAcreeOpenapi(accessKeyID string, accessKeySecret string, regionID string, instanceID string, rateLimiter http.RoundTripper) (openapi, error) {
+	config := sdk.NewConfig().
+		WithUserAgent(registry.UserAgent).
+		WithAutoRetry(true)
+	config.Transport = rateLimiter
+
+	client, err := cr_ee.NewClientWithOptions(regionID, config, credentials.NewAccessKeyCredential(accessKeyID, accessKeySecret))
 	if err != nil {
 		return nil, err
 	}

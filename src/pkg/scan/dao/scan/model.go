@@ -68,6 +68,7 @@ type VulnerabilityRecord struct {
 	PackageVersion   string   `orm:"column(package_version)"`
 	PackageType      string   `orm:"column(package_type)"`
 	Severity         string   `orm:"column(severity)"`
+	Status           string   `orm:"column(status)"`
 	Fix              string   `orm:"column(fixed_version);null"`
 	URLs             string   `orm:"column(urls);null"`
 	CVE3Score        *float64 `orm:"column(cvss_score_v3);null"`

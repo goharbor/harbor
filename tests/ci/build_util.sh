@@ -3,7 +3,25 @@ set -x
 
 set -e
 
+function s3_to_https() {
+  local s3_url="$1"
+
+  if [[ "$s3_url" =~ ^s3://([^/]+)/(.+)$ ]]; then
+    local bucket="${BASH_REMATCH[1]}"
+    local path="${BASH_REMATCH[2]}"
+    # current s3 bucket is create in this region
+    local region="us-west-1"  
+    echo "https://${bucket}.s3.${region}.amazonaws.com/${path}"
+  else
+    echo "Invalid S3 URL: $s3_url" >&2
+    return 1
+  fi
+}
+
+
 function uploader {
+    converted_url=$(s3_to_https "s3://$2/$1")
+    echo "download url $converted_url"
     aws s3 cp $1 s3://$2/$1
 }
 

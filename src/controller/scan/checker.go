@@ -16,6 +16,7 @@ package scan
 
 import (
 	"context"
+	"slices"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -125,10 +126,8 @@ func hasCapability(r *models.Registration, a *artifact.Artifact) bool {
 	// use allowlist here because currently only docker image is supported by the scanner
 	// https://github.com/goharbor/pluggable-scanner-spec/issues/2
 	allowlist := []string{image.ArtifactTypeImage}
-	for _, t := range allowlist {
-		if a.Type == t {
-			return r.HasCapability(a.ManifestMediaType)
-		}
+	if slices.Contains(allowlist, a.Type) {
+		return r.HasCapability(a.ManifestMediaType)
 	}
 
 	return false

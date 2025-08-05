@@ -161,17 +161,36 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 			log.Warningf("The separator '%s' is not valid in the query parameter '%s__%s'. Please use the correct field name.", orm.ExprSep, keyPieces[0], keyPieces[1])
 			continue
 		}
-		k := keyPieces[0]
-		mk, filterable := meta.Filterable(k)
+		fieldKey := keyPieces[0]
+		mk, filterable := meta.Filterable(fieldKey)
 		if !filterable {
 			// This is a workaround for the unsuitable usage of query, the keyword format for field and method should be consistent
 			// e.g. "ArtifactDigest" or the snake case format "artifact_digest" should be used instead:
 			// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/blob/controller.go#L233
-			mk, filterable = meta.Filterable(snakeCase(k))
+			mk, filterable = meta.Filterable(snakeCase(fieldKey))
 			if mk == nil || !filterable {
 				continue
 			}
 		}
+
+		// only accept the below operators
+		if len(keyPieces) == 2 {
+			operator := orm.ExprSep + keyPieces[1]
+			allowedOperators := map[string]struct{}{
+				"__icontains": {},
+				"__in":        {},
+				"__gte":       {},
+				"__lte":       {},
+				"__gt":        {},
+				"__lt":        {},
+				"__exact":     {},
+			}
+			if _, ok := allowedOperators[operator]; !ok {
+				log.Warningf("the operator '%s' in query parameter '%s' is not supported, the query will be skipped.", operator, key)
+				continue
+			}
+		}
+
 		// filter function defined, use it directly
 		if mk.FilterFunc != nil {
 			qs = mk.FilterFunc(ctx, qs, key, value)

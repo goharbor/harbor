@@ -11,10 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ScannerRegistration } from '../../../../../../ng-swagger-gen/models/scanner-registration';
-import { ScannerAdapterMetadata } from '../../../../../../ng-swagger-gen/models/scanner-adapter-metadata';
 
-export interface Scanner extends ScannerRegistration {
-    metadata?: ScannerAdapterMetadata;
-    loadingMetadata?: boolean;
+package lib
+
+import (
+	"os"
+	"strconv"
+)
+
+// GetEnvInt64 reads an environment variable and converts it to an int64, returning the default value if not set or invalid.
+func GetEnvInt64(envKey string, defaultValue int64) int64 {
+	value := os.Getenv(envKey)
+	if value == "" {
+		return defaultValue
+	}
+
+	intValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return defaultValue
+	}
+
+	return intValue
 }

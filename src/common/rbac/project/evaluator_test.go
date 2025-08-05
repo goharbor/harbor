@@ -119,7 +119,7 @@ func BenchmarkProjectEvaluator(b *testing.B) {
 	resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull)
 	}
 }

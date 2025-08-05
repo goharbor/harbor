@@ -131,7 +131,7 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	// if time exceed, then push a updated manifest list which contains existing manifest
 	var newMan distribution.Manifest
 	var err error
-	for n := 0; n < maxManifestListWait; n++ {
+	for range maxManifestListWait {
 		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, reference)
 		time.Sleep(sleepIntervalSec * time.Second)
 		newMan, err = m.updateManifestList(ctx, repo, man)
@@ -177,7 +177,7 @@ type ManifestCache struct {
 // CacheContent ...
 func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, _ string) {
 	var waitBlobs []distribution.Descriptor
-	for n := 0; n < maxManifestWait; n++ {
+	for n := range maxManifestWait {
 		time.Sleep(sleepIntervalSec * time.Second)
 		waitBlobs = m.local.CheckDependencies(ctx, art.Repository, man)
 		if len(waitBlobs) == 0 {
