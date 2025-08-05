@@ -111,7 +111,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	}
 
 	var count int64
-	// If running executions are found, skip the current execution and mark it as skipped.
+	// If running executions are found, skip the current execution and mark it as error.
 	if policy.SingleActiveReplication {
 		var err error
 		count, err = c.execMgr.Count(ctx, &q.Query{
