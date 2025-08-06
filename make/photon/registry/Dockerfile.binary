@@ -1,7 +1,7 @@
 ARG golang_image
 FROM ${golang_image}
 
-ENV DISTRIBUTION_DIR /go/src/github.com/docker/distribution
+ENV DISTRIBUTION_DIR /go/src/github.com/distribution/distribution/v3
 ENV BUILDTAGS include_oss include_gcs
 ENV GO111MODULE auto
 

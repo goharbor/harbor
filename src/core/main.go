@@ -281,7 +281,7 @@ func main() {
 				log.Debugf("failed to ping %s, retry after %s : %v", url, sleep, err)
 			}),
 		}
-		if err := retry.Retry(checker.Check, options...); err != nil {
+		if err := retry.Retry(func() error { return checker.Check(ctx) }, options...); err != nil {
 			log.Errorf("failed to check the jobservice health status: timeout, error: %v", err)
 			return
 		}

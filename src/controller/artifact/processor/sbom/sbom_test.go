@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

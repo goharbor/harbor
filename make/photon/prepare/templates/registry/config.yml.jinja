@@ -28,12 +28,13 @@ storage:
     disable: true
 {% endif %}
 redis:
+  {% set redis_hosts = redis_host.split(',') %}
+  addrs:
+    {% for local_redis_host in redis_hosts %}
+    - {{local_redis_host}}
+    {% endfor %}
 {% if sentinel_master_set %}
-  # sentinel hosts with comma
-  addr: {{redis_host}}
-  sentinelMasterSet: {{sentinel_master_set}}
-{% else %}
-  addr: {{redis_host}}
+  masterName: {{sentinel_master_set}}
 {% endif %}
   readtimeout: 10s
   writetimeout: 10s
@@ -71,6 +72,3 @@ auth:
     path: /etc/registry/passwd
 validation:
   disabled: true
-compatibility:
-  schema1:
-    enabled: true

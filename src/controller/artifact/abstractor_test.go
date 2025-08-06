@@ -18,15 +18,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	tblob "github.com/goharbor/harbor/src/testing/pkg/blob"
@@ -316,25 +314,6 @@ func (a *abstractorTestSuite) SetupTest() {
 	processor.Registry[schema2.MediaTypeImageConfig] = a.processor
 }
 
-// docker manifest v1
-func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
-	manifest, _, err := distribution.UnmarshalManifest(schema1.MediaTypeSignedManifest, []byte(v1Manifest))
-	a.Require().Nil(err)
-	mock.OnAnything(a.blobMgr, "List").Return([]*blob.Blob{
-		{Size: 10},
-		{Size: 20},
-	}, nil)
-	a.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
-	artifact := &artifact.Artifact{
-		ID: 1,
-	}
-	err = a.abstractor.AbstractMetadata(nil, artifact)
-	a.Require().Nil(err)
-	a.Assert().Equal(int64(1), artifact.ID)
-	a.Assert().Equal(schema1.MediaTypeSignedManifest, artifact.ManifestMediaType)
-	a.Assert().Equal(schema1.MediaTypeSignedManifest, artifact.MediaType)
-	a.Assert().Equal(int64(30+len([]byte(v1Manifest))), artifact.Size)
-}
 
 // docker manifest v2
 func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {

@@ -3,7 +3,7 @@
 package distribution
 
 import (
-	distribution "github.com/docker/distribution"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -50,19 +50,19 @@ func (_m *Manifest) Payload() (string, []byte, error) {
 }
 
 // References provides a mock function with no fields
-func (_m *Manifest) References() []distribution.Descriptor {
+func (_m *Manifest) References() []v1.Descriptor {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for References")
 	}
 
-	var r0 []distribution.Descriptor
-	if rf, ok := ret.Get(0).(func() []distribution.Descriptor); ok {
+	var r0 []v1.Descriptor
+	if rf, ok := ret.Get(0).(func() []v1.Descriptor); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]distribution.Descriptor)
+			r0 = ret.Get(0).([]v1.Descriptor)
 		}
 	}
 

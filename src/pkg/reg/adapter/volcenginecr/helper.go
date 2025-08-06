@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/docker/distribution/registry/client/auth/challenge"
+	"github.com/goharbor/harbor/src/pkg/reg/util/challenge"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/util"

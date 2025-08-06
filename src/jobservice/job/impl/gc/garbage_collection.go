@@ -485,7 +485,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 }
 
 // cleanCache is to clean the registry cache for GC.
-// To do this is because the issue https://github.com/docker/distribution/issues/2094
+// To do this is because the issue https://github.com/distribution/distribution/v3/issues/2094
 func (gc *GarbageCollector) cleanCache(ctx context.Context) error {
 	u, err := url.Parse(gc.redisURL)
 	if err != nil {
