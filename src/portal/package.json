@@ -53,13 +53,13 @@
     "zone.js": "^0.13.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.2.16",
+    "@angular-devkit/build-angular": "^20.1.5",
     "@angular-eslint/builder": "16.1.2",
     "@angular-eslint/eslint-plugin": "16.1.2",
     "@angular-eslint/eslint-plugin-template": "16.1.2",
-    "@angular-eslint/schematics": "16.1.2",
+    "@angular-eslint/schematics": "20.1.1",
     "@angular-eslint/template-parser": "16.1.2",
-    "@angular/cli": "^16.2.16",
+    "@angular/cli": "^20.1.5",
     "@angular/compiler-cli": "^16.2.9",
     "@cypress/schematic": "^2.5.2",
     "@types/express": "^4.17.21",
