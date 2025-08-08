@@ -1,5 +1,5 @@
 import os
-
+import platform
 from g import templates_dir
 from .configs import parse_versions
 from .jinja import render_jinja
@@ -58,5 +58,15 @@ def prepare_docker_compose(configs, with_trivy):
     metric = configs.get('metric')
     if metric:
         rendering_variables['metric'] = metric
+    # for metrics
+    metric = configs.get('metric')
+    if metric:
+        rendering_variables['metric'] = metric
+    
+    arch = platform.machine()
+    if arch == "aarch64":
+        rendering_variables['platform'] = "linux/arm64"
+    else:
+        rendering_variables['platform'] = "linux/amd64"
 
     render_jinja(docker_compose_template_path, docker_compose_yml_path,  mode=0o644, **rendering_variables)
