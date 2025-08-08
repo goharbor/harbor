@@ -115,7 +115,7 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.SingleActiveReplication != nil {
 		// Validate and assign SingleActiveReplication only for non-event_based triggers
-		if params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
 			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
@@ -191,7 +191,7 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.SingleActiveReplication != nil {
 		// Validate and assign SingleActiveReplication only for non-event_based triggers
-		if params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
 			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
