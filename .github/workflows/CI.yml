@@ -148,7 +148,12 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
-
+      - name: upload_logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-api-harbor-logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
@@ -203,7 +208,12 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh PROXY_CACHE $IP
           df -h
-
+      - name: upload_logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxy-api-harbor-logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   APITEST_LDAP:
     env:
       APITEST_LDAP: true
@@ -256,7 +266,12 @@ jobs:
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
           df -h
-
+      - name: upload_logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ldap-api-harbor-logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   OFFLINE:
     env:
       OFFLINE: true
