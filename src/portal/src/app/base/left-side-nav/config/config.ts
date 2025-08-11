@@ -68,6 +68,7 @@ export class Configuration {
     ldap_verify_cert: BoolValueItem;
     ldap_group_base_dn: StringValueItem;
     ldap_group_search_filter: StringValueItem;
+    ldap_group_admin_filter: StringValueItem;
     ldap_group_attribute_name: StringValueItem;
     ldap_group_search_scope: NumberValueItem;
     ldap_group_membership_attribute: StringValueItem;
@@ -137,6 +138,7 @@ export class Configuration {
         this.ldap_verify_cert = new BoolValueItem(true, true);
         this.ldap_group_base_dn = new StringValueItem('', true);
         this.ldap_group_search_filter = new StringValueItem('', true);
+        this.ldap_group_admin_filter = new StringValueItem('', true);
         this.ldap_group_attribute_name = new StringValueItem('', true);
         this.ldap_group_search_scope = new NumberValueItem(0, true);
         this.ldap_group_membership_attribute = new StringValueItem('', true);
