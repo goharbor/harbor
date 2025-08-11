@@ -60,7 +60,8 @@ services:
     networks:
       - harbor
     depends_on:
-      - log
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -103,7 +104,8 @@ services:
     networks:
       - harbor
     depends_on:
-      - log
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -128,7 +130,8 @@ services:
     env_file:
       - ./common/config/db/env
     depends_on:
-      - log
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -179,13 +182,17 @@ services:
     networks:
       harbor:
     depends_on:
-      - log
-      - registry
+      log:
+        condition: service_healthy
+      registry:
+        condition: service_started
 {% if external_redis == False %}
-      - redis
+      redis:
+        condition: service_started
 {% endif %}
 {% if external_database == False %}
-      - postgresql
+      postgresql:
+        condition: service_started
 {% endif %}
     logging:
       driver: "syslog"
@@ -218,7 +225,8 @@ services:
     networks:
       - harbor
     depends_on:
-      - log
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -256,7 +264,8 @@ services:
     networks:
       - harbor
     depends_on:
-      - core
+      core:
+        condition: service_started
     logging:
       driver: "syslog"
       options:
@@ -278,7 +287,8 @@ services:
     networks:
       harbor:
     depends_on:
-      - log
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -323,10 +333,14 @@ services:
       - {{metric.port}}:9090
 {% endif %}
     depends_on:
-      - registry
-      - core
-      - portal
-      - log
+      registry:
+        condition: service_started
+      core:
+        condition: service_started
+      portal:
+        condition: service_started
+      log:
+        condition: service_healthy
     logging:
       driver: "syslog"
       options:
@@ -340,7 +354,8 @@ services:
     cap_drop:
       - ALL
     depends_on:
-      - log
+      log:
+        condition: service_healthy
 {% if external_redis == False %}
       - redis
 {% endif %}
@@ -382,9 +397,11 @@ services:
     networks:
       - harbor
     depends_on:
-      - core
+      core:
+        condition: service_started
   {% if external_database == False %}
-      - postgresql
+      postgresql:
+        condition: service_started
   {% endif %}
     volumes:
       - type: bind
