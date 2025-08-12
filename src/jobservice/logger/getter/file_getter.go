@@ -99,10 +99,8 @@ func tailLogFile(filename string, limit int64) ([]byte, error) {
 	}
 	defer fi.Close()
 
-	pos := size - sizeToRead
-	if pos < 0 {
-		pos = 0
-	}
+	pos := max(size-sizeToRead, 0)
+
 	if pos != 0 {
 		_, err = fi.Seek(pos, 0)
 		if err != nil {

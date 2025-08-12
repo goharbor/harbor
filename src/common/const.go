@@ -252,4 +252,7 @@ const (
 
 	// Global Leeway used for token validation
 	JwtLeeway = 60 * time.Second
+
+	// The replication adapter whitelist
+	ReplicationAdapterWhiteList = "REPLICATION_ADAPTER_WHITELIST"
 )

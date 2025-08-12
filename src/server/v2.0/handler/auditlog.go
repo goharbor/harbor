@@ -49,17 +49,17 @@ type auditlogAPI struct {
 	projectCtl  project.Controller
 }
 
-func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAuditLogsParams) middleware.Responder {
+func (a *auditlogAPI) checkPermissionAndBuildQuery(ctx context.Context, qs *string, sort *string, page *int64, pageSize *int64) (*q.Query, error) {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
-		return a.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
+		return nil, errors.UnauthorizedError(errors.New("security context not found"))
 	}
 	if !secCtx.IsAuthenticated() {
-		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
+		return nil, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername())
 	}
-	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	query, err := a.BuildQuery(ctx, qs, sort, page, pageSize)
 	if err != nil {
-		return a.SendError(ctx, err)
+		return nil, err
 	}
 
 	if err := a.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceAuditLog); err != nil {
@@ -73,11 +73,16 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 
 			projects, err := a.projectCtl.List(ctx, q.New(q.KeyWords{"member": member}), project.Metadata(false))
 			if err != nil {
-				return a.SendError(ctx, fmt.Errorf(
-					"failed to get projects of user %s: %v", secCtx.GetUsername(), err))
+				return nil, errors.Errorf(
+					"failed to get projects of user %s: %v", secCtx.GetUsername(), err)
 			}
 			for _, project := range projects {
-				if a.HasProjectPermission(ctx, project.ProjectID, rbac.ActionList, rbac.ResourceLog) {
+				hasPerm, err := a.HasProjectPermission(ctx, project.ProjectID, rbac.ActionList, rbac.ResourceLog)
+				if err != nil {
+					return nil, fmt.Errorf(
+						"failed to get project permission of user %s: %v", secCtx.GetUsername(), err)
+				}
+				if hasPerm {
 					ol.Values = append(ol.Values, project.ProjectID)
 				}
 			}
@@ -87,6 +92,14 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 			ol.Values = append(ol.Values, -1)
 		}
 		query.Keywords["ProjectID"] = ol
+	}
+	return query, nil
+}
+
+func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAuditLogsParams) middleware.Responder {
+	query, err := a.checkPermissionAndBuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	if err != nil {
+		return a.SendError(ctx, err)
 	}
 
 	total, err := a.auditMgr.Count(ctx, query)
@@ -114,44 +127,11 @@ func (a *auditlogAPI) ListAuditLogs(ctx context.Context, params auditlog.ListAud
 		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(auditLogs)
 }
+
 func (a *auditlogAPI) ListAuditLogExts(ctx context.Context, params auditlog.ListAuditLogExtsParams) middleware.Responder {
-	secCtx, ok := security.FromContext(ctx)
-	if !ok {
-		return a.SendError(ctx, errors.UnauthorizedError(errors.New("security context not found")))
-	}
-	if !secCtx.IsAuthenticated() {
-		return a.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
-	}
-	query, err := a.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
+	query, err := a.checkPermissionAndBuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
-	}
-
-	if err := a.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceAuditLog); err != nil {
-		ol := &q.OrList{}
-		if sc, ok := secCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
-			user := sc.User()
-			member := &project.MemberQuery{
-				UserID:   user.UserID,
-				GroupIDs: user.GroupIDs,
-			}
-
-			projects, err := a.projectCtl.List(ctx, q.New(q.KeyWords{"member": member}), project.Metadata(false))
-			if err != nil {
-				return a.SendError(ctx, fmt.Errorf(
-					"failed to get projects of user %s: %v", secCtx.GetUsername(), err))
-			}
-			for _, project := range projects {
-				if a.HasProjectPermission(ctx, project.ProjectID, rbac.ActionList, rbac.ResourceLog) {
-					ol.Values = append(ol.Values, project.ProjectID)
-				}
-			}
-		}
-		// make sure no project will be selected with the query
-		if len(ol.Values) == 0 {
-			ol.Values = append(ol.Values, -1)
-		}
-		query.Keywords["ProjectID"] = ol
 	}
 
 	total, err := a.auditextMgr.Count(ctx, query)

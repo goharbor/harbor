@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cache
+package lib
 
 import (
-	"testing"
+	"os"
+	"strconv"
 )
 
-func BenchmarkDefaultCodecEncode(b *testing.B) {
-	for b.Loop() {
-		codec.Encode("abcdefghigklmopqrztuvwxyz")
+// GetEnvInt64 reads an environment variable and converts it to an int64, returning the default value if not set or invalid.
+func GetEnvInt64(envKey string, defaultValue int64) int64 {
+	value := os.Getenv(envKey)
+	if value == "" {
+		return defaultValue
 	}
-}
 
-func BenchmarkDefaultCodecDecode(b *testing.B) {
-	data := []byte("abcdefghigklmopqrztuvwxyz")
-
-	for b.Loop() {
-		var str string
-		codec.Decode(data, &str)
+	intValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return defaultValue
 	}
+
+	return intValue
 }

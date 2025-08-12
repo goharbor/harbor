@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -386,12 +387,18 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+	hasPerm, err := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
 	}
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+	hasPerm, err = a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, a.getProjectMemberSummary)
 	}
 
@@ -795,13 +802,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if err != nil {
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
 		}
+
 		permitted := false
-		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
-			if string(registry.Type) == t {
-				permitted = true
-				break
-			}
+		if slices.Contains(config.GetPermittedRegistryTypesForProxyCache(), string(registry.Type)) {
+			permitted = true
 		}
+
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
 		}
