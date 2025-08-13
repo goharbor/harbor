@@ -238,3 +238,11 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	})
 	return err
 }
+
+func (a *adapter) DeleteTag(repository, tag string) error {
+	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+		RepositoryName: &repository,
+		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &tag}},
+	})
+	return err
+}
