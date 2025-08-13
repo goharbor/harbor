@@ -26,6 +26,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TagRetentionService } from '../tag-retention.service';
 import { ErrorHandler } from '../../../../../shared/units/error-handler';
 import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
+import { CallbackPipe } from '../../../../../shared/pipes/callback.pipe';
+
 describe('AddRuleComponent', () => {
     let component: AddRuleComponent;
     let fixture: ComponentFixture<AddRuleComponent>;
@@ -43,7 +45,11 @@ describe('AddRuleComponent', () => {
                 NoopAnimationsModule,
                 HttpClientTestingModule,
             ],
-            declarations: [AddRuleComponent, InlineAlertComponent],
+            declarations: [
+                AddRuleComponent,
+                CallbackPipe,
+                InlineAlertComponent,
+            ],
             providers: [
                 TranslateService,
                 ErrorHandler,
