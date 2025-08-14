@@ -15,12 +15,13 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/docker/distribution/configuration"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/factory"
+	"github.com/distribution/distribution/v3/configuration"
+	storagedriver "github.com/distribution/distribution/v3/registry/storage/driver"
+	"github.com/distribution/distribution/v3/registry/storage/driver/factory"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goharbor/harbor/src/lib/log"
@@ -78,7 +79,7 @@ func (c *Configuration) setStorageDriver() error {
 	if err != nil {
 		return fmt.Errorf("error parsing registry configuration %s: %v", c.RegistryConfig, err)
 	}
-	storageDriver, err := factory.Create(rConf.Storage.Type(), rConf.Storage.Parameters())
+	storageDriver, err := factory.Create(context.TODO(), rConf.Storage.Type(), rConf.Storage.Parameters())
 	if err != nil {
 		return err
 	}

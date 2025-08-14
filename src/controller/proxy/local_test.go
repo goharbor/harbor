@@ -18,8 +18,8 @@ import (
 	"context"
 	"testing"
 
-	distribution2 "github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema2"
+	distribution2 "github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
