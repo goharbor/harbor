@@ -31,13 +31,13 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
