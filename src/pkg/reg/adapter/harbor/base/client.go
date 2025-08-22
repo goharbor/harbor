@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
+        "os"
 	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
@@ -150,6 +150,9 @@ func (c *Client) GetURL() string {
 
 	// get the URL from the environment so can use non-standard port
         url := os.Getenv("CORE_LOCAL_URL")
+	if (url == "") {
+		url = "http://127.0.0.1:8080"
+	}
 
 	if common_http.InternalTLSEnabled() {
 		url = "https://127.0.0.1:8443"
