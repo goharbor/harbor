@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
+        "os"
 	common_http "github.com/goharbor/harbor/src/common/http"
 )
 
@@ -147,7 +147,13 @@ func (c *Client) GetURL() string {
 	// inside core, returns the "127.0.0.1" as URL to avoid the issue:
 	// https://github.com/goharbor/harbor-helm/issues/222
 	// when harbor is deployed on Kubernetes with hairpin mode disabled
-	url := "http://127.0.0.1:8080"
+
+	// get the URL from the environment so can use non-standard port
+        url := os.Getenv("CORE_LOCAL_URL")
+	if (url == "") {
+		url = "http://127.0.0.1:8080"
+	}
+
 	if common_http.InternalTLSEnabled() {
 		url = "https://127.0.0.1:8443"
 	}
