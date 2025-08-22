@@ -357,7 +357,8 @@ services:
       log:
         condition: service_healthy
 {% if external_redis == False %}
-      - redis
+      redis:
+        condition: service_started
 {% endif %}
     networks:
       - harbor
