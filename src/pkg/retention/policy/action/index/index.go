@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action/performer"
 )
 
 // index for keeping the mapping action and its performer
@@ -26,7 +27,7 @@ var index sync.Map
 
 func init() {
 	// Register retain action
-	Register(action.Retain, action.NewRetainAction)
+	Register(action.Retain, performer.NewRetainAction)
 }
 
 // Register the performer with the corresponding action
