@@ -19,6 +19,7 @@ func main() {
 		"TRIVYADAPTERVERSION": true,
 		"DISTRIBUTION_SRC":    true,
 		"SPECTRAL_VERSION":    true,
+		"NODEBUILDIMAGE":      true,
 	}
 
 	f, err := os.Open("Makefile")
@@ -66,6 +67,14 @@ func main() {
 		}
 	}
 
+	var nodeVersion string
+	if img, ok := vars["NODEBUILDIMAGE"]; ok {
+		parts := strings.SplitN(img, ":", 2)
+		if len(parts) == 2 {
+			nodeVersion = parts[1]
+		}
+	}
+
 	swaggerVersion := vars["SWAGGER_VERSION"]
 	registryTag := vars["REGISTRY_SRC_TAG"]
 	trivyVer := vars["TRIVYVERSION"]
@@ -103,6 +112,7 @@ func main() {
 	fmt.Fprintf(out, "\tGOLANGCILINT_VERSION = \"%s\"\n", GOLANGCILINT_VERSION)
 	fmt.Fprintf(out, "\tDELVE_VERSION        = \"%s\"\n", DELVE_VERSION)
 	fmt.Fprintf(out, "\tBUN_VERSION          = \"%s\"\n", BUN_VERSION)
+	fmt.Fprintf(out, "\tNODE_VERSION         = \"%s\"\n", nodeVersion)
 	fmt.Fprintf(out, "\tDISTRIBUTION_SRC     = \"%s\"\n", distributionSrc)
 	fmt.Fprintf(out, "\tSPECTRAL_VERSION     = \"%s\"\n", spectralVersion)
 	fmt.Fprintf(out, "\tREGISTRY_SRC_TAG     = \"%s\"\n", registryTag)

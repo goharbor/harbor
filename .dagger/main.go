@@ -8,9 +8,6 @@ import (
 	"strings"
 )
 
-// to-do: update registry to v3
-// to-do: stop usage of shell things. No shell spawning
-
 type (
 	Package  string
 	Platform string
@@ -18,9 +15,7 @@ type (
 
 var (
 	targetPlatforms = []Platform{"linux/amd64", "linux/arm64"}
-	// targetPlatforms = []Platform{"linux/amd64"}
-	packages = []Package{"core", "jobservice", "registryctl", "portal", "registry", "nginx", "cmd/exporter", "trivy-adapter"}
-	// packages = []string{"core", "jobservice"}
+	packages        = []Package{"core", "jobservice", "registryctl", "portal", "registry", "nginx", "cmd/exporter", "trivy-adapter"}
 )
 
 type BuildMetadata struct {
@@ -58,6 +53,33 @@ type Harbor struct {
 	OnlyDagger  *dagger.Directory
 }
 
+// build, publish and sign image
+func (m *Harbor) PublishAndSignImage(
+	ctx context.Context,
+	registry, registryUsername, projectName string,
+	pkg Package,
+	debugbin bool,
+	imageTags []string,
+	registryPassword *dagger.Secret,
+	// +optional
+	sigstoreIdToken *dagger.Secret,
+) (string, error) {
+	imageAddrs := m.PublishImage(ctx, registry, registryUsername, projectName, imageTags, debugbin, pkg, registryPassword)
+	_, err := m.Sign(
+		ctx,
+		sigstoreIdToken,
+		registryUsername,
+		registryPassword,
+		imageAddrs[0],
+	)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign image: %w", err)
+	}
+
+	fmt.Printf("Signed image: %s\n", imageAddrs)
+	return imageAddrs[0], nil
+}
+
 // build, publish and sign all images
 func (m *Harbor) PublishAndSignAllImages(
 	ctx context.Context,
@@ -68,18 +90,12 @@ func (m *Harbor) PublishAndSignAllImages(
 	debugbin bool,
 	imageTags []string,
 	// +optional
-	githubToken *dagger.Secret,
-	// +optional
-	actionsIdTokenRequestToken *dagger.Secret,
-	// +optional
-	actionsIdTokenRequestUrl string,
+	sigstoreIdToken *dagger.Secret,
 ) (string, error) {
 	imageAddrs := m.PublishAllImages(ctx, registry, registryUsername, projectName, imageTags, debugbin, registryPassword)
 	_, err := m.Sign(
 		ctx,
-		githubToken,
-		actionsIdTokenRequestUrl,
-		actionsIdTokenRequestToken,
+		sigstoreIdToken,
 		registryUsername,
 		registryPassword,
 		imageAddrs[0],
@@ -95,11 +111,7 @@ func (m *Harbor) PublishAndSignAllImages(
 // Sign signs a container image using Cosign, works also with GitHub Actions
 func (m *Harbor) Sign(ctx context.Context,
 	// +optional
-	githubToken *dagger.Secret,
-	// +optional
-	actionsIdTokenRequestUrl string,
-	// +optional
-	actionsIdTokenRequestToken *dagger.Secret,
+	sigstoreIdToken *dagger.Secret,
 	registryUsername string,
 	registryPassword *dagger.Secret,
 	imageAddr string,
@@ -109,14 +121,9 @@ func (m *Harbor) Sign(ctx context.Context,
 	cosing_ctr := dag.Container().From("cgr.dev/chainguard/cosign")
 
 	// If githubToken is provided, use it to sign the image. (GitHub Actions) use case
-	if githubToken != nil {
-		if actionsIdTokenRequestUrl == "" || actionsIdTokenRequestToken == nil {
-			return "", fmt.Errorf("actionsIdTokenRequestUrl (exist=%s) and actionsIdTokenRequestToken (exist=%t) must be provided when githubToken is provided", actionsIdTokenRequestUrl, actionsIdTokenRequestToken != nil)
-		}
-		fmt.Printf("Setting the ENV Vars GITHUB_TOKEN, ACTIONS_ID_TOKEN_REQUEST_URL, ACTIONS_ID_TOKEN_REQUEST_TOKEN to sign with GitHub Token")
-		cosing_ctr = cosing_ctr.WithSecretVariable("GITHUB_TOKEN", githubToken).
-			WithEnvVariable("ACTIONS_ID_TOKEN_REQUEST_URL", actionsIdTokenRequestUrl).
-			WithSecretVariable("ACTIONS_ID_TOKEN_REQUEST_TOKEN", actionsIdTokenRequestToken)
+	if sigstoreIdToken != nil {
+		fmt.Printf("Setting the ENV Vars SIGSTORE_ID_TOKEN to sign with Token")
+		cosing_ctr = cosing_ctr.WithSecretVariable("SIGSTORE_ID_TOKEN", sigstoreIdToken)
 	}
 
 	return cosing_ctr.WithSecretVariable("REGISTRY_PASSWORD", registryPassword).
@@ -298,7 +305,7 @@ func (m *Harbor) BuildImage(ctx context.Context, platform Platform, pkg Package,
 			WithWorkdir("/")
 	}
 	if pkg == "registryctl" {
-		regBinary := m.registryBuilder(ctx)
+		regBinary := m.registryBuilder(ctx, platform)
 		buildMtd.Container = buildMtd.Container.WithFile("/usr/bin/registry_DO_NOT_USE_GC", regBinary).
 			WithExposedPort(8080)
 	}
@@ -306,9 +313,10 @@ func (m *Harbor) BuildImage(ctx context.Context, platform Platform, pkg Package,
 	return buildMtd.Container
 }
 
-// internal function to build registry
-func (m *Harbor) registryBuilder(ctx context.Context) *dagger.File {
-	registry := dag.Container().From("golang:"+GO_VERSION).
+// deprecated: internal function to build registry
+func (m *Harbor) registryBuilder(ctx context.Context, platform Platform) *dagger.File {
+	registrySrc := dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
+		From("golang:"+GO_VERSION+"-alpine").
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("go-mod-"+GO_VERSION)).
 		WithMountedCache("/go/build-cache", dag.CacheVolume("go-build-"+GO_VERSION)).
 		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
@@ -318,16 +326,45 @@ func (m *Harbor) registryBuilder(ctx context.Context) *dagger.File {
 		WithEnvVariable("GO111MODULE", "auto").
 		WithEnvVariable("CGO_ENABLED", "0").
 		WithWorkdir("/go/src/github.com/docker").
+		WithExec([]string{"apk", "add", "--no-cache", "git"}).
 		WithExec([]string{"git", "clone", "-b", REGISTRY_SRC_TAG, DISTRIBUTION_SRC}).
 		WithWorkdir("distribution").
+		// fix for CVE-2025-22872 https://avd.aquasec.com/nvd/2025/cve-2025-22872/
+		WithExec([]string{"go", "mod", "edit", "-require", "golang.org/x/net@v0.38.0"}).
+		// update & clean
+		WithExec([]string{"go", "mod", "tidy", "-e"}).
+		WithExec([]string{"go", "mod", "vendor"}).
+		// comment out when using v3
 		// WithFile("/redis.patch", m.OnlyDagger.File("./.dagger/registry/redis.patch")).
 		// WithExec([]string{"git", "apply", "/redis.patch"}).
 		WithExec([]string{"echo", "build the registry binary"})
 
-	registryBinary := registry.
-		// to-do: check possible ways to remove make clean bin/registry
-		WithExec([]string{"make", "clean", "binaries", "PREFIX=/go"}).
-		File("bin/registry")
+	// created based on distribution's dockerfile
+	// https://github.com/distribution/distribution/blob/main/Dockerfile
+	// 'version' stage: Generate versioning info and linker flags
+	// This container will generate the .ldflags file
+	versioner := registrySrc.WithExec([]string{
+		"sh", "-c",
+		`VERSION=$(git describe --match 'v[0-9]*' --dirty='.m' --always --tags) && \
+		 REVISION=$(git rev-parse HEAD) && \
+		 PKG=github.com/distribution/distribution/v3 && \
+		 echo "-X ${PKG}/version.version=${VERSION#v} -X ${PKG}/version.revision=${REVISION} -X ${PKG}/version.mainpkg=${PKG}" > /tmp/.ldflags`,
+	})
+
+	ldflagsFile := versioner.File("/tmp/.ldflags")
+
+	// build stage
+	builder := registrySrc.
+		// Mount the ldflags file from the 'versioner' container
+		WithFile("/tmp/.ldflags", ldflagsFile).
+		WithExec([]string{
+			"sh", "-c",
+			`CGO_ENABLED=0 go build -trimpath -ldflags "$(cat /tmp/.ldflags) -s -w" -o /go/bin/registry ./cmd/registry`,
+		}).
+		WithExec([]string{"/go/bin/registry", "--version"})
+
+	// 5. Extract the final binary
+	registryBinary := builder.File("/go/bin/registry")
 
 	return registryBinary
 }
@@ -372,7 +409,8 @@ func (m *Harbor) buildImage(ctx context.Context, platform Platform, pkg Package,
 		}
 	} else {
 		buildMtd = m.buildBinary(ctx, platform, pkg, debugbin)
-		img = dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).From("alpine:latest").
+		img = dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
+			WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 			WithFile("/"+string(pkg), buildMtd.Container.File(buildMtd.BinaryPath))
 
 		// Set entrypoint based on package
@@ -383,6 +421,7 @@ func (m *Harbor) buildImage(ctx context.Context, platform Platform, pkg Package,
 			entrypoint = append(entrypoint, "-c", "/etc/registryctl/config.yml")
 		}
 
+		// handle for debug
 		if debugbin && string(platform) == "linux/amd64" {
 			fmt.Println("entrypoint before:", entrypoint)
 			entrycmd := entrypoint[0]
@@ -391,7 +430,9 @@ func (m *Harbor) buildImage(ctx context.Context, platform Platform, pkg Package,
 
 			fmt.Println("entrypoint for debug:", debug_entrypoint)
 
-			img = dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).From("golang:"+GO_VERSION).
+			img = dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
+				From("golang:"+GO_VERSION+"-alpine").
+				WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 				WithExec([]string{"go", "install", "github.com/go-delve/delve/cmd/dlv@" + DELVE_VERSION}).
 				WithExposedPort(8080).
 				// should use script since executing with config would result in an error
@@ -479,7 +520,7 @@ func (m *Harbor) buildBinary(ctx context.Context, platform Platform, pkg Package
 	outputPath := fmt.Sprintf("bin/%s/%s", platform, pkg)
 	src := fmt.Sprintf("%s/main.go", pkg)
 	builder := dag.Container().
-		From("golang:"+GO_VERSION).
+		From("golang:"+GO_VERSION+"-alpine").
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("go-mod-"+GO_VERSION)).
 		WithEnvVariable("GOMODCACHE", "/go/pkg/mod").
 		WithMountedCache("/go/build-cache", dag.CacheVolume("go-build-"+GO_VERSION)).
@@ -506,6 +547,7 @@ func (m *Harbor) buildNginx(ctx context.Context, platform Platform) *dagger.Cont
 
 	return dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
 		From("nginx:alpine").
+		WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 		WithExposedPort(8080).
 		WithEntrypoint([]string{"nginx", "-g", "daemon off;"})
 }
@@ -513,10 +555,15 @@ func (m *Harbor) buildNginx(ctx context.Context, platform Platform) *dagger.Cont
 func (m *Harbor) buildRegistry(ctx context.Context, platform Platform) *dagger.Container {
 	fmt.Println("🛠️  Building Harbor Registry...")
 
-	regBinary := m.registryBuilder(ctx)
+	regBinary := m.registryBuilder(ctx, platform)
+	// regBinary := m.getRegistry(ctx, platform)
 	return dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
+		// WithExec([]string{"apk", "add", "--no-cache", "libc6-compat"}).
+		WithWorkdir("/").
+		WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 		WithFile("/usr/bin/registry_DO_NOT_USE_GC", regBinary).
-		// specifically turn it off for distribution v3
+		WithExec([]string{"/usr/bin/registry_DO_NOT_USE_GC", "--version"}).
+		// specifically set this for distribution v3
 		WithEnvVariable("OTEL_TRACES_EXPORTER", "none").
 		WithExposedPort(5000).
 		WithExposedPort(5443).
@@ -527,7 +574,8 @@ func (m *Harbor) buildRegistry(ctx context.Context, platform Platform) *dagger.C
 func (m *Harbor) buildTrivyAdapter(ctx context.Context, platform Platform) *dagger.Container {
 	fmt.Println("🛠️  Building Trivy Adapter...")
 
-	trivyBinDir := dag.Container().From("golang:"+GO_VERSION).
+	trivyBinDir := dag.Container().
+		From("golang:"+GO_VERSION).
 		WithWorkdir("/go/src/github.com/goharbor/").
 		WithExec([]string{"git", "clone", "-b", TRIVYADAPTERVERSION, "https://github.com/goharbor/harbor-scanner-trivy.git"}).
 		WithWorkdir("harbor-scanner-trivy").
@@ -549,6 +597,7 @@ func (m *Harbor) buildTrivyAdapter(ctx context.Context, platform Platform) *dagg
 
 	return dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).
 		From("aquasec/trivy:"+TRIVY_VERSION_NO_PREFIX).
+		WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 		WithFile("/home/scanner/bin/scanner-trivy", trivyScanner).
 		WithFile("/usr/local/bin/trivy", trivyAdapter).
 		// ENV TRIVY_VERSION=${trivy_version}
@@ -574,27 +623,10 @@ func (m *Harbor) buildPortal(ctx context.Context, platform Platform) *dagger.Con
 		WithExec([]string{"ls"}).
 		File("LICENSE")
 
-	// before := dag.Container().
-	//    From("node:16.18.0").
-	// 	WithMountedCache(USER_HOME_DIR+"/.bun/install/cache", dag.CacheVolume("bun")).
-	// 	WithMountedCache(USER_HOME_DIR+"/.npm", dag.CacheVolume("node")).
-	//    WithMountedCache("/root/.npm", dag.CacheVolume("node-16")).
-	// 	// for better caching
-	// 	WithMountedDirectory("/harbor", m.Source).
-	// 	WithWorkdir("/harbor/src/portal").
-	// 	WithEnvVariable("NPM_CONFIG_REGISTRY", NPM_REGISTRY).
-	// 	WithEnvVariable("BUN_INSTALL_CACHE_DIR", "/root/.bun/install/cache").
-	//    // $BUN_INSTALL_CACHE_DIR
-	// 	// WithExec([]string{"bun", "pm", "trust", "--all"}).
-	// 	WithFile("swagger.yaml", swaggerYaml).
-	// 	WithExec([]string{"npm", "install", "--unsafe-perm"}).
-	// 	WithExec([]string{"npm", "run", "generate-build-timestamp"}).
-	// 	WithExec([]string{"npm", "run", "release"})
-
 	before := dag.Container().
-		From("node:16.18.0").
+		From("node:"+NODE_VERSION).
 		WithMountedCache("/root/.bun/install/cache", dag.CacheVolume("bun")).
-		WithMountedCache("/root/.npm", dag.CacheVolume("node-16")).
+		WithMountedCache("/root/.npm", dag.CacheVolume("node")).
 		WithMountedCache("/root/.angular", dag.CacheVolume("angular")).
 		// for better caching
 		WithDirectory("/harbor", m.PortalSrc).
@@ -622,8 +654,9 @@ func (m *Harbor) buildPortal(ctx context.Context, platform Platform) *dagger.Con
 	builderDir := builder.Directory("/harbor")
 
 	// swagger UI only supports npm some edge case error
-	swagger := dag.Container().From("node:16.18.0").
-		WithMountedCache("/root/.npm", dag.CacheVolume("node-16")).
+	swagger := dag.Container().
+		From("node:"+NODE_VERSION).
+		WithMountedCache("/root/.npm", dag.CacheVolume("node")).
 		WithMountedCache("/root/.angular", dag.CacheVolume("angular")).
 		WithMountedDirectory("/harbor", builderDir).
 		WithWorkdir("/harbor/src/portal/app-swagger-ui").
@@ -632,6 +665,7 @@ func (m *Harbor) buildPortal(ctx context.Context, platform Platform) *dagger.Con
 		WithWorkdir("/harbor/src/portal")
 
 	deployer := dag.Container(dagger.ContainerOpts{Platform: dagger.Platform(string(platform))}).From("nginx:alpine").
+		WithDirectory("/etc/ssl/certs", m.getCaCerts(ctx)).
 		WithFile("/usr/share/nginx/html/swagger.json", builder.File("/harbor/src/portal/swagger.json")).
 		WithDirectory("/usr/share/nginx/html", builder.Directory("/harbor/src/portal/dist")).
 		WithDirectory("/usr/share/nginx/html", swagger.Directory("/harbor/src/portal/app-swagger-ui/dist")).
@@ -702,11 +736,18 @@ func (m *Harbor) GetVersion(ctx context.Context) string {
 	}
 
 	temp := dag.Container().
-		From("golang:"+GO_VERSION).
+		From("golang:"+GO_VERSION+"-alpine").
 		WithDirectory("/src", m.FilteredSrc, dirOpts).
 		WithWorkdir("/src").
 		WithExec([]string{"ls", "-la"})
 
 	version, _ := temp.WithExec([]string{"cat", "VERSION"}).Stdout(ctx)
 	return version
+}
+
+func (m *Harbor) getCaCerts(ctx context.Context) *dagger.Directory {
+	return dag.Container().
+		From("alpine:latest").
+		WithExec([]string{"apk", "add", "--no-cache", "ca-certificates"}).
+		Directory("/etc/ssl/certs")
 }
