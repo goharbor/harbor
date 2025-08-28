@@ -1,0 +1,4 @@
+/dagger.gen.go
+/internal/dagger
+/internal/querybuilder
+/internal/telemetry

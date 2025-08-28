@@ -1,0 +1,6 @@
+# original config file
+---
+protocol: "http"
+port: 8080
+log_level: debug
+registry_config: "/etc/registry/config.yml"
