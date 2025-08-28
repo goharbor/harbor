@@ -1,0 +1,144 @@
+name: Dagger Build and Publish
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+  pull_request:
+    paths-ignore:
+      - "*.md"
+      - "assets/**"
+
+env:
+  GIT_DEPTH: 1
+  REGISTRY_DOMAIN: registry.goharbor.io
+  PROJECT_NAME: harbor-next
+  COSIGN_YES: "true"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      VERSIONTAG: ${{ steps.vars.outputs.VERSIONTAG }}
+      DEBUGTAG: ${{ steps.vars.outputs.DEBUGTAG }}
+      REGISTRY_USER: ${{ steps.vars.outputs.REGISTRY_USER }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Dagger Version
+        uses: sagikazarmark/dagger-version-action@v0.0.1
+
+      - name: Set Variables
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # use PR number as version tag
+            VERSIONTAG="pr-${{ github.event.number }}"
+          else
+            VERSIONTAG=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
+          fi
+          DEBUGTAG=$VERSIONTAG-debug
+
+          echo "VERSIONTAG=$VERSIONTAG" >> $GITHUB_ENV
+          echo "DEBUGTAG=$DEBUGTAG" >> $GITHUB_ENV
+
+          # docker auth
+          mkdir -p $HOME/.docker
+          echo '${{ secrets.DOCKER_AUTH_CONFIG }}' > $HOME/.docker/config.json
+          REGISTRY_USER=$(jq -r '.auths["${{ env.REGISTRY_DOMAIN }}"].username' $HOME/.docker/config.json)
+          echo "REGISTRY_USER=$REGISTRY_USER" >> $GITHUB_ENV
+
+          # Export registry password
+          REGISTRY_PASS=$(jq -r '.auths["${{ env.REGISTRY_DOMAIN }}"].password' $HOME/.docker/config.json)
+          echo "REGISTRY_PASS=$REGISTRY_PASS" >> $GITHUB_ENV
+
+      - name: Verify Dagger
+        uses: dagger/dagger-for-github@v7
+        with:
+          version: ${{ steps.dagger_version.outputs.version }}
+          verb: functions
+
+  publish:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - component: core
+            debug: false
+          - component: core
+            debug: true
+          - component: jobservice
+            debug: false
+          - component: jobservice
+            debug: true
+          - component: registryctl
+            debug: false
+          - component: registryctl
+            debug: true
+          - component: registry
+            debug: false
+          - component: portal
+            debug: false
+          - component: nginx
+            debug: false
+          - component: trivy-adapter
+            debug: false
+          - component: cmd/exporter
+            debug: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set component vars
+        id: comp
+        run: |
+          if [ "${{ matrix.debug }}" = "true" ]; then
+            export FINAL_IMAGE_TAG="${{ needs.setup.outputs.DEBUGTAG }}"
+          else
+            export FINAL_IMAGE_TAG="${{ needs.setup.outputs.VERSIONTAG }}"
+          fi
+          echo "FINAL_IMAGE_TAG=$FINAL_IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Verify Dagger
+        uses: dagger/dagger-for-github@v7
+        with:
+          version: latest
+          verb: functions
+
+      - name: Publish and Sign
+        id: publish
+        uses: dagger/dagger-for-github@v7
+        with:
+          version: latest
+          verb: call
+          args: |
+            publish-and-sign-image \
+              --pkg ${{ matrix.component }} \
+              --registry-username=${{ env.REGISTRY_USER }} \
+              --registry=${{ env.REGISTRY_DOMAIN }} \
+              --registry-password="${{ env.REGISTRY_PASS }}" \
+              --image-tags ${{ steps.comp.outputs.FINAL_IMAGE_TAG }} \
+              --project-name=${{ env.PROJECT_NAME }} \
+              --debugbin=${{ matrix.debug }}
+              --github-token=env:GITHUB_TOKEN \
+              --actions-id-token-request-url=$ACTIONS_ID_TOKEN_REQUEST_URL \
+              --actions-id-token-request-token=env:ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+
+      - name: Validate Image Ref
+        run: |
+          OUTPUT="${{ steps.publish.outputs.stdout }}"
+
+          echo "--- Full Dagger Output ---"
+          echo "$OUTPUT"
+          echo "--------------------------"
+
+          if echo "$OUTPUT" | grep -qE "^${{ env.REGISTRY_DOMAIN }}/${{ env.PROJECT_NAME }}/[a-z0-9./-]+:${{ steps.comp.outputs.FINAL_IMAGE_TAG }}@sha256:[a-f0-9]{64}$"; then
+            echo "✅ Success: Published image reference for '${{ matrix.component }}' is valid."
+          else
+            echo "❌ Error: Invalid image ref for '${{ matrix.component }}'"
+            exit 1
+          fi

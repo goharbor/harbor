@@ -62,12 +62,18 @@ func (m *Harbor) PublishAndSignImage(
 	imageTags []string,
 	registryPassword *dagger.Secret,
 	// +optional
-	sigstoreIdToken *dagger.Secret,
+	githubToken *dagger.Secret,
+	// +optional
+	actionsIdTokenRequestUrl string,
+	// +optional
+	actionsIdTokenRequestToken *dagger.Secret,
 ) (string, error) {
 	imageAddrs := m.PublishImage(ctx, registry, registryUsername, projectName, imageTags, debugbin, pkg, registryPassword)
 	_, err := m.Sign(
 		ctx,
-		sigstoreIdToken,
+		githubToken,
+		actionsIdTokenRequestUrl,
+		actionsIdTokenRequestToken,
 		registryUsername,
 		registryPassword,
 		imageAddrs[0],
@@ -91,11 +97,17 @@ func (m *Harbor) PublishAndSignAllImages(
 	imageTags []string,
 	// +optional
 	sigstoreIdToken *dagger.Secret,
+	// +optional
+	actionsIdTokenRequestUrl string,
+	// +optional
+	actionsIdTokenRequestToken *dagger.Secret,
 ) (string, error) {
 	imageAddrs := m.PublishAllImages(ctx, registry, registryUsername, projectName, imageTags, debugbin, registryPassword)
 	_, err := m.Sign(
 		ctx,
 		sigstoreIdToken,
+		actionsIdTokenRequestUrl,
+		actionsIdTokenRequestToken,
 		registryUsername,
 		registryPassword,
 		imageAddrs[0],
@@ -111,7 +123,11 @@ func (m *Harbor) PublishAndSignAllImages(
 // Sign signs a container image using Cosign, works also with GitHub Actions
 func (m *Harbor) Sign(ctx context.Context,
 	// +optional
-	sigstoreIdToken *dagger.Secret,
+	githubToken *dagger.Secret,
+	// +optional
+	actionsIdTokenRequestUrl string,
+	// +optional
+	actionsIdTokenRequestToken *dagger.Secret,
 	registryUsername string,
 	registryPassword *dagger.Secret,
 	imageAddr string,
@@ -120,10 +136,15 @@ func (m *Harbor) Sign(ctx context.Context,
 
 	cosing_ctr := dag.Container().From("cgr.dev/chainguard/cosign")
 
-	// If githubToken is provided, use it to sign the image. (GitHub Actions) use case
-	if sigstoreIdToken != nil {
-		fmt.Printf("Setting the ENV Vars SIGSTORE_ID_TOKEN to sign with Token")
-		cosing_ctr = cosing_ctr.WithSecretVariable("SIGSTORE_ID_TOKEN", sigstoreIdToken)
+	// If githubToken is provided, use it to sign the image
+	if githubToken != nil {
+		if actionsIdTokenRequestUrl == "" || actionsIdTokenRequestToken == nil {
+			return "", fmt.Errorf("actionsIdTokenRequestUrl (exist=%s) and actionsIdTokenRequestToken (exist=%t) must be provided when githubToken is provided", actionsIdTokenRequestUrl, actionsIdTokenRequestToken != nil)
+		}
+		fmt.Printf("Setting the ENV Vars GITHUB_TOKEN, ACTIONS_ID_TOKEN_REQUEST_URL, ACTIONS_ID_TOKEN_REQUEST_TOKEN to sign with GitHub Token")
+		cosing_ctr = cosing_ctr.WithSecretVariable("GITHUB_TOKEN", githubToken).
+			WithEnvVariable("ACTIONS_ID_TOKEN_REQUEST_URL", actionsIdTokenRequestUrl).
+			WithSecretVariable("ACTIONS_ID_TOKEN_REQUEST_TOKEN", actionsIdTokenRequestToken)
 	}
 
 	return cosing_ctr.WithSecretVariable("REGISTRY_PASSWORD", registryPassword).
