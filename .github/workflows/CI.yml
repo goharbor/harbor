@@ -1,18 +1,18 @@
 name: CI
 env:
-   POSTGRESQL_HOST: localhost
-   POSTGRESQL_PORT: 5432
-   POSTGRESQL_USR: postgres
-   POSTGRESQL_PWD: root123
-   POSTGRESQL_DATABASE: registry
-   DOCKER_COMPOSE_VERSION: 2.27.1
-   HARBOR_ADMIN: admin
-   HARBOR_ADMIN_PASSWD: Harbor12345
-   CORE_SECRET: tempString
-   KEY_PATH: "/data/secret/keys/secretkey"
-   REDIS_HOST: localhost
-   REG_VERSION: v2.7.1-patch-2819-2553
-   UI_BUILDER_VERSION: 1.6.0
+  POSTGRESQL_HOST: localhost
+  POSTGRESQL_PORT: 5432
+  POSTGRESQL_USR: postgres
+  POSTGRESQL_PWD: root123
+  POSTGRESQL_DATABASE: registry
+  DOCKER_COMPOSE_VERSION: 2.27.1
+  HARBOR_ADMIN: admin
+  HARBOR_ADMIN_PASSWD: Harbor12345
+  CORE_SECRET: tempString
+  KEY_PATH: "/data/secret/keys/secretkey"
+  REDIS_HOST: localhost
+  REG_VERSION: v2.7.1-patch-2819-2553
+  UI_BUILDER_VERSION: 1.6.0
 
 on:
   pull_request:
@@ -34,21 +34,24 @@ on:
 
 jobs:
   UTTEST:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
-       UTTEST: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      UTTEST: true
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
         uses: actions/setup-go@v5
         with:
-           go-version: 1.23.2
+          go-version: 1.23.2
         id: go
       - uses: actions/checkout@v5
         with:
-         path: src/github.com/goharbor/harbor
+          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -92,14 +95,17 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
-          flags: unittests
+          flags: unittests,linux-${{ matrix.arch }}
 
   APITEST_DB:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       APITEST_DB: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -155,11 +161,14 @@ jobs:
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   APITEST_DB_PROXY_CACHE:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       APITEST_DB: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -215,11 +224,14 @@ jobs:
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   APITEST_LDAP:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       APITEST_LDAP: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -273,11 +285,14 @@ jobs:
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   OFFLINE:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       OFFLINE: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -325,11 +340,14 @@ jobs:
           df -h
 
   UI_UT:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     env:
       UI_UT: true
-    runs-on:
-      #- self-hosted
-      - ubuntu-latest
+      ARCH: ${{ matrix.arch }}
     timeout-minutes: 100
     steps:
       - uses: actions/setup-node@v4
@@ -349,4 +367,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
-          flags: unittests
+          flags: unittests,linux-${{ matrix.arch }}
