@@ -73,12 +73,14 @@ CORE_PATH=$(BUILDPATH)/src/core
 PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
 ARCH ?= $(shell uname -m)
-
+ifeq ($(ARCH), aarch64)
+  ARCH := arm64
+endif
 # parameters
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
-TRIVYFLAG=true
+TRIVYFLAG=false
 EXPORTERFLAG=false
 HTTPPROXY=
 BUILDREG=true
@@ -123,32 +125,15 @@ DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-
 ifeq ($(ARCH), arm64)
-
-
-   # Arm64-specific version and source values
-   TRIVYVERSION=v0.58.2
-   TRIVYADAPTERVERSION=v0.32.3
-   REGISTRY_SRC_TAG=v2.8.3
-   DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
-   TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION)_Linux-ARM64.tar.gz
-   TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
-
+   TRIVY_DOWNLOAD_URL = https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-ARM64.tar.gz
 
 else
-  
-   # Default (x86_64 or others) versions   
-   TRIVYVERSION=v0.61.0
-   TRIVYADAPTERVERSION=v0.33.0-rc.2
-   REGISTRY_SRC_TAG=release/2.8
-   DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
-   TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-   TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+   TRIVY_DOWNLOAD_URL = https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 
 endif
 
-
+TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
 REGISTRY_VERSION: $(REGISTRYVERSION)

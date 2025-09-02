@@ -58,10 +58,6 @@ def prepare_docker_compose(configs, with_trivy):
     metric = configs.get('metric')
     if metric:
         rendering_variables['metric'] = metric
-    # for metrics
-    metric = configs.get('metric')
-    if metric:
-        rendering_variables['metric'] = metric
     
     arch = platform.machine()
     if arch == "aarch64":
