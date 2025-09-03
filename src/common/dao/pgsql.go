@@ -106,6 +106,12 @@ func (p *pgsql) Register(alias ...string) error {
 	}
 	db.SetConnMaxIdleTime(p.connMaxIdleTime)
 
+	// Set statement timeout for all queries in this session (10 minutes)
+	_, err = db.Exec("SET statement_timeout = '10min'")
+	if err != nil {
+		log.Warningf("Failed to set statement_timeout: %v", err)
+	}
+
 	return nil
 }
 
