@@ -15,10 +15,13 @@ SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
+ARCH ?= $(shell uname -m)
+PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
+
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK)
+DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK) --platform=$(PLATFORM)
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMAGES=$(DOCKERCMD) images
