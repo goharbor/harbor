@@ -70,7 +70,7 @@ require (
 	golang.org/x/net v0.41.0
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sync v0.16.0
-	golang.org/x/text v0.27.0
+	golang.org/x/text v0.28.0
 	golang.org/x/time v0.12.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
