@@ -151,7 +151,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.24.3
+GOBUILDIMAGE=golang:1.24.6
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -393,11 +393,6 @@ build:
 	fi
 	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 		echo Do not push base images since no base images built. ; \
-		exit 1; \
-	fi
-# PULL_BASE_FROM_DOCKERHUB should be true if BUILD_BASE is not true
-	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PULL_BASE_FROM_DOCKERHUB)" = "false" ] ; then \
-		echo Should pull base images from registry in docker configuration since no base images built. ; \
 		exit 1; \
 	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) -e NODEBUILDIMAGE=$(NODEBUILDIMAGE) \

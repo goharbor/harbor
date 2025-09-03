@@ -63,10 +63,11 @@ func TestBaseParse(t *testing.T) {
 			expectedError: "failed to pull blob from registry: registry error",
 		},
 		{
-			name:     "successful parse",
+			name:     "successful parse (tar format)",
 			artifact: &artifact.Artifact{RepositoryName: "test/repo"},
 			layer: &v1.Descriptor{
-				Digest: "sha256:1234",
+				MediaType: "vnd.foo.bar.tar",
+				Digest:    "sha256:1234",
 			},
 			mockSetup: func(m *mock.Client) {
 				var buf bytes.Buffer
@@ -81,6 +82,34 @@ func TestBaseParse(t *testing.T) {
 				m.On("PullBlob", "test/repo", "sha256:1234").Return(int64(0), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)
 			},
 			expectedType: contentTypeTextPlain,
+		},
+		{
+			name:     "successful parse (raw format)",
+			artifact: &artifact.Artifact{RepositoryName: "test/repo"},
+			layer: &v1.Descriptor{
+				MediaType: "vnd.foo.bar.raw",
+				Digest:    "sha256:1234",
+			},
+			mockSetup: func(m *mock.Client) {
+				var buf bytes.Buffer
+				buf.Write([]byte("test content"))
+				m.On("PullBlob", "test/repo", "sha256:1234").Return(int64(0), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)
+			},
+			expectedType: contentTypeTextPlain,
+		},
+		{
+			name:     "error parse (unsupported format)",
+			artifact: &artifact.Artifact{RepositoryName: "test/repo"},
+			layer: &v1.Descriptor{
+				MediaType: "vnd.foo.bar.unknown",
+				Digest:    "sha256:1234",
+			},
+			mockSetup: func(m *mock.Client) {
+				var buf bytes.Buffer
+				buf.Write([]byte("test content"))
+				m.On("PullBlob", "test/repo", "sha256:1234").Return(int64(0), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)
+			},
+			expectedError: "failed to decode content: unsupported format: .unknown",
 		},
 	}
 

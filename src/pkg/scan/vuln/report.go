@@ -206,6 +206,8 @@ type VulnerabilityItem struct {
 	FixVersion string `json:"fix_version"`
 	// A standard scale for measuring the severity of a vulnerability.
 	Severity Severity `json:"severity"`
+	// The status of the vulnerability.
+	Status string `json:"status"`
 	// example: dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program
 	// and does not offer a protection mechanism for blank-indented diff hunks, which allows remote
 	// attackers to conduct directory traversal attacks via a crafted Debian source package, as

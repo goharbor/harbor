@@ -11,6 +11,7 @@ on:
       - '!tests/ci/**'
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
   push:
     paths:
       - 'docs/**'
@@ -21,6 +22,7 @@ on:
       - '!tests/ci/**'
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
 
 jobs:
   UTTEST:

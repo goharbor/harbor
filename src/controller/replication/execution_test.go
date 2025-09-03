@@ -101,6 +101,38 @@ func (r *replicationTestSuite) TestStart() {
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
+
+	r.SetupTest()
+
+	// run replication flow with SingleActiveReplication, flow should not start
+	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	r.execMgr.On("MarkError", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(1), nil) // Simulate an existing running execution
+	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
+	r.Require().Nil(err)
+	r.Equal(int64(1), id)
+	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 0)
+	r.execMgr.AssertNumberOfCalls(r.T(), "MarkError", 1) // Ensure execution marked as final status error
+	r.execMgr.AssertExpectations(r.T())
+	r.flowCtl.AssertExpectations(r.T())
+	r.ormCreator.AssertExpectations(r.T())
+
+	r.SetupTest()
+
+	// no error when running the replication flow with SingleActiveReplication
+	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
+	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.ormCreator.On("Create").Return(nil)
+	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil) // Simulate no running execution
+	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
+	r.Require().Nil(err)
+	r.Equal(int64(1), id)
+	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.execMgr.AssertExpectations(r.T())
+	r.flowCtl.AssertExpectations(r.T())
+	r.ormCreator.AssertExpectations(r.T())
 }
 
 func (r *replicationTestSuite) TestStop() {
