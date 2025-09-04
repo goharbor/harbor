@@ -11,6 +11,7 @@ on:
 
 jobs:
   CONFORMANCE_TEST:
+    if: github.repository == 'goharbor/harbor'
     env:
       CONFORMANCE_TEST: true
     runs-on:
