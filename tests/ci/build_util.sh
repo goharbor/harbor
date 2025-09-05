@@ -22,6 +22,8 @@ function s3_to_https() {
 function uploader {
     converted_url=$(s3_to_https "s3://$2/$1")
     echo "download url $converted_url"
+    echo $converted_url > download_url.txt
+    pwd
     aws s3 cp $1 s3://$2/$1
 }
 

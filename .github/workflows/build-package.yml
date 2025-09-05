@@ -104,3 +104,20 @@ jobs:
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
 
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+      - name: Checkout buildresult repo
+          uses: actions/checkout@v4
+          with:
+            repository: stonezdj/buildresult
+            path: buildresult
+            token: ${{ secrets.ZDJ_GITHUB_TOKEN }}  
+  
+      - name: Update buildresult.txt
+        run: |
+          URL=$(cat download_url.txt)
+          echo "$URL" > buildresult/buildresult.txt
+          cd buildresult
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add buildresult.txt
+          git commit -m "Update build result at $(date)" || echo "No changes to commit"
+          git push origin main
