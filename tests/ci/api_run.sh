@@ -39,19 +39,9 @@ else
     rc=999
 fi
 rc=$?
-## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
-#timestamp=$(date +%s)
-#GIT_COMMIT=$(git rev-parse --short "$GITHUB_SHA")
-#outfile="integration_logs_$timestamp$GIT_COMMIT.tar.gz"
-#sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
-#if [ -f "$outfile" ]; then
-#   uploader $outfile $harbor_logs_bucket
-#   echo "----------------------------------------------"
-#   echo "Download test logs:"
-#   echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
-#   echo "----------------------------------------------"
-#else
-#   echo "No log output file to upload"
-#fi
-
+## --------------------------------------------- Package Harbor CI Logs -------------------------------------------
+outfile="integration_logs.tar.gz"
+sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
+pwd
+ls -lh $outfile
 exit $rc
