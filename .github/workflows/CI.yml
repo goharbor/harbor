@@ -122,8 +122,6 @@ jobs:
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
-          pwd
-          go env
           echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -135,18 +133,13 @@ jobs:
         run: |
           set -x
           cd src/github.com/goharbor/harbor
-          pwd
-          env
           df -h
-          #sudo apt install -y xvfb
-          #xvfb-run ls
           curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
-          env
           df -h
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
