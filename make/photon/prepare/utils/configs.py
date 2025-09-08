@@ -227,7 +227,6 @@ def parse_yaml_config(config_file_path, with_trivy):
     value = config_dict["max_job_duration_hours"]
     if not isinstance(value, int) or value < 24:
         config_dict["max_job_duration_hours"] = 24
-    config_dict['max_job_duration_seconds'] = config_dict['max_job_duration_hours'] * 3600
     config_dict['job_loggers'] = js_config["job_loggers"]
     config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)

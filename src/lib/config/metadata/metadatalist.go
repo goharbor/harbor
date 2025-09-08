@@ -204,5 +204,7 @@ var (
 
 		{Name: common.BeegoMaxMemoryBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_MEMORY_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxMemoryBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max memory, default is 128GB`},
 		{Name: common.BeegoMaxUploadSizeBytes, Scope: SystemScope, Group: BasicGroup, EnvKey: "BEEGO_MAX_UPLOAD_SIZE_BYTES", DefaultValue: fmt.Sprintf("%d", common.DefaultBeegoMaxUploadSizeBytes), ItemType: &Int64Type{}, Editable: false, Description: `The bytes for limiting the beego max upload size, default it 128GB`},
+
+		{Name: common.ReplicationAdapterWhiteList, Scope: SystemScope, Group: BasicGroup, EnvKey: "REPLICATION_ADAPTER_WHITELIST", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 	}
 )
