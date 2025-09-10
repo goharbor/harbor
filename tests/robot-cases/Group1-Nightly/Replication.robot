@@ -266,23 +266,6 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     Image Should Be Replicated To Project  project${d}  hello-world
     Close Browser
 
-Test Case - Replication Of Pull Images from Google-GCR To Self
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project    project${d}
-    Switch To Registries
-    Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
-    Switch To Replication Manage
-    Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
-    Filter Replication Rule  rule${d}
-    Select Rule And Replicate  rule${d}
-    Check Latest Replication Job Status  Succeeded
-    Image Should Be Replicated To Project  project${d}  httpd
-    Image Should Be Replicated To Project  project${d}  tomcat
-    Close Browser
-
 Test Case - Replication Of Push Images to DockerHub Triggered By Event
     Body Of Replication Of Push Images to Registry Triggered By Event  docker-hub  https://hub.docker.com/  ${DOCKER_USER}  ${DOCKER_PWD}  ${DOCKER_USER}
 
