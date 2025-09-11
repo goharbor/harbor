@@ -27,18 +27,25 @@ import (
 // GetBlobMiddleware cleans up zero-sized blob keys from Redis before serving blob
 func GetBlobMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		log.Infof("GetBlobMiddleware: processing request %s %s", r.Method, r.URL.Path)
+
 		// Get blob digest from request context
 		blobInfo := lib.GetArtifactInfo(r.Context())
+		log.Infof("GetBlobMiddleware: artifact info: %+v", blobInfo)
+
 		if blobInfo.Digest == "" {
+			log.Infof("GetBlobMiddleware: no digest found, skipping cleanup")
 			next.ServeHTTP(w, r) // No digest, skip cleanup
 			return
 		}
 
 		// Clean up zero-sized blob key in Redis
 		key := fmt.Sprintf("blobs::%s", blobInfo.Digest)
+		log.Infof("GetBlobMiddleware: checking Redis key: %s", key)
+
 		rc, err := libredis.GetRegistryClient()
 		if err != nil {
-			log.Debugf("failed to get Redis client for blob cleanup: %v", err)
+			log.Errorf("GetBlobMiddleware: failed to get Redis client for blob cleanup: %v", err)
 			next.ServeHTTP(w, r) // Don't fail the request, just skip cleanup
 			return
 		}
@@ -46,10 +53,12 @@ func GetBlobMiddleware() func(http.Handler) http.Handler {
 		// Check if key exists and has zero size
 		size, err := rc.HGet(r.Context(), key, "size").Result()
 		if err != nil {
-			// Key doesn't exist or other error, skip
+			log.Infof("GetBlobMiddleware: Redis key %s doesn't exist or error: %v", key, err)
 			next.ServeHTTP(w, r)
 			return
 		}
+
+		log.Infof("GetBlobMiddleware: Redis key %s has size: %s", key, size)
 
 		if size == "0" {
 			// Delete the zero-sized key
