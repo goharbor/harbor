@@ -40,13 +40,8 @@ func PatchBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 		sessionID := distribution.ParseSessionID(r.URL.Path)
 
-		// Only cache non-zero sizes in Redis
-		if size > 0 {
-			log.Debugf("caching blob size %d for session %s", size, sessionID)
-			return blobController.SetAcceptedBlobSize(r.Context(), sessionID, size)
-		}
-		log.Warningf("skipping cache for zero-sized blob (size=%d, range=%s) for session %s", size, w.Header().Get("Range"), sessionID)
-		return nil // Successfully processed, but not cached
+		log.Debugf("caching blob size %d for session %s", size, sessionID)
+		return blobController.SetAcceptedBlobSize(r.Context(), sessionID, size)
 	})
 }
 
