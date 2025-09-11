@@ -301,13 +301,20 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 			return err
 		}
 		myLogger.Debugf("Converting report ID %s to the new V2 schema", rp.UUID)
+		if len(rawReports[i]) == 0 {
+			myLogger.Warning("current raw report is empty, skip to handle it")
+			continue
+		}
 
 		reportData, err := handler.PostScan(ctx, req, rp, rawReports[i], startTime, robotAccount)
 		if err != nil {
 			myLogger.Errorf("handler failed at PostScan, report %s, error %v", rp.UUID, err)
 			return err
 		}
-
+		if len(reportData) == 0 {
+			myLogger.Warning("current reportData is empty, skip to handle it")
+			continue
+		}
 		// update the original report with the new summarized report with all vulnerability data removed.
 		// this is required since the top level layers relay on the vuln.Report struct that
 		// contains additional metadata within the report which if stored in the new columns within the scan_report table
