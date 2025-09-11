@@ -26,11 +26,12 @@ import (
 
 // GetBlobMiddleware cleans up zero-sized blob keys from Redis before serving blob
 func GetBlobMiddleware() func(http.Handler) http.Handler {
-	return middleware.BeforeRequest(func(r *http.Request) error {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		// Get blob digest from request context
 		blobInfo := lib.GetArtifactInfo(r.Context())
 		if blobInfo.Digest == "" {
-			return nil // No digest, skip cleanup
+			next.ServeHTTP(w, r) // No digest, skip cleanup
+			return
 		}
 
 		// Clean up zero-sized blob key in Redis
@@ -38,14 +39,16 @@ func GetBlobMiddleware() func(http.Handler) http.Handler {
 		rc, err := libredis.GetRegistryClient()
 		if err != nil {
 			log.Debugf("failed to get Redis client for blob cleanup: %v", err)
-			return nil // Don't fail the request, just skip cleanup
+			next.ServeHTTP(w, r) // Don't fail the request, just skip cleanup
+			return
 		}
 
 		// Check if key exists and has zero size
 		size, err := rc.HGet(r.Context(), key, "size").Result()
 		if err != nil {
 			// Key doesn't exist or other error, skip
-			return nil
+			next.ServeHTTP(w, r)
+			return
 		}
 
 		if size == "0" {
@@ -60,6 +63,6 @@ func GetBlobMiddleware() func(http.Handler) http.Handler {
 			log.Debugf("blob key %s has valid size %s, no cleanup needed", key, size)
 		}
 
-		return nil
+		next.ServeHTTP(w, r)
 	})
 }
