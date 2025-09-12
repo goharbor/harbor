@@ -308,7 +308,7 @@ def parse_yaml_config(config_file_path, with_trivy):
     # for compatibility, user could configure the strong_ssl_ciphers either in https section or under internal_tls section,
     # but it is more reasonable to configure it in https_config
     if https_config:
-        config_dict['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers') 
+        config_dict['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers')
     else:
         config_dict['strong_ssl_ciphers'] = False
 
@@ -463,7 +463,7 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
-    
+
     if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
         configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
