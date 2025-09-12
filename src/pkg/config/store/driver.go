@@ -23,4 +23,6 @@ type Driver interface {
 	Load(ctx context.Context) (map[string]any, error)
 	// Save - save config item into config driver
 	Save(ctx context.Context, cfg map[string]any) error
+	// Load - load config item from config driver
+	Get(ctx context.Context, key string) (map[string]any, error)
 }

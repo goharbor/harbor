@@ -62,3 +62,8 @@ func (h *Driver) Load(_ context.Context) (map[string]any, error) {
 func (h *Driver) Save(_ context.Context, cfg map[string]any) error {
 	return h.client.Put(h.configRESTURL, cfg)
 }
+
+// TODO
+func (d *Driver) Get(ctx context.Context, key string) (map[string]any, error) {
+	return nil, errors.ErrUnsupported
+}
