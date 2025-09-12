@@ -256,7 +256,10 @@
         "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
         "ENDPOINT": "Конечная точка",
         "PROXY_CACHE_ENDPOINT": "Конечная точка прокси-кэша",
-        "NO_PROJECT": "Мы не смогли найти никаких проектов"
+        "NO_PROJECT": "Мы не смогли найти никаких проектов",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",
