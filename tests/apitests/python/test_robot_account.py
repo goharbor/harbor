@@ -341,6 +341,89 @@ class TestRobotAccount(unittest.TestCase):
             project_access_list.append(dict(project_name = projects[i].name, project_id = projects[i].project_id, check_list = all_true_access_list))
         self.verify_repository_pushable(project_access_list, SYSTEM_RA_CLIENT_COVER_ALL)
 
+    def test_03_SystemRobotCreatesProjectRobot(self):
+        """
+        Test case: Verify system-level robot account can create project-level robot accounts
+        
+        Test steps:
+        1. Create a test project using admin credentials
+        2. Create a system-level robot account with robot creation permissions for the project
+        3. Use the system robot credentials to create a project-level robot account
+        4. Verify the project robot was created successfully
+        5. Clean up: Delete created robots and project
+        """
+        
+        # Step 1: Create a test project using admin credentials
+        project_id, project_name = self.project.create_project(
+            metadata={"public": "false"}, **ADMIN_CLIENT
+        )
+        print("Created project: {} (ID: {})".format(project_name, project_id))
+        
+        # Step 2: Create system-level robot with system-level robot creation permissions
+        # Define permissions: robot resource with create action at system level
+        robot_access = v2_swagger_client.Access(resource="robot", action="create")
+        robot_permission = v2_swagger_client.RobotPermission(
+            kind="project", 
+            namespace="*", 
+            access=[robot_access]
+        )
+        
+        system_robot_id, system_robot = self.robot.create_system_robot(
+            permission_list=[robot_permission], 
+            duration=300,  # 5 minutes
+            robot_name="test-system-robot-creator",
+            robot_desc="System robot for testing project robot creation"
+        )
+        print("Created system robot: {}".format(system_robot.name))
+        
+        # System robot client configuration
+        SYSTEM_ROBOT_CLIENT = dict(
+            endpoint=TestRobotAccount.url, 
+            username=system_robot.name, 
+            password=system_robot.secret
+        )
+        
+        # Step 3: Use system robot to create a project-level robot
+        try:
+            project_robot_id, project_robot = self.robot.create_project_robot(
+                project_name=project_name,
+                duration=300,  # 5 minutes
+                robot_name="test-project-robot-by-system",
+                robot_desc="Project robot created by system robot",
+                has_pull_right=True,
+                has_push_right=True,
+                **SYSTEM_ROBOT_CLIENT
+            )
+            print("SUCCESS: System robot created project robot: {}".format(project_robot.name))
+            
+            # Step 4: Verify the project robot was created and has correct properties
+            retrieved_robot = self.robot.get_robot_account_by_id(project_robot_id, **ADMIN_CLIENT)
+            _assert_status_code("project", retrieved_robot.level, "Expected level 'project', got '{}'".format(retrieved_robot.level))
+            _assert_status_code(1, len(retrieved_robot.permissions), "Expected 1 permission, got {}".format(len(retrieved_robot.permissions)))
+            _assert_status_code(project_name, retrieved_robot.permissions[0].namespace, "Expected namespace '{}', got '{}'".format(project_name, retrieved_robot.permissions[0].namespace))
+            
+            print("SUCCESS: Project robot verification passed")
+            
+        except Exception as e:
+            print("FAILED: System robot could not create project robot: {}".format(str(e)))
+            raise e
+        
+        finally:
+            # Step 5: Clean up
+            try:
+                if 'project_robot_id' in locals():
+                    self.robot.delete_robot_account(project_robot_id, **ADMIN_CLIENT)
+                    print("Cleaned up project robot: {}".format(project_robot_id))
+                    
+                self.robot.delete_robot_account(system_robot_id, **ADMIN_CLIENT)
+                print("Cleaned up system robot: {}".format(system_robot_id))
+                
+                self.project.delete_project(project_id, **ADMIN_CLIENT)
+                print("Cleaned up project: {}".format(project_name))
+                
+            except Exception as cleanup_error:
+                print("Warning: Cleanup error: {}".format(cleanup_error))
+
 if __name__ == '__main__':
     suite = unittest.TestSuite(unittest.makeSuite(TestRobotAccount))
     result = unittest.TextTestRunner(sys.stdout, verbosity=2, failfast=True).run(suite)

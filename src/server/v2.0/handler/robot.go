@@ -112,6 +112,28 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		if err != nil {
 			return rAPI.SendError(ctx, err)
 		}
+		
+		// If no creator robots found in the specific project, check for system robots with wildcard permissions
+		if len(creatorRobots) == 0 && r.Level == robot.LEVELPROJECT {
+			systemCreatorRobots, err := rAPI.robotCtl.List(ctx, q.New(q.KeyWords{
+				"name":       strings.TrimPrefix(sc.GetUsername(), config.RobotPrefix(ctx)),
+				"project_id": 0, // System robots have project_id = 0
+			}), &robot.Option{
+				WithPermission: true,
+			})
+			if err != nil {
+				return rAPI.SendError(ctx, err)
+			}
+			
+			// Check if any system robot has wildcard project permissions for robot creation
+			for _, sysRobot := range systemCreatorRobots {
+				if rAPI.hasWildcardRobotPermission(sysRobot, rbac.ActionCreate) {
+					creatorRobots = systemCreatorRobots
+					break
+				}
+			}
+		}
+		
 		if len(creatorRobots) == 0 {
 			return rAPI.SendError(ctx, errors.DeniedError(nil))
 		}
@@ -315,6 +337,15 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 }
 
 func (rAPI *robotAPI) requireAccess(ctx context.Context, r *robot.Robot, action rbac.Action) error {
+	sc, _ := rAPI.GetSecurityContext(ctx)
+	
+	// Special case: system robots with wildcard project permissions
+	if robotSc, ok := sc.(*robotSc.SecurityContext); ok && robotSc.User().Level == robot.LEVELSYSTEM {
+		if r.Level == robot.LEVELPROJECT && rAPI.hasWildcardRobotPermission(robotSc.User(), action) {
+			return nil // Allow system robots with wildcard permissions
+		}
+	}
+	
 	if r.Level == robot.LEVELSYSTEM {
 		return rAPI.RequireSystemAccess(ctx, action, rbac.ResourceRobot)
 	} else if r.Level == robot.LEVELPROJECT {
@@ -495,4 +526,18 @@ func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot
 		}
 	}
 	return true
+}
+
+// hasWildcardRobotPermission checks if a robot has wildcard project permissions for the specified action on robot resources
+func (rAPI *robotAPI) hasWildcardRobotPermission(robot *robot.Robot, action rbac.Action) bool {
+	for _, perm := range robot.Permissions {
+		if perm.Kind == "project" && perm.Namespace == "*" {
+			for _, access := range perm.Access {
+				if access.Resource == "robot" && access.Action == action {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
