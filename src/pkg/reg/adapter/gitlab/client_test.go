@@ -84,3 +84,158 @@ func TestProjects(t *testing.T) {
 	require.Nil(t, e)
 	assert.Equal(t, 1, len(projects))
 }
+
+func TestDeleteTag(t *testing.T) {
+	t.Run("successful deletion", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0")
+		require.Nil(t, err)
+	})
+
+	t.Run("deletion with 204 status", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNoContent)
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0")
+		require.Nil(t, err)
+	})
+
+	t.Run("deletion with 404 not found", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte(`{"message": "Tag not found"}`))
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0")
+		require.NotNil(t, err)
+		assert.Contains(t, err.Error(), "failed to delete tag with status code 404")
+		assert.Contains(t, err.Error(), "Tag not found")
+	})
+
+	t.Run("deletion with 403 forbidden", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusForbidden)
+				w.Write([]byte(`{"message": "Access denied"}`))
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0")
+		require.NotNil(t, err)
+		assert.Contains(t, err.Error(), "failed to delete tag with status code 403")
+		assert.Contains(t, err.Error(), "Access denied")
+	})
+
+	t.Run("deletion with 500 internal server error", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`{"message": "Internal server error"}`))
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0")
+		require.NotNil(t, err)
+		assert.Contains(t, err.Error(), "failed to delete tag with status code 500")
+		assert.Contains(t, err.Error(), "Internal server error")
+	})
+
+	t.Run("tag name with special characters", func(t *testing.T) {
+		server := test.NewServer(&test.RequestHandlerMapping{
+			Method:  http.MethodDelete,
+			Pattern: "/api/v4/projects/123/registry/repositories/456/tags/v1.0.0-alpha.1",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			},
+		})
+		defer server.Close()
+
+		client := &Client{
+			url:      server.URL,
+			username: "test",
+			token:    "test",
+			client: common_http.NewClient(
+				&http.Client{
+					Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+				}),
+		}
+
+		err := client.deleteTag(123, 456, "v1.0.0-alpha.1")
+		require.Nil(t, err)
+	})
+}
