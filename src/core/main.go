@@ -22,12 +22,14 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/beego/beego/v2/server/web"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	configCtl "github.com/goharbor/harbor/src/controller/config"
@@ -222,6 +224,11 @@ func main() {
 		log.Error(err)
 	}
 
+	// Allow user to disable writing audit log to db by env while initialize
+	if err := initSkipAuditDBbyEnv(ctx); err != nil {
+		log.Errorf("Failed to initialize SkipAuditDB by ENV: %v", err)
+	}
+
 	// Init API handler
 	if err := api.Init(); err != nil {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
@@ -355,4 +362,38 @@ func getDefaultScannerName() string {
 		return trivyScanner
 	}
 	return ""
+}
+
+func initSkipAuditDBbyEnv(ctx context.Context) error {
+	var err error
+	skipAuditEnv := false
+	s := os.Getenv("SKIP_LOG_AUDIT_DATABASE")
+	skipAuditEnv, err = strconv.ParseBool(s)
+	if err != nil {
+		log.Fatalf("Failed to parse SKIP_LOG_AUDIT_DATABASE to bool with error: %v, Will use SKIP_LOG_AUDIT_DATABASE env as false")
+	}
+	log.Debugf("get SKIP_LOG_AUDIT_DATABASE from Env is %v", skipAuditEnv)
+
+	// get SkipAuditLogDatabase k-v config from db
+	skipAuditDB := config.SkipAuditLogDatabase(ctx)
+	log.Debugf("get SkipAuditLogDatabase from user config is %v", skipAuditDB)
+	/*
+		skipAuditEnv  skipAuditDB  Skip
+		false         false        false
+		false         true         true
+		true          false        true
+		true          true         true
+	*/
+	// update SkipAuditLogDatabase config
+	if skipAuditDB || skipAuditEnv {
+		cfgMgr := config.GetCfgManager(ctx)
+		cfg := map[string]any{
+			common.SkipAuditLogDatabase: true,
+		}
+		log.Info("Initialize SkipAuditDB as true")
+		if err := cfgMgr.UpdateConfig(ctx, cfg); err != nil {
+			return err
+		}
+	}
+	return nil
 }
