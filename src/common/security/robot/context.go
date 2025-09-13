@@ -121,7 +121,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, filterRobotPolicies))
 		}
 	})
-	
+
 	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
 }
 

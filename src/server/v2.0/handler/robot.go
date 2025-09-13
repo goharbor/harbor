@@ -112,7 +112,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 		if err != nil {
 			return rAPI.SendError(ctx, err)
 		}
-		
+
 		// If no creator robots found in the specific project, check for system robots with wildcard permissions
 		if len(creatorRobots) == 0 && r.Level == robot.LEVELPROJECT {
 			systemCreatorRobots, err := rAPI.robotCtl.List(ctx, q.New(q.KeyWords{
@@ -124,7 +124,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 			if err != nil {
 				return rAPI.SendError(ctx, err)
 			}
-			
+
 			// Check if any system robot has wildcard project permissions for robot creation
 			for _, sysRobot := range systemCreatorRobots {
 				if rAPI.hasWildcardRobotPermission(sysRobot, rbac.ActionCreate) {
@@ -133,7 +133,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 				}
 			}
 		}
-		
+
 		if len(creatorRobots) == 0 {
 			return rAPI.SendError(ctx, errors.DeniedError(nil))
 		}
@@ -338,14 +338,14 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 
 func (rAPI *robotAPI) requireAccess(ctx context.Context, r *robot.Robot, action rbac.Action) error {
 	sc, _ := rAPI.GetSecurityContext(ctx)
-	
+
 	// Special case: system robots with wildcard project permissions
 	if robotSc, ok := sc.(*robotSc.SecurityContext); ok && robotSc.User().Level == robot.LEVELSYSTEM {
 		if r.Level == robot.LEVELPROJECT && rAPI.hasWildcardRobotPermission(robotSc.User(), action) {
 			return nil // Allow system robots with wildcard permissions
 		}
 	}
-	
+
 	if r.Level == robot.LEVELSYSTEM {
 		return rAPI.RequireSystemAccess(ctx, action, rbac.ResourceRobot)
 	} else if r.Level == robot.LEVELPROJECT {
