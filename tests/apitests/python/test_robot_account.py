@@ -702,11 +702,15 @@ class TestRobotAccount(unittest.TestCase):
         )
         print("Created project: {} (ID: {})".format(project_name, project_id))
 
-        # Step 2: Create system-level robot with system-level robot creation permissions
+        # Step 2: Create system-level robot with robot creation permissions
         # Define permissions: robot resource with create action at system level
+        # Also include repository:pull since the robot library forces pull permissions
         robot_access = v2_swagger_client.Access(resource="robot", action="create")
+        repository_access = v2_swagger_client.Access(
+            resource="repository", action="pull"
+        )
         robot_permission = v2_swagger_client.RobotPermission(
-            kind="project", namespace="*", access=[robot_access]
+            kind="project", namespace="*", access=[robot_access, repository_access]
         )
 
         system_robot_id, system_robot = self.robot.create_system_robot(
@@ -731,8 +735,8 @@ class TestRobotAccount(unittest.TestCase):
                 duration=300,  # 5 minutes
                 robot_name="test-project-robot-by-system",
                 robot_desc="Project robot created by system robot",
-                has_pull_right=True,
-                has_push_right=True,
+                has_pull_right=False,
+                has_push_right=False,
                 **SYSTEM_ROBOT_CLIENT
             )
             print(

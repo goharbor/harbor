@@ -480,3 +480,158 @@ func TestValidPermissionScope(t *testing.T) {
 		})
 	}
 }
+
+func TestHasWildcardRobotPermission(t *testing.T) {
+	rAPI := &robotAPI{}
+
+	tests := []struct {
+		name     string
+		robot    *robot.Robot
+		action   rbac.Action
+		expected bool
+	}{
+		{
+			name: "Robot with wildcard project permissions for robot:create",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "project",
+						Namespace: "*",
+						Access: []*types.Policy{
+							{Resource: "robot", Action: "create", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: true,
+		},
+		{
+			name: "Robot with wildcard project permissions for robot:delete",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "project",
+						Namespace: "*",
+						Access: []*types.Policy{
+							{Resource: "robot", Action: "delete", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionDelete,
+			expected: true,
+		},
+		{
+			name: "Robot with wildcard project permissions but wrong resource",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "project",
+						Namespace: "*",
+						Access: []*types.Policy{
+							{Resource: "repository", Action: "create", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+		{
+			name: "Robot with wildcard project permissions but wrong action",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "project",
+						Namespace: "*",
+						Access: []*types.Policy{
+							{Resource: "robot", Action: "read", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+		{
+			name: "Robot with specific project permissions (not wildcard)",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "project",
+						Namespace: "library",
+						Access: []*types.Policy{
+							{Resource: "robot", Action: "create", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+		{
+			name: "Robot with system level permissions",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "system",
+						Namespace: "/",
+						Access: []*types.Policy{
+							{Resource: "robot", Action: "create", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+		{
+			name: "Robot with multiple permissions including wildcard robot:create",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{
+					{
+						Kind:      "system",
+						Namespace: "/",
+						Access: []*types.Policy{
+							{Resource: "user", Action: "create", Effect: "allow"},
+						},
+					},
+					{
+						Kind:      "project",
+						Namespace: "*",
+						Access: []*types.Policy{
+							{Resource: "repository", Action: "pull", Effect: "allow"},
+							{Resource: "robot", Action: "create", Effect: "allow"},
+						},
+					},
+				},
+			},
+			action:   rbac.ActionCreate,
+			expected: true,
+		},
+		{
+			name: "Robot with no permissions",
+			robot: &robot.Robot{
+				Permissions: []*robot.Permission{},
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+		{
+			name: "Robot is nil",
+			robot: &robot.Robot{
+				Permissions: nil,
+			},
+			action:   rbac.ActionCreate,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := rAPI.hasWildcardRobotPermission(tt.robot, tt.action)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
