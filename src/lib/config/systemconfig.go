@@ -269,5 +269,23 @@ func Database() (*models.Database, error) {
 	}
 	database.PostGreSQL = postgresql
 
+	// Configure reader database if reader host is provided
+	readerHost := DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderHOST).GetString()
+	if readerHost != "" {
+		readerDB := &models.PostGreSQL{
+			Host:            readerHost,
+			Port:            DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderPort).GetInt(),
+			Username:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderUsername).GetString(),
+			Password:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderPassword).GetPassword(),
+			Database:        DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderDatabase).GetString(),
+			SSLMode:         DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderSSLMode).GetString(),
+			MaxIdleConns:    DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderMaxIdleConns).GetInt(),
+			MaxOpenConns:    DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderMaxOpenConns).GetInt(),
+			ConnMaxLifetime: DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderConnMaxLifetime).GetDuration(),
+			ConnMaxIdleTime: DefaultMgr().Get(backgroundCtx, common.PostGreSQLReaderConnMaxIdleTime).GetDuration(),
+		}
+		database.ReaderDB = readerDB
+	}
+
 	return database, nil
 }

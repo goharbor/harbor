@@ -62,6 +62,30 @@ database:
   # The value is a duration string. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
   conn_max_idle_time: 0
 
+# Optional reader database configuration for read-only queries
+# Uncomment and configure this section if you want to use a separate read-only database instance
+# reader_database:
+#   # The host of the reader database
+#   host: reader-postgresql
+#   # The port of reader database
+#   port: 5432
+#   # The username to connect to the reader database
+#   username: postgres
+#   # The password for the reader database user
+#   password: root123
+#   # The database name for the reader database
+#   database: registry
+#   # postgres connection sslmode
+#   sslmode: disable
+#   # The maximum number of connections in the idle connection pool for reader database
+#   max_idle_conns: 50
+#   # The maximum number of open connections to the reader database
+#   max_open_conns: 1000
+#   # The maximum amount of time a reader connection may be reused
+#   conn_max_lifetime: 5m
+#   # The maximum amount of time a reader connection may be idle
+#   conn_max_idle_time: 0
+
 # The default data volume
 data_volume: /data
 

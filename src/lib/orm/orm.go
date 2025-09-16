@@ -103,6 +103,30 @@ func Copy(ctx context.Context) context.Context {
 	return NewContext(valueOnlyContext{ctx}, orm.NewOrm())
 }
 
+// WithReaderDB returns new context with orm using the reader database alias
+// If reader database is not available, it returns the context unchanged
+func WithReaderDB(ctx context.Context) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	// Try to create an ORM with the reader alias
+	// This will fail silently if the reader database is not initialized
+	defer func() {
+		if r := recover(); r != nil {
+			// If there's a panic (likely because reader DB isn't registered), just return original context
+		}
+	}()
+
+	// Check if reader database is registered by trying to get it
+	if _, err := orm.GetDB("reader"); err != nil {
+		// Reader database not available, return original context
+		return ctx
+	}
+
+	return NewContext(ctx, orm.NewOrmUsingDB("reader"))
+}
+
 type operationNameKey struct{}
 
 // SetTransactionOpNameToContext sets the transaction operation name

@@ -159,6 +159,20 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict['harbor_db_conn_max_lifetime'] = db_configs.get("conn_max_lifetime") or '5m'
         config_dict['harbor_db_conn_max_idle_time'] = db_configs.get("conn_max_idle_time") or '0'
 
+    # Reader DB configs (optional)
+    reader_db_configs = configs.get('reader_database')
+    if reader_db_configs:
+        config_dict['harbor_db_reader_host'] = reader_db_configs.get("host") or ''
+        config_dict['harbor_db_reader_port'] = reader_db_configs.get("port") or 5432
+        config_dict['harbor_db_reader_name'] = reader_db_configs.get("database") or 'registry'
+        config_dict['harbor_db_reader_username'] = reader_db_configs.get("username") or 'postgres'
+        config_dict['harbor_db_reader_password'] = reader_db_configs.get("password") or ''
+        config_dict['harbor_db_reader_sslmode'] = reader_db_configs.get("sslmode") or 'disable'
+        config_dict['harbor_db_reader_max_idle_conns'] = reader_db_configs.get("max_idle_conns") or default_db_max_idle_conns
+        config_dict['harbor_db_reader_max_open_conns'] = reader_db_configs.get("max_open_conns") or default_db_max_open_conns
+        config_dict['harbor_db_reader_conn_max_lifetime'] = reader_db_configs.get("conn_max_lifetime") or '5m'
+        config_dict['harbor_db_reader_conn_max_idle_time'] = reader_db_configs.get("conn_max_idle_time") or '0'
+
     # Data path volume
     config_dict['data_volume'] = configs['data_volume']
 

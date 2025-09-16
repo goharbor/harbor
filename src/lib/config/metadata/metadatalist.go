@@ -111,6 +111,18 @@ var (
 		{Name: common.PostGreSQLConnMaxLifetime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_CONN_MAX_LIFETIME", DefaultValue: "5m", ItemType: &DurationType{}, Editable: false},
 		{Name: common.PostGreSQLConnMaxIdleTime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_CONN_MAX_IDLE_TIME", DefaultValue: "0", ItemType: &DurationType{}, Editable: false},
 
+		// Reader Database configuration
+		{Name: common.PostGreSQLReaderHOST, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_HOST", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.PostGreSQLReaderPort, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_PORT", DefaultValue: "5432", ItemType: &PortType{}, Editable: false},
+		{Name: common.PostGreSQLReaderUsername, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_USERNAME", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.PostGreSQLReaderPassword, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: false},
+		{Name: common.PostGreSQLReaderDatabase, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_DATABASE", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.PostGreSQLReaderSSLMode, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_SSLMODE", DefaultValue: "disable", ItemType: &StringType{}, Editable: false},
+		{Name: common.PostGreSQLReaderMaxIdleConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_MAX_IDLE_CONNS", DefaultValue: "2", ItemType: &IntType{}, Editable: false},
+		{Name: common.PostGreSQLReaderMaxOpenConns, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_MAX_OPEN_CONNS", DefaultValue: "0", ItemType: &IntType{}, Editable: false},
+		{Name: common.PostGreSQLReaderConnMaxLifetime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_CONN_MAX_LIFETIME", DefaultValue: "5m", ItemType: &DurationType{}, Editable: false},
+		{Name: common.PostGreSQLReaderConnMaxIdleTime, Scope: SystemScope, Group: DatabaseGroup, EnvKey: "POSTGRESQL_READER_CONN_MAX_IDLE_TIME", DefaultValue: "0", ItemType: &DurationType{}, Editable: false},
+
 		{Name: common.ProjectCreationRestriction, Scope: UserScope, Group: BasicGroup, EnvKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, ItemType: &ProjectCreationRestrictionType{}, Editable: false, Description: `Indicate who can create projects, it could be ''adminonly'' or ''everyone''.`},
 		{Name: common.ReadOnly, Scope: UserScope, Group: BasicGroup, EnvKey: "READ_ONLY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false, Description: `The flag to indicate whether Harbor is in readonly mode.`},
 

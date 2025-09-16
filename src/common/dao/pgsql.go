@@ -92,7 +92,7 @@ func (p *pgsql) Register(alias ...string) error {
 	if len(alias) != 0 {
 		an = alias[0]
 	}
-	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s timezone=UTC",
+	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s timezone=UTC options='-c statement_timeout=20min'",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
 	if err := orm.RegisterDataBase(an, "pgx", info, orm.MaxIdleConnections(p.maxIdleConns),

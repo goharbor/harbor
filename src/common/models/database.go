@@ -20,6 +20,8 @@ import "time"
 type Database struct {
 	Type       string      `json:"type"`
 	PostGreSQL *PostGreSQL `json:"postgresql,omitempty"`
+	// ReaderDB for read-only queries
+	ReaderDB *PostGreSQL `json:"reader_postgresql,omitempty"`
 }
 
 // SQLite ...

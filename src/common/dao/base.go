@@ -69,6 +69,18 @@ func InitDatabase(database *models.Database) error {
 		return err
 	}
 
+	// Initialize reader database if configured
+	if database.ReaderDB != nil {
+		readerDB, err := getReaderDatabase(database)
+		if err != nil {
+			return err
+		}
+		log.Infof("Registering reader database: %s", readerDB.String())
+		if err := readerDB.Register("reader"); err != nil {
+			return err
+		}
+	}
+
 	log.Info("Register database completed")
 	return nil
 }
@@ -87,6 +99,27 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.MaxOpenConns,
 			database.PostGreSQL.ConnMaxLifetime,
 			database.PostGreSQL.ConnMaxIdleTime,
+		)
+	default:
+		err = fmt.Errorf("invalid database: %s", database.Type)
+	}
+	return
+}
+
+func getReaderDatabase(database *models.Database) (db Database, err error) {
+	switch database.Type {
+	case "", "postgresql":
+		db = NewPGSQL(
+			database.ReaderDB.Host,
+			strconv.Itoa(database.ReaderDB.Port),
+			database.ReaderDB.Username,
+			database.ReaderDB.Password,
+			database.ReaderDB.Database,
+			database.ReaderDB.SSLMode,
+			database.ReaderDB.MaxIdleConns,
+			database.ReaderDB.MaxOpenConns,
+			database.ReaderDB.ConnMaxLifetime,
+			database.ReaderDB.ConnMaxIdleTime,
 		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)

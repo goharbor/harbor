@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	beegorm "github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution/manifest/schema2"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -241,9 +242,19 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 		return nil, nil
 	}
 
-	o, err := orm.FromContext(ctx)
+	// Try to use reader database connection if available, fallback to main connection
+	var o beegorm.QueryExecutor
+	var err error
+
+	// First try to get a reader connection
+	readerCtx := orm.WithReaderDB(ctx)
+	o, err = orm.FromContext(readerCtx)
 	if err != nil {
-		return nil, err
+		// If reader connection fails, fallback to main connection
+		o, err = orm.FromContext(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	sql := `SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob IN (%s)`
