@@ -169,6 +169,19 @@ func (p *Project) ProxyCacheSpeed() int32 {
 	return int32(speedInt)
 }
 
+// MaxUpstreamConnection ...
+func (p *Project) MaxUpstreamConnection() int {
+	countVal, exist := p.GetMetadata(ProMetaMaxUpstreamConn)
+	if !exist {
+		return 0
+	}
+	cnt, err := strconv.ParseInt(countVal, 10, 32)
+	if err != nil {
+		return 0
+	}
+	return int(cnt)
+}
+
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
