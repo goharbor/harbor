@@ -179,7 +179,30 @@ func (s *Session) SearchUser(username string) ([]model.User, error) {
 			}
 			u.GroupDNList = groupDNList
 		}
+
 		u.DN = ldapEntry.DN
+		// Search for nested group memberships (if AdminFilter is set)
+		if s.groupCfg.AdminFilter != "" {
+			nestedFilter, err := createUserSearchFilter(s.groupCfg.AdminFilter, s.basicCfg.UID, username)
+			if err != nil {
+				return nil, err
+			}
+			nestedResult, err := s.SearchLdap(nestedFilter)
+			if err != nil {
+				return nil, err
+			}
+
+			// check and give permissions to user under admin DN
+			for _, ldapEntry := range nestedResult.Entries {
+				if ldapEntry.DN != u.DN {
+					continue
+				}
+				// add user to AdminDN
+				u.GroupDNList = append(u.GroupDNList, s.groupCfg.AdminDN)
+				log.Debugf("User %s (DN: %s) added to admin group: %s", username, ldapEntry.DN, s.groupCfg.AdminDN)
+			}
+		}
+
 		ldapUsers = append(ldapUsers, u)
 	}
 
@@ -260,7 +283,6 @@ func (s *Session) SearchLdapAttribute(baseDN, filter string, attributes []string
 		log.Errorf("Wrong filter format, filter:%v", filter)
 		return nil, ErrInvalidFilter
 	}
-	log.Debugf("Search ldap with filter:%v", filter)
 	searchRequest := goldap.NewSearchRequest(
 		baseDN,
 		s.basicCfg.Scope,
