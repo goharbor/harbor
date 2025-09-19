@@ -51,6 +51,22 @@ func (c *ConfigStore) Get(key string) (*metadata.ConfigureValue, error) {
 	return nil, metadata.ErrValueNotSet
 }
 
+func (c *ConfigStore) GetFromDriver(ctx context.Context, key string) (map[string]any, error) {
+	resultMap := map[string]any{}
+	if c.cfgDriver == nil {
+		return nil, errors.New("failed to load store, cfgDriver is nil")
+	}
+	cfgs, err := c.cfgDriver.Load(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if val, ok := cfgs[key]; ok {
+		log.Debugf("key %s exist with value %v", key, val)
+		resultMap[key] = val
+	}
+	return resultMap, nil
+}
+
 // GetAnyType get any type for config items
 func (c *ConfigStore) GetAnyType(key string) (any, error) {
 	if value, ok := c.cfgValues.Load(key); ok {
