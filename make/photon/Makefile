@@ -218,7 +218,6 @@ define _get_binary
 	$(CURL) --connect-timeout 30 -f -k -L $1 -o $2 || exit 1
 endef
 
-
 define _build_base
 	if [ "$(BUILD_BASE)" = "true" ] ; then \
 		echo "building base image for $(1)...";\
@@ -254,3 +253,4 @@ cleanimage:
 
 .PHONY: clean
 clean: cleanimage
+
