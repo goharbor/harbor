@@ -1,43 +1,54 @@
 FROM ubuntu:20.04 as tool_builder
+ARG TARGETARCH
 ENV TZ=Asia/Shanghai \
     DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 WORKDIR /tool
 
-#RUN tdnf install -y \
+# base deps
 RUN apt-get update && apt-get install -y \
     build-essential \
     wget \
     git \
     tar \
-    #go
-    #ubuntu
     curl \
     libssl-dev \
-    uuid-dev
-#ubuntu
+    uuid-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install Go (needed for cnab-to-oci and wasm-to-oci on arm64)
 RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:longsleep/golang-backports && \
     apt-get install -y golang-go
 
+# Map arch for binary downloads
+RUN set -eux; \
+    case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
+      amd64|x86_64)  ARCH_LINUX=amd64; ARCH_UNDERSCORE=amd64 ;; \
+      arm64|aarch64) ARCH_LINUX=arm64; ARCH_UNDERSCORE=arm64 ;; \
+      *) echo "Unsupported arch: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac; \
+    echo "ARCH_LINUX=$ARCH_LINUX" >> /arch.env; \
+    echo "ARCH_UNDERSCORE=$ARCH_UNDERSCORE" >> /arch.env
+ENV $(cat /arch.env | xargs)
+
 RUN pwd && mkdir /tool/binary && \
     # Install CONTAINERD
-    CONTAINERD_VERSION=1.7.20 &&  \
-    wget https://github.com/containerd/containerd/releases/download/v$CONTAINERD_VERSION/containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
-    tar zxvf containerd-$CONTAINERD_VERSION-linux-amd64.tar.gz && \
-    cd bin && cp -f containerd ctr /tool/binary/ && \
-    # docker compose
+    CONTAINERD_VERSION=1.7.20 && \
+    wget https://github.com/containerd/containerd/releases/download/v$CONTAINERD_VERSION/containerd-$CONTAINERD_VERSION-linux-${ARCH_LINUX}.tar.gz && \
+    tar zxvf containerd-$CONTAINERD_VERSION-linux-${ARCH_LINUX}.tar.gz && \
+    cd bin && cp -f containerd ctr /tool/binary/ && cd .. && \
+    # docker compose (multi-arch from upstream)
     curl -L "https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /tool/binary/docker-compose && \
     chmod +x /tool/binary/docker-compose && \
     # Install helm
-    HELM_VERSION=3.15.3 && wget https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz && \
-    tar zxvf helm-v$HELM_VERSION-linux-amd64.tar.gz && \
-    ls || pwd && \
-    mv linux-amd64/helm /tool/binary/helm && \
+    HELM_VERSION=3.15.3 && wget https://get.helm.sh/helm-v$HELM_VERSION-linux-${ARCH_LINUX}.tar.gz && \
+    tar zxvf helm-v$HELM_VERSION-linux-${ARCH_LINUX}.tar.gz && \
+    mv linux-${ARCH_LINUX}/helm /tool/binary/helm && \
     # Install ORAS
-    ORAS_VERSION=1.2.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_amd64.tar.gz && \
-    mkdir -p oras-install/  && \
-    tar -zxf oras_${ORAS_VERSION}_*.tar.gz -C oras-install/  && \
+    ORAS_VERSION=1.2.0 && curl -LO https://github.com/deislabs/oras/releases/download/v$ORAS_VERSION/oras_${ORAS_VERSION}_linux_${ARCH_UNDERSCORE}.tar.gz && \
+    mkdir -p oras-install/ && \
+    tar -zxf oras_${ORAS_VERSION}_linux_${ARCH_UNDERSCORE}.tar.gz -C oras-install/ && \
     mv oras-install/oras /tool/binary/ && \
     # Install CNAB
     CNAB_PATH=$(go env GOPATH)/src/github.com/cnabio && \
@@ -48,20 +59,27 @@ RUN pwd && mkdir /tool/binary && \
     mv bin/cnab-to-oci /tool/binary/ && \
     # Install DIND
     DIND_COMMIT=3b5fac462d21ca164b3778647420016315289034 && \
-    wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /tool/binary/dind \
-    && chmod +x /tool/binary/dind && \
+    wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/dind" -O /tool/binary/dind && \
+    chmod +x /tool/binary/dind && \
     # Install wasm-to-oci
-    WASM_TO_OCI_VERSION=0.1.2 && wget https://github.com/engineerd/wasm-to-oci/releases/download/v${WASM_TO_OCI_VERSION}/linux-amd64-wasm-to-oci && \
-    chmod +x linux-amd64-wasm-to-oci && mv linux-amd64-wasm-to-oci /tool/binary/wasm-to-oci && \
+    WASM_TO_OCI_VERSION=0.1.2 && \
+    if [ "$ARCH_LINUX" = "amd64" ]; then \
+      wget https://github.com/engineerd/wasm-to-oci/releases/download/v${WASM_TO_OCI_VERSION}/linux-amd64-wasm-to-oci && \
+      chmod +x linux-amd64-wasm-to-oci && mv linux-amd64-wasm-to-oci /tool/binary/wasm-to-oci; \
+    else \
+      git clone --depth 1 --branch v${WASM_TO_OCI_VERSION} https://github.com/engineerd/wasm-to-oci.git /tmp/wasm-to-oci && \
+      cd /tmp/wasm-to-oci && GOOS=linux GOARCH=${ARCH_LINUX} go build -o /tool/binary/wasm-to-oci ./cmd/wasm-to-oci && \
+      cd /tool && rm -rf /tmp/wasm-to-oci; \
+    fi && \
     # Install imgpkg
-    IMGPKG_VERSION=0.43.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-amd64 && \
-    mv imgpkg-linux-amd64 /tool/binary/imgpkg && chmod +x /tool/binary/imgpkg && \
+    IMGPKG_VERSION=0.43.0 && wget https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v$IMGPKG_VERSION/imgpkg-linux-${ARCH_LINUX} && \
+    mv imgpkg-linux-${ARCH_LINUX} /tool/binary/imgpkg && chmod +x /tool/binary/imgpkg && \
     # Install cosign
-    COSIGN_VERSION=2.4.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-amd64 && \
-    mv cosign-linux-amd64 /tool/binary/cosign && chmod +x /tool/binary/cosign && \
-    # # Install notation
-    NOTATION_VERSION=1.1.1 && wget https://github.com/notaryproject/notation/releases/download/v$NOTATION_VERSION/notation_${NOTATION_VERSION}_linux_amd64.tar.gz && \
-    tar zxvf notation_${NOTATION_VERSION}_linux_amd64.tar.gz && \
+    COSIGN_VERSION=2.4.0 && wget https://github.com/sigstore/cosign/releases/download/v$COSIGN_VERSION/cosign-linux-${ARCH_LINUX} && \
+    mv cosign-linux-${ARCH_LINUX} /tool/binary/cosign && chmod +x /tool/binary/cosign && \
+    # Install notation
+    NOTATION_VERSION=1.1.1 && wget https://github.com/notaryproject/notation/releases/download/v$NOTATION_VERSION/notation_${NOTATION_VERSION}_linux_${ARCH_UNDERSCORE}.tar.gz && \
+    tar zxvf notation_${NOTATION_VERSION}_linux_${ARCH_UNDERSCORE}.tar.gz && \
     mv notation /tool/binary/notation && chmod +x /tool/binary/notation && \
     pwd
 

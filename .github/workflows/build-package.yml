@@ -10,10 +10,14 @@ on:
 
 jobs:
   BUILD_PACKAGE:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
     env:
-        BUILD_PACKAGE: true
-    runs-on:
-      - ubuntu-22.04
+      BUILD_PACKAGE: true
+      ARCH: ${{ matrix.arch }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-22.04' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.2.1
@@ -21,16 +25,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Set up Go 1.22
+
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
         id: go
+
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
           docker_version: 20.10
           docker_channel: stable
+
       - uses: actions/checkout@v5
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
@@ -40,15 +47,16 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+
       - name: Build Base Image
         if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
+          contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+          contains(steps.changed-files.outputs.modified, 'VERSION') ||
+          contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+          github.ref == 'refs/heads/main'
         run: |
-          set -x
           echo "BUILD_BASE=true" >> $GITHUB_ENV
+
       - name: Build Package
         run: |
           set -x
@@ -62,7 +70,6 @@ jobs:
           harbor_builds_bucket="harbor-builds"
           harbor_releases_bucket="harbor-releases"
           harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
-          # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
 
@@ -82,25 +89,39 @@ jobs:
 
           build_base_params=" BUILD_BASE=false"
           cd src/github.com/goharbor/harbor
-          if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
-            echo "Do not need to build base images!"
-          else
+          if [ -n "$BUILD_BASE" ] && [ "$BUILD_BASE" = "true" ]; then
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+          else
+            echo "Do not need to build base images!"
           fi
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+
+          # Build per-arch (ARCH is supplied by the matrix)
+          sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online  ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+
+          # Add arch suffix so the two jobs don't overwrite each other
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
-          echo "Package name is: $harbor_offline_build_bundle"
-          echo "Package name is: $harbor_online_build_bundle"
+          mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          mv "${harbor_online_build_bundle}"  "harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          harbor_offline_build_bundle="harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          harbor_online_build_bundle="harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+
+          echo "Package (offline): $harbor_offline_build_bundle"
+          echo "Package (online) : $harbor_online_build_bundle"
 
           source tests/ci/build_util.sh
-          cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
-          cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
-          uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
-          uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
-          echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
+          cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest-${ARCH}.tgz"
+          cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest-${ARCH}.tgz"
 
-          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          uploader "${harbor_offline_build_bundle}"         $harbor_target_bucket
+          uploader "${harbor_online_build_bundle}"          $harbor_target_bucket
+          uploader "harbor-offline-installer-latest-${ARCH}.tgz" $harbor_target_bucket
+          uploader "harbor-online-installer-latest-${ARCH}.tgz"  $harbor_target_bucket
+
+          echo "BUILD_BUNDLE_${ARCH}=${harbor_offline_build_bundle}" >> $GITHUB_ENV
+
+          # Keep legacy image publishing only once (amd64) to avoid duplicate pushes here.
+          if [ "${ARCH}" = "amd64" ]; then
+            publishImage $target_branch ${Harbor_Assets_Version} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          fi

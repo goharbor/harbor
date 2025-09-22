@@ -60,7 +60,7 @@ def prepare_docker_compose(configs, with_trivy):
         rendering_variables['metric'] = metric
     
     arch = platform.machine()
-    if arch == "aarch64":
+    if arch in ("arm64", "aarch64"):
         rendering_variables['platform'] = "linux/arm64"
     else:
         rendering_variables['platform'] = "linux/amd64"
