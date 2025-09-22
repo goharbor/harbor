@@ -174,7 +174,12 @@ _build_nginx:
 
 _build_registry:
 	@$(call _build_base,$(REGISTRY),$(DOCKERFILEPATH_REG))
-	@cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRY_SRC_TAG) $(DISTRIBUTION_SRC) $(GOBUILDIMAGE) $(DOCKERNETWORK) && cd -
+	@if [ "$(BUILDREG)" != "true" ] ; then \
+		rm -rf $(DOCKERFILEPATH_REG)/binary && mkdir -p $(DOCKERFILEPATH_REG)/binary && \
+		$(call _get_binary, $(REGISTRYURL), $(DOCKERFILEPATH_REG)/binary/registry); \
+	else \
+		cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRY_SRC_TAG) $(DISTRIBUTION_SRC) $(GOBUILDIMAGE) $(DOCKERNETWORK) && cd - ; \
+	fi
 	@echo "building registry container for photon..."
 	@chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(VERSIONTAG) .
 	@echo "Done."
@@ -206,6 +211,11 @@ _compile_and_build_exporter:
 define _extract_archive
 	echo "download $1";\
 	$(CURL) --connect-timeout 30 -f -k -L $1 | tar xvz -C $2 || exit 1
+endef
+
+define _get_binary
+	echo "download $1";\
+	$(CURL) --connect-timeout 30 -f -k -L $1 -o $2 || exit 1
 endef
 
 
