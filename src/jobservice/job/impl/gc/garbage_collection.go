@@ -64,6 +64,7 @@ type GarbageCollector struct {
 	logger            logger.Interface
 	redisURL          string
 	deleteUntagged    bool
+	deleteTag         bool
 	dryRun            bool
 	// holds all of trashed artifacts' digest and repositories.
 	// The source data of trashedArts is the table ArtifactTrash and it's only used as a dictionary by sweep when to delete a manifest.
@@ -130,6 +131,15 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 		}
 	}
 
+	// delete tag: default is to delete the tag in the backend storage
+	gc.deleteTag = true
+	deleteTag, exist := params["delete_tag"]
+	if exist {
+		if tegDel, ok := deleteTag.(bool); ok && !tegDel {
+			gc.deleteTag = tegDel
+		}
+	}
+
 	// time window: default is 2 hours, and for testing/debugging, it can be set to 0.
 	gc.timeWindowHours = 2
 	timeWindow, exist := params["time_window"]
@@ -159,8 +169,8 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 		}
 	}
 
-	gc.logger.Infof("Garbage Collection parameters: [delete_untagged: %t, dry_run: %t, time_window: %d, workers: %d]",
-		gc.deleteUntagged, gc.dryRun, gc.timeWindowHours, gc.workers)
+	gc.logger.Infof("Garbage Collection parameters: [delete_untagged: %t, delete_tag: %t, dry_run: %t, time_window: %d, workers: %d]",
+		gc.deleteUntagged, gc.deleteTag, gc.dryRun, gc.timeWindowHours, gc.workers)
 }
 
 // Run implements the interface in job/Interface
@@ -332,34 +342,37 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				skippedBlob := false
 				if _, exist := gc.trashedArts[blob.Digest]; exist && blob.IsManifest() {
 					for _, art := range gc.trashedArts[blob.Digest] {
-						// Harbor cannot know the existing tags in the backend from its database, so let the v2 DELETE manifest to remove all of them.
-						gc.logger.Infof("[%s][%d/%d] delete the manifest with registry v2 API: %s, %s, %s",
-							uid, localIndex, total, art.RepositoryName, blob.ContentType, blob.Digest)
-						if err := retry.Retry(func() error {
-							return ignoreNotFound(func() error {
-								err := v2DeleteManifest(art.RepositoryName, blob.Digest)
-								// if the system is in read-only mode, return an Abort error to skip retrying
-								if err == readonly.Err {
-									return retry.Abort(err)
+						// if the deleteTag is enabled, call the distribution api to perform the tag deletion.
+						if gc.deleteTag {
+							// Harbor cannot know the existing tags in the backend from its database, so let the v2 DELETE manifest to remove all of them.
+							gc.logger.Infof("[%s][%d/%d] delete the manifest with registry v2 API: %s, %s, %s",
+								uid, localIndex, total, art.RepositoryName, blob.ContentType, blob.Digest)
+							if err := retry.Retry(func() error {
+								return ignoreNotFound(func() error {
+									err := v2DeleteManifest(art.RepositoryName, blob.Digest)
+									// if the system is in read-only mode, return an Abort error to skip retrying
+									if err == readonly.Err {
+										return retry.Abort(err)
+									}
+									return err
+								})
+							}, retry.Callback(func(err error, sleep time.Duration) {
+								gc.logger.Infof("[%s][%d/%d] failed to exec v2DeleteManifest, error: %v, will retry again after: %s", uid, localIndex, total, err, sleep)
+							})); err != nil {
+								gc.logger.Errorf("[%s][%d/%d] failed to delete manifest with v2 API, %s, %s, %v", uid, localIndex, total, art.RepositoryName, blob.Digest, err)
+								if err := ignoreNotFound(func() error {
+									return gc.markDeleteFailed(ctx, blob)
+								}); err != nil {
+									gc.logger.Errorf("[%s][%d/%d] failed to call gc.markDeleteFailed() after v2DeleteManifest() error out: %s, %v", uid, localIndex, total, blob.Digest, err)
+									return err
 								}
-								return err
-							})
-						}, retry.Callback(func(err error, sleep time.Duration) {
-							gc.logger.Infof("[%s][%d/%d] failed to exec v2DeleteManifest, error: %v, will retry again after: %s", uid, localIndex, total, err, sleep)
-						})); err != nil {
-							gc.logger.Errorf("[%s][%d/%d] failed to delete manifest with v2 API, %s, %s, %v", uid, localIndex, total, art.RepositoryName, blob.Digest, err)
-							if err := ignoreNotFound(func() error {
-								return gc.markDeleteFailed(ctx, blob)
-							}); err != nil {
-								gc.logger.Errorf("[%s][%d/%d] failed to call gc.markDeleteFailed() after v2DeleteManifest() error out: %s, %v", uid, localIndex, total, blob.Digest, err)
-								return err
+								// if the system is set to read-only mode, return directly
+								if err == readonly.Err {
+									return err
+								}
+								skippedBlob = true
+								continue
 							}
-							// if the system is set to read-only mode, return directly
-							if err == readonly.Err {
-								return err
-							}
-							skippedBlob = true
-							continue
 						}
 						// for manifest, it has to delete the revisions folder of each repository
 						gc.logger.Infof("[%s][%d/%d] delete manifest from storage: %s", uid, localIndex, total, blob.Digest)
