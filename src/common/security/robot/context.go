@@ -118,7 +118,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			}
 			s.evaluator = evaluators
 		} else {
-			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, filterRobotPolicies))
+			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, nil))
 		}
 	})
 
@@ -126,15 +126,28 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 }
 
 func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.Policy {
+	if p == nil {
+		return policies
+	}
 	namespace := rbac_project.NewNamespace(p.ProjectID)
 
 	var results []*types.Policy
 	for _, policy := range policies {
-		if types.ResourceAllowedInNamespace(policy.Resource, namespace) {
+		// Check if this is a wildcard permission by checking if resource contains "/project/*"
+		// Wildcard permissions from namespace="*" create resources like "/project/*/repository"
+		if strings.Contains(policy.Resource.String(), "/project/*") {
+			// For wildcard permissions, allow access to any project
 			results = append(results, policy)
 			// give the PUSH action a pull access
 			if policy.Action == rbac.ActionPush {
-				results = append(results, &types.Policy{Resource: policy.Resource, Action: rbac.ActionPull})
+				results = append(results, &types.Policy{Resource: policy.Resource, Action: rbac.ActionPull, Effect: policy.Effect})
+			}
+		} else if types.ResourceAllowedInNamespace(policy.Resource, namespace) {
+			// For specific project permissions, only allow if project matches
+			results = append(results, policy)
+			// give the PUSH action a pull access
+			if policy.Action == rbac.ActionPush {
+				results = append(results, &types.Policy{Resource: policy.Resource, Action: rbac.ActionPull, Effect: policy.Effect})
 			}
 		}
 	}

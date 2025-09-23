@@ -110,6 +110,7 @@ func TestIsSolutionUser(t *testing.T) {
 
 func TestHasPullPerm(t *testing.T) {
 	robot := &robot.Robot{
+		Level: "project",
 		Robot: model.Robot{
 			Name:        "test_robot_1",
 			Description: "desc",
@@ -122,6 +123,7 @@ func TestHasPullPerm(t *testing.T) {
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPull,
+						Effect:   "allow",
 					},
 				},
 			},
@@ -139,6 +141,7 @@ func TestHasPullPerm(t *testing.T) {
 
 func TestHasPushPerm(t *testing.T) {
 	robot := &robot.Robot{
+		Level: "project",
 		Robot: model.Robot{
 			Name:     "test",
 			Disabled: false,
@@ -151,6 +154,7 @@ func TestHasPushPerm(t *testing.T) {
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPush,
+						Effect:   "allow",
 					},
 				},
 			},
@@ -168,6 +172,7 @@ func TestHasPushPerm(t *testing.T) {
 
 func TestHasPushPullPerm(t *testing.T) {
 	robot := &robot.Robot{
+		Level: "project",
 		Robot: model.Robot{
 			Name:        "test_robot_3",
 			Description: "desc",
@@ -180,10 +185,12 @@ func TestHasPushPullPerm(t *testing.T) {
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPush,
+						Effect:   "allow",
 					},
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPull,
+						Effect:   "allow",
 					},
 				},
 			},
@@ -214,10 +221,12 @@ func TestSysAndProPerm(t *testing.T) {
 					{
 						Resource: rbac.Resource(fmt.Sprintf("system/%s", rbac.ResourceRepository)),
 						Action:   rbac.ActionList,
+						Effect:   "allow",
 					},
 					{
 						Resource: rbac.Resource(fmt.Sprintf("system/%s", rbac.ResourceGarbageCollection)),
 						Action:   rbac.ActionCreate,
+						Effect:   "allow",
 					},
 				},
 			},
@@ -228,10 +237,12 @@ func TestSysAndProPerm(t *testing.T) {
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPush,
+						Effect:   "allow",
 					},
 					{
 						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
 						Action:   rbac.ActionPull,
+						Effect:   "allow",
 					},
 				},
 			},
@@ -283,6 +294,35 @@ func Test_filterRobotPolicies(t *testing.T) {
 			},
 			[]*types.Policy{
 				{Resource: "/project/1/repository", Action: "pull", Effect: "allow"},
+			},
+		},
+		{
+			"wildcard permissions should apply to any project and generate auto-pull permissions",
+			args{
+				&proModels.Project{ProjectID: 1},
+				[]*types.Policy{
+					{Resource: "/project/*/repository", Action: "push", Effect: "allow"},
+					{Resource: "/project/2/repository", Action: "pull", Effect: "allow"},
+				},
+			},
+			[]*types.Policy{
+				{Resource: "/project/*/repository", Action: "push", Effect: "allow"},
+				{Resource: "/project/*/repository", Action: "pull", Effect: "allow"},
+			},
+		},
+		{
+			"wildcard permissions should work for library project specifically",
+			args{
+				&proModels.Project{ProjectID: 1, Name: "library"},
+				[]*types.Policy{
+					{Resource: "/project/*/repository", Action: "push", Effect: "allow"},
+					{Resource: "/project/*/repository", Action: "delete", Effect: "allow"},
+				},
+			},
+			[]*types.Policy{
+				{Resource: "/project/*/repository", Action: "push", Effect: "allow"},
+				{Resource: "/project/*/repository", Action: "pull", Effect: "allow"},
+				{Resource: "/project/*/repository", Action: "delete", Effect: "allow"},
 			},
 		},
 	}
