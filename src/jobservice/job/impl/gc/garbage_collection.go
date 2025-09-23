@@ -133,11 +133,8 @@ func (gc *GarbageCollector) parseParams(params job.Parameters) {
 
 	// delete tag: default is to delete the tag in the backend storage
 	gc.deleteTag = true
-	deleteTag, exist := params["delete_tag"]
-	if exist {
-		if tegDel, ok := deleteTag.(bool); ok && !tegDel {
-			gc.deleteTag = tegDel
-		}
+	if deleteTag, ok := params["delete_tag"].(bool); ok {
+		gc.deleteTag = deleteTag
 	}
 
 	// time window: default is 2 hours, and for testing/debugging, it can be set to 0.
