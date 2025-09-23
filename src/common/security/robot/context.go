@@ -133,9 +133,9 @@ func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.P
 
 	var results []*types.Policy
 	for _, policy := range policies {
-		// Check if this is a wildcard permission by checking if resource contains "/project/*"
+		// Check if this is a wildcard permission by checking if resource starts with "/project/*"
 		// Wildcard permissions from namespace="*" create resources like "/project/*/repository"
-		if strings.Contains(policy.Resource.String(), "/project/*") {
+		if strings.HasPrefix(policy.Resource.String(), robot.SCOPEALLPROJECT) {
 			// For wildcard permissions, allow access to any project
 			results = append(results, policy)
 			// give the PUSH action a pull access
