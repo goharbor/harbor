@@ -93,6 +93,21 @@ jobs:
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/ut_install.sh
+      - name: Wait for redis-photon (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          echo "Waiting for redis-photon container to be healthy..."
+          for i in {1..30}; do
+            if docker ps --filter "name=redis" --filter "health=healthy" | grep redis; then
+              echo "redis-photon is healthy"
+              break
+            fi
+            echo "Retry $i: redis-photon not healthy yet"
+            docker ps
+            sleep 2
+          done
+          docker ps --filter "name=redis" --filter "health=healthy" | grep redis || \
+            (echo "redis-photon never became healthy" && exit 1)
       - name: script
         run: |
           echo IP: $IP
@@ -125,6 +140,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+      - name: Build E2E engine locally (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          cd src/github.com/goharbor/harbor/tests/test-engine-image
+          chmod +x build.sh
+          ./build.sh api latest
+          # Tag as "latest-api" to satisfy test scripts
+          docker tag goharbor/harbor-e2e-engine:latest-api goharbor/harbor-e2e-engine:latest-api
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -188,6 +211,13 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+      - name: Build E2E engine locally (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          cd src/github.com/goharbor/harbor/tests/test-engine-image
+          chmod +x build.sh
+          ./build.sh api latest
+          docker tag goharbor/harbor-e2e-engine:latest-api goharbor/harbor-e2e-engine:latest-api
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -251,6 +281,13 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+      - name: Build E2E engine locally (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          cd src/github.com/goharbor/harbor/tests/test-engine-image
+          chmod +x build.sh
+          ./build.sh api latest
+          docker tag goharbor/harbor-e2e-engine:latest-api goharbor/harbor-e2e-engine:latest-api
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
