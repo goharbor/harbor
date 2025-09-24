@@ -29,13 +29,14 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     RUN set -eux; \
         arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
         case "$arch" in \
-          amd64|x86_64)  echo "Staying on amd64 (default)";; \
-          arm64|aarch64) echo "Switching to arm64"; \
-                         sed -i 's/ARCH_LINUX=amd64/ARCH_LINUX=arm64/' /etc/environment || true; \
-                         sed -i 's/ARCH_UNDERSCORE=amd64/ARCH_UNDERSCORE=arm64/' /etc/environment || true; \
-                         export ARCH_LINUX=arm64 ARCH_UNDERSCORE=arm64 ;; \
+          amd64|x86_64)  ARCH_LINUX=amd64; ARCH_UNDERSCORE=amd64 ;; \
+          arm64|aarch64) ARCH_LINUX=arm64; ARCH_UNDERSCORE=arm64 ;; \
           *) echo "Unsupported arch: $arch" >&2; exit 1 ;; \
-        esac
+        esac; \
+        echo "ARCH_LINUX=$ARCH_LINUX" > /arch.env; \
+        echo "ARCH_UNDERSCORE=$ARCH_UNDERSCORE" >> /arch.env
+    # Persist values into environment for all later layers
+    ENV $(cat /arch.env | xargs)`
 RUN pwd && mkdir /tool/binary && \
     # Install CONTAINERD
     CONTAINERD_VERSION=1.7.20 && \
