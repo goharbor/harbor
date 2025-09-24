@@ -70,6 +70,14 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
         shell: bash
+      - name: Start Redis (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          nohup redis-server --daemonize yes
+          sleep 5
+          redis-cli ping
       - name: before_install
         run: |
           set -x
@@ -365,6 +373,15 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+          
+      - name: Install Chromium (arm64 only)
+        if: matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+          which chromium-browser || which chromium
+          echo "CHROME_BIN=$(which chromium-browser || which chromium)" >> $GITHUB_ENV
+
       - name: script
         run: |
           echo IP: $IP
