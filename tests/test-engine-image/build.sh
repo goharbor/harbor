@@ -32,7 +32,7 @@ TARGET_IMAGE=goharbor/harbor-e2e-engine:${VERSION}-${IMAGE_FOR}
 ARCH=$(uname -m)
 if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     echo "Detected ARM64 host, building image for linux/arm64"
-    docker buildx build --platform linux/arm64 -t $TARGET_IMAGE .
+    docker buildx build --platform linux/arm64 --load -t $TARGET_IMAGE .
 else
     echo "Detected AMD64 host (or default), building image normally"
     docker build -t $TARGET_IMAGE .

@@ -145,9 +145,8 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor/tests/test-engine-image
           chmod +x build.sh
-          ./build.sh api latest
-          # Tag as "latest-api" to satisfy test scripts
-          docker tag goharbor/harbor-e2e-engine:latest-api goharbor/harbor-e2e-engine:latest-api
+          ./build.sh api latest --load
+          docker images | grep harbor-e2e-engine
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
