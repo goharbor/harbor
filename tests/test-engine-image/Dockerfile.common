@@ -21,17 +21,21 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:longsleep/golang-backports && \
     apt-get install -y golang-go
 
-# Map arch for binary downloads
-RUN set -eux; \
-    case "${TARGETARCH:-$(dpkg --print-architecture)}" in \
-      amd64|x86_64)  ARCH_LINUX=amd64; ARCH_UNDERSCORE=amd64 ;; \
-      arm64|aarch64) ARCH_LINUX=arm64; ARCH_UNDERSCORE=arm64 ;; \
-      *) echo "Unsupported arch: ${TARGETARCH}" >&2; exit 1 ;; \
-    esac; \
-    echo "ARCH_LINUX=$ARCH_LINUX" >> /arch.env; \
-    echo "ARCH_UNDERSCORE=$ARCH_UNDERSCORE" >> /arch.env
-ENV $(cat /arch.env | xargs)
-
+    ENV ARCH_LINUX=amd64
+    ENV ARCH_UNDERSCORE=amd64
+    
+    # Allow overriding from buildx TARGETARCH, or detect via dpkg
+    ARG TARGETARCH
+    RUN set -eux; \
+        arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
+        case "$arch" in \
+          amd64|x86_64)  echo "Staying on amd64 (default)";; \
+          arm64|aarch64) echo "Switching to arm64"; \
+                         sed -i 's/ARCH_LINUX=amd64/ARCH_LINUX=arm64/' /etc/environment || true; \
+                         sed -i 's/ARCH_UNDERSCORE=amd64/ARCH_UNDERSCORE=arm64/' /etc/environment || true; \
+                         export ARCH_LINUX=arm64 ARCH_UNDERSCORE=arm64 ;; \
+          *) echo "Unsupported arch: $arch" >&2; exit 1 ;; \
+        esac
 RUN pwd && mkdir /tool/binary && \
     # Install CONTAINERD
     CONTAINERD_VERSION=1.7.20 && \
