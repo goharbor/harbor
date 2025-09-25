@@ -197,7 +197,20 @@ _build_registryctl:
 _build_redis:
 	@$(call _build_base,$(REDIS),$(DOCKERFILEPATH_REDIS))
 	@echo "building redis container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+ifneq ($(PUSHBASEIMAGE), true)
+	@$(DOCKERBUILD_WITH_PULL_PARA) \
+		--build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+		--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+		-f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) \
+		-t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+else
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		--build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+		--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+		-f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) \
+		-t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) \
+		--push .
+endif
 	@echo "Done."
 
 _build_standalone_db_migrator:
