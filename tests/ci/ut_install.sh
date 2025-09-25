@@ -27,6 +27,12 @@ sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
 sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
+if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then
+  echo "Building redis-photon locally for arm64"
+  sudo make -f make/photon/Makefile _build_redis \
+    -e BASEIMAGETAG=dev -e VERSIONTAG=dev \
+    -e PULL_BASE_FROM_DOCKERHUB=false -e BUILD_BASE=true
+fi
 docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"

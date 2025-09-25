@@ -140,13 +140,13 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
-      - name: Build E2E engine locally (arm64 only)
+      - name: Build E2E engine image (arm64 only)
         if: matrix.arch == 'arm64'
         run: |
           cd src/github.com/goharbor/harbor/tests/test-engine-image
           chmod +x build.sh
-          ./build.sh api latest --load
-          docker images | grep harbor-e2e-engine
+          ./build.sh api dev --load
+          docker tag goharbor/harbor-e2e-engine:dev-api goharbor/harbor-e2e-engine:latest-api
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
