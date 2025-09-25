@@ -3031,6 +3031,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -7460,6 +7462,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to skip execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
