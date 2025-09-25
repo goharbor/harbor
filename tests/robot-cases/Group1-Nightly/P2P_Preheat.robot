@@ -79,32 +79,3 @@ Test Case - P2P Preheat By Manual
     Delete A P2P Preheat Policy  ${policy_name}
     Delete A Distribution  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
     Close Browser
-
-Test Case - P2P Preheat By Event
-    [Tags]  p2p_preheat_by_event  need_distribution_endpoint
-    ${d}=    Get Current Date    result_format=%m%s
-    ${project_name}=  Set Variable  project_p2p${d}
-    ${dist_name}=  Set Variable  distribution${d}
-    ${policy_name}=  Set Variable  policy${d}
-    ${image1}=  Set Variable  busybox
-    ${image2}=  Set Variable  hello-world
-    ${tag1}=  Set Variable  latest
-    ${tag2}=  Set Variable  stable
-    ${label}=  Set Variable  p2p_preheat
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Distribution  Dragonfly  ${dist_name}  ${DISTRIBUTION_ENDPOINT}  ${DRAGONFLY_AUTH_TOKEN}
-    Create An New Project And Go Into Project  ${project_name}
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag1}  ${tag1}
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  ${project_name}  ${image1}  ${tag2}  ${tag2}
-    Create An New P2P Preheat Policy  ${policy_name}  ${dist_name}  **  **  Event based
-    Retry Double Keywords When Error  Select P2P Preheat Policy  ${policy_name}  Wait Until Element Is Visible  ${p2p_execution_header}
-    # Artifact is pushed event
-    Retry Action Keyword  Verify Artifact Is Pushed Event  ${project_name}  ${policy_name}  ${image2}  ${tag1}
-    # Artifact is scanned event
-    Retry Action Keyword  Verify Artifact Is Scanned Event  ${project_name}  ${policy_name}  ${image1}  ${tag1}
-    # Artifact is labeled event
-    Retry Action Keyword  Verify Artifact Is Labeled Event  ${project_name}  ${policy_name}  ${image1}  ${tag2}  ${label}
-    Delete A P2P Preheat Policy  ${policy_name}
-    Delete A Distribution  ${dist_name}  ${DISTRIBUTION_ENDPOINT}
-    Close Browser

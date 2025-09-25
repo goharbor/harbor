@@ -597,7 +597,9 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 		return nil, err
 	}
 
-	if !scannable {
+	// When the scanner is unhealthy, the artifact will be recognized as "not scannable", in this case we will not return the error
+	// but return the scanner report with the best effort.
+	if !scannable && r.Health == sc.StatusHealthy {
 		return nil, errors.NotFoundError(nil).WithMessagef("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
