@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/label"
 )
 
 func init() {
@@ -35,7 +36,7 @@ func init() {
 	}, doublestar.New)
 
 	// Register label selector
-	// Register(label.Kind, []string{label.With, label.Without}, label.New)
+	 Register(label.Kind, []string{label.With, label.Without}, label.New)
 }
 
 // index for keeping the mapping between selector meta and its implementation
