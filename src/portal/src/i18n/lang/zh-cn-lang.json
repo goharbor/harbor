@@ -1347,6 +1347,7 @@
         "MSG_SCHEDULE_RESET": "垃圾回收定时任务已被重置",
         "PARAMETERS": "参数",
         "DELETE_UNTAGGED": "允许回收无 tag 的 artifacts",
+        "DELETE_TAG": "允许垃圾回收移除后端存储中的Tag文件",
         "EXPLAIN": "垃圾回收是一个计算密集型操作，可能会影响仓库性能",
         "EXPLAIN_TIME_WINDOW": "在最近的两小时（默认窗口期）内被推送的 Artifacts 不会被当做垃圾回收的目标",
         "DRY_RUN_SUCCESS": "触发模拟运行成功",

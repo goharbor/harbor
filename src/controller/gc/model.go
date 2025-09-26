@@ -22,6 +22,7 @@ import (
 type Policy struct {
 	Trigger        *Trigger       `json:"trigger"`
 	DeleteUntagged bool           `json:"deleteuntagged"`
+	DeleteTag      bool           `json:"deletetag"`
 	DryRun         bool           `json:"dryrun"`
 	Workers        int            `json:"workers"`
 	ExtraAttrs     map[string]any `json:"extra_attrs"`
@@ -60,6 +61,7 @@ type Task struct {
 	StatusMessage  string
 	RunCount       int32
 	DeleteUntagged bool
+	DeleteTag      bool
 	DryRun         bool
 	Workers        int
 	JobID          string
