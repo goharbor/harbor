@@ -187,7 +187,7 @@ func (suite *gcTestSuite) TestInit() {
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.False(gc.deleteUntagged)
-	suite.False(gc.deleteUntagged)
+	suite.False(gc.deleteTag)
 
 	params = map[string]any{
 		"redis_url_reg": "redis url",
