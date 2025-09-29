@@ -1267,6 +1267,7 @@
         "MSG_SCHEDULE_RESET": "Расписание для сборки мусора сброшено",
         "PARAMETERS": "Параметры",
         "DELETE_UNTAGGED": "Разрешить сборку мусора для непомеченных артефактов",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "GC — это ресурсоемкая операция, которая может повлиять на производительность реестра",
         "DRY_RUN_SUCCESS": "Сухой запуск успешно запущен"
     },

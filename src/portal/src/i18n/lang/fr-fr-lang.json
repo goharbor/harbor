@@ -1350,6 +1350,7 @@
         "MSG_SCHEDULE_RESET": "La planification de la purge a été réinitialisée",
         "PARAMETERS": "Paramètres",
         "DELETE_UNTAGGED": "Supprimer les artefacts non tagués",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "Purger est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre",
         "EXPLAIN_TIME_WINDOW": "Les artefacts téléversés dans les dernières 2 heures (fenêtre de temps par défaut) sont exclues de la purge",
         "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès",

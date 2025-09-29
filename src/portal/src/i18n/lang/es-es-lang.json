@@ -1345,6 +1345,7 @@
         "MSG_SCHEDULE_RESET": "Programación de Garbage Collection ha sido reiniciada",
         "PARAMETERS": "Parametros",
         "DELETE_UNTAGGED": "Permitir garbage collection en artefactos no tageados",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "GC es una operación que requiere un uso intensivo de recursos informáticos y que puede afectar el rendimiento del registro",
         "EXPLAIN_TIME_WINDOW": "Los artefactos cargados en las últimas 2 horas (la ventana predeterminada) se excluyen de la recolección de basura",
         "DRY_RUN_SUCCESS": "Activación de dry run satisfactorio",

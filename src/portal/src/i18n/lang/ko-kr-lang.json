@@ -1343,6 +1343,7 @@
         "MSG_SCHEDULE_RESET": "가비지 컬렉션 일정이 초기화됐습니다",
         "PARAMETERS": "파라미터",
         "DELETE_UNTAGGED": "태그가 지정되지 않은 아티팩트에 대한 가비지 수집 허용",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "가비지 컬렉션은 레지스트리 성능에 영향을 미칠 수 있는 커퓨팅 집약적 작업입니다.",
         "EXPLAIN_TIME_WINDOW": "지난 2시간(기본 기간) 동안 업로드된 아티팩트는 가비지 컬렉션에서 제외됩니다.",
         "DRY_RUN_SUCCESS": "모의 테스트가 성공적으로 실행됐습니다",
