@@ -102,20 +102,6 @@ func scanAllCallback(ctx context.Context, param string) error {
 	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
 	return err
 }
-	if param != "" {
-		params := make(map[string]any)
-		if err := json.Unmarshal([]byte(param), &params); err != nil {
-			return err
-		}
-
-		if op, ok := params["operator"].(string); ok {
-			ctx = context.WithValue(ctx, operator.ContextKey{}, op)
-		}
-	}
-
-	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
-	return err
-}
 
 func scanTaskStatusChange(ctx context.Context, taskID int64, status string) (err error) {
 	logger := log.G(ctx).WithFields(log.Fields{"task_id": taskID, "status": status})
