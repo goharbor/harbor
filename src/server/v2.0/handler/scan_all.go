@@ -16,6 +16,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -90,6 +91,144 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 	req := params.Schedule
 
+	// parse optional scope header
+	var scope any
+	if params.HTTPRequest != nil {
+		if h := params.HTTPRequest.Header.Get(scan.ScopeHeader); h != "" {
+			// validate JSON
+			var tmp map[string]any
+			if err := json.Unmarshal([]byte(h), &tmp); err == nil {
+				scope = tmp
+			}
+		}
+	}
+
+	if req.Schedule.Type == ScheduleNone {
+		return operation.NewCreateScanAllScheduleCreated()
+	}
+
+	if req.Schedule.Type == ScheduleManual {
+		execution, err := s.getLatestScanAllExecution(ctx, task.ExecutionTriggerManual)
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+
+		if execution != nil && execution.IsOnGoing() {
+			message := fmt.Sprintf("a previous scan all job aleady exits, its status is %s", execution.Status)
+			return s.SendError(ctx, errors.ConflictError(nil).WithMessage(message))
+		}
+
+		// attach scope to context for manual trigger
+		if scope != nil {
+			// best-effort parse
+			b, _ := json.Marshal(scope)
+			var sscope scan.ScanAllScope
+			_ = json.Unmarshal(b, &sscope)
+			ctx = scan.WithScanAllScope(ctx, &sscope)
+		}
+		if _, err := s.scanCtl.ScanAll(ctx, task.ExecutionTriggerManual, true); err != nil {
+			return s.SendError(ctx, err)
+		}
+	} else {
+		schedule, err := s.getScanAllSchedule(ctx)
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+
+		if schedule != nil {
+			message := "fail to set schedule for scan all as always had one, please delete it firstly then to re-schedule"
+			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage(message))
+		}
+
+		cbParams := map[string]any{
+			// the operator of schedule job is harbor-jobservice
+			"operator": secret.JobserviceUser,
+		}
+		if scope != nil {
+			cbParams["scope"] = scope
+		}
+		if _, err := s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, req.Schedule.Type, req.Schedule.Cron, scan.ScanAllCallback, cbParams, nil); err != nil {
+			return s.SendError(ctx, err)
+		}
+	}
+
+	return operation.NewCreateScanAllScheduleCreated()
+}
+	if err := s.requireAccess(ctx, rbac.ActionCreate); err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	req := params.Schedule
+
+	// parse optional scope header
+	var scope any
+	if params.HTTPRequest != nil {
+		if h := params.HTTPRequest.Header.Get(scan.ScopeHeader); h != "" {
+			// validate JSON
+			var tmp map[string]any
+			if err := json.Unmarshal([]byte(h), &tmp); err == nil {
+				scope = tmp
+			}
+		}
+	}
+
+	if req.Schedule.Type == ScheduleNone {
+		return operation.NewCreateScanAllScheduleCreated()
+	}
+
+	if req.Schedule.Type == ScheduleManual {
+		execution, err := s.getLatestScanAllExecution(ctx, task.ExecutionTriggerManual)
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+
+		if execution != nil && execution.IsOnGoing() {
+			message := fmt.Sprintf("a previous scan all job aleady exits, its status is %s", execution.Status)
+			return s.SendError(ctx, errors.ConflictError(nil).WithMessage(message))
+		}
+
+		// attach scope to context for manual trigger
+		if scope != nil {
+			// best-effort parse
+			b, _ := json.Marshal(scope)
+			var sscope scan.ScanAllScope
+			_ = json.Unmarshal(b, &sscope)
+			ctx = scan.WithScanAllScope(ctx, &sscope)
+		}
+		if _, err := s.scanCtl.ScanAll(ctx, task.ExecutionTriggerManual, true); err != nil {
+			return s.SendError(ctx, err)
+		}
+	} else {
+		schedule, err := s.getScanAllSchedule(ctx)
+		if err != nil {
+			return s.SendError(ctx, err)
+		}
+
+		if schedule != nil {
+			message := "fail to set schedule for scan all as always had one, please delete it firstly then to re-schedule"
+			return s.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage(message))
+		}
+
+		cbParams := map[string]any{
+			// the operator of schedule job is harbor-jobservice
+			"operator": secret.JobserviceUser,
+		}
+		if scope != nil {
+			cbParams["scope"] = scope
+		}
+		if _, err := s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, req.Schedule.Type, req.Schedule.Cron, scan.ScanAllCallback, cbParams, nil); err != nil {
+			return s.SendError(ctx, err)
+		}
+	}
+
+	return operation.NewCreateScanAllScheduleCreated()
+}
+	if err := s.requireAccess(ctx, rbac.ActionCreate); err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	req := params.Schedule
+
 	if req.Schedule.Type == ScheduleNone {
 		return operation.NewCreateScanAllScheduleCreated()
 	}
@@ -128,6 +267,108 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 }
 
 func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation.UpdateScanAllScheduleParams) middleware.Responder {
+	if err := s.requireAccess(ctx, rbac.ActionUpdate); err != nil {
+		return s.SendError(ctx, err)
+	}
+	req := params.Schedule
+
+	// parse optional scope header
+	var scope any
+	if params.HTTPRequest != nil {
+		if h := params.HTTPRequest.Header.Get(scan.ScopeHeader); h != "" {
+			var tmp map[string]any
+			if err := json.Unmarshal([]byte(h), &tmp); err == nil {
+				scope = tmp
+			}
+		}
+	}
+
+	if req.Schedule.Type == ScheduleManual {
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type))
+	}
+
+	schedule, err := s.getScanAllSchedule(ctx)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	if req.Schedule.Type == ScheduleNone {
+		if schedule != nil {
+			err = s.scheduler.UnScheduleByID(ctx, schedule.ID)
+		}
+	} else {
+		// update with new cron and optional scope by re-scheduling
+		if schedule != nil {
+			if err := s.scheduler.UnScheduleByID(ctx, schedule.ID); err != nil {
+				return s.SendError(ctx, err)
+			}
+		}
+		cbParams := map[string]any{
+			"operator": secret.JobserviceUser,
+		}
+		if scope != nil {
+			cbParams["scope"] = scope
+		}
+		_, err = s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, req.Schedule.Type, req.Schedule.Cron, scan.ScanAllCallback, cbParams, nil)
+	}
+
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	return operation.NewUpdateScanAllScheduleOK()
+}
+	if err := s.requireAccess(ctx, rbac.ActionUpdate); err != nil {
+		return s.SendError(ctx, err)
+	}
+	req := params.Schedule
+
+	// parse optional scope header
+	var scope any
+	if params.HTTPRequest != nil {
+		if h := params.HTTPRequest.Header.Get(scan.ScopeHeader); h != "" {
+			var tmp map[string]any
+			if err := json.Unmarshal([]byte(h), &tmp); err == nil {
+				scope = tmp
+			}
+		}
+	}
+
+	if req.Schedule.Type == ScheduleManual {
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type))
+	}
+
+	schedule, err := s.getScanAllSchedule(ctx)
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	if req.Schedule.Type == ScheduleNone {
+		if schedule != nil {
+			err = s.scheduler.UnScheduleByID(ctx, schedule.ID)
+		}
+	} else {
+		// update with new cron and optional scope by re-scheduling
+		if schedule != nil {
+			if err := s.scheduler.UnScheduleByID(ctx, schedule.ID); err != nil {
+				return s.SendError(ctx, err)
+			}
+		}
+		cbParams := map[string]any{
+			"operator": secret.JobserviceUser,
+		}
+		if scope != nil {
+			cbParams["scope"] = scope
+		}
+		_, err = s.scheduler.Schedule(ctx, job.ScanAllVendorType, 0, req.Schedule.Type, req.Schedule.Cron, scan.ScanAllCallback, cbParams, nil)
+	}
+
+	if err != nil {
+		return s.SendError(ctx, err)
+	}
+
+	return operation.NewUpdateScanAllScheduleOK()
+}
 	if err := s.requireAccess(ctx, rbac.ActionUpdate); err != nil {
 		return s.SendError(ctx, err)
 	}
