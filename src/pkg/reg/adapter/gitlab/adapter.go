@@ -15,6 +15,7 @@
 package gitlab
 
 import (
+	"errors"
 	"net/url"
 	"strings"
 
@@ -228,6 +229,7 @@ func existPatterns(path string, patterns []string) bool {
 	correct := false
 	if len(patterns) > 0 {
 		for _, pathPattern := range patterns {
+			log.Debug("Checking pathPattern: ", pathPattern, " against path: ", path)
 			if ok, _ := util.Match(strings.ToLower(pathPattern), strings.ToLower(path)); ok {
 				correct = true
 				break
@@ -237,4 +239,77 @@ func existPatterns(path string, patterns []string) bool {
 		correct = true
 	}
 	return correct
+}
+
+func (a *adapter) getProjectsByRepositoryName(repository string) ([]*Project, error) {
+	repositoriesToTry := []string{repository}
+
+	components := strings.Split(repository, "/")
+	for i := len(components) - 1; i >= 2; i-- {
+		repositoriesToTry = append(repositoriesToTry, strings.Join(components[:i], "/"))
+	}
+
+	for _, repo := range repositoriesToTry {
+		projects, err := a.clientGitlabAPI.getProjectsByName(url.QueryEscape(repo))
+		if err != nil {
+			continue
+		}
+		if len(projects) > 0 {
+			return projects, nil
+		}
+	}
+
+	return []*Project{}, nil
+}
+
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	log.Errorf("DeleteManifest called with repository: %s, reference: %s", repository, reference)
+
+	projects, err := a.getProjectsByRepositoryName(repository)
+	if err != nil {
+		log.Errorf("Failed to get projects by pattern %s: %v", repository, err)
+	}
+	if len(projects) == 0 {
+		log.Errorf("No projects found for pattern %s", repository)
+		return errors.New("no projects found")
+	}
+	projectID := projects[0].ID
+
+	log.Debugf("Project ID: %d", projectID)
+
+	repositories, err := a.clientGitlabAPI.getRepositories(projectID)
+	if err != nil {
+		log.Errorf("Failed to get repositories for project %s: %v", repository, err)
+	}
+	if len(repositories) == 0 {
+		log.Errorf("No repositories found for project %s", repository)
+		return errors.New("no repositories found")
+	}
+
+	// Filter by hand because the API does not support filtering by repository name
+	repositoryID := int64(-1)
+	for _, repo := range repositories {
+		if repo.Path == repository {
+			log.Debugf("Found repository ID: %d for path: %s", repositoryID, repo.Path)
+			repositoryID = repo.ID
+			break
+		}
+		log.Debugf("Skipping repository path=%s and id=%d", repo.Path, repo.ID)
+	}
+
+	if repositoryID == -1 {
+		log.Errorf("No repository found for path %s", repository)
+		return errors.New("no repository found")
+	}
+
+	log.Debugf("Deleting tag %s from repository %s with ID %d", reference, repository, repositoryID)
+
+	err = a.clientGitlabAPI.deleteTag(projectID, repositoryID, reference)
+	if err != nil {
+		log.Errorf("Failed to delete tag %s from repository %s with ID %d: %v", reference, repository, repositoryID, err)
+		return err
+	}
+	log.Debugf("Tag %s deleted successfully from repository %s with ID %d", reference, repository, repositoryID)
+
+	return nil
 }
