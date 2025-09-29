@@ -1348,6 +1348,7 @@
         "MSG_SCHEDULE_RESET": "Speicherbereinigungs-Intervall wurde zurückgesetzt",
         "PARAMETERS": "Parameter",
         "DELETE_UNTAGGED": "Erlaube Speicherbereinigung auf Artefakte ohne Tag",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "Speicherbereinigung (Garbage Collection / GC) ist eine rechenintensive Operation, die die Registry-Leistung beeinflussen kann",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Probelauf erfolgreich gestartet",
