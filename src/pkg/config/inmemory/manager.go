@@ -16,6 +16,7 @@ package inmemory
 
 import (
 	"context"
+	"errors"
 	"maps"
 	"sync"
 
@@ -52,6 +53,11 @@ func (d *Driver) Save(_ context.Context, cfg map[string]any) error {
 	defer d.Unlock()
 	maps.Copy(d.cfgMap, cfg)
 	return nil
+}
+
+// TODO
+func (d *Driver) Get(ctx context.Context, key string) (map[string]any, error) {
+	return nil, errors.ErrUnsupported
 }
 
 // NewInMemoryManager create a manager for unit testing, doesn't involve database or REST
