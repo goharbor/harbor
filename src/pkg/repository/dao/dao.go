@@ -159,7 +159,7 @@ func (d *dao) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 		return nil, err
 	}
 
-	sql := `select * from repository where repository_id in (select distinct repository_id from tag)`
+	sql := `select * from repository where exists (select 1 from tag where tag.repository_id = repository.repository_id)`
 	_, err = ormer.Raw(sql).QueryRows(&repos)
 	if err != nil {
 		return repos, err

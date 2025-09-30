@@ -100,6 +100,9 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
+		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()
 			if err != nil {
@@ -123,6 +126,9 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		}
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
+		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
 		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()

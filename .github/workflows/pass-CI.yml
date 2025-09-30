@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    # the paths is the same as the paths-ignore in CI.yml, they should be synced together
     paths:
       - 'docs/**'
       - '**.md'
@@ -13,6 +14,7 @@ on:
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
   push:
+    # the paths is the same as the paths-ignore in CI.yml, they should be synced together
     paths:
       - 'docs/**'
       - '**.md'

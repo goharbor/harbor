@@ -138,7 +138,7 @@
                         }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>
-                        {{ getStatusStr(j.status) }}
+                        {{ getStatusStr(j.status, j.status_text) }}
                         <clr-tooltip>
                             <clr-icon
                                 *ngIf="j.status_text"
