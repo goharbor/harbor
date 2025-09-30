@@ -95,11 +95,15 @@ jobs:
             echo "Do not need to build base images!"
           fi
 
-          # Build per-arch (ARCH is supplied by the matrix)
-          sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
-          sudo make package_online  ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          # Build per-arch
+          sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" \
+            BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} \
+            PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" \
+            BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} \
+            PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
 
-          # Add arch suffix so the two jobs don't overwrite each other
+          # Add arch suffix to artifacts
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
           mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
@@ -121,7 +125,90 @@ jobs:
 
           echo "BUILD_BUNDLE_${ARCH}=${harbor_offline_build_bundle}" >> $GITHUB_ENV
 
-          # Keep legacy image publishing only once (amd64) to avoid duplicate pushes here.
-          if [ "${ARCH}" = "amd64" ]; then
-            publishImage $target_branch ${Harbor_Assets_Version} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          # Publish images for both amd64 and arm64
+          publishImage $target_branch ${Harbor_Assets_Version} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+      - name: Save repo list for this arch
+        run: |
+          set -e
+          source tests/ci/build_util.sh
+          source_file="$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          saveRepoList "$source_file"
+
+      - name: Upload repo list artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repos-${{ matrix.arch }}
+          path: ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
+          retention-days: 7
+  
+  CREATE_MANIFEST:
+    needs: [BUILD_PACKAGE]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: 20.10
+          docker_channel: stable
+
+      - name: Checkout repo (for VERSION file)
+        uses: actions/checkout@v5
+
+      - name: Download repo lists
+        uses: actions/download-artifact@v4
+        with:
+          name: repos-amd64
+          path: .
+      - name: Download repo lists (arm64)
+        uses: actions/download-artifact@v4
+        with:
+          name: repos-arm64
+          path: .
+
+      - name: Merge repo lists
+        id: repos
+        run: |
+          set -e
+          cat _repos_amd64.txt _repos_arm64.txt | sort -u > _repos_all.txt
+          echo "count=$(wc -l < _repos_all.txt)" >> $GITHUB_OUTPUT
+          echo "---- repos to manifest ----"
+          cat _repos_all.txt
+
+      - name: Login to Docker Hub
+        run: |
+          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+
+      - name: Create multi-arch manifests
+        run: |
+          set -euo pipefail
+
+          branch="${GITHUB_REF#refs/heads/}"
+          version="$(cat VERSION)"
+          if [[ "$branch" == "main" ]]; then
+            image_tag="dev"
+          elif [[ "$branch" == release-* ]]; then
+            image_tag="${version}-dev"
+          else
+            image_tag="${version}"
           fi
+
+          echo "Creating multi-arch manifests for tag: ${image_tag}"
+
+          # Ensure buildx imagetools is ready (usually is via the action)
+          docker buildx version || true
+
+          while IFS= read -r repo; do
+            # Only manifest if both arch tags exist in the registry
+            if docker buildx imagetools inspect "${repo}:${image_tag}-amd64" >/dev/null 2>&1 \
+            && docker buildx imagetools inspect "${repo}:${image_tag}-arm64" >/dev/null 2>&1; then
+              echo "→ ${repo}:${image_tag}"
+              docker buildx imagetools create \
+                -t "${repo}:${image_tag}" \
+                "${repo}:${image_tag}-amd64" \
+                "${repo}:${image_tag}-arm64"
+            else
+              echo "SKIP ${repo}:${image_tag} (missing one of: -amd64 / -arm64)"
+            fi
+          done < _repos_all.txt
+
+          docker logout

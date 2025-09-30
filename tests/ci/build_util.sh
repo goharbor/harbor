@@ -1,16 +1,15 @@
 #!/bin/bash
 set -x
-
 set -e
 
 function s3_to_https() {
   local s3_url="$1"
 
+
   if [[ "$s3_url" =~ ^s3://([^/]+)/(.+)$ ]]; then
     local bucket="${BASH_REMATCH[1]}"
     local path="${BASH_REMATCH[2]}"
-    # current s3 bucket is create in this region
-    local region="us-west-1"  
+    local region="us-west-1"
     echo "https://${bucket}.s3.${region}.amazonaws.com/${path}"
   else
     echo "Invalid S3 URL: $s3_url" >&2
@@ -20,26 +19,58 @@ function s3_to_https() {
 
 
 function uploader {
-    converted_url=$(s3_to_https "s3://$2/$1")
-    echo "download url $converted_url"
-    aws s3 cp $1 s3://$2/$1
+  converted_url=$(s3_to_https "s3://$2/$1")
+  echo "download url $converted_url"
+  aws s3 cp "$1" "s3://$2/$1"
 }
 
+# NEW: persist the repo list from this runner
+# Writes one line per repo (no tags), e.g. goharbor/harbor-core
+function saveRepoList() {
+  local outfile="$1"
+  docker images --format "{{.Repository}}" \
+    | grep '^goharbor/' \
+    | grep -v '\-base' \
+    | sort -u > "$outfile"
+  echo "Saved repo list to $outfile"
+  cat "$outfile"
+}
+
+# UPDATED: arch-aware publish
+# Usage: publishImage <branch> <version> <docker_user> <docker_pass> <arch>
+#  - main      -  base_tag=dev
+#  - release-* - base_tag=<version>-dev
+# Pushes: <repo>:<base_tag>-<arch>   (e.g. core:dev-amd64 / core:dev-arm64)
 function publishImage {
-    echo "Publishing images to Docker Hub..."
-    echo "The images on the host:"
-    # for main, will use 'dev' as the tag name
-    # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
-    if [[ $1 == "main" ]]; then
-      image_tag=dev
-    fi
-    if [[ $1 == "release-"* ]]; then
-      image_tag=$2-dev
-    fi
-    # rename the images with tag "dev" and push to Docker Hub
-    docker images
-    docker login -u $3 -p $4
-    docker images | grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
-    echo "Images are published successfully"
-    docker images
+  branch=$1
+  version=$2
+  user=$3
+  pass=$4
+  arch=$5
+
+  if [[ "$branch" == "main" ]]; then
+    base_tag="dev"
+  elif [[ "$branch" == release-* ]]; then
+    base_tag="${version}-dev"
+  else
+    base_tag="${version}"
+  fi
+
+  arch_tag="${base_tag}-${arch}"
+  echo "Publishing images for arch=${arch}; tag=${arch_tag}"
+
+  docker login -u "$user" -p "$pass"
+
+  # Retag & push every non-base goharbor image we built on this runner that already carries $version
+  docker images --format '{{.Repository}}:{{.Tag}}' \
+    | grep '^goharbor/' \
+    | grep -v '\-base' \
+    | awk -F: -v version="$version" -v tag="$arch_tag" '
+        $2 ~ version {
+          printf("docker tag %s:%s %s:%s\n", $1, $2, $1, tag);
+          printf("docker push %s:%s\n", $1, tag);
+        }' | bash
+
+  docker logout
+  echo "Done pushing arch tag: ${arch_tag}"
 }
