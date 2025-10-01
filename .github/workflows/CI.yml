@@ -15,6 +15,8 @@ env:
    UI_BUILDER_VERSION: 1.6.0
 
 on:
+  # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
+  # see https://web.archive.org/web/20230506145443/https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/troubleshooting-required-status-checks#handling-skipped-but-required-checks
   pull_request:
     paths-ignore:
       - 'docs/**'
@@ -23,7 +25,11 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'      
   push:
+    # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -31,6 +37,9 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
 
 jobs:
   UTTEST:
@@ -332,7 +341,7 @@ jobs:
       - ubuntu-latest
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '18'
       - uses: actions/checkout@v5
