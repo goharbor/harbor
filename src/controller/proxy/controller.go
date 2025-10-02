@@ -189,7 +189,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	}
 	if !exist || desc == nil {
 		if a != nil { // if not found, use local if it exists, because a exist, otherwise return error
-			log.Errorf("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
+			log.Infof("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
 			return true, nil, nil
 		}
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
