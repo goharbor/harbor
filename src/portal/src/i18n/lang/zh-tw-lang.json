@@ -1343,6 +1343,7 @@
         "MSG_SCHEDULE_RESET": "已重設垃圾回收排程",
         "PARAMETERS": "參數",
         "DELETE_UNTAGGED": "允許對未標籤的檔案進行垃圾回收",
+        "DELETE_TAG": "允許垃圾回收移除後端儲存中的標籤檔案",
         "EXPLAIN": "垃圾回收是一個密集計算的操作，可能影響 Registry 的效能",
         "EXPLAIN_TIME_WINDOW": "過去 2 小時（預設窗口）內上傳的檔案將不包括在垃圾回收中",
         "DRY_RUN_SUCCESS": "成功觸發模擬執行",
