@@ -992,6 +992,32 @@
                     [(ngModel)]="currentConfig.oidc_logout.value" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label for="oidcAutoLogin"
+                >{{ 'CONFIG.OIDC.OIDC_AUTO_LOGIN' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{ 'TOOLTIP.OIDC_AUTO_LOGIN' | translate }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    name="oidcAutoLogin"
+                    id="oidcAutoLogin"
+                    [disabled]="disabled(currentConfig.oidc_auto_login)"
+                    [(ngModel)]="currentConfig.oidc_auto_login.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
         <clr-input-container>
             <label for="oidcUserClaim"
                 >{{ 'CONFIG.OIDC.USER_CLAIM' | translate }}

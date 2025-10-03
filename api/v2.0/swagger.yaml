@@ -9362,6 +9362,11 @@ definitions:
         description: Logout OIDC user session
         x-omitempty: true
         x-isnullable: true
+      oidc_auto_login:
+        type: boolean
+        description: Auto login OIDC user session to bypass login screen when already authenticated
+        x-omitempty: true
+        x-isnullable: true
       robot_token_duration:
         type: integer
         description: The robot account token duration in days
