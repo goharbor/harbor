@@ -17,8 +17,9 @@ package index
 import (
 	"sync"
 
-	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/dayspl"
@@ -220,6 +221,10 @@ func Valid(templateID string, parameters rule.Parameters) error {
 func Get(templateID string, parameters rule.Parameters) (rule.Evaluator, error) {
 	if len(templateID) == 0 {
 		return nil, errors.New("empty rule template ID")
+	}
+
+	if templateID == "immutable_template" {
+		templateID = always.TemplateID
 	}
 
 	v, ok := index.Load(templateID)
