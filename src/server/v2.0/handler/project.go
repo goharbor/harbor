@@ -163,9 +163,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if req.RegistryID == nil {
 		req.Metadata.ProxySpeedKb = nil
+		req.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -566,9 +567,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if params.Project.Metadata != nil && !p.IsProxy() {
 		params.Project.Metadata.ProxySpeedKb = nil
+		params.Project.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -816,6 +818,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if ps := req.Metadata.ProxySpeedKb; ps != nil {
 			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
 				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
+			}
+		}
+
+		if cnt := req.Metadata.MaxUpstreamConn; cnt != nil {
+			if _, err := strconv.ParseInt(*cnt, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
 			}
 		}
 	}
