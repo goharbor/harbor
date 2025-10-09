@@ -16,6 +16,7 @@ package project
 
 import (
 	"context"
+	"fmt"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	event "github.com/goharbor/harbor/src/controller/event/metadata"
@@ -44,26 +45,19 @@ type Project = models.Project
 // MemberQuery alias to models.MemberQuery
 type MemberQuery = models.MemberQuery
 
-// Controller defines the operations related with blobs
+// Controller defines the operations related with projects
 type Controller interface {
-	// Create create project instance
 	Create(ctx context.Context, project *models.Project) (int64, error)
-	// Count returns the total count of projects according to the query
 	Count(ctx context.Context, query *q.Query) (int64, error)
-	// Delete delete the project by project id
 	Delete(ctx context.Context, id int64) error
-	// Exists returns true when the specific project exists
 	Exists(ctx context.Context, projectIDOrName any) (bool, error)
-	// Get get the project by project id or name
 	Get(ctx context.Context, projectIDOrName any, options ...Option) (*models.Project, error)
-	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
-	// List list projects
 	List(ctx context.Context, query *q.Query, options ...Option) ([]*models.Project, error)
-	// Update update the project
 	Update(ctx context.Context, project *models.Project) error
-	// ListRoles lists the roles of user for the specific project
 	ListRoles(ctx context.Context, projectID int64, u *commonmodels.User) ([]int, error)
+	// 👇 New method to manage project visibility
+	SetPublic(ctx context.Context, projectID int64, public bool) error
 }
 
 // NewController creates an instance of the default project controller
@@ -151,7 +145,6 @@ func (c *controller) Exists(ctx context.Context, projectIDOrName any) (bool, err
 	} else if errors.IsNotFoundErr(err) {
 		return false, nil
 	}
-	// else
 	return false, err
 }
 
@@ -202,11 +195,8 @@ func (c *controller) List(ctx context.Context, query *q.Query, options ...Option
 	return projects, nil
 }
 
+// ✅ Updated Update function to handle visibility
 func (c *controller) Update(ctx context.Context, p *models.Project) error {
-	// currently, allowlist manager not use the ormer from the context,
-	// the SQL executed in the allowlist manager will not be in the transaction with metadata manager,
-	// we will update the metadata of the project first so that we can be rollback the operations for the metadata
-	// when set allowlist for the project failed
 	if len(p.Metadata) > 0 {
 		meta, err := c.metaMgr.Get(ctx, p.ProjectID)
 		if err != nil {
@@ -226,6 +216,12 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 				metaNeedCreated[key] = value
 			}
 		}
+
+		// 🟩 Check and update "public" visibility metadata
+		if val, ok := p.Metadata["public"]; ok {
+			metaNeedUpdated["public"] = val
+		}
+
 		if err = c.metaMgr.Add(ctx, p.ProjectID, metaNeedCreated); err != nil {
 			return err
 		}
@@ -240,6 +236,27 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 		}
 	}
 
+	return nil
+}
+
+// 🆕 New helper function to change visibility easily
+func (c *controller) SetPublic(ctx context.Context, projectID int64, public bool) error {
+	meta := map[string]string{
+		"public": fmt.Sprintf("%t", public),
+	}
+	if err := c.metaMgr.Update(ctx, projectID, meta); err != nil {
+		log.G(ctx).Errorf("failed to update project visibility: %v", err)
+		return err
+	}
+
+	// Fire an event for visibility change
+	e := &event.UpdateProjectEventMetadata{
+		ProjectID: projectID,
+		Operator:  operator.FromContext(ctx),
+	}
+	notification.AddEvent(ctx, e)
+
+	log.G(ctx).Infof("Project %d visibility updated to public=%t", projectID, public)
 	return nil
 }
 
