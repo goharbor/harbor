@@ -1,6 +1,8 @@
 #!/bin/bash
 #docker version: 20.10.10+
 #docker-compose version: 1.18.0+
+#podman version: 5.4.0+
+#podman-compose version: 1.0.6+
 #golang version: 1.12.0+
 
 set +e
@@ -75,11 +77,41 @@ function check_golang {
 	fi
 }
 
+
+
 function check_docker {
+	is_podman=false
+	
 	if ! docker --version &> /dev/null
 	then
-		error "Need to install docker(20.10.10+) first and run this script again."
+		error "Need to install docker(20.10.10+) or podman(5.4.0+) first and run this script again."
 		exit 1
+	fi
+
+	# either docker is podman
+	if docker --version 2>&1 | grep -qi podman; then
+		is_podman=true
+		note "Detected Podman as the Docker CLI."
+		# Check Podman version
+		if [[ $(podman --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
+		then
+			podman_version=${BASH_REMATCH[1]}
+			podman_version_part1=${BASH_REMATCH[2]}
+			podman_version_part2=${BASH_REMATCH[3]}
+
+			note "Podman version: $podman_version"
+			# the version of Podman does not meet the requirement
+			if [ "$podman_version_part1" -lt 5 ] || ([ "$podman_version_part1" -eq 5 ] && [ "$podman_version_part2" -lt 4 ])
+			then
+				error "Need to upgrade Podman package to 5.4.0+."
+				exit 1
+			fi
+		else
+			error "Failed to parse Podman version."
+			exit 1
+		fi
+		# Skip Docker version checks if Podman is detected
+		return
 	fi
 
 	# docker has been installed and check its version
@@ -91,7 +123,7 @@ function check_docker {
 
 		note "docker version: $docker_version"
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
+		if [ "$docker_version_part1" -lt 20 ] || ([ "$docker_version_part1" -eq 20 ] && [ "$docker_version_part2" -lt 10 ])
 		then
 			error "Need to upgrade docker package to 20.10.10+."
 			exit 1
@@ -134,5 +166,6 @@ function check_dockercompose {
 		exit 1
 	fi
 }
+
 
 

@@ -1,4 +1,5 @@
 services:
+{% if not with_podman %}
   log:
     image: goharbor/harbor-log:{{version}}
     container_name: harbor-log
@@ -22,6 +23,7 @@ services:
       - 127.0.0.1:1514:10514
     networks:
       - harbor
+{% endif %}
   registry:
     image: goharbor/registry-photon:{{reg_version}}
     container_name: registry
@@ -60,12 +62,23 @@ services:
     networks:
       - harbor
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "registry"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/registry.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
   registryctl:
     image: goharbor/harbor-registryctl:{{version}}
     container_name: registryctl
@@ -103,12 +116,23 @@ services:
     networks:
       - harbor
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "registryctl"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/registryctl.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 {% if external_database == False %}
   postgresql:
     image: goharbor/harbor-db:{{version}}
@@ -128,12 +152,23 @@ services:
     env_file:
       - ./common/config/db/env
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "postgresql"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/postgresql.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
     shm_size: '1gb'
 {% endif %}
   core:
@@ -179,7 +214,9 @@ services:
     networks:
       harbor:
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
       - registry
 {% if external_redis == False %}
       - redis
@@ -187,11 +224,20 @@ services:
 {% if external_database == False %}
       - postgresql
 {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "core"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/core.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
   portal:
     image: goharbor/harbor-portal:{{version}}
     container_name: harbor-portal
@@ -218,12 +264,23 @@ services:
     networks:
       - harbor
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "portal"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/portal.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 
   jobservice:
     image: goharbor/harbor-jobservice:{{version}}
@@ -257,11 +314,21 @@ services:
       - harbor
     depends_on:
       - core
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "jobservice"
+    {% endif %}
+    {% if with_podman %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/jobservice.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 {% if external_redis == False %}
   redis:
     image: goharbor/redis-photon:{{redis_version}}
@@ -278,12 +345,23 @@ services:
     networks:
       harbor:
     depends_on:
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "redis"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/redis.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 {% endif %}
   proxy:
     image: goharbor/nginx-photon:{{version}}
@@ -326,12 +404,23 @@ services:
       - registry
       - core
       - portal
+      {% if not with_podman %}
       - log
+      {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "proxy"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/proxy.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 {% if with_trivy %}
   trivy-adapter:
     container_name: trivy-adapter
@@ -364,11 +453,21 @@ services:
         source: {{internal_tls.trivy_adapter_key_path}}
         target: /etc/harbor/ssl/trivy_adapter.key
 {% endif %}
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "trivy-adapter"
+    {% endif %}
+    {% if with_podman %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/trivy-adapter.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
     env_file:
       ./common/config/trivy-adapter/env
 {% endif %}
@@ -390,11 +489,20 @@ services:
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+    {% if not with_podman %}
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://localhost:1514"
         tag: "exporter"
+    {% else %}
+    logging:
+      driver: "json-file"
+      options:
+        path: "{{ log_location }}/exporter.log"
+        max-size: "{{ log_rotate_size }}"
+        max-file: "{{ log_rotate_count }}"
+    {% endif %}
 {% endif %}
 networks:
   harbor:
