@@ -59,7 +59,14 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
+	// Get robot prefix from config
+	robotPrefix := config.RobotPrefix(ctx)
+
+	// If robot prefix is empty, log a warning and skip robot detection
+	if robotPrefix == "" {
+		logger.Warning("robot_name_prefix is empty — skipping robot account detection")
+	} else if strings.HasPrefix(username, robotPrefix) {
+		// Username starts with robot prefix, treat as robot account — skip OIDC auth
 		return nil
 	}
 
