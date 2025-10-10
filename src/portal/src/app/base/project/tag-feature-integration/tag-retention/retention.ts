@@ -81,10 +81,12 @@ export class BaseRule {
 
 export class ImmutableRetentionRule extends BaseRule {
     project_id: number;
+    params: object;
     constructor(project_id) {
         super();
         this.project_id = project_id;
         this.priority = 0;
+        this.params = {};
         this.action = 'immutable';
         this.template = 'immutable_template';
     }
@@ -116,7 +118,7 @@ export class Param {
 export class Template {
     rule_template: string;
     display_text: string;
-    action: 'retain';
+    action: 'retain' | 'immutable';
     params: Array<Param>;
 }
 

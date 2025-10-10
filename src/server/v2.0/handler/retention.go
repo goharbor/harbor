@@ -109,6 +109,37 @@ var (
 				Action:       "retain",
 				Params:       []*models.RetentionRuleParamMetadata{},
 			},
+			// immutable templates
+			{
+				RuleTemplate: "nDaysSinceLastPush",
+				DisplayText:  "pushed within the last # days",
+				Action:       "immutable",
+				Params: []*models.RetentionRuleParamMetadata{
+					{
+						Type:     "int",
+						Unit:     "DAYS",
+						Required: true,
+					},
+				},
+			},
+			{
+				RuleTemplate: "nDaysSinceLastPull",
+				DisplayText:  "pulled within the last # days",
+				Action:       "immutable",
+				Params: []*models.RetentionRuleParamMetadata{
+					{
+						Type:     "int",
+						Unit:     "DAYS",
+						Required: true,
+					},
+				},
+			},
+			{
+				RuleTemplate: "immutable_template", // backward compatibility, should be always
+				DisplayText:  "always",
+				Action:       "immutable",
+				Params:       []*models.RetentionRuleParamMetadata{},
+			},
 		},
 		ScopeSelectors: []*models.RetentionSelectorMetadata{
 			{

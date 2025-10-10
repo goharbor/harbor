@@ -39,6 +39,9 @@ type Metadata struct {
 	// Template ID
 	Template string `json:"template" valid:"Required"`
 
+	// The parameters of this rule
+	Parameters Parameters `json:"params" valid:"Required"`
+
 	// TagSelectors attached to the rule for filtering tags
 	TagSelectors []*Selector `json:"tag_selectors" valid:"Required"`
 
@@ -76,3 +79,9 @@ type Selector struct {
 	// Param for the selector
 	Pattern string `json:"pattern" valid:"Required"`
 }
+
+// Parameters of rule, indexed by the key
+type Parameters map[string]Parameter
+
+// Parameter of rule
+type Parameter interface{}
