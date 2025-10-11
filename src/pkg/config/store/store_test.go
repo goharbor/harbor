@@ -61,7 +61,6 @@ func (suite *GetFromDriverTestSuite) SetupTest() {
 	}
 }
 
-// TestGetFromDriverSuccess tests successful retrieval from driver
 func (suite *GetFromDriverTestSuite) TestGetFromDriverSuccess() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{
@@ -77,7 +76,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverSuccess() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverNilDriver tests behavior when driver is nil
 func (suite *GetFromDriverTestSuite) TestGetFromDriverNilDriver() {
 	key := common.SkipAuditLogDatabase
 	suite.store.cfgDriver = nil
@@ -89,7 +87,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverNilDriver() {
 	suite.Nil(result)
 }
 
-// TestGetFromDriverError tests error handling when driver returns error
 func (suite *GetFromDriverTestSuite) TestGetFromDriverError() {
 	key := common.SkipAuditLogDatabase
 	expectedError := errors.New("database connection failed")
@@ -104,7 +101,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverError() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverEmptyResult tests when driver returns empty result
 func (suite *GetFromDriverTestSuite) TestGetFromDriverEmptyResult() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{}
@@ -118,7 +114,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverEmptyResult() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverMultipleConfigs tests retrieval with multiple configurations
 func (suite *GetFromDriverTestSuite) TestGetFromDriverMultipleConfigs() {
 	key := common.AuditLogForwardEndpoint
 	expectedResult := map[string]any{
@@ -139,7 +134,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverMultipleConfigs() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverNilContext tests behavior with nil context
 func (suite *GetFromDriverTestSuite) TestGetFromDriverNilContext() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{
@@ -155,7 +149,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverNilContext() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverEmptyKey tests behavior with empty key
 func (suite *GetFromDriverTestSuite) TestGetFromDriverEmptyKey() {
 	key := ""
 	expectedResult := map[string]any{}
@@ -169,7 +162,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverEmptyKey() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetFromDriverDifferentKeys tests retrieval with different configuration keys
 func (suite *GetFromDriverTestSuite) TestGetFromDriverDifferentKeys() {
 	testCases := []struct {
 		name           string
@@ -215,7 +207,6 @@ func (suite *GetFromDriverTestSuite) TestGetFromDriverDifferentKeys() {
 	}
 }
 
-// Run the test suite
 func TestGetFromDriverTestSuite(t *testing.T) {
 	suite.Run(t, new(GetFromDriverTestSuite))
 }

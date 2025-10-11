@@ -62,7 +62,6 @@ func (suite *GetItemFromDriverTestSuite) SetupTest() {
 	}
 }
 
-// TestGetItemFromDriverSuccess tests successful retrieval of config from driver
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverSuccess() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{
@@ -78,7 +77,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverSuccess() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetItemFromDriverError tests error handling when driver returns error
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverError() {
 	key := common.SkipAuditLogDatabase
 	expectedError := errors.New("database connection failed")
@@ -93,7 +91,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverError() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetItemFromDriverEmptyResult tests when driver returns empty result
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverEmptyResult() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{}
@@ -107,7 +104,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverEmptyResult() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetItemFromDriverMultipleKeys tests retrieval with multiple keys
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverMultipleKeys() {
 	key := common.AuditLogForwardEndpoint
 	expectedResult := map[string]any{
@@ -124,7 +120,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverMultipleKeys() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetItemFromDriverNilContext tests behavior with nil context
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverNilContext() {
 	key := common.SkipAuditLogDatabase
 	expectedResult := map[string]any{
@@ -140,7 +135,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverNilContext() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// TestGetItemFromDriverEmptyKey tests behavior with empty key
 func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverEmptyKey() {
 	key := ""
 	expectedResult := map[string]any{}
@@ -154,7 +148,6 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverEmptyKey() {
 	suite.driver.AssertExpectations(suite.T())
 }
 
-// Run the test suite
 func TestGetItemFromDriverTestSuite(t *testing.T) {
 	suite.Run(t, new(GetItemFromDriverTestSuite))
 }
