@@ -8,7 +8,7 @@ docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'do
 docker_compose_yml_path = '/compose_location/docker-compose.yml'
 
 # render docker-compose
-def prepare_docker_compose(configs, with_trivy):
+def prepare_docker_compose(configs, with_trivy, with_podman):
     versions = parse_versions()
     VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
 
@@ -24,7 +24,12 @@ def prepare_docker_compose(configs, with_trivy):
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
         'with_trivy': with_trivy,
+        'with_podman': with_podman,
     }
+
+    if with_podman:
+        rendering_variables['log_rotate_count'] = configs['log_rotate_count']
+        rendering_variables['log_rotate_size'] = configs['log_rotate_size']
 
     # if configs.get('registry_custom_ca_bundle_path'):
     #     rendering_variables['registry_custom_ca_bundle_path'] = configs.get('registry_custom_ca_bundle_path')
