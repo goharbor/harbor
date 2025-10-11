@@ -114,6 +114,24 @@
         </div>
     </div>
     <div class="clr-row">
+        <div class="clr-col-2 flex-200"></div>
+        <div class="clr-col">
+            <clr-toggle-container class="mt-05">
+                <clr-toggle-wrapper>
+                    <input
+                        type="checkbox"
+                        clrToggle
+                        name="delete_tag"
+                        id="delete_tag"
+                        [(ngModel)]="shouldDeleteTag" />
+                    <label class="font-weight-400" for="delete_tag">{{
+                        'GC.DELETE_TAG' | translate
+                    }}</label>
+                </clr-toggle-wrapper>
+            </clr-toggle-container>
+        </div>
+    </div>
+    <div class="clr-row">
         <div class="clr-col-2 flex-200">
             <button
                 id="gc-now"

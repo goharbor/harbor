@@ -271,7 +271,10 @@
         "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
-        "NO_PROJECT": "Nous n'avons trouvé aucun projet."
+        "NO_PROJECT": "Nous n'avons trouvé aucun projet.",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -1350,6 +1353,7 @@
         "MSG_SCHEDULE_RESET": "La planification de la purge a été réinitialisée",
         "PARAMETERS": "Paramètres",
         "DELETE_UNTAGGED": "Supprimer les artefacts non tagués",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "Purger est une opération gourmande en puissance de calcul qui peut impacter les performances  du registre",
         "EXPLAIN_TIME_WINDOW": "Les artefacts téléversés dans les dernières 2 heures (fenêtre de temps par défaut) sont exclues de la purge",
         "DRY_RUN_SUCCESS": "Exécution à blanc déclenchée avec succès",

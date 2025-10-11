@@ -269,7 +269,10 @@
         "PROXY_CACHE_TOOLTIP": "啟用此選項可讓此專案作為特定目標 Registry 實例的拉取快取。Harbor 僅可作為 DockerHub、Docker Registry、Harbor、AWS ECR、Azure ACR、Alibaba Cloud ACR、Quay、Google GCR、GitHub GHCR 和 JFrog Artifactory Registry 的代理。",
         "ENDPOINT": "端點",
         "PROXY_CACHE_ENDPOINT": "代理快取端點",
-        "NO_PROJECT": "找不到任何專案"
+        "NO_PROJECT": "找不到任何專案",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",
@@ -1343,6 +1346,7 @@
         "MSG_SCHEDULE_RESET": "已重設垃圾回收排程",
         "PARAMETERS": "參數",
         "DELETE_UNTAGGED": "允許對未標籤的檔案進行垃圾回收",
+        "DELETE_TAG": "允許垃圾回收移除後端儲存中的標籤檔案",
         "EXPLAIN": "垃圾回收是一個密集計算的操作，可能影響 Registry 的效能",
         "EXPLAIN_TIME_WINDOW": "過去 2 小時（預設窗口）內上傳的檔案將不包括在垃圾回收中",
         "DRY_RUN_SUCCESS": "成功觸發模擬執行",

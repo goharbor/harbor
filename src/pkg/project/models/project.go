@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
@@ -167,6 +168,20 @@ func (p *Project) ProxyCacheSpeed() int32 {
 		return 0
 	}
 	return int32(speedInt)
+}
+
+// MaxUpstreamConnection ...
+func (p *Project) MaxUpstreamConnection() int {
+	countVal, exist := p.GetMetadata(ProMetaMaxUpstreamConn)
+	if !exist {
+		return 0
+	}
+	cnt, err := strconv.ParseInt(countVal, 10, 32)
+	if err != nil {
+		log.Warningf("failed th parse the max_upstream_conn, val:%s error %v", countVal, err)
+		return 0
+	}
+	return int(cnt)
 }
 
 // FilterByPublic returns orm.QuerySeter with public filter
