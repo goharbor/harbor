@@ -60,6 +60,7 @@ jobs:
           echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
           IP=`hostname -I | awk '{print $1}'`
           echo "IP=$IP" >> $GITHUB_ENV
+          echo "BASE_URL=https://$IP" >> $GITHUB_ENV
         shell: bash
       - name: before_install
         run: |
@@ -86,5 +87,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: src/github.com/goharbor/harbor/playwright-report/
+          path: src/github.com/goharbor/harbor/src/portal/playwright-report/
           retention-days: 30
