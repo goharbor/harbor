@@ -1,0 +1,91 @@
+name: Playwright Tests
+
+env:
+   POSTGRESQL_HOST: localhost
+   POSTGRESQL_PORT: 5432
+   POSTGRESQL_USR: postgres
+   POSTGRESQL_PWD: root123
+   POSTGRESQL_DATABASE: registry
+   DOCKER_COMPOSE_VERSION: 2.27.1
+   HARBOR_ADMIN: admin
+   HARBOR_ADMIN_PASSWD: Harbor12345
+   CORE_SECRET: tempString
+   KEY_PATH: "/data/secret/keys/secretkey"
+   REDIS_HOST: localhost
+   REG_VERSION: v2.7.1-patch-2819-2553
+   UI_BUILDER_VERSION: 1.6.0
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  E2E_PLAYWRIGHT:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.2
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '18'
+      - uses: actions/checkout@v5
+        with:
+          path: src/github.com/goharbor/harbor
+      - name: setup env
+        run: |
+          cd src/github.com/goharbor/harbor
+          pwd
+          go env
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          IP=`hostname -I | awk '{print $1}'`
+          echo "IP=$IP" >> $GITHUB_ENV
+          echo "BASE_URL=https://$IP" >> $GITHUB_ENV
+        shell: bash
+      - name: before_install
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+      - name: Start Harbor for E2E
+        run: |
+          cd src/github.com/goharbor/harbor
+          docker system prune -a -f
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: Install Playwright dependencies
+        run: |
+          cd src/github.com/goharbor/harbor/src/portal
+          npm ci
+          npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: |
+          cd src/github.com/goharbor/harbor/src/portal
+          npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/github.com/goharbor/harbor/src/portal/playwright-report/
+          retention-days: 30
