@@ -4,7 +4,7 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
-sudo go env -w GO111MODULE=auto
+go env -w GO111MODULE=auto
 pwd
 # cd ./src
 # go get github.com/docker/distribution@latest
