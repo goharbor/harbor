@@ -1,12 +1,13 @@
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+ARG TARGETARCH
 
 FROM ${build_image} AS build
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux
-ENV GOARCH=amd64
+ENV GOARCH=${TARGETARCH}
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
