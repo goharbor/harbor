@@ -20,7 +20,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
