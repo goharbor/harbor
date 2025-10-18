@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 )
 
@@ -83,4 +84,19 @@ func (d *Database) Save(ctx context.Context, cfgs map[string]any) error {
 		}
 	}
 	return d.cfgDAO.SaveConfigEntries(ctx, configEntries)
+}
+
+// Get - Get config item from db
+func (d *Database) Get(ctx context.Context, key string) (map[string]any, error) {
+	resultMap := map[string]any{}
+	configEntries, err := d.cfgDAO.GetConfigItem(ctx, q.New(q.KeyWords{"k": key}))
+	if err != nil {
+		log.Debugf("get config db error: %v", err)
+		return resultMap, err
+	}
+	// convert to map if there's any record
+	for _, item := range configEntries {
+		resultMap[item.Key] = item.Value
+	}
+	return resultMap, nil
 }

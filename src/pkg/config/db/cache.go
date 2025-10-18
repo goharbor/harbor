@@ -61,6 +61,11 @@ func (d *Cache) Save(ctx context.Context, cfg map[string]any) error {
 	return nil
 }
 
+// Get - delegate to driver
+func (d *Cache) Get(ctx context.Context, key string) (map[string]any, error) {
+	return d.driver.Get(ctx, key)
+}
+
 // NewCacheDriver returns driver with cache
 func NewCacheDriver(cache cache.Cache, driver store.Driver) store.Driver {
 	return &Cache{
