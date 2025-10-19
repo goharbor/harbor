@@ -74,3 +74,43 @@ test('Update User Comment', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Comments' }).fill('test1234');
     await page.getByRole('button', { name: 'OK' }).click();
 })
+
+test('Update User Password', async ({ page }) => {
+    // Create user
+    const username = await createUser(page)
+
+    // Login with user credentials
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill("Harbor12345");
+
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    // Update Password
+    await page.getByRole('button', { name: username }).click();
+    await page.getByRole('menuitem', { name: 'Change Password' }).click();
+    await page.getByRole('textbox', { name: 'Current Password*' }).click();
+    await page.getByRole('textbox', { name: 'Current Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'New Password*' }).click();
+    await page.getByRole('textbox', { name: 'New Password*' }).fill('Test1234');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Test1234');
+    await page.getByRole('button', { name: 'OK' }).click();
+
+    // Logout after update
+    await page.getByRole('button', { name: username }).click();
+    await page.getByRole('menuitem', { name: 'Log Out' }).click();
+
+    // Login with Updated Password
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('Test1234');
+
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    // Logout
+    await page.getByRole('button', { name: username }).click();
+    await page.getByRole('menuitem', { name: 'Log Out' }).click();
+})
