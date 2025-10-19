@@ -20,6 +20,8 @@ async function createUser(page) {
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
     await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
     await page.getByRole('button', { name: 'SIGN UP' }).click();
+
+    return username
 }
 
 
@@ -52,3 +54,23 @@ test('Create An New User', async ({ page }) => {
     //Creating user
     await createUser(page)
 });
+
+test('Update User Comment', async ({ page }) => {
+    // Creating user
+    const username = await createUser(page)
+
+    //Login with user credentials
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill("Harbor12345");
+
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    // Updating user comment
+    await page.getByRole('button', { name: username }).click();
+    await page.getByRole('menuitem', { name: 'User Profile' }).click();
+    await page.getByRole('textbox', { name: 'Comments' }).click();
+    await page.getByRole('textbox', { name: 'Comments' }).fill('test1234');
+    await page.getByRole('button', { name: 'OK' }).click();
+})
