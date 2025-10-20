@@ -142,7 +142,7 @@ test('Edit Self Registration', async ({ page }) => {
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 
     // Checks whether Signup is visible or not
-    await expect(page.getByText('Sign up for an account')).not.toBeVisible();;
+    await expect(page.getByText('Sign up for an account')).not.toBeVisible();
 
     // Login
     await page.goto('/');
@@ -170,4 +170,75 @@ test('Edit Self Registration', async ({ page }) => {
     //Logout
     await page.getByRole('button', { name: 'admin', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
+})
+
+test('Admin Add New Users', async ({ page }) => {
+    await page.goto('/');
+
+    //Login with Admin Credentials
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    // Check Self configuration is Enabled
+    await page.getByRole('link', { name: 'Configuration' }).click();
+    await expect(page.locator('clr-checkbox-wrapper label')).toBeChecked();
+
+    // Add users with self registration is enabled
+    await page.getByRole('link', { name: 'Users' }).click();
+    await page.getByRole('button', { name: 'New User' }).click();
+
+    let timestamp = Date.now();
+    let username = "harbor-user" + timestamp    
+    await page.locator('#username').click();
+    await page.locator('#username').fill(username);
+
+    let email = username + "@example.com"
+    await page.locator('#email').click();
+    await page.locator('#email').fill(email);
+    await page.getByRole('textbox', { name: 'First and last name*' }).click();
+    await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Comments' }).click();
+    await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
+
+    await page.getByRole('button', { name: 'OK' }).click();
+
+    await expect(page.getByText('New user created successfully.')).toBeVisible();
+
+    // Add users with self registration is disabled
+    await page.getByRole('link', { name: 'Configuration' }).click();
+
+    await page.locator('clr-checkbox-wrapper label').click();
+    await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
+
+    await page.getByRole('button', { name: 'SAVE' }).click();
+
+    await page.getByRole('link', { name: 'Users' }).click();
+    await page.getByRole('button', { name: 'New User' }).click();
+    timestamp = Date.now();
+    username = "harbor-user" + timestamp  
+    await page.locator('#username').click();
+    await page.locator('#username').fill(username);
+
+    email = username + "@example.com"
+    await page.locator('#email').click();
+    await page.locator('#email').fill(email);
+    await page.getByRole('textbox', { name: 'First and last name*' }).click();
+    await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Comments' }).click();
+    await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
+
+    await page.getByRole('button', { name: 'OK' }).click();
+
+    await expect(page.getByText('New user created successfully.')).toBeVisible();
 })
