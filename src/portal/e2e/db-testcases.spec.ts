@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 async function createUser(page) {
     await page.goto('/');
@@ -113,4 +113,61 @@ test('Update User Password', async ({ page }) => {
     // Logout
     await page.getByRole('button', { name: username }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
+})
+
+test('Edit Self Registration', async ({ page }) => {
+    // Login
+    await page.goto('/');
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(5000);
+
+    //Select Configuration
+    await page.getByRole('link', { name: 'Configuration' }).click();
+
+    //Update self-registration Status
+    if (await page.locator('clr-checkbox-wrapper label').isChecked()) {
+        await page.locator('clr-checkbox-wrapper label').click();
+        await page.getByRole('button', { name: 'SAVE' }).click();
+    }
+
+    //Logout
+    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
+
+    // Checks whether Signup is visible or not
+    await expect(page.getByText('Sign up for an account')).not.toBeVisible();;
+
+    // Login
+    await page.goto('/');
+    await page.getByRole('textbox', { name: 'Username' }).click();
+    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(5000);
+
+    //Select Configuration
+    await page.getByRole('link', { name: 'Configuration' }).click();
+
+    await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
+
+    //Update self-registration Status
+    if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
+        await page.locator('clr-checkbox-wrapper label').click();
+        await page.getByRole('button', { name: 'SAVE' }).click();
+    }
+
+    //Logout
+    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 })
