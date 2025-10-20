@@ -3,22 +3,24 @@ import { test, expect } from '@playwright/test';
 async function createUser(page) {
     await page.goto('/');
     await page.getByRole('link', { name: 'Sign up for an account' }).click();
+
+    let timestamp = Date.now();
+    let username = "harbor-user" + timestamp    
     await page.locator('#username').click();
-    await page.locator('#username').fill('user');
-    await page.locator('#username').press('Home');
-    const timestamp = Date.now();
-    const username = "harbor-user" + timestamp
     await page.locator('#username').fill(username);
-    await page.locator('#username').press('ArrowDown');
-    await page.locator('new-user-form div').filter({ hasText: 'Email is only used for' }).nth(3).click();
-    const email = username + "@example.com"
+
+    let email = username + "@example.com"
+    await page.locator('#email').click();
     await page.locator('#email').fill(email);
-    await page.locator('clr-input-container').filter({ hasText: 'First and last name' }).locator('div').nth(1).click();
+    await page.getByRole('textbox', { name: 'First and last name*' }).click();
     await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
     await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
     await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
     await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Comments' }).click();
+    await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
+
     await page.getByRole('button', { name: 'SIGN UP' }).click();
 
     return username
