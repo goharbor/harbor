@@ -244,3 +244,47 @@ test('Admin Add New Users', async ({ page }) => {
 
     await expect(page.getByText('New user created successfully.')).toBeVisible();
 })
+
+test('Delete Multi User', async ({ page }) => {
+    // Create multiple users
+    const user1 = await createUser(page);
+    const user2 = await createUser(page);
+    const user3 = await createUser(page);
+    const users = [user1, user2, user3];
+
+    // Login with admin credentials
+    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+
+    // Navigate to Users 
+    const usersLink = page.getByRole('link', { name: 'Users' });
+    await expect(usersLink).toBeVisible(); // Wait for the link to be visible
+    await usersLink.click();
+
+    // Select Users 
+    await page.locator('hbr-filter clr-icon').click();
+    const filterInput = page.getByRole('textbox', { name: 'Filter users' });
+    await expect(filterInput).toBeVisible();
+
+    for(const user of users){
+        await page.getByRole('textbox', { name: 'Filter users' }).fill(user);
+        await page.getByRole('row', { name: 'Select Select ' +user }).locator('label').click();
+    }
+
+    // Delete Selected Users 
+    // Now that all 3 users are selected, we can proceed with deletion.
+    await page.getByText('Actions').click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'DELETE' }).click();
+
+    // Assert Deletion 
+    await expect(page.getByText('Deleted successfully')).toBeVisible();
+
+    // Logout 
+    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    
+    const logoutMenuItem = page.getByRole('menuitem', { name: 'Log Out' });
+    await expect(logoutMenuItem).toBeVisible(); // Wait for logout to be visible
+    await logoutMenuItem.click();
+});
