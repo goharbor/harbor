@@ -554,7 +554,7 @@ swagger_client:
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
-	cd harborclient/harbor_v2_swagger_client; python ./setup.py install
+	cd harborclient/harbor_v2_swagger_client; pip install .
 	pip install docker -q
 	pip freeze
 
