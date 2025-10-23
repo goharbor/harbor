@@ -120,6 +120,7 @@ const (
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
 	OIDCLogout                       = "oidc_logout"
+	OIDCAutoLogin                    = "oidc_auto_login"
 
 	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
