@@ -42,6 +42,8 @@ const (
 	PurgeAuditVendorType = "PURGE_AUDIT_LOG"
 	// SystemArtifactCleanupVendorType : the name of the SystemArtifact cleanup job
 	SystemArtifactCleanupVendorType = "SYSTEM_ARTIFACT_CLEANUP"
+	// RedisCleanupVendorType : the name of the Redis cleanup job
+	RedisCleanupVendorType = "REDIS_CLEANUP"
 	// ScanDataExportVendorType : the name of the scan data export job
 	ScanDataExportVendorType = "SCAN_DATA_EXPORT"
 	// ExecSweepVendorType: the name of the execution sweep job
