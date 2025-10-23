@@ -5,7 +5,7 @@ async function createUser(page) {
     await page.getByRole('link', { name: 'Sign up for an account' }).click();
 
     let timestamp = Date.now();
-    let username = "harbor-user" + timestamp    
+    let username = "harbor-user" + timestamp;
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
@@ -196,7 +196,7 @@ test('Delete Multi User', async ({ page }) => {
     const filterInput = page.getByRole('textbox', { name: 'Filter users' });
     await expect(filterInput).toBeVisible();
 
-    for(const user of users){
+    for(const user of users) {
         await page.getByRole('textbox', { name: 'Filter users' }).fill(user);
         await page.getByRole('row', { name: 'Select Select ' +user }).locator('label').click();
     }
@@ -237,7 +237,7 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('button', { name: 'New User' }).click();
 
     let timestamp = Date.now();
-    let username = "harbor-user" + timestamp    
+    let username = "harbor-user" + timestamp;   
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
@@ -268,7 +268,7 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('link', { name: 'Users' }).click();
     await page.getByRole('button', { name: 'New User' }).click();
     timestamp = Date.now();
-    username = "harbor-user" + timestamp  
+    username = "harbor-user" + timestamp;
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
