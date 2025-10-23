@@ -37,8 +37,7 @@ test('Create An New User', async ({ page }) => {
 
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(5000);
+    await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
     //Select Configuration
     await page.getByRole('link', { name: 'Configuration' }).click();
@@ -127,8 +126,7 @@ test('Edit Self Registration', async ({ page }) => {
 
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(5000);
+    await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
     //Select Configuration
     await page.getByRole('link', { name: 'Configuration' }).click();
@@ -155,8 +153,7 @@ test('Edit Self Registration', async ({ page }) => {
 
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(5000);
+    await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
     //Select Configuration
     await page.getByRole('link', { name: 'Configuration' }).click();
