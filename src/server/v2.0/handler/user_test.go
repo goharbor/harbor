@@ -10,6 +10,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	usertesting "github.com/goharbor/harbor/src/testing/controller/user"
@@ -44,7 +45,8 @@ type UserTestSuite struct {
 	htesting.Suite
 	uCtl *usertesting.Controller
 
-	user *commonmodels.User
+	user        *commonmodels.User
+	localSecCtx *local.SecurityContext
 }
 
 func (uts *UserTestSuite) SetupSuite() {
@@ -62,7 +64,10 @@ func (uts *UserTestSuite) SetupSuite() {
 			},
 		},
 	}
+
 	uts.Suite.SetupSuite()
+
+	uts.localSecCtx = local.NewSecurityContext(uts.user)
 	uts.Security.On("IsAuthenticated").Return(true)
 
 }
