@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-async function createUser(page) {
+async function createUser(page: Page): Promise<string> {
     await page.goto('/');
     await page.getByRole('link', { name: 'Sign up for an account' }).click();
 
@@ -9,7 +9,7 @@ async function createUser(page) {
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
-    let email = username + "@example.com"
+    let email = username + "@example.com";
     await page.locator('#email').click();
     await page.locator('#email').fill(email);
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
@@ -23,7 +23,7 @@ async function createUser(page) {
 
     await page.getByRole('button', { name: 'SIGN UP' }).click();
 
-    return username
+    return username;
 }
 
 
@@ -53,12 +53,12 @@ test('Create An New User', async ({ page }) => {
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 
     //Creating user
-    await createUser(page)
+    await createUser(page);
 });
 
 test('Update User Comment', async ({ page }) => {
     // Creating user
-    const username = await createUser(page)
+    const username = await createUser(page);
 
     //Login with user credentials
     await page.getByRole('textbox', { name: 'Username' }).click();
@@ -74,11 +74,11 @@ test('Update User Comment', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Comments' }).click();
     await page.getByRole('textbox', { name: 'Comments' }).fill('test1234');
     await page.getByRole('button', { name: 'OK' }).click();
-})
+});
 
 test('Update User Password', async ({ page }) => {
     // Create user
-    const username = await createUser(page)
+    const username = await createUser(page);
 
     // Login with user credentials
     await page.getByRole('textbox', { name: 'Username' }).click();
@@ -114,7 +114,7 @@ test('Update User Password', async ({ page }) => {
     // Logout
     await page.getByRole('button', { name: username }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
-})
+});
 
 test('Edit Self Registration', async ({ page }) => {
     // Login
@@ -169,7 +169,7 @@ test('Edit Self Registration', async ({ page }) => {
     //Logout
     await page.getByRole('button', { name: 'admin', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
-})
+});
 
 test('Delete Multi User', async ({ page }) => {
     // Create multiple users
@@ -238,7 +238,7 @@ test('Admin Add New Users', async ({ page }) => {
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
-    let email = username + "@example.com"
+    let email = username + "@example.com";
     await page.locator('#email').click();
     await page.locator('#email').fill(email);
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
@@ -269,7 +269,7 @@ test('Admin Add New Users', async ({ page }) => {
     await page.locator('#username').click();
     await page.locator('#username').fill(username);
 
-    email = username + "@example.com"
+    email = username + "@example.com";
     await page.locator('#email').click();
     await page.locator('#email').fill(email);
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
@@ -284,4 +284,4 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('button', { name: 'OK' }).click();
 
     await expect(page.getByText('New user created successfully.')).toBeVisible();
-})
+});
