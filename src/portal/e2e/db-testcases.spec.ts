@@ -46,6 +46,7 @@ test('Create An New User', async ({ page }) => {
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
         await page.locator('clr-checkbox-wrapper label').click();
         await page.getByRole('button', { name: 'SAVE' }).click();
+        await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
 
     //Logout
@@ -135,6 +136,7 @@ test('Edit Self Registration', async ({ page }) => {
     if (await page.locator('clr-checkbox-wrapper label').isChecked()) {
         await page.locator('clr-checkbox-wrapper label').click();
         await page.getByRole('button', { name: 'SAVE' }).click();
+        await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
 
     //Logout
@@ -164,6 +166,7 @@ test('Edit Self Registration', async ({ page }) => {
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
         await page.locator('clr-checkbox-wrapper label').click();
         await page.getByRole('button', { name: 'SAVE' }).click();
+        await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
 
     //Logout
@@ -261,6 +264,7 @@ test('Admin Add New Users', async ({ page }) => {
     await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
 
     await page.getByRole('button', { name: 'SAVE' }).click();
+    await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
 
     await page.getByRole('link', { name: 'Users' }).click();
     await page.getByRole('button', { name: 'New User' }).click();
@@ -284,4 +288,20 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('button', { name: 'OK' }).click();
 
     await expect(page.getByText('New user created successfully.')).toBeVisible();
+
+    // Update self registration to default
+    await page.getByRole('link', { name: 'Configuration' }).click();
+
+    await page.locator('clr-checkbox-wrapper label').click();
+    await expect(page.locator('clr-checkbox-wrapper label')).toBeChecked();
+
+    await page.getByRole('button', { name: 'SAVE' }).click();
+    await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
+
+    // Logout 
+    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    
+    const logoutMenuItem = page.getByRole('menuitem', { name: 'Log Out' });
+    await expect(logoutMenuItem).toBeVisible(); // Wait for logout to be visible
+    await logoutMenuItem.click();
 });
