@@ -42,7 +42,7 @@ test('Create An New User', async ({ page }) => {
     //Select Configuration
     await page.getByRole('link', { name: 'Configuration' }).click();
 
-    //Update self-registration Status
+    //check self-registration Status if it is unchecked
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
         await page.locator('clr-checkbox-wrapper label').check();
         await page.getByRole('button', { name: 'SAVE' }).click();
@@ -162,7 +162,7 @@ test('Edit Self Registration', async ({ page }) => {
 
     await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
 
-    //Update self-registration Status
+    //Check self-registration Status if it is unchecked
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
         await page.locator('clr-checkbox-wrapper label').check();
         await page.getByRole('button', { name: 'SAVE' }).click();
@@ -196,7 +196,7 @@ test('Delete Multi User', async ({ page }) => {
     const filterInput = page.getByRole('textbox', { name: 'Filter users' });
     await expect(filterInput).toBeVisible();
 
-    for(const user of users) {
+    for (const user of users) {
         await page.getByRole('textbox', { name: 'Filter users' }).fill(user);
         await page.getByRole('row', { name: 'Select Select ' +user }).locator('label').click();
     }
@@ -228,7 +228,7 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
-    // Check Self configuration is Enabled
+    // Assert Self registration is Enabled
     await page.getByRole('link', { name: 'Configuration' }).click();
     await expect(page.locator('clr-checkbox-wrapper label')).toBeChecked();
 
@@ -260,6 +260,7 @@ test('Admin Add New Users', async ({ page }) => {
     // Add users with self registration is disabled
     await page.getByRole('link', { name: 'Configuration' }).click();
 
+    // Uncheck self registration 
     await page.locator('clr-checkbox-wrapper label').uncheck();
     await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
 
