@@ -44,7 +44,7 @@ test('Create An New User', async ({ page }) => {
 
     //Update self-registration Status
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
-        await page.locator('clr-checkbox-wrapper label').click();
+        await page.locator('clr-checkbox-wrapper label').check();
         await page.getByRole('button', { name: 'SAVE' }).click();
         await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
@@ -132,9 +132,9 @@ test('Edit Self Registration', async ({ page }) => {
     //Select Configuration
     await page.getByRole('link', { name: 'Configuration' }).click();
 
-    //Update self-registration Status
+    //Uncheck self-registration Status
     if (await page.locator('clr-checkbox-wrapper label').isChecked()) {
-        await page.locator('clr-checkbox-wrapper label').click();
+        await page.locator('clr-checkbox-wrapper label').uncheck();
         await page.getByRole('button', { name: 'SAVE' }).click();
         await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
@@ -164,7 +164,7 @@ test('Edit Self Registration', async ({ page }) => {
 
     //Update self-registration Status
     if (!(await page.locator('clr-checkbox-wrapper label').isChecked())) {
-        await page.locator('clr-checkbox-wrapper label').click();
+        await page.locator('clr-checkbox-wrapper label').check();
         await page.getByRole('button', { name: 'SAVE' }).click();
         await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
     }
@@ -260,7 +260,7 @@ test('Admin Add New Users', async ({ page }) => {
     // Add users with self registration is disabled
     await page.getByRole('link', { name: 'Configuration' }).click();
 
-    await page.locator('clr-checkbox-wrapper label').click();
+    await page.locator('clr-checkbox-wrapper label').uncheck();
     await expect(page.locator('clr-checkbox-wrapper label')).not.toBeChecked();
 
     await page.getByRole('button', { name: 'SAVE' }).click();
@@ -292,7 +292,7 @@ test('Admin Add New Users', async ({ page }) => {
     // Update self registration to default
     await page.getByRole('link', { name: 'Configuration' }).click();
 
-    await page.locator('clr-checkbox-wrapper label').click();
+    await page.locator('clr-checkbox-wrapper label').check();
     await expect(page.locator('clr-checkbox-wrapper label')).toBeChecked();
 
     await page.getByRole('button', { name: 'SAVE' }).click();
