@@ -269,7 +269,10 @@
         "PROXY_CACHE": "Cache do Proxy",
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
-        "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache"
+        "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
@@ -1345,6 +1348,7 @@
         "MSG_SCHEDULE_RESET": "Agendamento da limpeza redefinido",
         "PARAMETERS": "Parâmetros",
         "DELETE_UNTAGGED": "Permitir coleta de artefatos sem tags",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "A limpeza exige recursos computacionais e pode impactar performance.",
         "EXPLAIN_TIME_WINDOW": "Artifacts uploaded in the past 2 hours(the default window) are excluded from garbage collection",
         "DRY_RUN_SUCCESS": "Teste executado com sucesso",
