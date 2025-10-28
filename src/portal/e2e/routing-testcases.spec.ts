@@ -49,3 +49,31 @@ test('Main Menu Routing', async ({ page }) => {
         await expect(element).toBeVisible();
     }
 });
+
+test('Project Tab Routing', async ({ page }) => {
+    // Login with admin credentials
+    await Login(page);
+
+    // Page Checks Dictionary, Path as a Key and a element in that path as a Value
+    const pageChecks: Record<string, (page: Page) => Locator> = {
+        'harbor/projects/1/summary': (page: Page) => page.locator('project-detail summary'),
+        'harbor/projects/1/repositories': (page: Page) => page.locator('project-detail hbr-repository-gridview'),
+        'harbor/projects/1/members': (page: Page) => page.locator('project-detail ng-component button span:has-text("User")'),
+        'harbor/projects/1/labels': (page: Page) => page.locator('project-detail app-project-config hbr-label'),
+        'harbor/projects/1/scanner': (page: Page) => page.locator('project-detail scanner'),
+        'harbor/projects/1/p2p-provider/policies': (page: Page) => page.locator('project-detail ng-component button span:has-text("NEW POLICY")'),
+        'harbor/projects/1/tag-strategy/tag-retention': (page: Page) => page.locator('project-detail app-tag-feature-integration tag-retention'),
+        'harbor/projects/1/tag-strategy/immutable-tag': (page: Page) => page.locator('project-detail app-tag-feature-integration app-immutable-tag'),
+        'harbor/projects/1/robot-account': (page: Page) => page.locator('project-detail app-robot-account'),
+        'harbor/projects/1/webhook': (page: Page) => page.locator('project-detail ng-component button span:has-text("New Webhook")'),
+        'harbor/projects/1/logs': (page: Page) => page.locator('project-detail project-logs'),
+        'harbor/projects/1/configs': (page: Page) => page.locator('project-detail app-project-config hbr-project-policy-config'),
+    };
+
+    //  Iterate through the dictionary and expect the locators to be visible
+    for (const [path, locatorFn] of Object.entries(pageChecks)) {
+        await page.goto(`/${path}`);
+        const element = locatorFn(page);
+        await expect(element).toBeVisible();
+    }
+});
