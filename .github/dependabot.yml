@@ -24,5 +24,15 @@ updates:
       interval: "weekly"
     labels:
       - "release-note/update"
-  
+      - "branch/main"
+
+  - package-ecosystem: "gomod"
+    directory: "/src"
+    schedule:
+      interval: "weekly"
+    target-branch: "release-2.14.0"
+    labels:
+      - "release-note/update"
+      - "branch/release-2.14.0"
+
   # More will be needed
