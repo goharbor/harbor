@@ -12,8 +12,13 @@ async function Login(page: Page) {
 }
 
 test('Main Menu Routing', async ({ page }) => {
+    // override the default timeout for this test, As it expects more time than the default one.
     test.setTimeout(60_000);
+
+    // Login with admin credentials
     await Login(page);
+
+    // Page Checks Dictionary, Path as a Key and a element in that path as a Value
     const pageChecks: Record<string, (page: Page) => Locator> = {
         'harbor/projects': (page: Page) => page.locator('projects div h2:has-text("Projects")'),
         'harbor/logs': (page: Page) => page.locator('app-logs h2:has-text("Logs")'),
@@ -37,6 +42,7 @@ test('Main Menu Routing', async ({ page }) => {
         'harbor/configs/setting': (page: Page) => page.locator('config system-settings label:has-text("Project Creation")'),
     };
 
+    // Iterate through the dictionary and expect the locators to be visible
     for (const [path, locatorFn] of Object.entries(pageChecks)) {
         await page.goto(`/${path}`);
         const element = locatorFn(page);
