@@ -26,8 +26,7 @@ async function createUser(page: Page): Promise<string> {
     return username;
 }
 
-
-test('Create An New User', async ({ page }) => {
+async function checkSelfRegistration(page: Page) {
     // Login
     await page.goto('/');
     await page.getByRole('textbox', { name: 'Username' }).click();
@@ -52,12 +51,20 @@ test('Create An New User', async ({ page }) => {
     //Logout
     await page.getByRole('button', { name: 'admin', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
+}
+
+test('Create An New User', async ({ page }) => {
+    // Checks slef registration enabled or not, if disabled it enables it.
+    await checkSelfRegistration(page);
 
     //Creating user
     await createUser(page);
 });
 
 test('Update User Comment', async ({ page }) => {
+    // Checks slef registration enabled or not, if disabled it enables it.
+    await checkSelfRegistration(page);
+
     // Creating user
     const username = await createUser(page);
 
@@ -78,6 +85,9 @@ test('Update User Comment', async ({ page }) => {
 });
 
 test('Update User Password', async ({ page }) => {
+    // Checks slef registration enabled or not, if disabled it enables it.
+    await checkSelfRegistration(page);
+
     // Create user
     const username = await createUser(page);
 
@@ -175,6 +185,9 @@ test('Edit Self Registration', async ({ page }) => {
 });
 
 test('Delete Multi User', async ({ page }) => {
+    // Checks slef registration enabled or not, if disabled it enables it.
+    await checkSelfRegistration(page);
+
     // Create multiple users
     const user1 = await createUser(page);
     const user2 = await createUser(page);
@@ -219,7 +232,8 @@ test('Delete Multi User', async ({ page }) => {
 });
 
 test('Admin Add New Users', async ({ page }) => {
-    await page.goto('/');
+    // Checks slef registration enabled or not, if disabled it enables it.
+    await checkSelfRegistration(page);
 
     //Login with Admin Credentials
     await page.getByRole('textbox', { name: 'Username' }).click();
