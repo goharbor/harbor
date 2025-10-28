@@ -77,3 +77,22 @@ test('Project Tab Routing', async ({ page }) => {
         await expect(element).toBeVisible();
     }
 });
+
+test('Open License Page', async ({ page }) => {
+    // Login with admin credentials
+    await Login(page);
+
+    // Navigate to About section
+    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'About' }).click();
+
+    // Click on Open Source License Link
+    await page.getByRole('link', { name: 'Open Source/Third Party' }).click();
+
+    // Wait for the page to load
+    const newPagePromise = page.waitForEvent('popup');
+    const newPage = await newPagePromise;
+
+    // Expect 'Apache License' text to be visible
+    await expect(newPage.getByText('Apache License')).toBeVisible();
+});
