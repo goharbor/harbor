@@ -96,3 +96,18 @@ test('Open License Page', async ({ page }) => {
     // Expect 'Apache License' text to be visible
     await expect(newPage.getByText('Apache License')).toBeVisible();
 });
+
+test('Open More Info Page', async ({ page }) => {
+    // Go to harbor url
+    await page.goto('/');
+
+    // Click on More Info Link
+    await page.getByRole('link', { name: 'More info...' }).click();
+
+    // Wait for the page to load
+    const newPagePromise = page.waitForEvent('popup');
+    const newPage = await newPagePromise;
+
+    // Expect About section of harbor repo to be visible
+    await expect(newPage.getByText('An open source trusted cloud native registry project that stores, signs, and scans content.').nth(2)).toBeVisible();
+});
