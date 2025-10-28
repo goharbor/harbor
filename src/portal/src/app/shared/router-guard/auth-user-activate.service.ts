@@ -67,12 +67,14 @@ export class AuthCheckGuard {
                             let navigatorExtra: NavigationExtras = {
                                 queryParams: { redirect_url: state.url },
                             };
-                            // if primary auth mode enabled, skip the first step
+                            // if primary auth mode or auto login enabled, skip the first step
                             if (
                                 this.appConfigService.getConfig().auth_mode ==
                                     CONFIG_AUTH_MODE.OIDC_AUTH &&
-                                this.appConfigService.getConfig()
-                                    .primary_auth_mode
+                                (this.appConfigService.getConfig()
+                                    .primary_auth_mode ||
+                                 this.appConfigService.getConfig()
+                                    .oidc_auto_login)
                             ) {
                                 window.location.href =
                                     '/c/oidc/login?redirect_url=' +
