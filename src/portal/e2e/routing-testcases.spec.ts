@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Locator } from '@playwright/test';
 
 async function Login(page: Page) {
     // Login
@@ -14,7 +14,7 @@ async function Login(page: Page) {
 test('Main Menu Routing', async ({ page }) => {
     test.setTimeout(60_000);
     await Login(page);
-    const pageChecks: Record<string, (page: Page) => any> = {
+    const pageChecks: Record<string, (page: Page) => Locator> = {
         'harbor/projects': (page: Page) => page.locator('projects div h2:has-text("Projects")'),
         'harbor/logs': (page: Page) => page.locator('app-logs h2:has-text("Logs")'),
         'harbor/users': (page: Page) => page.locator('harbor-user div h2:has-text("Users")'),
