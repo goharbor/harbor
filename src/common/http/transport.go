@@ -16,12 +16,15 @@ package http
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"net"
 	"net/http"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/trace"
 )
 
@@ -87,17 +90,36 @@ func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	}
 }
 
-// WithMaxIdleConns returns a TransportOption that configures the transport to use the specified number of idle connections per host
-func WithMaxIdleConns(maxIdleConns int) func(*http.Transport) {
-	return func(tr *http.Transport) {
-		tr.MaxIdleConns = maxIdleConns
+// ValidateCACertificate validates if the provided certificate is in valid PEM format
+func ValidateCACertificate(caCert string) error {
+	if caCert == "" {
+		return nil
 	}
+
+	caCertPool := x509.NewCertPool()
+	if !caCertPool.AppendCertsFromPEM([]byte(caCert)) {
+		return errors.New("invalid CA certificate: not in valid PEM format")
+	}
+	return nil
 }
 
-// WithIdleconnectionTimeout returns a TransportOption that configures the transport to use the specified idle connection timeout
-func WithIdleconnectionTimeout(idleConnectionTimeout time.Duration) func(*http.Transport) {
+// WithCustomCACert returns a TransportOption that configures custom CA certificate
+func WithCustomCACert(caCert string) func(*http.Transport) {
 	return func(tr *http.Transport) {
-		tr.IdleConnTimeout = idleConnectionTimeout
+		if caCert == "" {
+			return
+		}
+
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM([]byte(caCert)) {
+			log.Errorf("Failed to append CA certificate to pool - invalid PEM format")
+			return
+		}
+
+		if tr.TLSClientConfig == nil {
+			tr.TLSClientConfig = &tls.Config{}
+		}
+		tr.TLSClientConfig.RootCAs = caCertPool
 	}
 }
 
@@ -112,7 +134,8 @@ func NewTransport(opts ...func(*http.Transport)) http.RoundTripper {
 
 // TransportConfig is the configuration for http transport
 type TransportConfig struct {
-	Insecure bool
+	Insecure      bool
+	CACertificate string
 }
 
 // TransportOption is the option for http transport
@@ -125,12 +148,36 @@ func WithInsecure(skipVerify bool) TransportOption {
 	}
 }
 
-// GetHTTPTransport returns HttpTransport based on insecure configuration
+// WithCACert returns a TransportOption that configures custom CA certificate
+func WithCACert(caCert string) TransportOption {
+	return func(cfg *TransportConfig) {
+		cfg.CACertificate = caCert
+	}
+}
+
+// GetHTTPTransport returns HttpTransport based on insecure configuration and CA certificate.
+//
+// Priority:
+//  1. Custom CA certificate (if provided) - creates a new transport with custom CA
+//  2. Insecure mode (if enabled) - returns shared transport that skips TLS verification
+//  3. Default - returns shared transport that uses system CA pool
+//
+// Backward Compatibility:
+// Existing Harbor installations that rely on system-level CA trust stores will continue
+// to work after upgrade. The custom CA certificate feature is optional, and when no
+// custom CA is provided, the system CA pool is used (option 3 above).
 func GetHTTPTransport(opts ...TransportOption) http.RoundTripper {
 	cfg := &TransportConfig{}
 	for _, opt := range opts {
 		opt(cfg)
 	}
+
+	if cfg.CACertificate != "" {
+		return NewTransport(
+			WithCustomCACert(cfg.CACertificate),
+		)
+	}
+
 	if cfg.Insecure {
 		return insecureHTTPTransport
 	}
