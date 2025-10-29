@@ -23,7 +23,7 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "release-note/update"
+      - "release-note/bump-version"
       - "branch/main"
 
   - package-ecosystem: "gomod"
@@ -32,7 +32,7 @@ updates:
       interval: "weekly"
     target-branch: "release-2.14.0"
     labels:
-      - "release-note/update"
+      - "release-note/bump-version"
       - "branch/release-2.14.0"
 
   # More will be needed
