@@ -4,7 +4,7 @@ go 1.24.9
 
 require (
 	github.com/CloudNativeAI/model-spec v0.0.5
-	github.com/FZambia/sentinel v1.1.0
+	github.com/FZambia/sentinel v1.1.1
 	github.com/Masterminds/semver v1.5.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
