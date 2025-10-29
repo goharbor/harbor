@@ -23,6 +23,6 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "release-note/update"
+      - "release-note/bump-version"
   
   # More will be needed
