@@ -667,7 +667,11 @@
         "DELETED_SUCCESS": "Deleted endpoints successfully.",
         "DELETED_FAILED": "Deleted endpoints failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
-        "PLACEHOLDER": "We couldn't find any endpoints!"
+        "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use.",
+        "PLACEHOLDER": "We couldn't find any endpoints!",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
+        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",

@@ -61,8 +61,12 @@ func New(registry *model.Registry) (*Adapter, error) {
 			registry.Credential.AccessKey,
 			registry.Credential.AccessSecret))
 	}
+
 	httpClient := common_http.NewClient(&http.Client{
-		Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
+		Transport: common_http.GetHTTPTransport(
+			common_http.WithInsecure(registry.Insecure),
+			common_http.WithCACert(registry.CACertificate),
+		),
 	}, authorizers...)
 	client, err := NewClient(registry.URL, httpClient)
 	if err != nil {
