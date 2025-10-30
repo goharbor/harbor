@@ -21,7 +21,7 @@ require (
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667
 	github.com/go-ldap/ldap/v3 v3.4.11
-	github.com/go-openapi/errors v0.22.0
+	github.com/go-openapi/errors v0.22.3
 	github.com/go-openapi/loads v0.22.0 // indirect
 	github.com/go-openapi/runtime v0.28.0
 	github.com/go-openapi/spec v0.21.0 // indirect
