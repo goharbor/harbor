@@ -163,7 +163,13 @@ type ArtOption struct {
 }
 
 func (c *controller) Ensure(ctx context.Context, repository, digest string, option *ArtOption) (bool, int64, error) {
-	created, artifact, err := c.ensureArtifact(ctx, repository, digest)
+	projectName, _ := utils.ParseRepository(repository)
+	p, err := c.proCtl.GetByName(ctx, projectName)
+	if err != nil {
+		return false, 0, err
+	}
+
+	created, artifact, err := c.ensureArtifact(ctx, repository, digest, p.IsProxy())
 	if err != nil {
 		return false, 0, err
 	}
@@ -178,12 +184,6 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 				return false, 0, err
 			}
 		}
-	}
-
-	projectName, _ := utils.ParseRepository(repository)
-	p, err := c.proCtl.GetByName(ctx, projectName)
-	if err != nil {
-		return false, 0, err
 	}
 
 	// Does not fire event only when the current project is a proxy-cache project and the artifact already exists.
@@ -205,7 +205,7 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 }
 
 // ensure the artifact exists under the repository, create it if doesn't exist.
-func (c *controller) ensureArtifact(ctx context.Context, repository, digest string) (bool, *artifact.Artifact, error) {
+func (c *controller) ensureArtifact(ctx context.Context, repository string, digest string, isProxyProject bool) (bool, *artifact.Artifact, error) {
 	art, err := c.artMgr.GetByDigest(ctx, repository, digest)
 	// the artifact already exists under the repository, return directly
 	if err == nil {
@@ -229,6 +229,13 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		Digest:         digest,
 		PushTime:       time.Now(),
 	}
+
+	if isProxyProject {
+		// proxy images get created when pulled
+		// set pull time based off creation time
+		artifact.PullTime = artifact.PushTime
+	}
+
 	// abstract the metadata for the artifact
 	if err = c.abstractor.AbstractMetadata(ctx, artifact); err != nil {
 		return false, nil, err
