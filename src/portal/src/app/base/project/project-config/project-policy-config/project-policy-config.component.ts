@@ -157,7 +157,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     maxUpstreamConnError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
-        'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
+        'type={docker-hub harbor azure-acr aws-ecr google-gcr google-gar quay docker-registry github-ghcr jfrog-artifactory}';
 
     constructor(
         private errorHandler: ErrorHandler,
