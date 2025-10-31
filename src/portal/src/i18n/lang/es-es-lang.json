@@ -669,7 +669,10 @@
         "DELETED_SUCCESS": "Endpoint eliminado satisfactoriamente.",
         "DELETED_FAILED": "Ha fallado la eliminación del endpoint.",
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
-        "PLACEHOLDER": "No pudimos encontrar ningún punto final!"
+        "PLACEHOLDER": "No pudimos encontrar ningún punto final!",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
+        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",

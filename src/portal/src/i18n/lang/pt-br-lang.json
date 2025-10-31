@@ -671,7 +671,10 @@
         "DELETED_SUCCESS": "Endereço removido com sucesso.",
         "DELETED_FAILED": "Falha ao remover endereço.",
         "CANNOT_EDIT": "Endereço não pode ser alterado enquando a regra de replicação estiver ativa.",
-        "PLACEHOLDER": "Não há endereços cadastrados"
+        "PLACEHOLDER": "Não há endereços cadastrados",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
+        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",

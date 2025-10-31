@@ -696,9 +696,11 @@
         "DELETED_SUCCESS": "Конечные точки успешно удалены.",
         "DELETED_FAILED": "Не удалось удалить конечные точки.",
         "CANNOT_EDIT": "Конечную точку нельзя изменить, пока правило репликации активно.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Не удалось удалить используемую конечную точку.",
         "PLACEHOLDER": "Мы не смогли найти ни одной конечной точки!",
-        "DEPRECATED": "Helm Hub переходит на Artifact Hub"
+        "DEPRECATED": "Helm Hub переходит на Artifact Hub",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
+        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
 },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Копировать Хэш",

@@ -666,7 +666,10 @@
         "DELETED_SUCCESS": "엔드포인트를 성공적으로 삭제했습니다.",
         "DELETED_FAILED": "엔드포인트 삭제를 실패했습니다.",
         "CANNOT_EDIT": "복제 규칙이 활성화된 동안에는 엔드포인트를 변경할 수 없습니다..",
-        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!"
+        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
+        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Digest 복사",
