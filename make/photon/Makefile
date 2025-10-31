@@ -15,10 +15,13 @@ SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
+ARCH ?= $(shell uname -m)
+PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
+
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK)
+DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK) --platform=$(PLATFORM)
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMAGES=$(DOCKERCMD) images
@@ -194,7 +197,20 @@ _build_registryctl:
 _build_redis:
 	@$(call _build_base,$(REDIS),$(DOCKERFILEPATH_REDIS))
 	@echo "building redis container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+ifneq ($(PUSHBASEIMAGE), true)
+	@$(DOCKERBUILD_WITH_PULL_PARA) \
+		--build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+		--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+		-f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) \
+		-t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+else
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		--build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+		--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+		-f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) \
+		-t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) \
+		--push .
+endif
 	@echo "Done."
 
 _build_standalone_db_migrator:
