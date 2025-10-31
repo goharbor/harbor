@@ -111,8 +111,8 @@ func listOrderBy(query *q.Query) string {
 		}
 		prefixes := []string{"hard.", "used."}
 		for _, prefix := range prefixes {
-			if strings.HasPrefix(sortByItem.Key, prefix) {
-				resource := strings.TrimPrefix(sortByItem.Key, prefix)
+			if after, ok := strings.CutPrefix(sortByItem.Key, prefix); ok {
+				resource := after
 				if types.IsValidResource(types.ResourceName(resource)) {
 					field := fmt.Sprintf("%s->>%s", strings.TrimSuffix(prefix, "."), orm.QuoteLiteral(resource))
 					orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
