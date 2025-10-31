@@ -222,18 +222,18 @@ func (a *adapter) listRepositories(filters []*model.Filter) ([]*model.Repository
 			return nil, err
 		}
 
-	for _, docker := range dockerRepos {
-		url := fmt.Sprintf("%s/artifactory/api/docker/%s", a.client.url, docker.Key)
-		regClient := registry.NewClientWithAuthorizer(url, basic.NewAuthorizer(a.client.username, a.client.password), a.client.insecure, a.registry.CACertificate)
-		repos, err := regClient.Catalog()
-		if err != nil {
-			return nil, err
-		}
+		for _, docker := range dockerRepos {
+			url := fmt.Sprintf("%s/artifactory/api/docker/%s", a.client.url, docker.Key)
+			regClient := registry.NewClientWithAuthorizer(url, basic.NewAuthorizer(a.client.username, a.client.password), a.client.insecure, a.registry.CACertificate)
+			repos, err := regClient.Catalog()
+			if err != nil {
+				return nil, err
+			}
 
-		for _, repo := range repos {
-			repositories = append(repositories, fmt.Sprintf("%s/%s", docker.Key, repo))
+			for _, repo := range repos {
+				repositories = append(repositories, fmt.Sprintf("%s/%s", docker.Key, repo))
+			}
 		}
-	}
 	}
 
 	var result []*model.Repository
