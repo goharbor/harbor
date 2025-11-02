@@ -15,7 +15,6 @@ SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
-ARCH ?= $(shell uname -m)
 PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
 
 
@@ -269,3 +268,4 @@ cleanimage:
 
 .PHONY: clean
 clean: cleanimage
+
