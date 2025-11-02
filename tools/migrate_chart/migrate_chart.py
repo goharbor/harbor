@@ -7,23 +7,12 @@ import os
 from pathlib import Path
 import tarfile
 import yaml
-import platform
-import shutil
+
 import click
 import requests
 
 MIGRATE_CHART_SCRIPT = '/migrate_chart.sh'
-_helm_env = os.environ.get('HELM_CMD')
-if _helm_env:
-    HELM_CMD = _helm_env
-else:
-    _arch = platform.machine().lower()
-    _candidates = ['/linux-amd64/helm', 'helm']
-    if _arch in ('arm64', 'aarch64'):
-        _candidates = ['/linux-arm64/helm', 'helm']
-    HELM_CMD = next((c for c in _candidates
-                     if (shutil.which(c) is not None) or Path(c).exists()), _candidates[-1])
- 
+HELM_CMD = '/linux-amd64/helm'
 CA_UPDATE_CMD = 'update-ca-certificates'
 CHART_URL_PATTERN = "https://{host}/api/v2.0/projects/{project}/repositories/{name}/artifacts/{version}"
 CHART_SOURCE_DIR = Path('/chart_storage')
