@@ -4,8 +4,6 @@ set -e
 
 function s3_to_https() {
   local s3_url="$1"
-
-
   if [[ "$s3_url" =~ ^s3://([^/]+)/(.+)$ ]]; then
     local bucket="${BASH_REMATCH[1]}"
     local path="${BASH_REMATCH[2]}"
