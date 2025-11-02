@@ -90,7 +90,7 @@ function publishPackages {
 function retry {
     local -r -i max="$1"; shift
     local -i n=1
-    until "$?"
+    until "$@"
     do
         if ((n==max))
         then
