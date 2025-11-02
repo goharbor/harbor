@@ -100,6 +100,11 @@ jobs:
             publishPackages "$cur" "$base" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}" $images
             rm -rf harbor
           done
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
 
       - name: Create multi-arch manifests (Docker Hub)
         run: |
@@ -109,7 +114,6 @@ jobs:
           mapfile -t repos < <(sort -u "$GITHUB_WORKSPACE/_images_all.txt")
           echo "Repos to manifest: ${#repos[@]}"
           docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
-          docker buildx create --use --name harbor-multi || docker buildx use harbor-multi
           for repo in "${repos[@]}"; do
             echo "Creating manifest ${repo}:${cur} (amd64+arm64)"
             docker buildx imagetools create \
