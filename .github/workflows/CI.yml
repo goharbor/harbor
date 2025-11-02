@@ -280,16 +280,6 @@ jobs:
           env
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
-      - name: Wait for LDAP config to be active (arm64 only)
-        if: matrix.arch == 'arm64'
-        run: |
-          echo "Waiting for Harbor LDAP config to become active..."
-          for i in {1..30}; do
-            out=$(curl -sk -u admin:Harbor12345 https://127.0.0.1/api/v2.0/systeminfo || true)
-            echo "$out" | grep -q '"auth_mode":"ldap_auth"' && { echo "LDAP active"; break; }
-            echo "Retry $i: LDAP not active yet"
-            sleep 5
-          done
       - name: script
         run: |
           echo IP: $IP
