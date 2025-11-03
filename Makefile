@@ -470,7 +470,6 @@ package_offline: check_buildinstaller update_prepare_version compile build
 	@echo "Done."
 
 go_check: gen_apis mocks_check misspell commentfmt lint
-
 commentfmt:
 	@echo checking comment format...
 	@res=$$(find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
@@ -614,3 +613,4 @@ clean:
 	@echo "  make cleanpackage:		remove online and offline install package"
 
 all: install
+
