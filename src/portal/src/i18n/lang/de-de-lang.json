@@ -669,8 +669,8 @@
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
         "CA_CERTIFICATE": "CA Certificate",
-        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. If provided, this CA will be used instead of the system CA pool. Leave empty to use system CAs or enable 'Verify Remote Cert' to skip verification.",
-        "CA_CERTIFICATE_HELPER": "Optional: Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. This field is required when 'Verify Remote Cert' is enabled. Uncheck 'Verify Remote Cert' to skip certificate verification entirely.",
+        "CA_CERTIFICATE_HELPER": "Required when certificate verification is enabled. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",

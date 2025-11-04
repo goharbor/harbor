@@ -271,8 +271,8 @@
                     rows="8"
                     placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
                     name="ca_certificate"
-                    [disabled]="testOngoing"
-                    [readonly]="!editable"
+                    [disabled]="testOngoing || target.insecure || !editable"
+                    [required]="!target.insecure"
                     [(ngModel)]="target.ca_certificate"></textarea>
                 <clr-control-helper>
                     {{ 'DESTINATION.CA_CERTIFICATE_HELPER' | translate }}
