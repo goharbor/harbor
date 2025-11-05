@@ -85,8 +85,8 @@ func ParseSorting(sort string) []*Sort {
 	for sorting := range strings.SplitSeq(sort, ",") {
 		key := sorting
 		desc := false
-		if strings.HasPrefix(sorting, "-") {
-			key = strings.TrimPrefix(sorting, "-")
+		if after, ok := strings.CutPrefix(sorting, "-"); ok {
+			key = after
 			desc = true
 		}
 		sorts = append(sorts, &Sort{
