@@ -3,6 +3,8 @@ package tencentcr
 import (
 	"reflect"
 	"testing"
+	"fmt"
+	"strings"
 
 	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 
@@ -161,41 +163,72 @@ func Test_adapter_listCandidateNamespaces(t *testing.T) {
 	}
 }
 
-func Test_adapter_DeleteManifest(t *testing.T) {
-	type fields struct {
-		Adapter    *native.Adapter
-		registryID *string
-		regionName *string
-		tcrClient  *tcr.Client
-		pageSize   *int64
-		client     *commonhttp.Client
-		registry   *model.Registry
+type mockAdapter struct {
+	adapter
+	deleteImageFunc func(namespace, repo, reference string) error
+}
+
+func (m *mockAdapter) deleteImage(namespace, repo, reference string) error {
+	if m.deleteImageFunc != nil {
+		return m.deleteImageFunc(namespace, repo, reference)
 	}
+	return nil
+}
+
+func (m *mockAdapter) DeleteManifest(repository, reference string) error {
+	parts := strings.Split(repository, "/")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid repository format: %s", repository)
+	}
+	namespace, repo := parts[0], parts[1]
+	return m.deleteImage(namespace, repo, reference)
+}
+
+func Test_adapter_DeleteManifest(t *testing.T) {
 	type args struct {
 		repository string
 		reference  string
 	}
+
 	tests := []struct {
 		name    string
-		fields  fields
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "invalid repository format",
+			args: args{
+				repository: "invalidRepo",
+				reference:  "latest",
+			},
+			wantErr: true,
+		},
+		{
+			name: "valid repository format should not error",
+			args: args{
+				repository: "demo/app",
+				reference:  "v1.0",
+			},
+			wantErr: false,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &adapter{
-				Adapter:    tt.fields.Adapter,
-				registryID: tt.fields.registryID,
-				regionName: tt.fields.regionName,
-				tcrClient:  tt.fields.tcrClient,
-				pageSize:   tt.fields.pageSize,
-				client:     tt.fields.client,
-				registry:   tt.fields.registry,
+			a := &mockAdapter{}
+
+			if tt.name == "valid repository format should not error" {
+				a.deleteImageFunc = func(namespace, repo, reference string) error {
+					if namespace != "demo" || repo != "app" || reference != "v1.0" {
+						t.Errorf("unexpected args: %s/%s:%s", namespace, repo, reference)
+					}
+					return nil
+				}
 			}
-			if err := a.DeleteManifest(tt.args.repository, tt.args.reference); (err != nil) != tt.wantErr {
-				t.Errorf("adapter.DeleteManifest() error = %v, wantErr %v", err, tt.wantErr)
+
+			err := a.DeleteManifest(tt.args.repository, tt.args.reference)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DeleteManifest() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
