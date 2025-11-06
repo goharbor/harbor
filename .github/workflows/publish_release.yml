@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-22.04
+    runs-on: oracle-vm-24cpu-96gb-x86-64
     steps:
       - uses: actions/checkout@v5
 

@@ -27,7 +27,7 @@ on:
       - '!tests/ci/**'
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
-      - '!tests/robot-cases/Group1-Nightly/**'      
+      - '!tests/robot-cases/Group1-Nightly/**'
   push:
     # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     env:
       UTTEST: true
       ARCH: ${{ matrix.arch }}
@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     env:
       APITEST_DB: true
       ARCH: ${{ matrix.arch }}
@@ -164,7 +164,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
       - name: upload_logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: db-api-harbor-logs.tar.gz
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -174,7 +174,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     env:
       APITEST_DB: true
       ARCH: ${{ matrix.arch }}
@@ -227,7 +227,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh PROXY_CACHE $IP
           df -h
       - name: upload_logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: proxy-api-harbor-logs.tar.gz
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -237,10 +237,10 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }
     env:
       APITEST_LDAP: true
-      ARCH: ${{ matrix.arch }}
+      ARCH: ${{ matrix.arch }}    
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -288,7 +288,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
           df -h
       - name: upload_logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ldap-api-harbor-logs.tar.gz
           path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -298,7 +298,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     env:
       OFFLINE: true
       ARCH: ${{ matrix.arch }}
@@ -353,7 +353,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     env:
       UI_UT: true
       ARCH: ${{ matrix.arch }}

@@ -17,7 +17,7 @@ jobs:
     env:
       BUILD_PACKAGE: true
       ARCH: ${{ matrix.arch }}
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.0.0
