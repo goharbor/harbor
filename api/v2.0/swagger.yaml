@@ -9033,6 +9033,10 @@ definitions:
   NotifyType:
     type: string
     description: Webhook supported notify type.
+    enum:
+      - http
+      - slack
+      - email
     example: 'http'
   PayloadFormatType:
     type: string
