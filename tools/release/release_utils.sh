@@ -50,34 +50,39 @@ function generateReleaseNotes {
 }
 
 function publishImages {
-    # Create curTag and push it to the goharbor namespace of dockerhub
+    # Push images to Docker Hub; if $ARCH is set, push :${curTag}-$ARCH (per-arch)
     local curTag=$1
     local baseTag=$2
     local dockerHubUser=$3
     local dockerHubPassword=$4
     local images=${@:5}
+    local suffix=""
+    if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
     docker login -u $dockerHubUser -p $dockerHubPassword
     for image in $images
     do
         echo "push image: $image"
-        docker tag $image:$baseTag $image:$curTag
-        retry 5 docker push $image:$curTag
+        docker tag $image:$baseTag $image:${curTag}${suffix}
+        retry 5 docker push $image:${curTag}${suffix}
     done
     docker logout
 }
 
 function publishPackages {
+    # Push images to GHCR; if $ARCH is set, push :${curTag}-$ARCH (per-arch)
     local curTag=$1
     local baseTag=$2
     local ghcrUser=$3
     local ghcrPassword=$4
     local images=${@:5}
+    local suffix=""
+    if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
     docker login ghcr.io -u $ghcrUser -p $ghcrPassword
     for image in $images
     do
         echo "push image: $image"
-        docker tag $image:$baseTag "ghcr.io/"$image:$curTag
-        retry 5 docker push "ghcr.io/"$image:$curTag
+        docker tag $image:$baseTag "ghcr.io/${image}:${curTag}${suffix}"
+        retry 5 docker push "ghcr.io/${image}:${curTag}${suffix}"
     done
     docker logout ghcr.io
 }
