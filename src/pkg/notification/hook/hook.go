@@ -52,6 +52,8 @@ func (hm *DefaultManager) StartHook(ctx context.Context, event *model.HookEvent,
 		vendorType = job.WebhookJobVendorType
 	case model.NotifyTypeSlack:
 		vendorType = job.SlackJobVendorType
+	case model.NotifyTypeAMQP:
+		vendorType = job.AMQPJobVendorType
 	}
 
 	if len(vendorType) == 0 {
