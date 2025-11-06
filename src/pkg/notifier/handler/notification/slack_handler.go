@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -51,7 +52,7 @@ const (
             "type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "*occur_at:* <!date^{{.OccurAt}}^{date} at {time}|February 18th, 2014 at 6:39 AM PST>"
+				"text": "*occur_at:* {{.OccurAtFormatted}}"
 			}
         },
         {	"type": "section",
@@ -129,7 +130,7 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {
 	data := make(map[string]any)
 	data["Type"] = payLoad.Type
-	data["OccurAt"] = payLoad.OccurAt
+	data["OccurAtFormatted"] = time.Unix(payLoad.OccurAt, 0).Format("2006-01-02 15:04:05 UTC")
 	data["Operator"] = payLoad.Operator
 	eventData, err := json.MarshalIndent(payLoad.EventData, "", "\t")
 	if err != nil {
