@@ -102,7 +102,7 @@ func (ej *EmailJob) Run(ctx job.Context, params job.Parameters) error {
 
 	ej.logger.Info("start to run email job")
 
-	err := ej.execute(params)
+	err := ej.execute(ctx, params)
 	if err != nil {
 		ej.logger.Errorf("exit email job, error: %s", err)
 	} else {
@@ -118,7 +118,7 @@ func (ej *EmailJob) init(ctx job.Context, params map[string]any) error {
 }
 
 // execute email job
-func (ej *EmailJob) execute(params map[string]any) error {
+func (ej *EmailJob) execute(ctx job.Context, params map[string]any) error {
 	subject := params["subject"].(string)
 	body := params["body"].(string)
 	toStr := params["to"].(string)
@@ -129,7 +129,7 @@ func (ej *EmailJob) execute(params map[string]any) error {
 	}
 
 	// Get email configuration from Harbor config
-	cfg, err := config.Email()
+	cfg, err := config.Email(ctx.SystemContext())
 	if err != nil {
 		return errors.Wrap(err, "failed to get email config")
 	}
