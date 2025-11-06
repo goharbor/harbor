@@ -22,4 +22,6 @@ const (
 	SlackTopic = "slack"
 	// EmailTopic is topic for sending email payload
 	EmailTopic = "email"
+	// AMQPTopic is topic for sending amqp payload
+	AMQPTopic = "amqp"
 )
