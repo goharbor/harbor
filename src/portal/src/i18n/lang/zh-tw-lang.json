@@ -776,9 +776,9 @@
         "CANNOT_EDIT": "當複製規則啟用時，無法變更端點。",
         "FAILED_TO_DELETE_TARGET_IN_USED": "無法刪除正在使用的端點。",
         "PLACEHOLDER": "找不到任何端點！",
-        "CA_CERTIFICATE": "CA Certificate",
-        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. This field is required when 'Verify Remote Cert' is enabled. Uncheck 'Verify Remote Cert' to skip certificate verification entirely.",
-        "CA_CERTIFICATE_HELPER": "Required when certificate verification is enabled. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
+        "CA_CERTIFICATE": "CA 憑證",
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 編碼的 CA 憑證以驗證倉庫的 TLS 憑證。留空將使用系統 CA 池。此欄位僅在啟用「驗證遠端憑證」時可用。",
+        "CA_CERTIFICATE_HELPER": "選填。在此貼上 PEM 編碼的 CA 憑證，以信任此端點的自簽名或私有 CA 憑證。如果留空，Harbor 將使用系統 CA 池。"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "複製 Digest",
