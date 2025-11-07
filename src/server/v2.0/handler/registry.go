@@ -55,7 +55,6 @@ func (r *registryAPI) CreateRegistry(ctx context.Context, params operation.Creat
 		Insecure:    params.Registry.Insecure,
 	}
 	if params.Registry.CaCertificate != nil {
-		// Validate CA certificate format
 		if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
 			return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
 		}
@@ -269,7 +268,6 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 			registry.Credential.AccessSecret = *params.Registry.AccessSecret
 		}
 		if params.Registry.CaCertificate != nil {
-			// Validate CA certificate format
 			if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
 				return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
 			}

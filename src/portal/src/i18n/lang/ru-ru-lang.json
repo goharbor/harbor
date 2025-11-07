@@ -698,9 +698,9 @@
         "CANNOT_EDIT": "Конечную точку нельзя изменить, пока правило репликации активно.",
         "PLACEHOLDER": "Мы не смогли найти ни одной конечной точки!",
         "DEPRECATED": "Helm Hub переходит на Artifact Hub",
-        "CA_CERTIFICATE": "CA Certificate",
-        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. This field is required when 'Verify Remote Cert' is enabled. Uncheck 'Verify Remote Cert' to skip certificate verification entirely.",
-        "CA_CERTIFICATE_HELPER": "Required when certificate verification is enabled. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint."
+        "CA_CERTIFICATE": "Сертификат CA",
+        "CA_CERTIFICATE_TOOLTIP": "Укажите сертификат CA в формате PEM для проверки TLS-сертификата реестра. Оставьте пустым для использования системного пула CA. Это поле доступно только при включенной опции 'Проверять удаленный сертификат'.",
+        "CA_CERTIFICATE_HELPER": "Необязательно. Вставьте здесь сертификат CA в формате PEM для доверия самоподписанным или частным сертификатам CA для этой конечной точки. Если оставить пустым, Harbor будет использовать системный пул CA."
 },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Копировать Хэш",

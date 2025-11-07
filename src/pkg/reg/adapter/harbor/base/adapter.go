@@ -35,6 +35,7 @@ import (
 // New creates an instance of the base adapter
 func New(registry *model.Registry) (*Adapter, error) {
 	if isLocalHarbor(registry.URL) {
+		log.Warningf("Detected LOCAL Harbor instance (URL=%s matches CORE_URL). Using INSECURE transport - CA certificate will be IGNORED.", registry.URL)
 		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
 		httpClient := common_http.NewClient(&http.Client{
 			// when it's a local Harbor instance, the code runs inside the same process with

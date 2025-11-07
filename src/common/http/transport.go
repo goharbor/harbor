@@ -17,8 +17,11 @@ package http
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
+	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -90,36 +93,84 @@ func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	}
 }
 
-// ValidateCACertificate validates if the provided certificate is in valid PEM format
+// ValidateCACertificate validates whether the provided CA certificate string
+// contains at least one valid PEM-encoded x509 certificate.
 func ValidateCACertificate(caCert string) error {
+	caCert = strings.TrimSpace(caCert)
 	if caCert == "" {
 		return nil
 	}
 
-	caCertPool := x509.NewCertPool()
-	if !caCertPool.AppendCertsFromPEM([]byte(caCert)) {
-		return errors.New("invalid CA certificate: not in valid PEM format")
+	// Attempt to parse one or more certificates from the provided PEM
+	certs, err := parseCertificatesFromPEM(caCert)
+	if err != nil {
+		return fmt.Errorf("invalid CA certificate: %w", err)
 	}
+
+	if len(certs) == 0 {
+		return errors.New("invalid CA certificate: no valid certificates found in PEM data")
+	}
+
 	return nil
 }
 
-// WithCustomCACert returns a TransportOption that configures custom CA certificate
+// parseCertificatesFromPEM decodes all PEM blocks and parses certificates.
+func parseCertificatesFromPEM(pemData string) ([]*x509.Certificate, error) {
+	var certs []*x509.Certificate
+	rest := []byte(pemData)
+
+	for {
+		var block *pem.Block
+		block, rest = pem.Decode(rest)
+		if block == nil {
+			break
+		}
+		if block.Type != "CERTIFICATE" {
+			continue
+		}
+
+		cert, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse certificate: %v", err)
+		}
+
+		certs = append(certs, cert)
+	}
+
+	return certs, nil
+}
+
+// WithCustomCACert returns a TransportOption that configures custom CA certificates (supports chains)
 func WithCustomCACert(caCert string) func(*http.Transport) {
 	return func(tr *http.Transport) {
+		caCert = strings.TrimSpace(caCert)
 		if caCert == "" {
+			log.Debugf("No custom CA certificate provided; skipping configuration")
+			return
+		}
+
+		certs, err := parseCertificatesFromPEM(caCert)
+		if err != nil {
+			log.Warningf("Failed to parse CA certificate: %v", err)
+			return
+		}
+
+		if len(certs) == 0 {
+			log.Warningf("No valid certificates found in provided CA PEM")
 			return
 		}
 
 		caCertPool := x509.NewCertPool()
-		if !caCertPool.AppendCertsFromPEM([]byte(caCert)) {
-			log.Errorf("Failed to append CA certificate to pool - invalid PEM format")
-			return
+		for _, cert := range certs {
+			caCertPool.AddCert(cert)
 		}
 
 		if tr.TLSClientConfig == nil {
 			tr.TLSClientConfig = &tls.Config{}
 		}
+
 		tr.TLSClientConfig.RootCAs = caCertPool
+		log.Debugf("Configured HTTP transport with custom CA certificate.")
 	}
 }
 
