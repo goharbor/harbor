@@ -24,7 +24,7 @@ jobs:
       - name: Set up Go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24.5
+          go-version: 1.24.10
         id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
