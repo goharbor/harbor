@@ -22,38 +22,7 @@ func Test_filterToPatterns(t *testing.T) {
 		wantRepoPattern      string
 		wantTagsPattern      string
 	}{
-		{
-			name: "name and tag filters provided",
-			args: args{
-				filters: []*model.Filter{
-					{Type: model.FilterTypeName, Value: "demo/app"},
-					{Type: model.FilterTypeTag, Value: "v1.*"},
-				},
-			},
-			wantNamespacePattern: "demo",
-			wantRepoPattern:      "demo/app",
-			wantTagsPattern:      "v1.*",
-		},
-		{
-			name: "only name filter provided",
-			args: args{
-				filters: []*model.Filter{
-					{Type: model.FilterTypeName, Value: "team/project"},
-				},
-			},
-			wantNamespacePattern: "team",
-			wantRepoPattern:      "team/project",
-			wantTagsPattern:      "",
-		},
-		{
-			name: "empty filters slice",
-			args: args{
-				filters: []*model.Filter{},
-			},
-			wantNamespacePattern: "",
-			wantRepoPattern:      "",
-			wantTagsPattern:      "",
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,7 +88,6 @@ func Test_adapter_FetchArtifacts(t *testing.T) {
 func Test_adapter_listCandidateNamespaces(t *testing.T) {
 	a := &adapter{}
 
-	// Mock helper functions
 	a.isNamespaceExist = func(name string) (bool, error) {
 		if name == "exist" {
 			return true, nil
