@@ -30,6 +30,16 @@ const (
 	tcrQPSLimit = 10
 )
 
+var (
+	isNamespaceExist = func(a *adapter, namespace string) (bool, error) {
+		return a.isNamespaceExist(namespace)
+	}
+
+	listNamespaces = func(a *adapter) ([]string, error) {
+		return a.listNamespaces()
+	}
+)
+
 /**
 	* Implement ArtifactRegistry Interface
 **/
@@ -155,7 +165,7 @@ func (a *adapter) listCandidateNamespaces(namespacePattern string) (namespaces [
 			// Check is exist
 			var exist bool
 			for _, ns := range nms {
-				exist, err = a.isNamespaceExist(ns)
+				exist, err = isNamespaceExist(a, ns)
 				if err != nil {
 					return
 				}
@@ -172,8 +182,7 @@ func (a *adapter) listCandidateNamespaces(namespacePattern string) (namespaces [
 		return namespaces, nil
 	}
 
-	// list all
-	return a.listNamespaces()
+	return listNamespaces(a)
 }
 
 func (a *adapter) DeleteManifest(repository, reference string) (err error) {

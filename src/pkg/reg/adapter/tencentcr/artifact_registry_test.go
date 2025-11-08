@@ -88,14 +88,21 @@ func Test_adapter_FetchArtifacts(t *testing.T) {
 func Test_adapter_listCandidateNamespaces(t *testing.T) {
 	a := &adapter{}
 
-	a.isNamespaceExist = func(name string) (bool, error) {
+	origIsNamespaceExist := isNamespaceExist
+	origListNamespaces := listNamespaces
+	defer func() {
+		isNamespaceExist = origIsNamespaceExist
+		listNamespaces = origListNamespaces
+	}()
+
+	isNamespaceExist = func(ad *adapter, name string) (bool, error) {
 		if name == "exist" {
 			return true, nil
 		}
 		return false, nil
 	}
 
-	a.listNamespaces = func() ([]string, error) {
+	listNamespaces = func(ad *adapter) ([]string, error) {
 		return []string{"exist", "default"}, nil
 	}
 
