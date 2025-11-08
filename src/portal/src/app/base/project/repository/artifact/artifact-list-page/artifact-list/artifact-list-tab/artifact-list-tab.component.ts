@@ -164,6 +164,22 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     get generateSbomBtnState(): ClrLoadingState {
         return this.artifactListPageService.getSbomBtnState();
     }
+    get selectedCommonLabels(): Label[] {
+        if (!this.selectedRow?.length) {
+            return [];
+        }
+        const common = new Map<number, Label>();
+        (this.selectedRow[0].labels || []).forEach(l => common.set(l.id, l));
+        for (let i = 1; i < this.selectedRow.length; i++) {
+            const ids = new Set((this.selectedRow[i].labels || []).map(l => l.id));
+            for (const id of Array.from(common.keys())) {
+                if (!ids.has(id)) {
+                    common.delete(id);
+                }
+            }
+        }
+        return Array.from(common.values());
+    }
 
     onSendingScanCommand: boolean;
     onSendingStopScanCommand: boolean = false;
@@ -504,21 +520,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
 
     canAddLabel(): boolean {
-        if (this.selectedRow && this.selectedRow.length === 1) {
-            return true;
-        }
-        if (this.selectedRow && this.selectedRow.length > 1) {
-            for (let i = 0; i < this.selectedRow.length; i++) {
-                if (
-                    this.selectedRow[i].labels &&
-                    this.selectedRow[i].labels.length
-                ) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+        return !!(this.selectedRow && this.selectedRow.length >= 1);
     }
 
     stickLabel(labelEvent: { label: Label; isAdd: boolean }): void {
@@ -529,50 +531,60 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
     addLabel(label: Label) {
-        if (!this.inprogress) {
-            const params: NewArtifactService.AddLabelParams = {
-                projectName: this.projectName,
-                repositoryName: dbEncodeURIComponent(this.repoName),
-                reference: this.selectedRow[0].digest,
-                label: label,
-            };
-            this.inprogress = true;
-            this.newArtifactService
-                .addLabel(params)
-                .pipe(finalize(() => (this.inprogress = false)))
-                .subscribe({
-                    next: res => {
-                        this.refresh();
-                    },
-                    error: err => {
-                        this.refresh();
-                        this.errorHandlerService.error(err);
-                    },
-                });
+        if (this.inprogress) {
+            return;
         }
+        const ops = (this.selectedRow || [])
+            .filter(a => !(a.labels || []).some(l => l.id === label.id))
+            .map(a =>
+                this.newArtifactService.addLabel({
+                    projectName: this.projectName,
+                    repositoryName: dbEncodeURIComponent(this.repoName),
+                    reference: a.digest,
+                    label,
+                })
+            );
+        if (!ops.length) {
+            return;
+        }
+        this.inprogress = true;
+        forkJoin(ops)
+            .pipe(finalize(() => (this.inprogress = false)))
+            .subscribe({
+                next: () => this.refresh(),
+                error: err => {
+                    this.errorHandlerService.error(err);
+                    this.refresh();
+                },
+            });
     }
     removeLabel(label: Label) {
-        if (!this.inprogress) {
-            let params: NewArtifactService.RemoveLabelParams = {
-                projectName: this.projectName,
-                repositoryName: dbEncodeURIComponent(this.repoName),
-                reference: this.selectedRow[0].digest,
-                labelId: label.id,
-            };
-            this.inprogress = true;
-            this.newArtifactService
-                .removeLabel(params)
-                .pipe(finalize(() => (this.inprogress = false)))
-                .subscribe({
-                    next: res => {
-                        this.refresh();
-                    },
-                    error: err => {
-                        this.refresh();
-                        this.errorHandlerService.error(err);
-                    },
-                });
+        if (this.inprogress) {
+            return;
         }
+        const ops = (this.selectedRow || [])
+            .filter(a => (a.labels || []).some(l => l.id === label.id))
+            .map(a =>
+                this.newArtifactService.removeLabel({
+                    projectName: this.projectName,
+                    repositoryName: dbEncodeURIComponent(this.repoName),
+                    reference: a.digest,
+                    labelId: label.id,
+                })
+            );
+        if (!ops.length) {
+            return;
+        }
+        this.inprogress = true;
+        forkJoin(ops)
+            .pipe(finalize(() => (this.inprogress = false)))
+            .subscribe({
+                next: () => this.refresh(),
+                error: err => {
+                    this.errorHandlerService.error(err);
+                    this.refresh();
+                },
+            });
     }
 
     sizeTransform(tagSize: string): string {
