@@ -117,45 +117,54 @@ func Test_adapter_FetchArtifacts(t *testing.T) {
 }
 
 func Test_adapter_listCandidateNamespaces(t *testing.T) {
-	type fields struct {
-		Adapter    *native.Adapter
-		registryID *string
-		regionName *string
-		tcrClient  *tcr.Client
-		pageSize   *int64
-		client     *commonhttp.Client
-		registry   *model.Registry
+	a := &adapter{}
+
+	// Mock helper functions
+	a.isNamespaceExist = func(name string) (bool, error) {
+		if name == "exist" {
+			return true, nil
+		}
+		return false, nil
 	}
-	type args struct {
-		namespacePattern string
+
+	a.listNamespaces = func() ([]string, error) {
+		return []string{"exist", "default"}, nil
 	}
+
 	tests := []struct {
 		name           string
-		fields         fields
-		args           args
+		namespacePattern string
 		wantNamespaces []string
 		wantErr        bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:             "specific existing namespace",
+			namespacePattern: "exist",
+			wantNamespaces:   []string{"exist"},
+			wantErr:          false,
+		},
+		{
+			name:             "non-existing namespace falls back to all",
+			namespacePattern: "missing",
+			wantNamespaces:   []string{"exist", "default"},
+			wantErr:          false,
+		},
+		{
+			name:             "empty pattern lists all",
+			namespacePattern: "",
+			wantNamespaces:   []string{"exist", "default"},
+			wantErr:          false,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &adapter{
-				Adapter:    tt.fields.Adapter,
-				registryID: tt.fields.registryID,
-				regionName: tt.fields.regionName,
-				tcrClient:  tt.fields.tcrClient,
-				pageSize:   tt.fields.pageSize,
-				client:     tt.fields.client,
-				registry:   tt.fields.registry,
-			}
-			gotNamespaces, err := a.listCandidateNamespaces(tt.args.namespacePattern)
+			got, err := a.listCandidateNamespaces(tt.namespacePattern)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("adapter.listCandidateNamespaces() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				t.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if !reflect.DeepEqual(gotNamespaces, tt.wantNamespaces) {
-				t.Errorf("adapter.listCandidateNamespaces() = %v, want %v", gotNamespaces, tt.wantNamespaces)
+			if !reflect.DeepEqual(got, tt.wantNamespaces) {
+				t.Errorf("listCandidateNamespaces() = %v, want %v", got, tt.wantNamespaces)
 			}
 		})
 	}
