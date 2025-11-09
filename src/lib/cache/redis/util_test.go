@@ -50,6 +50,15 @@ func TestParseSentinelURL(t *testing.T) {
 	assert.Equal(t, 10*time.Second, o.MaxConnAge)
 	assert.Equal(t, 10*time.Second, o.PoolTimeout)
 
+	// test sentinel auth parameters
+	url = "redis+sentinel://anonymous:password@host1:26379,host2:26379/mymaster/1?sentinel_username=suser&sentinel_password=spass"
+	o, err = ParseSentinelURL(url)
+	assert.NoError(t, err)
+	assert.Equal(t, "anonymous", o.Username)
+	assert.Equal(t, "password", o.Password)
+	assert.Equal(t, "suser", o.SentinelUsername)
+	assert.Equal(t, "spass", o.SentinelPassword)
+
 	// invalid url should return err
 	url = "###"
 	_, err = ParseSentinelURL(url)
