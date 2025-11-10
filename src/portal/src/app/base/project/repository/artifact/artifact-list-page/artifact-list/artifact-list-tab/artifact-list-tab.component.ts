@@ -171,7 +171,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         const common = new Map<number, Label>();
         (this.selectedRow[0].labels || []).forEach(l => common.set(l.id, l));
         for (let i = 1; i < this.selectedRow.length; i++) {
-            const ids = new Set((this.selectedRow[i].labels || []).map(l => l.id));
+            const ids = new Set(
+                (this.selectedRow[i].labels || []).map(l => l.id)
+            );
             for (const id of Array.from(common.keys())) {
                 if (!ids.has(id)) {
                     common.delete(id);
