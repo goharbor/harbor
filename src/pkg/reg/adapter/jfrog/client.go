@@ -47,7 +47,10 @@ func newClient(reg *model.Registry) *client {
 	return &client{
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(reg.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(reg.Insecure),
+					common_http.WithCACert(reg.CACertificate),
+				),
 			},
 			basic.NewAuthorizer(username, password),
 		),

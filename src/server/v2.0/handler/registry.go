@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/lib"
@@ -52,6 +53,12 @@ func (r *registryAPI) CreateRegistry(ctx context.Context, params operation.Creat
 		Type:        params.Registry.Type,
 		URL:         params.Registry.URL,
 		Insecure:    params.Registry.Insecure,
+	}
+	if params.Registry.CaCertificate != nil {
+		if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
+			return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
+		}
+		registry.CACertificate = *params.Registry.CaCertificate
 	}
 	if params.Registry.Credential != nil {
 		registry.Credential = &model.Credential{
@@ -142,6 +149,13 @@ func (r *registryAPI) UpdateRegistry(ctx context.Context, params operation.Updat
 		}
 		if params.Registry.Insecure != nil {
 			registry.Insecure = *params.Registry.Insecure
+		}
+		if params.Registry.CaCertificate != nil {
+			// Validate CA certificate format
+			if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
+				return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
+			}
+			registry.CACertificate = *params.Registry.CaCertificate
 		}
 		if registry.Credential == nil {
 			registry.Credential = &model.Credential{}
@@ -252,6 +266,12 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 				registry.Credential = &model.Credential{}
 			}
 			registry.Credential.AccessSecret = *params.Registry.AccessSecret
+		}
+		if params.Registry.CaCertificate != nil {
+			if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
+				return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
+			}
+			registry.CACertificate = *params.Registry.CaCertificate
 		}
 	}
 
