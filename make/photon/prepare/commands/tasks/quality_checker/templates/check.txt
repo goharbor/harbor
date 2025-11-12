@@ -1,0 +1,17 @@
+The following files are part of a task in the benchmark. You need to ensure that the criteria are met. Please respond whether they are met and if not, why, in the specified JSON structure.
+
+<Dockerfile>
+{dockerfile}
+</Dockerfile>
+
+<task.yaml>
+{task}
+</task.yaml>
+
+<solution.[sh|yaml]>
+{solution}
+</solution.[sh|yaml]>
+
+<test_outputs.py>
+{unit_tests}
+</test_outputs.py>
