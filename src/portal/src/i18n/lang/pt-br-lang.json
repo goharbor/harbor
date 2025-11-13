@@ -1234,7 +1234,8 @@
         "DELETION_TITLE_TARGET": "Confirmar remoção do marcador",
         "DELETION_SUMMARY_TARGET": "Você deseja remover {{param}}?",
         "PLACEHOLDER": "Não foi possível encontrar nenhum marcador!",
-        "NAME_ALREADY_EXISTS": "Marcador já existe."
+        "NAME_ALREADY_EXISTS": "Marcador já existe.",
+        "INVALID_COLOR": "Código de cor hexadecimal inválido (ex. #RRGGBB ou #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Projeto",

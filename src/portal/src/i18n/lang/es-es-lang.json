@@ -1224,7 +1224,6 @@
         "ADD_TAG": "AGREGAR TAG",
         "REMOVE_TAG": "REMOVER TAG",
         "NAME_ALREADY_EXISTS": "Tag ya existe en el repositorio"
-
     },
     "LABEL": {
         "LABEL": "Etiqueta",
@@ -1240,7 +1239,8 @@
         "DELETION_TITLE_TARGET": "Confirmar Borrar Etiqueta",
         "DELETION_SUMMARY_TARGET": "Quieres borrar {{param}}?",
         "PLACEHOLDER": "No pudimos encontrar ninguna etiqueta!",
-        "NAME_ALREADY_EXISTS": "Nombre Etiqueta ya existe."
+        "NAME_ALREADY_EXISTS": "Nombre Etiqueta ya existe.",
+        "INVALID_COLOR": "Código de color hexadecimal no válido (ej. #RRGGBB o #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Proyecto",
