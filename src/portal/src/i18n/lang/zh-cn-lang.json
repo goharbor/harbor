@@ -1241,7 +1241,8 @@
         "DELETION_TITLE_TARGET": "删除标签确认",
         "DELETION_SUMMARY_TARGET": "确认删除标签 {{param}}?",
         "PLACEHOLDER": "未发现任何标签!",
-        "NAME_ALREADY_EXISTS": "标签名已存在。"
+        "NAME_ALREADY_EXISTS": "标签名已存在。",
+        "INVALID_COLOR": "无效的十六进制颜色代码（例如 #RRGGBB 或 #RGB）"
     },
     "QUOTA": {
         "PROJECT": "项目",
