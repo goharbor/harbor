@@ -1159,7 +1159,8 @@
         "DELETION_TITLE_TARGET": "Подтверждение удаления метки",
         "DELETION_SUMMARY_TARGET": "Вы хотите удалить {{param}}?",
         "PLACEHOLDER": "Мы не смогли найти никаких меток!",
-        "NAME_ALREADY_EXISTS": "Имя метки уже существует."
+        "NAME_ALREADY_EXISTS": "Имя метки уже существует.",
+        "INVALID_COLOR": "Недопустимый шестнадцатеричный код цвета (например, #RRGGBB или #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Проект",

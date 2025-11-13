@@ -20,7 +20,7 @@ import {
     OnInit,
     ViewChild,
 } from '@angular/core';
-import { clone, compareValue } from '../../../units/utils';
+import { clone, compareValue, isValidHexColor } from '../../../units/utils';
 import { ErrorHandler } from '../../../units/error-handler';
 import { NgForm } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -42,6 +42,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     labelId = 0;
 
     isLabelNameExist = false;
+    isValidColor = true;
 
     nameChecker = new Subject<string>();
 
@@ -109,6 +110,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
         this.labelModel = this.initLabel();
         this.formShow = true;
         this.isLabelNameExist = false;
+        this.isValidColor = true;
         this.labelId = 0;
         this.copeLabelModel = null;
     }
@@ -118,6 +120,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
         this.formShow = true;
         this.labelId = labelId;
         this.copeLabelModel = clone(label[0]);
+        this.validateColor();
     }
 
     public get hasChanged(): boolean {
@@ -127,6 +130,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     public get isValid(): boolean {
         return !(
             this.isLabelNameExist ||
+            !this.isValidColor ||
             !(this.currentForm && this.currentForm.valid) ||
             !this.hasChanged ||
             this.inProgress
@@ -139,6 +143,23 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
         } else {
             this.isLabelNameExist = false;
         }
+    }
+
+    validateColor(): void {
+        if (this.labelModel.color) {
+            this.isValidColor = isValidHexColor(this.labelModel.color);
+            // Ensure color has # prefix
+            if (this.isValidColor && !this.labelModel.color.startsWith('#')) {
+                this.labelModel.color = '#' + this.labelModel.color;
+            }
+        } else {
+            this.isValidColor = true;
+        }
+    }
+
+    selectPresetColor(color: string): void {
+        this.labelModel.color = color;
+        this.isValidColor = true;
     }
 
     onSubmit(): void {
