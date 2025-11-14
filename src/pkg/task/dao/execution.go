@@ -412,7 +412,7 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 		return "", nil
 	}
 
-	var cond string
+	var cond strings.Builder
 	var args []any
 	sql := "select id from execution where"
 
@@ -423,9 +423,9 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
 		if len(keys) == 1 {
 			if i == 0 {
-				cond += "extra_attrs->>?=?"
+				cond.WriteString("extra_attrs->>?=?")
 			} else {
-				cond += " and extra_attrs->>?=?"
+				cond.WriteString(" and extra_attrs->>?=?")
 			}
 		}
 		if len(keys) >= 2 {
@@ -435,9 +435,9 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 			}
 			s := strings.Join(elements, "->")
 			if i == 0 {
-				cond += fmt.Sprintf("extra_attrs->%s->>?=?", s)
+				cond.WriteString(fmt.Sprintf("extra_attrs->%s->>?=?", s))
 			} else {
-				cond += fmt.Sprintf(" and extra_attrs->%s->>?=?", s)
+				cond.WriteString(fmt.Sprintf(" and extra_attrs->%s->>?=?", s))
 			}
 		}
 
@@ -447,7 +447,7 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 		args = append(args, jsonbStr.value)
 	}
 
-	return fmt.Sprintf("%s %s", sql, cond), args
+	return fmt.Sprintf("%s %s", sql, cond.String()), args
 }
 
 func buildExecStatusOutdateKey(id int64, vendor string) string {
