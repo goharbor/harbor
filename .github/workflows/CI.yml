@@ -40,11 +40,13 @@ on:
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
+
 jobs:
   UTTEST:
     env:
        UTTEST: true
     runs-on:
+      #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:

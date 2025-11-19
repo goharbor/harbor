@@ -31,8 +31,8 @@ func FromRequest(req *http.Request) string {
 		return ""
 	}
 	auth := req.Header.Get("Authorization")
-	if after, ok := strings.CutPrefix(auth, HeaderPrefix); ok {
-		return after
+	if strings.HasPrefix(auth, HeaderPrefix) {
+		return strings.TrimPrefix(auth, HeaderPrefix)
 	}
 	return ""
 }

@@ -39,13 +39,22 @@ jobs:
           src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
           dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
           dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
+          src_offline_bundle=${src_offline_package}.bundle
+          src_online_bundle=${src_online_package}.bundle
+          dst_offline_bundle=${dst_offline_package}.bundle
+          dst_online_bundle=${dst_online_package}.bundle
+
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
+          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_bundle} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_bundle}
+          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_bundle} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_bundle}
 
           assets_path=$(pwd)/assets
-          source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path
+          source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path $dst_offline_bundle $dst_online_bundle
           echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
+          echo "OFFLINE_BUNDLE_PATH=$assets_path/$dst_offline_bundle" >> $GITHUB_ENV
+          echo "ONLINE_BUNDLE_PATH=$assets_path/$dst_online_bundle" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
@@ -72,6 +81,7 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
+            ${{ env.OFFLINE_BUNDLE_PATH }}
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
         uses: softprops/action-gh-release@v2
@@ -80,5 +90,7 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
+            ${{ env.OFFLINE_BUNDLE_PATH }}
             ${{ env.ONLINE_PACKAGE_PATH }}
+            ${{ env.ONLINE_BUNDLE_PATH }}
             ${{ env.MD5SUM_PATH }}

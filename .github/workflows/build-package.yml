@@ -133,13 +133,3 @@ jobs:
           uploader ${harbor_offline_bundle} ${{ env.harbor_target_bucket }}
           uploader ${harbor_online_bundle} ${{ env.harbor_target_bucket }}
           
-      - name: Upload Signed Artifacts   
-        uses: actions/upload-artifact@v4
-        with:
-          name: harbor-signed-installers
-          path: |
-            src/github.com/goharbor/harbor/harbor-offline-installer-*.tgz
-            src/github.com/goharbor/harbor/harbor-offline-installer-*.tgz.bundle
-            src/github.com/goharbor/harbor/harbor-online-installer-*.tgz
-            src/github.com/goharbor/harbor/harbor-online-installer-*.tgz.bundle
-          retention-days: 90
