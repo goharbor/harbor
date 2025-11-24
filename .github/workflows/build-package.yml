@@ -104,8 +104,6 @@ jobs:
           cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
           uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
           uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
           echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
       
@@ -132,4 +130,6 @@ jobs:
           harbor_online_bundle=$(ls harbor-online-installer-*.tgz.bundle | head -n 1)
           uploader ${harbor_offline_bundle} ${{ env.harbor_target_bucket }}
           uploader ${harbor_online_bundle} ${{ env.harbor_target_bucket }}
+          uploader harbor-offline-installer-latest.tgz ${{ env.harbor_target_bucket }}
+          uploader harbor-online-installer-latest.tgz ${{ env.harbor_target_bucket }}
           

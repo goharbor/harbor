@@ -8,6 +8,8 @@ on:
 jobs:
   release:
     runs-on: oracle-vm-24cpu-96gb-x86-64
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
       - name: Setup env
