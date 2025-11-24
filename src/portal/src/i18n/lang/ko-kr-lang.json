@@ -271,7 +271,10 @@
         "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
         "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
-        "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
+        "NO_PROJECT": "프로젝트를 찾을 수 없습니다",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",
@@ -1343,6 +1346,7 @@
         "MSG_SCHEDULE_RESET": "가비지 컬렉션 일정이 초기화됐습니다",
         "PARAMETERS": "파라미터",
         "DELETE_UNTAGGED": "태그가 지정되지 않은 아티팩트에 대한 가비지 수집 허용",
+        "DELETE_TAG": "Allow garbage collection to remove tag files from backend storage",
         "EXPLAIN": "가비지 컬렉션은 레지스트리 성능에 영향을 미칠 수 있는 커퓨팅 집약적 작업입니다.",
         "EXPLAIN_TIME_WINDOW": "지난 2시간(기본 기간) 동안 업로드된 아티팩트는 가비지 컬렉션에서 제외됩니다.",
         "DRY_RUN_SUCCESS": "모의 테스트가 성공적으로 실행됐습니다",

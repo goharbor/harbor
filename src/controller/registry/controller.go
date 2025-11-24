@@ -214,7 +214,7 @@ func getWhitelistedAdapters(ctx context.Context) map[string]struct{} {
 		return nil
 	}
 	adapterWhitelist := make(map[string]struct{})
-	for _, adapter := range strings.Split(adapterWhitelistRaw, ",") {
+	for adapter := range strings.SplitSeq(adapterWhitelistRaw, ",") {
 		adapter = strings.TrimSpace(adapter)
 		if adapter != "" {
 			adapterWhitelist[adapter] = struct{}{}

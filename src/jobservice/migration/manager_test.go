@@ -58,7 +58,7 @@ func (suite *ManagerTestSuite) SetupSuite() {
 	suite.manager = New(suite.pool, suite.namespace)
 }
 
-// SetupTestSuite sets up env for each test case
+// SetupTest sets up env for each test case
 func (suite *ManagerTestSuite) SetupTest() {
 	// Mock fake data
 	conn := suite.pool.Get()
@@ -141,7 +141,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 	require.Equal(suite.T(), 1, count)
 }
 
-// SetupTestSuite clears up env for each test case
+// TearDownTest clears up env for each test case
 func (suite *ManagerTestSuite) TearDownTest() {
 	conn := suite.pool.Get()
 	defer func() {
