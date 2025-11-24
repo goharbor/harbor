@@ -58,6 +58,7 @@ export class ProjectPolicy {
     ProxyCacheEnabled: boolean;
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
+    MaxUpstreamConn?: number | null;
 
     constructor() {
         this.Public = false;
@@ -70,6 +71,7 @@ export class ProjectPolicy {
         this.ProxyCacheEnabled = false;
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
+        this.MaxUpstreamConn = -1;
     }
 
     initByProject(pro: Project) {
@@ -87,6 +89,9 @@ export class ProjectPolicy {
         this.RegistryId = pro.registry_id;
         this.ProxySpeedKb = pro.metadata.proxy_speed_kb
             ? pro.metadata.proxy_speed_kb
+            : -1;
+        this.MaxUpstreamConn = pro.metadata.max_upstream_conn
+            ? pro.metadata.max_upstream_conn
             : -1;
     }
 }
@@ -149,6 +154,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     ];
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
+    maxUpstreamConnError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
@@ -200,8 +206,11 @@ export class ProjectPolicyConfigComponent implements OnInit {
             (!Number.isInteger(value) && value !== -1) ||
             (value <= 0 && value !== -1)
         ) {
-            this.bandwidthError =
-                'Please enter -1 or an integer  greater than 0.';
+            this.translate
+                .get('PROJECT.SPEED_LIMIT_TIP')
+                .subscribe((res: string) => {
+                    this.bandwidthError = res;
+                });
         } else {
             this.bandwidthError = null;
         }
