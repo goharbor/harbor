@@ -38,7 +38,7 @@
 # FROM mcr.microsoft.com/playwright:v1.56.1-noble
 FROM node:20-bookworm
 
-RUN npx -y playwright@1.56.1 install --with-deps
+# RUN npx -y playwright@1.56.1 install --with-deps
 
 # 1. Install Docker CLI:
 # We install the Docker Command Line Interface (CLI) to allow the container
@@ -95,10 +95,13 @@ RUN apt-get update && apt-get install -y \
 # Install Playwright dependencies (if not using the official Playwright base image)
 # If you stick with the Playwright base image above, this step is often unnecessary.
 # If you are using package.json dependencies:
+
 WORKDIR /app
-# COPY package.json package-lock.json ./
-# RUN npm install
-# Now copy your e2e files
+
+COPY package.json package-lock.json ./
+RUN npm install @playwright/test
+RUN npx playwright install --with-deps
+
 COPY . .
 
 # Command to run the tests
