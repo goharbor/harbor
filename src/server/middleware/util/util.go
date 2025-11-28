@@ -41,8 +41,8 @@ func ParseProjectName(r *http.Request) string {
 	}
 
 	for _, prefix := range prefixes {
-		if strings.HasPrefix(path, prefix) {
-			parts := strings.Split(strings.TrimPrefix(path, prefix), "/")
+		if after, ok := strings.CutPrefix(path, prefix); ok {
+			parts := strings.Split(after, "/")
 			if len(parts) > 0 {
 				projectName = parts[0]
 				break
