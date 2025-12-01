@@ -281,6 +281,55 @@
                     </clr-control-error>
                 </div>
             </div>
+            <div
+                class="clr-form-control mt-05"
+                [style.visibility]="
+                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
+                ">
+                <label for="maxUpStreamConn" class="clr-control-label required">
+                    {{ 'PROJECT.CONNECTION_LIMIT' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="bottom-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_TIP'
+                                    | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="maxUpstreamConnError">
+                    <input
+                        type="number"
+                        id="maxUpStreamConn"
+                        [(ngModel)]="project.metadata.max_upstream_conn"
+                        name="maxUpStreamConn"
+                        class="clr-input width-164 mr-10"
+                        placeholder="Enter upstream connection limit"
+                        autocomplete="off"
+                        (ngModelChange)="validateMaxUpstreamConnections()" />
+                    <clr-icon
+                        *ngIf="maxUpstreamConnError"
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <clr-control-error
+                        *ngIf="maxUpstreamConnError"
+                        class="tooltip-content">
+                        {{
+                            'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP'
+                                | translate
+                        }}
+                    </clr-control-error>
+                </div>
+            </div>
         </form>
     </div>
     <div class="modal-footer">
