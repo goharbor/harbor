@@ -13,7 +13,7 @@ jobs:
     env:
         BUILD_PACKAGE: true
     runs-on:
-      - ubuntu-22.04
+      - oracle-vm-24cpu-96gb-x86-64
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.0.0
