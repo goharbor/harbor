@@ -109,4 +109,4 @@ cosign verify-blob \
 
 ---
 
-**Applies to:** Harbor v2.14.0 and later
+**Applies to:** Harbor v2.15.0 and later
