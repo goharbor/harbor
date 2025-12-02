@@ -140,5 +140,3 @@ This project uses open source components which have additional licensing terms. 
 ## Fossa Status
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_large)
-
-
