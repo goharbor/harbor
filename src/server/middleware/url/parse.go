@@ -17,6 +17,7 @@ package url
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
@@ -32,6 +33,20 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 				lib_http.SendError(w, errors.New(err).WithCode(errors.BadRequestCode))
 				return
 			}
+			raw := r.URL.RawQuery
+			// remove null bytes from raw query
+			if strings.Contains(raw, "%00") {
+				// Remove null bytes
+				cleaned := strings.ReplaceAll(raw, "%00", "")
+				// Update the RawQuery
+				r.URL.RawQuery = cleaned
+				// Also update RequestURI if needed (some frameworks use it)
+				r.RequestURI = r.URL.Path
+				if cleaned != "" {
+					r.RequestURI += "?" + cleaned
+				}
+			}
+
 		}
 		next.ServeHTTP(w, r)
 	}, skippers...)
