@@ -1,6 +1,6 @@
 # Harbor Release Signature Verification
 
-> **Note:** Signature verification is available starting with Harbor v2.14.0. Earlier releases are not signed.
+> **Note:** Signature verification is available starting with Harbor v2.15.0. Earlier releases are not signed.
 
 ## Table of Contents
 - [Overview](#overview)
@@ -13,13 +13,13 @@
 
 ## Overview
 
-Harbor release artifacts (installers) are cryptographically signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with keyless signing. This allows you to verify that downloads are authentic and unmodified [[4](https://docs.streamsets.com/platform-datacollector/latest/datacollector/UserGuide/Data_Formats/WholeFile.html)].
+Harbor release artifacts (installers) are cryptographically signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with keyless signing. This allows you to verify that downloads are authentic and unmodified.
 
 ## Why Verify
 
-✅ Confirms the file came from Harbor's official build  
-✅ Detects any modifications or tampering  
-✅ Protects against malicious downloads
+* Confirms the file came from Harbor's official build  
+* Detects any modifications or tampering  
+* Protects against malicious downloads
 
 ## Prerequisites
 
@@ -44,18 +44,18 @@ cosign version
 
 ### 1. Download Files
 ```bash
-# Download installer and signature bundle (example v2.14.0)
-wget https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-offline-installer-v2.14.0.tgz
-wget https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-offline-installer-v2.14.0.tgz.bundle
+# Download installer and signature bundle (example v2.15.0)
+wget https://github.com/goharbor/harbor/releases/download/v2.15.0/harbor-offline-installer-v2.15.0.tgz
+wget https://github.com/goharbor/harbor/releases/download/v2.15.0/harbor-offline-installer-v2.15.0.tgz.bundle
 ```
 
 ### 2. Verify Signature
 ```bash
 cosign verify-blob \
-  --bundle harbor-offline-installer-v2.14.0.tgz.bundle \
+  --bundle harbor-offline-installer-v2.15.0.tgz.bundle \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/build-package.yml@refs/(heads/main|tags/v.*)$' \
-  harbor-offline-installer-v2.14.0.tgz
+  harbor-offline-installer-v2.15.0.tgz
 ```
 
 **Expected output:**
@@ -64,17 +64,15 @@ Verified OK
 ```
 
 ### 3. For Online Installer
-
-Same process, just replace `offline` with `online`:
 ```bash
-wget https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-online-installer-v2.14.0.tgz
-wget https://github.com/goharbor/harbor/releases/download/v2.14.0/harbor-online-installer-v2.14.0.tgz.bundle
+wget https://github.com/goharbor/harbor/releases/download/v2.15.0/harbor-online-installer-v2.15.0.tgz
+wget https://github.com/goharbor/harbor/releases/download/v2.15.0/harbor-online-installer-v2.15.0.tgz.bundle
 
 cosign verify-blob \
-  --bundle harbor-online-installer-v2.14.0.tgz.bundle \
+  --bundle harbor-online-installer-v2.15.0.tgz.bundle \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/build-package.yml@refs/(heads/main|tags/v.*)$' \
-  harbor-online-installer-v2.14.0.tgz
+  harbor-online-installer-v2.15.0.tgz
 ```
 
 ## Troubleshooting
@@ -97,14 +95,13 @@ cosign verify-blob \
 
 ## What Gets Verified
 
-✅ **File authenticity** - Signed by official Harbor CI/CD workflow  
-✅ **File integrity** - No modifications since signing  
-✅ **Build provenance** - Logged in public Sigstore transparency log
+- **File authenticity** - Signed by official Harbor CI/CD workflow  
+- **File integrity** - No modifications since signing  
+- **Build provenance** - Logged in public Sigstore transparency log
 
 ## Resources
 
 - [Cosign Documentation](https://docs.sigstore.dev/)
-- [Harbor Issue #22367](https://github.com/goharbor/harbor/isshttps://www.appvia.io/blog/tutorial-keyless-sign-and-verify-your-container-images)
 - [Harbor Releases](https://github.com/goharbor/harbor/releases)
 
 ---
