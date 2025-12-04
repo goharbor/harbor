@@ -72,7 +72,10 @@ TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
 PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
-
+ARCH ?= $(shell uname -m)
+ifeq ($(ARCH), aarch64)
+  ARCH := arm64
+endif
 # parameters
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
@@ -122,9 +125,15 @@ DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
 # dependency binaries
 REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
-TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
-TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
+ifeq ($(ARCH), arm64)
+   TRIVY_DOWNLOAD_URL = https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-ARM64.tar.gz
 
+else
+   TRIVY_DOWNLOAD_URL = https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
+
+endif
+
+TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
 REGISTRY_VERSION: $(REGISTRYVERSION)
@@ -407,7 +416,8 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
+	 -e ARCH=$(ARCH)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)

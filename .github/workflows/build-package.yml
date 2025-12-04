@@ -10,10 +10,14 @@ on:
 
 jobs:
   BUILD_PACKAGE:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
     env:
-        BUILD_PACKAGE: true
-    runs-on:
-      - oracle-vm-24cpu-96gb-x86-64
+      BUILD_PACKAGE: true
+      ARCH: ${{ matrix.arch }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'oracle-vm-24cpu-96gb-x86-64' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.0.0
@@ -21,16 +25,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Set up Go 1.22
+
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
         id: go
+
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
           docker_version: 20.10
           docker_channel: stable
+
       - uses: actions/checkout@v5
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
@@ -40,15 +47,16 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
+
       - name: Build Base Image
         if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
+          contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+          contains(steps.changed-files.outputs.modified, 'VERSION') ||
+          contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+          github.ref == 'refs/heads/main'
         run: |
-          set -x
           echo "BUILD_BASE=true" >> $GITHUB_ENV
+
       - name: Build Package
         run: |
           set -x
@@ -62,7 +70,6 @@ jobs:
           harbor_builds_bucket="harbor-builds"
           harbor_releases_bucket="harbor-releases"
           harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
-          # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
 
@@ -82,25 +89,126 @@ jobs:
 
           build_base_params=" BUILD_BASE=false"
           cd src/github.com/goharbor/harbor
-          if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
-            echo "Do not need to build base images!"
-          else
+          if [ -n "$BUILD_BASE" ] && [ "$BUILD_BASE" = "true" ]; then
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+          else
+            echo "Do not need to build base images!"
           fi
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+
+          # Build per-arch
+          sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" \
+            BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} \
+            PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" \
+            BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} \
+            PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+
+          # Add arch suffix to artifacts
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
-          echo "Package name is: $harbor_offline_build_bundle"
-          echo "Package name is: $harbor_online_build_bundle"
+          mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          mv "${harbor_online_build_bundle}"  "harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          harbor_offline_build_bundle="harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          harbor_online_build_bundle="harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+
+          echo "Package (offline): $harbor_offline_build_bundle"
+          echo "Package (online) : $harbor_online_build_bundle"
 
           source tests/ci/build_util.sh
-          cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
-          cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
-          uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
-          uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
-          echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
+          cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest-${ARCH}.tgz"
+          cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest-${ARCH}.tgz"
 
-          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          uploader "${harbor_offline_build_bundle}"         $harbor_target_bucket
+          uploader "${harbor_online_build_bundle}"          $harbor_target_bucket
+          uploader "harbor-offline-installer-latest-${ARCH}.tgz" $harbor_target_bucket
+          uploader "harbor-online-installer-latest-${ARCH}.tgz"  $harbor_target_bucket
+
+          echo "BUILD_BUNDLE_${ARCH}=${harbor_offline_build_bundle}" >> $GITHUB_ENV
+
+          # Publish images for both amd64 and arm64
+          publishImage $target_branch ${Harbor_Assets_Version} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+      - name: Save repo list for this arch
+        run: |
+          set -e
+          source tests/ci/build_util.sh
+          source_file="$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          saveRepoList "$source_file"
+
+      - name: Upload repo list artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repos-${{ matrix.arch }}
+          path: ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
+          retention-days: 7
+  
+  CREATE_MANIFEST:
+    needs: [BUILD_PACKAGE]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Docker
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_version: 20.10
+          docker_channel: stable
+
+      - name: Checkout repo (for VERSION file)
+        uses: actions/checkout@v5
+
+      - name: Download repo lists
+        uses: actions/download-artifact@v4
+        with:
+          name: repos-amd64
+          path: .
+      - name: Download repo lists (arm64)
+        uses: actions/download-artifact@v4
+        with:
+          name: repos-arm64
+          path: .
+
+      - name: Merge repo lists
+        id: repos
+        run: |
+          set -e
+          cat _repos_amd64.txt _repos_arm64.txt | sort -u > _repos_all.txt
+          echo "count=$(wc -l < _repos_all.txt)" >> $GITHUB_OUTPUT
+          echo "---- repos to manifest ----"
+          cat _repos_all.txt
+
+      - name: Login to Docker Hub
+        run: |
+          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+
+      - name: Create multi-arch manifests
+        run: |
+          set -euo pipefail
+
+          branch="${GITHUB_REF#refs/heads/}"
+          version="$(cat VERSION)"
+          if [[ "$branch" == "main" ]]; then
+            image_tag="dev"
+          elif [[ "$branch" == release-* ]]; then
+            image_tag="${version}-dev"
+          else
+            image_tag="${version}"
+          fi
+
+          echo "Creating multi-arch manifests for tag: ${image_tag}"
+
+          # Ensure buildx imagetools is ready (usually is via the action)
+          docker buildx version || true
+
+          while IFS= read -r repo; do
+            # Only manifest if both arch tags exist in the registry
+            if docker buildx imagetools inspect "${repo}:${image_tag}-amd64" >/dev/null 2>&1 \
+            && docker buildx imagetools inspect "${repo}:${image_tag}-arm64" >/dev/null 2>&1; then
+              echo "→ ${repo}:${image_tag}"
+              docker buildx imagetools create \
+                -t "${repo}:${image_tag}" \
+                "${repo}:${image_tag}-amd64" \
+                "${repo}:${image_tag}-arm64"
+            else
+              echo "SKIP ${repo}:${image_tag} (missing one of: -amd64 / -arm64)"
+            fi
+          done < _repos_all.txt
+
+          docker logout

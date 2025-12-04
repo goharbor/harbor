@@ -10,6 +10,7 @@ jobs:
     runs-on: oracle-vm-24cpu-96gb-x86-64
     steps:
       - uses: actions/checkout@v5
+
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
@@ -19,66 +20,133 @@ jobs:
           echo "PRE_TAG=$(echo $release | jq -r '.body' | jq -r '.preTag')" >> $GITHUB_ENV
           echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.0.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Prepare Assets
+
+      - name: Prepare Assets (amd64 + arm64)
         run: |
-          if [ ! ${{ env.BUILD_NO }} -o ${{ env.BUILD_NO }} = "null" ]
-          then
-              echo "missing required parameter buildNo."
-              exit 1
+          if [ -z "${{ env.BUILD_NO }}" ] || [ "${{ env.BUILD_NO }}" = "null" ]; then
+            echo "missing required parameter buildNo."; exit 1
           fi
           echo "buildNo:${{ env.BUILD_NO }}"
           echo "preTag:${{ env.PRE_TAG }}"
 
-          src_offline_package=harbor-offline-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
-          src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
-          dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
-          dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
-          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
-          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
+          base=${{ env.BASE_TAG }}
+          cur=${{ env.CUR_TAG }}
+          branch=${{ env.BRANCH }}
+          bucket=${{ secrets.HARBOR_RELEASE_BUILD }}
+
+          # Source names produced by build-package (per-arch)
+          src_offline_amd64="harbor-offline-installer-${base}-${{ env.BUILD_NO }}-amd64.tgz"
+          src_online_amd64="harbor-online-installer-${base}-${{ env.BUILD_NO }}-amd64.tgz"
+          src_offline_arm64="harbor-offline-installer-${base}-${{ env.BUILD_NO }}-arm64.tgz"
+          src_online_arm64="harbor-online-installer-${base}-${{ env.BUILD_NO }}-arm64.tgz"
+
+          # Destination names attached to GitHub release
+          dst_offline_amd64="harbor-offline-installer-${cur}-amd64.tgz"
+          dst_online_amd64="harbor-online-installer-${cur}-amd64.tgz"
+          dst_offline_arm64="harbor-offline-installer-${cur}-arm64.tgz"
+          dst_online_arm64="harbor-online-installer-${cur}-arm64.tgz"
+
+          # Copy/rename in S3
+          aws s3 cp s3://$bucket/$branch/$src_offline_amd64 s3://$bucket/$branch/$dst_offline_amd64
+          aws s3 cp s3://$bucket/$branch/$src_online_amd64  s3://$bucket/$branch/$dst_online_amd64
+          aws s3 cp s3://$bucket/$branch/$src_offline_arm64 s3://$bucket/$branch/$dst_offline_arm64
+          aws s3 cp s3://$bucket/$branch/$src_online_arm64  s3://$bucket/$branch/$dst_online_arm64
 
           assets_path=$(pwd)/assets
-          source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} $dst_offline_package $dst_online_package ${{ env.PRERELEASE }} $assets_path
-          echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
-          echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
+          mkdir -p "$assets_path"
+          source tools/release/release_utils.sh
+
+          # Pull down both arch sets into ./assets and generate md5s
+          getAssets $bucket $branch $dst_offline_amd64 $dst_online_amd64 ${{ env.PRERELEASE }} $assets_path
+          getAssets $bucket $branch $dst_offline_arm64 $dst_online_arm64 ${{ env.PRERELEASE }} $assets_path
+
+          echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
+          # Back-compat (points to amd64)
+          echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_amd64" >> $GITHUB_ENV
+          echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_amd64" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
+
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
           docker_version: 20.10
           docker_channel: stable
-      - name: Publish Images
+
+      - name: Publish Images (amd64 + arm64)
         run: |
-          tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
-          docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
-          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
-          source tools/release/release_utils.sh
-          publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
-          publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
+          set -euo pipefail
+          base=${{ env.BASE_TAG }}
+          cur=${{ env.CUR_TAG }}
+          : > "$GITHUB_WORKSPACE/_images_all.txt"
+
+          for arch in amd64 arm64; do
+            export ARCH="$arch"
+            pkg="$PWD/assets/harbor-offline-installer-${cur}-${arch}.tgz"
+            echo "Processing $pkg"
+            tar -zxf "$pkg"
+            docker load -i ./harbor/harbor.${base}.tar.gz
+            images="$(docker images --format "{{.Repository}}" --filter=reference="goharbor/*:${base}" | xargs)"
+            # keep a union of repo names for the manifest step
+            echo "$images" | tr ' ' '\n' >> "$GITHUB_WORKSPACE/_images_all.txt"
+            source tools/release/release_utils.sh
+            publishImages   "$cur" "$base" "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
+            publishPackages "$cur" "$base" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}" $images
+            rm -rf harbor
+          done
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      - name: Create multi-arch manifests (Docker Hub)
+        run: |
+          set -euo pipefail
+          cur=${{ env.CUR_TAG }}
+          # unique repo list
+          mapfile -t repos < <(sort -u "$GITHUB_WORKSPACE/_images_all.txt")
+          echo "Repos to manifest: ${#repos[@]}"
+          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          for repo in "${repos[@]}"; do
+            echo "Creating manifest ${repo}:${cur} (amd64+arm64)"
+            docker buildx imagetools create \
+              -t ${repo}:${cur} \
+              ${repo}:${cur}-amd64 \
+              ${repo}:${cur}-arm64
+          done
+          docker logout
+
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt
           source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
           echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
+
       - name: RC Release
         uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'true' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
-            ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.MD5SUM_PATH }}
+            ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-amd64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz
+            ${{ env.ASSETS_DIR }}/md5sum
+
       - name: GA Release
         uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'false' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
-            ${{ env.OFFLINE_PACKAGE_PATH }}
-            ${{ env.ONLINE_PACKAGE_PATH }}
-            ${{ env.MD5SUM_PATH }}
+            ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-amd64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-amd64.tgz
+            ${{ env.ASSETS_DIR }}/harbor-online-installer-*-arm64.tgz
+            ${{ env.ASSETS_DIR }}/md5sum
