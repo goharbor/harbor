@@ -147,15 +147,15 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_429ToLocal() {
 	p.Assert().True(result)
 }
 
-func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_False() {
+func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_True() {
 	ctx := context.Background()
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
 	desc := &distribution.Descriptor{}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, nil)
 	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
-	p.Assert().True(errors.IsNotFoundErr(err))
-	p.Assert().False(result)
+	p.Assert().Nil(err)
+	p.Assert().True(result)
 }
 
 func (p *proxyControllerTestSuite) TestUseLocalBlob_True() {
