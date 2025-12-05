@@ -55,7 +55,7 @@ jobs:
         with:
            go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
          path: src/github.com/goharbor/harbor
       - name: setup env
@@ -116,7 +116,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -177,7 +177,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -238,7 +238,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -297,7 +297,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -347,7 +347,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '18'
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: script
