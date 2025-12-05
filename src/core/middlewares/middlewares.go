@@ -31,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
-	"github.com/goharbor/harbor/src/server/middleware/validate"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
 	"github.com/goharbor/harbor/src/server/middleware/trace"
@@ -88,7 +87,6 @@ func MiddleWares() []web.MiddleWare {
 	return []web.MiddleWare{
 		url.Middleware(),
 		mergeslash.Middleware(),
-		validate.Middleware(), // validate query params, reject null bytes and invalid UTF-8
 		trace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
