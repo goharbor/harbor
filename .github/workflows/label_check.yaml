@@ -1,7 +1,7 @@
 name: Release Note Label Check
 
 # Trigger the workflow on pull requests only
-on: 
+on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
 
@@ -20,4 +20,5 @@ jobs:
         with:
           mode: minimum
           count: 1
-          labels: "release-note/ignore-for-release, release-note/new-feature, release-note/update, release-note/enhancement, release-note/community, release-note/breaking-change, release-note/docs, release-note/infra, release-note/deprecation"
+          labels: "release-note/.*"
+          use_regex: true

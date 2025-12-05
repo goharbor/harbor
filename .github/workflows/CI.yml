@@ -27,7 +27,7 @@ on:
       - '!tests/ci/**'
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
-      - '!tests/robot-cases/Group1-Nightly/**'      
+      - '!tests/robot-cases/Group1-Nightly/**'
   push:
     # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
@@ -47,7 +47,7 @@ jobs:
        UTTEST: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -108,7 +108,7 @@ jobs:
       APITEST_DB: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -168,7 +168,7 @@ jobs:
       APITEST_DB: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -228,7 +228,7 @@ jobs:
       APITEST_LDAP: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -286,7 +286,7 @@ jobs:
       OFFLINE: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -338,7 +338,7 @@ jobs:
       UI_UT: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - uses: actions/setup-node@v5
