@@ -41,7 +41,7 @@ var (
 
 	// cosign media type  in config layer, which would support in oci-spec1.1
 	mediaTypeCosignConfig = "application/vnd.dev.cosign.artifact.sig.v1+json"
-    // sigstore bundle media type (New Format)
+	// sigstore bundle media type (New Format)
 	mediaTypeCosignBundle = "application/vnd.dev.sigstore.bundle.v0.3+json"
 
 	// annotation of nydus image
