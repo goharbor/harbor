@@ -60,3 +60,11 @@ src/server/v2.0/restapi/
 harborclient/
 openapi-generator-cli.jar
 tests/e2e_setup/robotvars.py
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
