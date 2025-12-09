@@ -15,8 +15,10 @@ parser.add_argument('--version', '-v', dest='version', required=False, help='The
 parser.add_argument('--libpath', '-l', dest='libpath', required=False, help='e2e library')
 parser.add_argument('--src-registry', '-g', dest='LOCAL_REGISTRY', required=False, help='Sample images registry')
 parser.add_argument('--src-repo', '-p', dest='LOCAL_REGISTRY_NAMESPACE', required=False, help='Sample images repo')
+parser.add_argument('--skip-proxycache', '-s', dest='skip_proxycache', action='store_true', help='Skip proxy cache project population')
 
 args = parser.parse_args()
+print("skip_proxycache:", args.skip_proxycache)
 
 from os import path
 sys.path.append(args.libpath)
@@ -116,7 +118,7 @@ class HarborAPI:
             request(url+"projects", 'post', **body)
 
             #Project with registry_name is a proxy project, there should be images can be pulled.
-            if project.get("registry_name") is not None:
+            if args.skip_proxycache == False and project.get("registry_name") is not None:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
                 for _repo in project["repo"]:
