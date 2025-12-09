@@ -1,8 +1,11 @@
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
+import * as dotenv from 'dotenv';
 
 const reporter = process.env.PLAYWRIGHT_REPORTER?.trim();
 const htmlReporter: ReporterDescription[] = [['html', { open: 'never' }]];
 const defaultReporters: ReporterDescription[] = [['list'], ...htmlReporter];
+
+dotenv.config();
 
 export default defineConfig({
     testDir: './e2e',
