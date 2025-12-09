@@ -46,6 +46,7 @@ const (
 	TopicQuotaWarning      = "QUOTA_WARNING"
 	TopicQuotaExceed       = "QUOTA_EXCEED"
 	TopicReplication       = "REPLICATION"
+	TopicProxyCache        = "PROXY_CACHE"
 	TopicArtifactLabeled   = "ARTIFACT_LABELED"
 	TopicTagRetention      = "TAG_RETENTION"
 	TopicCreateRobot       = "CREATE_ROBOT"
@@ -450,4 +451,17 @@ func (c *DeleteRobotEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 func (c *DeleteRobotEvent) String() string {
 	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
 		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+type ProxyCacheEvent struct {
+	ProjectID  int64
+	EventType  string
+	Repository string
+	Digest     string
+	Tag        string
+}
+
+func (p *ProxyCacheEvent) String() string {
+	return fmt.Sprintf("Repository-%s Tag-%s Digest-%s",
+		p.Repository, p.Tag, p.Digest)
 }

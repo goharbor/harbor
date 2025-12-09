@@ -45,6 +45,8 @@ func init() {
 	_ = notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
 	_ = notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
 
+	// proxy cache 
+
 	// replication
 	_ = notifier.Subscribe(event.TopicPushArtifact, &replication.Handler{})
 	_ = notifier.Subscribe(event.TopicDeleteArtifact, &replication.Handler{})
