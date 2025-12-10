@@ -148,3 +148,36 @@ test('create projects with different storage quotas', async ({ harborPage }) => 
     await harborPage.getByRole('link', { name: 'Projects' }).click();
   }
 });
+
+test('delete a project', async ({ harborPage }) => {
+  const projectName = `project_to_delete_${Date.now()}`;
+  
+  // Create a new project first
+  await harborPage.getByRole('button', { name: 'New Project' }).click();
+  const modal = harborPage.getByLabel('New Project');
+  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
+  await modal.getByRole('textbox').first().fill(projectName);
+  const okButton = modal.getByRole('button', { name: 'OK' });
+  await expect(okButton).toBeEnabled();
+  await okButton.click();
+  await harborPage.getByRole('link', { name: projectName }).waitFor({ state: 'visible', timeout: 5000 });
+  
+  // Navigate back to projects list
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  
+  // Select the project by clicking on the row's checkbox label
+  const projectRow = harborPage.getByRole('row', { name: new RegExp(projectName) });
+  await projectRow.locator('label').click();
+  
+  // Click ACTION text/button
+  await harborPage.getByText('ACTION').click();
+  
+  // Click Delete button
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  
+  // Confirm deletion by clicking DELETE button
+  await harborPage.getByRole('button', { name: 'DELETE' }).click();
+  
+  // Verify project was deleted - should not appear in the list
+  await expect(harborPage.getByRole('link', { name: projectName })).not.toBeVisible({ timeout: 5000 });
+});
