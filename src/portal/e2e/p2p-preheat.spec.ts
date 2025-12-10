@@ -64,9 +64,9 @@ test('Distribution CRUD', async ({ page }) => {
     // Login
     await page.goto('/');
     await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Username' }).fill(user);
     await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Password' }).fill(pwd);
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
     // Navigate to Distributions
@@ -119,8 +119,8 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
 
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Username' }).fill(user);
+    await page.getByRole('textbox', { name: 'Password' }).fill(pwd);
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
     // Create Distribution
@@ -216,8 +216,8 @@ test('P2P Preheat By Manual', async ({ page }) => {
 
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Username' }).fill(user);
+    await page.getByRole('textbox', { name: 'Password' }).fill(pwd);
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
     // Create Distribution
@@ -260,15 +260,28 @@ test('P2P Preheat By Manual', async ({ page }) => {
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Execute' }).click();
     await page.getByRole('button', { name: 'CONFIRM' }).click();
-    await page.waitForTimeout(5000);
 
-    // Wait for execution to complete and verify
-    await page.locator('.refresh-btn').click();
-    await page.waitForTimeout(3000);
-    await expect(page.getByText('Success')).toBeVisible();
+    // Wait for execution with retries
+    let verified = false;
+    for (let i = 0; i < 10; i++) {
+        await page.waitForTimeout(5000);
+        await page.locator('.refresh-btn').click();
+        await page.waitForTimeout(3000);
+        
+        const successVisible = await page.getByText('Success').isVisible().catch(() => false);
+        if (successVisible) {
+            verified = true;
+            break;
+        }
+    }
+    expect(verified).toBeTruthy();
 
     // Check that the correct image was preheated
     await expect(page.getByText(`${projectName}/${image1}:${tag1}`)).toBeVisible();
+
+    // Verify: Check that other images were NOT preheated
+    await expect(page.getByText(`${projectName}/${image1}:${tag2}`)).not.toBeVisible();
+    await expect(page.getByText(`${projectName}/${image2}:${tag1}`)).not.toBeVisible();
 
     // Cleanup: delete policy
     await page.getByRole('link', { name: 'P2P Preheat' }).click();
@@ -286,7 +299,15 @@ test('P2P Preheat By Manual', async ({ page }) => {
     await page.getByRole('button', { name: 'DELETE' }).click();
     await page.waitForTimeout(2000);
 
+    // Cleanup: delete project
+    await page.getByRole('link', { name: 'Projects' }).click();
+    await page.getByRole('row', { name: new RegExp(projectName) }).locator('label').click();
+    await page.getByRole('button', { name: 'ACTION' }).click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'DELETE' }).click();
+    await page.waitForTimeout(2000);
+
     // Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: user, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 });
