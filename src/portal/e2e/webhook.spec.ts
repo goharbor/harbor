@@ -417,7 +417,7 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         await harborPage
             .locator('.execution-select > .refresh-btn > clr-icon')
             .click();
-            
+
         await expect(
             harborPage.getByRole('gridcell', { name: 'Succeeded' }).first()
         ).toBeVisible();
@@ -493,7 +493,7 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
             harborPage.getByRole('gridcell', {
                 name: 'Replication status changed',
                 exact: true,
-            })
+            }).first()
         ).toBeVisible();
         // Verify webhook payload on webhook server
         await webhookPage.bringToFront();
