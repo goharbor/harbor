@@ -39,7 +39,7 @@ const project: string = 'aproject-'+ Date.now();
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
     await page.getByRole('button', { name: 'LOG IN' }).click();
-    
+
   // create project
   await page.getByRole('button', { name: 'New Project' }).click();
   await page.locator('#create_project_name').click();
@@ -49,7 +49,7 @@ const project: string = 'aproject-'+ Date.now();
 for (const image of images) {
 
   pushImageWithTag(ip, user, pwd, project, image, tag, tag);
-  
+
   // go into project repo page to verify the image is there.
   await page.getByRole('link', { name: project }).click();
   await page.getByRole('link', { name: project + '/' + image }).click();
@@ -79,7 +79,7 @@ const command = `./e2e/scripts/docker_push_manifest_list.sh \
   "${ip}/${project}/${index_repo}:${tag}" \
   "${ip}/${project}/${images[0]}:${tag}" \
   "${ip}/${project}/${images[1]}:${tag}"`;
-  
+
   const output = runCommand(command);
 
   expect(output).not.toContain('Error');
@@ -173,12 +173,12 @@ for (const cve of dangerousCVEs) {
 
 // check the quick search
   // select the first repo name on the right side - dangerous artifacts
-  await page.locator('app-vulnerability-summary').getByRole('link', { name: summary.dangerous_cves[0].repository_name }).first().click(); 
+  await page.locator('app-vulnerability-summary').getByRole('link', { name: summary.dangerous_cves[0].repository_name }).first().click();
   // check if the below element got the right repo and digest
   console.log('Checking quick search values for repo:', dangerousCVEs[0].repository_name);
   console.log('Checking quick search values for repo:', summary.dangerous_cves[0].repository_name);
   console.log('checking value of dangerous arts:', summary.dangerous_artifacts[0].repository_name);
-  
+
   await expect(page.locator('app-vulnerability-filter form div').filter({ hasText: 'Filter by All Repository Name' }).getByRole('textbox')).toHaveValue(summary.dangerous_artifacts[0].repository_name);
   await expect(page.getByRole('textbox').nth(2)).toHaveValue(summary.dangerous_artifacts[0].digest);
   // check if the table shows the right info
@@ -397,7 +397,7 @@ for (const cve of dangerousCVEs) {
   // await expect(page.locator('#clr-dg-expandable-row-281')).toContainText('Description: libcurl-using applications can ask for a specific client certificate to be used in a transfer');
   // await page.getByRole('gridcell', { name: 'Close' }).click();
   await expect(page.locator('clr-datagrid')).toContainText(cve_description);
-  
+
 // do page jump test
   // await page.getByRole('link', { name: 'Projects' }).click();
   // await page.getByRole('link', { name: 'Interrogation Services' }).click();
