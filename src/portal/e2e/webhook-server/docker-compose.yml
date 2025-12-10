@@ -1,0 +1,62 @@
+# Webhook Server for Harbor E2E Tests
+#
+# This Docker Compose file sets up a webhook receiver server for testing
+# Harbor webhook functionality. The server captures and displays webhook
+# payloads sent by Harbor.
+#
+# Usage:
+#   Start:  docker compose up -d
+#   Stop:   docker compose down
+#   Logs:   docker compose logs -f webhook
+#
+# Access:
+#   - Web UI: http://localhost:8084
+#   - The webhook endpoint URL will be displayed on the web UI
+#
+# Environment Variable for Tests:
+#   WEBHOOK_ENDPOINT_UI=localhost:8084
+#
+services:
+  webhook:
+    container_name: "webhook-site"
+    image: "webhooksite/webhook.site"
+    command: php artisan queue:work --daemon --tries=3 --timeout=10
+    ports:
+      - "8084:80"
+    environment:
+      - APP_ENV=dev
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8084
+      - APP_LOG=errorlog
+      - DB_CONNECTION=sqlite
+      - REDIS_HOST=redis
+      - BROADCAST_DRIVER=redis
+      - CACHE_DRIVER=redis
+      - QUEUE_DRIVER=redis
+      - ECHO_HOST_MODE=path
+    depends_on:
+      - redis
+
+  redis:
+    container_name: "webhook-redis"
+    image: "redis:alpine"
+
+  laravel-echo-server:
+    container_name: "laravel-echo-server"
+    image: "webhooksite/laravel-echo-server"
+    command:
+      - exec
+      - laravel-echo-server
+      - start
+      - --force
+    environment:
+      - LARAVEL_ECHO_SERVER_AUTH_HOST=http://webhook
+      - LARAVEL_ECHO_SERVER_HOST=0.0.0.0
+      - LARAVEL_ECHO_SERVER_PORT=6001
+      - ECHO_REDIS_PORT=6379
+      - ECHO_REDIS_HOSTNAME=redis
+      - ECHO_PROTOCOL=http
+      - ECHO_ALLOW_CORS=true
+      - ECHO_ALLOW_ORIGIN=*
+      - ECHO_ALLOW_METHODS=*
+      - ECHO_ALLOW_HEADERS=*
