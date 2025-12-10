@@ -63,9 +63,7 @@ test('Distribution CRUD', async ({ page }) => {
 
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).click();
     await page.getByRole('textbox', { name: 'Username' }).fill(user);
-    await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill(pwd);
     await page.getByRole('button', { name: 'LOG IN' }).click();
 
@@ -102,7 +100,7 @@ test('Distribution CRUD', async ({ page }) => {
     await expect(page.getByText(name)).not.toBeVisible();
 
     // Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: user, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 });
 
