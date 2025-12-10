@@ -187,7 +187,7 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
     await page.waitForTimeout(2000);
     await expect(page.getByText(policyName)).not.toBeVisible();
 
-    // Now delete distribution
+    // delete distribution
     await page.getByRole('link', { name: 'Distributions' }).click();
     await page.getByRole('row', { name: new RegExp(distName) }).locator('label').click();
     await page.getByRole('button', { name: 'ACTION' }).click();
@@ -196,8 +196,16 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
     await page.waitForTimeout(2000);
     await expect(page.getByText(distName)).not.toBeVisible();
 
+    // Cleanup: delete project
+    await page.getByRole('link', { name: 'Projects' }).click();
+    await page.getByRole('row', { name: new RegExp(projectName) }).locator('label').click();
+    await page.getByRole('button', { name: 'ACTION' }).click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'DELETE' }).click();
+    await page.waitForTimeout(2000);
+
     // Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: user, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 });
 
