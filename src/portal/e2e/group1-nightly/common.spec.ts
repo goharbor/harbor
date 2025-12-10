@@ -181,3 +181,35 @@ test('delete a project', async ({ harborPage }) => {
   // Verify project was deleted - should not appear in the list
   await expect(harborPage.getByRole('link', { name: projectName })).not.toBeVisible({ timeout: 5000 });
 });
+
+test('user view projects', async ({ harborPage }) => {
+  // Create three projects and go into each
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectNames = [
+    `test${dateStr}1`,
+    `test${dateStr}2`,
+    `test${dateStr}3`,
+  ];
+
+  for (const projectName of projectNames) {
+    await harborPage.getByRole('button', { name: 'New Project' }).click();
+    const modal = harborPage.getByLabel('New Project');
+    await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
+    await modal.getByRole('textbox').first().fill(projectName);
+    const okButton = modal.getByRole('button', { name: 'OK' });
+    await expect(okButton).toBeEnabled();
+    await okButton.click();
+    await harborPage.getByRole('link', { name: projectName }).waitFor({ state: 'visible', timeout: 5000 });
+    // Go into the project
+    await harborPage.getByRole('link', { name: projectName }).click();
+    // Go back to projects list for next project
+    await harborPage.getByRole('link', { name: 'Projects' }).click();
+  }
+
+  await harborPage.getByRole('link', { name: 'Logs' }).click();
+  // Wait until page contains all three project names
+  for (const projectName of projectNames) {
+    await expect(harborPage.getByRole('gridcell', { name: projectName, exact: true })).toBeVisible();
+  }
+});
