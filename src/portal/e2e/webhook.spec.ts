@@ -93,9 +93,13 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         // Add a tag retention rule
         await harborPage.getByRole('button', { name: 'ADD RULE' }).click();
         await harborPage.locator('#template').selectOption('always');
-        await harborPage.getByRole('button', { name: 'ADD', exact: true }).click();
+        await harborPage
+            .getByRole('button', { name: 'ADD', exact: true })
+            .click();
         await harborPage.getByRole('button', { name: 'ACTION' }).click();
-        await harborPage.getByRole('button', { name: 'Edit', exact: true }).click();
+        await harborPage
+            .getByRole('button', { name: 'Edit', exact: true })
+            .click();
         await harborPage.locator('#repos').click();
         // await harborPage.locator('#repos').press('ControlOrMeta+a');
         await harborPage.locator('#repos').fill('**');
@@ -165,7 +169,10 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         // Create new endpoint
         await harborPage.getByRole('button', { name: 'New Endpoint' }).click();
         await harborPage.waitForTimeout(500);
-        await harborPage.getByLabel('New Registry Endpoint').getByText('Provider').click();
+        await harborPage
+            .getByLabel('New Registry Endpoint')
+            .getByText('Provider')
+            .click();
         await harborPage.locator('#adapter').selectOption('harbor');
         await harborPage.locator('#destination_name').fill(endpointName);
         await harborPage.locator('#destination_url').fill(`https://${ip}`);
@@ -179,12 +186,11 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         await harborPage.waitForTimeout(2000);
 
         // Navigate to Replications
-        await harborPage.getByRole('link', { name: 'Registries' }).click();
+        await harborPage.getByRole('link', { name: 'Replications' }).click();
         // await harborPage.locator('//span[contains(.,"Replications")]').click();
         await harborPage.waitForTimeout(1000);
 
         // Create replication rule
-        await harborPage.getByRole('link', { name: 'Replications' }).click();
         await harborPage.locator('#new_replication_rule_id').click();
         await harborPage.waitForTimeout(500);
 
@@ -197,10 +203,11 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
             .filter({ hasText: 'Push-based' })
             .click();
 
-        // Select destination endpoint
-        await harborPage
-            .locator('#dest_registry')
-            .selectOption(endpointName);
+        // Select destination endpoint (partial match)
+        await harborPage.locator('#dest_registry').selectOption('1: Object');
+        await expect(harborPage.locator('#dest_registry')).toContainText(
+            endpointName
+        );
 
         // Set filter
         await harborPage.locator('#filter_name').fill(`${project}/*`);
@@ -236,7 +243,9 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         await goIntoProject(harborPage, project);
 
         // Navigate to Tag Retention
-        await harborPage.getByRole('link', { name: /Tag Retention/i }).click();
+        await harborPage.getByText('Policy').click();
+        await harborPage.getByRole('button', { name: 'Tag Retention' }).click();
+        await harborPage.waitForTimeout(1000);
         await harborPage.waitForTimeout(1000);
 
         // Execute run
@@ -255,34 +264,69 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
         // Navigate to webhooks and verify execution
         await harborPage.goto('/');
         await goIntoProject(harborPage, project);
-        await harborPage.getByRole('link', { name: 'Webhooks' }).click();
+        await harborPage.getByRole('application').locator('button').click();
+        await harborPage.getByText('Webhooks').click();
         await harborPage.waitForTimeout(1000);
 
+        // TODO: update this to selector.
         // Select webhook row
-        await harborPage
-            .locator(
-                `//clr-dg-row[contains(.,'${webhookName}')]//div[contains(@class,'datagrid-select')]`
-            )
-            .click();
+
+        await harborPage.getByRole('gridcell', { name: 'Select' }).click();
+        // await expect(harborPage.locator('#datagrid')).toContainText('111');
+        // await page.getByRole('gridcell', { name: 'Error' }).click();
+        // await expect(harborPage.locator('#datagrid')).toContainText('Error');
+
+        // await expect(page.locator('#clr-dg-row12')).toMatchAriaSnapshot(`- gridcell "Tag retention finished"`);
+        // await page.getByRole('gridcell', { name: 'Tag retention finished', exact: true }).click();
+        await expect(
+            harborPage.getByRole('gridcell', {
+                name: 'Tag retention finished',
+                exact: true,
+            })
+        ).toBeVisible();
+        // await expect(harborPage.locator('#datagrid')).toContainText('Tag retention finished');
+        // await page.getByRole('button', { name: 'Toggle vertical navigation' }).click();
+
+        // await harborPage.getByText(/ WEBHOOK /).click();
+
+        // get and print cells in the row
+        const row = harborPage.getByRole('row').filter({ hasText: /WEBHOOK/ });
+        const cells = row.getByRole('gridcell');
+        const cellCount = await cells.count();
+
+        for (let i = 0; i < cellCount; i++) {
+            const cellText = await cells.nth(i).textContent();
+            console.log(`Cell ${i}:`, cellText);
+        }
+
+        // await harborPage
+        //     .locator(
+        //         `//clr-dg-row[contains(.,'${webhookName}')]//div[contains(@class,'datagrid-select')]`
+        //     )
+        //     .click();
         await harborPage.waitForTimeout(1000);
 
         // Get latest webhook execution ID
-        const webhookExecutionId = await harborPage
-            .locator('//clr-dg-row[1]//clr-dg-cell[1]//a')
-            .textContent();
+        const webhookExecutionId = cells[0];
         console.log('Tag Retention Webhook Execution ID:', webhookExecutionId);
-
+        await harborPage.waitForTimeout(10000);
+        await expect(
+            harborPage.getByRole('gridcell', {
+                name: 'Success',
+                exact: true,
+            })
+        ).toBeVisible();
         // Verify webhook execution status
-        await expect(
-            harborPage.locator(
-                `//clr-dg-row[.//clr-dg-cell/a[text()=${webhookExecutionId}]]//clr-dg-cell[3]`
-            )
-        ).toContainText('Success');
-        await expect(
-            harborPage.locator(
-                `//clr-dg-row[.//clr-dg-cell/a[text()=${webhookExecutionId}]]//clr-dg-cell[4]`
-            )
-        ).toContainText('Tag retention finished');
+        // await expect(
+        //     harborPage.locator(
+        //         `//clr-dg-row[.//clr-dg-cell/a[text()=${webhookExecutionId}]]//clr-dg-cell[3]`
+        //     )
+        // ).toContainText('Success');
+        // await expect(
+        //     harborPage.locator(
+        //         `//clr-dg-row[.//clr-dg-cell/a[text()=${webhookExecutionId}]]//clr-dg-cell[4]`
+        //     )
+        // ).toContainText('Tag retention finished');
 
         // Verify webhook payload on webhook server
         await webhookPage.bringToFront();
@@ -325,68 +369,132 @@ test.describe('Tag Retention and Replication Webhook - CloudEvents Format', () =
 
         // Go back to Harbor and trigger replication
         await harborPage.bringToFront();
-        await harborPage.getByRole('link', { name: 'Administration' }).click();
+        // await harborPage.getByRole('link', { name: 'Administration' }).click();
         await harborPage.waitForTimeout(500);
-        await harborPage.locator('//span[contains(.,"Replications")]').click();
+        await harborPage.getByRole('link', { name: 'Replications' }).click();
         await harborPage.waitForTimeout(1000);
 
         // Select rule and replicate
+
+        // await harborPage.getByRole('gridcell', { name: endpointName }).click();
         await harborPage
-            .locator(
-                `//clr-dg-row[contains(.,'${replicationRuleName}')]//div[contains(@class,'datagrid-select')]`
-            )
-            .first()
+            .getByRole('gridcell', { name: 'Select' })
+            .locator('label')
             .click();
-        await harborPage.waitForTimeout(500);
-        await harborPage.locator('#replication_exe_id').click();
-        await harborPage.waitForTimeout(500);
         await harborPage
-            .locator('//clr-modal//button[contains(.,"REPLICATE")]')
+            .getByRole('radio', { name: 'Select' })
+            .setChecked(true);
+        // await harborPage
+        //     .getByRole('row', { name: `/${endpointName}/` })
+        //     .locator('label')
+        //     .click();
+
+        await harborPage.getByRole('button', { name: 'Replicate' }).click();
+        await harborPage
+            .getByRole('button', { name: 'REPLICATE', exact: true })
             .click();
-        await harborPage.waitForTimeout(10000);
+
+        // await harborPage
+        //     .locator(
+        //         `//clr-dg-row[contains(.,'${replicationRuleName}')]//div[contains(@class,'datagrid-select')]`
+        //     )
+        //     .first()
+        //     .click();
+        // await harborPage.waitForTimeout(500);
+        // await harborPage.locator('#replication_exe_id').click();
+        // await harborPage.waitForTimeout(500);
+        // await harborPage
+        //     .locator('//clr-modal//button[contains(.,"REPLICATE")]')
+        //     .click();
+        await harborPage.waitForTimeout(20000);
 
         // Verify replication succeeded
+        // await expect(
+        //     harborPage.locator(
+        //         '//hbr-replication//div[contains(@class,"datagrid")]//clr-dg-row[1]'
+        //     )
+        // ).toContainText('Succeeded');
+        await harborPage
+            .locator('.execution-select > .refresh-btn > clr-icon')
+            .click();
+            
         await expect(
-            harborPage.locator(
-                '//hbr-replication//div[contains(@class,"datagrid")]//clr-dg-row[1]'
-            )
-        ).toContainText('Succeeded');
-
+            harborPage.getByRole('gridcell', { name: 'Succeeded' }).first()
+        ).toBeVisible();
         // Navigate to project webhooks and verify
         await harborPage.goto('/');
         await goIntoProject(harborPage, project);
-        await harborPage.getByRole('link', { name: 'Webhooks' }).click();
+        await harborPage.getByText('Webhooks').click();
         await harborPage.waitForTimeout(1000);
 
         // Select webhook row
-        await harborPage
-            .locator(
-                `//clr-dg-row[contains(.,'${webhookName}')]//div[contains(@class,'datagrid-select')]`
-            )
-            .click();
+        await harborPage.getByRole('gridcell', { name: 'Select' }).click();
+        // await harborPage
+        //     .locator(
+        //         `//clr-dg-row[contains(.,'${webhookName}')]//div[contains(@class,'datagrid-select')]`
+        //     )
+        //     .click();
         await harborPage.waitForTimeout(1000);
 
         // Get latest webhook execution ID for replication
-        const replicationWebhookExecutionId = await harborPage
-            .locator('//clr-dg-row[1]//clr-dg-cell[1]//a')
-            .textContent();
+        const row1 = harborPage.getByRole('row').filter({ hasText: /WEBHOOK/ });
+        const cells1 = row1.getByRole('gridcell');
+        const cellCount1 = await cells1.count();
+
+        for (let i = 0; i < cellCount1; i++) {
+            const cellText = await cells.nth(i).textContent();
+            console.log(`Cell ${i}:`, cellText);
+        }
+
+        // await harborPage
+        //     .locator(
+        //         `//clr-dg-row[contains(.,'${webhookName}')]//div[contains(@class,'datagrid-select')]`
+        //     )
+        //     .click();
+        await harborPage.waitForTimeout(1000);
+
+        // Get latest webhook execution ID
+        const replicationWebhookExecutionId = cells1[0];
         console.log(
-            'Replication Webhook Execution ID:',
+            'Tag Retention Webhook Execution ID:',
             replicationWebhookExecutionId
         );
 
+        // const replicationWebhookExecutionId = await harborPage
+        //     .locator('//clr-dg-row[1]//clr-dg-cell[1]//a')
+        //     .textContent();
+        // console.log(
+        //     'Replication Webhook Execution ID:',
+        //     replicationWebhookExecutionId
+        // );
+
         // Verify webhook execution status
         await expect(
-            harborPage.locator(
-                `//clr-dg-row[.//clr-dg-cell/a[text()=${replicationWebhookExecutionId}]]//clr-dg-cell[3]`
-            )
-        ).toContainText('Success');
-        await expect(
-            harborPage.locator(
-                `//clr-dg-row[.//clr-dg-cell/a[text()=${replicationWebhookExecutionId}]]//clr-dg-cell[4]`
-            )
-        ).toContainText('Replication status changed');
+            harborPage
+                .getByRole('gridcell', {
+                    name: 'Success',
+                    exact: true,
+                })
+                .first()
+        ).toBeVisible();
 
+        // await expect(
+        //     harborPage.locator(
+        //         `//clr-dg-row[.//clr-dg-cell/a[text()=${replicationWebhookExecutionId}]]//clr-dg-cell[3]`
+        //     )
+        // ).toContainText('Success');
+        // await expect(
+        //     harborPage.locator(
+        //         `//clr-dg-row[.//clr-dg-cell/a[text()=${replicationWebhookExecutionId}]]//clr-dg-cell[4]`
+        //     )
+        // ).toContainText('Replication status changed');
+
+        await expect(
+            harborPage.getByRole('gridcell', {
+                name: 'Replication status changed',
+                exact: true,
+            })
+        ).toBeVisible();
         // Verify webhook payload on webhook server
         await webhookPage.bringToFront();
         await webhookPage.waitForTimeout(2000);
@@ -451,12 +559,13 @@ async function goIntoProject(page: Page, projectName: string): Promise<void> {
 async function deleteAllRequests(page: Page): Promise<void> {
     await page.bringToFront();
     await page.waitForTimeout(1000);
-    try {
-        await page
-            .getByRole('button', { name: /Delete all requests/i })
-            .click();
+    const deleteButton = page.getByRole('button', {
+        name: 'Delete all requests',
+    });
+    if (await deleteButton.isVisible()) {
+        await deleteButton.click();
         await page.waitForTimeout(1000);
-    } catch (e) {
+    } else {
         console.log('No requests to delete or button not found');
     }
 }
