@@ -68,6 +68,7 @@ $$
                 none_count := 0;
                 low_count := 0;
                 unknown_count := 0;
+                fixable_count := 0;
                 FOR v IN SELECT vr.severity, vr.fixed_version
                          FROM report_vulnerability_record rvr,
                               vulnerability_record vr
@@ -86,7 +87,8 @@ $$
                             none_count = none_count + 1;
                         ELSIF v.severity = 'Unknown' THEN
                             unknown_count = unknown_count + 1;
-                        ELSIF v.fixed_version IS NOT NULL THEN
+                        END IF;
+                        IF v.fixed_version IS NOT NULL THEN
                             fixable_count = fixable_count + 1;
                         END IF;
                     END LOOP;
@@ -95,7 +97,8 @@ $$
                     high_cnt     = high_count,
                     medium_cnt   = medium_count,
                     low_cnt      = low_count,
-                    unknown_cnt  = unknown_count
+                    unknown_cnt  = unknown_count,
+                    fixable_cnt  = fixable_count
                 WHERE uuid = report.uuid;
             END LOOP;
     END
