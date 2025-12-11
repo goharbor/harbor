@@ -41,8 +41,8 @@ var (
 
 	// cosign media type  in config layer, which would support in oci-spec1.1
 	mediaTypeCosignConfig = "application/vnd.dev.cosign.artifact.sig.v1+json"
-	// sigstore bundle media type (New Format)
-	mediaTypeCosignBundle = "application/vnd.dev.sigstore.bundle.v0.3+json"
+	// cosign media type in artifact type (New Format)
+	mediaTypeCosignArtifactType = "application/vnd.dev.sigstore.bundle.v0.3+json"
 
 	// annotation of nydus image
 	layerAnnotationNydusBootstrap = "containerd.io/snapshot/nydus-bootstrap"
@@ -157,7 +157,7 @@ func Middleware() func(http.Handler) http.Handler {
 				}
 			case mediaTypeNotationLayer:
 				accData.Type = model.TypeNotationSignature
-			case mediaTypeCosignConfig, mediaTypeCosignBundle:
+			case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
 				accData.Type = model.TypeCosignSignature
 			case mediaTypeHarborSBOM:
 				accData.Type = model.TypeHarborSBOM
