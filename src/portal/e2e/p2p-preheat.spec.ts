@@ -14,18 +14,13 @@ const distributionEndpoint: string = process.env.DISTRIBUTION_ENDPOINT || 'https
  * Executes a shell command and returns the output.
  */
 function runCommand(command: string): string {
-    console.log(`\n$ ${command}`);
     try {
         const output = execSync(command, {
             encoding: 'utf-8',
             stdio: ['pipe', 'pipe', 'pipe'],
         });
-        console.log('✅ Command output:\n', output.trim());
         return output.trim();
     } catch (error: any) {
-        console.error(`❌ Command failed: ${command}`);
-        console.error('--- STDOUT ---\n', error.stdout?.toString()?.trim() || '');
-        console.error('--- STDERR ---\n', error.stderr?.toString()?.trim() || '');
         throw error;
     }
 }

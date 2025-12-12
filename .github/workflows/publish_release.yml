@@ -9,7 +9,7 @@ jobs:
   release:
     runs-on: oracle-vm-24cpu-96gb-x86-64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v5
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
