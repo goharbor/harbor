@@ -37,8 +37,6 @@ function pushImageWithTag(
     tag: string,
     tag1: string = 'latest'
 ): void {
-    console.log(`\n🚀 Running docker push for ${image}...`);
-
     const sourceImage = `${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}`;
     const targetImage = `${ip}/${project}/${image}:${tag}`;
 
