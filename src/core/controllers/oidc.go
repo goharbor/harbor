@@ -78,6 +78,22 @@ func (oc *OIDCController) RedirectLogin() {
 		oc.SendInternalServerError(err)
 		return
 	}
+	
+	// Check if auto_login is enabled and add prompt=none for silent authentication
+	oidcSettings, err := config.OIDCSetting(oc.Context())
+	if err != nil {
+		log.Errorf("failed to get OIDC settings, error: %v", err)
+		oc.SendInternalServerError(err)
+		return
+	}
+	if oidcSettings.AutoLogin {
+		// Add prompt=none to attempt silent authentication
+		if strings.Contains(url, "?") {
+			url += "&prompt=none"
+		} else {
+			url += "?prompt=none"
+		}
+	}
 	redirectURL := oc.Ctx.Request.URL.Query().Get("redirect_url")
 	if !utils.IsLocalPath(redirectURL) {
 		log.Errorf("invalid redirect url: %v", redirectURL)
