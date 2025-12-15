@@ -10,20 +10,20 @@ type HarborFixtures = {
     harborUser: HarborUser;
 };
 
-async function login(page: Page, baseURL: string | undefined, creds: HarborUser) {
+export async function login(page: Page, baseURL: string | undefined, creds: HarborUser) {
     await page.goto(baseURL);
     await page.getByRole('textbox', { name: 'Username' }).fill(creds.username);
     await page.getByRole('textbox', { name: 'Password' }).fill(creds.password);
     await page.getByRole('button', { name: 'LOG IN' }).click();
 }
 
-async function logout(page: Page, username: string) {
+export async function logout(page: Page, username: string) {
     await page.getByRole('button', { name: username, exact: true }).waitFor({ state: 'visible', timeout: 5000 });
     await page.getByRole('button', { name: username, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 }
 
-async function logoutIfPossible(page: Page, username: string) {
+export async function logoutIfPossible(page: Page, username: string) {
     try {
         await page.getByRole('button', { name: username, exact: true }).waitFor({ state: 'visible', timeout: 2000 });
     } catch {
