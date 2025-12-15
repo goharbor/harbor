@@ -290,3 +290,17 @@ test('project level policy public', async ({ harborPage, harborUser }) => {
     throw new Error(`Timeout waiting for project "${projectName}" to appear in project list`);
   }
 });
+
+test('goto harbor API docs', async ({ harborPage, context }) => {
+  // Navigate to API Docs - this may open in a new tab
+  const [newPage] = await Promise.all([
+    context.waitForEvent('page'),
+    harborPage.getByRole('link', { name: 'Harbor API V2.0' }).click()
+  ]);
+  
+  // Wait for the new page to load
+  await newPage.waitForLoadState();
+  
+  // Wait for API Docs page to load by checking for Swagger UI element
+  await expect(newPage.locator('.swagger-ui')).toBeVisible({ timeout: 10000 });
+});
