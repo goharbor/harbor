@@ -1,3 +1,5 @@
+import { Page, expect } from '@playwright/test';
+
 const { exec } = require('child_process');
 const util = require('util');
 const execAsync = util.promisify(exec);
@@ -76,4 +78,65 @@ export async function pushImageWithTag({
   await runCommand(`docker tag ${localRegistry}/${localRegistryNamespace}/${image}:${tag1} ${ip}/${project}/${image}:${tag}`);
   await runCommand(`docker push ${ip}/${project}/${image}:${tag}`);
   await runCommand(`docker logout ${ip}`);
+}
+
+export async function waitForProjectInList(harborPage: Page, projectName: string, timeout: number = 15000, goto: boolean = false) {
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeout) {
+    // Check if project is visible on current page
+    const projectLink = harborPage.getByRole('link', { name: projectName });
+    if (await projectLink.isVisible()) {
+      if (goto) {
+        await projectLink.click();
+      }
+      return;
+    }
+    
+    // Check if Next Page button is enabled
+    const nextButton = harborPage.getByRole('button', { name: 'Next Page' });
+    const isNextEnabled = await nextButton.isEnabled().catch(() => false);
+    
+    if (isNextEnabled) {
+      // Click next page and wait for content to load
+      await nextButton.click();
+      await harborPage.waitForTimeout(500);
+    } else {
+      // No more pages, wait a bit and check one more time
+      await harborPage.waitForTimeout(500);
+      if (await projectLink.isVisible()) {
+        if (goto) {
+          await projectLink.click();
+        }
+        return;
+      }
+      throw new Error(`Project "${projectName}" not found in project list after checking all pages`);
+    }
+  }
+  
+  throw new Error(`Timeout waiting for project "${projectName}" to appear in project list`);
+}
+
+export async function createProject(harborPage: Page, projectName: string) {
+  // Click on New Project button
+  await harborPage.getByRole('button', { name: 'New Project' }).click();
+  
+  // Wait for modal to appear
+  const modal = harborPage.getByLabel('New Project');
+  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
+  
+  // Fill in the project name
+  await modal.getByRole('textbox').first().fill(projectName);
+  
+  // Wait for OK button to be enabled and click it
+  const okButton = modal.getByRole('button', { name: 'OK' });
+  await okButton.waitFor({ state: 'visible' });
+  await expect(okButton).toBeEnabled();
+  await okButton.click();
+  
+  // Wait for modal to close
+  await modal.waitFor({ state: 'hidden', timeout: 5000 });
+  
+  // Verify project was created by checking if it appears in the project list (with pagination support)
+  await waitForProjectInList(harborPage, projectName);
 }
