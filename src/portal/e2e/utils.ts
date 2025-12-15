@@ -117,7 +117,7 @@ export async function waitForProjectInList(harborPage: Page, projectName: string
   throw new Error(`Timeout waiting for project "${projectName}" to appear in project list`);
 }
 
-export async function createProject(harborPage: Page, projectName: string) {
+export async function createProject(harborPage: Page, projectName: string, goto: boolean = false, isPublic: boolean = false) {
   // Click on New Project button
   await harborPage.getByRole('button', { name: 'New Project' }).click();
   
@@ -127,6 +127,11 @@ export async function createProject(harborPage: Page, projectName: string) {
   
   // Fill in the project name
   await modal.getByRole('textbox').first().fill(projectName);
+
+  if (isPublic) {
+    // Set project as public - check the Public checkbox
+    await modal.getByText('Public').click();
+  }
   
   // Wait for OK button to be enabled and click it
   const okButton = modal.getByRole('button', { name: 'OK' });
@@ -138,5 +143,5 @@ export async function createProject(harborPage: Page, projectName: string) {
   await modal.waitFor({ state: 'hidden', timeout: 5000 });
   
   // Verify project was created by checking if it appears in the project list (with pagination support)
-  await waitForProjectInList(harborPage, projectName);
+  await waitForProjectInList(harborPage, projectName, 15000, goto);
 }
