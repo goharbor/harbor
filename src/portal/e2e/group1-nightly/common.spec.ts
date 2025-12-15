@@ -333,3 +333,41 @@ test('repo size', async ({ harborPage, harborUser }) => {
   // Wait for and verify the repo size is displayed (alpine 2.6 is approximately 3.68MiB)
   await expect(harborPage.getByText(/3\.6[0-9]MiB/)).toBeVisible({ timeout: 10000 });
 });
+
+test('edit token expire', async ({ harborPage, harborUser }) => {
+  // Navigate to Configuration -> System Settings
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  
+  // Modify token expiration to 20 minutes
+  const tokenInput = harborPage.getByRole('spinbutton', { name: 'Token Expiration (Minutes) *' });
+  await tokenInput.fill('20');
+  
+  // Save the configuration
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+  
+  // Logout
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  // Login again to verify
+  await login(harborPage, process.env.HARBOR_BASE_URL, harborUser);
+  
+  // Navigate to Configuration -> System Settings
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  
+  // Verify token expiration is 20 minutes
+  const tokenInputVerify = harborPage.getByRole('spinbutton', { name: 'Token Expiration (Minutes) *' });
+  await expect(tokenInputVerify).toHaveValue('20');
+  
+  // Reset to default (30 minutes)
+  await tokenInputVerify.fill('30');
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+});
