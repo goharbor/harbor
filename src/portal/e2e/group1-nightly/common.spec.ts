@@ -1,4 +1,5 @@
 import { test, expect } from '../fixtures/harbor';
+import { pushImage } from '../utils';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -212,4 +213,43 @@ test('user view projects', async ({ harborPage }) => {
   for (const projectName of projectNames) {
     await expect(harborPage.getByRole('gridcell', { name: projectName, exact: true })).toBeVisible();
   }
+});
+
+test('push image', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectName = `project${dateStr}`;
+  const image = 'hello-world';
+  
+  // Create a new project and go into it
+  await harborPage.getByRole('button', { name: 'New Project' }).click();
+  const modal = harborPage.getByLabel('New Project');
+  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
+  await modal.getByRole('textbox').first().fill(projectName);
+  const okButton = modal.getByRole('button', { name: 'OK' });
+  await expect(okButton).toBeEnabled();
+  await okButton.click();
+  
+  
+  // Push image using the utility function
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+  
+  // Navigate into the project
+  await harborPage.getByRole('link', { name: projectName }).waitFor({ state: 'visible', timeout: 5000 });
+  await harborPage.getByRole('link', { name: projectName }).click();
+  await expect(harborPage.getByRole('link', { name: projectName + '/' + image })).toBeVisible({ timeout: 5000 });
+  
+  // Logout
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 });
