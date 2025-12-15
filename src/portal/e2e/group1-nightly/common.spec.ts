@@ -371,3 +371,141 @@ test('edit token expire', async ({ harborPage, harborUser }) => {
   // Wait for save to complete
   await harborPage.waitForTimeout(1000);
 });
+
+test('statistics info', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  
+  // Navigate to Projects page to see statistics
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  
+  // Get initial statistics counts
+  const getPrivateRepoCount = async () => {
+    const text = await harborPage.locator('statistics-panel').getByText('Private').nth(1).locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  const getPrivateProjectCount = async () => {
+    const text = await harborPage.locator('statistics-panel').getByText('Private').first().locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  const getPublicRepoCount = async () => {
+    const text = await harborPage.getByText('Public').nth(1).locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  const getPublicProjectCount = async () => {
+    const text = await harborPage.getByText('Public').first().locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  const getTotalRepoCount = async () => {
+    const text = await harborPage.getByText('Total').nth(1).locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  const getTotalProjectCount = async () => {
+    const text = await harborPage.getByText('Total').first().locator('..').textContent();
+    return parseInt(text?.match(/\d+/)?.[0] || '0');
+  };
+  
+  // Capture initial counts
+  const privateRepoCount1 = await getPrivateRepoCount();
+  const privateProjectCount1 = await getPrivateProjectCount();
+  const publicRepoCount1 = await getPublicRepoCount();
+  const publicProjectCount1 = await getPublicProjectCount();
+  const totalRepoCount1 = await getTotalRepoCount();
+  const totalProjectCount1 = await getTotalProjectCount();
+
+  console.log('Initial Counts:', {
+    privateRepoCount1,
+    privateProjectCount1,
+    publicRepoCount1,
+    publicProjectCount1,
+    totalRepoCount1,
+    totalProjectCount1,
+  });
+  
+  // Create private and public projects
+  const privateProjectName = `private${dateStr}`;
+  const publicProjectName = `public${dateStr}`;
+  const image = 'hello-world';
+  
+  // Create private project and push image
+  await createProject(harborPage, privateProjectName, false, false);
+  
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: privateProjectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+  
+  // Create public project and push image
+  await createProject(harborPage, publicProjectName, false, true);
+  
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: publicProjectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+  
+  // Calculate expected counts
+  const expectedPrivateProjectCount = privateProjectCount1 + 1;
+  const expectedPrivateRepoCount = privateRepoCount1 + 1;
+  const expectedPublicProjectCount = publicProjectCount1 + 1;
+  const expectedPublicRepoCount = publicRepoCount1 + 1;
+  const expectedTotalRepoCount = totalRepoCount1 + 2;
+  const expectedTotalProjectCount = totalProjectCount1 + 2;
+
+  console.log('Expected Counts:', {
+    expectedPrivateProjectCount,
+    expectedPrivateRepoCount,
+    expectedPublicProjectCount,
+    expectedPublicRepoCount,
+    expectedTotalRepoCount,
+    expectedTotalProjectCount,
+  });
+  
+  // Refresh the page to update statistics
+  await harborPage.reload({ waitUntil: 'networkidle' });
+  
+  // Wait for statistics to update
+  await harborPage.waitForTimeout(2000);
+  
+  // Get updated statistics counts
+  const privateRepoCount2 = await getPrivateRepoCount();
+  const privateProjectCount2 = await getPrivateProjectCount();
+  const publicRepoCount2 = await getPublicRepoCount();
+  const publicProjectCount2 = await getPublicProjectCount();
+  const totalRepoCount2 = await getTotalRepoCount();
+  const totalProjectCount2 = await getTotalProjectCount();
+
+  console.log('Updated Counts:', {
+    privateRepoCount2,
+    privateProjectCount2,
+    publicRepoCount2,
+    publicProjectCount2,
+    totalRepoCount2,
+    totalProjectCount2,
+  });
+  
+  // Verify all statistics match expected values
+  expect(privateProjectCount2).toBe(expectedPrivateProjectCount);
+  expect(privateRepoCount2).toBe(expectedPrivateRepoCount);
+  expect(publicProjectCount2).toBe(expectedPublicProjectCount);
+  expect(publicRepoCount2).toBe(expectedPublicRepoCount);
+  expect(totalProjectCount2).toBe(expectedTotalProjectCount);
+  expect(totalRepoCount2).toBe(expectedTotalRepoCount);
+});
