@@ -68,65 +68,14 @@ test('delete a system label', async ({ harborPage }) => {
 test('create a new project', async ({ harborPage }) => {
   const projectName = `test_project_${Date.now()}`;
   
-  // Click on New Project button
-  await harborPage.getByRole('button', { name: 'New Project' }).click();
-  
-  // Wait for modal to appear
-  const modal = harborPage.getByLabel('New Project');
-  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-  
-  // Fill in the project name - using the first textbox in the modal
-  await modal.getByRole('textbox').first().fill(projectName);
-  
-  // Wait for OK button to be enabled and click it
-  const okButton = modal.getByRole('button', { name: 'OK' });
-  await okButton.waitFor({ state: 'visible' });
-  await expect(okButton).toBeEnabled();
-  await okButton.click();
-  
-  // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
-  
-  // Verify project was created by checking if it appears in the project list (with pagination)
-  await waitForProjectInList(harborPage, projectName);
-  
-  // Navigate into the project
-  await harborPage.getByRole('link', { name: projectName }).click();
+  // Create project and navigate into it
+  await createProject(harborPage, projectName, true);
 });
 
 test('create a new public project', async ({ harborPage }) => {
   const projectName = `public_project_${Date.now()}`;
   
-  // Click on New Project button
-  await harborPage.getByRole('button', { name: 'New Project' }).click();
-  
-  // Wait for modal to appear
-  const modal = harborPage.getByLabel('New Project');
-  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-  
-  // Fill in the project name
-  await modal.getByRole('textbox').first().fill(projectName);
-  
-  // Set project as public - check the Public checkbox
-  await modal.getByText('Public').click();
-  
-  // Click OK button to create the project
-  const okButton = modal.getByRole('button', { name: 'OK' });
-  await okButton.waitFor({ state: 'visible' });
-  await expect(okButton).toBeEnabled();
-  await okButton.click();
-  
-  // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
-  
-  // Verify project was created (with pagination)
-  await waitForProjectInList(harborPage, projectName);
-  
-  // Navigate into the project
-  await harborPage.getByRole('link', { name: projectName }).click();
-  
-  // Verify it's public by checking the grid shows "Public"
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await createProject(harborPage, projectName, false, true);
 });
 
 test('create projects with different storage quotas', async ({ harborPage }) => {
@@ -181,30 +130,8 @@ test('create projects with different storage quotas', async ({ harborPage }) => 
 test('delete a project', async ({ harborPage }) => {
   const projectName = `project_to_delete_${Date.now()}`;
   
-  // Create a new project first
-  await harborPage.getByRole('button', { name: 'New Project' }).click();
-  
-  // Wait for modal to appear
-  const modal = harborPage.getByLabel('New Project');
-  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-  
-  // Fill in the project name
-  await modal.getByRole('textbox').first().fill(projectName);
-  
-  // Wait for OK button to be enabled and click it
-  const okButton = modal.getByRole('button', { name: 'OK' });
-  await okButton.waitFor({ state: 'visible' });
-  await expect(okButton).toBeEnabled();
-  await okButton.click();
-  
-  // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
-  
-  // Verify project was created (with pagination)
-  await waitForProjectInList(harborPage, projectName);
-  
-  // Navigate back to projects list
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  // Create a new project
+  await createProject(harborPage, projectName);
   
   // Select the project by clicking on the row's checkbox label
   const projectRow = harborPage.getByRole('row', { name: new RegExp(projectName) });
@@ -237,30 +164,8 @@ test('user view projects', async ({ harborPage }) => {
   ];
 
   for (const projectName of projectNames) {
-    // Click on New Project button
-    await harborPage.getByRole('button', { name: 'New Project' }).click();
-    
-    // Wait for modal to appear
-    const modal = harborPage.getByLabel('New Project');
-    await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-    
-    // Fill in the project name
-    await modal.getByRole('textbox').first().fill(projectName);
-    
-    // Wait for OK button to be enabled and click it
-    const okButton = modal.getByRole('button', { name: 'OK' });
-    await okButton.waitFor({ state: 'visible' });
-    await expect(okButton).toBeEnabled();
-    await okButton.click();
-    
-    // Wait for modal to close
-    await modal.waitFor({ state: 'hidden', timeout: 5000 });
-    
-    // Verify project was created (with pagination)
-    await waitForProjectInList(harborPage, projectName);
-    
-    // Navigate into the project
-    await harborPage.getByRole('link', { name: projectName }).click();
+    // Create project and navigate into it
+    await createProject(harborPage, projectName, true);
     
     // Navigate back to projects list for next project
     await harborPage.getByRole('link', { name: 'Projects' }).click();
@@ -282,27 +187,8 @@ test('push image', async ({ harborPage, harborUser }) => {
   const projectName = `project${dateStr}`;
   const image = 'hello-world';
   
-  // Click on New Project button
-  await harborPage.getByRole('button', { name: 'New Project' }).click();
-  
-  // Wait for modal to appear
-  const modal = harborPage.getByLabel('New Project');
-  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-  
-  // Fill in the project name
-  await modal.getByRole('textbox').first().fill(projectName);
-  
-  // Wait for OK button to be enabled and click it
-  const okButton = modal.getByRole('button', { name: 'OK' });
-  await okButton.waitFor({ state: 'visible' });
-  await expect(okButton).toBeEnabled();
-  await okButton.click();
-  
-  // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
-  
-  // Verify project was created (with pagination)
-  await waitForProjectInList(harborPage, projectName);
+  // Create project
+  await createProject(harborPage, projectName);
   
   // Push image using the utility function
   const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
@@ -334,30 +220,8 @@ test('project level policy public', async ({ harborPage, harborUser }) => {
   const time = d.getTime();
   const projectName = `test_project_${time}`;
 
-  // Create a new project first
-  await harborPage.getByRole('button', { name: 'New Project' }).click();
-    
-  // Wait for modal to appear
-  const modal = harborPage.getByLabel('New Project');
-  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
-  
-  // Fill in the project name
-  await modal.getByRole('textbox').first().fill(projectName);
-  
-  // Wait for OK button to be enabled and click it
-  const okButton = modal.getByRole('button', { name: 'OK' });
-  await okButton.waitFor({ state: 'visible' });
-  await expect(okButton).toBeEnabled();
-  await okButton.click();
-  
-  // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
-  
-  // Verify project was created (with pagination)
-  await waitForProjectInList(harborPage, projectName);
-  
-  // Navigate to project and make it public
-  await harborPage.getByRole('link', { name: projectName }).click();
+  // Create project and navigate into it
+  await createProject(harborPage, projectName, true);
   
   // Wait for project page to load
   await harborPage.waitForLoadState('networkidle');
