@@ -1,6 +1,5 @@
 import { test, expect, login } from '../fixtures/harbor';
 import { createProject, pushImage, waitForProjectInList } from '../utils';
-import { logout } from '../fixtures/harbor';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -204,7 +203,7 @@ test('push image', async ({ harborPage, harborUser }) => {
   });
   
   // Navigate into the project
-  await harborPage.getByRole('link', { name: projectName }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
   
   // Wait for image to appear in the repository list
   await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
@@ -303,4 +302,34 @@ test('goto harbor API docs', async ({ harborPage, context }) => {
   
   // Wait for API Docs page to load by checking for Swagger UI element
   await expect(newPage.locator('.swagger-ui')).toBeVisible({ timeout: 10000 });
+});
+
+test('repo size', async ({ harborPage, harborUser }) => {
+  const projectName = `project${Date.now()}`;
+  const image = 'alpine';
+
+  await createProject(harborPage, projectName);
+  
+  // Push image with specific tag using the utility function
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+  
+  // Navigate to the project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Navigate into the repository
+  await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(image) }).click();
+  
+  // Wait for and verify the repo size is displayed (alpine 2.6 is approximately 3.68MiB)
+  await expect(harborPage.getByText(/3\.6[0-9]MiB/)).toBeVisible({ timeout: 10000 });
 });
