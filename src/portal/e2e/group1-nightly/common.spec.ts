@@ -327,3 +327,102 @@ test('push image', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 });
+
+
+test('project level policy public', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const time = d.getTime();
+  const projectName = `test_project_${time}`;
+
+  // Create a new project first
+  await harborPage.getByRole('button', { name: 'New Project' }).click();
+    
+  // Wait for modal to appear
+  const modal = harborPage.getByLabel('New Project');
+  await expect(modal.getByRole('heading', { name: 'New Project', level: 3 })).toBeVisible();
+  
+  // Fill in the project name
+  await modal.getByRole('textbox').first().fill(projectName);
+  
+  // Wait for OK button to be enabled and click it
+  const okButton = modal.getByRole('button', { name: 'OK' });
+  await okButton.waitFor({ state: 'visible' });
+  await expect(okButton).toBeEnabled();
+  await okButton.click();
+  
+  // Wait for modal to close
+  await modal.waitFor({ state: 'hidden', timeout: 5000 });
+  
+  // Verify project was created (with pagination)
+  await waitForProjectInList(harborPage, projectName);
+  
+  // Navigate to project and make it public
+  await harborPage.getByRole('link', { name: projectName }).click();
+  
+  // Wait for project page to load
+  await harborPage.waitForLoadState('networkidle');
+  
+  // Click the application button to access Configuration
+  const appButton = harborPage.getByRole('application').locator('button');
+  await appButton.waitFor({ state: 'visible', timeout: 5000 });
+  await appButton.click();
+  
+  // Navigate to Configuration tab and make project public
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  await harborPage.getByText('Public', { exact: true }).click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+  
+  // Logout
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+
+  // Login again to verify
+  await login(harborPage, process.env.HARBOR_BASE_URL, harborUser);
+  
+  // Navigate to Projects page
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await harborPage.waitForLoadState('networkidle');
+  
+  // Search through all pages to verify the project is now public
+  const startTime = Date.now();
+  const timeout = 15000;
+  let found = false;
+  
+  while (Date.now() - startTime < timeout && !found) {
+    // Check if project row with Public status is visible on current page
+    const projectRow = harborPage.getByRole('row', { name: new RegExp(projectName) });
+    
+    if (await projectRow.isVisible()) {
+      // Verify it shows Public status
+      await expect(projectRow.getByText('Public')).toBeVisible({ timeout: 5000 });
+      found = true;
+      break;
+    }
+    
+    // Check if Next Page button is enabled
+    const nextButton = harborPage.getByRole('button', { name: 'Next Page' });
+    const isNextEnabled = await nextButton.isEnabled().catch(() => false);
+    
+    if (isNextEnabled) {
+      // Click next page and wait for content to load
+      await nextButton.click();
+      await harborPage.waitForTimeout(500);
+    } else {
+      // No more pages, check one final time
+      if (await projectRow.isVisible()) {
+        await expect(projectRow.getByText('Public')).toBeVisible({ timeout: 5000 });
+        found = true;
+      } else {
+        throw new Error(`Project "${projectName}" not found in project list after checking all pages`);
+      }
+      break;
+    }
+  }
+  
+  if (!found) {
+    throw new Error(`Timeout waiting for project "${projectName}" to appear in project list`);
+  }
+});
