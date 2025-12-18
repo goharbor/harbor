@@ -333,6 +333,7 @@ Body Of Replication Of Pull Images from Registry To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  pull  ${src_project_name}  all  e${d}  ${_des_pro_name}  flattening=${flattening}
     Select Rule And Replicate  rule${d}
+    Sleep  120
     Check Latest Replication Job Status  Succeeded
     Run Keyword If  '${verify_verbose}'=='Y'  Verify Artifact Display Verbose  ${_des_pro_name}  @{target_images}
     ...  ELSE  Verify Artifact Display  ${_des_pro_name}  @{target_images}
