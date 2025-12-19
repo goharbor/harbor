@@ -152,6 +152,59 @@ test('delete a project', async ({ harborPage }) => {
   await expect(harborPage.getByRole('link', { name: projectName })).not.toBeVisible({ timeout: 5000 });
 });
 
+test('delete multiple projects', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectWithArtifacts = `projecta${dateStr}`;
+  const projectWithoutArtifacts = `projectb${dateStr}`;
+  const image = 'hello-world';
+  
+  // Create public projects
+  await createProject(harborPage, projectWithArtifacts, false, true);
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await harborPage.waitForTimeout(100);
+  
+  await createProject(harborPage, projectWithoutArtifacts, false, true);
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  
+  // Push image to first project only
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectWithArtifacts,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+  
+  // Navigate back to projects list
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  
+  // Select both projects
+  const projectARow = harborPage.getByRole('row', { name: new RegExp(projectWithArtifacts) });
+  const projectBRow = harborPage.getByRole('row', { name: new RegExp(projectWithoutArtifacts) });
+  
+  await projectARow.locator('label').click();
+  await projectBRow.locator('label').click();
+  
+  // Click ACTION and Delete
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE' }).click();
+  
+  // Wait for deletion to process
+  await harborPage.waitForTimeout(1000);
+  
+  // Verify project with artifacts still exists (deletion should fail)
+  await expect(harborPage.getByRole('link', { name: projectWithArtifacts })).toBeVisible({ timeout: 5000 });
+  
+  // Verify project without artifacts was deleted
+  await expect(harborPage.getByRole('link', { name: projectWithoutArtifacts })).not.toBeVisible({ timeout: 5000 });
+});
+
 test('user view projects', async ({ harborPage }) => {
   // Create three projects and go into each
   const d = new Date();
