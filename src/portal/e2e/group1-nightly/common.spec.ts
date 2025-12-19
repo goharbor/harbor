@@ -205,6 +205,51 @@ test('delete multiple projects', async ({ harborPage, harborUser }) => {
   await expect(harborPage.getByRole('link', { name: projectWithoutArtifacts })).not.toBeVisible({ timeout: 5000 });
 });
 
+test('delete multi repos', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectName = `project${dateStr}`;
+  const repos = ['hello-world', 'busybox'];
+  
+  // Create project and push images
+  await createProject(harborPage, projectName, false);
+  
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  for (const repo of repos) {
+    await pushImage({
+      ip: harborIp,
+      user: harborUser.username,
+      pwd: harborUser.password,
+      project: projectName,
+      imageWithOrWithoutTag: repo,
+      needPullFirst: true,
+      localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+      localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+    });
+  }
+  
+  // Navigate into the project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Select both repositories
+  for (const repo of repos) {
+    const repoRow = harborPage.getByRole('row', { name: new RegExp(repo) });
+    await repoRow.locator('label').click();
+  }
+  
+  // Click ACTION and Delete
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+
+  // Wait for deletion to process
+  await harborPage.waitForTimeout(1000);
+  
+  // Verify both repositories were deleted
+  for (const repo of repos) {
+    await expect(harborPage.getByRole('link', { name: repo })).not.toBeVisible({ timeout: 5000 });
+  }
+});
+
 test('user view projects', async ({ harborPage }) => {
   // Create three projects and go into each
   const d = new Date();
