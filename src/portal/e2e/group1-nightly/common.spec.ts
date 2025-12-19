@@ -1,5 +1,5 @@
 import { test, expect, login } from '../fixtures/harbor';
-import { createProject, pushImage, waitForProjectInList } from '../utils';
+import { createProject, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -291,6 +291,56 @@ test('delete repo on card view', async ({ harborPage, harborUser }) => {
 
   // Verify repository was deleted
   await expect(harborPage.getByRole('link', { name: new RegExp(image) })).not.toBeVisible({ timeout: 5000 });
+});
+
+test('delete multi artifacts', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectName = `project${dateStr}`;
+  const image = 'redis';
+  const tags = ['3.2.10-alpine', '4.0.7-alpine'];
+
+  // Create project
+  await createProject(harborPage, projectName);
+
+  // Push images with different tags
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  for (const tag of tags) {
+    await pushImageWithTag({
+      ip: harborIp,
+      user: harborUser.username,
+      pwd: harborUser.password,
+      project: projectName,
+      image: image,
+      tag: tag,
+      tag1: tag,
+      localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+      localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+    });
+  }
+
+  // Navigate into the project and then the repository
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(image) }).click();
+
+  // Select all artifacts by their tags
+  for (const tag of tags) {
+    const artifactRow = harborPage.getByRole('row', { name: new RegExp(tag) });
+    await artifactRow.locator('label').click();
+  }
+
+  // Click Delete button
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+
+  // Wait for deletion to process
+  await harborPage.waitForTimeout(1000);
+
+  // Verify both artifacts were deleted
+  for (const tag of tags) {
+    await expect(harborPage.getByRole('row', { name: new RegExp(tag) })).not.toBeVisible({ timeout: 5000 });
+  }
 });
 
 test('user view projects', async ({ harborPage }) => {
