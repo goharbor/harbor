@@ -250,6 +250,49 @@ test('delete multi repos', async ({ harborPage, harborUser }) => {
   }
 });
 
+test('delete repo on card view', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectName = `project${dateStr}`;
+  const image = 'hello-world';
+  
+  // Create project and push image
+  await createProject(harborPage, projectName, false);
+  
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Navigate into the project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+
+  // Switch to card view
+  await harborPage.locator('.card-btn > clr-icon').click();
+
+  // Select the repository card by checking its checkbox
+  const repoCardLink = harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) });
+  await expect(repoCardLink).toBeVisible({ timeout: 10000 });
+  await repoCardLink.getByRole('button', { name: 'ACTION' }).click({ timeout: 5000 });
+
+  // Delete the selected repository
+  await repoCardLink.getByRole('menuitem', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+
+  // Wait for deletion to process
+  await harborPage.waitForTimeout(1000);
+
+  // Verify repository was deleted
+  await expect(harborPage.getByRole('link', { name: new RegExp(image) })).not.toBeVisible({ timeout: 5000 });
+});
+
 test('user view projects', async ({ harborPage }) => {
   // Create three projects and go into each
   const d = new Date();
