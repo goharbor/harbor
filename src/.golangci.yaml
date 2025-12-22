@@ -3,6 +3,7 @@ linters:
   default: none
   enable:
     - bodyclose
+    - copyloopvar
     - errcheck
     - goheader
     - govet
@@ -34,6 +35,8 @@ linters:
       - .*test\.go
       - testing
       - src/jobservice/mgt/mock_manager.go
+      - server/v2.0/models
+      - server/v2.0/restapi
 formatters:
   enable:
     - gofmt
@@ -54,3 +57,5 @@ formatters:
       - .*test\.go
       - testing
       - src/jobservice/mgt/mock_manager.go
+      - server/v2.0/models
+      - server/v2.0/restapi

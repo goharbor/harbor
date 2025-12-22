@@ -314,7 +314,6 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	g.SetLimit(gc.workers)
 	index := int64(0)
 	for _, blobChunk := range blobChunks {
-		blobChunk := blobChunk
 		g.Go(func() error {
 			uid := uuid.New().String()
 			for _, blob := range blobChunk {

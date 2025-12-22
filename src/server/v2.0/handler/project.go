@@ -409,8 +409,6 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 
 	var wg sync.WaitGroup
 	for _, fn := range fetchSummaries {
-		fn := fn
-
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
