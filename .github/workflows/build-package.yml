@@ -7,13 +7,15 @@ on:
     branches:
       - main
       - release-*
-
 jobs:
   BUILD_PACKAGE:
     env:
         BUILD_PACKAGE: true
     runs-on:
       - oracle-vm-24cpu-96gb-x86-64
+    permissions:
+      id-token: write  
+      contents: read 
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.1
@@ -40,6 +42,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
+      - name: Install Cosign  
+        uses: sigstore/cosign-installer@v3.7.0   
       - name: Build Base Image
         if: |
             contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
@@ -87,6 +91,7 @@ jobs:
           else
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
           fi
+        
           sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
@@ -99,8 +104,32 @@ jobs:
           cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
           uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
           uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
-
+          echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
+      
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+      - name: Sign Offline Installer with Cosign 
+        run: |
+          cd src/github.com/goharbor/harbor
+          harbor_offline_build_bundle=$(ls harbor-offline-installer-*.tgz | head -n 1)
+          echo "Signing: $harbor_offline_build_bundle"
+          cosign sign-blob --yes --bundle=${harbor_offline_build_bundle}.bundle $harbor_offline_build_bundle
+
+      - name: Sign Online Installer with Cosign 
+        run: |
+          cd src/github.com/goharbor/harbor
+          harbor_online_build_bundle=$(ls harbor-online-installer-*.tgz | head -n 1)
+          echo "Signing: $harbor_online_build_bundle"
+          cosign sign-blob --yes --bundle=${harbor_online_build_bundle}.bundle $harbor_online_build_bundle
+
+      - name: Upload Bundle Files to S3 
+        run: |
+          cd src/github.com/goharbor/harbor
+          source tests/ci/build_util.sh
+          harbor_offline_bundle=$(ls harbor-offline-installer-*.tgz.bundle | head -n 1)
+          harbor_online_bundle=$(ls harbor-online-installer-*.tgz.bundle | head -n 1)
+          uploader ${harbor_offline_bundle} ${{ env.harbor_target_bucket }}
+          uploader ${harbor_online_bundle} ${{ env.harbor_target_bucket }}
+          uploader harbor-offline-installer-latest.tgz ${{ env.harbor_target_bucket }}
+          uploader harbor-online-installer-latest.tgz ${{ env.harbor_target_bucket }}
+          

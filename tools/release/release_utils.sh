@@ -8,14 +8,22 @@ function getAssets {
     local onlinePackage=$4
     local prerelease=$5
     local assetsPath=$6
+    local offlineBundle=$7
+    local onlineBundle=$8
     mkdir $assetsPath && pushd $assetsPath
     aws s3 cp s3://$bucket/$branch/$offlinePackage .
     md5sum $offlinePackage > md5sum
+    if [ -n "$offlineBundle" ]; then
+        aws s3 cp s3://$bucket/$branch/$offlineBundle .
+    fi
     # Pre-release does not handle online installer packages
     if [ $prerelease = "false" ]
     then
         aws s3 cp s3://$bucket/$branch/$onlinePackage .
         md5sum $onlinePackage >> md5sum
+        if [ -n "$onlineBundle" ]; then
+            aws s3 cp s3://$bucket/$branch/$onlineBundle .
+        fi
     fi
     popd
 }
