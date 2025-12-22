@@ -5,6 +5,7 @@ linters:
     - bodyclose
     - errcheck
     - goheader
+    - gosec
     - govet
     - ineffassign
     - misspell
@@ -14,6 +15,16 @@ linters:
   settings:
     goheader:
       template-path: copyright.tmpl
+    gosec:
+      excludes:
+        - G101
+        - G110
+        - G112
+        - G114
+        - G115
+        - G306
+        - G402
+        - G404
     misspell:
       locale: US,UK
     staticcheck:
@@ -26,6 +37,11 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+        path: "(common/|controller/event/handler/util/|core/utils/|jobservice/common/utils/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/)"
     paths:
       - third_party$
       - builtin$
