@@ -218,6 +218,7 @@ func decodeTrigger(triggerStr string) (*Trigger, error) {
 // decodeExtraAttrs parse extraAttrsStr to extraAttrs.
 func decodeExtraAttrs(extraAttrsStr string) (map[string]any, error) {
 	if len(extraAttrsStr) == 0 {
+		//nolint:nilnil // input is empty string
 		return nil, nil
 	}
 

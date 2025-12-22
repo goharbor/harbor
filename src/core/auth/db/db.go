@@ -46,6 +46,7 @@ func (d *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 func (d *Auth) SearchUser(ctx context.Context, username string) (*models.User, error) {
 	u, err := d.userMgr.GetByName(ctx, username)
 	if errors.IsNotFoundErr(err) {
+		//nolint:nilnil // user is not found
 		return nil, nil
 	} else if err != nil {
 		return nil, err

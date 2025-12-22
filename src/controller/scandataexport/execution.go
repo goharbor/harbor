@@ -108,6 +108,7 @@ func (c *controller) GetExecution(ctx context.Context, executionID int64) (*expo
 	}
 	if exec == nil {
 		logger.Infof("No execution found for ExecutionId: %d", executionID)
+		//nolint:nilnil // execution not found
 		return nil, nil
 	}
 	return c.convertToExportExecStatus(ctx, exec), nil

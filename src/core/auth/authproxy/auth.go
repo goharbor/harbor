@@ -187,6 +187,7 @@ func (a *Auth) SearchGroup(ctx context.Context, groupKey string) (*model.UserGro
 		}
 		return ug, nil
 	}
+	//nolint:nilnil // group not found
 	return nil, nil
 }
 

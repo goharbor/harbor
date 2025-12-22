@@ -361,6 +361,7 @@ func userInfoFromRemote(ctx context.Context, token *Token, setting cfgModels.OID
 // UserInfoFromIDToken extract user info from ID token
 func UserInfoFromIDToken(ctx context.Context, token *Token, setting cfgModels.OIDCSetting) (*UserInfo, error) {
 	if token.RawIDToken == "" {
+		//nolint:nilnil // no ID token present
 		return nil, nil
 	}
 	idt, err := parseIDToken(ctx, token.RawIDToken)

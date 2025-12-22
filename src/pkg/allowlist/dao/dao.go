@@ -74,6 +74,7 @@ func (d *dao) QueryByProjectID(ctx context.Context, pid int64) (*models.CVEAllow
 		return nil, fmt.Errorf("failed to get CVE allowlist for project %d, error: %v", pid, err)
 	}
 	if len(r) == 0 {
+		//nolint:nilnil // allowlist not found
 		return nil, nil
 	} else if len(r) > 1 {
 		log.Infof("Multiple CVE allowlists found for project %d, length: %d, returning first element.", pid, len(r))

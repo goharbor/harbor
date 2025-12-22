@@ -119,6 +119,7 @@ func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artif
 			}, nil
 		}
 	}
+	//nolint:nilnil // addition type is not found
 	return nil, nil
 }
 

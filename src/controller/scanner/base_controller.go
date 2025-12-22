@@ -131,6 +131,7 @@ func (bc *basicController) GetRegistration(ctx context.Context, registrationUUID
 		return nil, errors.Wrap(err, "api controller: get registration")
 	}
 	if r == nil {
+		//nolint:nilnil // registration not found
 		return nil, nil
 	}
 	if err := bc.RetrieveCap(ctx, r); err != nil {
@@ -184,6 +185,7 @@ func (bc *basicController) DeleteRegistration(ctx context.Context, registrationU
 
 	if registration == nil {
 		// Not found
+		//nolint:nilnil // registration not found
 		return nil, nil
 	}
 
@@ -276,6 +278,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 
 	// No scanner configured
 	if registration == nil {
+		//nolint:nilnil // no scanner configured
 		return nil, nil
 	}
 

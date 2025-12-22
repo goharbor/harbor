@@ -185,6 +185,7 @@ func GetLogDataGetter(loggerOptions ...Option) (getter.Interface, error) {
 	}
 
 	// No one configured
+	//nolint:nilnil // no logger is configured
 	return nil, nil
 }
 

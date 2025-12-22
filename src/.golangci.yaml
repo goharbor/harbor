@@ -9,6 +9,7 @@ linters:
     - ineffassign
     - misspell
     - nilerr
+    - nilnil
     - revive
     - staticcheck
     - whitespace

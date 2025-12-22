@@ -69,6 +69,7 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 	from := query.Get("from")
 	if from == "" {
 		// miss the from parameter, skip to request the resources
+		//nolint:nilnil // from parameter is missing
 		return nil, nil
 	}
 
@@ -78,6 +79,7 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 	if err != nil {
 		// bad from parameter, skip to request the resources
 		logger.Errorf("parse from parameter failed, error: %v", err)
+		//nolint:nilnil // from parameter is invalid
 		return nil, nil
 	}
 
@@ -98,6 +100,7 @@ func copyArtifactResources(r *http.Request, _, referenceID string) (types.Resour
 	repositoryName := parseRepositoryName(r.URL.EscapedPath())
 
 	if art.ProjectID == projectID && art.RepositoryName == repositoryName {
+		//nolint:nilnil // artifact is in same project
 		return nil, nil
 	}
 

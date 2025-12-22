@@ -36,6 +36,7 @@ func ResolveData(mime string, jsonData []byte, options ...Option) (any, error) {
 	// The raw data will be used.
 	t, ok := SupportedMimes[mime]
 	if !ok {
+		//nolint:nilnil // mime type not supported
 		return nil, nil
 	}
 

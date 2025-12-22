@@ -112,6 +112,7 @@ func (u *Auth) SearchUser(ctx context.Context, username string) (*models.User, e
 		return nil, err
 	}
 	if len(l) == 0 {
+		//nolint:nilnil // user not found
 		return nil, nil
 	}
 	if len(l) > 1 {
