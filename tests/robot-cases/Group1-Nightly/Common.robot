@@ -274,6 +274,7 @@ Test Case - Manage project publicity
     Body Of Manage project publicity
 
 Test Case - Assign Sys Admin
+    [Tags]  assign_sys_admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user009  Test1@34
@@ -318,6 +319,7 @@ Test Case - Edit Repo Info
     Close Browser
 
 Test Case - Delete Multi Project
+    [Tags]  delete_multi_project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
 
