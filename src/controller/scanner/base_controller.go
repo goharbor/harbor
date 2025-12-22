@@ -366,6 +366,7 @@ func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Contex
 	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (any, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
+			//nolint:nilerr // Error is captured in MetadataResult.Error for caching, not returned to caller
 			return &MetadataResult{Error: err.Error()}, nil
 		}
 

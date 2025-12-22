@@ -186,6 +186,7 @@ func decrypt(secret string) (string, error) {
 	}
 	secretKey, err := config.SecretKey()
 	if err != nil {
+		//nolint:nilerr // Return empty string when secret key unavailable for graceful degradation
 		return "", nil
 	}
 	decrypted, err := utils.ReversibleDecrypt(secret, secretKey)
@@ -203,6 +204,7 @@ func encrypt(secret string) (string, error) {
 	}
 	secretKey, err := config.SecretKey()
 	if err != nil {
+		//nolint:nilerr // Return empty string when secret key unavailable for graceful degradation
 		return "", nil
 	}
 	encrypted, err := utils.ReversibleEncrypt(secret, secretKey)

@@ -8,6 +8,7 @@ linters:
     - govet
     - ineffassign
     - misspell
+    - nilerr
     - revive
     - staticcheck
     - whitespace
