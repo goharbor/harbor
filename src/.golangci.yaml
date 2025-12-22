@@ -10,6 +10,7 @@ linters:
     - misspell
     - revive
     - staticcheck
+    - usestdlibvars
     - whitespace
   settings:
     goheader:
