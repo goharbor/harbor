@@ -3,6 +3,7 @@ linters:
   default: none
   enable:
     - bodyclose
+    - dupl
     - errcheck
     - goheader
     - govet
@@ -15,6 +16,8 @@ linters:
   settings:
     goheader:
       template-path: copyright.tmpl
+    dupl:
+      threshold: 300
     misspell:
       locale: US,UK
     staticcheck:
