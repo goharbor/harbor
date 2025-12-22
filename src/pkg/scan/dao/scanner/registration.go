@@ -63,7 +63,7 @@ func GetRegistration(ctx context.Context, UUID string) (*Registration, error) {
 	if err := qs.Filter("uuid", UUID).One(e); err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
 			// Not existing case
-			//nolint:nilnil // registration not found
+			// nolint:nilnil // registration not found
 			return nil, nil
 		}
 		return nil, err
@@ -183,7 +183,7 @@ func GetDefaultRegistration(ctx context.Context) (*Registration, error) {
 	e := &Registration{}
 	if err := qt.Filter("is_default", true).One(e); err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
-			//nolint:nilnil // no default registration exists
+			// nolint:nilnil // no default registration exists
 			return nil, nil
 		}
 

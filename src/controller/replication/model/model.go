@@ -305,7 +305,7 @@ func parseFilters(str string) ([]*model.Filter, error) {
 
 func parseTrigger(str string) (*model.Trigger, error) {
 	if len(str) == 0 {
-		//nolint:nilnil // input is empty string
+		// nolint:nilnil // input is empty string
 		return nil, nil
 	}
 	item := &trigger{}
@@ -330,7 +330,7 @@ func parseTrigger(str string) (*model.Trigger, error) {
 			}
 		default:
 			log.Warningf("unknown trigger type: %s", item.Kind)
-			//nolint:nilnil // Returning nil,nil is intentional for unknown trigger types
+			// nolint:nilnil // unknown trigger type
 			return nil, nil
 		}
 	}

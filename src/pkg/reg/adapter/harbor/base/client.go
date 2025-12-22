@@ -126,7 +126,7 @@ func (c *Client) GetProject(name string) (*Project, error) {
 			return project, nil
 		}
 	}
-	//nolint:nilnil // project is not found
+	// nolint:nilnil // project is not found
 	return nil, nil
 }
 

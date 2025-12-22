@@ -56,7 +56,7 @@ func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*a
 	a, err := l.artifactCtl.GetByReference(ctx, art.Repository, ref, nil)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
-			//nolint:nilnil // artifact not found locally
+			// nolint:nilnil // artifact not found locally
 			return nil, nil
 		}
 		return nil, err

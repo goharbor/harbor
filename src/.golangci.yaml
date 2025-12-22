@@ -28,6 +28,11 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+        path: "(common/|controller/event/handler/util/|core/utils/|jobservice/common/utils/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/)"
     paths:
       - third_party$
       - builtin$

@@ -139,6 +139,6 @@ func getScheduledSweepJob(ctx context.Context) (*scheduler.Schedule, error) {
 		return schedules[0], nil
 	}
 
-	//nolint:nilnil // no schedule is found
+	// nolint:nilnil // no schedule is found
 	return nil, nil
 }

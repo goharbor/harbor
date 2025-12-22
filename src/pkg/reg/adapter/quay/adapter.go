@@ -240,7 +240,7 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
-		//nolint:nilnil // namespace is not found
+		// nolint:nilnil // namespace is not found
 		return nil, nil
 	}
 

@@ -225,7 +225,7 @@ func (s *scanAllAPI) getScanAllSchedule(ctx context.Context) (*scheduler.Schedul
 	if len(schedules) > 1 {
 		return nil, fmt.Errorf("found more than one scheduled scan all job, please ensure that only one schedule left")
 	} else if len(schedules) == 0 {
-		//nolint:nilnil // no schedule found
+		// nolint:nilnil // no schedule found
 		return nil, nil
 	}
 
@@ -283,7 +283,7 @@ func (s *scanAllAPI) getLatestScanAllExecution(ctx context.Context, trigger ...s
 	}
 
 	if len(executions) == 0 {
-		//nolint:nilnil // no execution found
+		// nolint:nilnil // no execution found
 		return nil, nil
 	}
 

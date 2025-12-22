@@ -131,7 +131,7 @@ func (bc *basicController) GetRegistration(ctx context.Context, registrationUUID
 		return nil, errors.Wrap(err, "api controller: get registration")
 	}
 	if r == nil {
-		//nolint:nilnil // registration not found
+		// nolint:nilnil // registration not found
 		return nil, nil
 	}
 	if err := bc.RetrieveCap(ctx, r); err != nil {
@@ -185,7 +185,7 @@ func (bc *basicController) DeleteRegistration(ctx context.Context, registrationU
 
 	if registration == nil {
 		// Not found
-		//nolint:nilnil // registration not found
+		// nolint:nilnil // registration not found
 		return nil, nil
 	}
 
@@ -278,7 +278,7 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 
 	// No scanner configured
 	if registration == nil {
-		//nolint:nilnil // no scanner configured
+		// nolint:nilnil // no scanner configured
 		return nil, nil
 	}
 
@@ -369,7 +369,7 @@ func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Contex
 	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (any, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
-			//nolint:nilerr // Error is captured in MetadataResult.Error for caching, not returned to caller
+			// nolint:nilerr // Error is captured in MetadataResult.Error for caching, not returned to caller
 			return &MetadataResult{Error: err.Error()}, nil
 		}
 

@@ -48,7 +48,7 @@ func putBlobUploadResources(r *http.Request, _, referenceID string) (types.Resou
 
 	if size == 0 {
 		logger.Debug("blob size is 0")
-		//nolint:nilnil // skip zero size blob
+		// nolint:nilnil // skip zero size blob
 		return nil, nil
 	}
 
@@ -62,7 +62,7 @@ func putBlobUploadResources(r *http.Request, _, referenceID string) (types.Resou
 	}
 
 	if exist {
-		//nolint:nilnil // blob already exists
+		// nolint:nilnil // blob already exists
 		return nil, nil
 	}
 

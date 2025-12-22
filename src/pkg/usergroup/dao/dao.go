@@ -111,7 +111,7 @@ func (d *dao) Get(ctx context.Context, id int) (*model.UserGroup, error) {
 	if len(userGroupList) > 0 {
 		return userGroupList[0], nil
 	}
-	//nolint:nilnil // user group is not found
+	// nolint:nilnil // user group is not found
 	return nil, nil
 }
 

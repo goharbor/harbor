@@ -49,7 +49,7 @@ func postInitiateBlobUploadResources(r *http.Request, _, referenceID string) (ty
 	blb, err := blobController.Get(ctx, mount)
 	if errors.IsNotFoundErr(err) {
 		// mount blob not found, skip to request the resources
-		//nolint:nilnil // mount blob not found
+		// nolint:nilnil // mount blob not found
 		return nil, nil
 	} else if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func postInitiateBlobUploadResources(r *http.Request, _, referenceID string) (ty
 	}
 
 	if exist {
-		//nolint:nilnil // blob already exists
+		// nolint:nilnil // blob already exists
 		return nil, nil
 	}
 

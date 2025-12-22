@@ -247,7 +247,7 @@ func (d *controller) createPermission(ctx context.Context, r *Robot) error {
 
 func (d *controller) populate(ctx context.Context, r *model.Robot, option *Option) (*Robot, error) {
 	if r == nil {
-		//nolint:nilnil // input robot is nil
+		// nolint:nilnil // input robot is nil
 		return nil, nil
 	}
 	robot := &Robot{
