@@ -11,6 +11,7 @@ linters:
     - misspell
     - revive
     - staticcheck
+    - unconvert
     - unused
     - whitespace
   settings:

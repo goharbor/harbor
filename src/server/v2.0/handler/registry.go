@@ -174,17 +174,17 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 
 	in := &models.RegistryInfo{
 		Description: info.Description,
-		Type:        string(info.Type),
+		Type:        info.Type,
 	}
 	for _, filter := range info.SupportedResourceFilters {
 		in.SupportedResourceFilters = append(in.SupportedResourceFilters, &models.FilterStyle{
 			Style:  filter.Style,
-			Type:   string(filter.Type),
+			Type:   filter.Type,
 			Values: filter.Values,
 		})
 	}
 	for _, trigger := range info.SupportedTriggers {
-		in.SupportedTriggers = append(in.SupportedTriggers, string(trigger))
+		in.SupportedTriggers = append(in.SupportedTriggers, trigger)
 	}
 
 	// whether support copy by chunk
