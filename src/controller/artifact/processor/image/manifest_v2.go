@@ -74,7 +74,7 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 	authorlist := []string{"org.opencontainers.image.authors", "maintainer"}
 	if len(author) == 0 && len(config.Config.Labels) > 0 {
 		for _, authorlabel := range authorlist {
-			if val, ok := config.Config.Labels[string(authorlabel)]; ok && len(val) > 0 {
+			if val, ok := config.Config.Labels[authorlabel]; ok && len(val) > 0 {
 				author = val
 				break
 			}

@@ -16,8 +16,6 @@ package common
 
 import "time"
 
-type contextKey string
-
 // const variables
 const (
 	DBAuth              = "db_auth"

@@ -55,8 +55,6 @@ type adapter struct {
 	*native.Adapter
 	registry        *model.Registry
 	url             string
-	username        string
-	token           string
 	clientGitlabAPI *Client
 }
 

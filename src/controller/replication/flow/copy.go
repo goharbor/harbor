@@ -146,7 +146,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 
 		if _, err = c.taskMgr.Create(ctx, c.executionID, job, map[string]any{
 			"operation":            "copy",
-			"resource_type":        string(srcResource.Type),
+			"resource_type":        srcResource.Type,
 			"source_resource":      getResourceName(srcResource),
 			"destination_resource": getResourceName(dstResource),
 			"references":           getResourceReferences(dstResource)}); err != nil {

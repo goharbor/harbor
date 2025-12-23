@@ -125,7 +125,7 @@ func covertTime(t int64) strfmt.DateTime {
 	if t == 0 {
 		return strfmt.NewDateTime()
 	}
-	uxt := time.Unix(int64(t), 0)
+	uxt := time.Unix(t, 0)
 	return strfmt.DateTime(uxt)
 }
 

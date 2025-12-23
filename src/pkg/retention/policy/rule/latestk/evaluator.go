@@ -64,7 +64,7 @@ func New(params rule.Parameters) rule.Evaluator {
 		if p, ok := params[ParameterK]; ok {
 			if v, ok := utils.ParseJSONInt(p); ok && v >= 0 {
 				return &evaluator{
-					k: int(v),
+					k: v,
 				}
 			}
 		}

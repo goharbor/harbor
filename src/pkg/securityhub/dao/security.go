@@ -121,8 +121,6 @@ var filterMap = map[string]*filterMetaData{
 	"digest":          &filterMetaData{DataType: stringType, ColumnName: "a.digest"},
 }
 
-var applyFilterFunc func(ctx context.Context, key string, query *q.Query) (sqlStr string, params []any)
-
 func exactMatchFilter(_ context.Context, key string, query *q.Query) (sqlStr string, params []any) {
 	if query == nil {
 		return

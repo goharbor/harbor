@@ -15,8 +15,6 @@
 package filter
 
 import (
-	"strings"
-
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
@@ -74,26 +72,6 @@ func (a ArtifactFilters) Filter(artifacts []*model.Artifact) ([]*model.Artifact,
 	return artifacts, nil
 }
 
-type artifactTypeFilter struct {
-	types []string
-}
-
-func (a *artifactTypeFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
-	if len(a.types) == 0 {
-		return artifacts, nil
-	}
-	var result []*model.Artifact
-	for _, artifact := range artifacts {
-		for _, t := range a.types {
-			if strings.EqualFold(strings.ToLower(artifact.Type), strings.ToLower(t)) {
-				result = append(result, artifact)
-				continue
-			}
-		}
-	}
-	return result, nil
-}
-
 // filter the artifacts according to the labels. Only the artifact contains all labels defined
 // in the filter is the valid one
 type artifactLabelFilter struct {
@@ -128,22 +106,6 @@ func (a *artifactLabelFilter) Filter(artifacts []*model.Artifact) ([]*model.Arti
 			if match {
 				result = append(result, artifact)
 			}
-		}
-	}
-	return result, nil
-}
-
-// filter artifacts according to whether the artifact is tagged or untagged artifact
-type artifactTaggedFilter struct {
-	tagged bool
-}
-
-func (a *artifactTaggedFilter) Filter(artifacts []*model.Artifact) ([]*model.Artifact, error) {
-	var result []*model.Artifact
-	for _, artifact := range artifacts {
-		if a.tagged && len(artifact.Tags) > 0 ||
-			!a.tagged && len(artifact.Tags) == 0 {
-			result = append(result, artifact)
 		}
 	}
 	return result, nil

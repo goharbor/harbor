@@ -26,7 +26,6 @@ import (
 )
 
 var defaultRegistered = false
-var o orm.Ormer
 
 // PrepareTestForSQLite is for test only.
 func PrepareTestForSQLite() {
@@ -71,7 +70,7 @@ func PrepareTestForPostgresSQL() {
 	}
 
 	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-	o = initDatabaseForTest(database)
+	_ = initDatabaseForTest(database)
 }
 
 func initDatabaseForTest(db *models.Database) orm.Ormer {

@@ -75,8 +75,6 @@ type ArtifactEventHandler struct {
 	execMgr task.ExecutionManager
 	// reportMgr for managing scan reports
 	reportMgr report.Manager
-	// sbomReportMgr
-	sbomReportMgr sbom.Manager
 	// artMgr for managing artifacts
 	artMgr pkgArt.Manager
 

@@ -133,7 +133,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 
 	remoteRes := &ctlModel.ReplicationResource{
 		RegistryName: remoteRegistry.Name,
-		RegistryType: string(remoteRegistry.Type),
+		RegistryType: remoteRegistry.Type,
 		Endpoint:     remoteRegistry.URL,
 		Namespace:    srcNamespace,
 	}
@@ -143,7 +143,7 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 		log.Errorf("Error while reading external endpoint: %v", err)
 	}
 	localRes := &ctlModel.ReplicationResource{
-		RegistryType: string(rpModel.RegistryTypeHarbor),
+		RegistryType: rpModel.RegistryTypeHarbor,
 		Endpoint:     ext,
 		Namespace:    destNamespace,
 	}
@@ -159,9 +159,9 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 				Description:        rpPolicy.Description,
 				PolicyCreator:      rpPolicy.Creator,
 				ArtifactType:       task.ResourceType,
-				AuthenticationType: string(remoteRegistry.Credential.Type),
+				AuthenticationType: remoteRegistry.Credential.Type,
 				OverrideMode:       rpPolicy.Override,
-				TriggerType:        string(execution.Trigger),
+				TriggerType:        execution.Trigger,
 				ExecutionTimestamp: execution.StartTime.Unix(),
 				ExecutionID:        execution.ID,
 				TaskID:             task.ID,
