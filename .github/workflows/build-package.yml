@@ -13,10 +13,10 @@ jobs:
     env:
         BUILD_PACKAGE: true
     runs-on:
-      - ubuntu-22.04
+      - oracle-vm-24cpu-96gb-x86-64
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.0.0
+        uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -31,13 +31,13 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image

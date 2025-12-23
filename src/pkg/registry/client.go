@@ -467,7 +467,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 	resp, err := c.do(req)
 	if err != nil {
 		// if push chunk error, we should query the upload progress for new location and end range.
-		newLocation, newEnd, err1 := c.getUploadStatus(location)
+		newLocation, newEnd, err1 := c.getUploadStatus(url)
 		if err1 == nil {
 			return newLocation, newEnd, err
 		}

@@ -31,6 +31,10 @@ changelog:
       labels:
         - release-note/deprecation
 
+    - title: Bump Component Version 🤖
+      labels:
+        - release-note/bump-version
+
     - title: Other Changes
       labels:
         - "*"
