@@ -18,7 +18,7 @@ import "github.com/goharbor/harbor/src/pkg/reg/adapter"
 
 // define a new interface to combine the two interfaces of adapter for mockery to generate the mocks
 
-//nolint:unused // for make gen_mocks use
+// nolint:unused // for make gen_mocks use
 type registryAdapter interface {
 	adapter.Adapter
 	adapter.ArtifactRegistry
