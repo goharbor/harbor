@@ -126,6 +126,7 @@
                 type="text"
                 [(ngModel)]="currentConfig.robot_name_prefix.value"
                 required
+                pattern="\S+"
                 autocomplete="off"
                 id="robotNamePrefix"
                 size="20"
