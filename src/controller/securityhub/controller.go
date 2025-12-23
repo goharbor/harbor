@@ -87,6 +87,7 @@ func (c *controller) SecuritySummary(ctx context.Context, projectID int64, optio
 	opts := newOptions(options...)
 	scannerUUID, err := c.scannerMgr.DefaultScannerUUID(ctx)
 	if len(scannerUUID) == 0 || err != nil {
+		// nolint:nilerr // Return empty summary when no scanner configured or unavailable
 		return &secHubModel.Summary{}, nil
 	}
 	sum, err := c.secHubMgr.Summary(ctx, scannerUUID, projectID, nil)
