@@ -17,22 +17,52 @@ package url
 import (
 	"net/http"
 	"net/url"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
-// Middleware middleware which validates the raw query, especially for the invalid semicolon separator.
+// Middleware validates the URL query string, rejecting requests with:
+//   - Invalid semicolon separators
+//   - Null bytes (that can cause DB errors)
+//   - Invalid UTF-8 sequences
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if r.URL != nil && r.URL.RawQuery != "" {
-			_, err := url.ParseQuery(r.URL.RawQuery)
-			if err != nil {
-				lib_http.SendError(w, errors.New(err).WithCode(errors.BadRequestCode))
+			if err := validateQueryString(r.URL.RawQuery); err != nil {
+				lib_http.SendError(w, err)
 				return
 			}
 		}
 		next.ServeHTTP(w, r)
 	}, skippers...)
+}
+
+// containsInvalidChars checks for null bytes or invalid UTF-8
+func containsInvalidChars(s string) bool {
+	return strings.Contains(s, "\x00") || !utf8.ValidString(s)
+}
+
+func validateQueryString(rawQuery string) error {
+	values, err := url.ParseQuery(rawQuery)
+	if err != nil {
+		return errors.New(err).WithCode(errors.BadRequestCode)
+	}
+
+	for key, vals := range values {
+		if containsInvalidChars(key) {
+			return errors.BadRequestError(nil).
+				WithMessage("query parameter key contains invalid characters (null bytes or invalid UTF-8)")
+		}
+		for _, v := range vals {
+			if containsInvalidChars(v) {
+				return errors.BadRequestError(nil).
+					WithMessagef("query parameter %q contains invalid characters (null bytes or invalid UTF-8)", key)
+			}
+		}
+	}
+	return nil
 }
