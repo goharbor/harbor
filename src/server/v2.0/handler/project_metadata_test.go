@@ -37,7 +37,12 @@ func TestValidate(t *testing.T) {
 		{
 			name:      "max upstream conn value 0",
 			metas:     map[string]string{proModels.ProMetaMaxUpstreamConn: "0"},
-			expectErr: false,
+			expectErr: true,
+		},
+		{
+			name:      "max upstream conn negative invalid",
+			metas:     map[string]string{proModels.ProMetaMaxUpstreamConn: "-2"},
+			expectErr: true,
 		},
 		{
 			name:      "max upstream conn value -1",
