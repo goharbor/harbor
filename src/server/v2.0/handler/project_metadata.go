@@ -164,7 +164,14 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 	case proModels.ProMetaMaxUpstreamConn:
 		v, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
-			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
+			return nil, errors.New(nil).
+				WithCode(errors.BadRequestCode).
+				WithMessagef("invalid value: %s", value)
+		}
+		if v == 0 || v < -1 {
+			return nil, errors.New(nil).
+				WithCode(errors.BadRequestCode).
+				WithMessagef("invalid value for %s: %d", key, v)
 		}
 		metas[proModels.ProMetaMaxUpstreamConn] = strconv.FormatInt(v, 10)
 	default:
