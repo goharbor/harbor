@@ -241,7 +241,10 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, and JFrog Artifactory registries.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "CONNECTION_LIMIT": "Connection limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

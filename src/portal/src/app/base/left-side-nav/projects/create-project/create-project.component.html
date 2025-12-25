@@ -313,7 +313,7 @@
                         [(ngModel)]="project.metadata.max_upstream_conn"
                         name="maxUpStreamConn"
                         class="clr-input width-164 mr-10"
-                        placeholder="Enter upstream connection limit"
+                        [placeholder]="'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP' | translate"
                         autocomplete="off"
                         (ngModelChange)="validateMaxUpstreamConnections()" />
                     <clr-icon

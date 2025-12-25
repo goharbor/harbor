@@ -241,7 +241,10 @@
         "PROXY_CACHE": "프록시 캐시",
         "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
-        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트"
+        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
+        "CONNECTION_LIMIT": "Connection limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",

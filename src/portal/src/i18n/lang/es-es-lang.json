@@ -242,7 +242,10 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, AWS ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory y Github GHCR.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "CONNECTION_LIMIT": "Connection limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
