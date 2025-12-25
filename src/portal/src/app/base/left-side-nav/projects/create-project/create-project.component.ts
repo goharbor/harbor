@@ -366,7 +366,7 @@ export class CreateProjectComponent
         }
 
         this.validateMaxUpstreamConnections();
-        if (this.bandwidthError) {
+        if (this.maxUpstreamConnError) {
             this.inlineAlert.showInlineError(this.maxUpstreamConnError);
             return;
         }
@@ -449,7 +449,8 @@ export class CreateProjectComponent
             !this.isSubmitOnGoing &&
             this.isNameValid &&
             !this.checkOnGoing &&
-            !this.bandwidthError
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError
         );
     }
 
