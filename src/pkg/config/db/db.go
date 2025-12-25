@@ -89,7 +89,7 @@ func (d *Database) Save(ctx context.Context, cfgs map[string]any) error {
 // Get - Get config item from db
 func (d *Database) Get(ctx context.Context, key string) (map[string]any, error) {
 	resultMap := map[string]any{}
-	configEntries, err := d.cfgDAO.GetConfigItem(ctx, q.New(q.KeyWords{"k": key}))
+	configEntries, err := d.cfgDAO.GetConfigItem(ctx, q.New(q.KeyWords{"key": key}))
 	if err != nil {
 		log.Debugf("get config db error: %v", err)
 		return resultMap, err
