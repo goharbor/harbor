@@ -163,3 +163,7 @@ func (m *Manager) cleanUp(ctx context.Context, p *models.Project) {
 		}
 	}
 }
+
+func (m *Manager) DeleteRetentionID(ctx context.Context, projectID, retentionID int64) error {
+	return m.delegator.DeleteRetentionID(ctx, projectID, retentionID)
+}
