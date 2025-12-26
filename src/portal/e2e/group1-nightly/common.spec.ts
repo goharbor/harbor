@@ -114,6 +114,159 @@ test('project admin operate labels', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, harborUser);
 });
 
+test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const image = 'redis';
+  const tag1 = '3.2.10-alpine';
+  const tag2 = '4.0.7-alpine';
+  const label1 = 'label111';
+  const label2 = 'label22';
+
+  // Sign out current admin user and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+
+  // Create a new project
+  await createProject(harborPage, projectName);
+
+  // Push two images with different tags
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
+  const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+  
+  await pushImageWithTag({
+    ip: harborIp,
+    user: 'user1',
+    pwd: 'Harbor12345',
+    project: projectName,
+    image,
+    tag: tag1,
+    tag1,
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  await pushImageWithTag({
+    ip: harborIp,
+    user: 'user1',
+    pwd: 'Harbor12345',
+    project: projectName,
+    image,
+    tag: tag2,
+    tag1: tag2,
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  // Navigate into the project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+
+  // Navigate to Project Labels tab
+  await harborPage.getByRole('tab', { name: 'Labels' }).locator('a').click();
+  
+  // Create two labels
+  await harborPage.getByRole('button', { name: 'New Label' }).click();
+  await harborPage.getByRole('textbox', { name: 'Label Name' }).fill(label1);
+  await harborPage.getByText('OK', { exact: true }).click();
+  await harborPage.getByRole('row', { name: new RegExp(label1) }).waitFor({ state: 'visible', timeout: 5000 });
+
+  await harborPage.getByRole('button', { name: 'New Label' }).click();
+  await harborPage.getByRole('textbox', { name: 'Label Name' }).fill(label2);
+  await harborPage.getByText('OK', { exact: true }).click();
+  await harborPage.getByRole('row', { name: new RegExp(label2) }).waitFor({ state: 'visible', timeout: 5000 });
+
+  // Navigate to Repositories
+  await harborPage.getByText('Repositories').click();
+  
+  // Wait for repository link and click it
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) }).click();
+
+  // Add label1 to first tag (3.2.10-alpine)
+  const row1 = harborPage.getByRole('row', { name: new RegExp(tag1) });
+  await row1.locator('label').first().click();
+  await harborPage.getByText('Actions').click();
+  await harborPage.getByRole('button', { name: 'Add Labels' }).click();
+  await harborPage.getByRole('button', { name: label1 }).click();
+  
+  // Wait a bit for label to be applied
+  await harborPage.waitForTimeout(1000);
+
+  // Add label2 to second tag (4.0.7-alpine)
+  const row2 = harborPage.getByRole('row', { name: new RegExp(tag2) });
+  await row2.locator('label').first().click();
+  await harborPage.getByText('Actions').click();
+  await harborPage.getByRole('button', { name: 'Add Labels' }).click();
+  await harborPage.getByRole('button', { name: label2 }).click();
+  
+  // Wait for labels to be applied
+  await harborPage.waitForTimeout(1000);
+
+  // Filter by labels - click on Labels column header to show filter
+  await harborPage.getByRole('grid').getByText('Labels').click();
+  
+  // Verify that we can see both labels in the artifacts
+  await expect(harborPage.getByText(label1)).toBeVisible();
+  await expect(harborPage.getByText(label2)).toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
+test('developer operate labels', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+
+  // Sign out current admin user and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+
+  // Create a new project
+  await createProject(harborPage, projectName, true);
+
+  // Navigate to Members tab
+  await harborPage.getByText('Members').click();
+
+  // Add user2 as a member
+  await harborPage.getByRole('button', { name: 'User', exact: true }).click();
+  await harborPage.locator('#member_name').fill('user2');
+  await harborPage.getByText('Developer').click();
+  await harborPage.getByRole('button', { name: 'OK' }).click();
+
+  // Wait for member to be added
+  await harborPage.waitForTimeout(2000);
+
+  // Sign out user1
+  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+
+  // Sign in as user2 (Developer role)
+  await login(harborPage, undefined, { username: 'user2', password: 'Harbor12345' });
+
+  // Go to Projects page first
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  
+  // Navigate to the project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+
+  // Verify that Labels tab is NOT visible for developer role
+  await expect(harborPage.getByRole('tab', { name: 'Labels' })).not.toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: 'user2', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
 test('create a new project', async ({ harborPage }) => {
   const projectName = `test_project_${Date.now()}`;
   
