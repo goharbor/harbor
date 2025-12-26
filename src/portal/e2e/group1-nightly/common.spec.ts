@@ -343,6 +343,49 @@ test('delete multi artifacts', async ({ harborPage, harborUser }) => {
   }
 });
 
+test('delete multiple users', async ({ harborPage, harborUser }) => {
+  const d = new Date();
+  const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
+  const projectName = `project${dateStr}`;
+  const users = ['user1', 'user2'];
+  
+  // Create project
+  await createProject(harborPage, projectName, true);
+  
+  // Navigate to Members tab
+  await harborPage.getByText('Members').click();
+  
+  // Add multiple users as members
+  for (const user of users) {
+    await harborPage.getByRole('button', { name: 'User' }).click();
+    await harborPage.locator('#member_name').fill(user);
+    await harborPage.getByLabel('New Member').getByText('Guest', { exact: true }).click();
+    await harborPage.getByRole('button', { name: 'OK' }).click();
+    
+    // Wait for user to be added
+    await harborPage.waitForTimeout(500);
+  }
+  
+  // Select both users
+  for (const user of users) {
+    const userRow = harborPage.getByRole('row', { name: new RegExp(`${user}.*User.*Guest`) });
+    await userRow.locator('label').click();
+  }
+  
+  // Click ACTION and Remove
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Remove' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE' }).click();
+  
+  // Wait for deletion to process
+  await harborPage.waitForTimeout(1000);
+  
+  // Verify both users were removed
+  for (const user of users) {
+    await expect(harborPage.getByRole('row', { name: new RegExp(user) })).not.toBeVisible({ timeout: 5000 });
+  }
+});
+
 test('user view projects', async ({ harborPage }) => {
   // Create three projects and go into each
   const d = new Date();
