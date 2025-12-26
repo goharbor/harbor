@@ -64,6 +64,56 @@ test('delete a system label', async ({ harborPage }) => {
   await harborPage.getByRole('row', { name: new RegExp(labelName) }).waitFor({ state: 'detached', timeout: 5000 });
 });
 
+test('project admin operate labels', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const labelName = `label_${timestamp}`;
+  const updatedLabelName = `label_updated_${timestamp}`;
+
+  // Sign out current admin user and sign in as user019
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+
+  // Create a new project
+  await createProject(harborPage, projectName, true);
+  
+  // Navigate to Project Labels tab
+  await harborPage.getByRole('tab', { name: 'Labels' }).locator('a').click();
+  
+  // Create a new label
+  await harborPage.getByRole('button', { name: 'New Label' }).click();
+  await harborPage.getByRole('textbox', { name: 'Label Name' }).fill(labelName);
+  await harborPage.getByText('OK', { exact: true }).click();
+  
+  // Wait for label to appear
+  await harborPage.getByRole('row', { name: new RegExp(labelName) }).waitFor({ state: 'visible', timeout: 5000 });
+  
+  // Update the label
+  await harborPage.getByRole('row', { name: new RegExp(labelName) }).getByRole('gridcell', { name: 'Select' }).locator('label').click();
+  await harborPage.getByRole('button', { name: 'Edit' }).click();
+  await harborPage.getByRole('textbox', { name: 'Label Name' }).fill(updatedLabelName);
+  await harborPage.getByText('OK', { exact: true }).click();
+  
+  // Wait for updated label to appear
+  await harborPage.getByRole('row', { name: new RegExp(updatedLabelName) }).waitFor({ state: 'visible', timeout: 5000 });
+  
+  // Delete the label
+  await harborPage.getByRole('row', { name: new RegExp(updatedLabelName) }).getByRole('gridcell', { name: 'Select' }).locator('label').click();
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+  
+  // Wait for label to be removed
+  await harborPage.getByRole('row', { name: new RegExp(updatedLabelName) }).waitFor({ state: 'detached', timeout: 5000 });
+  
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
 test('create a new project', async ({ harborPage }) => {
   const projectName = `test_project_${Date.now()}`;
   
@@ -446,7 +496,6 @@ test('push image', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 });
-
 
 test('project level policy public', async ({ harborPage, harborUser }) => {
   const d = new Date();
