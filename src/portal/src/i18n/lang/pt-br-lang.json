@@ -241,9 +241,9 @@
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
-        "CONNECTION_LIMIT": "Connection limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Enter upstream connection limit"
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",

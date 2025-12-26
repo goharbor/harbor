@@ -259,7 +259,7 @@
         "NO_PROJECT": "Мы не смогли найти никаких проектов",
         "CONNECTION_LIMIT": "Connection limit",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Enter upstream connection limit"
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",
