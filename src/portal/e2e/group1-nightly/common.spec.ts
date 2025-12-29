@@ -1,5 +1,5 @@
 import { test, expect, login } from '../fixtures/harbor';
-import { createProject, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
+import { createProject, pullImage, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -615,6 +615,133 @@ test('user view projects', async ({ harborPage }) => {
   for (const projectName of projectNames) {
     await expect(harborPage.getByRole('gridcell', { name: projectName, exact: true })).toBeVisible();
   }
+});
+
+test('user view logs', async ({ harborPage, harborUser }) => {
+  test.setTimeout(60000);
+
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const pushImageName = 'hello-world';
+  const pushImageTag = 'latest';
+  const testUser = 'user1';
+  const testPassword = 'Harbor12345';
+
+  // Sign out admin and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: testUser, password: testPassword });
+
+  // Create a new project
+  await createProject(harborPage, projectName);
+
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
+  const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+
+  // Push an image to create logs
+  await pushImageWithTag({
+    ip: harborIp,
+    user: testUser,
+    pwd: testPassword,
+    project: projectName,
+    image: pushImageName,
+    tag: pushImageTag,
+    tag1: pushImageTag,
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  // Wait a bit to ensure the image is processed
+  await harborPage.waitForTimeout(1000);
+
+  // Pull the image to create pull logs - this will now definitely pull from Harbor
+  await pullImage({
+    ip: harborIp,
+    user: testUser,
+    pwd: testPassword,
+    project: projectName,
+    image: pushImageName,
+    tag: pushImageTag,
+  });
+
+  // Wait for Harbor to process and log the pull event
+  await harborPage.waitForTimeout(2000);
+
+  // Navigate to project
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+
+  // Delete the repository to create delete logs
+  const repoName = `${projectName}/${pushImageName}`;
+  await expect(harborPage.getByRole('link', { name: new RegExp(repoName) })).toBeVisible({ timeout: 10000 });
+  
+  // Select repository and delete
+  const repoRow = harborPage.getByRole('row', { name: new RegExp(repoName) });
+  await repoRow.locator('label').first().click();
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+  
+  // Go to project logs
+  await harborPage.getByRole('tab', { name: 'Logs' }).click();
+
+  // Verify Advanced Search button is displayed
+  await expect(harborPage.locator('project-audit-log').getByRole('button', { name: 'Advanced' })).toBeVisible();
+
+  // Verify different operation types in logs
+  // await expect(harborPage.getByRole('row', { name: /artifact.*pull/i })).toBeVisible({ timeout: 10000 });
+  const audit = harborPage.locator('project-audit-log');
+
+  // Verify specific audit entries with precise selectors
+  await expect(
+    audit.getByRole('row', {
+      name: new RegExp(`${projectName}\\/${pushImageName}:${pushImageTag}\\s+artifact\\s+create`, 'i'),
+    })
+  ).toBeVisible({ timeout: 5000 });
+
+  await expect(
+    audit.getByRole('row', {
+      name: new RegExp(`${projectName}\\s+project\\s+create`, 'i'),
+    })
+  ).toBeVisible({ timeout: 5000 });
+
+  await expect(
+    audit.getByRole('row', {
+      name: new RegExp(`${projectName}\\/${pushImageName}\\s+repository\\s+delete`, 'i'),
+    })
+  ).toBeVisible({ timeout: 5000 });
+
+  // Advanced search - Operations filter
+  await audit.getByRole('button', { name: 'Advanced' }).click();
+
+  // Filter by Operations - Create
+  await audit.getByRole('button', { name: 'Operations' }).click();
+  await audit.getByRole('menuitem', { name: 'All Operations' }).click(); // Deselect all first
+
+  await audit.getByRole('button', { name: 'Operations' }).click();
+  await audit.getByRole('menuitem', { name: 'Create' }).click();
+
+  await harborPage.waitForTimeout(1000);
+  await expect(
+    audit.getByRole('row', {
+      name: new RegExp('artifact\\s+create', 'i'),
+    })
+  ).toBeVisible({ timeout: 5000 });
+
+  // Filter by Operations - Delete
+  await audit.getByRole('button', { name: 'Operations' }).click();
+  await audit.getByRole('menuitem', { name: 'Delete' }).click();
+
+  await harborPage.waitForTimeout(1000);
+  await expect(
+    audit.getByRole('row', {
+      name: new RegExp(`${projectName}\\/${pushImageName}\\s+repository\\s+delete`, 'i'),
+    })
+  ).toBeVisible({ timeout: 5000 });
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 });
 
 test('push image', async ({ harborPage, harborUser }) => {
