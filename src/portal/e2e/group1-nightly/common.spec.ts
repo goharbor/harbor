@@ -945,3 +945,70 @@ test('statistics info', async ({ harborPage, harborUser }) => {
   expect(totalProjectCount2).toBe(expectedTotalProjectCount);
   expect(totalRepoCount2).toBe(expectedTotalRepoCount);
 });
+
+test('copy a image', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const sourceProjectName = `source_project_${timestamp}`;
+  const targetProjectName = `target_project_${timestamp}`;
+  const image = 'redis';
+  const tag = '3.2.10-alpine';
+
+  // Create source project
+  await createProject(harborPage, sourceProjectName);
+  
+  // Small delay to avoid timestamp collision
+  await harborPage.waitForTimeout(100);
+  
+  // Create target project
+  await createProject(harborPage, targetProjectName);
+
+  // Push image to source project
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
+  const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+  
+  await pushImageWithTag({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: sourceProjectName,
+    image,
+    tag,
+    tag1: tag,
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  // Navigate to source project
+  await waitForProjectInList(harborPage, sourceProjectName, 15000, true);
+
+  // Navigate to repository
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${sourceProjectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${sourceProjectName}/${image}`) }).click();
+
+  // Select the artifact and retag it
+  const artifactRow = harborPage.getByRole('row', { name: new RegExp(tag) });
+  await artifactRow.locator('label').first().click();
+  await harborPage.getByText('Actions').click();
+  await harborPage.getByRole('menuitem', { name: 'retag' }).click();
+
+  // Fill in retag dialog
+  await harborPage.locator('#project-name').fill(targetProjectName);
+  
+  // Confirm the retag
+  await harborPage.getByRole('button', { name: 'CONFIRM' }).click();
+
+  // Wait for retag operation to complete
+  await harborPage.waitForTimeout(2000);
+
+  // Navigate to target project
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, targetProjectName, 15000, true);
+
+  // Verify the image was copied to target project
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${targetProjectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${targetProjectName}/${image}`) }).click();
+
+  // Verify the artifact with the same tag exists in target project
+  await expect(harborPage.getByRole('button', { name: new RegExp(tag) })).toBeVisible({ timeout: 5000 });
+});
