@@ -1,5 +1,5 @@
 import { test, expect, login } from '../fixtures/harbor';
-import { createProject, pullImage, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
+import { createProject, pullImage, cannotPullImage, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -838,6 +838,174 @@ test('manage project members', async ({ harborPage, harborUser }) => {
 
   // Sign out and sign back in as admin
   await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
+test('manage project publicity', async ({ harborPage, harborUser }) => {
+  test.setTimeout(60000);
+
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const image = 'hello-world';
+  const tag = 'latest';
+  const user1 = 'user1';
+  const user2 = 'user2';
+  const pwd = 'Harbor12345';
+
+  // Sign out current admin user and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user1, password: pwd });
+
+  // Create a new public project
+  await createProject(harborPage, projectName, false, true);
+
+  // Push image to the project
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
+  const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+  
+  await pushImageWithTag({
+    ip: harborIp,
+    user: user1,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+    tag1: tag,
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  // Pull image as user2 (should succeed for public project)
+  await pullImage({
+    ip: harborIp,
+    user: user2,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+  });
+
+  // Sign out user1 and sign in as user2
+  await harborPage.getByRole('button', { name: user1, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user2, password: pwd });
+
+  // Verify project is visible to user2 in "All Projects" view
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName);
+
+  // Search for private projects only - public project should NOT be visible
+  await harborPage.getByRole('combobox').first().selectOption('1'); // Select "Private" option
+  await harborPage.waitForTimeout(1000);
+  await expect(harborPage.getByRole('link', { name: projectName })).not.toBeVisible();
+
+  // Sign out user2 and sign back in as user1
+  await harborPage.getByRole('button', { name: user2, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user1, password: pwd });
+
+  // Make project private
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Check if expand button exists and use it to access Configuration
+  await harborPage.getByRole('application').locator('button').click();
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  
+  // Verify Public checkbox is currently checked, then uncheck it
+  const publicCheckbox = harborPage.locator('#clr-wrapper-public').getByText('Public', { exact: true });
+  await publicCheckbox.click();
+  
+  // Save the configuration
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Verify project is now private by checking configuration again
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Check if expand button exists and use it to access Configuration
+  
+  await harborPage.getByRole('application').locator('button').click();
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  
+  // Verify public checkbox is unchecked
+  const publicCheckboxInput = harborPage.locator('#clr-wrapper-public').locator('input');
+  await expect(publicCheckboxInput).not.toBeChecked();
+
+  // Sign out user1 and sign in as user2
+  await harborPage.getByRole('button', { name: user1, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user2, password: pwd });
+
+  // Verify project is NOT visible to user2 (private project)
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await harborPage.waitForTimeout(1000);
+  await expect(harborPage.getByRole('link', { name: projectName })).not.toBeVisible();
+
+  // Verify user2 cannot pull image from private project
+  await cannotPullImage({
+    ip: harborIp,
+    user: user2,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+    expectedError: 'unauthorized to access repository',
+  });
+
+  // Sign out user2 and sign back in as user1
+  await harborPage.getByRole('button', { name: user2, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user1, password: pwd });
+
+  // Make project public again
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Check if expand button exists and use it to access Configuration
+  await harborPage.getByRole('application').locator('button').click();
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  
+  // Click to make public again
+  await harborPage.locator('#clr-wrapper-public').getByText('Public', { exact: true }).click();
+  
+  // Save the configuration
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Verify project is now public by checking configuration again
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  
+  // Check if expand button exists and use it to access Configuration
+  await harborPage.getByRole('application').locator('button').click();
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  
+  // Verify public checkbox is checked
+  await expect(publicCheckboxInput).toBeChecked();
+
+  // Sign out user1 and sign in as user2
+  await harborPage.getByRole('button', { name: user1, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: user2, password: pwd });
+
+  // Verify project IS visible to user2 again (public project)
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName);
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: user2, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   await login(harborPage, undefined, harborUser);
