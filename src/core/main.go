@@ -389,7 +389,7 @@ func initSkipAuditDBbyEnv(ctx context.Context) error {
 			return err
 		}
 	} else {
-		log.Debugf("key SkipAuditLogDatabase already exist in the db with value %v", val)
+		log.Debugf("key SkipAuditLogDatabase aleady exist in the db with value %v", val)
 	}
 	return nil
 }
