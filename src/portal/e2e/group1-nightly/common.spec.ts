@@ -1116,6 +1116,83 @@ test('edit project creation', async ({ harborPage, harborUser }) => {
   await harborPage.waitForTimeout(1000);
 });
 
+test('edit repo info', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const image = 'hello-world';
+  const testUser = 'user1';
+  const testPwd = 'Harbor12345';
+  const testDescription = 'test_description_info';
+
+  // Sign out admin and sign in as test user
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: testUser, password: testPwd });
+
+  // Create a new project
+  await createProject(harborPage, projectName);
+
+  // Push an image to the project
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImage({
+    ip: harborIp,
+    user: testUser,
+    pwd: testPwd,
+    project: projectName,
+    imageWithOrWithoutTag: image,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Navigate to the project and repository
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) }).click();
+
+  // Click on Info tab
+  await harborPage.getByRole('button', { name: 'Info' }).click();
+
+  // Test cancel functionality
+  // Click edit button
+  await harborPage.locator('#info-edit-button button').click();
+  
+  // Enter test description
+  await harborPage.locator('#info-edit-textarea').fill(testDescription);
+  
+  // Click cancel
+  await harborPage.locator('#edit-cancel').click();
+  
+  // Confirm the cancel action in the modal
+  await harborPage.getByRole('button', { name: 'CONFIRM' }).click();
+  
+  // Wait for edit mode to close
+  await harborPage.waitForTimeout(1000);
+
+  // Verify description was not saved (should not contain the test description)
+  await expect(harborPage.locator('#no-editing')).toBeVisible();
+
+  // Test save functionality
+  // Click edit button again
+  await harborPage.locator('#info-edit-button button').click();
+  
+  // Enter test description
+  await harborPage.locator('#info-edit-textarea').fill(testDescription);
+  
+  // Click save
+  await harborPage.locator('#edit-save').click();
+  
+  // Wait and verify the description was saved
+  await expect(harborPage.getByText(testDescription)).toBeVisible({ timeout: 5000 });
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
 test('push image', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
