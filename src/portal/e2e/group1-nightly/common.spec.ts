@@ -1011,6 +1011,58 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, harborUser);
 });
 
+test('assign sys admin', async ({ harborPage, harborUser }) => {
+  const testUser = 'user1';
+  const testPwd = 'Harbor12345';
+
+  // First, sign out current admin user and sign in as user1 to verify they're not admin yet
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: testUser, password: testPwd });
+
+  // Verify Administration section is NOT visible for regular user
+  await expect(harborPage.locator('clr-vertical-nav-group').filter({ hasText: 'Administration' })).not.toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+
+  // Navigate to Users page
+  await harborPage.getByRole('link', { name: 'Users' }).click();
+  
+  // Search for the user
+  await harborPage.locator('harbor-user hbr-filter clr-icon').click();
+  await harborPage.locator('harbor-user hbr-filter input').fill(testUser);
+  await harborPage.waitForTimeout(2000);
+  
+  // Select the user checkbox
+  const userRow = harborPage.getByRole('row', { name: new RegExp(testUser) });
+  await userRow.locator('label').first().click();
+  
+  // Click "SET AS ADMIN" button
+  await harborPage.getByRole('button', { name: 'SET AS ADMIN' }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Sign out admin
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  // Sign in as user1 again
+  await login(harborPage, undefined, { username: testUser, password: testPwd });
+
+  // Verify Administration section IS now visible for admin user
+  await expect(harborPage.locator('clr-vertical-nav-group').filter({ hasText: 'Administration' })).toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+});
+
 test('push image', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
