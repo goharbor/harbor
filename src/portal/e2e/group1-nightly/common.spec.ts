@@ -742,6 +742,105 @@ test('user view logs', async ({ harborPage, harborUser }) => {
   // Sign out and sign back in as admin
   await harborPage.getByRole('button', { name: testUser, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+
+  await login(harborPage, undefined, harborUser);
+});
+
+test('manage project members', async ({ harborPage, harborUser }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const testUser1 = 'user2';
+  const image = 'hello-world';
+  const testPassword = 'Harbor12345';
+
+  // Sign out admin and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: 'user1', password: testPassword });
+
+  // Create a new project
+  await createProject(harborPage, projectName, true);
+
+  // Push an image to the project
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
+  const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+
+  await pushImageWithTag({
+    ip: harborIp,
+    user: 'user1',
+    pwd: testPassword,
+    project: projectName,
+    image,
+    tag: 'latest',
+    tag1: 'latest',
+    localRegistry,
+    localRegistryNamespace,
+  });
+
+  // Navigate to Members tab
+  await harborPage.getByText('Members').click();
+
+  // Add user2 as Limited Guest
+  await harborPage.getByRole('button', { name: 'User', exact: true }).click();
+  await harborPage.locator('#member_name').fill(testUser1);
+  await harborPage.getByText('Limited Guest', { exact: true }).click();
+  await harborPage.getByRole('button', { name: 'OK' }).click();
+
+  // Wait for member to be added
+  await harborPage.waitForTimeout(2000);
+  await expect(harborPage.getByRole('gridcell', { name: testUser1 })).toBeVisible({ timeout: 5000 });
+
+  // Change user2 role to Guest
+  const user1Row = harborPage.getByRole('row', { name: new RegExp(testUser1) });
+  await user1Row.locator('label').first().click();
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Guest', exact: true }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Change user2 role to Developer
+  await user1Row.locator('label').first().click();
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Developer', exact: true }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Verify role changed to Developer
+  await expect(user1Row.getByText('Developer')).toBeVisible({ timeout: 5000 });
+
+   // Change user2 role to Maintainer
+  await user1Row.locator('label').first().click();
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Maintainer', exact: true }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Verify role changed to Maintainer
+  await expect(user1Row.getByText('Maintainer')).toBeVisible({ timeout: 5000 });
+
+  // Change user2 role to Admin
+  await user1Row.locator('label').first().click();
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Project Admin', exact: true }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Verify role changed to Admin
+  await expect(user1Row.getByText('Project Admin')).toBeVisible({ timeout: 5000 });
+ 
+  // Remove user2 from project
+  await user1Row.locator('label').first().click();
+  await harborPage.getByText('ACTION').click();
+  await harborPage.getByRole('menuitem', { name: 'Remove' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE' }).click();
+  await harborPage.waitForTimeout(2000);
+
+  // Verify user2 is removed
+  await expect(harborPage.getByRole('gridcell', { name: testUser1 })).not.toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
 });
 
 test('push image', async ({ harborPage, harborUser }) => {
