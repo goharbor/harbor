@@ -1063,6 +1063,59 @@ test('assign sys admin', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, harborUser);
 });
 
+test('edit project creation', async ({ harborPage, harborUser }) => {
+  const testUser = 'user1';
+  const testPwd = 'Harbor12345';
+
+  // First, sign out admin and sign in as user1 to verify project creation button exists initially
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, { username: testUser, password: testPwd });
+
+  // Verify "New Project" button is visible for regular users initially
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await expect(harborPage.getByRole('button', { name: 'New Project' })).toBeVisible();
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  await login(harborPage, undefined, harborUser);
+
+  // Set project creation to admin only
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByLabel('Project Creation').selectOption('adminonly');
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Sign out admin
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  // Sign in as user1 again
+  await login(harborPage, undefined, { username: testUser, password: testPwd });
+
+  // Verify "New Project" button is NOT visible for regular users now
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await expect(harborPage.getByRole('button', { name: 'New Project' })).not.toBeVisible();
+
+  // Sign out user1
+  await harborPage.getByRole('button', { name: testUser, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  
+  // Sign back in as admin
+  await login(harborPage, undefined, harborUser);
+
+  // Reset project creation to everyone
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByLabel('Project Creation').selectOption('everyone');
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await harborPage.waitForTimeout(1000);
+});
+
 test('push image', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
