@@ -115,6 +115,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		if err != nil {
 			// Redis unavailable or script error → do NOT return 429
 			log.Errorf("connection limiter error (blob), skipping rate limit: %v", err)
+			return errors.NewErr(errors.ErrorCodeInternalError, err) // HTTP 500
 		} else if !allowed {
 			log.Infof("current connection exceed max connections to upstream registry")
 			return tooManyRequestsError
