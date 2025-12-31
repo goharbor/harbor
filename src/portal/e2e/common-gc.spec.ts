@@ -101,38 +101,40 @@ async function switchToProjectQuotas(page: Page) {
 
 async function checkProjectQuotaSorting(
   page: Page, 
-  proj1: string, 
-  proj2: string
+  smaller_proj: string, 
+  larger_proj: string
 ) {
-  // Get the Storage column header button
   const storageHeader = page.locator(
     "//div[@class='datagrid-table']//div[@class='datagrid-header']//button[normalize-space()='Storage']"
   );
 
-  // Click to sort ascending (smaller first)
+  // Ascending (smaller first)
   await storageHeader.click();
+  console.log(`smaller project: ${smaller_proj}`);
+  console.log(`larger project: ${larger_proj}`);
+
   
-  // Verify proj1 (alpine, smaller) appears in row 2
+  // smaller proj : in row 1
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${proj1}')]`)
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
   ).toBeVisible();
   
-  // Verify proj2 (photon, larger) appears in row 3
+  // larger proj : in row 2
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[3]//clr-dg-cell[1]//a[contains(text(), '${proj2}')]`)
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
   ).toBeVisible();
 
-  // Click to sort descending (larger first)
+  // Descending (larger first)
   await storageHeader.click();
   
-  // Verify proj2 (photon, larger) now in row 1
+  // larger proj : in row 1
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${proj2}')]`)
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
   ).toBeVisible();
   
-  // Verify proj1 (alpine, smaller) now in row 2
+  // smaller proj : in row 2
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${proj1}')]`)
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
   ).toBeVisible();
 }
 
@@ -185,11 +187,12 @@ test('Project Quota Sorting', async ({ page }) => {
       project: project2,
       image: 'alpine',
       needPullFirst: false,
-      tag: '2.6'
+      tag: 'latest'
     });
 
+    // alpine < photon
     await switchToProjectQuotas(page);
-    await checkProjectQuotaSorting(page, project1, project2);
+    await checkProjectQuotaSorting(page, project2, project1);
 
     await deleteRepo(page, project1, 'photon');
     await deleteRepo(page, project2, 'alpine');
