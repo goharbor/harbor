@@ -125,11 +125,11 @@ test('Project Quota Sorting', async ({ page }) => {
       user: 'admin',
       pwd: 'Harbor12345',
       project: project1,
-      image: 'busybox',
+      image: 'photon',
       needPullFirst: false,
-      tag: 'latest'
+      tag: '2.0'
     });
 
-    await deleteRepo(page, project1, 'busybox');
+    await deleteRepo(page, project1, 'photon');
     await runGC(page)
 })
