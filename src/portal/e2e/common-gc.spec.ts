@@ -93,6 +93,25 @@ async function deleteRepo(page: Page, projectName: string, repoName: string) {
 
 }
 
+async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, gc_now: boolean = false) {
+    await page.locator(" //clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
+    await page.getByRole('link', { name: 'Garbage Collection' }).click();
+
+    if (workers) {
+        await page.selectOption('#workers', workers.toString())
+    }
+
+    if (deleteUntagged) {
+        await page.locator('#delete_untagged').click();
+    }
+
+    if (gc_now) {
+        await page.getByRole("button", { name: 'DRY RUN' }).click()
+    } else {
+        await page.getByRole('button', { name: 'GC NOW' }).click();
+    }
+}
+
 test('Project Quota Sorting', async ({ page }) => {
     await loginAsAdmin(page);
 
@@ -112,4 +131,5 @@ test('Project Quota Sorting', async ({ page }) => {
     });
 
     await deleteRepo(page, project1, 'busybox');
+    await runGC(page)
 })
