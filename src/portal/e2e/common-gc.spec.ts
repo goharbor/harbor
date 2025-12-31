@@ -1,4 +1,17 @@
 import { expect, Page, test } from '@playwright/test'
+import { execSync } from 'child_process';
+
+interface PushImageOptions {
+  ip: string;
+  user: string;
+  pwd: string;
+  project: string;
+  image: string;
+  tag?: string;
+  needPullFirst?: boolean;
+  localRegistry?: string;
+  localNamespace?: string;
+}
 
 async function loginAsAdmin(page: Page) {
     await page.goto('/');
@@ -17,6 +30,50 @@ async function createProject(page: Page, projectName: string, isPublic: boolean 
     }
     await page.getByRole('button', { name: 'OK' }).click();
     await expect(page.getByRole('link', {name: projectName})).toBeVisible()
+}
+
+async function pushImage(options: PushImageOptions) {
+  const {
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    tag = 'latest',
+    needPullFirst = true,
+    localRegistry = 'docker.io',
+    localNamespace = 'library'
+  } = options;
+
+  const imageWithTag = `${image}:${tag}`;
+  const sourceImage = `${localRegistry}/${localNamespace}/${imageWithTag}`;
+  const targetImage = `${ip}/${project}/${imageWithTag}`;
+
+  try {
+    // Pull from source if needed
+    if (needPullFirst) {
+      console.log(`Pulling ${sourceImage}...`);
+      execSync(`sudo docker pull ${sourceImage}`, { stdio: 'inherit' });
+    }
+
+    // Login to Harbor
+    console.log(`Logging in to ${ip}...`);
+    execSync(`sudo docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'pipe' });
+
+    // Tag image
+    const srcImage = needPullFirst ? sourceImage : imageWithTag;
+    execSync(`sudo docker tag ${srcImage} ${targetImage}`, { stdio: 'inherit' });
+
+    // Push to Harbor
+    console.log(`Pushing ${targetImage}...`);
+    execSync(`sudo docker push ${targetImage}`, { stdio: 'inherit' });
+
+    // Logout
+    execSync(`sudo docker logout ${ip}`, { stdio: 'inherit' });
+  } catch (error) {
+    console.error('Docker operation failed:', error);
+    throw error;
+  }
 }
 
 async function goIntoProject(page: Page, projectName: string) {
@@ -43,6 +100,16 @@ test('Project Quota Sorting', async ({ page }) => {
     const project1 = `project${timestamp1}`;
     console.log(project1);
     await createProject(page, project1);
+
+    await pushImage({
+      ip: 'localhost:80',
+      user: 'admin',
+      pwd: 'Harbor12345',
+      project: project1,
+      image: 'busybox',
+      needPullFirst: false,
+      tag: 'latest'
+    });
 
     await deleteRepo(page, project1, 'busybox');
 })
