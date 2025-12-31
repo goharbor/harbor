@@ -93,6 +93,49 @@ async function deleteRepo(page: Page, projectName: string, repoName: string) {
 
 }
 
+async function switchToProjectQuotas(page: Page) {
+  // Navigate to Administration → Project Quotas
+  await page.locator("//clr-vertical-nav-group-children/a[contains(.,'Project Quotas')]").click();
+  await page.waitForTimeout(1000);
+}
+
+async function checkProjectQuotaSorting(
+  page: Page, 
+  proj1: string, 
+  proj2: string
+) {
+  // Get the Storage column header button
+  const storageHeader = page.locator(
+    "//div[@class='datagrid-table']//div[@class='datagrid-header']//button[normalize-space()='Storage']"
+  );
+
+  // Click to sort ascending (smaller first)
+  await storageHeader.click();
+  
+  // Verify proj1 (alpine, smaller) appears in row 2
+  await expect(
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${proj1}')]`)
+  ).toBeVisible();
+  
+  // Verify proj2 (photon, larger) appears in row 3
+  await expect(
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[3]//clr-dg-cell[1]//a[contains(text(), '${proj2}')]`)
+  ).toBeVisible();
+
+  // Click to sort descending (larger first)
+  await storageHeader.click();
+  
+  // Verify proj2 (photon, larger) now in row 1
+  await expect(
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${proj2}')]`)
+  ).toBeVisible();
+  
+  // Verify proj1 (alpine, smaller) now in row 2
+  await expect(
+    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${proj1}')]`)
+  ).toBeVisible();
+}
+
 async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, gc_now: boolean = false) {
     await page.locator(" //clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
     await page.getByRole('link', { name: 'Garbage Collection' }).click();
@@ -130,6 +173,25 @@ test('Project Quota Sorting', async ({ page }) => {
       tag: '2.0'
     });
 
+    const timestamp2 = Date.now();
+    const project2 = `project${timestamp2}`;
+    console.log(project2);
+    await createProject(page, project2);
+
+    await pushImage({
+      ip: 'localhost:80',
+      user: 'admin',
+      pwd: 'Harbor12345',
+      project: project2,
+      image: 'alpine',
+      needPullFirst: false,
+      tag: '2.6'
+    });
+
+    await switchToProjectQuotas(page);
+    await checkProjectQuotaSorting(page, project1, project2);
+
     await deleteRepo(page, project1, 'photon');
+    await deleteRepo(page, project2, 'alpine');
     await runGC(page)
 })
