@@ -306,6 +306,10 @@ export class ProjectPolicyConfigComponent implements OnInit {
             )
             .subscribe(permissins => {
                 this.hasChangeConfigRole = permissins as boolean;
+                this.allowUpdateProxyCacheConfiguration =
+                    this.isSystemAdmin &&
+                    this.hasChangeConfigRole &&
+                    !this.isProxyCacheProject;
             });
     }
 
