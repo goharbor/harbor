@@ -19,6 +19,23 @@ async function createProject(page: Page, projectName: string, isPublic: boolean 
     await expect(page.getByRole('link', {name: projectName})).toBeVisible()
 }
 
+async function goIntoProject(page: Page, projectName: string) {
+    await page.getByRole('link', { name: 'Projects' }).click();
+    await expect(page.getByRole('link', {name: projectName})).toBeVisible()
+    await page.getByRole('link', {name: projectName}).click();
+}
+
+async function deleteRepo(page: Page, projectName: string, repoName: string) {
+    await goIntoProject(page, projectName);
+    const repoRow = page.locator(` xpath=//clr-dg-row[contains(.,'${projectName}/${repoName}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]`);
+    await repoRow.check();
+
+    await page.getByRole('button', { name: 'DELETE' }).click();
+    await page.locator("xpath=//button[contains(.,'DELETE')]").click();
+    await expect(repoRow).not.toBeVisible();
+
+}
+
 test('Project Quota Sorting', async ({ page }) => {
     await loginAsAdmin(page);
 
@@ -26,4 +43,6 @@ test('Project Quota Sorting', async ({ page }) => {
     const project1 = `project${timestamp1}`;
     console.log(project1);
     await createProject(page, project1);
+
+    await deleteRepo(page, project1, 'busybox');
 })
