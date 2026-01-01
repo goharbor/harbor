@@ -16,7 +16,7 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="isSystemAdmin" clrInline>
+        <clr-checkbox-container *ngIf="hasChangeConfigRole" clrInline>
             <label class="label-color-input">
                 {{ 'PROJECT.PROXY_CACHE' | translate }}
             </label>
@@ -33,7 +33,7 @@
             </clr-control-helper>
         </clr-checkbox-container>
         <div
-            *ngIf="isSystemAdmin && projectPolicy.ProxyCacheEnabled"
+            *ngIf="hasChangeConfigRole && projectPolicy.ProxyCacheEnabled"
             class="clr-form-control mt-0">
             <label class="clr-control-label"></label>
             <div class="clr-select-wrapper row-inline">
