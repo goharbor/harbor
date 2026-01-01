@@ -8,6 +8,7 @@ interface PushImageOptions {
   project: string;
   image: string;
   tag?: string;
+  tag1: string;
   needPullFirst?: boolean;
   localRegistry?: string;
   localNamespace?: string;
@@ -45,13 +46,14 @@ async function pushImage(options: PushImageOptions) {
     pwd,
     project,
     image,
-    tag = 'latest',
+    tag,
+    tag1 = 'latest',
     needPullFirst = true,
     localRegistry = localRegistryName,
     localNamespace = localRegistryNamespace,
   } = options;
 
-  const imageWithTag = `${image}:${tag}`;
+  const imageWithTag = `${image}:${tag1}`;
   const sourceImage = `${localRegistry}/${localNamespace}/${imageWithTag}`;
   const targetImage = `${ip}/${project}/${imageWithTag}`;
 
@@ -62,7 +64,7 @@ async function pushImage(options: PushImageOptions) {
     }
     
     console.log(`Logging in to ${ip}...`);
-    execSync(`docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'inherit' });
+    execSync(`docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'pipe' });
 
     const srcImage = needPullFirst ? sourceImage : imageWithTag;
     execSync(`docker tag ${srcImage} ${targetImage}`, { stdio: 'inherit' });
@@ -175,6 +177,7 @@ test('Project Quota Sorting', async ({ page }) => {
       image: smaller_repo,
       needPullFirst: true,
       tag: smaller_repo_tag,
+      tag1: 'latest',
     });
 
     const timestamp2 = Date.now();
@@ -190,6 +193,7 @@ test('Project Quota Sorting', async ({ page }) => {
       image: larger_repo,
       needPullFirst: true,
       tag: larger_repo_tag,
+      tag1: 'latest'
     });
 
     await switchToProjectQuotas(page);
