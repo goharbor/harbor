@@ -50,26 +50,21 @@ async function pushImage(options: PushImageOptions) {
   const targetImage = `${ip}/${project}/${imageWithTag}`;
 
   try {
-    // Pull from source if needed
     if (needPullFirst) {
       console.log(`Pulling ${sourceImage}...`);
-      execSync(`sudo docker pull ${sourceImage}`, { stdio: 'inherit' });
+      execSync(`docker pull ${sourceImage}`, { stdio: 'inherit' });
     }
-
-    // Login to Harbor
+    
     console.log(`Logging in to ${ip}...`);
-    execSync(`sudo docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'pipe' });
+    execSync(`docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'inherit' });
 
-    // Tag image
     const srcImage = needPullFirst ? sourceImage : imageWithTag;
-    execSync(`sudo docker tag ${srcImage} ${targetImage}`, { stdio: 'inherit' });
+    execSync(`docker tag ${srcImage} ${targetImage}`, { stdio: 'inherit' });
 
-    // Push to Harbor
     console.log(`Pushing ${targetImage}...`);
-    execSync(`sudo docker push ${targetImage}`, { stdio: 'inherit' });
+    execSync(`docker push ${targetImage}`, { stdio: 'inherit' });
 
-    // Logout
-    execSync(`sudo docker logout ${ip}`, { stdio: 'inherit' });
+    execSync(`docker logout ${ip}`, { stdio: 'inherit' });
   } catch (error) {
     console.error('Docker operation failed:', error);
     throw error;
@@ -107,19 +102,17 @@ async function checkProjectQuotaSorting(
   const storageHeader = page.locator(
     "//div[@class='datagrid-table']//div[@class='datagrid-header']//button[normalize-space()='Storage']"
   );
-
-  // Ascending (smaller first)
-  await storageHeader.click();
+  
   console.log(`smaller project: ${smaller_proj}`);
   console.log(`larger project: ${larger_proj}`);
-
   
-  // smaller proj : in row 1
+  // Ascending (smaller first)
+  await storageHeader.click();
+  
   await expect(
     page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
   ).toBeVisible();
   
-  // larger proj : in row 2
   await expect(
     page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
   ).toBeVisible();
@@ -127,12 +120,10 @@ async function checkProjectQuotaSorting(
   // Descending (larger first)
   await storageHeader.click();
   
-  // larger proj : in row 1
   await expect(
     page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
   ).toBeVisible();
   
-  // smaller proj : in row 2
   await expect(
     page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
   ).toBeVisible();
@@ -165,14 +156,19 @@ test('Project Quota Sorting', async ({ page }) => {
     console.log(project1);
     await createProject(page, project1);
 
+    const smaller_repo = 'alpine';
+    const smaller_repo_tag = 'latest';
+    const larger_repo = 'photon';
+    const larger_repo_tag = 'latest';
+
     await pushImage({
       ip: 'localhost:80',
       user: 'admin',
       pwd: 'Harbor12345',
       project: project1,
-      image: 'photon',
-      needPullFirst: false,
-      tag: '2.0'
+      image: smaller_repo,
+      needPullFirst: true,
+      tag: smaller_repo_tag,
     });
 
     const timestamp2 = Date.now();
@@ -185,16 +181,15 @@ test('Project Quota Sorting', async ({ page }) => {
       user: 'admin',
       pwd: 'Harbor12345',
       project: project2,
-      image: 'alpine',
-      needPullFirst: false,
-      tag: 'latest'
+      image: larger_repo,
+      needPullFirst: true,
+      tag: larger_repo_tag,
     });
 
-    // alpine < photon
     await switchToProjectQuotas(page);
-    await checkProjectQuotaSorting(page, project2, project1);
+    await checkProjectQuotaSorting(page, project1, project2);
 
-    await deleteRepo(page, project1, 'photon');
-    await deleteRepo(page, project2, 'alpine');
+    await deleteRepo(page, project1, smaller_repo);
+    await deleteRepo(page, project2, larger_repo);
     await runGC(page)
 })
