@@ -13,8 +13,14 @@ interface PushImageOptions {
   localNamespace?: string;
 }
 
+const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+const harborUser = process.env.HARBOR_USERNAME || 'admin';
+const harborPassword = process.env.HARBOR_USERNAME || 'Harbor12345';
+const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
+const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+
 async function loginAsAdmin(page: Page) {
-    await page.goto('/');
+    await page.goto(harborIp);
     await page.getByRole('textbox', { name: 'Username' }).fill('admin');
     await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
     await page.getByRole('button', { name: 'LOG IN' }).click();
@@ -41,8 +47,8 @@ async function pushImage(options: PushImageOptions) {
     image,
     tag = 'latest',
     needPullFirst = true,
-    localRegistry = 'docker.io',
-    localNamespace = 'library'
+    localRegistry = localRegistryName,
+    localNamespace = localRegistryNamespace,
   } = options;
 
   const imageWithTag = `${image}:${tag}`;
@@ -162,9 +168,9 @@ test('Project Quota Sorting', async ({ page }) => {
     const larger_repo_tag = 'latest';
 
     await pushImage({
-      ip: 'localhost:80',
-      user: 'admin',
-      pwd: 'Harbor12345',
+      ip: harborIp,
+      user: harborUser,
+      pwd: harborPassword,
       project: project1,
       image: smaller_repo,
       needPullFirst: true,
@@ -177,9 +183,9 @@ test('Project Quota Sorting', async ({ page }) => {
     await createProject(page, project2);
 
     await pushImage({
-      ip: 'localhost:80',
-      user: 'admin',
-      pwd: 'Harbor12345',
+      ip: harborIp,
+      user: harborUser,
+      pwd: harborPassword,
       project: project2,
       image: larger_repo,
       needPullFirst: true,
