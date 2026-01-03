@@ -4,6 +4,9 @@ const reporter = process.env.PLAYWRIGHT_REPORTER?.trim();
 const htmlReporter: ReporterDescription[] = [['html', { open: 'never' }]];
 const defaultReporters: ReporterDescription[] = [['list'], ...htmlReporter];
 
+// Use system CA certificates for HTTPS requests
+process.env.NODE_OPTIONS = '--use-system-ca';
+
 export default defineConfig({
     testDir: './e2e',
     timeout: 30 * 1000,
