@@ -7,18 +7,151 @@ interface PushImageOptions {
   pwd: string;
   project: string;
   image: string;
-  tag?: string;
-  tag1: string;
   needPullFirst?: boolean;
+  sha256?: string;
+  isRobot?: boolean;
   localRegistry?: string;
   localNamespace?: string;
 }
+
+interface pushImageWithTagOptions {
+  ip: string;
+  user: string;
+  pwd: string;
+  project: string;
+  image: string;
+  tag?: string;
+  tag1: string;
+  localRegistry?: string;
+  localNamespace?: string;
+}
+
 
 const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
 const harborUser = process.env.HARBOR_USERNAME || 'admin';
 const harborPassword = process.env.HARBOR_USERNAME || 'Harbor12345';
 const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
 const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+
+
+function execCommand(command: string): string {
+  try {
+    return execSync(command, { encoding: 'utf-8', stdio: 'pipe' });
+  } catch (error: any) {
+    throw new Error(`Command failed: ${command}\n${error.message}`);
+  }
+}
+
+function dockerLogin(ip: string, username: string, password: string) {
+  console.log(`Logging in to ${ip}...`);
+  execCommand(`docker login -u '${username}' -p '${password}' ${ip}`);
+}
+
+function dockerLogout(ip: string) {
+  execCommand(`docker logout ${ip}`);
+}
+
+async function pushImage(options: PushImageOptions): Promise<void> {
+  const {
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    needPullFirst = true,
+    sha256,
+    isRobot = false,
+    localRegistry = 'docker.io',
+    localNamespace = 'library'
+  } = options;
+
+  console.log(`Running docker push ${image}...`);
+
+  let imageInUse: string;
+  let imageInUseWithTag: string;
+
+  if (sha256) {
+    // SHA256 provided - use digest format for pulling
+    imageInUse = `${image}@sha256:${sha256}`;
+    // Use SHA256 as tag name for pushing
+    imageInUseWithTag = `${image}:${sha256}`;
+  } else {
+    // No SHA256 - use image as-is
+    imageInUse = image;
+    imageInUseWithTag = image;
+  }
+
+  if (!needPullFirst) {
+    imageInUse = image;
+  }
+
+  try {
+    if (needPullFirst) {
+      const sourceImage = `${localRegistry}/${localNamespace}/${imageInUse}`;
+      console.log(`Pulling ${sourceImage} from Docker Hub...`);
+      execCommand(`docker pull ${sourceImage}`);
+    }
+
+    const username = isRobot 
+      ? `robot$${project}+${user}` 
+      : user;
+    
+    dockerLogin(ip, username, pwd);
+
+    const sourceImageForTag = needPullFirst 
+      ? `${localRegistry}/${localNamespace}/${imageInUse}`
+      : imageInUse;
+    
+    const targetImage = `${ip}/${project}/${imageInUseWithTag}`;
+    
+    console.log(`Tagging ${sourceImageForTag} as ${targetImage}...`);
+    execCommand(`docker tag ${sourceImageForTag} ${targetImage}`);
+
+    console.log(`Pushing ${targetImage}...`);
+    execCommand(`docker push ${targetImage}`);
+    console.log('Push successful');
+
+  } finally {
+    dockerLogout(ip);
+  }
+}
+
+async function pushImageWithTag(options: pushImageWithTagOptions) {
+  const {
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    tag,      // Target tag
+    tag1 = 'latest',  // Source tag
+    localRegistry = localRegistryName,
+    localNamespace = localRegistryNamespace,
+  } = options;
+
+  console.log(`\nRunning docker push ${image}...`);
+
+  const sourceImageWithTag1 = `${localRegistry}/${localNamespace}/${image}:${tag1}`;
+  
+  const targetImageWithTag = `${ip}/${project}/${image}:${tag}`;
+
+  try {
+    console.log(`Pulling ${sourceImageWithTag1} from Docker Hub...`);
+    execCommand(`docker pull ${sourceImageWithTag1}`);
+    
+    dockerLogin(ip, user, pwd);
+
+    console.log(`Tagging ${sourceImageWithTag1} as ${targetImageWithTag}...`);
+    execCommand(`docker tag ${sourceImageWithTag1} ${targetImageWithTag}`);
+
+    console.log(`Pushing ${targetImageWithTag}...`);
+    execCommand(`docker push ${targetImageWithTag}`);
+    console.log('Push successful');
+
+  } finally {
+    dockerLogout(ip);
+  }
+}
 
 async function loginAsAdmin(page: Page) {
   await page.goto(harborIp);
@@ -39,45 +172,6 @@ async function createProject(page: Page, projectName: string, isPublic: boolean 
   await expect(page.getByRole('link', {name: projectName})).toBeVisible()
 }
 
-async function pushImage(options: PushImageOptions) {
-  const {
-    ip,
-    user,
-    pwd,
-    project,
-    image,
-    tag,
-    tag1 = 'latest',
-    needPullFirst = true,
-    localRegistry = localRegistryName,
-    localNamespace = localRegistryNamespace,
-  } = options;
-
-  const imageWithTag = `${image}:${tag1}`;
-  const sourceImage = `${localRegistry}/${localNamespace}/${imageWithTag}`;
-  const targetImage = `${ip}/${project}/${imageWithTag}`;
-
-  try {
-    if (needPullFirst) {
-      console.log(`Pulling ${sourceImage}...`);
-      execSync(`docker pull ${sourceImage}`, { stdio: 'inherit' });
-    }
-    
-    console.log(`Logging in to ${ip}...`);
-    execSync(`docker login -u ${user} -p ${pwd} ${ip}`, { stdio: 'pipe' });
-
-    const srcImage = needPullFirst ? sourceImage : imageWithTag;
-    execSync(`docker tag ${srcImage} ${targetImage}`, { stdio: 'inherit' });
-
-    console.log(`Pushing ${targetImage}...`);
-    execSync(`docker push ${targetImage}`, { stdio: 'inherit' });
-
-    execSync(`docker logout ${ip}`, { stdio: 'inherit' });
-  } catch (error) {
-    console.error('Docker operation failed:', error);
-    throw error;
-  }
-}
 
 async function goIntoProject(page: Page, projectName: string) {
   await page.getByRole('link', { name: 'Projects' }).click();
@@ -169,13 +263,12 @@ test('Project Quota Sorting', async ({ page }) => {
   const larger_repo = 'photon';
   const larger_repo_tag = 'latest';
 
-  await pushImage({
+  await pushImageWithTag({
     ip: harborIp,
     user: harborUser,
     pwd: harborPassword,
     project: project1,
     image: smaller_repo,
-    needPullFirst: true,
     tag: smaller_repo_tag,
     tag1: 'latest',
   });
@@ -185,13 +278,12 @@ test('Project Quota Sorting', async ({ page }) => {
   console.log(project2);
   await createProject(page, project2);
 
-  await pushImage({
+  await pushImageWithTag({
     ip: harborIp,
     user: harborUser,
     pwd: harborPassword,
     project: project2,
     image: larger_repo,
-    needPullFirst: true,
     tag: larger_repo_tag,
     tag1: 'latest'
   });
@@ -202,4 +294,26 @@ test('Project Quota Sorting', async ({ page }) => {
   await deleteRepo(page, project1, smaller_repo);
   await deleteRepo(page, project2, larger_repo);
   await runGC(page)
+})
+
+test('Garbage Collection', async ({ page }) => {
+  const timestamp1 = Date.now();
+  await loginAsAdmin(page);
+  const project1 = `project${timestamp1}`;
+  await runGC(page)
+  await createProject(page, project1);
+  const repo = 'redis';
+  const repoTag = 'latest'
+
+
+  await pushImage({
+    ip: harborIp,
+    user: harborUser,
+    pwd: harborPassword,
+    project: project1,
+    image: 'redis',
+    sha256: 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c',
+  })
+
+  await deleteRepo(page, project1, repo);
 })
