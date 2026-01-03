@@ -250,6 +250,55 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
   }
 }
 
+
+async function getLatestGCJobId(page: Page): Promise<string> {
+  const jobId = page.locator('//clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[1]');
+  await jobId.waitFor();
+  return await jobId.textContent() || '';
+}
+
+async function verifyGCSuccess(page: Page, jobId: string, expectedMessage: string) {
+  const response = await page.request.get(`https://${harborIp}/api/v2.0/system/gc/${jobId}/log`, {
+    headers: {
+      'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
+  const logText = await response.text();
+  
+  expect(logText).toContain(expectedMessage);
+  expect(logText).toContain('success to run gc in job.');
+}
+
+async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number = 120000) {
+  // Poll the GC job log until it shows completion
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const response = await page.request.get(`https://${harborIp}/api/v2.0/system/gc/${jobId}/log`, {
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
+        },
+      });
+
+      if (response.ok()) {
+        const logText = await response.text();
+        console.log(logText)
+        if (logText.includes('success to run gc in job.')) {
+          console.log("we here");
+          return;
+        }
+      }
+    } catch (e) {
+      // Ignore errors and retry
+    }
+  }
+  
+  throw new Error(`GC job ${jobId} did not complete within ${timeoutMs}ms`);
+}
+
 test('Project Quota Sorting', async ({ page }) => {
   await loginAsAdmin(page);
 
@@ -300,20 +349,27 @@ test('Garbage Collection', async ({ page }) => {
   const timestamp1 = Date.now();
   await loginAsAdmin(page);
   const project1 = `project${timestamp1}`;
-  await runGC(page)
+  
+  await runGC(page);
+  
   await createProject(page, project1);
+
   const repo = 'redis';
-  const repoTag = 'latest'
-
-
+  const repoSHA = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
   await pushImage({
     ip: harborIp,
     user: harborUser,
     pwd: harborPassword,
     project: project1,
-    image: 'redis',
-    sha256: 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c',
-  })
-
+    image: repo,
+    sha256: repoSHA,
+  });
+  
   await deleteRepo(page, project1, repo);
+  await runGC(page, 5);
+  const latestJobId = await getLatestGCJobId(page);
+  console.log(`Latest GC Job ID: ${latestJobId}`);
+  await waitForGCToComplete(page, latestJobId);
+  await verifyGCSuccess(page, latestJobId, '7 blobs and 1 manifests eligible for deletion');
+  await verifyGCSuccess(page, latestJobId, 'The GC job actual frees up 34 MB space');
 })
