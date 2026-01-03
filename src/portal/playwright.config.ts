@@ -8,6 +8,9 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Use system CA certificates for HTTPS requests
+process.env.NODE_OPTIONS = '--use-system-ca';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
