@@ -179,6 +179,58 @@ async function goIntoProject(page: Page, projectName: string) {
   await page.getByRole('link', {name: projectName}).click();
 }
 
+async function goIntoRepo(page: Page, projectName: string, repoName: string) {
+  
+  await expect(page.getByRole('link', {name: `${projectName}/${repoName}`})).toBeVisible()
+  await page.getByRole('link', {name: `${projectName}/${repoName}`}).click();
+  
+  await expect(page.locator(`xpath=//artifact-list-page//h2[contains(., '${repoName}')]`)).toBeVisible();
+}
+
+async function goIntoArtifact(page: Page, tag: string) {
+  await page.locator('xpath=//clr-datagrid//clr-spinner').waitFor({ state: 'hidden' }).catch((() => {}));
+  
+  const artifactLink = page.locator(`xpath=//clr-dg-row[contains(.,'${tag}')]//a[contains(.,'sha256')]`);
+  await expect(artifactLink).toBeVisible();
+  await artifactLink.click();
+  
+  await expect(page.locator('xpath=//artifact-tag')).toBeVisible();
+  await page.locator('xpath=//clr-datagrid//clr-spinner').waitFor({ state: 'hidden' }).catch(() => {});
+}
+
+async function shouldContainTag(page: Page, tag: string) {
+  await expect(page.locator(`xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]`)).toBeVisible();
+}
+
+async function shouldNotContainTag(page: Page, tag: string) {
+  await expect(page.locator(`xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]`)).not.toBeVisible();
+}
+
+async function deleteTag(page: Page, tag: string) {
+  const tagCheckbox = page.locator(`xpath=//clr-dg-row[contains(.,'${tag}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]`);
+  await tagCheckbox.click();
+  
+  await page.locator('xpath=//*[@id="delete-tag"]').click();
+  
+  await expect(page.getByRole('button', { name: 'DELETE' })).toBeVisible();
+  await page.getByRole('button', { name: 'DELETE' }).click();
+  
+  await shouldNotContainTag(page, tag);
+}
+
+async function shouldContainArtifact(page: Page) {
+  await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row//a[contains(.,"sha256")]')).toBeVisible();
+}
+
+async function shouldNotContainAnyArtifact(page: Page) {
+  await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row')).not.toBeVisible();
+}
+
+async function switchToGarbageCollection(page: Page) {
+  await page.locator("//clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
+  await page.getByRole('link', { name: 'Garbage Collection' }).click();
+}
+
 async function deleteRepo(page: Page, projectName: string, repoName: string) {
   await goIntoProject(page, projectName);
   const repoRow = page.locator(` xpath=//clr-dg-row[contains(.,'${projectName}/${repoName}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]`);
@@ -187,7 +239,6 @@ async function deleteRepo(page: Page, projectName: string, repoName: string) {
   await page.getByRole('button', { name: 'DELETE' }).click();
   await page.locator("xpath=//button[contains(.,'DELETE')]").click();
   await expect(repoRow).not.toBeVisible();
-
 }
 
 async function switchToProjectQuotas(page: Page) {
@@ -240,7 +291,7 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
   }
 
   if (deleteUntagged) {
-      await page.locator('#delete_untagged').click();
+      await page.locator('label[for="delete_untagged"]').click();
   }
 
   if (gc_now) {
@@ -285,9 +336,7 @@ async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number 
 
       if (response.ok()) {
         const logText = await response.text();
-        console.log(logText)
         if (logText.includes('success to run gc in job.')) {
-          console.log("we here");
           return;
         }
       }
@@ -372,4 +421,53 @@ test('Garbage Collection', async ({ page }) => {
   await waitForGCToComplete(page, latestJobId);
   await verifyGCSuccess(page, latestJobId, '7 blobs and 1 manifests eligible for deletion');
   await verifyGCSuccess(page, latestJobId, 'The GC job actual frees up 34 MB space');
+})
+
+test('GC Untagged Images', async ({ page }) => {
+  const timestamp = Date.now();
+  await loginAsAdmin(page);
+  const project = `project${timestamp}`;
+  
+  await runGC(page, 4);
+  
+  await createProject(page, project);
+  await pushImageWithTag({
+    ip: harborIp,
+    user: harborUser,
+    pwd: harborPassword,
+    project: project,
+    image: 'hello-world',
+    tag: 'latest',
+    tag1: 'latest'
+  });
+  
+  // Make hello-world untagged by deleting the 'latest' tag
+  await goIntoProject(page, project);
+  await goIntoRepo(page, project, 'hello-world');
+  await goIntoArtifact(page, 'latest');
+  await shouldContainTag(page, 'latest');
+  await deleteTag(page, 'latest');
+  await shouldNotContainTag(page, 'latest');
+  
+  // Run GC without delete untagged artifacts - should NOT delete hello-world
+  await switchToGarbageCollection(page);
+  await runGC(page, 3);
+  let jobId = await getLatestGCJobId(page);
+  await waitForGCToComplete(page, jobId);
+  
+  // Verify artifact still exists
+  await goIntoProject(page, project);
+  await goIntoRepo(page, project, 'hello-world');
+  await shouldContainArtifact(page);
+  
+  // Run GC WITH delete untagged artifacts - should delete hello-world
+  await switchToGarbageCollection(page);
+  await runGC(page, 2, true);
+  jobId = await getLatestGCJobId(page);
+  await waitForGCToComplete(page, jobId);
+  
+  // Verify no artifacts exist
+  await goIntoProject(page, project);
+  await goIntoRepo(page, project, 'hello-world');
+  await shouldNotContainAnyArtifact(page);
 })
