@@ -14,7 +14,7 @@ interface PushImageOptions {
   localNamespace?: string;
 }
 
-interface pushImageWithTagOptions {
+interface PushImageWithTagOptions {
   ip: string;
   user: string;
   pwd: string;
@@ -116,7 +116,7 @@ async function pushImage(options: PushImageOptions): Promise<void> {
   }
 }
 
-async function pushImageWithTag(options: pushImageWithTagOptions) {
+async function pushImageWithTag(options: PushImageWithTagOptions) {
   const {
     ip,
     user,
@@ -161,13 +161,21 @@ async function loginAsAdmin(page: Page) {
   await expect(page.getByRole('link', { name: 'Projects' })).toBeVisible();
 }
 
-async function createProject(page: Page, projectName: string, isPublic: boolean = false) {
+async function createProject(page: Page, projectName: string, isPublic: boolean = false, storageQuota?: number, storageQuotaUnit?: string) {
   await page.getByRole("link", { name: "Projects" }).click();
   await page.getByRole("button", { name: "NEW PROJECT" }).click();
   await page.locator("//*[@id='create_project_name']").fill(projectName);
+  
   if (isPublic) {
       await page.locator(`xpath=//input[@name='public']/..//label[contains(@class,'clr-control-label')]`).check();
   }
+  
+  if (storageQuota !== undefined && storageQuotaUnit) {
+      // Enable storage quota
+      await page.locator("xpath=//*[@id='create_project_storage_limit']").fill(storageQuota.toString());
+      await page.locator("xpath=//*[@id='create_project_storage_limit_unit']").selectOption(storageQuotaUnit);
+  }
+  
   await page.getByRole('button', { name: 'OK' }).click();
   await expect(page.getByRole('link', {name: projectName})).toBeVisible()
 }
@@ -224,6 +232,39 @@ async function shouldContainArtifact(page: Page) {
 
 async function shouldNotContainAnyArtifact(page: Page) {
   await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row')).not.toBeVisible();
+}
+
+async function cannotPushImage(ip: string, user: string, pwd: string, project: string, imageWithTag: string, expectedErrorMessage: string) {
+  const localImage = `${localRegistryName}/${localRegistryNamespace}/${imageWithTag}`;
+  const harborImage = `${ip}/${project}/${imageWithTag}`;
+
+  try {
+    console.log(`Attempting to push ${harborImage} (should fail)...`);
+    execCommand(`docker pull ${localImage}`);
+    dockerLogin(ip, user, pwd);
+    execCommand(`docker tag ${localImage} ${harborImage}`);
+    
+    try {
+      execCommand(`docker push ${harborImage}`);
+      throw new Error(`Push succeeded but should have failed because of quota limitations`);
+    } catch (error: any) {
+      // Verify the error message contains the expected text
+      if (!error.message.includes(expectedErrorMessage)) {
+        throw new Error(`Expected error message to contain "${expectedErrorMessage}", but got: ${error.message}`);
+      }
+      console.log(`Push correctly failed with expected error: ${expectedErrorMessage}`);
+    }
+  } finally {
+    dockerLogout(ip);
+  }
+}
+
+async function getProjectStorageQuota(page: Page, projectName: string): Promise<string> {
+  await switchToProjectQuotas(page);
+  
+  const quotaCell = page.locator(`xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${projectName}')]//clr-dg-cell[3]//label`);
+  await quotaCell.waitFor();
+  return await quotaCell.textContent() || '';
 }
 
 async function switchToGarbageCollection(page: Page) {
@@ -343,6 +384,7 @@ async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number 
     } catch (e) {
       // Ignore errors and retry
     }
+    await page.waitForTimeout(2000);
   }
   
   throw new Error(`GC job ${jobId} did not complete within ${timeoutMs}ms`);
@@ -449,7 +491,7 @@ test('GC Untagged Images', async ({ page }) => {
   await deleteTag(page, 'latest');
   await shouldNotContainTag(page, 'latest');
   
-  // Run GC without delete untagged artifacts - should NOT delete hello-world
+  // Run GC without delete untagged artifacts (should not delete hello-world)
   await switchToGarbageCollection(page);
   await runGC(page, 3);
   let jobId = await getLatestGCJobId(page);
@@ -460,7 +502,7 @@ test('GC Untagged Images', async ({ page }) => {
   await goIntoRepo(page, project, 'hello-world');
   await shouldContainArtifact(page);
   
-  // Run GC WITH delete untagged artifacts - should delete hello-world
+  // Run GC WITH delete untagged artifacts (should delete hello-world)
   await switchToGarbageCollection(page);
   await runGC(page, 2, true);
   jobId = await getLatestGCJobId(page);
@@ -470,4 +512,54 @@ test('GC Untagged Images', async ({ page }) => {
   await goIntoProject(page, project);
   await goIntoRepo(page, project, 'hello-world');
   await shouldNotContainAnyArtifact(page);
+})
+
+test('Project Quotas Control Under GC', async ({ page }) => {
+  const timestamp = Date.now();
+  await loginAsAdmin(page);
+  const project = `project${timestamp}`;
+  const storageQuota:number = 20.0;
+  const storageQuotaUnit:string = 'MiB';
+  const image = 'redis';
+  const imageTag = '8.4.0';
+  
+  await runGC(page);
+  
+  // Create project has insufficient storage quota
+  await createProject(page, project, true, storageQuota, storageQuotaUnit);
+  
+  // Try to push redis:8.4.0 - should fail due to quota
+  await cannotPushImage(
+    harborIp,
+    harborUser,
+    harborPassword,
+    project,
+    `${image}:${imageTag}`,
+    `will exceed the configured upper limit of ${storageQuota.toFixed(1)} ${storageQuotaUnit}.`
+  );
+  
+  // Run GC multiple times until quota shows 0 Byte
+  const expectedQuota = `0Byte of ${storageQuota}${storageQuotaUnit} `;
+  let quotaMatches = false;
+  
+  for (let i = 0; i < 10; i++) {
+    console.log(`GC iteration ${i + 1}/10`);
+    
+    await switchToGarbageCollection(page);
+    await runGC(page);
+    const jobId = await getLatestGCJobId(page);
+    await waitForGCToComplete(page, jobId);
+    
+    const actualQuota = await getProjectStorageQuota(page, project);
+    console.log(`Quota check: expected="${expectedQuota}", actual="${actualQuota}"`);
+    
+    if (actualQuota === expectedQuota) {
+      quotaMatches = true;
+      break;
+    }
+    
+    await page.waitForTimeout(5000);
+  }
+  
+  expect(quotaMatches).toBeTruthy();
 })
