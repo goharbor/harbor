@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -279,7 +278,7 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params operation.SearchUsers
 	if total == 0 {
 		return operation.NewSearchUsersOK().WithXTotalCount(0).WithPayload([]*models.UserSearchRespItem{})
 	}
-	l, err := u.ctl.List(ctx, query)
+	l, err := u.ctl.SearchByName(ctx, params.Username, int(*params.PageSize))
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
@@ -288,9 +287,6 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params operation.SearchUsers
 		m := &model.User{User: us}
 		result = append(result, m.ToSearchRespItem())
 	}
-	sort.Slice(result, func(i, j int) bool {
-		return utils.MostMatchSorter(result[i].Username, result[j].Username, params.Username)
-	})
 	return operation.NewSearchUsersOK().
 		WithXTotalCount(total).
 		WithPayload(result).
