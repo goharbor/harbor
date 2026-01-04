@@ -162,7 +162,7 @@ jobs:
         if: always()
         with:
           name: db-api-harbor-logs.tar.gz
-          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   APITEST_DB_PROXY_CACHE:
     env:
@@ -223,7 +223,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: proxy-api-harbor-logs.tar.gz
-          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   APITEST_LDAP:
     env:
@@ -282,7 +282,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: ldap-api-harbor-logs.tar.gz
-          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          path: /home/runner/work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
           retention-days: 5
   OFFLINE:
     env:
