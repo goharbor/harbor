@@ -303,7 +303,7 @@ export class ProjectDetailComponent
             this.userPermissionService.getPermission(
                 projectId,
                 USERSTATICPERMISSION.SCANNER.KEY,
-                USERSTATICPERMISSION.SCANNER.VALUE.READ
+                USERSTATICPERMISSION.SCANNER.VALUE.CREATE
             )
         );
         permissionsList.push(
