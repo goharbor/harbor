@@ -239,7 +239,7 @@ export class ProjectDetailComponent
             this.userPermissionService.getPermission(
                 projectId,
                 USERSTATICPERMISSION.CONFIGURATION.KEY,
-                USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+                USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE
             )
         );
         permissionsList.push(
