@@ -97,7 +97,7 @@ const routes: Routes = [
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
-                        action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ,
+                        action: USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE,
                     },
                 },
                 loadChildren: () =>
