@@ -53,16 +53,18 @@ export class BuildHistoryComponent implements OnInit {
                                 const history: ArtifactBuildHistory =
                                     new ArtifactBuildHistory();
                                 history.created = ele.created;
-                              if (ele.created_by !== undefined) {
-                                    let createdBy = ele.created_by
-                                        .replace('/bin/sh -c #(nop)', '')
-                                        .trimLeft();
-                                    if (!createdBy.startsWith('RUN ')) {
-                                        createdBy = createdBy.replace('/bin/sh -c', 'RUN');
-                                    }
-                                    history.created_by = createdBy.replace(/\s+# buildkit$/, '');
+                                if (ele.created_by !== undefined) {
+                                let createdBy = ele.created_by
+                                    .replace('/bin/sh -c #(nop)', '')
+                                    .trimLeft();
+
+                                if (!createdBy.startsWith('RUN ')) {
+                                    createdBy = createdBy.replace('/bin/sh -c', 'RUN');
+                                }
+
+                                history.created_by = createdBy.replace(/\s+# buildkit$/, '');
                                 } else {
-                                    history.created_by = ele.comment;
+                                history.created_by = ele.comment;
                                 }
                                 this.historyList.push(history);
                             });
