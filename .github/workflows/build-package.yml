@@ -21,10 +21,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Set up Go 1.22
+      - name: Set up Go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.2
+          go-version: 1.24.11
         id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
