@@ -27,7 +27,8 @@ interface PushImageWithTagOptions {
 }
 
 
-const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+const harborIp = process.env.HARBOR_IP || 'localhost';
+const base_url = process.env.HARBOR_BASE_URL || 'https://localhost'
 const harborUser = process.env.HARBOR_USERNAME || 'admin';
 const harborPassword = process.env.HARBOR_USERNAME || 'Harbor12345';
 const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
@@ -350,7 +351,7 @@ async function getLatestGCJobId(page: Page): Promise<string> {
 }
 
 async function verifyGCSuccess(page: Page, jobId: string, expectedMessage: string) {
-  const response = await page.request.get(`https://${harborIp}/api/v2.0/system/gc/${jobId}/log`, {
+  const response = await page.request.get(`${base_url}/api/v2.0/system/gc/${jobId}/log`, {
     headers: {
       'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
     },
@@ -369,7 +370,7 @@ async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number 
   
   while (Date.now() - startTime < timeoutMs) {
     try {
-      const response = await page.request.get(`https://${harborIp}/api/v2.0/system/gc/${jobId}/log`, {
+      const response = await page.request.get(`${base_url}/api/v2.0/system/gc/${jobId}/log`, {
         headers: {
           'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
         },
