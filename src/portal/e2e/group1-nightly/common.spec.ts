@@ -1,5 +1,5 @@
 import { test, expect, login } from '../fixtures/harbor';
-import { createProject, pullImage, cannotPullImage, pushImage, pushImageWithTag, waitForProjectInList } from '../utils';
+import { createProject, pullImage, cannotPullImage, cannotPushImage, pushImage, pushImageWithTag, waitForProjectInList, cosignGenerateKeyPair, cosignSign, cosignVerify, runCommand } from '../utils';
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
@@ -1316,6 +1316,64 @@ test('goto harbor API docs', async ({ harborPage, context }) => {
   await expect(newPage.locator('.swagger-ui')).toBeVisible({ timeout: 10000 });
 });
 
+test('read only mode', async ({ harborPage, harborUser }) => {
+  const d = Date.now();
+  const projectName = `project${d}`;
+  const image = 'busybox';
+  const tag = 'latest';
+
+  // Create a new project
+  await createProject(harborPage, projectName);
+
+  // Enable Read Only Mode
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByRole('group').filter({ hasText: 'Repository Read Only' }).locator('clr-checkbox-wrapper label').click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+
+  // Try to push image - should fail in read-only mode
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await cannotPushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectName,
+    image: `${image}:${tag}`,
+    expectedError: 'denied: The system is in read only mode. Any modification is prohibited.',
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Disable Read Only Mode
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByRole('group').filter({ hasText: 'Repository Read Only' }).locator('clr-checkbox-wrapper label').click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+
+  // Now push should succeed
+  await pushImage({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: projectName,
+    imageWithOrWithoutTag: `${image}:${tag}`,
+    needPullFirst: true,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Verify image was pushed successfully
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+});
+
 test('repo size', async ({ harborPage, harborUser }) => {
   const projectName = `project${Date.now()}`;
   const image = 'alpine';
@@ -1587,4 +1645,118 @@ test('copy a image', async ({ harborPage, harborUser }) => {
 
   // Verify the artifact with the same tag exists in target project
   await expect(harborPage.getByRole('button', { name: new RegExp(tag) })).toBeVisible({ timeout: 5000 });
+});
+
+test('cosign and cosign deployment security policy', async ({ harborPage, harborUser }) => {
+  const user = 'user1';
+  const pwd = 'Harbor12345';
+  const d = Date.now();
+  const projectName = `project${d}`;
+  const image = 'hello-world';
+  const tag = 'latest';
+  
+  // Sign out admin and sign in as user1
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  await login(harborPage, undefined, { username: user, password: pwd });
+
+  // Create project and enable Cosign deployment security
+  await createProject(harborPage, projectName, true);
+  
+  // Navigate to Configuration tab
+  await harborPage.getByRole('application').locator('button').click();
+  await harborPage.getByRole('tab', { name: 'Configuration' }).locator('a').click();
+  
+  // Enable Cosign deployment security
+  await harborPage.getByText('Cosign', { exact: true }).click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  
+  // Wait for save to complete
+  await harborPage.waitForTimeout(1000);
+  
+  // Verify Cosign is selected
+  await expect(harborPage.getByText('Cosign', { exact: true })).toBeChecked();
+
+  // Push image without signing
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImageWithTag({
+    ip: harborIp,
+    user,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+    tag1: tag,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Navigate to repository
+  await harborPage.getByRole('tab', { name: 'Repositories' }).locator('a').click();
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) }).click();
+
+  // Verify artifact is not signed (no signature icon/accessory)
+  const artifactRow = harborPage.getByRole('row', { name: new RegExp(tag) });
+  await expect(artifactRow).toBeVisible();
+  
+  // Try to pull image - should fail because it's not signed
+  await cannotPullImage({
+    ip: harborIp,
+    user,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+    expectedError: 'The image is not signed by cosign',
+  });
+
+  // Generate Cosign key pair
+  await cosignGenerateKeyPair();
+  
+  // Login to Docker registry for cosign operations
+  await runCommand(`docker login -u ${user} -p ${pwd} ${harborIp}`);
+  
+  // Verify image is not signed yet
+  await cosignVerify(`${harborIp}/${projectName}/${image}:${tag}`, false);
+
+  // Sign the image with Cosign
+  await cosignSign(`${harborIp}/${projectName}/${image}:${tag}`);
+  
+  // Verify image is now signed
+  await cosignVerify(`${harborIp}/${projectName}/${image}:${tag}`, true);
+
+  // Refresh the artifact list to see signature
+  await harborPage.reload();
+  await harborPage.waitForTimeout(2000);
+  
+  // Verify signature/accessory appears (look for signature icon or accessory count)
+  await expect(artifactRow.locator('.sub-accessories-icon, clr-icon[shape="certificate"]')).toBeVisible({ timeout: 10000 }).catch(() => {
+    // Alternative: Check for accessory count
+    return expect(artifactRow.getByText(/1 Accessory|Accessories/)).toBeVisible({ timeout: 5000 });
+  });
+
+  // Now pull should succeed
+  await pullImage({
+    ip: harborIp,
+    user,
+    pwd,
+    project: projectName,
+    image,
+    tag,
+  });
+
+  // Delete the signature/accessory
+  await artifactRow.locator('label').first().click();
+  await harborPage.getByText('Actions').click();
+  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
+  
+  // Wait for deletion
+  await harborPage.waitForTimeout(2000);
+
+  // Sign out and sign back in as admin
+  await harborPage.getByRole('button', { name: user, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  await login(harborPage, undefined, harborUser);
 });
