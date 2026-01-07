@@ -12,7 +12,7 @@ function getAssets {
     mkdir $assetsPath && pushd $assetsPath
     aws s3 cp s3://$bucket/$branch/$offlinePackage .
     md5sum $offlinePackage > md5sum
-    
+    # Pre-release does not handle online installer packages
     if [ "$prerelease" = "false" ]; then
         aws s3 cp s3://$bucket/$branch/$onlinePackage .
         md5sum $onlinePackage >> md5sum
