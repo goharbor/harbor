@@ -41,9 +41,6 @@ const (
 const (
 	// preheatTypeImage represents the image to the dragonfly cluster.
 	preheatTypeImage = "image"
-
-	// preheatTypeFile represents the file to the dragonfly cluster.
-	preheatTypeFile = "file"
 )
 
 const (

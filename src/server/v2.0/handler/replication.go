@@ -473,7 +473,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 	if len(policy.Filters) > 0 {
 		for _, filter := range policy.Filters {
 			p.Filters = append(p.Filters, &models.ReplicationFilter{
-				Type:       string(filter.Type),
+				Type:       filter.Type,
 				Value:      filter.Value,
 				Decoration: filter.Decoration,
 			})
@@ -481,7 +481,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 	}
 	if policy.Trigger != nil {
 		trigger := &models.ReplicationTrigger{
-			Type: string(policy.Trigger.Type),
+			Type: policy.Trigger.Type,
 		}
 		if policy.Trigger.Settings != nil {
 			trigger.TriggerSettings = &models.ReplicationTriggerSettings{
@@ -501,14 +501,14 @@ func convertRegistry(registry *model.Registry) *models.Registry {
 		Insecure:     registry.Insecure,
 		Name:         registry.Name,
 		Status:       registry.Status,
-		Type:         string(registry.Type),
+		Type:         registry.Type,
 		UpdateTime:   strfmt.DateTime(registry.UpdateTime),
 		URL:          registry.URL,
 	}
 	if registry.Credential != nil {
 		credential := &models.RegistryCredential{
 			AccessKey: registry.Credential.AccessKey,
-			Type:      string(registry.Credential.Type),
+			Type:      registry.Credential.Type,
 		}
 		if len(registry.Credential.AccessSecret) > 0 {
 			credential.AccessSecret = "*****"

@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/harbor/base"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
-	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 type client struct {
@@ -130,20 +129,6 @@ func (c *client) getAccessoryArts(project, repo string, art *artifact.Artifact, 
 		}
 	}
 	return nil
-}
-
-func (c *client) listTags(project, repo, digest string) ([]string, error) {
-	tags := []*tagmodel.Tag{}
-	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts/%s/tags",
-		c.BasePath(), project, repo, digest)
-	if err := c.C.GetAndIteratePagination(url, &tags); err != nil {
-		return nil, err
-	}
-	var tagNames []string
-	for _, tag := range tags {
-		tagNames = append(tagNames, tag.Name)
-	}
-	return tagNames, nil
 }
 
 func (c *client) getArtifact(project, repo, digest string, withAccessory bool) (*artifact.Artifact, error) {

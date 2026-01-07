@@ -91,7 +91,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 
 		if _, err = d.taskMgr.Create(ctx, d.executionID, job, map[string]any{
 			"operation":            operation,
-			"resource_type":        string(resource.Type),
+			"resource_type":        resource.Type,
 			"source_resource":      getResourceName(resource),
 			"destination_resource": getResourceName(dstResources[i]),
 			"references":           getResourceReferences(dstResources[i])}); err != nil {

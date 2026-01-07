@@ -25,9 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/notification"
 )
 
-// This is a package to provide mock utilities.
-var preheatMap = make(map[string]struct{})
-
 // MockDragonflyProvider mocks a Dragonfly server.
 func MockDragonflyProvider() *httptest.Server {
 	return httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

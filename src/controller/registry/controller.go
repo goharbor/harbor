@@ -315,7 +315,7 @@ func process(info *model.RegistryInfo) *model.RegistryInfo {
 	}
 	values := []string{}
 	for _, resourceType := range info.SupportedResourceTypes {
-		values = append(values, string(resourceType))
+		values = append(values, resourceType)
 	}
 	filters = append(filters, &model.FilterStyle{
 		Type:   model.FilterTypeResource,

@@ -97,7 +97,7 @@ func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig strin
 		return
 	}
 	art := lib.GetArtifactInfo(ctx)
-	key := TrimmedManifestlist + string(art.Digest)
+	key := TrimmedManifestlist + art.Digest
 	err := m.cache.Save(ctx, key, newDig)
 	if err != nil {
 		log.Warningf("failed to cache the trimmed manifest, err %v", err)
