@@ -30,6 +30,65 @@ export async function pullImage({ ip, user, pwd, project, image, tag = null, isR
   if (output.includes('No such image:')) throw new Error('Image not found');
 }
 
+export async function cannotPullImage({ ip, user, pwd, project, image, tag = null, expectedError = null }) {
+  console.log(`\nVerifying docker pull should fail for ${image}...`);
+  const imageWithTag = tag === null ? image : `${image}:${tag}`;
+  const loginCmd = `docker login -u ${user} -p ${pwd} ${ip}`;
+  await runCommand(loginCmd);
+
+  const pullCmd = `docker pull ${ip}/${project}/${imageWithTag}`;
+  const output = await runCommand(pullCmd);
+  console.log(output);
+
+  // Verify that the pull failed
+  if (output.includes('Digest:') && output.includes('Status: Downloaded')) {
+    throw new Error('Pull should have failed but succeeded');
+  }
+
+  // Verify expected error message if provided
+  if (expectedError && !output.includes(expectedError)) {
+    throw new Error(`Expected error message "${expectedError}" not found in output: ${output}`);
+  }
+
+  return output;
+}
+
+export async function cannotPushImage({ ip, user, pwd, project, image, expectedError = null, expectedError2 = null, localRegistry, localRegistryNamespace }) {
+  console.log(`\nVerifying docker push should fail for ${image}...`);
+  
+  // Pull the image from local registry
+  await runCommand(`docker pull ${localRegistry}/${localRegistryNamespace}/${image}`);
+  
+  // Login to Harbor
+  await runCommand(`docker login -u ${user} -p ${pwd} ${ip}`);
+  
+  // Tag the image
+  await runCommand(`docker tag ${localRegistry}/${localRegistryNamespace}/${image} ${ip}/${project}/${image}`);
+  
+  // Try to push and expect failure
+  const output = await runCommand(`docker push ${ip}/${project}/${image}`);
+  console.log(output);
+
+  // Verify that the push failed
+  if (output.includes('Pushed') || output.includes('digest:')) {
+    throw new Error('Push should have failed but succeeded');
+  }
+
+  // Verify expected error messages if provided
+  if (expectedError && !output.includes(expectedError)) {
+    throw new Error(`Expected error message "${expectedError}" not found in output: ${output}`);
+  }
+
+  if (expectedError2 && !output.includes(expectedError2)) {
+    throw new Error(`Expected error message "${expectedError2}" not found in output: ${output}`);
+  }
+
+  // Logout
+  await runCommand(`docker logout ${ip}`);
+
+  return output;
+}
+
 export async function pushImage({
   ip, user, pwd, project, imageWithOrWithoutTag,
   needPullFirst = true, sha256 = null, isRobot = false,
@@ -144,4 +203,43 @@ export async function createProject(harborPage: Page, projectName: string, goto:
   
   // Verify project was created by checking if it appears in the project list (with pagination support)
   await waitForProjectInList(harborPage, projectName, 15000, goto);
+}
+
+export async function cosignGenerateKeyPair() {
+  console.log("Generating Cosign key pair...");
+  await runCommand("rm -f cosign.key cosign.pub");
+  await runCommand("COSIGN_PASSWORD=\"\" cosign generate-key-pair");
+}
+
+export async function cosignSign(artifact: string) {
+  console.log(`Signing artifact with Cosign: ${artifact}...`);
+  await runCommand(`COSIGN_PASSWORD="" cosign sign -y --allow-insecure-registry --key cosign.key ${artifact}`);
+}
+
+export async function cosignVerify(artifact: string, shouldPass: boolean = true) {
+  console.log(`Verifying artifact with Cosign: ${artifact}...`);
+  const output = await runCommand(`COSIGN_PASSWORD="" cosign verify --key cosign.pub --allow-insecure-registry ${artifact}`);
+  console.log(output);
+  
+  if (shouldPass) {
+    if (!output.includes('Verification for') && !output.includes('The following checks were performed on each of these signatures')) {
+      throw new Error('Cosign verification should have passed but failed');
+    }
+  } else {
+    if (output.includes('Verification for') || output.includes('The following checks were performed on each of these signatures')) {
+      throw new Error('Cosign verification should have failed but passed');
+    }
+  }
+  
+  return output;
+}
+
+export async function notationGenerateCert() {
+  console.log("Generating Notation certificate...");
+  await runCommand("notation cert generate-test --default wabbit-networks.io");
+}
+
+export async function notationSign(artifact: string) {
+  console.log(`Signing artifact with Notation: ${artifact}...`);
+  await runCommand(`notation sign -d --allow-referrers-api ${artifact}`);
 }
