@@ -9,8 +9,8 @@ jobs:
   release:
     runs-on: oracle-vm-24cpu-96gb-x86-64
     permissions:
-      contents: write
-      id-token: write
+      contents: write   # Required for creating GitHub releases and uploading assets
+      id-token: write  # Required for Cosign keyless signing
     steps:
       - uses: actions/checkout@v5
       - name: Setup env
@@ -42,21 +42,12 @@ jobs:
           src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
           dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
           dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
-
+          
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
 
           assets_path=$(pwd)/assets
-          mkdir -p $assets_path && pushd $assets_path
-          aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package} .
-          md5sum $dst_offline_package > md5sum
-          
-          if [ "${{ env.PRERELEASE }}" = "false" ]; then
-            aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package} .
-            md5sum $dst_online_package >> md5sum
-          fi
-          popd
-          
+          source tools/release/release_utils.sh && getAssets ${{ secrets.HARBOR_RELEASE_BUILD }} ${{ env.BRANCH }} ${dst_offline_package} ${dst_online_package} ${{ env.PRERELEASE }} ${assets_path}
           echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
