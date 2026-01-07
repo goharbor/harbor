@@ -1374,6 +1374,69 @@ test('read only mode', async ({ harborPage, harborUser }) => {
   await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
 });
 
+test('cannot copy image in readonly mode', async ({ harborPage, harborUser }) => {
+  const d = Date.now();
+  const sourceProject = `project${d}`;
+  const targetProject = `project${d}${Math.floor(Math.random() * 9000) + 1000}`;
+  const image = 'busybox';
+  const tag = 'latest';
+
+  // Create source and target projects
+  await createProject(harborPage, targetProject);
+  await createProject(harborPage, sourceProject);
+
+  // Push image to source project
+  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  await pushImageWithTag({
+    ip: harborIp,
+    user: harborUser.username,
+    pwd: harborUser.password,
+    project: sourceProject,
+    image,
+    tag,
+    localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
+    localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
+  });
+
+  // Enable Read Only Mode
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByRole('group').filter({ hasText: 'Repository Read Only' }).locator('clr-checkbox-wrapper label').click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await harborPage.waitForTimeout(1000);
+
+  // Navigate to source project and try to copy image
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, sourceProject, 15000, true);
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${sourceProject}/${image}`) })).toBeVisible({ timeout: 10000 });
+  await harborPage.getByRole('link', { name: new RegExp(`${sourceProject}/${image}`) }).click();
+
+  // Select the artifact and try to copy
+  await harborPage.getByRole('gridcell', { name: 'Select Select' }).first().locator('label').click();
+  await harborPage.getByText('Actions').click();
+  await harborPage.getByRole('menuitem', { name: 'retag' }).click();
+  
+  // Fill in target project
+  await harborPage.locator('#project-name').click();
+  await harborPage.locator('#project-name').fill(targetProject);
+  await harborPage.getByRole('button', { name: 'CONFIRM' }).click();
+  
+  // Verify error message appears
+  await expect(harborPage.getByText(/system is in read only mode/i)).toBeVisible({ timeout: 5000 });
+
+  // Verify target project doesn't have the image
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
+  await waitForProjectInList(harborPage, targetProject, 15000, true);
+  await expect(harborPage.getByRole('link', { name: new RegExp(`${targetProject}/${image}`) })).not.toBeVisible();
+
+  // Disable Read Only Mode
+  await harborPage.getByRole('link', { name: 'Configuration' }).click();
+  await harborPage.getByRole('button', { name: 'System Settings' }).click();
+  await harborPage.getByRole('group').filter({ hasText: 'Repository Read Only' }).locator('clr-checkbox-wrapper label').click();
+  await harborPage.getByRole('button', { name: 'SAVE' }).click();
+  await expect(harborPage.getByText(/system is in read only mode/i)).not.toBeVisible({ timeout: 5000 });
+});
+
 test('repo size', async ({ harborPage, harborUser }) => {
   const projectName = `project${Date.now()}`;
   const image = 'alpine';

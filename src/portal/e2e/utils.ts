@@ -144,7 +144,7 @@ export async function waitForProjectInList(harborPage: Page, projectName: string
   
   while (Date.now() - startTime < timeout) {
     // Check if project is visible on current page
-    const projectLink = harborPage.getByRole('link', { name: projectName });
+    const projectLink = harborPage.getByRole('link', { name: projectName, exact: true });
     if (await projectLink.isVisible()) {
       if (goto) {
         await projectLink.click();
