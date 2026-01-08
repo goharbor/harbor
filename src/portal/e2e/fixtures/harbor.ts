@@ -40,7 +40,7 @@ export async function logoutIfPossible(page: Page, username: string) {
 const harborTest = base.extend<HarborFixtures>({
     harborUser: async ({}, use) => {
         await use({
-            username: process.env.HARBOR_USERNAME || 'admin',
+            username: process.env.HARBOR_ADMIN || 'admin',
             password: process.env.HARBOR_PASSWORD || 'Harbor12345',
         });
     },
