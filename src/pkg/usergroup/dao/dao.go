@@ -147,13 +147,11 @@ func (d *dao) UpdateName(ctx context.Context, id int, groupName string) error {
 	return err
 }
 
-// ReadOrCreate read or create user group
+// ReadOrCreate read or create user group.
+// Uses the custom orm.ReadOrCreate which handles errors gracefully
+// within transactions, preventing transaction corruption during LDAP group onboarding.
 func (d *dao) ReadOrCreate(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) (bool, int64, error) {
-	o, err := orm.FromContext(ctx)
-	if err != nil {
-		return false, 0, err
-	}
-	return o.ReadOrCreate(g, keyAttribute, combinedKeyAttributes...)
+	return orm.ReadOrCreate(ctx, g, keyAttribute, combinedKeyAttributes...)
 }
 
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
