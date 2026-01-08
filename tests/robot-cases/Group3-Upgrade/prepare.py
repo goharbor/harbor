@@ -121,9 +121,17 @@ class HarborAPI:
                 repo = Repository()
                 for _repo in project["repo"]:
                     pull_image(args.endpoint+"/"+ project["name"]+"/"+_repo["cache_image_namespace"]+"/"+_repo["cache_image"])
-                    time.sleep(180)
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
-                    repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                    # Retry repository lookup every minute for up to 10 minutes total
+                    deadline = time.time() + 600
+                    while True:
+                        try:
+                            repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                            break
+                        except Exception:
+                            if time.time() >= deadline:
+                                raise
+                            time.sleep(60)
             return
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
