@@ -1823,3 +1823,195 @@ test('cosign and cosign deployment security policy', async ({ harborPage, harbor
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   await login(harborPage, undefined, harborUser);
 });
+
+test('banner message', async ({ harborPage, harborUser }) => {
+  const message = 'This is a test message.';
+
+  // Helper function to set banner message
+  async function setBannerMessage(
+    msg: string | null,
+    messageType: 'success' | 'info' | 'warning' | 'danger' = 'success',
+    closable: boolean = false,
+    setDateRange: boolean = false
+  ) {
+    await harborPage.getByRole('link', { name: 'Configuration' }).click();
+    await harborPage.getByRole('button', { name: 'System Settings' }).click();
+
+    if (msg !== null) {
+      // Fill message
+      await harborPage.getByRole('textbox', { name: 'Enter your message here' }).fill(msg);
+      
+      // Select message type
+      await harborPage.locator('#banner-message-type').selectOption(messageType);
+      
+      // Handle closable checkbox
+      if (closable) {
+        await harborPage.getByText('Closable').click();
+      }
+      
+      // Handle date range
+      if (setDateRange) {
+        const now = new Date();
+        const day = now.getDate();
+        
+        // Set FROM date to today
+        const fromDiv = harborPage.locator('div').filter({ hasText: /^From$/ });
+        const fromButton = fromDiv.getByRole('button', { name: new RegExp('choose\\s+date|change\\s+date', 'i') });
+        
+        // Scroll the FROM button into view before clicking
+        await fromButton.scrollIntoViewIfNeeded();
+        await harborPage.waitForTimeout(300);
+        await fromButton.click();
+        
+        // Select the day in FROM date dialog
+        const dialog = harborPage.getByRole('dialog');
+        await dialog.waitFor({ state: 'visible', timeout: 5000 });
+        await dialog.getByRole('button', { name: new RegExp(`^${day}$|/${day}/`) }).first().click();
+        
+        // Wait for dialog to close
+        await dialog.waitFor({ state: 'hidden', timeout: 5000 });
+        await harborPage.waitForTimeout(500);
+        
+        // Set TO date to same day next month
+        const toDiv = harborPage.locator('div').filter({ hasText: /^To$/ });
+        const toButton = toDiv.getByRole('button', { name: new RegExp('choose\\s+date|change\\s+date', 'i') });
+        
+        // Scroll the TO button into view before clicking
+        await toButton.scrollIntoViewIfNeeded();
+        await harborPage.waitForTimeout(300);
+        await toButton.click();
+        
+        // Wait for dialog to appear again
+        await dialog.waitFor({ state: 'visible', timeout: 5000 });
+        
+        // Navigate to next month in TO date dialog
+        await dialog.getByRole('button', { name: 'Previous month', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Current month', exact: true }).click();
+        await dialog.getByRole('button', { name: 'Next month', exact: true }).click();
+        await harborPage.waitForTimeout(500);
+        
+        // Click the same day in next month
+        await dialog.getByRole('button', { name: new RegExp(`^${day}$|/${day}/`) }).first().click();
+        
+        // Wait for dialog to close
+        await dialog.waitFor({ state: 'hidden', timeout: 5000 });
+        await harborPage.waitForTimeout(500);
+      }
+    } else {
+      // Clear message
+      await harborPage.getByRole('textbox', { name: 'Enter your message here' }).clear();
+    }
+    
+    // Save configuration
+    await harborPage.getByRole('button', { name: 'SAVE' }).click();
+    await expect(harborPage.getByText('Configuration has been successfully saved')).toBeVisible({ timeout: 5000 });
+    await harborPage.waitForTimeout(1000);
+  }
+
+  // Helper function to check banner message
+  async function checkBannerMessage(
+    msg: string | null,
+    messageType: 'success' | 'info' | 'warning' | 'danger' = 'success',
+    closable: boolean = false
+  ) {
+    if (msg === null) {
+      await expect(harborPage.locator('app-app-level-alerts clr-alerts')).not.toBeVisible();
+    } else {
+      // Check message type class
+      const alertTypeClass = {
+        success: 'alert-success',
+        info: 'alert-info',
+        warning: 'alert-warning',
+        danger: 'alert-danger',
+      };
+      await expect(harborPage.locator(`app-app-level-alerts clr-alerts.${alertTypeClass[messageType]}`)).toBeVisible();
+      
+      await expect(harborPage.locator('app-app-level-alerts clr-alert')).toHaveText(new RegExp(msg));
+      // Check closable button
+      if (closable) {
+        await expect(harborPage.locator('app-app-level-alerts clr-alert button.close')).toBeVisible();
+      }
+    }
+  }
+
+  // Close any existing banner message
+  const closeButton = harborPage.locator('app-app-level-alerts clr-alert button.close');
+  if (await closeButton.isVisible()) {
+    await closeButton.click();
+    await expect(harborPage.locator('app-app-level-alerts clr-alerts')).not.toBeVisible();
+  }
+
+  // Clear any existing banner message in configuration
+  if (await harborPage.locator('app-app-level-alerts clr-alerts').isVisible()) {
+    await setBannerMessage(null);
+    await checkBannerMessage(null);
+  }
+
+  // Test 1: Success message with closable and date range
+  await setBannerMessage(message, 'success', true, true);
+  await checkBannerMessage(message, 'success', true);
+
+  // Test 2: Info message without closable, no date range
+  await setBannerMessage(message, 'info', true, false);
+  await checkBannerMessage(message, 'info', false);
+
+  // Test 3: Warning message without closable
+  await setBannerMessage(message, 'warning', false, false);
+  await checkBannerMessage(message, 'warning', false);
+
+  // Test 4: Danger message with closable and date range
+  await setBannerMessage(message, 'danger', true, true);
+  await checkBannerMessage(message, 'danger', true);
+
+  // Test 5: Clear message
+  await setBannerMessage(null);
+  await checkBannerMessage(null);
+
+  // Test 6: Reload and verify message cleared
+  await harborPage.reload();
+  await checkBannerMessage(null);
+
+  // Test 7: Set message again with date range
+  await setBannerMessage(message, 'danger', true, true);
+  await checkBannerMessage(message, 'danger', true);
+
+  // Test 8: Clear message and verify
+  await setBannerMessage(null);
+  await checkBannerMessage(null);
+
+  // Test 9: Set message and verify on reload
+  await harborPage.reload();
+  await setBannerMessage(message, 'danger', true, true);
+  await checkBannerMessage(message, 'danger', true);
+
+  // Test 10: Check banner on other pages
+  const pages = [
+    '/harbor/projects',
+    '/harbor/logs',
+    '/harbor/users',
+  ];
+
+  for (const pageUrl of pages) {
+    await harborPage.goto(`${process.env.HARBOR_BASE_URL}${pageUrl}`);
+    await checkBannerMessage(message, 'danger', true);
+  }
+
+  // Test 11: Sign out and verify banner still shows
+  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
+  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  await checkBannerMessage(message, 'danger', true);
+
+  // Sign back in and navigate to project pages
+  await login(harborPage, undefined, harborUser);
+  
+  // Close banner if visible
+  const closeBannerBtn = harborPage.locator('app-app-level-alerts clr-alert button.close');
+  if (await closeBannerBtn.isVisible()) {
+    await closeBannerBtn.click();
+  }
+
+  // Clear banner message in configuration
+  await setBannerMessage(null);
+  await harborPage.reload();
+  await checkBannerMessage(null);
+});
