@@ -66,11 +66,13 @@ func (suite *ReadOrCreateTransactionSuite) TestBeegoNativeCorruptsTransaction() 
 	var gotError25P02 bool
 
 	WithTransaction(func(txCtx context.Context) error {
-		o, _ := FromContext(txCtx)
+		o, err := FromContext(txCtx)
+		suite.Require().NoError(err)
 
 		// Insert a record, then try to insert duplicate (simulates race condition)
-		o.Insert(&Foo{Name: uniqueName})
-		_, err := o.Insert(&Foo{Name: uniqueName}) // duplicate key error
+		_, err = o.Insert(&Foo{Name: uniqueName})
+		suite.Require().NoError(err)
+		_, err = o.Insert(&Foo{Name: uniqueName}) // duplicate key error
 		suite.Error(err, "Should get duplicate key error")
 
 		// Try another operation - this WILL fail with 25P02
