@@ -63,12 +63,22 @@ function getFiles(dir, extensions) {
 function findUsedKeys() {
     const usedKeys = {};
     const patterns = [
+        // Keys with dots (e.g., 'BUTTON.CANCEL' | translate)
         /'([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)'\s*\|\s*translate/g,
         /"([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)"\s*\|\s*translate/g,
+        // Single word keys (e.g., 'CANCEL' | translate)
+        /'([A-Z][A-Z0-9_]{2,})'\s*\|\s*translate/g,
+        /"([A-Z][A-Z0-9_]{2,})"\s*\|\s*translate/g,
+        // Service calls with dots
         /translate\.(get|instant)\(\s*'([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)'/g,
         /translate\.(get|instant)\(\s*"([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)"/g,
+        // Service calls single word
+        /translate\.(get|instant)\(\s*'([A-Z][A-Z0-9_]{2,})'/g,
+        /translate\.(get|instant)\(\s*"([A-Z][A-Z0-9_]{2,})"/g,
         /translateService\.(get|instant)\(\s*'([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)'/gi,
         /translateService\.(get|instant)\(\s*"([A-Z][A-Z0-9_]+\.[A-Z0-9_.]+)"/gi,
+        /translateService\.(get|instant)\(\s*'([A-Z][A-Z0-9_]{2,})'/gi,
+        /translateService\.(get|instant)\(\s*"([A-Z][A-Z0-9_]{2,})"/gi,
     ];
 
     const files = getFiles(APP_DIR, ['.html', '.ts']);
