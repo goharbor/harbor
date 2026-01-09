@@ -46,6 +46,46 @@ type replicationAPI struct {
 	ctl replication.Controller
 }
 
+// convertFilterValue converts interface{} filter values to proper internal format
+func convertFilterValue(filterType string, value interface{}) interface{} {
+	if filterType == model.FilterTypeLabel {
+		switch v := value.(type) {
+		case []interface{}:
+			var labels []interface{}
+			for _, item := range v {
+				if str, ok := item.(string); ok && strings.TrimSpace(str) != "" {
+					labels = append(labels, strings.TrimSpace(str))
+				}
+			}
+			return labels
+		case []string:
+			var labels []interface{}
+			for _, str := range v {
+				if trimmed := strings.TrimSpace(str); trimmed != "" {
+					labels = append(labels, trimmed)
+				}
+			}
+			return labels
+		case string:
+			if v == "" {
+				return []interface{}{}
+			}
+			labelStrs := strings.Split(v, ",")
+			var labels []interface{}
+			for _, label := range labelStrs {
+				if trimmed := strings.TrimSpace(label); trimmed != "" {
+					labels = append(labels, trimmed)
+				}
+			}
+			return labels
+		default:
+			return []interface{}{}
+		}
+	}
+	// For non-label filters, return as-is or convert to string if needed
+	return value
+}
+
 func (r *replicationAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
@@ -85,9 +125,10 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 	}
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
+			filterValue := convertFilterValue(filter.Type, filter.Value)
 			policy.Filters = append(policy.Filters, &model.Filter{
 				Type:       filter.Type,
-				Value:      filter.Value,
+				Value:      filterValue,
 				Decoration: filter.Decoration,
 			})
 		}
@@ -161,9 +202,10 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 	}
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
+			filterValue := convertFilterValue(filter.Type, filter.Value)
 			policy.Filters = append(policy.Filters, &model.Filter{
 				Type:       filter.Type,
-				Value:      filter.Value,
+				Value:      filterValue,
 				Decoration: filter.Decoration,
 			})
 		}
@@ -472,9 +514,20 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 	}
 	if len(policy.Filters) > 0 {
 		for _, filter := range policy.Filters {
+			var filterValue interface{}
+			if filter.Type == model.FilterTypeLabel {
+				// Label filters are always converted to []string by parseFilters
+				if labels, ok := filter.Value.([]string); ok {
+					filterValue = labels
+				} else {
+					filterValue = []string{}
+				}
+			} else {
+				filterValue = filter.Value
+			}
 			p.Filters = append(p.Filters, &models.ReplicationFilter{
 				Type:       string(filter.Type),
-				Value:      filter.Value,
+				Value:      filterValue,
 				Decoration: filter.Decoration,
 			})
 		}
