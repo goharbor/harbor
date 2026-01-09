@@ -23,10 +23,22 @@ _redis_url() {
     echo -n "$REDIS_SCHEME://$(_redis_cred)${REDIS_ADDR}$(_sentinel_master_set)/$1"
 }
 
+_precheck() {
+    if [ -z "${REDIS_SCHEME}" ] && [ -z "${REDIS_ADDR}" ]; then
+        echo "Using default ${1:-_REDIS_URL}_* variables for redis"
+        return 1
+    fi
+}
+
 _validate_redis() {
     case "$REDIS_SCHEME" in
-        redis|redis+sentinel|rediss|rediss+sentinel)
+        redis|rediss)
             # valid
+            ;;
+        redis+sentinel|rediss+sentinel)
+            if [ -z "${REDIS_MASTER_SET}" ]; then
+                echo "Error: REDIS_MASTER_SET not set, but sentinel is enabled" >&2
+            fi
             ;;
         *)
             echo "Error: invalid REDIS_SCHEME: $REDIS_SCHEME" >&2
@@ -46,8 +58,8 @@ _configure_redis_core() {
         exit 1
     fi
 
-    # NOTE: _REDIS_URL_HARBOR is not ever set
-    # It can still be used and will overwrite configuration done by this script
+    # NOTE: _REDIS_URL_HARBOR is not ever set by this script
+    # It can still be set by user and will overwrite configuration done by this script
     if [ -z "${_REDIS_URL_CORE}" ]; then
         echo "Using REDIS_* variables for harbor/cache"
         export _REDIS_URL_CORE="$(_redis_url "${REDIS_HARBOR_DB_INDEX}")"
@@ -66,7 +78,7 @@ _configure_redis_reg() {
         echo "Using REDIS_* variables for registry controller"
 
         if [ -z "${REDIS_REG_DB_INDEX}" ]; then
-            echo "ERROR: _REDIS_URL_REG and  REDIS_REG_DB_INDEX are not set, configure at least one" >&2
+            echo "ERROR: _REDIS_URL_REG and REDIS_REG_DB_INDEX are not set, configure at least one" >&2
             exit 1
         fi
 
@@ -93,10 +105,7 @@ _configure_redis_cache() {
 configure_redis_core() {
     echo "Configuring Redis for Harbor core..."
 
-    if [ -z "${REDIS_SCHEME}" ] || [ -z "${REDIS_ADDR}" ]; then
-        echo "Using default _REDIS_URL_* variables for redis"
-        return 0
-    fi
+    _precheck || return 0
 
     _validate_redis
 
@@ -111,10 +120,7 @@ configure_redis_core() {
 configure_redis_jobservice() {
     echo "Configuring Redis for Harbor jobservice..."
 
-    if [ -z "${REDIS_SCHEME}" ] || [ -z "${REDIS_ADDR}" ]; then
-        echo "Using default _REDIS_URL_* variables for redis"
-        return 0
-    fi
+    _precheck || return 0
 
     _validate_redis
 
@@ -126,10 +132,7 @@ configure_redis_jobservice() {
 configure_redis_trivy() {
     echo "Configuring Redis for Trivy..."
 
-    if [ -z "${REDIS_SCHEME}" ] || [ -z "${REDIS_ADDR}" ]; then
-        echo "Using default SCANNER_* variables for redis"
-        return 0
-    fi
+    _precheck "SCANNER" || return 0
 
     _validate_redis
 
