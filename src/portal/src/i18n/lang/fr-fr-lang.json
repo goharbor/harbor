@@ -241,7 +241,11 @@
         "PROXY_CACHE": "Cache proxy",
         "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache"
+        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -269,7 +273,10 @@
         "SCAN": "Analyse des vulnérabilités",
         "AUTOSCAN_TOGGLE": "Analyse automatique des images lors de l'envoi",
         "AUTOSCAN_POLICY": "Analyser automatiquement les images lorsqu'elles sont envoyées au projet du registre.",
-        "SBOM": "Génération de SBOM"
+        "SBOM": "Génération de SBOM",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
+        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
     },
     "MEMBER": {
         "NEW_MEMBER": "Nouveau membre",
@@ -491,6 +498,7 @@
         "RESOURCE_TYPE": "Type de ressource"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "Uniquement pour la réplication de type push",
         "YES": "Oui",
         "SECONDS": "Secondes",
@@ -750,6 +758,7 @@
         "SUB_TITLE": "Afficher"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SECURITY": "Sécurité",
         "TITLE": "Configuration",
         "AUTH": "Authentification",

@@ -240,7 +240,11 @@
         "PROXY_CACHE": "镜像代理",
         "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
         "ENDPOINT": "地址",
-        "PROXY_CACHE_ENDPOINT": "镜像代理地址"
+        "PROXY_CACHE_ENDPOINT": "镜像代理地址",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
@@ -268,7 +272,10 @@
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
         "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
-        "SBOM": "生成软件物料清单"
+        "SBOM": "生成软件物料清单",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
+        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
     },
     "MEMBER": {
         "NEW_MEMBER": "新建成员",
@@ -489,6 +496,7 @@
         "RESOURCE_TYPE": "资源类型"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "仅针对于 Push-Based 模式下的复制操作",
         "YES": "是",
         "SECONDS": "秒",
@@ -750,6 +758,7 @@
         "SUB_TITLE": "显示"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SECURITY": "安全",
         "TITLE": "配置",
         "AUTH": "认证模式",

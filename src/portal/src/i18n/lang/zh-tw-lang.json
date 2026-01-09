@@ -239,7 +239,11 @@
         "PROXY_CACHE": "代理快取",
         "PROXY_CACHE_TOOLTIP": "啟用此選項，可讓此專案作為特定目標 Registry 執行個體的通透快取。Harbor 僅能代理 DockerHub、Docker Registry、Harbor、AWS ECR、Azure ACR、阿里雲 ACR、Quay、Google GCR、GitHub GHCR 及 JFrog Artifactory。",
         "ENDPOINT": "端點",
-        "PROXY_CACHE_ENDPOINT": "代理快取端點"
+        "PROXY_CACHE_ENDPOINT": "代理快取端點",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",
@@ -267,7 +271,10 @@
         "SCAN": "弱點掃描",
         "AUTOSCAN_TOGGLE": "推送時自動掃描映像檔",
         "AUTOSCAN_POLICY": "當映像檔推送到專案儲存庫時自動掃描。",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
+        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
     },
     "MEMBER": {
         "NEW_MEMBER": "新增成員",
@@ -489,6 +496,7 @@
         "RESOURCE_TYPE": "資源類型"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "僅適用於推送模式的複製",
         "YES": "是",
         "SECONDS": "秒",
@@ -750,6 +758,7 @@
         "SUB_TITLE": "顯示"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SECURITY": "安全性",
         "HISTORY": "歷史記錄",
         "TITLE": "組態設定",

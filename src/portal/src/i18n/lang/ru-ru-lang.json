@@ -288,7 +288,9 @@
         "PREVENT_VULNERABLE_2": "и выше.",
         "SCAN": "Сканирование уязвимостей",
         "AUTOSCAN_TOGGLE": "Автоматически сканировать образы при отправке",
-        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта."
+        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта.",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_USER": "Добавить пользователя",

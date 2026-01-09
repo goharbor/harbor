@@ -243,7 +243,8 @@
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
         "CONNECTION_LIMIT": "Max connection to upstream registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
@@ -271,7 +272,10 @@
         "SCAN": "Análise de vulnerabilidades",
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
         "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
+        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
     },
     "MEMBER": {
         "NEW_MEMBER": "Novo membro",
@@ -493,6 +497,7 @@
         "RESOURCE_TYPE": "Tipo de Recurso"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Sim",
         "SECONDS": "Segundo",
@@ -753,6 +758,7 @@
         "SUB_TITLE": "Exibir"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SECURITY": "Security",
         "TITLE": "Configuração",
         "AUTH": "Autenticação",
