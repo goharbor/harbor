@@ -2,6 +2,7 @@
  * Script to find missing i18n translation keys in Harbor portal.
  * Scans HTML and TypeScript files for translation key usage and compares
  * against defined keys in language JSON files.
+ * Also verifies all language files have the same keys as en-us.
  *
  * Usage: node scripts/find-missing-i18n.js
  */
@@ -98,6 +99,51 @@ function findUsedKeys() {
 }
 
 /**
+ * Get all language files except en-us.
+ */
+function getOtherLangFiles() {
+    const files = fs.readdirSync(LANG_DIR);
+    return files.filter(function(f) {
+        return f.endsWith('-lang.json') && f !== 'en-us-lang.json';
+    });
+}
+
+/**
+ * Check if all language files have the same keys as en-us.
+ */
+function checkLangFileSync(enKeys) {
+    const langFiles = getOtherLangFiles();
+    const issues = {};
+    let totalMissing = 0;
+
+    for (let i = 0; i < langFiles.length; i++) {
+        const langFile = langFiles[i];
+        const langPath = path.join(LANG_DIR, langFile);
+        const langData = JSON.parse(fs.readFileSync(langPath, 'utf-8'));
+        const langKeys = extractKeys(langData);
+        const langKeySet = {};
+
+        for (let j = 0; j < langKeys.length; j++) {
+            langKeySet[langKeys[j]] = true;
+        }
+
+        const missing = [];
+        for (let k = 0; k < enKeys.length; k++) {
+            if (!langKeySet[enKeys[k]]) {
+                missing.push(enKeys[k]);
+            }
+        }
+
+        if (missing.length > 0) {
+            issues[langFile] = missing;
+            totalMissing += missing.length;
+        }
+    }
+
+    return { issues: issues, totalMissing: totalMissing };
+}
+
+/**
  * Main function
  */
 function main() {
@@ -122,7 +168,10 @@ function main() {
     const usedKeysList = Object.keys(usedKeys);
     console.log('Unique keys used in source code: ' + usedKeysList.length + '\n');
 
-    console.log('=== MISSING KEYS (used in code but not in translation files) ===\n');
+    let hasErrors = false;
+
+    // Check for keys used in code but missing from en-us
+    console.log('=== MISSING KEYS (used in code but not in en-us) ===\n');
     const missingKeys = [];
 
     for (let i = 0; i < usedKeysList.length; i++) {
@@ -135,6 +184,7 @@ function main() {
     if (missingKeys.length === 0) {
         console.log('No missing keys found!\n');
     } else {
+        hasErrors = true;
         missingKeys.sort(function(a, b) { return a.key.localeCompare(b.key); });
         for (let i = 0; i < missingKeys.length; i++) {
             var item = missingKeys[i];
@@ -147,10 +197,36 @@ function main() {
                 console.log('    -> ... and ' + (item.files.length - 3) + ' more files');
             }
         }
-        console.log('\nTotal missing keys: ' + missingKeys.length);
+        console.log('\nTotal missing from en-us: ' + missingKeys.length + '\n');
     }
 
-    if (missingKeys.length > 0) {
+    // Check that all language files have the same keys as en-us
+    console.log('=== LANGUAGE FILE SYNC CHECK ===\n');
+    const syncResult = checkLangFileSync(definedKeys);
+
+    if (syncResult.totalMissing === 0) {
+        console.log('All language files are in sync with en-us!\n');
+    } else {
+        hasErrors = true;
+        const langFiles = Object.keys(syncResult.issues);
+        langFiles.sort();
+
+        for (let i = 0; i < langFiles.length; i++) {
+            const langFile = langFiles[i];
+            const missing = syncResult.issues[langFile];
+            console.log(langFile + ': ' + missing.length + ' missing keys');
+            var maxShow = Math.min(missing.length, 5);
+            for (var m = 0; m < maxShow; m++) {
+                console.log('    - ' + missing[m]);
+            }
+            if (missing.length > 5) {
+                console.log('    - ... and ' + (missing.length - 5) + ' more');
+            }
+        }
+        console.log('\nTotal keys missing across all language files: ' + syncResult.totalMissing);
+    }
+
+    if (hasErrors) {
         process.exitCode = 1;
     }
 }
