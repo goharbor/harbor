@@ -13,8 +13,7 @@ COPY ./make/photon/trivy-adapter/binary/scanner-trivy /home/scanner/bin/scanner-
 RUN chown -R scanner:scanner /etc/pki/tls/certs \
     && chown scanner:scanner /home/scanner/*.sh && chmod u+x /home/scanner/*.sh \
     && chown scanner:scanner /usr/local/bin/trivy && chmod u+x /usr/local/bin/trivy \
-    && chown scanner:scanner /home/scanner/bin/scanner-trivy && chmod u+x /home/scanner/bin/scanner-trivy \
-    && chown scanner:scanner /home/scanner/install_cert.sh && chmod u+x /home/scanner/install_cert.sh
+    && chown scanner:scanner /home/scanner/bin/scanner-trivy && chmod u+x /home/scanner/bin/scanner-trivy
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl --fail -s http://localhost:8080/probe/healthy || curl -k --fail -s https://localhost:8443/probe/healthy || exit 1
 
