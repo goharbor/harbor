@@ -243,10 +243,10 @@
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
-        "NO_PROJECT": "We couldn't find any projects"
+        "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Bu proxy önbellek projesi için üst kayıt defterine maksimum bağlantı, -1 ise sınır yoktur",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
+        "NO_PROJECT": "Herhangi bir proje bulunamadı"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",
@@ -275,9 +275,9 @@
         "AUTOSCAN_TOGGLE": "İmajları yüklerken anında tarayın",
         "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın.",
         "SBOM": "SBOM generation",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
-        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
+        "AUTOSBOM_TOGGLE": "Push'ta otomatik SBOM oluştur",
+        "AUTOSBOM_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak SBOM oluşturun.",
+        "CONTENT_TRUST_POLICY": "Yalnızca doğrulanmış imajların yüklenilmesine izin verin."
     },
     "MEMBER": {
         "NEW_MEMBER": "Yeni Üye",
@@ -499,7 +499,7 @@
         "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
-        "REPLICATION_TRIGGER": "Trigger",
+        "REPLICATION_TRIGGER": "Tetikleyici",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Evet",
         "SECONDS": "Saniye",
@@ -759,7 +759,7 @@
         "SUB_TITLE": "Göster"
     },
     "CONFIG": {
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Etkin",
         "SECURITY": "Security",
         "TITLE": "Ayarlar",
         "AUTH": "Doğrulama",

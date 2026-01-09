@@ -242,10 +242,10 @@
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
-        "NO_PROJECT": "We couldn't find any projects"
+        "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
@@ -274,9 +274,9 @@
         "AUTOSCAN_TOGGLE": "Images automatisch beim Hochladen scannen",
         "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden.",
         "SBOM": "SBOM generation",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
-        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
+        "AUTOSBOM_TOGGLE": "SBOM automatisch beim Hochladen generieren",
+        "AUTOSBOM_POLICY": "Automatisch SBOM generieren, wenn Bilder in die Projektregistrierung hochgeladen werden.",
+        "CONTENT_TRUST_POLICY": "Erlaube ausschließlich verifizierte Images."
     },
     "MEMBER": {
         "NEW_MEMBER": "Neues Mitglied",
@@ -758,7 +758,7 @@
         "SUB_TITLE": "Zeige"
     },
     "CONFIG": {
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks aktiviert",
         "SECURITY": "Security",
         "TITLE": "Konfiguration",
         "AUTH": "Authentifizierung",

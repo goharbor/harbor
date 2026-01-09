@@ -243,10 +243,10 @@
         "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, AWS ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory y Github GHCR.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
-        "NO_PROJECT": "We couldn't find any projects"
+        "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
@@ -275,9 +275,9 @@
         "AUTOSCAN_TOGGLE": "Escanee automáticamente las imágenes al instante",
         "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto.",
         "SBOM": "generación de SBOM",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
-        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
+        "AUTOSBOM_TOGGLE": "Generar SBOM automáticamente en push",
+        "AUTOSBOM_POLICY": "Generar SBOM automáticamente cuando las imágenes se envían al registro del proyecto.",
+        "CONTENT_TRUST_POLICY": "Solo permita la implementación de imágenes verificadas."
     },
     "MEMBER": {
         "NEW_MEMBER": "Nuevo miembro",
@@ -498,7 +498,7 @@
         "RESOURCE_TYPE": "Tipo de Recurso"
     },
     "REPLICATION": {
-        "REPLICATION_TRIGGER": "Trigger",
+        "REPLICATION_TRIGGER": "Disparador",
         "PUSH_BASED_ONLY": "Solo para replicación push-based",
         "YES": "Si",
         "SECONDS": "Segundos",
@@ -760,7 +760,7 @@
         "SUB_TITLE": "Mostrar"
     },
     "CONFIG": {
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Habilitados",
         "SECURITY": "Seguridad",
         "TITLE": "Configuración",
         "AUTH": "Autentificación",

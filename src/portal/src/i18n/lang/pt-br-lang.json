@@ -241,10 +241,10 @@
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
-        "NO_PROJECT": "We couldn't find any projects"
+        "CONNECTION_LIMIT": "Conexão máxima ao repositório remoto",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "A conexão máxima ao repositório remoto para este projeto de cache proxy, se -1, então não há limite",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, insira -1 ou um número inteiro maior que 0.",
+        "NO_PROJECT": "Não encontramos nenhum projeto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
@@ -273,9 +273,9 @@
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
         "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
         "SBOM": "SBOM generation",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
-        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
+        "AUTOSBOM_TOGGLE": "Gerar SBOM automaticamente ao enviar",
+        "AUTOSBOM_POLICY": "Gerar SBOM automaticamente quando as imagens são enviadas ao repositório do projeto.",
+        "CONTENT_TRUST_POLICY": "Permitir implantação apenas de imagens verificadas."
     },
     "MEMBER": {
         "NEW_MEMBER": "Novo membro",
@@ -497,7 +497,7 @@
         "RESOURCE_TYPE": "Tipo de Recurso"
     },
     "REPLICATION": {
-        "REPLICATION_TRIGGER": "Trigger",
+        "REPLICATION_TRIGGER": "Gatilho",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Sim",
         "SECONDS": "Segundo",
@@ -758,7 +758,7 @@
         "SUB_TITLE": "Exibir"
     },
     "CONFIG": {
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Habilitados",
         "SECURITY": "Security",
         "TITLE": "Configuração",
         "AUTH": "Autenticação",

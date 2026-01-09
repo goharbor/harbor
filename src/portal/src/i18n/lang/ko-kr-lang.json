@@ -242,10 +242,10 @@
         "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
         "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
-        "NO_PROJECT": "We couldn't find any projects"
+        "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "이 프록시 캐시 프로젝트의 업스트림 레지스트리에 대한 최대 연결 수입니다. -1이면 제한이 없습니다",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "-1 또는 0보다 큰 정수를 입력하세요.",
+        "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",
@@ -273,9 +273,9 @@
         "SCAN": "취약점 스캔",
         "AUTOSCAN_TOGGLE": "푸시 시 이미지 자동 스캔",
         "AUTOSCAN_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 이미지를 스캔합니다.",
-        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
-        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
-        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
+        "AUTOSBOM_TOGGLE": "푸시 시 SBOM 자동 생성",
+        "AUTOSBOM_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 SBOM을 생성합니다.",
+        "CONTENT_TRUST_POLICY": "확인된 이미지만 배포되도록 허용합니다."
     },
     "MEMBER": {
         "NEW_MEMBER": "새 구성원",
@@ -497,7 +497,7 @@
         "RESOURCE_TYPE": "리소스 종류"
     },
     "REPLICATION": {
-        "REPLICATION_TRIGGER": "Trigger",
+        "REPLICATION_TRIGGER": "트리거",
         "PUSH_BASED_ONLY": "푸시 기반 복제에만 해당됩니다",
         "YES": "예",
         "SECONDS": "초",
@@ -757,7 +757,7 @@
         "SUB_TITLE": "보기"
     },
     "CONFIG": {
-        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_NOTIFICATION_ENABLED": "웹훅 활성화됨",
         "SECURITY": "보안",
         "TITLE": "설정",
         "AUTH": "인증",
