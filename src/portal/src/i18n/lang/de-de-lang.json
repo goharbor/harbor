@@ -840,7 +840,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Gruppenmitgliedschaft",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
             "GROUP_SCOPE": "LDAP Gruppen Search Scope",
-            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
+            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Gruppen parallel anhängen",
+            "GROUP_ATTACH_PARALLEL_INFO": "Aktivieren Sie diese Option, um Gruppen parallel anzuhängen und Zeitüberschreitungen bei zu vielen Gruppen zu vermeiden. Falls deaktiviert, werden die LDAP-Gruppeninformationen sequentiell angehängt."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpunkt",
@@ -989,7 +991,8 @@
             "FOOT_ITEMS": "Elemente",
             "FOOT_OF": "von",
             "IN_ALLOW_LIST": "In CVE Allowliste enthalten",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Status"
         },
         "CHART": {
             "SCANNING_TIME": "Scan abgeschlossen um:",

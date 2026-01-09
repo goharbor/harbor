@@ -196,6 +196,7 @@
         "ITEMS": "entrées",
         "OF": "sur",
         "RESET_Ok": "Réinitialisation du mot de passe des utilisateurs réussie",
+        "RESET_OK": "Réinitialisation du mot de passe des utilisateurs réussie",
         "EXISTING_PASSWORD": "Le nouveau mot de passe ne peut pas être égal à l'ancien",
         "UNKNOWN": "Inconnu",
         "UNKNOWN_TIP": "Vérifiez SVP que l'utilisateur a le statut admin sur le fournisseur d'identité si la valeur est \"Inconnu\""
@@ -437,6 +438,7 @@
         "SLACK_RATE_LIMIT": "Attention aux limites de requêtes de Slack"
     },
     "GROUP": {
+        "GROUP": "Groupe",
         "Group": "Groupe",
         "IMPORT_LDAP_GROUP": "Importer un groupe LDAP",
         "IMPORT_HTTP_GROUP": "Nouveau groupe HTTP",
@@ -991,7 +993,8 @@
             "FOOT_ITEMS": "Entrées",
             "FOOT_OF": "sur",
             "IN_ALLOW_LIST": "Présent dans la liste blanche CVE",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Statut"
         },
         "CHART": {
             "SCANNING_TIME": "Temps d'analyse complète :",

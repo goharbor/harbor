@@ -841,7 +841,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Grup Üyeliği",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Öznitelik, LDAP grubunun üyeliğini gösterir, varsayılan değer memberof, bazı LDAP sunucularında \"ismemberof\" olabilir. This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin."
+            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Gruplarını Paralel Olarak Ekle",
+            "GROUP_ATTACH_PARALLEL_INFO": "Çok fazla grup olduğunda zaman aşımını önlemek için grupları paralel olarak eklemek üzere bu seçeneği etkinleştirin. Devre dışı bırakılırsa, LDAP grup bilgileri sırayla eklenir."
         },
         "UAA": {
             "ENDPOINT": "UAA Uç Noktası",
@@ -990,7 +992,8 @@
             "FOOT_ITEMS": "Öğeler",
             "FOOT_OF": "of",
             "IN_ALLOW_LIST": "Listed In CVE Allowlist",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Durum"
         },
         "CHART": {
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",

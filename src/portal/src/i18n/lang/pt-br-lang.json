@@ -61,6 +61,7 @@
         "DESTINATION_NAMESPACE": "Especificar o namespace de destino. Se vazio, os recursos serão colocados no mesmo namespace que a fonte.",
         "OVERRIDE": "Sobrescrever recursos no destino se já existir com o mesmo nome.",
         "SINGLE_ACTIVE_REPLICATION": "Specify whether to skip execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
+        "REPO_TOOLTIP": "Usuários não podem realizar operações nas imagens neste modo.",
         "EMAIL": "Deve ser um endereço de e-mail válido como nome@exemplo.com.",
         "USER_NAME": "Não pode conter caracteres especiais. Tamanho máximo de 255 caracteres.",
         "FULL_NAME": "Tamanho máximo de 20 caracteres.",
@@ -679,6 +680,8 @@
         "PLACEHOLDER": "Não há endereços cadastrados"
     },
     "REPOSITORY": {
+        "BUILD_HISTORY": "Histórico de Build",
+        "REPO_NAME": "Repositório",
         "COPY_DIGEST_ID": "Copiar Digest",
         "DELETE": "Remover",
         "NAME": "Nome",
@@ -840,7 +843,9 @@
             "LDAP_GROUP_MEMBERSHIP": "Filiação de Grupo LDAP",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Atributo que informa a lista de grupos do usuário. Se não informado, o nome \"memberof\" será usado. Alguns servidores LDAP utilizam o atributo \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
+            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão.",
+            "GROUP_ATTACH_PARALLEL": "Anexar Grupo LDAP em Paralelo",
+            "GROUP_ATTACH_PARALLEL_INFO": "Habilite esta opção para anexar grupos em paralelo e evitar timeout quando há muitos grupos. Se desabilitado, as informações do grupo LDAP serão anexadas sequencialmente."
         },
         "UAA": {
             "ENDPOINT": "Endereço UAA",
@@ -989,7 +994,8 @@
             "FOOT_ITEMS": "Itens",
             "FOOT_OF": "de",
             "IN_ALLOW_LIST": "Na lista de CVEs permitidas",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Status"
         },
         "CHART": {
             "SCANNING_TIME": "Tempo de conclusão da análise:",
@@ -1068,6 +1074,9 @@
         "SHOW_YAML": "Arquivo YAML"
     },
     "TAG": {
+        "OS_VERSION": "Versão do SO",
+        "CREATION": "Criado em",
+        "COMMAND": "Comandos",
         "CREATION_TIME_PREFIX": "Criada em",
         "CREATOR_PREFIX": "por",
         "ANONYMITY": "anonimato",
@@ -1165,6 +1174,7 @@
         "ADD_GROUP": "Adicionar grupo membro",
         "ADD_USER": "Adicionar usuário membro",
         "DELETE_LABEL": "Remover label",
+        "STOP_EXECUTIONS": "Parar Execução",
         "REPLICATION": "Replicação",
         "DAY_AGO": " dia(s) atrás",
         "HOUR_AGO": " hora(s) atrás",
@@ -1172,6 +1182,8 @@
         "SECOND_AGO": "menos de 1 minuto",
         "EVENT_LOG": "EVENTOS LOCAIS"
     },
+    "UPDATE_TIME": "Hora de atualização",
+    "LOGS": "Logs",
     "UNKNOWN_ERROR": "Ocorreram erros desconhecidos. Tente novamente mais tarde",
     "UNAUTHORIZED_ERROR": "Sua sessão é inválida ou expirou. Você deve logar-se novamente para continuar essa ação.",
     "REPO_READ_ONLY": "Harbor está em modo somente leitura, remover repositórios, artifact, tag e o envio de imagens serão desabilitados em modo somente leitura.",

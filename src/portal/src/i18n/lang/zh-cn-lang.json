@@ -81,6 +81,7 @@
         "EMPTY": "名称为必填项",
         "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
         "OIDC_ENDPOINT_FORMAT": "Endpoint必须以https://开头。",
+        "REPO_TOOLTIP": "在此模式下，用户无法对镜像执行任何操作。",
         "OIDC_NAME": "OIDC提供商的名称。",
         "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
@@ -344,6 +345,7 @@
         "EXPORT_TO_FILE": "导出到文件中",
         "EXPIRES_AT": "到期日",
         "INVALID_VALUE": "无效的过期日期",
+        "QUOTA": "配额",
         "NEVER_EXPIRED": "永不过期",
         "NAME_PREFIX": "机器人账户名称前缀",
         "NAME_PREFIX_REQUIRED": "机器人账户名称前缀为必填项",
@@ -991,7 +993,8 @@
             "FOOT_ITEMS": "项目",
             "FOOT_OF": "总共",
             "IN_ALLOW_LIST": "已入特赦名单",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "状态"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
@@ -1170,6 +1173,8 @@
         "ADD_USER": "添加用户成员",
         "DELETE_LABEL": "删除标签",
         "REPLICATION": "复制",
+        "DELETE_CHART_VERSION": "删除 Chart 版本",
+        "DELETE_CHART": "删除 Chart",
         "DAY_AGO": "天前",
         "HOUR_AGO": "小时前",
         "MINUTE_AGO": "分钟前",
