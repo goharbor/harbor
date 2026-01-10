@@ -391,6 +391,68 @@ async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number 
   throw new Error(`GC job ${jobId} did not complete within ${timeoutMs}ms`);
 }
 
+async function checkGCLog(
+  page: Page,
+  gcJobId: string,
+  logContaining: string[],
+  logExcluding: string[]
+): Promise<void> {
+  // Locate the GC job row and its log link
+  const rowXpath = `//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`;
+  const row = page.locator(`xpath=${rowXpath}`);
+  await expect(row).toBeVisible({ timeout: 30000 });
+
+  // Open log in a popup window
+  const [logPopup] = await Promise.all([
+    page.waitForEvent('popup'),
+    row.locator('xpath=.//a').click()
+  ]);
+
+  // Ensure log page content is loaded
+  await expect(logPopup.locator('body')).toBeVisible({ timeout: 30000 });
+
+  // Verify all required strings are present
+  for (const text of logContaining) {
+    await expect(logPopup.locator('body')).toContainText(text, { timeout: 30000 });
+  }
+
+  // Verify all excluded strings are absent
+  for (const text of logExcluding) {
+    await expect(logPopup.locator('body')).not.toContainText(text, { timeout: 30000 });
+  }
+
+  // Close popup and return to main window
+  await logPopup.close();
+}
+
+async function checkGCHistory(
+  page: Page,
+  gcJobId: string,
+  details: string,
+  triggerType: string = 'Manual',
+  dryRun: string = 'No',
+  status: string = 'SUCCESS'
+): Promise<void> {
+  const rowXpath = `//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`;
+
+  const triggerCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[2]`);
+  const dryRunCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[3]`);
+  const statusCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[4]`);
+  const detailsCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[5]//span`);
+
+  await expect(triggerCell).toBeVisible({ timeout: 30000 });
+  await expect(dryRunCell).toBeVisible({ timeout: 30000 });
+  await expect(statusCell).toBeVisible({ timeout: 30000 });
+  await expect(detailsCell).toBeVisible({ timeout: 30000 });
+
+  await expect(triggerCell).toHaveText(triggerType, { timeout: 30000 });
+  await expect(dryRunCell).toHaveText(dryRun, { timeout: 30000 });
+  await expect(statusCell).toHaveText(status, { timeout: 30000 });
+
+  // Details cell contains a dynamic summary; assert substring match
+  await expect(detailsCell).toContainText(details, { timeout: 30000 });
+}
+
 test('Project Quota Sorting', async ({ page }) => {
   await loginAsAdmin(page);
 
@@ -564,3 +626,34 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   
   expect(quotaMatches).toBeTruthy();
 })
+
+test('Garbage Collection Accessory', async ({ page }) => {
+  // Setup
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const imageName = 'hello-world';
+  const imageTag = 'latest';
+  
+  // Initialize
+  await loginAsAdmin(page);
+  
+  // 1. Initial GC - verify no artifacts to delete
+  await switchToGarbageCollection(page);
+  await runGC(page, 1, false);
+  let jobId = await getLatestGCJobId(page);
+  await waitForGCToComplete(page, jobId);
+  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCLog(page, jobId, ['workers: 1'], []);
+  
+  // 2. Create project and push image
+  await createProject(page, projectName);
+  await pushImageWithTag({
+    ip: harborIp,
+    user: harborUser,
+    pwd: harborPassword,
+    project: projectName,
+    image: imageName,
+    tag: imageTag,
+    tag1: imageTag,
+  });
+});
