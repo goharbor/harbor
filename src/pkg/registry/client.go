@@ -143,13 +143,11 @@ func NewClientWithCACert(url, username, password string, insecure bool, caCert s
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
 func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
-	var transport http.RoundTripper
-	if caCert != "" {
-		// Custom CA certificate takes precedence
-		transport = commonhttp.GetHTTPTransport(commonhttp.WithCACert(caCert))
-	} else {
-		transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure))
-	}
+	// When CACertificate is set, it takes precedence and Insecure is ignored
+	transport := commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	)
 
 	return &client{
 		url:          url,

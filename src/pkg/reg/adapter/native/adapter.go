@@ -73,11 +73,7 @@ func NewAdapter(reg *model.Registry) *Adapter {
 		password = reg.Credential.AccessSecret
 	}
 
-	if reg.CACertificate != "" {
-		adapter.Client = registry.NewClientWithCACert(reg.URL, username, password, reg.Insecure, reg.CACertificate)
-	} else {
-		adapter.Client = registry.NewClient(reg.URL, username, password, reg.Insecure)
-	}
+	adapter.Client = registry.NewClientWithCACert(reg.URL, username, password, reg.Insecure, reg.CACertificate)
 	return adapter
 }
 

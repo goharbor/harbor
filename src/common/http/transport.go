@@ -93,10 +93,18 @@ func WithInsecureSkipVerify(skipVerify bool) func(*http.Transport) {
 	}
 }
 
+// normalizePEM normalizes PEM data by trimming whitespace and converting
+func normalizePEM(cert string) string {
+	cert = strings.TrimSpace(cert)
+	cert = strings.ReplaceAll(cert, "\r\n", "\n")
+	cert = strings.ReplaceAll(cert, "\r", "\n")
+	return cert
+}
+
 // ValidateCACertificate validates whether the provided CA certificate string
 // contains at least one valid PEM-encoded x509 certificate.
 func ValidateCACertificate(caCert string) error {
-	caCert = strings.TrimSpace(caCert)
+	caCert = normalizePEM(caCert)
 	if caCert == "" {
 		return nil
 	}
@@ -143,7 +151,7 @@ func parseCertificatesFromPEM(pemData string) ([]*x509.Certificate, error) {
 // WithCustomCACert returns a TransportOption that configures custom CA certificates (supports chains)
 func WithCustomCACert(caCert string) func(*http.Transport) {
 	return func(tr *http.Transport) {
-		caCert = strings.TrimSpace(caCert)
+		caCert = normalizePEM(caCert)
 		if caCert == "" {
 			log.Debugf("No custom CA certificate provided; skipping configuration")
 			return
