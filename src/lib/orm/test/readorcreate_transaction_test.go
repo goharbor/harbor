@@ -37,7 +37,6 @@ type ReadOrCreateTransactionSuite struct {
 
 func (suite *ReadOrCreateTransactionSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
-	RegisterModel(&Foo{})
 
 	o, err := FromContext(Context())
 	suite.Require().NoError(err)
