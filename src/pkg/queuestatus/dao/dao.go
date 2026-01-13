@@ -73,6 +73,7 @@ func (d *dao) GetByJobType(ctx context.Context, jobType string) (*model.JobQueue
 	if len(queueList) > 0 {
 		return queueList[0], nil
 	}
+	// nolint:nilnil // queue status not found
 	return nil, nil
 }
 
