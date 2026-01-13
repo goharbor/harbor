@@ -665,7 +665,10 @@
         "DELETED_SUCCESS": "成功刪除端點。",
         "DELETED_FAILED": "刪除端點失敗。",
         "CANNOT_EDIT": "當複製規則啟用時，端點無法修改。",
-        "PLACEHOLDER": "未找到任何端點！"
+        "PLACEHOLDER": "未找到任何端點！",
+        "CA_CERTIFICATE": "CA 憑證",
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 編碼的 CA 憑證以驗證倉庫的 TLS 憑證。留空將使用系統 CA 池。此欄位僅在啟用「驗證遠端憑證」時可用。",
+        "CA_CERTIFICATE_HELPER": "選填。在此貼上 PEM 編碼的 CA 憑證，以信任此端點的自簽名或私有 CA 憑證。如果留空，Harbor 將使用系統 CA 池。"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "複製 Digest",
@@ -1173,7 +1176,7 @@
     },
     "UNKNOWN_ERROR": "發生未知錯誤。請稍後再試。",
     "UNAUTHORIZED_ERROR": "您的工作階段無效或已過期。您需要重新登入以繼續操作。",
-        "REPO_READ_ONLY": "Harbor 已設為唯讀模式。在唯讀模式下，刪除儲存庫、Artifact、標籤及推送映像檔等操作將被停用。",
+    "REPO_READ_ONLY": "Harbor 已設為唯讀模式。在唯讀模式下，刪除儲存庫、Artifact、標籤及推送映像檔等操作將被停用。",
     "FORBIDDEN_ERROR": "您沒有執行此操作的適當權限。",
     "GENERAL_ERROR": "執行服務呼叫時發生錯誤：{{param}}。",
     "BAD_REQUEST_ERROR": "因請求不正確，我們無法執行您的操作。",
