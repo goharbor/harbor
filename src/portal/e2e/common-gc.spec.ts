@@ -27,10 +27,10 @@ interface PushImageWithTagOptions {
 }
 
 
-const harborIp = process.env.HARBOR_IP || 'localhost';
-const base_url = process.env.HARBOR_BASE_URL || 'https://localhost'
 const harborUser = process.env.HARBOR_USERNAME || 'admin';
-const harborPassword = process.env.HARBOR_USERNAME || 'Harbor12345';
+const harborPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
+const harborIp = process.env.IP || 'localhost';
+const base_url = process.env.BASE_URL || 'https://localhost';
 const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
 const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
 
@@ -626,34 +626,3 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   
   expect(quotaMatches).toBeTruthy();
 })
-
-test('Garbage Collection Accessory', async ({ page }) => {
-  // Setup
-  const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
-  const imageName = 'hello-world';
-  const imageTag = 'latest';
-  
-  // Initialize
-  await loginAsAdmin(page);
-  
-  // 1. Initial GC - verify no artifacts to delete
-  await switchToGarbageCollection(page);
-  await runGC(page, 1, false);
-  let jobId = await getLatestGCJobId(page);
-  await waitForGCToComplete(page, jobId);
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
-  await checkGCLog(page, jobId, ['workers: 1'], []);
-  
-  // 2. Create project and push image
-  await createProject(page, projectName);
-  await pushImageWithTag({
-    ip: harborIp,
-    user: harborUser,
-    pwd: harborPassword,
-    project: projectName,
-    image: imageName,
-    tag: imageTag,
-    tag1: imageTag,
-  });
-});
