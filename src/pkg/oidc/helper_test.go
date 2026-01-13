@@ -157,10 +157,11 @@ func TestGroupsFromClaim(t *testing.T) {
 		ok     bool
 	}{
 		{
+			// Test single string value (supported for OIDC providers that return string for single group)
 			in,
 			"user",
-			[]string{},
-			false,
+			[]string{"user1"},
+			true,
 		},
 		{
 			in,
@@ -181,7 +182,7 @@ func TestGroupsFromClaim(t *testing.T) {
 			true,
 		},
 		{
-			// Test single string group (RFC 7519 compliance)
+			// Test single string group
 			in,
 			"single_group",
 			[]string{"onlygroup"},

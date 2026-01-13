@@ -402,7 +402,7 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 
 // groupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
 // If the claims does not have the claim defined as k, the second return value will be false, otherwise true
-// According to RFC 7519, a claim can be either a string (single value) or an array (multiple values)
+// Some OIDC providers return groups as a single string when user belongs to one group, so we handle both formats
 func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 	res := make([]string, 0)
 	claimMap := make(map[string]any)
