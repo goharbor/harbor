@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.24.6
+go 1.25
 
 require (
 	github.com/CloudNativeAI/model-spec v0.0.5
@@ -215,3 +215,5 @@ replace (
 	github.com/gomodule/redigo => github.com/gomodule/redigo v1.9.2
 	google.golang.org/api => google.golang.org/api v0.0.0-20160322025152-9bf6e6e569ff
 )
+
+ignore portal
