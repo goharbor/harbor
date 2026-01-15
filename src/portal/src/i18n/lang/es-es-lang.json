@@ -669,7 +669,10 @@
         "DELETED_SUCCESS": "Endpoint eliminado satisfactoriamente.",
         "DELETED_FAILED": "Ha fallado la eliminación del endpoint.",
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
-        "PLACEHOLDER": "No pudimos encontrar ningún punto final!"
+        "PLACEHOLDER": "No pudimos encontrar ningún punto final!",
+        "CA_CERTIFICATE": "Certificado CA",
+        "CA_CERTIFICATE_TOOLTIP": "Proporcione un certificado CA codificado en PEM para verificar el certificado TLS del registro. Déjelo vacío para usar el conjunto de CA del sistema. Este campo solo está disponible cuando 'Verificar certificado remoto' está habilitado.",
+        "CA_CERTIFICATE_HELPER": "Opcional. Pegue aquí el certificado CA codificado en PEM para confiar en certificados autofirmados o de CA privadas para este endpoint. Si se deja vacío, Harbor usará el conjunto de CA del sistema."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",
