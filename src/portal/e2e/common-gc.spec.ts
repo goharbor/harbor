@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test'
 import { execSync } from 'child_process';
+import { Agent } from 'http';
 
 interface PushImageOptions {
   ip: string;
@@ -31,8 +32,11 @@ const harborUser = process.env.HARBOR_USERNAME || 'admin';
 const harborPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
 const harborIp = process.env.IP || 'localhost';
 const base_url = process.env.BASE_URL || 'https://localhost';
+const harborPort = process.env.PORT || '443';
 const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
 const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+
+const cosignPassword = process.env.COSIGN_PASSWORD || "";
 
 
 function execCommand(command: string): string {
@@ -453,6 +457,246 @@ async function checkGCHistory(
   await expect(detailsCell).toContainText(details, { timeout: 30000 });
 }
 
+interface AccessoryDigests {
+  sbomDigest: string;
+  signatureDigest: string;
+  signatureOfSbomDigest: string;
+  signatureOfSignatureDigest: string;
+}
+
+async function prepareAccessories(
+  page: Page,
+  project: string,
+  image: string,
+  tag: string
+): Promise<AccessoryDigests> {
+  const harborRegistry = `${harborIp}:${harborPort}`;
+  const artifact = `${harborRegistry}/${project}/${image}:${tag}`;
+  dockerLogin(harborRegistry, harborUser, harborPassword);
+  cosignGenerateKeyPair();
+  cosignSign(artifact);
+  cosignPushSbom(artifact);
+  
+  // Navigate to repository and open accessories
+  await goIntoRepo(page, project, image);
+  await page.getByRole('button', {name: 'Open'}).click();
+  await page.waitForTimeout(1000); //why dependant on this?
+  
+  /* Get SBOM digest */
+
+  // // Open action button of sbom digest
+  console.log('Getting SBOM digest...');
+  const sbomRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'subject.accessory' }).first();
+  await expect(sbomRow).toBeVisible({ timeout: 10000 });
+  const sbomActionButton = sbomRow.getByRole('button', {name: "Available Actions"});
+  await expect(sbomActionButton).toBeVisible();
+  await sbomActionButton.click();
+
+  // Copy digest
+  await page.getByRole('button', {name: ' Copy Digest '}).click();
+  
+  // Read from text
+  const sbomDigestElement = page.locator('textarea.clr-textarea');
+  await expect(sbomDigestElement).toBeVisible({ timeout: 10000 });
+  const sbomDigest = (await sbomDigestElement.textContent()) || '';
+  console.log(`SBOM digest: ${sbomDigest}`);
+  
+  // Close dialog
+  await page.getByRole('button', {name: ' COPY '}).click();
+  
+  /* Get Signature digest */
+
+  // Open actoin button of signature digest 
+  console.log('Getting Signature digest...');
+  const signatureRow = await page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  await expect(signatureRow).toBeVisible({ timeout: 1000 });
+  const signatureActionBtn = signatureRow.getByRole('button', {name: "Available Actions"});
+  await expect(signatureActionBtn).toBeVisible();
+  await signatureActionBtn.click();
+
+  // Copy digest
+  await page.getByRole('button', {name: ' Copy Digest '}).click();
+  
+  // Read from text
+  const signatureDigestElement = page.locator('textarea.clr-textarea');
+  await expect(signatureDigestElement).toBeVisible({ timeout: 10000 });
+  const signatureDigest = (await signatureDigestElement.textContent()) || '';
+  console.log(`Signature digest: ${signatureDigest}`);
+  
+  // Close dialog
+  await page.locator('xpath=//button[text()=" COPY "]').click();
+  
+  // Sign the SBOM digest
+  const sbomArtifact = `${harborRegistry}/${project}/${image}@${sbomDigest}`;
+  cosignSign(sbomArtifact);
+  
+  // Sign the signature digest
+  const signatureArtifact = `${harborRegistry}/${project}/${image}@${signatureDigest}`;
+  cosignSign(signatureArtifact);
+  
+  // Refresh artifacts to see new signatures
+  await page.reload();
+  await page.waitForTimeout(2000);
+  await page.getByRole('button', {name: 'Open'}).click();
+
+  /* Get signature of sbom digest */
+
+  // Expand the sbom accessory row
+  const sbomAccessoryRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'subject.accessory' }).first();
+  await expect(sbomAccessoryRow).toBeVisible({ timeout: 10000 });
+
+  // Click the expand button inside the SBOM row
+  const sbomExpandBtn = sbomAccessoryRow.locator('button.datagrid-expandable-caret-button');
+  await expect(sbomExpandBtn).toBeVisible();
+  await sbomExpandBtn.click();
+  await page.waitForTimeout(500); // Wait for expansion animation
+
+  // Click the action button on the signature-of-SBOM (inside SBOM row)
+  const signatureOfSbomRow = sbomAccessoryRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  await expect(signatureOfSbomRow).toBeVisible({ timeout: 10000 });
+
+  const signatureOfSbomActionBtn = signatureOfSbomRow.getByRole('button', { name: 'Available Actions' });
+  await expect(signatureOfSbomActionBtn).toBeVisible({ timeout: 10000 });
+  await signatureOfSbomActionBtn.click();
+
+  // Get text of signature of sbom digest
+  await page.getByRole('button', {name: ' Copy Digest '}).click();
+  const signatureOfSbomDigestTextarea = page.locator('textarea.clr-textarea');
+  await expect(signatureOfSbomDigestTextarea).toBeVisible({ timeout: 10000 });
+  const signatureOfSbomDigest = (await signatureOfSbomDigestTextarea.textContent()) || '';
+  console.log(`Signature of SBOM digest: ${signatureOfSbomDigest}`);
+
+  // Close dialog
+  await page.getByRole('button', { name: ' COPY ' }).click();
+  await expect(page.locator('textarea.clr-textarea')).not.toBeVisible({ timeout: 5000 });
+
+  /* Get signature of signature */
+
+  // Expand the signature accessory row
+  console.log('Expanding Signature row to show nested signature...');
+  const signatureAccessoryRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  await expect(signatureAccessoryRow).toBeVisible({ timeout: 10000 });
+
+  // Click the expand button
+  const signatureExpandBtn = signatureAccessoryRow.locator('button.datagrid-expandable-caret-button');
+  await expect(signatureExpandBtn).toBeVisible();
+  await signatureExpandBtn.click();
+  await page.waitForTimeout(500);
+  
+  // Click the action button on the signature-of-signature roq (inside signature row)
+  console.log('Getting Signature-of-Signature digest...');
+  const signatureOfSignatureRow = signatureAccessoryRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  await expect(signatureOfSignatureRow).toBeVisible({ timeout: 10000 });
+
+  const signatureOfSignatureActionBtn = signatureOfSignatureRow.getByRole('button', { name: 'Available Actions' });
+  await expect(signatureOfSignatureActionBtn).toBeVisible();
+  await signatureOfSignatureActionBtn.click();
+
+  // Get text of signature of signature digest
+  await page.getByRole('button', { name: ' Copy Digest ' }).click();
+  const signatureOfSignatureDigestTextarea = page.locator('textarea.clr-textarea');
+  await expect(signatureOfSignatureDigestTextarea).toBeVisible({ timeout: 10000 });
+  const signatureOfSignatureDigest = (await signatureOfSignatureDigestTextarea.textContent()) || '';
+  console.log(`Signature of Signature digest: ${signatureOfSignatureDigest}`);
+
+  // Close dialog
+  await page.getByRole('button', { name: ' COPY ' }).click();
+  await expect(page.locator('textarea.clr-textarea')).not.toBeVisible({ timeout: 5000 });
+  await expect(page.locator('//button[text()=" COPY "]')).not.toBeVisible({ timeout: 5000 });
+  
+  // Docker logout
+  dockerLogout(harborRegistry);
+  
+  // Return all digests
+  return {
+    sbomDigest,
+    signatureDigest,
+    signatureOfSbomDigest,
+    signatureOfSignatureDigest
+  };
+}
+
+/**
+ * Generate a Cosign key pair (cosign.key and cosign.pub)
+ * Removes any existing key files first
+ */
+function cosignGenerateKeyPair(): void {
+  try {
+    // Remove existing key files if they exist
+    try {
+      execCommand('rm -f cosign.key cosign.pub');
+    } catch (e) {
+      // Ignore if files don't exist
+    }
+    
+    // Generate new key pair (using COSIGN_PASSWORD env var to avoid interactive prompt)
+    console.log('Generating Cosign key pair...');
+    execCommand(`COSIGN_PASSWORD=${cosignPassword} cosign generate-key-pair`);
+    console.log('Cosign key pair generated successfully');
+  } catch (error: any) {
+    throw new Error(`Failed to generate Cosign key pair: ${error.message}`);
+  }
+}
+
+/**
+ * Sign an artifact with Cosign
+ * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
+ * Note: Requires prior authentication to the registry via docker login or cosign login
+ */
+function cosignSign(artifact: string): void {
+  try {
+    console.log(`Signing artifact with Cosign: ${artifact}`);
+    // Cosign uses Docker's credential store, so docker login must be called first
+    execCommand(`cosign sign -y --allow-insecure-registry --key cosign.key ${artifact}`);
+  } catch (error: any) {
+    throw new Error(`Failed to sign artifact ${artifact}: ${error.message}`);
+  }
+}
+
+/**
+ * Verify an artifact signature with Cosign
+ * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
+ * @param shouldBeSigned - Whether the artifact should be signed (true) or unsigned (false)
+ */
+function cosignVerify(artifact: string, shouldBeSigned: boolean): void {
+  try {
+    console.log(`Verifying artifact signature: ${artifact}`);
+    execCommand(`cosign verify --key cosign.pub ${artifact}`);
+    
+    if (!shouldBeSigned) {
+      throw new Error(`Artifact ${artifact} was signed but expected to be unsigned`);
+    }
+    console.log(`Successfully verified signature for: ${artifact}`);
+  } catch (error: any) {
+    if (shouldBeSigned) {
+      throw new Error(`Failed to verify artifact ${artifact}: ${error.message}`);
+    }
+    console.log(`Correctly failed verification for unsigned artifact: ${artifact}`);
+  }
+}
+
+/**
+ * Attach an SBOM (Software Bill of Materials) to an artifact using Cosign
+ * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
+ * @param sbomPath - Path to SBOM file (default uses test SBOM from Harbor tests)
+ * @param type - SBOM format type (default: spdx)
+ */
+function cosignPushSbom(
+  artifact: string, 
+  sbomPath: string = '../../tests/files/sbom_test.json',
+  type: string = 'spdx'
+): void {
+  try {
+    console.log(`Attaching SBOM to artifact: ${artifact}`);
+    execCommand(
+      `cosign attach sbom --allow-insecure-registry --registry-referrers-mode oci-1-1 --type ${type} --sbom ${sbomPath} ${artifact}`
+    );
+    console.log(`Successfully attached SBOM to: ${artifact}`);
+  } catch (error: any) {
+    throw new Error(`Failed to attach SBOM to artifact ${artifact}: ${error.message}`);
+  }
+}
+
 test('Project Quota Sorting', async ({ page }) => {
   await loginAsAdmin(page);
 
@@ -626,3 +870,38 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   
   expect(quotaMatches).toBeTruthy();
 })
+
+test('Garbage Collection Accessory', async ({ page }) => {
+  const timestamp = Date.now();
+  const projectName = `project${timestamp}`;
+  const imageName = 'hello-world';
+  const imageTag = 'latest';
+  
+  await loginAsAdmin(page);
+  
+  // Initial GC - verify no artifacts to delete
+  await switchToGarbageCollection(page);
+  await runGC(page, 1, false);
+  let jobId = await getLatestGCJobId(page);
+  await waitForGCToComplete(page, jobId);
+  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCLog(page, jobId, ['workers: 1'], []);
+  
+  // Create project and push image
+  await createProject(page, projectName);
+  await goIntoProject(page, projectName);
+  await pushImageWithTag({
+    ip: harborIp,
+    user: harborUser,
+    pwd: harborPassword,
+    project: projectName,
+    image: imageName,
+    tag: imageTag,
+    tag1: imageTag,
+  });
+  page.reload();
+
+  // Prepare accessories (SBOM + signatures using Cosign)
+  const { sbomDigest, signatureDigest, signatureOfSbomDigest, signatureOfSignatureDigest } = 
+    await prepareAccessories(page, projectName, imageName, imageTag);
+});
