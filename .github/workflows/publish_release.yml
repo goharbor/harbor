@@ -52,7 +52,7 @@ jobs:
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.7.0
+        uses: sigstore/cosign-installer@v4.0.0
       - name: Sign Release Artifacts
         run: |
           cosign sign-blob --yes \
