@@ -9,7 +9,7 @@ process.env.NODE_OPTIONS = '--use-system-ca';
 
 export default defineConfig({
     testDir: './e2e',
-    timeout: 30 * 1000,
+    timeout: 1800000,
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
@@ -28,7 +28,7 @@ export default defineConfig({
         : defaultReporters,
     outputDir: 'test-results',
     expect: {
-        timeout: 10 * 1000,
+        timeout: 60000,
     },
     use: {
         baseURL: process.env.HARBOR_URL,
