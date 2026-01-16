@@ -172,7 +172,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
 	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
-		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
+		err := rp.c.Save(ctx, sid, map[any]any{}, time.Duration(rp.maxlifetime))
 		if err != nil {
 			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
 		}
