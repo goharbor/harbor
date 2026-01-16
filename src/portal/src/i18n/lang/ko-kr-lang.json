@@ -241,7 +241,11 @@
         "PROXY_CACHE": "프록시 캐시",
         "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
-        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트"
+        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
+        "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "이 프록시 캐시 프로젝트의 업스트림 레지스트리에 대한 최대 연결 수입니다. -1이면 제한이 없습니다",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "-1 또는 0보다 큰 정수를 입력하세요.",
+        "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",
@@ -268,7 +272,11 @@
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "취약점 스캔",
         "AUTOSCAN_TOGGLE": "푸시 시 이미지 자동 스캔",
-        "AUTOSCAN_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 이미지를 스캔합니다."
+        "AUTOSCAN_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 이미지를 스캔합니다.",
+        "AUTOSBOM_TOGGLE": "푸시 시 SBOM 자동 생성",
+        "AUTOSBOM_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 SBOM을 생성합니다.",
+        "CONTENT_TRUST_POLICY": "확인된 이미지만 배포되도록 허용합니다.",
+        "SBOM": "SBOM 생성"
     },
     "MEMBER": {
         "NEW_MEMBER": "새 구성원",
@@ -490,6 +498,7 @@
         "RESOURCE_TYPE": "리소스 종류"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "트리거",
         "PUSH_BASED_ONLY": "푸시 기반 복제에만 해당됩니다",
         "YES": "예",
         "SECONDS": "초",
@@ -752,6 +761,7 @@
         "SUB_TITLE": "보기"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "웹훅 활성화됨",
         "SECURITY": "보안",
         "TITLE": "설정",
         "AUTH": "인증",
@@ -833,7 +843,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group 멤버쉽",
             "LDAP_GROUP_MEMBERSHIP_INFO": "속성은 LDAP 그룹의 멤버십을 나타내며 기본값은 memberof이며 일부 LDAP 서버에서는 \"ismemberof\"일 수 있습니다. LDAP 그룹 관련 기능을 활성화해야 하는 경우 이 필드를 비워둘 수 없습니다.",
             "GROUP_SCOPE": "LDAP 그룹 검색 범위",
-            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다."
+            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다.",
+            "GROUP_ATTACH_PARALLEL": "LDAP 그룹 병렬 연결",
+            "GROUP_ATTACH_PARALLEL_INFO": "그룹이 너무 많을 때 시간 초과를 방지하기 위해 그룹을 병렬로 연결하려면 이 옵션을 활성화하세요. 비활성화하면 LDAP 그룹 정보가 순차적으로 연결됩니다."
         },
         "UAA": {
             "ENDPOINT": "UAA 엔드포인트",
@@ -982,7 +994,8 @@
             "FOOT_ITEMS": "아이템",
             "FOOT_OF": "of",
             "IN_ALLOW_LIST": "CVE 허용 목록에 나열됨",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "상태"
         },
         "CHART": {
             "SCANNING_TIME": "스캔 완료 시간:",
@@ -1042,6 +1055,8 @@
         "PLACEHOLDER": "아티팩트를 찾을 수 없음!",
         "SCAN_UNSUPPORTED": "지원되지 않음",
         "SBOM_UNSUPPORTED": "지원되지 않음",
+        "LICENSE": "라이선스",
+        "FILES": "파일",
         "SUMMARY": "요약",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
@@ -1415,6 +1430,10 @@
         "UNHEALTHY": "위험한",
         "SCANNERS": "스캐너들",
         "SCANNER": "스캐너",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "취약점",
+        "SUPPORTED": "지원됨",
+        "NOT_SUPPORTED": "지원되지 않음",
         "EDIT": "편집",
         "NOT_AVAILABLE": "사용 불가",
         "ADAPTER": "Adapter",

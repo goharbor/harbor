@@ -257,9 +257,9 @@
         "ENDPOINT": "Конечная точка",
         "PROXY_CACHE_ENDPOINT": "Конечная точка прокси-кэша",
         "NO_PROJECT": "Мы не смогли найти никаких проектов",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
+        "CONNECTION_LIMIT": "Максимальное соединение с вышестоящим реестром",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Максимальное соединение с вышестоящим реестром для этого прокси-кэш проекта, если -1, то ограничения нет",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Пожалуйста, введите -1 или целое число больше 0."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",
@@ -288,7 +288,9 @@
         "PREVENT_VULNERABLE_2": "и выше.",
         "SCAN": "Сканирование уязвимостей",
         "AUTOSCAN_TOGGLE": "Автоматически сканировать образы при отправке",
-        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта."
+        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта.",
+        "AUTOSBOM_TOGGLE": "Автоматически генерировать SBOM при отправке",
+        "AUTOSBOM_POLICY": "Автоматически генерировать SBOM, когда образы отправляются в реестр проекта."
     },
     "MEMBER": {
         "NEW_USER": "Добавить пользователя",

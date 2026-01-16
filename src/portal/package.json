@@ -23,7 +23,8 @@
     "release": "ng build --configuration production",
     "build-mock-api-server": "tsc -p server",
     "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js",
-    "generate-build-timestamp": "node scripts/generate-build-timestamp.js"
+    "generate-build-timestamp": "node scripts/generate-build-timestamp.js",
+    "i18n:check": "node scripts/find-missing-i18n.js"
   },
   "private": true,
   "dependencies": {

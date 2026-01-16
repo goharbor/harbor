@@ -242,7 +242,11 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Bu proxy önbellek projesi için üst kayıt defterine maksimum bağlantı, -1 ise sınır yoktur",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
+        "NO_PROJECT": "Herhangi bir proje bulunamadı"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",
@@ -270,7 +274,10 @@
         "SCAN": "Güvenlik açığı taraması",
         "AUTOSCAN_TOGGLE": "İmajları yüklerken anında tarayın",
         "AUTOSCAN_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak tarayın.",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Push'ta otomatik SBOM oluştur",
+        "AUTOSBOM_POLICY": "İmajlar proje kayıt defterine yüklenildiğinde otomatik olarak SBOM oluşturun.",
+        "CONTENT_TRUST_POLICY": "Yalnızca doğrulanmış imajların yüklenilmesine izin verin."
     },
     "MEMBER": {
         "NEW_MEMBER": "Yeni Üye",
@@ -492,6 +499,7 @@
         "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Tetikleyici",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Evet",
         "SECONDS": "Saniye",
@@ -754,6 +762,7 @@
         "SUB_TITLE": "Göster"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Etkin",
         "SECURITY": "Security",
         "TITLE": "Ayarlar",
         "AUTH": "Doğrulama",
@@ -835,7 +844,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Grup Üyeliği",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Öznitelik, LDAP grubunun üyeliğini gösterir, varsayılan değer memberof, bazı LDAP sunucularında \"ismemberof\" olabilir. This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin."
+            "GROUP_SCOPE_INFO": "Grupları aramak için kapsamı, Varsayılan olarak Alt Ağaç'ı seçin.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Gruplarını Paralel Olarak Ekle",
+            "GROUP_ATTACH_PARALLEL_INFO": "Çok fazla grup olduğunda zaman aşımını önlemek için grupları paralel olarak eklemek üzere bu seçeneği etkinleştirin. Devre dışı bırakılırsa, LDAP grup bilgileri sırayla eklenir."
         },
         "UAA": {
             "ENDPOINT": "UAA Uç Noktası",
@@ -984,7 +995,8 @@
             "FOOT_ITEMS": "Öğeler",
             "FOOT_OF": "of",
             "IN_ALLOW_LIST": "Listed In CVE Allowlist",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Durum"
         },
         "CHART": {
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",

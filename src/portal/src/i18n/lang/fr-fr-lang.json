@@ -196,6 +196,7 @@
         "ITEMS": "entrées",
         "OF": "sur",
         "RESET_Ok": "Réinitialisation du mot de passe des utilisateurs réussie",
+        "RESET_OK": "Réinitialisation du mot de passe des utilisateurs réussie",
         "EXISTING_PASSWORD": "Le nouveau mot de passe ne peut pas être égal à l'ancien",
         "UNKNOWN": "Inconnu",
         "UNKNOWN_TIP": "Vérifiez SVP que l'utilisateur a le statut admin sur le fournisseur d'identité si la valeur est \"Inconnu\""
@@ -241,7 +242,11 @@
         "PROXY_CACHE": "Cache proxy",
         "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache"
+        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
+        "CONNECTION_LIMIT": "Connexion maximale au registre en amont",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La connexion maximale au registre en amont pour ce projet de cache proxy, si -1, alors il n'y a pas de limite",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Veuillez entrer -1 ou un entier supérieur à 0.",
+        "NO_PROJECT": "Nous n'avons trouvé aucun projet"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
@@ -269,7 +274,10 @@
         "SCAN": "Analyse des vulnérabilités",
         "AUTOSCAN_TOGGLE": "Analyse automatique des images lors de l'envoi",
         "AUTOSCAN_POLICY": "Analyser automatiquement les images lorsqu'elles sont envoyées au projet du registre.",
-        "SBOM": "Génération de SBOM"
+        "SBOM": "Génération de SBOM",
+        "AUTOSBOM_TOGGLE": "Générer automatiquement un SBOM au push",
+        "AUTOSBOM_POLICY": "Générer automatiquement un SBOM lorsque les images sont poussées sur le registre.",
+        "CONTENT_TRUST_POLICY": "Autoriser uniquement le déploiement d'images vérifiées."
     },
     "MEMBER": {
         "NEW_MEMBER": "Nouveau membre",
@@ -430,6 +438,7 @@
         "SLACK_RATE_LIMIT": "Attention aux limites de requêtes de Slack"
     },
     "GROUP": {
+        "GROUP": "Groupe",
         "Group": "Groupe",
         "IMPORT_LDAP_GROUP": "Importer un groupe LDAP",
         "IMPORT_HTTP_GROUP": "Nouveau groupe HTTP",
@@ -491,6 +500,7 @@
         "RESOURCE_TYPE": "Type de ressource"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Déclencheur",
         "PUSH_BASED_ONLY": "Uniquement pour la réplication de type push",
         "YES": "Oui",
         "SECONDS": "Secondes",
@@ -753,6 +763,7 @@
         "SUB_TITLE": "Afficher"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks activés",
         "SECURITY": "Sécurité",
         "TITLE": "Configuration",
         "AUTH": "Authentification",
@@ -985,7 +996,8 @@
             "FOOT_ITEMS": "Entrées",
             "FOOT_OF": "sur",
             "IN_ALLOW_LIST": "Présent dans la liste blanche CVE",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Statut"
         },
         "CHART": {
             "SCANNING_TIME": "Temps d'analyse complète :",

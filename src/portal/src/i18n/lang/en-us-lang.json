@@ -241,7 +241,11 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, and JFrog Artifactory registries.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "CONNECTION_LIMIT": "Max connection to upstream registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -269,7 +273,10 @@
         "SCAN": "Vulnerability scanning",
         "AUTOSCAN_TOGGLE": "Automatically scan images on push",
         "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry.",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Automatically generate SBOM on push",
+        "AUTOSBOM_POLICY": "Automatically generate SBOM when the images are pushed to the project registry.",
+        "CONTENT_TRUST_POLICY": "Allow only verified images to be deployed."
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",
@@ -491,6 +498,7 @@
         "RESOURCE_TYPE": "Resource Type"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Yes",
         "SECONDS": "Seconds",
@@ -753,6 +761,7 @@
         "SUB_TITLE": "Show"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
         "SECURITY": "Security",
         "TITLE": "Configuration",
         "AUTH": "Authentication",

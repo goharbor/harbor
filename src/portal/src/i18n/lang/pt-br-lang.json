@@ -61,6 +61,7 @@
         "DESTINATION_NAMESPACE": "Especificar o namespace de destino. Se vazio, os recursos serão colocados no mesmo namespace que a fonte.",
         "OVERRIDE": "Sobrescrever recursos no destino se já existir com o mesmo nome.",
         "SINGLE_ACTIVE_REPLICATION": "Specify whether to skip execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
+        "REPO_TOOLTIP": "Usuários não podem realizar operações nas imagens neste modo.",
         "EMAIL": "Deve ser um endereço de e-mail válido como nome@exemplo.com.",
         "USER_NAME": "Não pode conter caracteres especiais. Tamanho máximo de 255 caracteres.",
         "FULL_NAME": "Tamanho máximo de 20 caracteres.",
@@ -241,9 +242,10 @@
         "PROXY_CACHE_TOOLTIP": "Habilite para fazer deste projeto um cache local de outros repositórios remotos (registries). O Harbor pode servir de cache apenas para outros repositórios Harbor, Docker Hub, AWS ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, JFrog Artifactory, e repositórios compatíveis com o protocolo Docker Registry",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
+        "CONNECTION_LIMIT": "Conexão máxima ao repositório remoto",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "A conexão máxima ao repositório remoto para este projeto de cache proxy, se -1, então não há limite",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, insira -1 ou um número inteiro maior que 0.",
+        "NO_PROJECT": "Não encontramos nenhum projeto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
@@ -271,7 +273,10 @@
         "SCAN": "Análise de vulnerabilidades",
         "AUTOSCAN_TOGGLE": "Verificar imagens automaticamente",
         "AUTOSCAN_POLICY": "Imagens serão analisadas automaticamente quando enviadas ao repositório do projeto.",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "Gerar SBOM automaticamente ao enviar",
+        "AUTOSBOM_POLICY": "Gerar SBOM automaticamente quando as imagens são enviadas ao repositório do projeto.",
+        "CONTENT_TRUST_POLICY": "Permitir implantação apenas de imagens verificadas."
     },
     "MEMBER": {
         "NEW_MEMBER": "Novo membro",
@@ -493,6 +498,7 @@
         "RESOURCE_TYPE": "Tipo de Recurso"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Gatilho",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Sim",
         "SECONDS": "Segundo",
@@ -677,6 +683,8 @@
         "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. Se deixado em branco, o Harbor usará o pool de CA do sistema."
     },
     "REPOSITORY": {
+        "BUILD_HISTORY": "Histórico de Build",
+        "REPO_NAME": "Repositório",
         "COPY_DIGEST_ID": "Copiar Digest",
         "DELETE": "Remover",
         "NAME": "Nome",
@@ -756,6 +764,7 @@
         "SUB_TITLE": "Exibir"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Habilitados",
         "SECURITY": "Security",
         "TITLE": "Configuração",
         "AUTH": "Autenticação",
@@ -837,7 +846,9 @@
             "LDAP_GROUP_MEMBERSHIP": "Filiação de Grupo LDAP",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Atributo que informa a lista de grupos do usuário. Se não informado, o nome \"memberof\" será usado. Alguns servidores LDAP utilizam o atributo \"ismemberof\". This field cannot be empty if you need to enable the LDAP group related feature.",
             "GROUP_SCOPE": "LDAP Group Search Scope",
-            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
+            "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão.",
+            "GROUP_ATTACH_PARALLEL": "Anexar Grupo LDAP em Paralelo",
+            "GROUP_ATTACH_PARALLEL_INFO": "Habilite esta opção para anexar grupos em paralelo e evitar timeout quando há muitos grupos. Se desabilitado, as informações do grupo LDAP serão anexadas sequencialmente."
         },
         "UAA": {
             "ENDPOINT": "Endereço UAA",
@@ -986,7 +997,8 @@
             "FOOT_ITEMS": "Itens",
             "FOOT_OF": "de",
             "IN_ALLOW_LIST": "Na lista de CVEs permitidas",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Status"
         },
         "CHART": {
             "SCANNING_TIME": "Tempo de conclusão da análise:",
@@ -1065,6 +1077,9 @@
         "SHOW_YAML": "Arquivo YAML"
     },
     "TAG": {
+        "OS_VERSION": "Versão do SO",
+        "CREATION": "Criado em",
+        "COMMAND": "Comandos",
         "CREATION_TIME_PREFIX": "Criada em",
         "CREATOR_PREFIX": "por",
         "ANONYMITY": "anonimato",
@@ -1162,6 +1177,7 @@
         "ADD_GROUP": "Adicionar grupo membro",
         "ADD_USER": "Adicionar usuário membro",
         "DELETE_LABEL": "Remover label",
+        "STOP_EXECUTIONS": "Parar Execução",
         "REPLICATION": "Replicação",
         "DAY_AGO": " dia(s) atrás",
         "HOUR_AGO": " hora(s) atrás",
@@ -1169,6 +1185,8 @@
         "SECOND_AGO": "menos de 1 minuto",
         "EVENT_LOG": "EVENTOS LOCAIS"
     },
+    "UPDATE_TIME": "Hora de atualização",
+    "LOGS": "Logs",
     "UNKNOWN_ERROR": "Ocorreram erros desconhecidos. Tente novamente mais tarde",
     "UNAUTHORIZED_ERROR": "Sua sessão é inválida ou expirou. Você deve logar-se novamente para continuar essa ação.",
     "REPO_READ_ONLY": "Harbor está em modo somente leitura, remover repositórios, artifact, tag e o envio de imagens serão desabilitados em modo somente leitura.",
