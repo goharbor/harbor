@@ -827,11 +827,11 @@ test('Garbage Collection', async ({ page }) => {
   
   await deleteRepo(page, project1, repo);
   await runGC(page, 5);
-  const latestJobId = await getLatestGCJobId(page);
-  console.log(`Latest GC Job ID: ${latestJobId}`);
-  await waitUntilGCComplete(page, latestJobId);
-  await verifyGCSuccess(page, latestJobId, '7 blobs and 1 manifests eligible for deletion');
-  await verifyGCSuccess(page, latestJobId, 'The GC job actual frees up 34 MB space');
+  const jobId = await runGC(page, 5);
+  console.log(`Latest GC Job ID: ${jobId}`);
+  await waitUntilGCComplete(page, jobId);
+  await verifyGCSuccess(page, jobId, '7 blobs and 1 manifests eligible for deletion');
+  await verifyGCSuccess(page, jobId, 'The GC job actual frees up 34 MB space');
 })
 
 test('GC Untagged Images', async ({ page }) => {
@@ -862,8 +862,7 @@ test('GC Untagged Images', async ({ page }) => {
   
   // Run GC without delete untagged artifacts (should not delete hello-world)
   await switchToGarbageCollection(page);
-  await runGC(page, 3);
-  let jobId = await getLatestGCJobId(page);
+  let jobId = await runGC(page, 3);
   await waitUntilGCComplete(page, jobId);
   
   // Verify artifact still exists
@@ -873,8 +872,7 @@ test('GC Untagged Images', async ({ page }) => {
   
   // Run GC WITH delete untagged artifacts (should delete hello-world)
   await switchToGarbageCollection(page);
-  await runGC(page, 2, true);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, 2, true);
   await waitUntilGCComplete(page, jobId);
   
   // Verify no artifacts exist
@@ -915,8 +913,7 @@ test('Project Quotas Control Under GC', async ({ page }) => {
     console.log(`GC iteration ${i + 1}/10`);
     
     await switchToGarbageCollection(page);
-    await runGC(page);
-    const jobId = await getLatestGCJobId(page);
+    const jobId = await runGC(page);
     await waitUntilGCComplete(page, jobId);
     
     const actualQuota = await getProjectStorageQuota(page, project);
@@ -949,8 +946,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await loginAsAdmin(page);
   
   // Initial GC - verify no artifacts to delete
-  await runGC(page, gcWorkers, false);
-  let jobId = await getLatestGCJobId(page);
+  let jobId = await runGC(page);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
   await checkGCLog(page, jobId, logContaining, logExcluding);
@@ -985,8 +981,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await deleteAccessoryByAccessoryRow(page, signatureOfSignatureRow);
 
   gcWorkers = 2;
-  await runGC(page, gcWorkers, false);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
   
@@ -1011,8 +1006,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await deleteAccessoryByAccessoryRow(page, signatureRow);
 
   gcWorkers = 3;
-  await runGC(page, gcWorkers, false);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
   
@@ -1035,8 +1029,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await deleteAccessoryByAccessoryRow(page, sbomRow);
 
   gcWorkers = 4;
-  await runGC(page, gcWorkers, false);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '4 blob(s) and 2 manifest(s) deleted');
   
@@ -1063,8 +1056,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
 
   // Run GC without untagged images
   gcWorkers = 5;
-  await runGC(page, gcWorkers, false);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted, 0 space freed up');
   
@@ -1081,8 +1073,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await checkGCLog(page, jobId, logContaining, logExcluding);
 
   // Run GC with untagged images
-  await runGC(page, gcWorkers, false);
-  jobId = await getLatestGCJobId(page);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '10 blob(s) and 5 manifest(s) deleted');
 
