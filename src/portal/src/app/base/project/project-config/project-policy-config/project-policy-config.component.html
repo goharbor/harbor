@@ -24,7 +24,7 @@
                 <input
                     type="checkbox"
                     clrCheckbox
-                    [disabled]="!allowUpdateProxyCacheConfiguration"
+                    disabled
                     [(ngModel)]="projectPolicy.ProxyCacheEnabled"
                     name="project-proxy-cache-enabled" />
             </clr-checkbox-wrapper>
@@ -34,7 +34,7 @@
         </clr-checkbox-container>
         <div
             *ngIf="hasChangeConfigRole && projectPolicy.ProxyCacheEnabled"
-            class="clr-form-control mt-0">
+            class="clr-form-control mt-0 mb-2">
             <label class="clr-control-label"></label>
             <div class="clr-select-wrapper row-inline">
                 <label class="clr-control-label">
