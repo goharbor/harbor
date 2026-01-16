@@ -668,7 +668,10 @@
         "DELETED_SUCCESS": "Uç noktaları başarıyla silindi.",
         "DELETED_FAILED": "Silinen uç noktalar başarısız oldu.",
         "CANNOT_EDIT": "Çoğaltma kuralı etkinken uç noktası değiştirilemez.",
-        "PLACEHOLDER": "Uç noktaları bulamadık!"
+        "PLACEHOLDER": "Uç noktaları bulamadık!",
+        "CA_CERTIFICATE": "CA Sertifikası",
+        "CA_CERTIFICATE_TOOLTIP": "Kayıt defterinin TLS sertifikasını doğrulamak için PEM kodlu bir CA sertifikası sağlayın. Sistem CA havuzunu kullanmak için boş bırakın. Bu alan yalnızca 'Uzak Sertifikayı Doğrula' etkinleştirildiğinde kullanılabilir.",
+        "CA_CERTIFICATE_HELPER": "İsteğe bağlı. Bu uç nokta için kendi imzalı veya özel CA sertifikalarına güvenmek için PEM kodlu CA sertifikasını buraya yapıştırın. Boş bırakılırsa, Harbor sistem CA havuzunu kullanacaktır."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Özet Kopyala",

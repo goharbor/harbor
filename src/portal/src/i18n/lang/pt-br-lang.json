@@ -671,7 +671,10 @@
         "DELETED_SUCCESS": "Endereço removido com sucesso.",
         "DELETED_FAILED": "Falha ao remover endereço.",
         "CANNOT_EDIT": "Endereço não pode ser alterado enquando a regra de replicação estiver ativa.",
-        "PLACEHOLDER": "Não há endereços cadastrados"
+        "PLACEHOLDER": "Não há endereços cadastrados",
+        "CA_CERTIFICATE": "Certificado CA",
+        "CA_CERTIFICATE_TOOLTIP": "Forneça um certificado CA codificado em PEM para verificar o certificado TLS do registro. Deixe em branco para usar o pool de CA do sistema. Este campo está disponível apenas quando 'Verificar Certificado Remoto' está habilitado.",
+        "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. Se deixado em branco, o Harbor usará o pool de CA do sistema."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",

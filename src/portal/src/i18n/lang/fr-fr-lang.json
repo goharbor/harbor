@@ -667,7 +667,10 @@
         "DELETED_SUCCESS": "Endpoint supprimé avec succès.",
         "DELETED_FAILED": "Échec de la suppression de l'endpoint",
         "CANNOT_EDIT": "L'endpoint ne peut pas être modifié tant que la règle de réplication est activée.",
-        "PLACEHOLDER": "Nous n'avons trouvé aucun endpoint !"
+        "PLACEHOLDER": "Nous n'avons trouvé aucun endpoint !",
+        "CA_CERTIFICATE": "Certificat CA",
+        "CA_CERTIFICATE_TOOLTIP": "Fournissez un certificat CA encodé en PEM pour vérifier le certificat TLS du registre. Laissez vide pour utiliser le pool de CA système. Ce champ n'est disponible que lorsque 'Vérifier le certificat distant' est activé.",
+        "CA_CERTIFICATE_HELPER": "Optionnel. Collez ici le certificat CA encodé en PEM pour faire confiance aux certificats auto-signés ou de CA privées pour cet endpoint. Si laissé vide, Harbor utilisera le pool de CA système."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copier le Digest",

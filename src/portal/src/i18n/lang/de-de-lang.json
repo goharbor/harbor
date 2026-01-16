@@ -667,7 +667,10 @@
         "DELETED_SUCCESS": "Endpunkt erfolgreich gelöscht.",
         "DELETED_FAILED": "Löschen des Endpunktes fehlgeschlagen.",
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
-        "PLACEHOLDER": "Wir konnten keine Endpunkt finden."
+        "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
+        "CA_CERTIFICATE": "CA-Zertifikat",
+        "CA_CERTIFICATE_TOOLTIP": "Geben Sie ein PEM-kodiertes CA-Zertifikat an, um das TLS-Zertifikat der Registry zu überprüfen. Leer lassen, um den System-CA-Pool zu verwenden. Dieses Feld ist nur verfügbar, wenn 'Fernzertifikat überprüfen' aktiviert ist.",
+        "CA_CERTIFICATE_HELPER": "Optional. Fügen Sie hier das PEM-kodierte CA-Zertifikat ein, um selbstsignierten oder privaten CA-Zertifikaten für diesen Endpunkt zu vertrauen. Wenn leer gelassen, verwendet Harbor den System-CA-Pool."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",

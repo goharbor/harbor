@@ -217,16 +217,17 @@ func encrypt(secret string) (string, error) {
 // Also, if access secret is provided, decrypt it.
 func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
 	r := &model.Registry{
-		ID:           registry.ID,
-		Name:         registry.Name,
-		Description:  registry.Description,
-		Type:         registry.Type,
-		Credential:   &model.Credential{},
-		URL:          registry.URL,
-		Insecure:     registry.Insecure,
-		Status:       registry.Status,
-		CreationTime: registry.CreationTime,
-		UpdateTime:   registry.UpdateTime,
+		ID:            registry.ID,
+		Name:          registry.Name,
+		Description:   registry.Description,
+		Type:          registry.Type,
+		Credential:    &model.Credential{},
+		URL:           registry.URL,
+		Insecure:      registry.Insecure,
+		CACertificate: registry.CACertificate,
+		Status:        registry.Status,
+		CreationTime:  registry.CreationTime,
+		UpdateTime:    registry.UpdateTime,
 	}
 
 	if len(registry.AccessKey) != 0 {
@@ -252,15 +253,16 @@ func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
 // Also, if access secret is provided, encrypt it.
 func toDaoModel(registry *model.Registry) (*dao.Registry, error) {
 	m := &dao.Registry{
-		ID:           registry.ID,
-		URL:          registry.URL,
-		Name:         registry.Name,
-		Type:         string(registry.Type),
-		Insecure:     registry.Insecure,
-		Description:  registry.Description,
-		Status:       registry.Status,
-		CreationTime: registry.CreationTime,
-		UpdateTime:   registry.UpdateTime,
+		ID:            registry.ID,
+		URL:           registry.URL,
+		Name:          registry.Name,
+		Type:          string(registry.Type),
+		Insecure:      registry.Insecure,
+		CACertificate: registry.CACertificate,
+		Description:   registry.Description,
+		Status:        registry.Status,
+		CreationTime:  registry.CreationTime,
+		UpdateTime:    registry.UpdateTime,
 	}
 
 	if registry.Credential != nil && len(registry.Credential.AccessKey) != 0 {

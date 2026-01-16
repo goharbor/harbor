@@ -666,7 +666,10 @@
         "DELETED_SUCCESS": "엔드포인트를 성공적으로 삭제했습니다.",
         "DELETED_FAILED": "엔드포인트 삭제를 실패했습니다.",
         "CANNOT_EDIT": "복제 규칙이 활성화된 동안에는 엔드포인트를 변경할 수 없습니다..",
-        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!"
+        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!",
+        "CA_CERTIFICATE": "CA 인증서",
+        "CA_CERTIFICATE_TOOLTIP": "레지스트리의 TLS 인증서를 확인하기 위해 PEM 인코딩된 CA 인증서를 제공하십시오. 비워두면 시스템 CA 풀을 사용합니다. 이 필드는 '원격 인증서 확인'이 활성화된 경우에만 사용할 수 있습니다.",
+        "CA_CERTIFICATE_HELPER": "선택 사항입니다. 이 엔드포인트에 대한 자체 서명 또는 개인 CA 인증서를 신뢰하려면 여기에 PEM 인코딩된 CA 인증서를 붙여넣으십시오. 비워두면 Harbor는 시스템 CA 풀을 사용합니다."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Digest 복사",
