@@ -240,7 +240,7 @@
         "QUOTA_UNLIMIT_TIP": "El espacio lógico máximo que puede utilizar el proyecto. Para una cuota ilimitada, introduzca '-1'.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, AWS ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory y Github GHCR.",
+        "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
     },
