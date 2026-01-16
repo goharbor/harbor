@@ -97,7 +97,7 @@ const routes: Routes = [
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
-                        action: USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE,
+                        action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ,
                     },
                 },
                 loadChildren: () =>
@@ -153,7 +153,7 @@ const routes: Routes = [
                 data: {
                     permissionParam: {
                         resource: USERSTATICPERMISSION.SCANNER.KEY,
-                        action: USERSTATICPERMISSION.SCANNER.VALUE.CREATE,
+                        action: USERSTATICPERMISSION.SCANNER.VALUE.READ,
                     },
                 },
                 loadChildren: () =>
