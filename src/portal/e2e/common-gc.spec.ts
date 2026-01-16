@@ -1,6 +1,5 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Locator, Page, test } from '@playwright/test'
 import { execSync } from 'child_process';
-import { Agent } from 'http';
 
 interface PushImageOptions {
   ip: string;
@@ -239,6 +238,62 @@ async function shouldNotContainAnyArtifact(page: Page) {
   await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row')).not.toBeVisible();
 }
 
+async function refreshRepositories(page: Page): Promise<void> {
+  console.log('Refreshing repos');
+  const refreshBtn = page.locator('span.refresh-btn');
+  await expect(refreshBtn).toBeVisible({ timeout: 10000 });
+  await refreshBtn.click(); 
+
+  // Check if spinner exists
+  const spinner = page.locator('clr-datagrid clr-spinner');
+  const spinnerVisible = await spinner.isVisible().catch(() => false);
+  
+  if (spinnerVisible) {
+    // Wait for spinner to disappear
+    await expect(spinner).not.toBeVisible({ timeout: 30000 });
+  } else {
+    // Spinner didn't appear (instant refresh), just wait a bit
+    console.log('Spinner did not appear (instant refresh)');
+    await page.waitForTimeout(1000);
+  }
+}
+
+/**
+ * Refreshes the artifacts list by clicking the refresh button
+ * Handles cases where spinner might not appear or refresh is instant
+ */
+async function refreshArtifacts(page: Page): Promise<void> {
+  console.log('Refreshing artifacts...');
+  
+  try {
+    // Click the refresh button
+    const refreshBtn = page.locator('artifact-list-tab span.refresh-btn');
+    await expect(refreshBtn).toBeVisible({ timeout: 10000 });
+    await refreshBtn.click();
+    
+    // Wait a moment for spinner to appear
+    // await page.waitForTimeout(500);
+    
+    // Check if spinner exists
+    const spinner = page.locator('clr-datagrid clr-spinner');
+    const spinnerVisible = await spinner.isVisible().catch(() => false);
+    
+    if (spinnerVisible) {
+      // Wait for spinner to disappear
+      await expect(spinner).not.toBeVisible({ timeout: 30000 });
+    } else {
+      // Spinner didn't appear (instant refresh), just wait a bit
+      console.log('Spinner did not appear (instant refresh)');
+      await page.waitForTimeout(1000);
+    }
+    
+    console.log('✓ Artifacts refreshed');
+  } catch (error) {
+    console.error('Failed to refresh artifacts:', error);
+    throw error;
+  }
+}
+
 async function cannotPushImage(ip: string, user: string, pwd: string, project: string, imageWithTag: string, expectedErrorMessage: string) {
   const localImage = `${localRegistryName}/${localRegistryNamespace}/${imageWithTag}`;
   const harborImage = `${ip}/${project}/${imageWithTag}`;
@@ -328,7 +383,7 @@ async function checkProjectQuotaSorting(
   ).toBeVisible();
 }
 
-async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, gc_now: boolean = false) {
+async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, dry_run: boolean = false): Promise<string> {
   await page.locator(" //clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
   await page.getByRole('link', { name: 'Garbage Collection' }).click();
 
@@ -340,11 +395,15 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
       await page.locator('label[for="delete_untagged"]').click();
   }
 
-  if (gc_now) {
+  if (dry_run) {
       await page.getByRole("button", { name: 'DRY RUN' }).click()
   } else {
       await page.getByRole('button', { name: 'GC NOW' }).click();
   }
+  await expect(page.locator('//clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[4]')).toContainText('Running')
+  const jobId =  await getLatestGCJobId(page);
+  console.log(jobId);
+  return jobId;
 }
 
 
@@ -368,31 +427,26 @@ async function verifyGCSuccess(page: Page, jobId: string, expectedMessage: strin
   expect(logText).toContain('success to run gc in job.');
 }
 
-async function waitForGCToComplete(page: Page, jobId: string, timeoutMs: number = 120000) {
-  // Poll the GC job log until it shows completion
-  const startTime = Date.now();
-  
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const response = await page.request.get(`${base_url}/api/v2.0/system/gc/${jobId}/log`, {
-        headers: {
-          'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
-        },
-      });
+async function waitUntilGCComplete(
+  page: Page,
+  gcJobId: string,
+  status: string = 'SUCCESS',
+  timeout: number = 300000
+): Promise<void> {
+  console.log(`Waiting for GC job ${gcJobId} to reach status: ${status}...`);
 
-      if (response.ok()) {
-        const logText = await response.text();
-        if (logText.includes('success to run gc in job.')) {
-          return;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and retry
-    }
-    await page.waitForTimeout(2000);
-  }
+  // Step 1: Find the row by job ID
+  const jobRow = page.locator(`//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`);
+  await expect(jobRow).toBeVisible({ timeout: 10000 });
+
+  // Step 2: Find the status cell (4th column)
+  const statusCell = jobRow.locator('clr-dg-cell').nth(3); // 0-indexed, so 3 = 4th column
   
-  throw new Error(`GC job ${jobId} did not complete within ${timeoutMs}ms`);
+  // Step 3: Wait for the status cell to contain the expected text
+  // This handles cases where text changes from "Running" -> "SUCCESS"
+  await expect(statusCell).toHaveText(status, { timeout });
+
+  console.log(`✓ GC job ${gcJobId} completed with status: ${status}`);
 }
 
 async function checkGCLog(
@@ -535,24 +589,22 @@ async function prepareAccessories(
   cosignSign(signatureArtifact);
   
   // Refresh artifacts to see new signatures
-  await page.reload();
-  await page.waitForTimeout(2000);
+  await refreshArtifacts(page);
   await page.getByRole('button', {name: 'Open'}).click();
 
   /* Get signature of sbom digest */
 
   // Expand the sbom accessory row
-  const sbomAccessoryRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'subject.accessory' }).first();
-  await expect(sbomAccessoryRow).toBeVisible({ timeout: 10000 });
+  await expect(sbomRow).toBeVisible({ timeout: 10000 });
 
   // Click the expand button inside the SBOM row
-  const sbomExpandBtn = sbomAccessoryRow.locator('button.datagrid-expandable-caret-button');
+  const sbomExpandBtn = sbomRow.locator('button.datagrid-expandable-caret-button');
   await expect(sbomExpandBtn).toBeVisible();
   await sbomExpandBtn.click();
   await page.waitForTimeout(500); // Wait for expansion animation
 
   // Click the action button on the signature-of-SBOM (inside SBOM row)
-  const signatureOfSbomRow = sbomAccessoryRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  const signatureOfSbomRow = sbomRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
   await expect(signatureOfSbomRow).toBeVisible({ timeout: 10000 });
 
   const signatureOfSbomActionBtn = signatureOfSbomRow.getByRole('button', { name: 'Available Actions' });
@@ -574,18 +626,17 @@ async function prepareAccessories(
 
   // Expand the signature accessory row
   console.log('Expanding Signature row to show nested signature...');
-  const signatureAccessoryRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
-  await expect(signatureAccessoryRow).toBeVisible({ timeout: 10000 });
+  await expect(signatureRow).toBeVisible({ timeout: 10000 });
 
   // Click the expand button
-  const signatureExpandBtn = signatureAccessoryRow.locator('button.datagrid-expandable-caret-button');
+  const signatureExpandBtn = signatureRow.locator('button.datagrid-expandable-caret-button');
   await expect(signatureExpandBtn).toBeVisible();
   await signatureExpandBtn.click();
   await page.waitForTimeout(500);
   
   // Click the action button on the signature-of-signature roq (inside signature row)
   console.log('Getting Signature-of-Signature digest...');
-  const signatureOfSignatureRow = signatureAccessoryRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  const signatureOfSignatureRow = signatureRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
   await expect(signatureOfSignatureRow).toBeVisible({ timeout: 10000 });
 
   const signatureOfSignatureActionBtn = signatureOfSignatureRow.getByRole('button', { name: 'Available Actions' });
@@ -614,6 +665,17 @@ async function prepareAccessories(
     signatureOfSbomDigest,
     signatureOfSignatureDigest
   };
+}
+
+async function deleteAccessoryByAccessoryRow(
+  page:Page,
+  accessoryRowLocator: Locator
+) {
+  const actionBtn = accessoryRowLocator.getByRole('button', { name: 'Available Actions'});
+  await expect(actionBtn).toBeVisible();
+  await actionBtn.click();
+  await page.getByRole('button', {name: 'Delete'}).click();
+  await page.getByRole('button', {name: 'DELETE'}).click();
 }
 
 /**
@@ -767,7 +829,7 @@ test('Garbage Collection', async ({ page }) => {
   await runGC(page, 5);
   const latestJobId = await getLatestGCJobId(page);
   console.log(`Latest GC Job ID: ${latestJobId}`);
-  await waitForGCToComplete(page, latestJobId);
+  await waitUntilGCComplete(page, latestJobId);
   await verifyGCSuccess(page, latestJobId, '7 blobs and 1 manifests eligible for deletion');
   await verifyGCSuccess(page, latestJobId, 'The GC job actual frees up 34 MB space');
 })
@@ -802,7 +864,7 @@ test('GC Untagged Images', async ({ page }) => {
   await switchToGarbageCollection(page);
   await runGC(page, 3);
   let jobId = await getLatestGCJobId(page);
-  await waitForGCToComplete(page, jobId);
+  await waitUntilGCComplete(page, jobId);
   
   // Verify artifact still exists
   await goIntoProject(page, project);
@@ -813,7 +875,7 @@ test('GC Untagged Images', async ({ page }) => {
   await switchToGarbageCollection(page);
   await runGC(page, 2, true);
   jobId = await getLatestGCJobId(page);
-  await waitForGCToComplete(page, jobId);
+  await waitUntilGCComplete(page, jobId);
   
   // Verify no artifacts exist
   await goIntoProject(page, project);
@@ -855,7 +917,7 @@ test('Project Quotas Control Under GC', async ({ page }) => {
     await switchToGarbageCollection(page);
     await runGC(page);
     const jobId = await getLatestGCJobId(page);
-    await waitForGCToComplete(page, jobId);
+    await waitUntilGCComplete(page, jobId);
     
     const actualQuota = await getProjectStorageQuota(page, project);
     console.log(`Quota check: expected="${expectedQuota}", actual="${actualQuota}"`);
@@ -876,16 +938,22 @@ test('Garbage Collection Accessory', async ({ page }) => {
   const projectName = `project${timestamp}`;
   const imageName = 'hello-world';
   const imageTag = 'latest';
+  const deletedPrefix = 'delete blob from storage:';
+
+  let gcWorkers = 1;
+  let logContaining = [
+    `workers: ${gcWorkers}`
+  ];
+  let logExcluding = [];
   
   await loginAsAdmin(page);
   
   // Initial GC - verify no artifacts to delete
-  await switchToGarbageCollection(page);
-  await runGC(page, 1, false);
+  await runGC(page, gcWorkers, false);
   let jobId = await getLatestGCJobId(page);
-  await waitForGCToComplete(page, jobId);
+  await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
-  await checkGCLog(page, jobId, ['workers: 1'], []);
+  await checkGCLog(page, jobId, logContaining, logExcluding);
   
   // Create project and push image
   await createProject(page, projectName);
@@ -899,9 +967,133 @@ test('Garbage Collection Accessory', async ({ page }) => {
     tag: imageTag,
     tag1: imageTag,
   });
-  page.reload();
+
+  // Refresh repositories
+  await refreshRepositories(page);
 
   // Prepare accessories (SBOM + signatures using Cosign)
-  const { sbomDigest, signatureDigest, signatureOfSbomDigest, signatureOfSignatureDigest } = 
+  let { sbomDigest, signatureDigest, signatureOfSbomDigest, signatureOfSignatureDigest } = 
     await prepareAccessories(page, projectName, imageName, imageTag);
+
+  // Row locators
+  const sbomRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'subject.accessory' }).first();
+  const signatureRow = await page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  const signatureOfSbomRow = sbomRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+  const signatureOfSignatureRow = signatureRow.locator('clr-dg-row').filter({ hasText: 'signature.cosign' }).first();
+
+  // Delete Signature of Signature
+  await deleteAccessoryByAccessoryRow(page, signatureOfSignatureRow);
+
+  gcWorkers = 2;
+  await runGC(page, gcWorkers, false);
+  jobId = await getLatestGCJobId(page);
+  await waitUntilGCComplete(page, jobId);
+  await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
+  
+  logContaining = [
+    `${deletedPrefix} ${signatureOfSignatureDigest}`,
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+    `${deletedPrefix} ${signatureDigest}`
+  ];
+
+  await checkGCLog(page, jobId, logContaining, logExcluding);
+  goIntoProject(page, projectName);
+  goIntoRepo(page, projectName, imageName);
+  await page.getByRole('button', {name: 'Open'}).click();
+  await page.waitForTimeout(1000); 
+
+  // Delete the Signature
+  await deleteAccessoryByAccessoryRow(page, signatureRow);
+
+  gcWorkers = 3;
+  await runGC(page, gcWorkers, false);
+  jobId = await getLatestGCJobId(page);
+  await waitUntilGCComplete(page, jobId);
+  await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
+  
+  logContaining = [
+    `${deletedPrefix} ${signatureDigest}`,
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+  ];
+  await checkGCLog(page, jobId, logContaining, logExcluding);
+  goIntoProject(page, projectName);
+  goIntoRepo(page, projectName, imageName);
+  await page.getByRole('button', {name: 'Open'}).click();
+  await page.waitForTimeout(1000); 
+
+  // Delete the SBOM
+  await deleteAccessoryByAccessoryRow(page, sbomRow);
+
+  gcWorkers = 4;
+  await runGC(page, gcWorkers, false);
+  jobId = await getLatestGCJobId(page);
+  await waitUntilGCComplete(page, jobId);
+  await checkGCHistory(page, jobId, '4 blob(s) and 2 manifest(s) deleted');
+  
+  logContaining = [
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [];
+  await checkGCLog(page, jobId, logContaining, logExcluding);
+
+  ({ 
+    sbomDigest, 
+    signatureDigest, 
+    signatureOfSbomDigest, 
+    signatureOfSignatureDigest 
+  } = await prepareAccessories(page, projectName, imageName, imageTag));
+
+  // Delete image tags
+  goIntoRepo(page, projectName, imageName);
+  goIntoArtifact(page, imageTag);
+  deleteTag(page, imageTag);
+
+  // Run GC without untagged images
+  gcWorkers = 5;
+  await runGC(page, gcWorkers, false);
+  jobId = await getLatestGCJobId(page);
+  await waitUntilGCComplete(page, jobId);
+  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted, 0 space freed up');
+  
+  logContaining = [
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [
+    `${deletedPrefix} ${signatureOfSignatureDigest}`,
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+    `${deletedPrefix} ${signatureDigest}`
+  ];
+  await checkGCLog(page, jobId, logContaining, logExcluding);
+
+  // Run GC with untagged images
+  await runGC(page, gcWorkers, false);
+  jobId = await getLatestGCJobId(page);
+  await waitUntilGCComplete(page, jobId);
+  await checkGCHistory(page, jobId, '10 blob(s) and 5 manifest(s) deleted');
+
+  logContaining = [
+    `${deletedPrefix} ${signatureOfSignatureDigest}`,
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+    `${deletedPrefix} ${signatureDigest}`,
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [];
+  await checkGCLog(page, jobId, logContaining, logExcluding);
 });

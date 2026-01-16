@@ -27,6 +27,12 @@ export default defineConfig({
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: 'html',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+    /* Timeout for each test (30 minuites) */
+    timeout: 1800000,
+    expect: {
+        // Timeout for expect assertions(1 minuite)
+        timeout: 60000
+    },
     use: {
         headless: true,
         video: 'retain-on-failure', // record video of the test
