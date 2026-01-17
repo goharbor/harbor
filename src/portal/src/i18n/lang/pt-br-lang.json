@@ -243,7 +243,7 @@
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
         "CONNECTION_LIMIT": "Max connection to upstream registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Please enter -1 or an integer greater than 0. "
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
