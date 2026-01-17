@@ -1,5 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test'
 import { execSync } from 'child_process';
+import * as exp from 'constants';
 
 interface PushImageOptions {
   ip: string;
@@ -168,16 +169,16 @@ async function loginAsAdmin(page: Page) {
 async function createProject(page: Page, projectName: string, isPublic: boolean = false, storageQuota?: number, storageQuotaUnit?: string) {
   await page.getByRole("link", { name: "Projects" }).click();
   await page.getByRole("button", { name: "NEW PROJECT" }).click();
-  await page.locator("//*[@id='create_project_name']").fill(projectName);
+  await page.locator("#create_project_name").fill(projectName);
   
   if (isPublic) {
-      await page.locator(`xpath=//input[@name='public']/..//label[contains(@class,'clr-control-label')]`).check();
+      await page.locator("input[name='public'] ~ label.clr-control-label").check();
   }
   
   if (storageQuota !== undefined && storageQuotaUnit) {
       // Enable storage quota
-      await page.locator("xpath=//*[@id='create_project_storage_limit']").fill(storageQuota.toString());
-      await page.locator("xpath=//*[@id='create_project_storage_limit_unit']").selectOption(storageQuotaUnit);
+      await page.locator("#create_project_storage_limit").fill(storageQuota.toString());
+      await page.locator("#create_project_storage_limit_unit").selectOption(storageQuotaUnit);
   }
   
   await page.getByRole('button', { name: 'OK' }).click();
@@ -192,37 +193,36 @@ async function goIntoProject(page: Page, projectName: string) {
 }
 
 async function goIntoRepo(page: Page, projectName: string, repoName: string) {
-  
   await expect(page.getByRole('link', {name: `${projectName}/${repoName}`})).toBeVisible()
   await page.getByRole('link', {name: `${projectName}/${repoName}`}).click();
   
-  await expect(page.locator(`xpath=//artifact-list-page//h2[contains(., '${repoName}')]`)).toBeVisible();
+  await expect(page.locator('artifact-list-page h2', { hasText: repoName })).toBeVisible();
 }
 
 async function goIntoArtifact(page: Page, tag: string) {
-  await page.locator('xpath=//clr-datagrid//clr-spinner').waitFor({ state: 'hidden' }).catch((() => {}));
+  await page.locator('clr-datagrid clr-spinner').waitFor({ state: 'hidden' }).catch((() => {}));
   
-  const artifactLink = page.locator(`xpath=//clr-dg-row[contains(.,'${tag}')]//a[contains(.,'sha256')]`);
+  const artifactLink = page.locator('clr-dg-row', {hasText: `${tag}`}).locator('a', {hasText: 'sha256'});
   await expect(artifactLink).toBeVisible();
   await artifactLink.click();
   
-  await expect(page.locator('xpath=//artifact-tag')).toBeVisible();
-  await page.locator('xpath=//clr-datagrid//clr-spinner').waitFor({ state: 'hidden' }).catch(() => {});
+  await expect(page.locator('artifact-tag')).toBeVisible();
+  await page.locator('clr-datagrid clr-spinner').waitFor({ state: 'hidden' }).catch(() => {});
 }
 
 async function shouldContainTag(page: Page, tag: string) {
-  await expect(page.locator(`xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]`)).toBeVisible();
+  await expect(page.locator('artifact-tag clr-dg-row clr-dg-cell', { hasText: tag })).toBeVisible();
 }
 
 async function shouldNotContainTag(page: Page, tag: string) {
-  await expect(page.locator(`xpath=//artifact-tag//clr-dg-row//clr-dg-cell[contains(.,'${tag}')]`)).not.toBeVisible();
+  await expect(page.locator('artifact-tag clr-dg-row clr-dg-cell', { hasText: tag })).not.toBeVisible();
 }
 
 async function deleteTag(page: Page, tag: string) {
-  const tagCheckbox = page.locator(`xpath=//clr-dg-row[contains(.,'${tag}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]`);
+  const tagCheckbox = page.locator('clr-dg-row', { hasText: tag }).locator('.clr-checkbox-wrapper label.clr-control-label');
   await tagCheckbox.click();
   
-  await page.locator('xpath=//*[@id="delete-tag"]').click();
+  await page.locator('#delete-tag').click();
   
   await expect(page.getByRole('button', { name: 'DELETE' })).toBeVisible();
   await page.getByRole('button', { name: 'DELETE' }).click();
@@ -231,11 +231,11 @@ async function deleteTag(page: Page, tag: string) {
 }
 
 async function shouldContainArtifact(page: Page) {
-  await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row//a[contains(.,"sha256")]')).toBeVisible();
+  await expect(page.locator('artifact-list-tab clr-dg-row a', { hasText: 'sha256' })).toBeVisible();
 }
 
 async function shouldNotContainAnyArtifact(page: Page) {
-  await expect(page.locator('xpath=//artifact-list-tab//clr-dg-row')).not.toBeVisible();
+  await expect(page.locator('artifact-list-tab clr-dg-row')).not.toBeVisible();
 }
 
 async function refreshRepositories(page: Page): Promise<void> {
@@ -322,29 +322,29 @@ async function cannotPushImage(ip: string, user: string, pwd: string, project: s
 async function getProjectStorageQuota(page: Page, projectName: string): Promise<string> {
   await switchToProjectQuotas(page);
   
-  const quotaCell = page.locator(`xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${projectName}')]//clr-dg-cell[3]//label`);
+  const quotaCell = page.locator('project-quotas clr-datagrid clr-dg-row', { hasText: projectName }).locator('clr-dg-cell').nth(2).locator('label');
   await quotaCell.waitFor();
   return await quotaCell.textContent() || '';
 }
 
 async function switchToGarbageCollection(page: Page) {
-  await page.locator("//clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
+  await page.locator('clr-main-container clr-vertical-nav-group span', { hasText: 'Clean Up' }).click();
   await page.getByRole('link', { name: 'Garbage Collection' }).click();
 }
 
 async function deleteRepo(page: Page, projectName: string, repoName: string) {
   await goIntoProject(page, projectName);
-  const repoRow = page.locator(` xpath=//clr-dg-row[contains(.,'${projectName}/${repoName}')]//div[contains(@class,'clr-checkbox-wrapper')]//label[contains(@class,'clr-control-label')]`);
+  const repoRow = page.locator('clr-dg-row', { hasText: `${projectName}/${repoName}` }).locator('.clr-checkbox-wrapper label.clr-control-label');
   await repoRow.check();
 
-  await page.getByRole('button', { name: 'DELETE' }).click();
-  await page.locator("xpath=//button[contains(.,'DELETE')]").click();
+  await page.locator('hbr-repository-gridview').getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.getByRole('button', { name: 'DELETE', exact: true }).click();
   await expect(repoRow).not.toBeVisible();
 }
 
 async function switchToProjectQuotas(page: Page) {
   // Navigate to Administration → Project Quotas
-  await page.locator("//clr-vertical-nav-group-children/a[contains(.,'Project Quotas')]").click();
+  await page.locator('clr-vertical-nav-group-children a', { hasText: 'Project Quotas' }).click();
   await page.waitForTimeout(1000);
 }
 
@@ -353,9 +353,7 @@ async function checkProjectQuotaSorting(
   smaller_proj: string, 
   larger_proj: string
 ) {
-  const storageHeader = page.locator(
-    "//div[@class='datagrid-table']//div[@class='datagrid-header']//button[normalize-space()='Storage']"
-  );
+  const storageHeader = page.locator('.datagrid-table .datagrid-header button', { hasText: 'Storage' });
   
   console.log(`smaller project: ${smaller_proj}`);
   console.log(`larger project: ${larger_proj}`);
@@ -364,27 +362,27 @@ async function checkProjectQuotaSorting(
   await storageHeader.click();
   
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
+    page.locator('.datagrid-table clr-dg-row').first().locator('clr-dg-cell').first().locator('a', { hasText: smaller_proj })
   ).toBeVisible();
   
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
+    page.locator('.datagrid-table clr-dg-row').nth(1).locator('clr-dg-cell').first().locator('a', { hasText: larger_proj })
   ).toBeVisible();
 
   // Descending (larger first)
   await storageHeader.click();
   
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[1]//clr-dg-cell[1]//a[contains(text(), '${larger_proj}')]`)
+    page.locator('.datagrid-table clr-dg-row').first().locator('clr-dg-cell').first().locator('a', { hasText: larger_proj })
   ).toBeVisible();
   
   await expect(
-    page.locator(`//div[@class='datagrid-table']//clr-dg-row[2]//clr-dg-cell[1]//a[contains(text(), '${smaller_proj}')]`)
+    page.locator('.datagrid-table clr-dg-row').nth(1).locator('clr-dg-cell').first().locator('a', { hasText: smaller_proj })
   ).toBeVisible();
 }
 
 async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, dry_run: boolean = false): Promise<string> {
-  await page.locator(" //clr-main-container//clr-vertical-nav-group//span[contains(.,'Clean Up')]").click();
+  await page.locator('clr-main-container clr-vertical-nav-group span', { hasText: 'Clean Up' }).click();
   await page.getByRole('link', { name: 'Garbage Collection' }).click();
 
   if (workers) {
@@ -400,7 +398,7 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
   } else {
       await page.getByRole('button', { name: 'GC NOW' }).click();
   }
-  await expect(page.locator('//clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[4]')).toContainText('Running')
+  await expect(page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').nth(3)).toContainText('Running')
   const jobId =  await getLatestGCJobId(page);
   console.log(jobId);
   return jobId;
@@ -408,7 +406,7 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
 
 
 async function getLatestGCJobId(page: Page): Promise<string> {
-  const jobId = page.locator('//clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[1]');
+  const jobId = page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').first();
   await jobId.waitFor();
   return await jobId.textContent() || '';
 }
@@ -435,8 +433,8 @@ async function waitUntilGCComplete(
 ): Promise<void> {
   console.log(`Waiting for GC job ${gcJobId} to reach status: ${status}...`);
 
-  // Step 1: Find the row by job ID
-  const jobRow = page.locator(`//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`);
+  // Step 1: Find the row by job ID using filter with exact text match
+  const jobRow = page.locator('clr-dg-row').filter({ has: page.locator('clr-dg-cell', { hasText: new RegExp(`^${gcJobId}$`) }) });
   await expect(jobRow).toBeVisible({ timeout: 10000 });
 
   // Step 2: Find the status cell (4th column)
@@ -455,15 +453,14 @@ async function checkGCLog(
   logContaining: string[],
   logExcluding: string[]
 ): Promise<void> {
-  // Locate the GC job row and its log link
-  const rowXpath = `//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`;
-  const row = page.locator(`xpath=${rowXpath}`);
+  // Locate the GC job row and its log link using filter with exact text match
+  const row = page.locator('clr-dg-row').filter({ has: page.locator('clr-dg-cell', { hasText: new RegExp(`^${gcJobId}$`) }) });
   await expect(row).toBeVisible({ timeout: 30000 });
 
   // Open log in a popup window
   const [logPopup] = await Promise.all([
     page.waitForEvent('popup'),
-    row.locator('xpath=.//a').click()
+    row.locator('a').click()
   ]);
 
   // Ensure log page content is loaded
@@ -491,12 +488,13 @@ async function checkGCHistory(
   dryRun: string = 'No',
   status: string = 'SUCCESS'
 ): Promise<void> {
-  const rowXpath = `//clr-dg-row[.//clr-dg-cell[text()='${gcJobId}']]`;
+  // Find row by job ID using filter with exact text match
+  const jobRow = page.locator('clr-dg-row').filter({ has: page.locator('clr-dg-cell', { hasText: new RegExp(`^${gcJobId}$`) }) });
 
-  const triggerCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[2]`);
-  const dryRunCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[3]`);
-  const statusCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[4]`);
-  const detailsCell = page.locator(`xpath=${rowXpath}//clr-dg-cell[5]//span`);
+  const triggerCell = jobRow.locator('clr-dg-cell').nth(1);
+  const dryRunCell = jobRow.locator('clr-dg-cell').nth(2);
+  const statusCell = jobRow.locator('clr-dg-cell').nth(3);
+  const detailsCell = jobRow.locator('clr-dg-cell').nth(4).locator('span');
 
   await expect(triggerCell).toBeVisible({ timeout: 30000 });
   await expect(dryRunCell).toBeVisible({ timeout: 30000 });
@@ -578,7 +576,7 @@ async function prepareAccessories(
   console.log(`Signature digest: ${signatureDigest}`);
   
   // Close dialog
-  await page.locator('xpath=//button[text()=" COPY "]').click();
+  await page.getByRole('button', { name: ' COPY ' }).click();
   
   // Sign the SBOM digest
   const sbomArtifact = `${harborRegistry}/${project}/${image}@${sbomDigest}`;
@@ -653,7 +651,7 @@ async function prepareAccessories(
   // Close dialog
   await page.getByRole('button', { name: ' COPY ' }).click();
   await expect(page.locator('textarea.clr-textarea')).not.toBeVisible({ timeout: 5000 });
-  await expect(page.locator('//button[text()=" COPY "]')).not.toBeVisible({ timeout: 5000 });
+  await expect(page.getByRole('button', { name: ' COPY ' })).not.toBeVisible({ timeout: 5000 });
   
   // Docker logout
   dockerLogout(harborRegistry);
