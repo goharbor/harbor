@@ -23,8 +23,8 @@ const ScopeHeader = "X-Scan-All-Scope"
 // Currently supports filtering by project IDs or repository names.
 // Leave all fields empty to scan everything (default behavior).
 type ScanAllScope struct {
-    ProjectIDs   []int64  `json:"project_ids,omitempty"`
-    Repositories []string `json:"repositories,omitempty"`
+	ProjectIDs   []int64  `json:"project_ids,omitempty"`
+	Repositories []string `json:"repositories,omitempty"`
 }
 
 // scopeCtxKey is the context key type for storing scope in context
@@ -33,20 +33,20 @@ type scopeCtxKey struct{}
 
 // WithScanAllScope returns a new context with the given scope.
 func WithScanAllScope(ctx context.Context, scope *ScanAllScope) context.Context {
-    if scope == nil {
-        return ctx
-    }
-    return context.WithValue(ctx, scopeCtxKey{}, scope)
+	if scope == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, scopeCtxKey{}, scope)
 }
 
 // FromContextScope returns the ScanAllScope from context if present.
 func FromContextScope(ctx context.Context) *ScanAllScope {
-    v := ctx.Value(scopeCtxKey{})
-    if v == nil {
-        return nil
-    }
-    if s, ok := v.(*ScanAllScope); ok {
-        return s
-    }
-    return nil
+	v := ctx.Value(scopeCtxKey{})
+	if v == nil {
+		return nil
+	}
+	if s, ok := v.(*ScanAllScope); ok {
+		return s
+	}
+	return nil
 }
