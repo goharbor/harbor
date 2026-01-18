@@ -657,6 +657,51 @@ func (suite *ControllerTestSuite) TestScanAll() {
 	}
 }
 
+func (suite *ControllerTestSuite) TestScanAllWithScope() {
+	executionID := int64(2)
+	scope := &ScanAllScope{
+		ProjectIDs:   []int64{1},
+		Repositories: []string{"library/test"},
+	}
+
+	// Reset mock to avoid pollution
+	suite.execMgr.ExpectedCalls = nil
+	suite.execMgr.Calls = nil
+
+	// Prepare context with scope
+	ctx := WithScanAllScope(context.TODO(), scope)
+
+	// Mock expectations
+	// Verify that Create is called with extraAttrs containing the scope
+	var capturedExtra map[string]any
+	suite.execMgr.On("Create", ctx, "SCAN_ALL", int64(0), "MANUAL", mock.Anything).Run(func(args mock.Arguments) {
+		capturedExtra = args.Get(4).(map[string]any)
+	}).Return(executionID, nil).Once()
+
+	// Other necessary mocks for flow to complete
+	mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return([]*scan.Report{{UUID: "uuid"}}, nil).Once()
+	mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return([]*types.Policy{}).Once()
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
+	suite.execMgr.On("Get", mock.Anything, executionID).Return(&task.Execution{ID: executionID}, nil).Times(2)
+	mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
+	mock.OnAnything(suite.artifactCtl, "List").Return([]*artifact.Artifact{}, nil).Once()
+	suite.taskMgr.On("Count", ctx, q.New(q.KeyWords{"execution_id": executionID})).Return(int64(0), nil).Once()
+	mock.OnAnything(suite.execMgr, "UpdateExtraAttrs").Return(nil).Once()
+	suite.execMgr.On("MarkDone", mock.Anything, executionID, mock.Anything).Return(nil).Once()
+	suite.cache.On("Contains", ctx, scanAllStoppedKey(executionID)).Return(false).Once()
+
+	_, err := suite.c.ScanAll(ctx, "MANUAL", false)
+	suite.NoError(err)
+
+	// Verify scope was passed
+	assert.NotNil(suite.T(), capturedExtra)
+	if capturedExtra != nil {
+		s, ok := capturedExtra["scope"]
+		assert.True(suite.T(), ok)
+		assert.Equal(suite.T(), scope, s)
+	}
+}
+
 func (suite *ControllerTestSuite) TestStopScanAll() {
 	mockExecID := int64(100)
 	// mock error case
