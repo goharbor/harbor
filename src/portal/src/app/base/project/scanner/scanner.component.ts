@@ -57,21 +57,21 @@ export class ScannerComponent implements OnInit {
     ) {}
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
-        
+
         // Check user role and redirect if Limited Guest or Guest
         const resolverData = this.route.snapshot.parent.parent.data;
         if (resolverData && resolverData['projectResolver']) {
             const project = resolverData['projectResolver'];
             const userRole = project.role_name;
             const excludedRoles = ['MEMBER.LIMITED_GUEST', 'MEMBER.GUEST'];
-            
+
             if (excludedRoles.includes(userRole)) {
                 // Redirect to repositories page
                 this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
                 return;
             }
         }
-        
+
         this.getPermission();
         this.init();
     }
