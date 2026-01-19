@@ -166,8 +166,11 @@ async function loginAsAdmin(page: Page) {
 }
 
 async function createProject(page: Page, projectName: string, isPublic: boolean = false, storageQuota?: number, storageQuotaUnit?: string) {
+  // Open create project modal
   await page.getByRole("link", { name: "Projects" }).click();
   await page.getByRole("button", { name: "NEW PROJECT" }).click();
+
+  // Fill in Project details
   await page.locator("#create_project_name").fill(projectName);
   
   if (isPublic) {
@@ -181,7 +184,10 @@ async function createProject(page: Page, projectName: string, isPublic: boolean 
   }
   
   await page.getByRole('button', { name: 'OK' }).click();
+
+  // Check that the project is created
   await expect(page.getByRole('link', {name: projectName})).toBeVisible()
+  console.log(`Creating project ${projectName}`);
 }
 
 
@@ -192,21 +198,22 @@ async function goIntoProject(page: Page, projectName: string) {
 }
 
 async function goIntoRepo(page: Page, projectName: string, repoName: string) {
-  await goIntoProject(page, projectName);
   await expect(page.getByRole('link', {name: `${projectName}/${repoName}`})).toBeVisible()
   await page.getByRole('link', {name: `${projectName}/${repoName}`}).click();
-  
+
+  // Check that the repo heading is the given repo
   await expect(page.locator('artifact-list-page h2', { hasText: repoName })).toBeVisible();
 }
 
 async function goIntoArtifact(page: Page, tag: string) {
-  await page.locator('clr-datagrid clr-spinner').waitFor({ state: 'hidden' }).catch((() => {}));
   
   const artifactLink = page.locator('clr-dg-row', {hasText: `${tag}`}).locator('a', {hasText: 'sha256'});
   await expect(artifactLink).toBeVisible();
   await artifactLink.click();
   
   await expect(page.locator('artifact-tag')).toBeVisible();
+
+  // Wait until the loading icon has dissappeared
   await page.locator('clr-datagrid clr-spinner').waitFor({ state: 'hidden' }).catch(() => {});
 }
 
@@ -239,59 +246,27 @@ async function shouldNotContainAnyArtifact(page: Page) {
 }
 
 async function refreshRepositories(page: Page): Promise<void> {
-  console.log('Refreshing repos');
   const refreshBtn = page.locator('span.refresh-btn');
   await expect(refreshBtn).toBeVisible({ timeout: 10000 });
   await refreshBtn.click(); 
 
-  // Check if spinner exists
   const spinner = page.locator('clr-datagrid clr-spinner');
-  const spinnerVisible = await spinner.isVisible().catch(() => false);
-  
-  if (spinnerVisible) {
-    // Wait for spinner to disappear
-    await expect(spinner).not.toBeVisible({ timeout: 30000 });
-  } else {
-    // Spinner didn't appear (instant refresh), just wait a bit
-    console.log('Spinner did not appear (instant refresh)');
-    await page.waitForTimeout(1000);
-  }
+  // Wait for spinner to appear
+  await spinner.waitFor({ state: 'visible', timeout: 500 }).catch(() => {});
+  // Wait for spinner to disappear
+  await spinner.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
 }
 
-/**
- * Refreshes the artifacts list by clicking the refresh button
- * Handles cases where spinner might not appear or refresh is instant
- */
 async function refreshArtifacts(page: Page): Promise<void> {
-  console.log('Refreshing artifacts...');
-  
-  try {
-    // Click the refresh button
-    const refreshBtn = page.locator('artifact-list-tab span.refresh-btn');
-    await expect(refreshBtn).toBeVisible({ timeout: 10000 });
-    await refreshBtn.click();
-    
-    // Wait a moment for spinner to appear
-    // await page.waitForTimeout(500);
-    
-    // Check if spinner exists
-    const spinner = page.locator('clr-datagrid clr-spinner');
-    const spinnerVisible = await spinner.isVisible().catch(() => false);
-    
-    if (spinnerVisible) {
-      // Wait for spinner to disappear
-      await expect(spinner).not.toBeVisible({ timeout: 30000 });
-    } else {
-      // Spinner didn't appear (instant refresh), just wait a bit
-      console.log('Spinner did not appear (instant refresh)');
-      await page.waitForTimeout(1000);
-    }
-    
-    console.log('✓ Artifacts refreshed');
-  } catch (error) {
-    console.error('Failed to refresh artifacts:', error);
-    throw error;
-  }
+  const refreshBtn = page.locator('artifact-list-tab span.refresh-btn');
+  await expect(refreshBtn).toBeVisible({ timeout: 10000 });
+  await refreshBtn.click(); 
+
+  const spinner = page.locator('clr-datagrid clr-spinner');
+  // Wait for spinner to appear
+  await spinner.waitFor({ state: 'visible', timeout: 500 }).catch(() => {});
+  // Wait for spinner to disappear
+  await spinner.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
 }
 
 async function cannotPushImage(ip: string, user: string, pwd: string, project: string, imageWithTag: string, expectedErrorMessage: string) {
@@ -340,12 +315,18 @@ async function deleteRepo(page: Page, projectName: string, repoName: string) {
   await page.locator('hbr-repository-gridview').getByRole('button', { name: 'Delete', exact: true }).click();
   await page.getByRole('button', { name: 'DELETE', exact: true }).click();
   await expect(repoRow).not.toBeVisible();
+  console.log(`Deleted repository ${projectName}/${repoName}`)
 }
 
 async function switchToProjectQuotas(page: Page) {
   // Navigate to Administration → Project Quotas
   await page.locator('clr-vertical-nav-group-children a', { hasText: 'Project Quotas' }).click();
-  await page.waitForTimeout(1000);
+
+  const spinner = page.locator('clr-datagrid clr-spinner');
+  // Wait for spinner to appear
+  await spinner.waitFor({ state: 'visible', timeout: 500 }).catch(() => {});
+  // Wait for spinner to disappear
+  await spinner.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
 }
 
 async function checkProjectQuotaSorting(
@@ -355,8 +336,8 @@ async function checkProjectQuotaSorting(
 ) {
   const storageHeader = page.locator('.datagrid-table .datagrid-header button', { hasText: 'Storage' });
   
-  console.log(`smaller project: ${smaller_proj}`);
-  console.log(`larger project: ${larger_proj}`);
+  console.log(`Smaller project: ${smaller_proj}`);
+  console.log(`Larger project: ${larger_proj}`);
   
   // Ascending (smaller first)
   await storageHeader.click();
@@ -382,6 +363,7 @@ async function checkProjectQuotaSorting(
 }
 
 async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, dry_run: boolean = false): Promise<string> {
+  console.log("Running GC")
   await page.locator('clr-main-container clr-vertical-nav-group span', { hasText: 'Clean Up' }).click();
   await page.getByRole('link', { name: 'Garbage Collection' }).click();
 
@@ -400,7 +382,7 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
   }
   await expect(page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').nth(3)).toContainText('Running')
   const jobId =  await getLatestGCJobId(page);
-  console.log(jobId);
+  console.log(`GC Job Id: ${jobId}`);
   return jobId;
 }
 
@@ -436,18 +418,16 @@ async function waitUntilGCComplete(
 ): Promise<void> {
   console.log(`Waiting for GC job ${gcJobId} to reach status: ${status}...`);
 
-  // Step 1: Find the row by job ID using filter with exact text match
+  // Find the row by job ID using filter with exact text match
   const jobRow = page.locator('clr-dg-row').filter({ has: page.locator('clr-dg-cell', { hasText: new RegExp(`^${gcJobId}$`) }) });
   await expect(jobRow).toBeVisible({ timeout: 10000 });
 
-  // Step 2: Find the status cell (4th column)
-  const statusCell = jobRow.locator('clr-dg-cell').nth(3); // 0-indexed, so 3 = 4th column
+  const statusCell = jobRow.locator('clr-dg-cell').nth(3);
   
-  // Step 3: Wait for the status cell to contain the expected text
-  // This handles cases where text changes from "Running" -> "SUCCESS"
+  // Wait for the status cell to contain the expected text
   await expect(statusCell).toHaveText(status, { timeout });
 
-  console.log(`✓ GC job ${gcJobId} completed with status: ${status}`);
+  console.log(`GC job ${gcJobId} completed with status: ${status}`);
 }
 
 async function checkGCLog(
@@ -499,6 +479,7 @@ async function checkGCHistory(
   const statusCell = jobRow.locator('clr-dg-cell').nth(3);
   const detailsCell = jobRow.locator('clr-dg-cell').nth(4).locator('span');
 
+  // Checking GC status from GC history table
   await expect(triggerCell).toBeVisible({ timeout: 30000 });
   await expect(dryRunCell).toBeVisible({ timeout: 30000 });
   await expect(statusCell).toBeVisible({ timeout: 30000 });
@@ -508,7 +489,6 @@ async function checkGCHistory(
   await expect(dryRunCell).toHaveText(dryRun, { timeout: 30000 });
   await expect(statusCell).toHaveText(status, { timeout: 30000 });
 
-  // Details cell contains a dynamic summary; assert substring match
   if(details) {
     await expect(detailsCell).toContainText(details, { timeout: 30000 });
   }
@@ -527,6 +507,7 @@ async function prepareAccessories(
   image: string,
   tag: string
 ): Promise<AccessoryDigests> {
+  console.log('Creating image accessories')
   const harborRegistry = `${harborIp}:${harborPort}`;
   const artifact = `${harborRegistry}/${project}/${image}:${tag}`;
   dockerLogin(harborRegistry, harborUser, harborPassword);
@@ -535,13 +516,14 @@ async function prepareAccessories(
   cosignPushSbom(artifact);
   
   // Navigate to repository and open accessories
+  await goIntoProject(page, project);
   await goIntoRepo(page, project, image);
   await page.getByRole('button', {name: 'Open'}).click();
   await page.waitForTimeout(1000); //why dependant on this?
   
   /* Get SBOM digest */
 
-  // // Open action button of sbom digest
+  // Open action button of sbom digest
   console.log('Getting SBOM digest...');
   const sbomRow = page.locator('clr-dg-row clr-dg-row').filter({ hasText: 'subject.accessory' }).first();
   await expect(sbomRow).toBeVisible({ timeout: 10000 });
@@ -674,11 +656,13 @@ async function deleteAccessoryByAccessoryRow(
   page:Page,
   accessoryRowLocator: Locator
 ) {
+  // Click on action button of accessory row and press delete
   const actionBtn = accessoryRowLocator.getByRole('button', { name: 'Available Actions'});
   await expect(actionBtn).toBeVisible();
   await actionBtn.click();
   await page.getByRole('button', {name: 'Delete'}).click();
-  await page.getByRole('button', {name: 'DELETE'}).click();
+  // Confirm the delete
+  await page.getByRole('button', {name: 'DELETE', exact: true}).click();
 }
 
 /**
@@ -694,7 +678,7 @@ function cosignGenerateKeyPair(): void {
       // Ignore if files don't exist
     }
     
-    // Generate new key pair (using COSIGN_PASSWORD env var to avoid interactive prompt)
+    // Generate new key pair
     console.log('Generating Cosign key pair...');
     execCommand(`COSIGN_PASSWORD=${cosignPassword} cosign generate-key-pair`);
     console.log('Cosign key pair generated successfully');
@@ -705,8 +689,8 @@ function cosignGenerateKeyPair(): void {
 
 /**
  * Sign an artifact with Cosign
- * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
  * Note: Requires prior authentication to the registry via docker login or cosign login
+ * If using localhost, docker login with port (ie localhost:443) is required
  */
 function cosignSign(artifact: string): void {
   try {
@@ -718,11 +702,7 @@ function cosignSign(artifact: string): void {
   }
 }
 
-/**
- * Verify an artifact signature with Cosign
- * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
- * @param shouldBeSigned - Whether the artifact should be signed (true) or unsigned (false)
- */
+// Verify an artifact signature with Cosign
 function cosignVerify(artifact: string, shouldBeSigned: boolean): void {
   try {
     console.log(`Verifying artifact signature: ${artifact}`);
@@ -741,7 +721,7 @@ function cosignVerify(artifact: string, shouldBeSigned: boolean): void {
 }
 
 /**
- * Attach an SBOM (Software Bill of Materials) to an artifact using Cosign
+ * Attach an SBOM to an artifact using Cosign
  * @param artifact - Full artifact reference (e.g., registry/project/image:tag)
  * @param sbomPath - Path to SBOM file (default uses test SBOM from Harbor tests)
  * @param type - SBOM format type (default: spdx)
@@ -767,7 +747,6 @@ test('Project Quota Sorting', async ({ page }) => {
 
   const timestamp1 = Date.now();
   const project1 = `project${timestamp1}`;
-  console.log(project1);
   await createProject(page, project1);
 
   const smaller_repo = 'alpine';
@@ -787,7 +766,6 @@ test('Project Quota Sorting', async ({ page }) => {
 
   const timestamp2 = Date.now();
   const project2 = `project${timestamp2}`;
-  console.log(project2);
   await createProject(page, project2);
 
   await pushImageWithTag({
@@ -846,6 +824,8 @@ test('GC Untagged Images', async ({ page }) => {
   const timestamp = Date.now();
   await loginAsAdmin(page);
   const project = `project${timestamp}`;
+  const image = 'hello-world';
+  const tag = 'latest';
   
   await runGC(page, 4);
   
@@ -855,18 +835,18 @@ test('GC Untagged Images', async ({ page }) => {
     user: harborUser,
     pwd: harborPassword,
     project: project,
-    image: 'hello-world',
-    tag: 'latest',
-    tag1: 'latest'
+    image: image,
+    tag: tag,
+    tag1: tag
   });
   
   // Make hello-world untagged by deleting the 'latest' tag
   await goIntoProject(page, project);
-  await goIntoRepo(page, project, 'hello-world');
-  await goIntoArtifact(page, 'latest');
-  await shouldContainTag(page, 'latest');
-  await deleteTag(page, 'latest');
-  await shouldNotContainTag(page, 'latest');
+  await goIntoRepo(page, project, image);
+  await goIntoArtifact(page, tag);
+  await shouldContainTag(page, tag);
+  await deleteTag(page, tag);
+  await shouldNotContainTag(page, tag);
   
   // Run GC without delete untagged artifacts (should not delete hello-world)
   await switchToGarbageCollection(page);
@@ -875,7 +855,7 @@ test('GC Untagged Images', async ({ page }) => {
   
   // Verify artifact still exists
   await goIntoProject(page, project);
-  await goIntoRepo(page, project, 'hello-world');
+  await goIntoRepo(page, project, image);
   await shouldContainArtifact(page);
   
   // Run GC WITH delete untagged artifacts (should delete hello-world)
@@ -885,7 +865,7 @@ test('GC Untagged Images', async ({ page }) => {
   
   // Verify no artifacts exist
   await goIntoProject(page, project);
-  await goIntoRepo(page, project, 'hello-world');
+  await goIntoRepo(page, project, image);
   await shouldNotContainAnyArtifact(page);
 })
 
@@ -931,8 +911,6 @@ test('Project Quotas Control Under GC', async ({ page }) => {
       quotaMatches = true;
       break;
     }
-    
-    await page.waitForTimeout(5000);
   }
   
   expect(quotaMatches).toBeTruthy();
@@ -1026,12 +1004,12 @@ test('Garbage Collection Accessory', async ({ page }) => {
 
 
   await checkGCLog(page, jobId, logContaining, logExcluding);
+  
+  // Delete the Signature
   await goIntoProject(page, projectName);
   await goIntoRepo(page, projectName, imageName);
   await page.getByRole('button', {name: 'Open'}).click();
   await page.waitForTimeout(1000); 
-
-  // Delete the Signature
   await deleteAccessoryByAccessoryRow(page, signatureRow);
 
   gcWorkers = 3;
@@ -1071,12 +1049,12 @@ test('Garbage Collection Accessory', async ({ page }) => {
   
 
   await checkGCLog(page, jobId, logContaining, logExcluding);
+  
+  // Delete the SBOM
   await goIntoProject(page, projectName);
   await goIntoRepo(page, projectName, imageName);
   await page.getByRole('button', {name: 'Open'}).click();
   await page.waitForTimeout(1000); 
-
-  // Delete the SBOM
   await deleteAccessoryByAccessoryRow(page, sbomRow);
 
   gcWorkers = 4;
@@ -1123,6 +1101,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   } = await prepareAccessories(page, projectName, imageName, imageTag));
 
   // Delete image tags
+  await goIntoProject(page, projectName);
   await goIntoRepo(page, projectName, imageName);
   await goIntoArtifact(page, imageTag);
   await deleteTag(page, imageTag);
@@ -1168,6 +1147,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   
   logExcluding = [];
    */
+
   logContaining = [
     `workers: ${gcWorkers}`
   ];
