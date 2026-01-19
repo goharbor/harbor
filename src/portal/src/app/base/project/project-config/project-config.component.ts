@@ -46,11 +46,11 @@ export class ProjectConfigComponent implements OnInit {
             if (pro.registry_id) {
                 this.isProxyCacheProject = true;
             }
-            
+
             // Check user role and redirect if Limited Guest or Guest
             const userRole = pro.role_name;
             const excludedRoles = ['MEMBER.LIMITED_GUEST', 'MEMBER.GUEST'];
-            
+
             if (excludedRoles.includes(userRole)) {
                 // Redirect to repositories page
                 this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
