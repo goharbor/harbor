@@ -54,7 +54,7 @@ export class ProjectConfigComponent implements OnInit {
             
             if (excludedRoles.includes(userRole)) {
                 // Redirect to repositories page
-                this.router.navigate([]);
+                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
                 return;
             }
         }
