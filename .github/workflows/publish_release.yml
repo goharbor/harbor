@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: oracle-vm-24cpu-96gb-x86-64
+    runs-on: ubuntu-latest
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
       id-token: write  # Required for Cosign keyless signing
@@ -42,7 +42,7 @@ jobs:
           src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
           dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
           dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
-          
+
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
 
@@ -58,15 +58,15 @@ jobs:
           cosign sign-blob --yes \
             --bundle=./assets/harbor-offline-installer-${{ env.CUR_TAG }}.tgz.sigstore.json \
             ${{ env.OFFLINE_PACKAGE_PATH }}
-          
+
           if [ "${{ env.PRERELEASE }}" = "false" ]; then
             cosign sign-blob --yes \
               --bundle=./assets/harbor-online-installer-${{ env.CUR_TAG }}.tgz.sigstore.json \
               ${{ env.ONLINE_PACKAGE_PATH }}
           fi
-          
+
           echo "OFFLINE_SIGSTORE_PATH=./assets/harbor-offline-installer-${{ env.CUR_TAG }}.tgz.sigstore.json" >> $GITHUB_ENV
-          
+
           if [ "${{ env.PRERELEASE }}" = "false" ]; then
             echo "ONLINE_SIGSTORE_PATH=./assets/harbor-online-installer-${{ env.CUR_TAG }}.tgz.sigstore.json" >> $GITHUB_ENV
           fi
