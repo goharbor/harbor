@@ -41,11 +41,6 @@ https:
 # And when it enabled the hostname will no longer used
 # external_url: https://reg.mydomain.com:8433
 
-# The initial password of Harbor admin
-# It only works in first time to install harbor
-# Remember Change the admin password from UI after launching Harbor.
-harbor_admin_password: Harbor12345
-
 # Harbor DB configuration
 database:
   # The password for the user('postgres' by default) of Harbor DB. Change this before any production use.
@@ -324,3 +319,9 @@ cache:
 #   # suggest switch provider to redis if you were ran into the db connections spike around
 #   # the scenario of high concurrent pushing to same project, no improvement for other scenes.
 #   quota_update_provider: redis # Or db
+
+# The initial password of Harbor admin
+# Uncomment the below line if you want to use the default password.
+# The install script will prompt and set the admin password.
+#harbor_admin_password: Harbor12345
+
