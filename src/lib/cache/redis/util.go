@@ -167,7 +167,7 @@ func (o *queryOptions) remaining() []string {
 
 // setupConnParams converts query parameters in u to option value in o.
 func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptions, error) {
-	q := queryOptions{q: u.Query()}
+    q := queryOptions{q: u.Query()}
 
 	// compat: a future major release may use q.int("db")
 	if tmp := q.string("db"); tmp != "" {
@@ -194,15 +194,24 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 	if t := q.duration("idle_timeout_seconds"); t != 0 {
 		o.IdleTimeout = t
 	}
-	o.IdleCheckFrequency = q.duration("idle_check_frequency")
-	if q.err != nil {
-		return nil, q.err
-	}
+    o.IdleCheckFrequency = q.duration("idle_check_frequency")
+
+    // sentinel specific authentication parameters, allowing different credentials
+    // to authenticate against Sentinel while keeping master auth intact
+    if su := q.string("sentinel_username"); su != "" {
+        o.SentinelUsername = su
+    }
+    if sp := q.string("sentinel_password"); sp != "" {
+        o.SentinelPassword = sp
+    }
+    if q.err != nil {
+        return nil, q.err
+    }
 
 	// any parameters left?
-	if r := q.remaining(); len(r) > 0 {
-		return nil, errors.Errorf("redis: unexpected option: %s", strings.Join(r, ", "))
-	}
+    if r := q.remaining(); len(r) > 0 {
+        return nil, errors.Errorf("redis: unexpected option: %s", strings.Join(r, ", "))
+    }
 
-	return o, nil
+    return o, nil
 }

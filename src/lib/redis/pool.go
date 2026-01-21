@@ -132,9 +132,25 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 		sentinelOptions = append(sentinelOptions, redis.DialUseTLS(true))
 	}
 
+	// Apply Sentinel ACL credentials if provided via query params
+	q := u.Query()
+	if su := q.Get("sentinel_username"); su != "" {
+		log.Debug(name, "sentinel has username")
+		sentinelOptions = append(sentinelOptions, redis.DialUsername(su))
+	}
+	if sp := q.Get("sentinel_password"); sp != "" {
+		log.Debug(name, "sentinel has password")
+		sentinelOptions = append(sentinelOptions, redis.DialPassword(sp))
+	}
+
 	redisOptions := sentinelOptions
 
 	if u.User != nil {
+		username := u.User.Username()
+		if username != "" {
+			log.Debug(name, "redis has username")
+			redisOptions = append(redisOptions, redis.DialUsername(username))
+		}
 		password, isSet := u.User.Password()
 		if isSet {
 			log.Debug(name, "redis has password")
@@ -145,7 +161,7 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 	// sentinel doesn't need select db
 	db := 0
 	if len(ps) > 2 {
-		db, err := strconv.Atoi(ps[2])
+		db, err := strconv.Atoi(ps[2])	
 		if err != nil {
 			return nil, fmt.Errorf("invalid redis db: %s, %s", ps[1], name)
 		}
