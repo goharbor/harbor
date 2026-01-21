@@ -117,6 +117,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         'push_time',
         'date'
     );
+    tagsComparator: Comparator<Artifact> & { fieldName: string } = {
+        fieldName: 'tags',
+        compare: (a: Artifact, b: Artifact): number => {
+            const aTag = a?.tags?.[0]?.name || '';
+            const bTag = b?.tags?.[0]?.name || '';
+            return aTag.localeCompare(bTag);
+        }
+    };
 
     loading = true;
     selectedRow: Artifact[] = [];
@@ -327,9 +335,133 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
     clrDgRefresh(state: ClrDatagridStateInterface) {
         setTimeout(() => {
-            //add setTimeout to avoid ng check error
+            if (this.isTagsSorting(state) && this.artifactList?.length > 0) {
+                this.sortArtifactsByTags(state);
+                return;
+            }
             this.clrLoad(state);
         }, 0);
+    }
+
+    private isTagsSorting(state: ClrDatagridStateInterface): boolean {
+        if (!state?.sort?.by) {
+            return false;
+        }
+        const sortBy = state.sort.by as any;
+        const fieldName = sortBy.fieldName ? sortBy.fieldName : sortBy;
+        return fieldName === 'tags';
+    }
+
+    private sortArtifactsByTags(state: ClrDatagridStateInterface): void {
+        const isDescending = state.sort?.reverse ?? false;
+
+        this.artifactList.forEach(artifact => {
+            if (artifact.tags?.length > 1) {
+                artifact.tags = this.sortTagsBySemver(artifact.tags, isDescending);
+            }
+        });
+
+        this.artifactList = [...this.artifactList].sort((a, b) => {
+            const aRepTag = a?.tags?.[0]?.name || '';
+            const bRepTag = b?.tags?.[0]?.name || '';
+            const comparison = this.compareSemverTags(aRepTag, bRepTag);
+            return isDescending ? -comparison : comparison;
+        });
+
+        this.currentState = state;
+    }
+
+    private sortTagsBySemver(tags: Tag[], descending: boolean): Tag[] {
+        return [...tags].sort((a, b) => {
+            const comparison = this.compareSemverTags(a.name, b.name);
+            return descending ? -comparison : comparison;
+        });
+    }
+
+    private compareSemverTags(tagA: string, tagB: string): number {
+        if (tagA.toLowerCase() === 'latest' && tagB.toLowerCase() === 'latest') {
+            return 0;
+        }
+        if (tagA.toLowerCase() === 'latest') {
+            return 1; 
+        }
+        if (tagB.toLowerCase() === 'latest') {
+            return -1; 
+        }
+
+        const normalizedA = this.normalizeSemverTag(tagA);
+        const normalizedB = this.normalizeSemverTag(tagB);
+
+        const parsedA = semver.parse(normalizedA);
+        const parsedB = semver.parse(normalizedB);
+
+        if (parsedA && parsedB) {
+            return semver.compare(parsedA, parsedB);
+        }
+
+        const coercedA = semver.coerce(normalizedA);
+        const coercedB = semver.coerce(normalizedB);
+
+        if (coercedA && coercedB) {
+            const prereleaseA = this.extractPrerelease(normalizedA);
+            const prereleaseB = this.extractPrerelease(normalizedB);
+
+            const baseCompare = semver.compare(coercedA, coercedB);
+            if (baseCompare !== 0) {
+                return baseCompare;
+            }
+
+            if (prereleaseA && !prereleaseB) {
+                return -1; 
+            }
+            if (!prereleaseA && prereleaseB) {
+                return 1; 
+            }
+            if (prereleaseA && prereleaseB) {
+                return prereleaseA.localeCompare(prereleaseB);
+            }
+            return 0; 
+        }
+
+        if ((parsedA || coercedA) && !(parsedB || coercedB)) {
+            return 1;
+        }
+        if (!(parsedA || coercedA) && (parsedB || coercedB)) {
+            return -1;
+        }
+        
+        return tagA.localeCompare(tagB);
+    }
+
+    private normalizeSemverTag(tag: string): string {
+        let normalized = tag;
+        
+        if (normalized.startsWith('v') || normalized.startsWith('V')) {
+            normalized = normalized.substring(1);
+        }
+        
+        const prereleaseMatch = normalized.match(/^([^-]+)(-.*)?$/);
+        if (prereleaseMatch) {
+            const versionPart = prereleaseMatch[1];
+            const prereleasePart = prereleaseMatch[2] || '';
+            
+            const components = versionPart.split('.').map(component => {
+                if (/^\d+$/.test(component)) {
+                    return String(parseInt(component, 10));
+                }
+                return component;
+            });
+            
+            normalized = components.join('.') + prereleasePart;
+        }
+        
+        return normalized;
+    }
+
+    private extractPrerelease(version: string): string | null {
+        // Match patterns like: 1.0-rc, 1.0.0-rc1, 1.0-alpha.1
+        const match = version.match(/^[\d.]+[-](.+)$/);
+        return match ? match[1] : null;
     }
 
     clrLoad(state: ClrDatagridStateInterface): void {
@@ -356,7 +488,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 | string
                 | ClrDatagridComparatorInterface<any>;
             sortBy = sortBy.fieldName ? sortBy.fieldName : sortBy;
-            sortBy = state.sort.reverse ? `-${sortBy}` : sortBy;
+            // Skip tags sorting on server side, as it is handled on the client 
+            if (sortBy === 'tags' || sortBy === '-tags') {
+                sortBy = '';
+            } else {
+                sortBy = state.sort.reverse ? `-${sortBy}` : sortBy;
+            }
         }
         this.currentState = state;
 
