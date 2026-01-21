@@ -44,13 +44,13 @@ prompt_admin_password() {
 
 validate_password_and_set() {
   # Ensure the `harbor.yml` file exists
-  if [ ! -f harbor.yml ]; then
+  if [ ! -f ./harbor.yml ]; then
     echo "harbor.yml not found in the current directory. Aborting."
     exit 1
   fi
 
   #Add password to the yml file
-  echo "harbor_admin_password: $ADMIN_PASSWORD" >> harbor.yml
+  echo "harbor_admin_password: $ADMIN_PASSWORD" >> ./harbor.yml
 }
 
 while [ $# -gt 0 ]; do
@@ -85,9 +85,14 @@ echo ""
 
 # Prompt for Admin Password and validate it
 h2 "[Step $item]: checking for admin password ..."; let item+=1
-if ! grep -q '^[[:space:]]*harbor_admin_password:' harbor.yml; then
-    prompt_admin_password
-    validate_password_and_set
+if ! grep -q '^[[:space:]]*harbor_admin_password:' ./harbor.yml; then
+    if [ -z "$HARBOR_ADMIN_PASSWD" ]; then
+	echo "#Using environment variable for Admin Password" >> ./harbor.yml
+	echo "harbor_admin_password: $HARBOR_ADMIN_PASSWD" >> ./harbor.yml
+    else 
+	prompt_admin_password
+	validate_password_and_set
+    fi
 else
     echo "Password has been set in the yaml file"
 fi

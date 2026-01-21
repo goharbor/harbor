@@ -4,6 +4,11 @@ IP=$(hostname -I | awk '{print $1}')
 #echo $IP
 sudo sed "s/reg.mydomain.com/$IP/" make/harbor.yml.tmpl |sudo tee make/harbor.yml
 
+if [ -z "$HARBOR_ADMIN_PASSWD" ]; then
+    echo "#Using environment variable for Admin Password" >> make/harbor.yml
+    echo "harbor_admin_password: $HARBOR_ADMIN_PASSWD" >> make/harbor.yml
+fi
+
 # enable internal tls
 echo "internal_tls:" >> make/harbor.yml
 echo "  enabled: true" >> make/harbor.yml
