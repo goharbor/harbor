@@ -49,6 +49,8 @@ type DAO interface {
 	UpdateName(ctx context.Context, id int, groupName string) error
 	// ReadOrCreate create a user group or read existing one from db
 	ReadOrCreate(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) (bool, int64, error)
+	// Search search user groups by names with fuzzy search
+	SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error)
 }
 
 type dao struct {
@@ -154,29 +156,6 @@ func (d *dao) ReadOrCreate(ctx context.Context, g *model.UserGroup, keyAttribute
 	return o.ReadOrCreate(g, keyAttribute, combinedKeyAttributes...)
 }
 
-func (d *dao) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
-	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
-	created, ID, err := d.ReadOrCreate(ctx, g, keyAttribute, combinedKeyAttributes...)
-	if err != nil {
-		return err
-	}
-
-	if created {
-		g.ID = int(ID)
-	} else {
-		prevGroup, err := d.Get(ctx, int(ID))
-		if err != nil {
-			return err
-		}
-		g.ID = prevGroup.ID
-		g.GroupName = prevGroup.GroupName
-		g.GroupType = prevGroup.GroupType
-		g.LdapGroupDN = prevGroup.LdapGroupDN
-	}
-
-	return nil
-}
-
 func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	query = q.MustClone(query)
 	qs, err := orm.QuerySetterForCount(ctx, &model.UserGroup{}, query)
@@ -184,4 +163,20 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 		return 0, err
 	}
 	return qs.Count()
+}
+
+func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var usergroups []*model.UserGroup
+	// use raw sql to return the most matched user first, then by alphabetic order
+	sql := "select id, group_name, group_type, ldap_group_dn, creation_time, update_time from user_group where group_name like ? order by length(group_name), group_name asc limit ?"
+	likePattern := "%" + name + "%"
+	_, err = o.Raw(sql, likePattern, limitSize).QueryRows(&usergroups)
+	if err != nil {
+		return nil, err
+	}
+	return usergroups, nil
 }
