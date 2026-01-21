@@ -86,6 +86,7 @@ import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
 import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
+import * as semver from 'semver';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
