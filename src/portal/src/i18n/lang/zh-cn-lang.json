@@ -668,6 +668,9 @@
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
         "PLACEHOLDER": "未发现任何复制目标!"
+        "CA_CERTIFICATE": "CA 证书",
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以验证仓库的 TLS 证书。留空将使用系统 CA 池。此字段仅在启用"验证远程证书"时可用。",
+        "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。如果留空，Harbor 将使用系统 CA 池。"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",

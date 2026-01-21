@@ -7542,6 +7542,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7587,6 +7591,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7618,6 +7626,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object

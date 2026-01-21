@@ -50,7 +50,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	svc, err := getAwsSvc(
-		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, nil)
+		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, registry.CACertificate, nil)
 	if err != nil {
 		return nil, err
 	}

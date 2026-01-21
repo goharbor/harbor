@@ -667,7 +667,10 @@
         "DELETED_SUCCESS": "Deleted endpoints successfully.",
         "DELETED_FAILED": "Deleted endpoints failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
-        "PLACEHOLDER": "We couldn't find any endpoints!"
+        "PLACEHOLDER": "We couldn't find any endpoints!",
+        "CA_CERTIFICATE": "CA Certificate",
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. Leave empty to use the system CA pool. This field is only available when 'Verify Remote Cert' is enabled.",
+        "CA_CERTIFICATE_HELPER": "Optional. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint. If left empty, Harbor will use the system CA pool."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",

@@ -245,6 +245,38 @@
                         (ngModelChange)="setInsecureValue($event)" />
                 </clr-checkbox-wrapper>
             </clr-checkbox-container>
+            <!-- CA Certificate -->
+            <clr-textarea-container>
+                <label>
+                    <span>{{ 'DESTINATION.CA_CERTIFICATE' | translate }}</span>
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            {{
+                                'DESTINATION.CA_CERTIFICATE_TOOLTIP' | translate
+                            }}
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <textarea
+                    clrTextarea
+                    type="text"
+                    class="inputWidth"
+                    rows="8"
+                    placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"
+                    name="ca_certificate"
+                    [disabled]="testOngoing || target.insecure || !editable"
+                    [(ngModel)]="target.ca_certificate"></textarea>
+                <clr-control-helper>
+                    {{ 'DESTINATION.CA_CERTIFICATE_HELPER' | translate }}
+                </clr-control-helper>
+            </clr-textarea-container>
         </form>
     </div>
     <div class="modal-footer">

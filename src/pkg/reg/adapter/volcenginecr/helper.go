@@ -46,9 +46,9 @@ func getRegionRegistryName(url string) (string, string, error) {
 	return "", "", errors.New("invalid region")
 }
 
-func getRealmService(host string, insecure bool) (string, string, error) {
+func getRealmService(host string, insecure bool, caCert string) (string, string, error) {
 	client := &http.Client{
-		Transport: util.GetHTTPTransport(insecure),
+		Transport: util.GetHTTPTransport(insecure, caCert),
 	}
 
 	resp, err := client.Get(host + "/v2/")

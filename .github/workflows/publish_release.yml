@@ -7,7 +7,10 @@ on:
 
 jobs:
   release:
-    runs-on: oracle-vm-24cpu-96gb-x86-64
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # Required for creating GitHub releases and uploading assets
+      id-token: write  # Required for Cosign keyless signing
     steps:
       - uses: actions/checkout@v6
       - name: Setup env
@@ -39,6 +42,7 @@ jobs:
           src_online_package=harbor-online-installer-${{ env.BASE_TAG }}-${{ env.BUILD_NO }}.tgz
           dst_offline_package=harbor-offline-installer-${{ env.CUR_TAG }}.tgz
           dst_online_package=harbor-online-installer-${{ env.CUR_TAG }}.tgz
+
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_offline_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_offline_package}
           aws s3 cp s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${src_online_package} s3://${{ secrets.HARBOR_RELEASE_BUILD }}/${{ env.BRANCH }}/${dst_online_package}
 
@@ -47,6 +51,25 @@ jobs:
           echo "OFFLINE_PACKAGE_PATH=$assets_path/$dst_offline_package" >> $GITHUB_ENV
           echo "ONLINE_PACKAGE_PATH=$assets_path/$dst_online_package" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.0.0
+      - name: Sign Release Artifacts
+        run: |
+          cosign sign-blob --yes \
+            --bundle=./assets/harbor-offline-installer-${{ env.CUR_TAG }}.tgz.sigstore.json \
+            ${{ env.OFFLINE_PACKAGE_PATH }}
+
+          if [ "${{ env.PRERELEASE }}" = "false" ]; then
+            cosign sign-blob --yes \
+              --bundle=./assets/harbor-online-installer-${{ env.CUR_TAG }}.tgz.sigstore.json \
+              ${{ env.ONLINE_PACKAGE_PATH }}
+          fi
+
+          echo "OFFLINE_SIGSTORE_PATH=./assets/harbor-offline-installer-${{ env.CUR_TAG }}.tgz.sigstore.json" >> $GITHUB_ENV
+
+          if [ "${{ env.PRERELEASE }}" = "false" ]; then
+            echo "ONLINE_SIGSTORE_PATH=./assets/harbor-online-installer-${{ env.CUR_TAG }}.tgz.sigstore.json" >> $GITHUB_ENV
+          fi
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
@@ -72,6 +95,7 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
+            ${{ env.OFFLINE_SIGSTORE_PATH }}
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
         uses: softprops/action-gh-release@v2
@@ -80,5 +104,7 @@ jobs:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
           files: |
             ${{ env.OFFLINE_PACKAGE_PATH }}
+            ${{ env.OFFLINE_SIGSTORE_PATH }}
             ${{ env.ONLINE_PACKAGE_PATH }}
+            ${{ env.ONLINE_SIGSTORE_PATH }}
             ${{ env.MD5SUM_PATH }}
