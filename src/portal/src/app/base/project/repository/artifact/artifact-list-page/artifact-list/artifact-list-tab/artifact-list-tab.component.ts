@@ -123,7 +123,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             const aTag = a?.tags?.[0]?.name || '';
             const bTag = b?.tags?.[0]?.name || '';
             return aTag.localeCompare(bTag);
-        }
+        },
     };
 
     loading = true;
@@ -357,7 +357,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
 
         this.artifactList.forEach(artifact => {
             if (artifact.tags?.length > 1) {
-                artifact.tags = this.sortTagsBySemver(artifact.tags, isDescending);
+                artifact.tags = this.sortTagsBySemver(
+                    artifact.tags,
+                    isDescending
+                );
             }
         });
 
@@ -379,14 +382,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
 
     private compareSemverTags(tagA: string, tagB: string): number {
-        if (tagA.toLowerCase() === 'latest' && tagB.toLowerCase() === 'latest') {
+        if (
+            tagA.toLowerCase() === 'latest' &&
+            tagB.toLowerCase() === 'latest'
+        ) {
             return 0;
         }
         if (tagA.toLowerCase() === 'latest') {
-            return 1; 
+            return 1;
         }
         if (tagB.toLowerCase() === 'latest') {
-            return -1; 
+            return -1;
         }
 
         const normalizedA = this.normalizeSemverTag(tagA);
@@ -412,15 +418,15 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
 
             if (prereleaseA && !prereleaseB) {
-                return -1; 
+                return -1;
             }
             if (!prereleaseA && prereleaseB) {
-                return 1; 
+                return 1;
             }
             if (prereleaseA && prereleaseB) {
                 return prereleaseA.localeCompare(prereleaseB);
             }
-            return 0; 
+            return 0;
         }
 
         if ((parsedA || coercedA) && !(parsedB || coercedB)) {
@@ -429,32 +435,32 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         if (!(parsedA || coercedA) && (parsedB || coercedB)) {
             return -1;
         }
-        
+
         return tagA.localeCompare(tagB);
     }
 
     private normalizeSemverTag(tag: string): string {
         let normalized = tag;
-        
+
         if (normalized.startsWith('v') || normalized.startsWith('V')) {
             normalized = normalized.substring(1);
         }
-        
+
         const prereleaseMatch = normalized.match(/^([^-]+)(-.*)?$/);
         if (prereleaseMatch) {
             const versionPart = prereleaseMatch[1];
             const prereleasePart = prereleaseMatch[2] || '';
-            
+
             const components = versionPart.split('.').map(component => {
                 if (/^\d+$/.test(component)) {
                     return String(parseInt(component, 10));
                 }
                 return component;
             });
-            
+
             normalized = components.join('.') + prereleasePart;
         }
-        
+
         return normalized;
     }
 
@@ -488,7 +494,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 | string
                 | ClrDatagridComparatorInterface<any>;
             sortBy = sortBy.fieldName ? sortBy.fieldName : sortBy;
-            // Skip tags sorting on server side, as it is handled on the client 
+            // Skip tags sorting on server side, as it is handled on the client
             if (sortBy === 'tags' || sortBy === '-tags') {
                 sortBy = '';
             } else {
