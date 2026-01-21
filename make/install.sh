@@ -86,7 +86,7 @@ echo ""
 # Prompt for Admin Password and validate it
 h2 "[Step $item]: checking for admin password ..."; let item+=1
 if ! grep -q '^[[:space:]]*harbor_admin_password:' ./harbor.yml; then
-    if [ -z "$HARBOR_ADMIN_PASSWD" ]; then
+    if [ ! -z "$HARBOR_ADMIN_PASSWD" ]; then
 	echo "#Using environment variable for Admin Password" >> ./harbor.yml
 	echo "harbor_admin_password: $HARBOR_ADMIN_PASSWD" >> ./harbor.yml
     else 
