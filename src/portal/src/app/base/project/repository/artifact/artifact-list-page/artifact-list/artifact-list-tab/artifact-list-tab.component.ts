@@ -381,20 +381,56 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         });
     }
 
-    private compareSemverTags(tagA: string, tagB: string): number {
-        if (
-            tagA.toLowerCase() === 'latest' &&
-            tagB.toLowerCase() === 'latest'
-        ) {
-            return 0;
-        }
-        if (tagA.toLowerCase() === 'latest') {
+    private getTagCategory(tag: string): number {
+        if (tag.toLowerCase() === 'latest') {
             return 1;
         }
-        if (tagB.toLowerCase() === 'latest') {
-            return -1;
+
+        if (/^[a-zA-Z]+$/.test(tag)) {
+            return 4;
         }
 
+        if (this.isSemverTag(tag)) {
+            return 2;
+        }
+
+        return 3;
+    }
+
+    private isSemverTag(tag: string): boolean {
+        const normalized = this.normalizeSemverTag(tag);
+        if (semver.parse(normalized) !== null) {
+            return true;
+        }
+        if (semver.coerce(normalized) !== null) {
+            return /^[\d]+[\d.]*(-[a-zA-Z0-9.]+)?$/.test(normalized);
+        }
+        return false;
+    }
+
+    private compareSemverTags(tagA: string, tagB: string): number {
+        const categoryA = this.getTagCategory(tagA);
+        const categoryB = this.getTagCategory(tagB);
+
+        if (categoryA !== categoryB) {
+            return categoryB - categoryA;
+        }
+
+        switch (categoryA) {
+            case 1:
+                return 0;
+            case 2:
+                return this.compareSemverVersions(tagA, tagB);
+            case 3:
+                return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
+            case 4:
+                return tagA.toLowerCase().localeCompare(tagB.toLowerCase());
+            default:
+                return tagA.localeCompare(tagB);
+        }
+    }
+
+    private compareSemverVersions(tagA: string, tagB: string): number {
         const normalizedA = this.normalizeSemverTag(tagA);
         const normalizedB = this.normalizeSemverTag(tagB);
 
@@ -429,10 +465,10 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             return 0;
         }
 
-        if ((parsedA || coercedA) && !(parsedB || coercedB)) {
+        if (coercedA && !coercedB) {
             return 1;
         }
-        if (!(parsedA || coercedA) && (parsedB || coercedB)) {
+        if (!coercedA && coercedB) {
             return -1;
         }
 
