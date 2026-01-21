@@ -522,7 +522,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 withLabel: true,
                 withScanOverview: true,
                 withSbomOverview: true,
-                withTag: false,
+                withTag: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
                 withAccessory: false,
             };
@@ -547,7 +547,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                     withLabel: true,
                                     withScanOverview: true,
                                     withSbomOverview: true,
-                                    withTag: false,
+                                    withTag: true,
                                     XAcceptVulnerabilities:
                                         DEFAULT_SUPPORTED_MIME_TYPES,
                                     withAccessory: false,
@@ -576,7 +576,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                         platFormAttr[index].platform
                                     );
                                 });
-                                this.getArtifactTagsAsync(this.artifactList);
+                                // this.getArtifactTagsAsync(this.artifactList);
                                 this.getAccessoriesAsync(this.artifactList);
                                 this.checkCosignAndSbomAsync(this.artifactList);
                                 this.getIconsFromBackEnd();
@@ -597,7 +597,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 withLabel: true,
                 withScanOverview: true,
                 withSbomOverview: true,
-                withTag: false,
+                withTag: true,
                 sort: getSortingString(state),
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
                 withAccessory: false,
@@ -616,7 +616,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             }
                         }
                         this.artifactList = res.body;
-                        this.getArtifactTagsAsync(this.artifactList);
+                        // this.getArtifactTagsAsync(this.artifactList);
                         this.getAccessoriesAsync(this.artifactList);
                         this.checkCosignAndSbomAsync(this.artifactList);
                         this.getIconsFromBackEnd();
