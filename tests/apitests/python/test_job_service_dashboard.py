@@ -62,81 +62,93 @@ class TestJobServiceDashboard(unittest.TestCase, object):
             18. Resume all Job;
         """
         # 1. List job queue
-        job_queues = self.jobservice.get_job_queues()
+        job_queues = self.jobservice.get_job_queues(**ADMIN_CLIENT)
         self.assertSetEqual(set(self.job_types), set(job_queues.keys()))
 
         # 2. Pause GC Job and purge audit Job
-        self.jobservice.action_pending_jobs(self.job_types[0], "pause")
-        self.jobservice.action_pending_jobs(self.job_types[1], "pause")
+        self.jobservice.action_pending_jobs(self.job_types[0], "pause", **ADMIN_CLIENT)
+        self.jobservice.action_pending_jobs(self.job_types[1], "pause", **ADMIN_CLIENT)
 
         # 3. Verify that the Job status is Paused
-        job_queues = self.jobservice.get_job_queues()
+        job_queues = self.jobservice.get_job_queues(**ADMIN_CLIENT)
         self.assertTrue(job_queues[self.job_types[0]].paused)
         self.assertTrue(job_queues[self.job_types[1]].paused)
 
         # 4. Run GC and purge audit
-        self.gc.gc_now()
-        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False)
+        self.gc.gc_now(**ADMIN_CLIENT)
+        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False, **ADMIN_CLIENT)
+        print(f"Start time: {time.time()}")
         time.sleep(2)
+        print(f"End time: {time.time()}")
 
         # 5. Verify pending jobs of job queues
+        print("Step 5 verifyPendingJobs\n")
         self.verifyPendingJobs([self.job_types[0], self.job_types[1]])
 
         # 6. Resume GC Job and purge audit Job
-        self.jobservice.action_pending_jobs(self.job_types[0], "resume")
-        self.jobservice.action_pending_jobs(self.job_types[1], "resume")
+        self.jobservice.action_pending_jobs(self.job_types[0], "resume", **ADMIN_CLIENT)
+        self.jobservice.action_pending_jobs(self.job_types[1], "resume", **ADMIN_CLIENT)
 
         # 7. Verify pending jobs of job queues
         self.waitJobQueuesStopToComplete([self.job_types[0], self.job_types[1]])
 
         # 8. Pause GC Job and purge audit Job;
-        self.jobservice.action_pending_jobs(self.job_types[0], "pause")
-        self.jobservice.action_pending_jobs(self.job_types[1], "pause")
+        self.jobservice.action_pending_jobs(self.job_types[0], "pause", **ADMIN_CLIENT)
+        self.jobservice.action_pending_jobs(self.job_types[1], "pause", **ADMIN_CLIENT)
 
         # 9. Verify that the Job status is Paused
-        job_queues = self.jobservice.get_job_queues()
+        job_queues = self.jobservice.get_job_queues(**ADMIN_CLIENT)
         self.assertTrue(job_queues[self.job_types[0]].paused)
         self.assertTrue(job_queues[self.job_types[1]].paused)
 
         # 10. Run GC and purge audit
         self.gc.gc_now()
-        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False)
+        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False, **ADMIN_CLIENT)
+        print(f"Start time: {time.time()}")
         time.sleep(2)
-
+        print(f"End time: {time.time()}")
+        
         # 11. Verify pending jobs of job queues
+        print("Step 11 verifyPendingJobs\n")
         self.verifyPendingJobs([self.job_types[0], self.job_types[1]])
 
         # 12. Stop GC Job and purge audit Job
-        self.jobservice.action_pending_jobs(self.job_types[0], "stop")
-        self.jobservice.action_pending_jobs(self.job_types[1], "stop")
+        self.jobservice.action_pending_jobs(self.job_types[0], "stop", **ADMIN_CLIENT)
+        self.jobservice.action_pending_jobs(self.job_types[1], "stop", **ADMIN_CLIENT)
 
         # 13. Verify pending jobs of job queues
         self.waitJobQueuesStopToComplete([self.job_types[0], self.job_types[1]])
 
         # 14. Run GC and purge audit
-        self.gc.gc_now()
-        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False)
+        self.gc.gc_now(**ADMIN_CLIENT)
+        self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False, **ADMIN_CLIENT)
+        print(f"Start time: {time.time()}")
         time.sleep(2)
+        print(f"End time: {time.time()}")
 
         # 15. Verify pending jobs of job queues
+        print("Step 15 verifyPendingJobs\n")
         self.verifyPendingJobs([self.job_types[0], self.job_types[1]])
 
         # 16. Stop all Job
-        self.jobservice.action_pending_jobs("all", "stop")
+        self.jobservice.action_pending_jobs("all", "stop", **ADMIN_CLIENT)
 
         # 17. Verify pending jobs of job queues
         self.waitJobQueuesStopToComplete([self.job_types[0], self.job_types[1]])
 
         # 18. Resume all Job
-        self.jobservice.action_pending_jobs("all", "resume")
-        job_queues = self.jobservice.get_job_queues()
+        self.jobservice.action_pending_jobs("all", "resume", **ADMIN_CLIENT)
+        job_queues = self.jobservice.get_job_queues(**ADMIN_CLIENT)
         self.assertFalse(job_queues[self.job_types[0]].paused)
         self.assertFalse(job_queues[self.job_types[1]].paused)
 
 
     def verifyPendingJobs(self, job_types):
-        job_queues = self.jobservice.get_job_queues()
+        job_queues = self.jobservice.get_job_queues(**ADMIN_CLIENT)
+        print("***** VerifyPendingJobs *****")
         for job_type in job_types:
+            print(f"the count of job queue {job_type} is {job_queues[job_type].count}\n")
+            print(f"the latency of job queue {job_type} is {job_queues[job_type].latency}\n")
             self.assertTrue(job_queues[job_type].count > 0)
             self.assertTrue(job_queues[job_type].latency > 0)
             self.assertTrue(job_queues[job_type].count > 0)
