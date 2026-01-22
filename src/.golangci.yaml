@@ -3,6 +3,7 @@ linters:
   default: none
   enable:
     - bodyclose
+    - dupl
     - errcheck
     - goheader
     - govet
@@ -10,10 +11,13 @@ linters:
     - misspell
     - revive
     - staticcheck
+    - usestdlibvars
     - whitespace
   settings:
     goheader:
       template-path: copyright.tmpl
+    dupl:
+      threshold: 300
     misspell:
       locale: US,UK
     staticcheck:
@@ -26,6 +30,11 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+        path: "(common/|core/utils/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/)"
     paths:
       - third_party$
       - builtin$
