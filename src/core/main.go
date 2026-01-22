@@ -102,8 +102,7 @@ func updateInitPassword(ctx context.Context, userID int, password string) error 
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 		if userID == adminUserID && password != "" {
-			log.Warningf("The admin password in configuration (HARBOR_ADMIN_PASSWORD) will not be applied " +
-				"because a password already exists in the database. To change the admin password, use the Harbor UI or API.")
+			log.Warning("Admin password from config (HARBOR_ADMIN_PASSWORD) ignored: password already exists in database. Use Harbor UI or API to change.")
 		}
 	}
 	return nil
