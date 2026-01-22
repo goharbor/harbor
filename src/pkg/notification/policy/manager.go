@@ -104,6 +104,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.Policy, error) {
 		return nil, err
 	}
 	if policy == nil {
+		// nolint:nilnil // policy is not found
 		return nil, nil
 	}
 	if err := policy.ConvertFromDBModel(); err != nil {

@@ -80,6 +80,7 @@ func (drm *defaultRuleManager) GetImmutableRule(ctx context.Context, id int64) (
 	}
 	rule := &model.Metadata{}
 	if daoRule == nil {
+		// nolint:nilnil // rule is not found
 		return nil, nil
 	}
 	if err = json.Unmarshal([]byte(daoRule.TagFilter), rule); err != nil {

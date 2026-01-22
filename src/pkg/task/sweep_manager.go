@@ -86,6 +86,7 @@ func (sm *sweepManager) getCandidateMaxStartTime(ctx context.Context, vendorType
 	}
 	// list is null means that the execution count < retainCnt, return nil time
 	if len(executions) == 0 {
+		// nolint:nilnil // no executions found
 		return nil, nil
 	}
 

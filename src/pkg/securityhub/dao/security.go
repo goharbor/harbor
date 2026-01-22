@@ -209,6 +209,7 @@ func (d *dao) TotalArtifactsCount(ctx context.Context, projectID int64) (int64, 
 
 func (d *dao) Summary(ctx context.Context, scannerUUID string, projectID int64, _ *q.Query) (*model.Summary, error) {
 	if len(scannerUUID) == 0 || projectID != 0 {
+		// nolint:nilnil // parameters are invalid
 		return nil, nil
 	}
 	o, err := orm.FromContext(ctx)

@@ -133,6 +133,7 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 			return entry, nil
 		}
 	}
+	// nolint:nilnil // password doesn't match any user
 	return nil, nil
 }
 

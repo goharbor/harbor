@@ -158,5 +158,6 @@ func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule,
 		log.Debugf("Found export data cleanup job with schedule id : %v", schedules[0].ID)
 		return schedules[0], nil
 	}
+	// nolint:nilnil // no schedule is found
 	return nil, nil
 }

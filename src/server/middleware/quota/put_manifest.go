@@ -53,6 +53,7 @@ func putManifestResources(r *http.Request, _, referenceID string) (types.Resourc
 	}
 
 	if exist {
+		// nolint:nilnil // manifest already exists
 		return nil, nil
 	}
 
