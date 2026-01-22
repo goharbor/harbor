@@ -37,6 +37,7 @@ export class Project {
         reuse_sys_cve_allowlist?: string;
         proxy_speed_kb?: number | null;
         max_upstream_conn?: number | null;
+        proxy_referrer_api?: string | boolean;
     };
     cve_allowlist?: object;
     constructor() {
