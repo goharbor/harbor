@@ -272,14 +272,13 @@ make go_check      # Run tests, API generation, lint, vet, race, spell checks
 
 ### Build Specific Services
 ```sh
-make compile_core        # Build the core Kyverno service binary
+make compile_core        # Build the core Harbor service binary
 make compile_jobservice  # Build the jobservice binary (for background jobs)
 make compile_registryctl # Build the registryctl binary (for registry management)
 ```
 
 ### TLS / Cert Generation
 ```sh
-make gen_tls=true compile_core  # Build core service and generate TLS certificates at the same time
 make gen_tls                     # Only generate TLS certificates
 ```
 
