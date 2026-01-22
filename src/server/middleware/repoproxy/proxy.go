@@ -308,6 +308,10 @@ func canProxy(ctx context.Context, p *proModels.Project) bool {
 	if reg.Status != model.Healthy {
 		log.Errorf("current registry is unhealthy, regID:%v, Name:%v, Status: %v", reg.ID, reg.Name, reg.Status)
 	}
+	if !p.OnlineUpstreamRegistry() {
+		log.Infof("the upstream registry is offline for project %v, try to serve it with local content", p.Name)
+		return false
+	}
 	return reg.Status == model.Healthy
 }
 
