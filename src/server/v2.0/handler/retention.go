@@ -133,7 +133,7 @@ var (
 	}
 )
 
-func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ interface{}) middleware.Responder {
+func (r *retentionAPI) Prepare(ctx context.Context, _ string, _ any) middleware.Responder {
 	if err := r.RequireAuthenticated(ctx); err != nil {
 		return r.SendError(ctx, err)
 	}
@@ -258,6 +258,10 @@ func (r *retentionAPI) DeleteRetention(ctx context.Context, params operation.Del
 	}
 
 	if err = r.retentionCtl.DeleteRetention(ctx, params.ID); err != nil {
+		return r.SendError(ctx, err)
+	}
+	// delete retention data in project_metadata
+	if err := r.proMetaMgr.Delete(ctx, p.Scope.Reference, "retention_id"); err != nil {
 		return r.SendError(ctx, err)
 	}
 	return operation.NewDeleteRetentionOK()

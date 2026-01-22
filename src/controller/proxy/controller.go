@@ -149,6 +149,22 @@ type ManifestList struct {
 	ContentType string
 }
 
+// getManifestDigestInLocal get the artifact digest in local
+func (c *controller) getManifestDigestInLocal(ctx context.Context, art lib.ArtifactInfo) (string, error) {
+	// Get the manifest from local registry
+	a, err := c.local.GetManifest(ctx, art)
+	if err != nil {
+		return "", err
+	}
+	if a == nil {
+		return "", errors.NotFoundError(fmt.Errorf("manifest %v not found in local registry", art.Repository))
+	}
+	if len(a.Digest) == 0 {
+		return "", errors.NotFoundError(fmt.Errorf("manifest %v not found in local registry", art.Repository))
+	}
+	return a.Digest, nil
+}
+
 // UseLocalManifest check if these manifest could be found in local registry,
 // the return error should be nil when it is not found in local and need to delegate to remote registry
 // the return error should be NotFoundError when it is not found in remote registry
@@ -172,6 +188,16 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
+		dig, err := c.getManifestDigestInLocal(ctx, art)
+		if err != nil {
+			// skip to delete when error, use debug level log to avoid too many logs when the manifest is removed from upstream
+			log.Debugf("failed to get manifest digest in local, error: %v, skip to delete it, art %+v", err, art)
+		} else {
+			go func() {
+				c.local.DeleteManifest(art.Repository, dig)
+				log.Infof("delete manifest %s with digest %s", art.Repository, dig)
+			}()
+		}
 		return false, nil, errors.NotFoundError(fmt.Errorf("repo %v, tag %v not found", art.Repository, art.Tag))
 	}
 

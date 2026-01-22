@@ -22,7 +22,7 @@ type keyMutex struct {
 	m *sync.Map
 }
 
-func (km keyMutex) Lock(key interface{}) {
+func (km keyMutex) Lock(key any) {
 	m := sync.Mutex{}
 	act, _ := km.m.LoadOrStore(key, &m)
 
@@ -34,7 +34,7 @@ func (km keyMutex) Lock(key interface{}) {
 	}
 }
 
-func (km keyMutex) Unlock(key interface{}) {
+func (km keyMutex) Unlock(key any) {
 	act, exist := km.m.Load(key)
 	if !exist {
 		panic("unlock of unlocked mutex")

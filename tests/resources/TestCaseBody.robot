@@ -16,10 +16,16 @@
 Documentation  This resource wrap test case body
 Library  ../apitests/python/testutils.py
 Library  ../apitests/python/library/repository.py
+Library  String
 
 *** Variables ***
 
 *** Keywords ***
+Remove Port
+    [Arguments]    ${address}
+    ${result}=    Replace String    ${address}    :9443    ${EMPTY}
+    [Return]    ${result}
+
 Body Of Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
@@ -444,18 +450,6 @@ Body Of Generate Image SBOM On Push
     Checkout And Review SBOM Details  latest
     Close Browser
 
-Body Of Stop SBOM Manual Generation
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
-    ${tag}=    Set Variable    test-ui
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
-    # stop generate sbom of an artifact
-    Retry Action Keyword  Stop SBOM Generation  project${d}  ${repo}
-    Close Browser
-
 Stop SBOM Generation
     [Arguments]  ${project_name}  ${repo}
     Generate Artifact SBOM  ${project_name}  ${repo}
@@ -590,7 +584,8 @@ Verify Webhook By Tag Retention Finished Event
 Verify Webhook By Replication Status Changed Event
     [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{replication_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${ip}
+    ${cleaned_ip}=    Remove Port    ${ip}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${cleaned_ip}
     ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  operator=${user}  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests
@@ -676,9 +671,9 @@ Create Schedules For Job Service Dashboard Schedules
     Create An New P2P Preheat Policy  ${p2p_policy_name}  ${distribution_name}  **  **  Scheduled  ${schedule_type}  ${schedule_cron}
     # Create a replication policy triggered by schedule
     Switch to Registries
-    Create A New Endpoint  docker-hub  docker-hub${d}  ${null}  ${null}  ${null}  Y
+    Create A New Endpoint  harbor  goharbor${d}  https://${LOCAL_REGISTRY}  ${null}  ${null}  Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  goharbor/harbor-core  image  docker-hub${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
+    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  harbor-ci/goharbor/harbor-core  image  goharbor${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
     # Set up a schedule to scan all
     Switch To Vulnerability Page
     Set Scan Schedule  Custom  value=${schedule_cron}

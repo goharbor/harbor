@@ -212,7 +212,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 func (a *adapter) GetNamespace(namespaceStr string) (*model.Namespace, error) {
 	var namespace = &model.Namespace{
 		Name:     "",
-		Metadata: make(map[string]interface{}),
+		Metadata: make(map[string]any),
 	}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/namespaces/%s", a.registry.URL, namespaceStr)
@@ -268,7 +268,10 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		modifiers = append(modifiers, authorizer)
 	}
 
-	transport := common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure))
+	transport := common_http.GetHTTPTransport(
+		common_http.WithInsecure(registry.Insecure),
+		common_http.WithCACert(registry.CACertificate),
+	)
 	return &adapter{
 		Adapter:  native.NewAdapter(registry),
 		registry: registry,
@@ -299,8 +302,8 @@ type hwNamespace struct {
 	ImageCount   int64  `json:"image_count"`
 }
 
-func (ns hwNamespace) metadata() map[string]interface{} {
-	var metadata = make(map[string]interface{})
+func (ns hwNamespace) metadata() map[string]any {
+	var metadata = make(map[string]any)
 	metadata["id"] = ns.ID
 	metadata["creator_name"] = ns.CreatorName
 	metadata["domain_public"] = ns.DomainPublic

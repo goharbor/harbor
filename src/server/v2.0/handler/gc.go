@@ -47,7 +47,7 @@ func newGCAPI() *gcAPI {
 	}
 }
 
-func (g *gcAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (g *gcAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -79,9 +79,9 @@ func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCS
 	return operation.NewUpdateGCScheduleOK()
 }
 
-func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, parameters map[string]any) (int64, error) {
 	if parameters == nil {
-		parameters = make(map[string]interface{})
+		parameters = make(map[string]any)
 	}
 	// set the required parameters for GC
 	parameters["redis_url_reg"] = os.Getenv("_REDIS_URL_REG")
@@ -100,13 +100,16 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
+		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()
 			if err != nil {
 				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
 			}
 			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 10.", workers)
 			}
 			policy.Workers = int(wInt)
 		}
@@ -124,13 +127,16 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
+		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()
 			if err != nil {
 				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
 			}
 			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 5.", workers)
+				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 10.", workers)
 			}
 			policy.Workers = int(wInt)
 		}
@@ -284,7 +290,7 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 }
 
 func validateWorkers(workers int) bool {
-	if workers <= 0 || workers > 5 {
+	if workers <= 0 || workers > 10 {
 		return false
 	}
 	return true

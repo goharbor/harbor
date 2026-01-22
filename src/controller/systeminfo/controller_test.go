@@ -23,7 +23,7 @@ func (s *sysInfoCtlTestSuite) SetupTest() {
 	version.ReleaseVersion = "test"
 	version.GitCommit = "fakeid"
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.AUTHMode:                    "db_auth",
 		common.SelfRegistration:            true,
 		common.ExtEndpoint:                 "https://test.goharbor.io",
@@ -57,7 +57,6 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 			withProtected: false,
 			expect: Data{
 				AuthMode:         "db_auth",
-				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
 				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 			},
@@ -66,12 +65,12 @@ func (s *sysInfoCtlTestSuite) TestGetInfo() {
 			withProtected: true,
 			expect: Data{
 				AuthMode:         "db_auth",
-				HarborVersion:    "test-fakeid",
 				SelfRegistration: true,
 				BannerMessage:    "{\"closable\":false,\"message\":\"Just for test\",\"type\":\" error\"}",
 				Protected: &protectedData{
 					RegistryURL:             "test.goharbor.io",
 					ExtURL:                  "https://test.goharbor.io",
+					HarborVersion:           "test-fakeid",
 					ProjectCreationRestrict: "everyone",
 					// CI pipeline has it
 					HasCARoot:                   true,
@@ -108,16 +107,16 @@ func TestControllerSuite(t *testing.T) {
 
 func TestOIDCProviderName(t *testing.T) {
 	type args struct {
-		cfg map[string]interface{}
+		cfg map[string]any
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"normal testing", args{map[string]interface{}{common.AUTHMode: common.OIDCAuth, common.OIDCName: "test"}}, "test"},
-		{"not oidc", args{map[string]interface{}{common.AUTHMode: common.DBAuth, common.OIDCName: "test"}}, ""},
-		{"empty provider", args{map[string]interface{}{common.AUTHMode: common.OIDCAuth, common.OIDCName: ""}}, ""},
+		{"normal testing", args{map[string]any{common.AUTHMode: common.OIDCAuth, common.OIDCName: "test"}}, "test"},
+		{"not oidc", args{map[string]any{common.AUTHMode: common.DBAuth, common.OIDCName: "test"}}, ""},
+		{"empty provider", args{map[string]any{common.AUTHMode: common.OIDCAuth, common.OIDCName: ""}}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

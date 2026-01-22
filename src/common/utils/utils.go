@@ -60,9 +60,7 @@ func ParseRepository(repository string) (project, rest string) {
 		rest = repository
 		return
 	}
-	index := strings.Index(repository, "/")
-	project = repository[0:index]
-	rest = repository[index+1:]
+	project, rest, _ = strings.Cut(repository, "/")
 	return
 }
 
@@ -75,7 +73,7 @@ func GenerateRandomStringWithLen(length int) string {
 	if err != nil {
 		log.Warningf("Error reading random bytes: %v", err)
 	}
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
 	return string(result)
@@ -140,7 +138,7 @@ func ParseTimeStamp(timestamp string) (*time.Time, error) {
 }
 
 // ConvertMapToStruct is used to fill the specified struct with map.
-func ConvertMapToStruct(object interface{}, values interface{}) error {
+func ConvertMapToStruct(object any, values any) error {
 	if object == nil {
 		return errors.New("nil struct is not supported")
 	}
@@ -158,7 +156,7 @@ func ConvertMapToStruct(object interface{}, values interface{}) error {
 }
 
 // ParseProjectIDOrName parses value to ID(int64) or name(string)
-func ParseProjectIDOrName(value interface{}) (int64, string, error) {
+func ParseProjectIDOrName(value any) (int64, string, error) {
 	if value == nil {
 		return 0, "", errors.New("harborIDOrName is nil")
 	}
@@ -177,7 +175,7 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 }
 
 // SafeCastString -- cast an object to string safely
-func SafeCastString(value interface{}) string {
+func SafeCastString(value any) string {
 	if result, ok := value.(string); ok {
 		return result
 	}
@@ -185,7 +183,7 @@ func SafeCastString(value interface{}) string {
 }
 
 // SafeCastInt --
-func SafeCastInt(value interface{}) int {
+func SafeCastInt(value any) int {
 	if result, ok := value.(int); ok {
 		return result
 	}
@@ -193,7 +191,7 @@ func SafeCastInt(value interface{}) int {
 }
 
 // SafeCastBool --
-func SafeCastBool(value interface{}) bool {
+func SafeCastBool(value any) bool {
 	if result, ok := value.(bool); ok {
 		return result
 	}
@@ -201,7 +199,7 @@ func SafeCastBool(value interface{}) bool {
 }
 
 // SafeCastFloat64 --
-func SafeCastFloat64(value interface{}) float64 {
+func SafeCastFloat64(value any) float64 {
 	if result, ok := value.(float64); ok {
 		return result
 	}
@@ -214,9 +212,9 @@ func TrimLower(str string) string {
 }
 
 // GetStrValueOfAnyType return string format of any value, for map, need to convert to json
-func GetStrValueOfAnyType(value interface{}) string {
+func GetStrValueOfAnyType(value any) string {
 	var strVal string
-	if _, ok := value.(map[string]interface{}); ok {
+	if _, ok := value.(map[string]any); ok {
 		b, err := json.Marshal(value)
 		if err != nil {
 			log.Errorf("can not marshal json object, error %v", err)
@@ -237,18 +235,18 @@ func GetStrValueOfAnyType(value interface{}) string {
 }
 
 // IsIllegalLength ...
-func IsIllegalLength(s string, min int, max int) bool {
-	if min == -1 {
-		return (len(s) > max)
+func IsIllegalLength(s string, minVal int, maxVal int) bool {
+	if minVal == -1 {
+		return (len(s) > maxVal)
 	}
-	if max == -1 {
-		return (len(s) <= min)
+	if maxVal == -1 {
+		return (len(s) <= minVal)
 	}
-	return (len(s) < min || len(s) > max)
+	return (len(s) < minVal || len(s) > maxVal)
 }
 
 // ParseJSONInt ...
-func ParseJSONInt(value interface{}) (int, bool) {
+func ParseJSONInt(value any) (int, bool) {
 	switch v := value.(type) {
 	case float64:
 		return int(v), true
@@ -305,32 +303,6 @@ func ValidateCronString(cron string) error {
 		return fmt.Errorf("the 1st field (indicating Seconds of time) of the cron setting must be 0")
 	}
 	return nil
-}
-
-// MostMatchSorter is a sorter for the most match, usually invoked in sort Less function
-// usage:
-//
-//	sort.Slice(input, func(i, j int) bool {
-//		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
-//	})
-//
-// a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
-// the return value is true if a is less than b
-// for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
-// it returns with this order {"user", "users", "admin_user", "harbor_user"}
-func MostMatchSorter(a, b string, matchWord string) bool {
-	// exact match always first
-	if a == matchWord {
-		return true
-	}
-	if b == matchWord {
-		return false
-	}
-	// sort by length, then sort by alphabet
-	if len(a) == len(b) {
-		return a < b
-	}
-	return len(a) < len(b)
 }
 
 // IsLocalPath checks if path is local, includes the empty path

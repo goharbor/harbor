@@ -30,7 +30,7 @@ var (
 )
 
 // WrapNotFoundError wrap error as NotFoundError when it is orm.ErrNoRows otherwise return err
-func WrapNotFoundError(err error, format string, args ...interface{}) error {
+func WrapNotFoundError(err error, format string, args ...any) error {
 	if e := AsNotFoundError(err, format, args...); e != nil {
 		return e
 	}
@@ -39,7 +39,7 @@ func WrapNotFoundError(err error, format string, args ...interface{}) error {
 }
 
 // WrapConflictError wrap error as ConflictError when it is duplicate key error otherwise return err
-func WrapConflictError(err error, format string, args ...interface{}) error {
+func WrapConflictError(err error, format string, args ...any) error {
 	if e := AsConflictError(err, format, args...); e != nil {
 		return e
 	}
@@ -47,9 +47,9 @@ func WrapConflictError(err error, format string, args ...interface{}) error {
 	return err
 }
 
-// AsNotFoundError checks whether the err is orm.ErrNoRows. If it it, wrap it
+// AsNotFoundError checks whether the err is orm.ErrNoRows. If it is, wrap it
 // as a src/internal/error.Error with not found error code, else return nil
-func AsNotFoundError(err error, messageFormat string, args ...interface{}) *errors.Error {
+func AsNotFoundError(err error, messageFormat string, args ...any) *errors.Error {
 	if errors.Is(err, orm.ErrNoRows) {
 		e := errors.NotFoundError(nil)
 		if len(messageFormat) > 0 {
@@ -62,7 +62,7 @@ func AsNotFoundError(err error, messageFormat string, args ...interface{}) *erro
 
 // AsConflictError checks whether the err is duplicate key error. If it is, wrap it
 // as a src/internal/error.Error with conflict error code, else return nil
-func AsConflictError(err error, messageFormat string, args ...interface{}) *errors.Error {
+func AsConflictError(err error, messageFormat string, args ...any) *errors.Error {
 	if IsDuplicateKeyError(err) {
 		e := errors.New(err).
 			WithCode(errors.ConflictCode).
@@ -72,9 +72,9 @@ func AsConflictError(err error, messageFormat string, args ...interface{}) *erro
 	return nil
 }
 
-// AsForeignKeyError checks whether the err is violating foreign key constraint error. If it it, wrap it
+// AsForeignKeyError checks whether the err is violating foreign key constraint error. If it is, wrap it
 // as a src/internal/error.Error with violating foreign key constraint error code, else return nil
-func AsForeignKeyError(err error, messageFormat string, args ...interface{}) *errors.Error {
+func AsForeignKeyError(err error, messageFormat string, args ...any) *errors.Error {
 	if isViolatingForeignKeyConstraintError(err) {
 		e := errors.New(err).
 			WithCode(errors.ViolateForeignKeyConstraintCode).

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     REFRESH_TIME_DIFFERENCE,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
@@ -88,6 +89,7 @@ const ruleStatus: { [key: string]: any } = [
 ];
 
 export class SearchOption {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     ruleId: number | string;
     ruleName: string = '';
     trigger: string = '';
@@ -642,7 +644,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
     }
 
-    getStatusStr(status: string): string {
+    getStatusStr(status: string, status_text: string): string {
+        // If status is Failed and status_text has 'Execution skipped', it means the replication task is skipped.
+        if (status === 'Failed' && status_text.startsWith('Execution skipped'))
+            return 'Skipped';
+
         if (STATUS_MAP && STATUS_MAP[status]) {
             return STATUS_MAP[status];
         }

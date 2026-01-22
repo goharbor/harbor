@@ -16,6 +16,7 @@ package allowlist
 
 import (
 	"fmt"
+	"strings"
 
 	models2 "github.com/goharbor/harbor/src/pkg/allowlist/models"
 )
@@ -45,6 +46,13 @@ func IsInvalidErr(err error) bool {
 func Validate(wl models2.CVEAllowlist) error {
 	m := map[string]struct{}{}
 	for _, it := range wl.Items {
+		cveID := strings.TrimSpace(it.CVEID)
+		// Check for empty or whitespace-only CVE IDs
+		if cveID == "" {
+			return &invalidErr{fmt.Sprintf("empty or whitespace-only CVE ID in allowlist")}
+		}
+
+		// Check for duplicates
 		if _, ok := m[it.CVEID]; ok {
 			return &invalidErr{fmt.Sprintf("duplicate CVE ID in allowlist: %s", it.CVEID)}
 		}

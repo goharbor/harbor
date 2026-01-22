@@ -312,7 +312,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 	// Register jobs here
 	if err := redisWorker.RegisterJobs(
-		map[string]interface{}{
+		map[string]any{
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs

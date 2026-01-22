@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -33,18 +34,21 @@ import (
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/redis"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
 const (
-	contentLength       = "Content-Length"
-	contentType         = "Content-Type"
-	dockerContentDigest = "Docker-Content-Digest"
-	etag                = "Etag"
-	ensureTagInterval   = 10 * time.Second
-	ensureTagMaxRetry   = 60
+	contentLength                  = "Content-Length"
+	contentType                    = "Content-Type"
+	dockerContentDigest            = "Docker-Content-Digest"
+	etag                           = "Etag"
+	ensureTagInterval              = 10 * time.Second
+	ensureTagMaxRetry              = 60
+	upstreamRegistryLimitOnProject = "UPSTREAM_REGISTRY_LIMIT_ON_PROJECT" // if UPSTREAM_REGISTRY_LIMIT_ON_PROJECT is true, the upstream registry connection is based on project level, by default it is artifact level
 )
 
 var tooManyRequestsError = errors.New("too many requests to upstream registry").WithCode(errors.RateLimitCode)
@@ -65,6 +69,26 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return err
 	}
 
+	// go will panic if the network connection is ever interrupted, despite recovering successfully
+	// it will return an error type of http.ErrAbortHandler if it recovers. Middleware is expected to suppress this.
+	// golang/go#28239
+	defer func() {
+		r := recover()
+		err, ok := r.(error)
+
+		switch {
+		case r == nil:
+			return
+
+		case ok && errors.Is(err, http.ErrAbortHandler):
+			log.Debugf("Suppressed HttpAbortHandler: %s", err)
+			return // suppress
+
+		default:
+			panic(r)
+		}
+	}()
+
 	// Handle dockerhub request without library prefix
 	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
 	if err != nil {
@@ -79,6 +103,22 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	if p.MaxUpstreamConnection() > 0 {
+		client, err := redis.GetHarborClient()
+		if err != nil {
+			return errors.NewErrs(err)
+		}
+		key := upstreamRegistryConnectionKey(art)
+		log.Debugf("handle blob, upstream registry connection limit key: %s", key)
+		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
+			log.Infof("current connection exceed max connections to upstream registry")
+			// send http code 429 to client
+			return tooManyRequestsError
+		}
+		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	}
+
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
@@ -153,6 +193,15 @@ func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
 }
 
+// upstreamRegistryConnectionKey get upstream registry connection key
+func upstreamRegistryConnectionKey(art lib.ArtifactInfo) string {
+	limitOnProject := os.Getenv(upstreamRegistryLimitOnProject)
+	if strings.EqualFold("true", limitOnProject) {
+		return fmt.Sprintf("{upstream_registry_connection}:%s", art.ProjectName)
+	}
+	return fmt.Sprintf("{upstream_registry_connection}:%s:%s", art.Repository, art.Digest)
+}
+
 func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) error {
 	ctx := r.Context()
 	art, p, proxyCtl, err := preCheck(ctx, true)
@@ -179,7 +228,6 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return err
 	}
 	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
-
 	if err != nil {
 		return err
 	}
@@ -199,6 +247,20 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		}
 		next.ServeHTTP(w, r)
 		return nil
+	}
+	if p.MaxUpstreamConnection() > 0 {
+		client, err := redis.GetHarborClient()
+		if err != nil {
+			return errors.NewErrs(err)
+		}
+		key := upstreamRegistryConnectionKey(art)
+		log.Debugf("handle manifest key %v", key)
+		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
+			log.Infof("current connection exceed max connections to upstream registry")
+			// send http code 429 to client
+			return tooManyRequestsError
+		}
+		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
@@ -310,7 +372,7 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 		// Then GET the image by digest, in order to associate the tag with the digest
 		// Ensure tag after head request, make sure tags in proxy cache keep update
 		bCtx := orm.Context()
-		for i := 0; i < ensureTagMaxRetry; i++ {
+		for range ensureTagMaxRetry {
 			time.Sleep(ensureTagInterval)
 			bArt := lib.ArtifactInfo{ProjectName: art.ProjectName, Repository: art.Repository, Digest: string(desc.Digest)}
 			err := ctl.EnsureTag(bCtx, bArt, art.Tag)

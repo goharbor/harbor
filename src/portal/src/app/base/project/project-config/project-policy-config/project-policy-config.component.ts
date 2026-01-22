@@ -1,6 +1,22 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { compareValue, clone } from '../../../../shared/units/utils';
-import { ProjectService } from '../../../../shared/services';
+import {
+    ProjectCVEAllowlist,
+    ProjectService,
+} from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { State, SystemCVEAllowlist } from '../../../../shared/services';
 import {
@@ -42,6 +58,7 @@ export class ProjectPolicy {
     ProxyCacheEnabled: boolean;
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
+    MaxUpstreamConn?: number | null;
 
     constructor() {
         this.Public = false;
@@ -54,6 +71,7 @@ export class ProjectPolicy {
         this.ProxyCacheEnabled = false;
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
+        this.MaxUpstreamConn = -1;
     }
 
     initByProject(pro: Project) {
@@ -71,6 +89,9 @@ export class ProjectPolicy {
         this.RegistryId = pro.registry_id;
         this.ProxySpeedKb = pro.metadata.proxy_speed_kb
             ? pro.metadata.proxy_speed_kb
+            : -1;
+        this.MaxUpstreamConn = pro.metadata.max_upstream_conn
+            ? pro.metadata.max_upstream_conn
             : -1;
     }
 }
@@ -120,8 +141,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
     userProjectAllowlist = false;
     systemAllowlistOrProjectAllowlist: string;
     systemAllowlistOrProjectAllowlistOrigin: string;
-    projectAllowlist;
-    projectAllowlistOrigin;
+    projectAllowlist: ProjectCVEAllowlist;
+    projectAllowlistOrigin: ProjectCVEAllowlist;
     speedUnit = BandwidthUnit.KB;
     speedUnits = [
         {
@@ -133,6 +154,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     ];
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
+    maxUpstreamConnError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
@@ -184,8 +206,11 @@ export class ProjectPolicyConfigComponent implements OnInit {
             (!Number.isInteger(value) && value !== -1) ||
             (value <= 0 && value !== -1)
         ) {
-            this.bandwidthError =
-                'Please enter -1 or an integer  greater than 0.';
+            this.translate
+                .get('PROJECT.SPEED_LIMIT_TIP')
+                .subscribe((res: string) => {
+                    this.bandwidthError = res;
+                });
         } else {
             this.bandwidthError = null;
         }
@@ -441,7 +466,12 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.projectAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
-        this.cveIds.split(/[\n,]+/).forEach(id => {
+        const newCveIds = this.cveIds
+            .split(/[\n,]+/)
+            .map(id => id.trim()) // remove leading/trailing whitespace
+            .filter(id => id.length > 0); // skip empty or whitespace-only strings
+
+        newCveIds.forEach(id => {
             let cveObj: any = {};
             cveObj.cve_id = id.trim();
             if (!map[cveObj.cve_id]) {

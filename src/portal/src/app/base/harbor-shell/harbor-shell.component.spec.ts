@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,70 +31,80 @@ import { SkinableConfig } from '../../services/skinable-config.service';
 import { AppConfigService } from '../../services/app-config.service';
 import { ErrorHandler } from '../../shared/units/error-handler';
 import { AccountSettingsModalComponent } from '../account-settings/account-settings-modal.component';
+import { PreferenceSettingsComponent } from '../preference-settings/preference-settings.component';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ScannerService } from '../../../../ng-swagger-gen/services/scanner.service';
 import { UserService } from '../../../../ng-swagger-gen/services/user.service';
 
+// Mocks
+const fakeSessionService = {
+    getCurrentUser: function () {
+        return { has_admin_role: true };
+    },
+};
+
+const fakeSearchTriggerService = {
+    searchTriggerChan$: of('null'),
+    searchCloseChan$: of(null),
+};
+
+const mockMessageHandlerService = null;
+
+const mockPasswordSettingService = null;
+
+const mockSkinableConfig = {
+    getSkinConfig: function () {
+        return {
+            headerBgColor: {
+                darkMode: '',
+                lightMode: '',
+            },
+            loginBgImg: '',
+            loginTitle: '',
+            product: {
+                name: '',
+                logo: '',
+                introduction: '',
+            },
+        };
+    },
+};
+
+const fakeAppConfigService = {
+    isLdapMode: function () {
+        return true;
+    },
+    isHttpAuthMode: function () {
+        return false;
+    },
+    isOidcMode: function () {
+        return false;
+    },
+    getConfig: function () {
+        return {
+            with_trivy: true,
+        };
+    },
+};
+
+const fakedUserService = {
+    getCurrentUserInfo() {
+        return of({});
+    },
+    setCliSecret() {
+        return of(null);
+    },
+};
+
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;
     let fixture: ComponentFixture<HarborShellComponent>;
-    let fakeSessionService = {
-        getCurrentUser: function () {
-            return { has_admin_role: true };
-        },
-    };
-    let fakeSearchTriggerService = {
-        searchTriggerChan$: of('null'),
-        searchCloseChan$: of(null),
-    };
-    let mockMessageHandlerService = null;
-    let mockPasswordSettingService = null;
-    let mockSkinableConfig = {
-        getSkinConfig: function () {
-            return {
-                headerBgColor: {
-                    darkMode: '',
-                    lightMode: '',
-                },
-                loginBgImg: '',
-                loginTitle: '',
-                product: {
-                    name: '',
-                    logo: '',
-                    introduction: '',
-                },
-            };
-        },
-    };
-    let fakeAppConfigService = {
-        isLdapMode: function () {
-            return true;
-        },
-        isHttpAuthMode: function () {
-            return false;
-        },
-        isOidcMode: function () {
-            return false;
-        },
-        getConfig: function () {
-            return {
-                with_trivy: true,
-            };
-        },
-    };
-    const fakedUserService = {
-        getCurrentUserInfo() {
-            return of({});
-        },
-        setCliSecret() {
-            return of(null);
-        },
-    };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
-                TranslateModule.forRoot(),
+                TranslateModule.forRoot(), // Ensure TranslateModule is imported
                 ClarityModule,
                 BrowserAnimationsModule,
                 FormsModule,
@@ -89,6 +112,7 @@ describe('HarborShellComponent', () => {
             declarations: [
                 HarborShellComponent,
                 AccountSettingsModalComponent,
+                PreferenceSettingsComponent,
                 PasswordSettingComponent,
                 AboutDialogComponent,
                 InlineAlertComponent,
@@ -105,10 +129,7 @@ describe('HarborShellComponent', () => {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
                 },
-                {
-                    provide: UserService,
-                    useValue: fakedUserService,
-                },
+                { provide: UserService, useValue: fakedUserService },
                 {
                     provide: PasswordSettingService,
                     useValue: mockPasswordSettingService,
@@ -128,6 +149,9 @@ describe('HarborShellComponent', () => {
         ).componentInstance;
         component.accountSettingsModal.inlineAlert =
             TestBed.createComponent(InlineAlertComponent).componentInstance;
+        component.prefSetting = TestBed.createComponent(
+            PreferenceSettingsComponent
+        ).componentInstance;
         component.pwdSetting = TestBed.createComponent(
             PasswordSettingComponent
         ).componentInstance;
@@ -139,6 +163,7 @@ describe('HarborShellComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
     it('should open users profile', async () => {
         component.openModal({
             modalName: modalEvents.USER_PROFILE,
@@ -149,7 +174,18 @@ describe('HarborShellComponent', () => {
             fixture.nativeElement.querySelector('#account_settings_username');
         expect(accountSettingsUsernameInput).toBeTruthy();
     });
-    it('should open users changPwd', async () => {
+
+    it('should open users preferences', async () => {
+        component.openModal({
+            modalName: modalEvents.PREFERENCES,
+            modalFlag: false,
+        });
+        await fixture.whenStable();
+        const dropdowns = fixture.nativeElement.querySelector('.dropdowns');
+        expect(dropdowns).toBeTruthy();
+    });
+
+    it('should open users changePwd', async () => {
         component.openModal({
             modalName: modalEvents.CHANGE_PWD,
             modalFlag: false,
@@ -159,6 +195,7 @@ describe('HarborShellComponent', () => {
             fixture.nativeElement.querySelector('#oldPassword');
         expect(oldPasswordInput).toBeTruthy();
     });
+
     it('should open users about-dialog', async () => {
         component.openModal({ modalName: modalEvents.ABOUT, modalFlag: false });
         await fixture.whenStable();

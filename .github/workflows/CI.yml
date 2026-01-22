@@ -15,6 +15,8 @@ env:
    UI_BUILDER_VERSION: 1.6.0
 
 on:
+  # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
+  # see https://web.archive.org/web/20230506145443/https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/troubleshooting-required-status-checks#handling-skipped-but-required-checks
   pull_request:
     paths-ignore:
       - 'docs/**'
@@ -23,7 +25,11 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
   push:
+    # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -31,6 +37,9 @@ on:
       - '!tests/**.sh'
       - '!tests/apitests/**'
       - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
 
 jobs:
   UTTEST:
@@ -38,7 +47,7 @@ jobs:
        UTTEST: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -46,7 +55,7 @@ jobs:
         with:
            go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
          path: src/github.com/goharbor/harbor
       - name: setup env
@@ -89,9 +98,9 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file: ./src/github.com/goharbor/harbor/profile.cov
+          files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
 
   APITEST_DB:
@@ -99,7 +108,7 @@ jobs:
       APITEST_DB: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -107,7 +116,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -148,13 +157,19 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
-
+      - name: upload_logs
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: db-api-harbor-logs.tar.gz
+          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -162,7 +177,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -203,13 +218,19 @@ jobs:
           df -h
           bash ./tests/showtime.sh ./tests/ci/api_run.sh PROXY_CACHE $IP
           df -h
-
+      - name: upload_logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: proxy-api-harbor-logs.tar.gz
+          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   APITEST_LDAP:
     env:
       APITEST_LDAP: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -217,7 +238,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -256,13 +277,19 @@ jobs:
           cd src/github.com/goharbor/harbor
           bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
           df -h
-
+      - name: upload_logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: ldap-api-harbor-logs.tar.gz
+          path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
+          retention-days: 5
   OFFLINE:
     env:
       OFFLINE: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -270,7 +297,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -314,13 +341,13 @@ jobs:
       UI_UT: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '18'
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: script
@@ -331,7 +358,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          file:  ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
+          files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

@@ -45,13 +45,14 @@ var (
 // Manager defines the operation for config
 type Manager interface {
 	Load(ctx context.Context) error
-	Set(ctx context.Context, key string, value interface{})
+	Set(ctx context.Context, key string, value any)
 	Save(ctx context.Context) error
 	Get(ctx context.Context, key string) *metadata.ConfigureValue
-	UpdateConfig(ctx context.Context, cfgs map[string]interface{}) error
-	GetUserCfgs(ctx context.Context) map[string]interface{}
-	ValidateCfg(ctx context.Context, cfgs map[string]interface{}) error
-	GetAll(ctx context.Context) map[string]interface{}
+	GetItemFromDriver(ctx context.Context, key string) (map[string]any, error)
+	UpdateConfig(ctx context.Context, cfgs map[string]any) error
+	GetUserCfgs(ctx context.Context) map[string]any
+	ValidateCfg(ctx context.Context, cfgs map[string]any) error
+	GetAll(ctx context.Context) map[string]any
 	GetDatabaseCfg() *comModels.Database
 }
 
@@ -98,7 +99,7 @@ func Init() {
 // InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
 // need to import following package before calling it
 // _ "github.com/goharbor/harbor/src/pkg/config/inmemory"
-func InitWithSettings(cfgs map[string]interface{}, kp ...encrypt.KeyProvider) {
+func InitWithSettings(cfgs map[string]any, kp ...encrypt.KeyProvider) {
 	Init()
 	DefaultCfgManager = common.InMemoryCfgManager
 	mgr := DefaultMgr()
@@ -122,6 +123,6 @@ func Load(ctx context.Context) error {
 }
 
 // Upload save all configurations, used by testing
-func Upload(cfg map[string]interface{}) error {
+func Upload(cfg map[string]any) error {
 	return DefaultMgr().UpdateConfig(orm.Context(), cfg)
 }

@@ -26,8 +26,8 @@ var (
 	drivers   = map[string]Driver{}
 )
 
-// RefObject type for quota ref object
-type RefObject map[string]interface{}
+// QuotaRefObject type for quota ref object
+type QuotaRefObject map[string]any
 
 // Driver the driver for quota
 type Driver interface {
@@ -36,7 +36,7 @@ type Driver interface {
 	// HardLimits returns default resource list
 	HardLimits(ctx context.Context) types.ResourceList
 	// Load returns quota ref object by key
-	Load(ctx context.Context, key string) (RefObject, error)
+	Load(ctx context.Context, key string) (QuotaRefObject, error)
 	// Validate validate the hard limits
 	Validate(hardLimits types.ResourceList) error
 	// CalculateUsage calculate quota usage by reference id

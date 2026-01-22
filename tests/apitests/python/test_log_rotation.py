@@ -53,7 +53,7 @@ class TestLogRotation(unittest.TestCase, object):
         # 5. Verify purge audit log job status is Success
         job_status = None
         job_id = None
-        for i in range(10):
+        for i in range(20):
             print("wait for the job to finish:", i)
             if job_id == None:
                 latest_job = self.purge.get_latest_purge_job()
@@ -73,18 +73,18 @@ class TestLogRotation(unittest.TestCase, object):
         schedule_type = "Weekly"
         schedule_cron = "0 0 0 * * 0"
         audit_retention_hour = 24
-        include_operations = "create,delete,pull"
-        self.purge.create_purge_schedule(type=schedule_type, cron=schedule_cron, dry_run=False, audit_retention_hour=audit_retention_hour, include_operations=include_operations)
+        include_event_types = "create_artifact,delete_artifact,pull_artifact"
+        self.purge.create_purge_schedule(type=schedule_type, cron=schedule_cron, dry_run=False, audit_retention_hour=audit_retention_hour, include_event_types=include_event_types)
         # 8. Verify schedule
-        self.verifySchedule(schedule_type, schedule_cron, audit_retention_hour, include_operations)
+        self.verifySchedule(schedule_type, schedule_cron, audit_retention_hour, include_event_types)
         # 9. Update schedule
         schedule_type = "Custom"
         schedule_cron = "0 15 10 ? * *"
         audit_retention_hour = 12
-        include_operations = "create,delete"
-        self.purge.update_purge_schedule(type=schedule_type, cron=schedule_cron, audit_retention_hour=audit_retention_hour, include_operations=include_operations)
+        include_event_types = "create_artifact,delete_artifact"
+        self.purge.update_purge_schedule(type=schedule_type, cron=schedule_cron, audit_retention_hour=audit_retention_hour, include_event_types=include_event_types)
         # 10. Verify schedule
-        self.verifySchedule(schedule_type, schedule_cron, audit_retention_hour, include_operations)
+        self.verifySchedule(schedule_type, schedule_cron, audit_retention_hour, include_event_types)
 
     def testLogRotationAPIPermission(self):
         """
@@ -125,13 +125,13 @@ class TestLogRotation(unittest.TestCase, object):
         # 9. User(UA) should not have permission to update purge schedule API
         self.purge.update_purge_schedule(type="Custom", cron="0 15 10 ? * *", expect_status_code=expect_status_code, expect_response_body=expect_response_body, **USER_CLIENT)
 
-    def verifySchedule(self, schedule_type, schedule_cron, audit_retention_hour, include_operations):
+    def verifySchedule(self, schedule_type, schedule_cron, audit_retention_hour, include_event_types):
         purge_schedule = self.purge.get_purge_schedule()
         job_parameters = json.loads(purge_schedule.job_parameters)
         self.assertEqual(purge_schedule.schedule.type, schedule_type)
         self.assertEqual(purge_schedule.schedule.cron, schedule_cron)
         self.assertEqual(job_parameters["audit_retention_hour"], audit_retention_hour)
-        self.assertEqual(job_parameters["include_operations"], include_operations)
+        self.assertEqual(job_parameters["include_event_types"], include_event_types)
 
 if __name__ == '__main__':
     unittest.main()

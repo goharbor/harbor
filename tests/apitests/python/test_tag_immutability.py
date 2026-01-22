@@ -27,7 +27,7 @@ class TestTagImmutability(unittest.TestCase):
         self.tag_immutability = Tag_Immutability()
         self.project_id, self.project_name, self.user_id, self.user_name = [None] * 4
         self.user_id, self.user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
-        self.USER_CLIENT = dict(with_signature = True, with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password)
+        self.USER_CLIENT = dict(with_immutable_status = True, endpoint = self.url, username = self.user_name, password = self.user_password)
         self.exsiting_rule = dict(selector_repository="rel*", selector_tag="v2.*")
         self.project_id, self.project_name = self.project.create_project(metadata = {"public": "false"}, **self.USER_CLIENT)
 

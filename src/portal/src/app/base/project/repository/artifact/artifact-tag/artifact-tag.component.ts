@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { forkJoin, Observable, of, Subject, Subscription } from 'rxjs';
 import {
@@ -17,6 +30,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -58,6 +72,7 @@ class InitTag {
     styleUrls: ['./artifact-tag.component.scss'],
 })
 export class ArtifactTagComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     @Input() artifactDetails: Artifact;
     @Input() projectName: string;
     @Input() isProxyCacheProject: boolean = false;
@@ -114,7 +129,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             projectName: this.projectName,
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDetails.digest,
-            withSignature: true,
             withImmutableStatus: true,
             q: encodeURIComponent(`name=${name}`),
         };
@@ -165,7 +179,6 @@ export class ArtifactTagComponent implements OnInit, OnDestroy {
             repositoryName: dbEncodeURIComponent(this.repositoryName),
             reference: this.artifactDetails.digest,
             page: pageNumber,
-            withSignature: true,
             withImmutableStatus: true,
             pageSize: this.pageSize,
             sort: getSortingString(state),

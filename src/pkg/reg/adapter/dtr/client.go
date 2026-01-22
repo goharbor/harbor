@@ -46,14 +46,17 @@ func NewClient(registry *model.Registry) *Client {
 		password: registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(registry.Insecure),
+					common_http.WithCACert(registry.CACertificate),
+				),
 			}),
 	}
 	return client
 }
 
 // getAndIteratePagination will iterator over a paginated response from DTR
-func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) getAndIteratePagination(endpoint string, v any) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err

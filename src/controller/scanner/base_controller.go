@@ -17,6 +17,7 @@ package scanner
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -35,8 +36,8 @@ import (
 
 const (
 	proScannerMetaKey = "projectScanner"
-	statusUnhealthy   = "unhealthy"
-	statusHealthy     = "healthy"
+	StatusUnhealthy   = "unhealthy"
+	StatusHealthy     = "healthy"
 	// RetrieveCapFailMsg the message indicate failed to retrieve the scanner capabilities
 	RetrieveCapFailMsg = "failed to retrieve scanner capabilities, error %v"
 )
@@ -286,9 +287,9 @@ func (bc *basicController) GetRegistrationByProject(ctx context.Context, project
 		if err != nil {
 			// Not blocked, just logged it
 			log.Error(errors.Wrap(err, "api controller: get project scanner"))
-			registration.Health = statusUnhealthy
+			registration.Health = StatusUnhealthy
 		} else {
-			registration.Health = statusHealthy
+			registration.Health = StatusHealthy
 			// Fill in some metadata
 			registration.Adapter = meta.Scanner.Name
 			registration.Vendor = meta.Scanner.Vendor
@@ -362,7 +363,7 @@ func (bc *basicController) getScannerAdapterMetadataWithCache(ctx context.Contex
 	key := fmt.Sprintf("reg:%d:metadata", registration.ID)
 
 	var result MetadataResult
-	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (interface{}, error) {
+	err := cache.FetchOrSave(ctx, bc.Cache(), key, &result, func() (any, error) {
 		meta, err := bc.getScannerAdapterMetadata(registration)
 		if err != nil {
 			return &MetadataResult{Error: err.Error()}, nil
@@ -383,13 +384,7 @@ var (
 )
 
 func isReservedName(name string) bool {
-	for _, reservedName := range reservedNames {
-		if name == reservedName {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(reservedNames, name)
 }
 
 // MetadataResult metadata or error saved in cache

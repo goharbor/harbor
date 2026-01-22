@@ -38,6 +38,7 @@ import {
 import { RetentionService } from '../../../../../../ng-swagger-gen/services/retention.service';
 import { RetentionPolicy } from '../../../../../../ng-swagger-gen/models/retention-policy';
 import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 const MIN = 60000;
 const SEC = 1000;
@@ -61,6 +62,7 @@ const DECORATION = {
     styleUrls: ['./tag-retention.component.scss'],
 })
 export class TagRetentionComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;

@@ -119,12 +119,12 @@ func (g StatisticsCollector) getPublicProjectsAndRepositories(ctx context.Contex
 	if pubProjectsAmount == 0 {
 		return pubProjectsAmount, 0
 	}
-	var ids []interface{}
+	var ids []any
 	for _, p := range pubProjects {
 		ids = append(ids, p.ProjectID)
 	}
 	n, err := g.repoCtl.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": q.NewOrList(ids),
 		},
 	})

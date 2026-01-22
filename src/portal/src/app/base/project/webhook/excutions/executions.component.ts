@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, Input, OnDestroy } from '@angular/core';
 import { WebhookPolicy } from '../../../../../../ng-swagger-gen/models/webhook-policy';
 import { finalize } from 'rxjs/operators';
@@ -17,6 +30,7 @@ import {
     TIME_OUT,
 } from '../../p2p-provider/p2p-provider.service';
 import { ProjectWebhookService, VendorType } from '../webhook.service';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-executions',
@@ -32,6 +46,7 @@ export class ExecutionsComponent implements OnDestroy {
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.WEBHOOK_EXECUTIONS_COMPONENT
     );
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     total: number = 0;
     state: ClrDatagridStateInterface;
     timeout: any;

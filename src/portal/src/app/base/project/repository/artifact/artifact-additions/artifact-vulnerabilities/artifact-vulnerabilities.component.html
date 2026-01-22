@@ -64,6 +64,9 @@
             <clr-dg-column [clrDgSortBy]="cvssSort">{{
                 'VULNERABILITY.GRID.CVSS3' | translate
             }}</clr-dg-column>
+            <clr-dg-column>{{
+                'VULNERABILITY.GRID.COLUMN_STATUS' | translate
+            }}</clr-dg-column>
             <clr-dg-column [clrDgField]="'package'">{{
                 'VULNERABILITY.GRID.COLUMN_PACKAGE' | translate
             }}</clr-dg-column>
@@ -154,6 +157,7 @@
                         <div class="clr-col">{{ item?.value?.V3Score }}</div>
                     </div>
                 </clr-dg-cell>
+                <clr-dg-cell>{{ res.status }}</clr-dg-cell>
                 <clr-dg-cell>{{ res.package }}</clr-dg-cell>
                 <clr-dg-cell>{{ res.version }}</clr-dg-cell>
                 <clr-dg-cell>
@@ -193,9 +197,12 @@
                     #pagination
                     [clrDgPageSize]="pageSize"
                     [clrDgTotalItems]="scanningResults?.length">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
                     <span *ngIf="scanningResults?.length"
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}

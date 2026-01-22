@@ -44,6 +44,7 @@ type OIDCSetting struct {
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
 	ExtraRedirectParms map[string]string `json:"extra_redirect_parms"`
+	Logout             bool              `json:"logout"`
 }
 
 // QuotaSetting wraps the settings for Quota
@@ -69,8 +70,8 @@ func (ce *ConfigEntry) TableName() string {
 
 // Value ...
 type Value struct {
-	Val      interface{} `json:"value"`
-	Editable bool        `json:"editable"`
+	Val      any  `json:"value"`
+	Editable bool `json:"editable"`
 }
 
 // LdapConf holds information about ldap configuration

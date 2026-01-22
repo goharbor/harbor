@@ -1,14 +1,13 @@
 # Harbor
-
-[![CI](https://github.com/goharbor/harbor/workflows/CI/badge.svg?branch=main&event=push)](https://github.com/goharbor/harbor/actions?query=event%3Apush+branch%3Amain+workflow%3ACI+)
-[![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/main/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
+[![CI](https://github.com/goharbor/harbor/actions/workflows/CI.yml/badge.svg)](https://github.com/goharbor/harbor/actions/workflows/CI.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goharbor/harbor)](https://goreportcard.com/report/github.com/goharbor/harbor)
+[![Coverage Status](https://codecov.io/gh/goharbor/harbor/branch/main/graph/badge.svg)](https://codecov.io/gh/goharbor/harbor)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/792fe1755edc4d6e91f4c3469f553389)](https://www.codacy.com/gh/goharbor/harbor/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
 ![Code scanning - action](https://github.com/goharbor/harbor/workflows/Code%20scanning%20-%20action/badge.svg)
-[![Nightly Status](https://us-central1-eminent-nation-87317.cloudfunctions.net/harbor-nightly-result)](https://www.googleapis.com/storage/v1/b/harbor-nightly/o)
-![CONFORMANCE_TEST](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
+![OCI Distribution Conformance Tests](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
+[![Helm Chart on Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor)](https://artifacthub.io/packages/helm/harbor/harbor)
 </br>
 
 |![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
@@ -18,7 +17,7 @@
 </br> </br>
 
 **Note**: The `main` branch may be in an *unstable or even broken state* during development.
-Please use [releases](https://github.com/vmware/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
+Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
 
 <img alt="Harbor" src="https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png">
 
@@ -52,16 +51,35 @@ For learning the architecture design of Harbor, check the document [Architecture
   * Part 1: [New or changed APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml)
 
 ## Install & Run
-
 **System requirements:**
 
 **On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
+Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
 Refer to the **[documentation](https://goharbor.io/docs/)** for more details on how to use Harbor.
+### Verifying Release Signatures
+Starting with v2.15.0, Harbor release artifacts are cryptographically signed using Cosign to ensure authenticity and integrity.
+
+Download the installers and signature bundles from the Harbor releases page.
+
+#### Quick Verification
+```bash
+# Install Cosign (v2.0+)
+brew install sigstore/tap/cosign
+
+# Verify signature
+cosign verify-blob \
+  --bundle harbor-offline-installer-v2.15.0.tgz.sigstore.json \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/publish_release.yml@refs/tags/v.*$' \
+  harbor-offline-installer-v2.15.0.tgz
+```
+- *Expected output:* Verified OK
+
+- *Full verification guide:* [docs/signature-verification.md](docs/signature-verification.md)
 
 ## OCI Distribution Conformance Tests
 

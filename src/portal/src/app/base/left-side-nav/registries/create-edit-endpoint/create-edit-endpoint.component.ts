@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -303,6 +303,7 @@ export class CreateEditEndpointComponent
             payload.access_key = this.target.credential.access_key;
             payload.access_secret = this.target.credential.access_secret;
             payload.insecure = this.target.insecure;
+            payload.ca_certificate = this.target.ca_certificate;
         } else {
             let changes: { [key: string]: any } = this.getChanges();
             for (let prop of Object.keys(payload)) {

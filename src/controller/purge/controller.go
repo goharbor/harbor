@@ -68,11 +68,11 @@ func (c *controller) Stop(ctx context.Context, id int64) error {
 }
 
 func (c *controller) Start(ctx context.Context, policy JobPolicy, trigger string) (int64, error) {
-	para := make(map[string]interface{})
+	para := make(map[string]any)
 
 	para[common.PurgeAuditDryRun] = policy.DryRun
 	para[common.PurgeAuditRetentionHour] = policy.RetentionHour
-	para[common.PurgeAuditIncludeOperations] = policy.IncludeOperations
+	para[common.PurgeAuditIncludeEventTypes] = policy.IncludeEventTypes
 
 	execID, err := c.exeMgr.Create(ctx, job.PurgeAuditVendorType, -1, trigger, para)
 	if err != nil {

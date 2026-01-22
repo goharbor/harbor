@@ -35,7 +35,7 @@ type Report struct {
 	vulnerabilityItemList *VulnerabilityItemList
 
 	// SBOM sbom content
-	SBOM map[string]interface{} `json:"sbom,omitempty"`
+	SBOM map[string]any `json:"sbom,omitempty"`
 }
 
 // GetVulnerabilityItemList returns VulnerabilityItemList from the Vulnerabilities of report
@@ -206,6 +206,8 @@ type VulnerabilityItem struct {
 	FixVersion string `json:"fix_version"`
 	// A standard scale for measuring the severity of a vulnerability.
 	Severity Severity `json:"severity"`
+	// The status of the vulnerability.
+	Status string `json:"status"`
 	// example: dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program
 	// and does not offer a protection mechanism for blank-indented diff hunks, which allows remote
 	// attackers to conduct directory traversal attacks via a crafted Debian source package, as
@@ -225,7 +227,7 @@ type VulnerabilityItem struct {
 	CWEIds []string `json:"cwe_ids"`
 	// A collection of vendor specific attributes for the vulnerability item
 	// with each attribute represented as a key-value pair.
-	VendorAttributes map[string]interface{} `json:"vendor_attributes"`
+	VendorAttributes map[string]any `json:"vendor_attributes"`
 }
 
 // Key returns the uniq key for the item

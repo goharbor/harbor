@@ -315,6 +315,50 @@
                     !currentConfig?.audit_log_forward_endpoint?.editable
                 " />
         </clr-input-container>
+        <div class="clr-form-control">
+            <label for="disableAuditLogEventList" class="clr-control-label">
+                {{ 'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP'
+                                | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <div *ngIf="logEventTypes.length === 0">
+                {{ 'CLEARANCES.AUDIT_LOG_EVENT_TYPE_EMPTY' | translate }}
+            </div>
+            <div class="clr-control-container audit-log-type">
+                <div
+                    class="clr-checkbox-wrapper float-left"
+                    *ngFor="let item of logEventTypes">
+                    <input
+                        type="checkbox"
+                        id="{{ item.id }}"
+                        name="logEventTypes"
+                        value="{{ item.value }}"
+                        class="clr-checkbox"
+                        [disabled]="
+                            !currentConfig?.disabled_audit_log_event_types
+                                ?.editable
+                        "
+                        (change)="setLogEventType(item.value)"
+                        [checked]="hasLogEventType(item.value)" />
+                    <label for="{{ item.id }}" class="clr-control-label">{{
+                        item.label
+                    }}</label>
+                </div>
+            </div>
+        </div>
         <clr-checkbox-container class="center">
             <label for="skipAuditLogDatabase"
                 >{{ 'CLEARANCES.SKIP_DATABASE' | translate }}

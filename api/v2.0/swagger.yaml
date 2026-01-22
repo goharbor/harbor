@@ -336,6 +336,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -997,12 +999,6 @@ paths:
           type: boolean
           required: false
           default: false
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
@@ -1193,7 +1189,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1226,7 +1222,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -1280,7 +1276,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -1313,12 +1309,6 @@ paths:
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the returning tags
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the returning tags
@@ -1461,7 +1451,14 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
+          enum:
+            - build_history
+            - values.yaml
+            - readme.md
+            - dependencies
+            - sbom
+            - license
+            - files
           required: true
       responses:
         '200':
@@ -1723,9 +1720,9 @@ paths:
           $ref: '#/responses/500'
   /audit-logs:
     get:
-      summary: Get recent logs of the projects which the user is a member of
+      summary: Get recent logs of projects which the user is a member with project admin role, or return all audit logs for system admin user (deprecated)
       description: |
-        This endpoint let user see the recent operation logs of the projects which he is member of
+        This endpoint let the user see the recent operation logs of projects which the user is a member with project admin role,, or return all audit logs for system admin user, it only query the audit log in previous version.
       tags:
         - auditlog
       operationId: listAuditLogs
@@ -1755,10 +1752,63 @@ paths:
           $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
+  /auditlog-exts:
+    get:
+      summary: Get recent logs of the projects which the user is a member with project_admin role, or return all audit logs for system admin user
+      description: |
+        This endpoint let user see the recent operation logs of the projects which he is member with project_admin role, or return all audit logs for system admin user.
+      tags:
+        - auditlog
+      operationId: listAuditLogExts
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogExt'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /auditlog-exts/events:
+    get:
+      summary: Get all event types of audit log
+      description: |
+        Get all event types of audit log
+      tags:
+        - auditlog
+      operationId: listAuditLogEventTypes
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogEventType'
+        '401':
+          $ref: '#/responses/401'
   /projects/{project_name}/logs:
     get:
-      summary: Get recent logs of the projects
-      description: Get recent logs of the projects
+      summary: Get recent logs of the projects (deprecated)
+      description: Get recent logs of the projects, it only query the previous version's audit log
       tags:
         - project
       operationId: getLogs
@@ -1783,6 +1833,40 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/auditlog-exts:
+    get:
+      summary: Get recent logs of the projects
+      description: Get recent logs of the projects
+      tags:
+        - project
+      operationId: getLogExts
+      parameters:
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogExt'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -2341,160 +2425,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ProviderUnderProject'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /projects/{project_name_or_id}/robots:
-    get:
-      summary: Get all robot accounts of specified project
-      description: Get all robot accounts of specified project
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/page'
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/query'
-        - $ref: '#/parameters/sort'
-      tags:
-        - robotv1
-      operationId: ListRobotV1
-      responses:
-        '200':
-          description: Success
-          headers:
-            X-Total-Count:
-              description: The total count of robot accounts
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Robot'
-        '400':
-          $ref: '#/responses/400'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    post:
-      summary: Create a robot account
-      description: Create a robot account
-      tags:
-        - robotv1
-      operationId: CreateRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - name: robot
-          in: body
-          description: The JSON object of a robot account.
-          required: true
-          schema:
-            $ref: '#/definitions/RobotCreateV1'
-      responses:
-        '201':
-          description: Created
-          headers:
-            X-Request-Id:
-              description: The ID of the corresponding request for the response
-              type: string
-            Location:
-              description: The location of the resource
-              type: string
-          schema:
-            $ref: '#/definitions/RobotCreated'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /projects/{project_name_or_id}/robots/{robot_id}:
-    get:
-      summary: Get a robot account
-      description: This endpoint returns specific robot account information by robot ID.
-      tags:
-        - robotv1
-      operationId: GetRobotByIDV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-      responses:
-        '200':
-          description: Return matched robot information.
-          schema:
-            $ref: '#/definitions/Robot'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    put:
-      summary: Update status of robot account.
-      description: Used to disable/enable a specified robot account.
-      tags:
-        - robotv1
-      operationId: UpdateRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-        - name: robot
-          in: body
-          description: The JSON object of a robot account.
-          required: true
-          schema:
-            $ref: '#/definitions/Robot'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '409':
-          $ref: '#/responses/409'
-        '500':
-          $ref: '#/responses/500'
-    delete:
-      summary: Delete a robot account
-      description: This endpoint deletes specific robot account information by robot ID.
-      tags:
-        - robotv1
-      operationId: DeleteRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-      responses:
-        '200':
-          $ref: '#/responses/200'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -3101,6 +3031,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -3632,6 +3564,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -4070,6 +4004,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -4565,7 +4501,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -4595,7 +4531,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -6210,6 +6146,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -6553,7 +6490,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Errors'    
+      $ref: '#/definitions/Errors'
   '500':
     description: Internal server error
     headers:
@@ -6759,6 +6696,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -6996,6 +6943,43 @@ definitions:
         format: date-time
         example: '2006-01-02T15:04:05Z'
         description: The time when this operation is triggered.
+  AuditLogExt:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the audit log entry.
+      username:
+        type: string
+        description: The username of the operator in this log entry.
+      resource:
+        type: string
+        description: Name of the resource in this log entry.
+      resource_type:
+        type: string
+        description: Type of the resource in this log entry.
+      operation:
+        type: string
+        description: The operation against the resource in this log entry.
+      operation_description:
+        type: string
+        description: The operation's detail description
+      operation_result:
+        type: boolean
+        x-omitempty: false
+        description: the operation's result, true for success, false for fail
+      op_time:
+        type: string
+        format: date-time
+        example: '2006-01-02T15:04:05Z'
+        description: The time when this operation is triggered.
+  AuditLogEventType:
+    type: object
+    properties:
+      event_type:
+        type: string
+        description: the event type, such as create_user.
+        example: create_user
   Metadata:
     type: object
     properties:
@@ -7095,9 +7079,9 @@ definitions:
         type: boolean
         description: Whether the preheat policy enabled
         x-omitempty: false
-      scope:
+      extra_attrs:
         type: string
-        description: The scope of preheat policy
+        description: The extra attributes of preheat policy
       creation_time:
         type: string
         format: date-time
@@ -7347,6 +7331,10 @@ definitions:
         type: string
         description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
         x-nullable: true
+      max_upstream_conn:
+        type: string
+        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -7488,6 +7476,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to skip execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7548,6 +7542,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7593,6 +7591,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7624,6 +7626,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object
@@ -7937,7 +7943,7 @@ definitions:
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
@@ -9100,6 +9106,9 @@ definitions:
       oidc_extra_redirect_parms:
         $ref: '#/definitions/StringConfigItem'
         description: Extra parameters to add when redirect request to OIDC provider
+      oidc_logout:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user session from the OIDC provider
       robot_token_duration:
         $ref: '#/definitions/IntegerConfigItem'
         description: The robot account token duration in days
@@ -9143,6 +9152,9 @@ definitions:
       banner_message:
         $ref: '#/definitions/StringConfigItem'
         description: The banner message for the UI.It is the stringified result of the banner message object
+      disabled_audit_log_event_types:
+        $ref: '#/definitions/StringConfigItem'
+        description: The audit log event types to skip to log in database
   Configurations:
     type: object
     properties:
@@ -9371,6 +9383,11 @@ definitions:
         description: Extra parameters to add when redirect request to OIDC provider
         x-omitempty: true
         x-isnullable: true
+      oidc_logout:
+        type: boolean
+        description: Logout OIDC user session
+        x-omitempty: true
+        x-isnullable: true
       robot_token_duration:
         type: integer
         description: The robot account token duration in days
@@ -9419,6 +9436,11 @@ definitions:
       banner_message:
         type: string
         description: The banner message for the UI.It is the stringified result of the banner message object
+        x-omitempty: true
+        x-isnullable: true
+      disabled_audit_log_event_types:
+        type: string
+        description: the list to disable log audit event types. 
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:
@@ -10085,6 +10107,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float
