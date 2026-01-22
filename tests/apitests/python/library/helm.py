@@ -12,5 +12,9 @@ def helm_package(file_path):
     base.run_command(command)
 
 def helm_push(file_path, ip, project_name):
-    command = ["helm", "push", file_path, "oci://{}/{}".format(ip, project_name), "--insecure-skip-tls-verify"]
+    allow_insecure = base.getenv_bool("ALLOW_INSECURE", default=True)
+    if allow_insecure:
+        command = ["helm", "push", file_path, "oci://{}/{}".format(ip, project_name), "--insecure-skip-tls-verify"]
+    else:
+        command = ["helm", "push", file_path, "oci://{}/{}".format(ip, project_name)]
     base.run_command(command)
