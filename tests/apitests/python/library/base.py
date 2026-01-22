@@ -3,12 +3,16 @@ import os
 import subprocess
 import time
 
-import v2_swagger_client
+import importlib
 
 try:
     from urllib import getproxies
 except ImportError:
     from urllib.request import getproxies
+
+def swagger_module():
+        module = importlib.import_module("v2_swagger_client")
+        return module
 
 class Server:
     def __init__(self, endpoint, verify_ssl):
@@ -26,6 +30,7 @@ def get_endpoint():
     return os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0"
 
 def _create_client(server, credential, debug, api_type):
+    v2_swagger_client = swagger_module()
     cfg = v2_swagger_client.Configuration()
     cfg.host = server.endpoint
     cfg.verify_ssl = server.verify_ssl
@@ -101,8 +106,14 @@ def _get_string_from_unicode(udata):
         result = result + tmp.strip('\n\r\t')
     return result
 
+def getenv_bool(name: str, default: bool = False) -> bool:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val.strip().lower() in ( "true", "1")
+
 def restart_process(process):
-    if process == "dockerd":
+    if "dockerd" in process:
         full_process_name = process
     elif process == "containerd":
         full_process_name = "/usr/local/bin/containerd"

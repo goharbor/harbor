@@ -41,6 +41,7 @@ func (g *gcCtrTestSuite) TestStart() {
 	dataMap := make(map[string]any)
 	p := Policy{
 		DeleteUntagged: true,
+		DeleteTag:      true,
 		ExtraAttrs:     dataMap,
 	}
 	id, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
@@ -149,6 +150,7 @@ func (g *gcCtrTestSuite) TestCreateSchedule() {
 	dataMap := make(map[string]any)
 	p := Policy{
 		DeleteUntagged: true,
+		DeleteTag:      true,
 		ExtraAttrs:     dataMap,
 		Workers:        3,
 	}

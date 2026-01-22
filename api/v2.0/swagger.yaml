@@ -336,6 +336,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -1274,7 +1276,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -3029,6 +3031,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -3560,6 +3564,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -3998,6 +4004,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -6138,6 +6146,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -6687,6 +6696,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -7312,6 +7331,10 @@ definitions:
         type: string
         description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
         x-nullable: true
+      max_upstream_conn:
+        type: string
+        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -7453,6 +7476,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to skip execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7513,6 +7542,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7558,6 +7591,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7589,6 +7626,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object
@@ -10066,6 +10107,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float

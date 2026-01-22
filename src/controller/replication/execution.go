@@ -109,10 +109,37 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
+
+	var count int64
+	// If running executions are found, skip the current execution and mark it as error.
+	if policy.SingleActiveReplication {
+		var err error
+		count, err = c.execMgr.Count(ctx, &q.Query{
+			Keywords: map[string]any{
+				"VendorType": job.ReplicationVendorType,
+				"VendorID":   policy.ID,
+				"Status":     job.RunningStatus.String(),
+			},
+		})
+		if err != nil {
+			return 0, fmt.Errorf("failed to count running executions for policy ID: %d: %v", policy.ID, err)
+		}
+	}
+
 	id, err := c.execMgr.Create(ctx, job.ReplicationVendorType, policy.ID, trigger, extra)
 	if err != nil {
 		return 0, err
 	}
+
+	if policy.SingleActiveReplication {
+		if count > 0 {
+			if err = c.execMgr.MarkError(ctx, id, "Execution skipped: active replication still in progress."); err != nil {
+				return 0, err
+			}
+			return id, nil
+		}
+	}
+
 	// start the replication flow in background
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context

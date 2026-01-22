@@ -22,12 +22,14 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/beego/beego/v2/server/web"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	configCtl "github.com/goharbor/harbor/src/controller/config"
@@ -45,6 +47,7 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/core/session"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
@@ -128,6 +131,9 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 }
 
 func main() {
+	// Start pprof server
+	lib.StartPprof()
+
 	runMode := flag.String("mode", "normal", "The harbor-core container run mode, it could be normal, migrate or skip-migrate, default is normal")
 	flag.Parse()
 
@@ -222,6 +228,10 @@ func main() {
 		log.Error(err)
 	}
 
+	// Allow user to disable writing audit log to db by env while initialize
+	if err := initSkipAuditDBbyEnv(ctx); err != nil {
+		log.Errorf("Failed to initialize SkipAuditDB by ENV: %v", err)
+	}
 	// Init API handler
 	if err := api.Init(); err != nil {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
@@ -355,4 +365,35 @@ func getDefaultScannerName() string {
 		return trivyScanner
 	}
 	return ""
+}
+
+func initSkipAuditDBbyEnv(ctx context.Context) error {
+	var err error
+	skipAuditEnv := false
+	s := os.Getenv("SKIP_LOG_AUDIT_DATABASE")
+	if s != "" {
+		skipAuditEnv, err = strconv.ParseBool(s)
+		if err != nil {
+			log.Warningf("Failed to parse SKIP_LOG_AUDIT_DATABASE to bool with error: %v, Will use SKIP_LOG_AUDIT_DATABASE env as false", err)
+		}
+	}
+	log.Debugf("get SKIP_LOG_AUDIT_DATABASE from Env is %v", skipAuditEnv)
+
+	// get from db
+	mgr := config.GetCfgManager(ctx)
+	cfg, err := mgr.GetItemFromDriver(ctx, common.SkipAuditLogDatabase)
+	if err != nil {
+		return err
+	}
+	// if key not exist in the db, set default ENV value
+	if val, ok := cfg[common.SkipAuditLogDatabase]; !ok {
+		log.Debugf("key SkipAuditLogDatabase do not exist in the db, will initialize as %v", skipAuditEnv)
+		cfg[common.SkipAuditLogDatabase] = skipAuditEnv
+		if err := mgr.UpdateConfig(ctx, cfg); err != nil {
+			return err
+		}
+	} else {
+		log.Debugf("key SkipAuditLogDatabase aleady exist in the db with value %v", val)
+	}
+	return nil
 }

@@ -163,9 +163,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if req.RegistryID == nil {
 		req.Metadata.ProxySpeedKb = nil
+		req.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -387,12 +388,18 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+	hasPerm, err := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
 	}
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+	hasPerm, err = a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, a.getProjectMemberSummary)
 	}
 
@@ -560,9 +567,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if params.Project.Metadata != nil && !p.IsProxy() {
 		params.Project.Metadata.ProxySpeedKb = nil
+		params.Project.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -810,6 +818,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if ps := req.Metadata.ProxySpeedKb; ps != nil {
 			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
 				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
+			}
+		}
+
+		if cnt := req.Metadata.MaxUpstreamConn; cnt != nil {
+			if _, err := strconv.ParseInt(*cnt, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
 			}
 		}
 	}
