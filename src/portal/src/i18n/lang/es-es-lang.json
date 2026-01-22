@@ -242,7 +242,11 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, AWS ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory y Github GHCR.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
@@ -270,7 +274,10 @@
         "SCAN": "Escaneo de vulnerabilidad",
         "AUTOSCAN_TOGGLE": "Escanee automáticamente las imágenes al instante",
         "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto.",
-        "SBOM": "generación de SBOM"
+        "SBOM": "generación de SBOM",
+        "AUTOSBOM_TOGGLE": "Generar SBOM automáticamente en push",
+        "AUTOSBOM_POLICY": "Generar SBOM automáticamente cuando las imágenes se envían al registro del proyecto.",
+        "CONTENT_TRUST_POLICY": "Solo permita la implementación de imágenes verificadas."
     },
     "MEMBER": {
         "NEW_MEMBER": "Nuevo miembro",
@@ -432,6 +439,7 @@
     },
     "GROUP": {
         "GROUP": "Grupo",
+        "NAME": "Nombre",
         "IMPORT_LDAP_GROUP": "Importar Grupo LDAP",
         "IMPORT_HTTP_GROUP": "Nuevo Grupo HTTP",
         "IMPORT_OIDC_GROUP": "Nuevo Grupo OIDC",
@@ -491,6 +499,7 @@
         "RESOURCE_TYPE": "Tipo de Recurso"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Disparador",
         "PUSH_BASED_ONLY": "Solo para replicación push-based",
         "YES": "Si",
         "SECONDS": "Segundos",
@@ -755,6 +764,7 @@
         "SUB_TITLE": "Mostrar"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Habilitados",
         "SECURITY": "Seguridad",
         "TITLE": "Configuración",
         "AUTH": "Autentificación",
@@ -813,7 +823,8 @@
             "HOURLY_CRON": "Ejecutar una vez por hora, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON": "Correr semanal, media noche entre Sat/Sun. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON": "Correr diario, media noche. Equivalente a 0 0 0 * * *.",
-            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "El escáner de vulnerabilidades (por ejemplo, Trivy) no actualizará la \"tiempo último pull\" de la imagen cuando se escanee la imagen."
+            "SKIP_SCANNER_PULL_TIME_TOOLTIP": "El escáner de vulnerabilidades (por ejemplo, Trivy) no actualizará la \"tiempo último pull\" de la imagen cuando se escanee la imagen.",
+            "REPO_TOOLTIP": "Los usuarios no pueden realizar ninguna operación en las imágenes en este modo."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -835,7 +846,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Membresía Grupo",
             "LDAP_GROUP_MEMBERSHIP_INFO": "El atributo indica la pertenencia al grupo LDAP. El valor predeterminado es memberof. En algunos servidores LDAP, podría ser \"esmiembrode\". Este campo no puede estar vacío si necesita habilitar la función relacionada con el grupo LDAP.",
             "GROUP_SCOPE": "Alcance LDAP Grupo Busqueda",
-            "GROUP_SCOPE_INFO": "El ámbito de búsqueda de grupos, selecciona Subárbol por defecto."
+            "GROUP_SCOPE_INFO": "El ámbito de búsqueda de grupos, selecciona Subárbol por defecto.",
+            "GROUP_ATTACH_PARALLEL": "Adjuntar grupo LDAP en paralelo",
+            "GROUP_ATTACH_PARALLEL_INFO": "Habilite esta opción para adjuntar grupos en paralelo y evitar tiempos de espera cuando hay demasiados grupos. Si está deshabilitado, la información del grupo LDAP se adjuntará secuencialmente."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -984,7 +997,8 @@
             "FOOT_ITEMS": "Items",
             "FOOT_OF": "de",
             "IN_ALLOW_LIST": "Incluido en la lista de permitidos de CVE",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Estado"
         },
         "CHART": {
             "SCANNING_TIME": "Tiempo total escaneo:",
@@ -1162,6 +1176,9 @@
         "ADD_GROUP": "Agregar miembro grupo",
         "ADD_USER": "Agregar miembro usuario",
         "DELETE_LABEL": "Borrar label",
+        "STOP_EXECUTIONS": "Detener Ejecución",
+        "DELETE_CHART_VERSION": "Borrar Versión Chart",
+        "DELETE_CHART": "Borrar Chart",
         "REPLICATION": "Replicación",
         "DAY_AGO": " día(s) atrás",
         "HOUR_AGO": " hora(s) atrás",
@@ -1515,6 +1532,14 @@
         "CREATE_INSTANCE": "Crear instancia"
     },
     "P2P_PROVIDER": {
+        "DRAGONFLY": {
+            "SCOPE": "Alcance",
+            "SCOPE_SINGLE_SEED_PEER": "Único Seed Peer",
+            "SCOPE_ALL_SEED_PEERS": "Todos los Seed Peers",
+            "SCOPE_ALL_PEERS": "Todos los Peers",
+            "CLUSTER_IDS": "IDs de Cluster",
+            "CLUSTER_IDS_SEPARATOR": "Ingrese múltiples IDs de cluster separados por coma, ej., 1,2,3 (Si está vacío, precalentar todos los clusters)"
+        },
         "P2P_PROVIDER": "P2P Preheat",
         "POLICIES": "Políticas",
         "NEW_POLICY": "NUEVA POLÍTICA",

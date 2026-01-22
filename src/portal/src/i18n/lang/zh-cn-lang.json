@@ -81,6 +81,7 @@
         "EMPTY": "名称为必填项",
         "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
         "OIDC_ENDPOINT_FORMAT": "Endpoint必须以https://开头。",
+        "REPO_TOOLTIP": "在此模式下，用户无法对镜像执行任何操作。",
         "OIDC_NAME": "OIDC提供商的名称。",
         "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
@@ -240,7 +241,11 @@
         "PROXY_CACHE": "镜像代理",
         "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
         "ENDPOINT": "地址",
-        "PROXY_CACHE_ENDPOINT": "镜像代理地址"
+        "PROXY_CACHE_ENDPOINT": "镜像代理地址",
+        "CONNECTION_LIMIT": "上游仓库最大连接数",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "此镜像代理项目到上游仓库的最大连接数，如果为 -1 则不限制",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "请输入 -1 或大于 0 的整数。",
+        "NO_PROJECT": "未找到任何项目"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
@@ -268,7 +273,10 @@
         "SCAN": "漏洞扫描",
         "AUTOSCAN_TOGGLE": "自动扫描镜像",
         "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描",
-        "SBOM": "生成软件物料清单"
+        "SBOM": "生成软件物料清单",
+        "AUTOSBOM_TOGGLE": "推送时自动生成 SBOM",
+        "AUTOSBOM_POLICY": "当镜像推送到项目仓库时自动生成 SBOM。",
+        "CONTENT_TRUST_POLICY": "仅允许部署经过验证的镜像。"
     },
     "MEMBER": {
         "NEW_MEMBER": "新建成员",
@@ -337,6 +345,7 @@
         "EXPORT_TO_FILE": "导出到文件中",
         "EXPIRES_AT": "到期日",
         "INVALID_VALUE": "无效的过期日期",
+        "QUOTA": "配额",
         "NEVER_EXPIRED": "永不过期",
         "NAME_PREFIX": "机器人账户名称前缀",
         "NAME_PREFIX_REQUIRED": "机器人账户名称前缀为必填项",
@@ -489,6 +498,7 @@
         "RESOURCE_TYPE": "资源类型"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "触发器",
         "PUSH_BASED_ONLY": "仅针对于 Push-Based 模式下的复制操作",
         "YES": "是",
         "SECONDS": "秒",
@@ -667,9 +677,9 @@
         "DELETED_SUCCESS": "成功删除目标。",
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
-        "PLACEHOLDER": "未发现任何复制目标!"
+        "PLACEHOLDER": "未发现任何复制目标!",
         "CA_CERTIFICATE": "CA 证书",
-        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以验证仓库的 TLS 证书。留空将使用系统 CA 池。此字段仅在启用"验证远程证书"时可用。",
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以验证仓库的 TLS 证书。留空将使用系统 CA 池。此字段仅在启用\"验证远程证书\"时可用。",
         "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。如果留空，Harbor 将使用系统 CA 池。"
     },
     "REPOSITORY": {
@@ -753,6 +763,7 @@
         "SUB_TITLE": "显示"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks 已启用",
         "SECURITY": "安全",
         "TITLE": "配置",
         "AUTH": "认证模式",
@@ -985,7 +996,8 @@
             "FOOT_ITEMS": "项目",
             "FOOT_OF": "总共",
             "IN_ALLOW_LIST": "已入特赦名单",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "状态"
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
@@ -1164,6 +1176,8 @@
         "ADD_USER": "添加用户成员",
         "DELETE_LABEL": "删除标签",
         "REPLICATION": "复制",
+        "DELETE_CHART_VERSION": "删除 Chart 版本",
+        "DELETE_CHART": "删除 Chart",
         "DAY_AGO": "天前",
         "HOUR_AGO": "小时前",
         "MINUTE_AGO": "分钟前",
