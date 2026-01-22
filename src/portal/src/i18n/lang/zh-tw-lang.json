@@ -239,7 +239,10 @@
         "PROXY_CACHE": "代理快取",
         "PROXY_CACHE_TOOLTIP": "啟用此選項，可讓此專案作為特定目標 Registry 執行個體的通透快取。Harbor 僅能代理 DockerHub、Docker Registry、Harbor、AWS ECR、Azure ACR、阿里雲 ACR、Quay、Google GCR、GitHub GHCR 及 JFrog Artifactory。",
         "ENDPOINT": "端點",
-        "PROXY_CACHE_ENDPOINT": "代理快取端點"
+        "PROXY_CACHE_ENDPOINT": "代理快取端點",
+        "CONNECTION_LIMIT": "Connection limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",

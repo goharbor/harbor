@@ -241,7 +241,10 @@
         "PROXY_CACHE": "Cache proxy",
         "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
         "ENDPOINT": "Endpoint",
-        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache"
+        "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
+        "CONNECTION_LIMIT": "Connection limit",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Maximum number of concurrent connections to the upstream server",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Enter upstream connection limit"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
