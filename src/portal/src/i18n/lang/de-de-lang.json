@@ -241,7 +241,11 @@
         "PROXY_CACHE": "Proxy Cache",
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
         "ENDPOINT": "Endpunkt",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt"
+        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
+        "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
@@ -269,7 +273,10 @@
         "SCAN": "Scannen auf Schwachstellen",
         "AUTOSCAN_TOGGLE": "Images automatisch beim Hochladen scannen",
         "AUTOSCAN_POLICY": "Scanne Images automatisch, wenn sie in das Projekt hochgeladen werden.",
-        "SBOM": "SBOM generation"
+        "SBOM": "SBOM generation",
+        "AUTOSBOM_TOGGLE": "SBOM automatisch beim Hochladen generieren",
+        "AUTOSBOM_POLICY": "Automatisch SBOM generieren, wenn Bilder in die Projektregistrierung hochgeladen werden.",
+        "CONTENT_TRUST_POLICY": "Erlaube ausschließlich verifizierte Images."
     },
     "MEMBER": {
         "NEW_MEMBER": "Neues Mitglied",
@@ -491,6 +498,7 @@
         "RESOURCE_TYPE": "Ressourcen-Typ"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "Trigger",
         "PUSH_BASED_ONLY": "Only for the push-based replication",
         "YES": "Ja",
         "SECONDS": "Sekunden",
@@ -753,6 +761,7 @@
         "SUB_TITLE": "Zeige"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks aktiviert",
         "SECURITY": "Security",
         "TITLE": "Konfiguration",
         "AUTH": "Authentifizierung",
@@ -834,7 +843,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Gruppenmitgliedschaft",
             "LDAP_GROUP_MEMBERSHIP_INFO": "Dass Attribut, das die Mitglieder einer LDAP-Gruppe identifiziert. Standardwert ist memberof, in manchen LDAP Servern kann es \"ismemberof\" sein. Das Feld darf nicht leer sein, sofern eine LDAP Gruppen Funktion eingesetzt wird.",
             "GROUP_SCOPE": "LDAP Gruppen Search Scope",
-            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree."
+            "GROUP_SCOPE_INFO": "Der Scope mit dem nach Gruppen gesucht wird. Standard ist Subtree.",
+            "GROUP_ATTACH_PARALLEL": "LDAP Gruppen parallel anhängen",
+            "GROUP_ATTACH_PARALLEL_INFO": "Aktivieren Sie diese Option, um Gruppen parallel anzuhängen und Zeitüberschreitungen bei zu vielen Gruppen zu vermeiden. Falls deaktiviert, werden die LDAP-Gruppeninformationen sequentiell angehängt."
         },
         "UAA": {
             "ENDPOINT": "UAA Endpunkt",
@@ -983,7 +994,8 @@
             "FOOT_ITEMS": "Elemente",
             "FOOT_OF": "von",
             "IN_ALLOW_LIST": "In CVE Allowliste enthalten",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "Status"
         },
         "CHART": {
             "SCANNING_TIME": "Scan abgeschlossen um:",
