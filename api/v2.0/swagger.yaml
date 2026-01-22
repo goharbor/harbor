@@ -1276,7 +1276,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -6696,6 +6696,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
