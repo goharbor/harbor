@@ -18,7 +18,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha1"
+	"crypto/sha1" // nolint:gosec // Required for PBKDF2 legacy compatibility
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
