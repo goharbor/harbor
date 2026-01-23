@@ -52,7 +52,9 @@ func (r *registryAPI) CreateRegistry(ctx context.Context, params operation.Creat
 		Type:        params.Registry.Type,
 		URL:         params.Registry.URL,
 		Insecure:    params.Registry.Insecure,
+		Offline:     params.Registry.Offline,
 	}
+
 	if params.Registry.Credential != nil {
 		registry.Credential = &model.Credential{
 			Type:         params.Registry.Credential.Type,
@@ -142,6 +144,9 @@ func (r *registryAPI) UpdateRegistry(ctx context.Context, params operation.Updat
 		}
 		if params.Registry.Insecure != nil {
 			registry.Insecure = *params.Registry.Insecure
+		}
+		if params.Registry.Offline != nil {
+			registry.Offline = *params.Registry.Offline
 		}
 		if registry.Credential == nil {
 			registry.Credential = &model.Credential{}

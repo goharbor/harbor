@@ -7532,6 +7532,9 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      offline:
+        type: boolean
+        description: Whether this registry is marked as offline.
       description:
         type: string
         description: Description of the registry.
@@ -7576,6 +7579,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      offline:
+        type: boolean
+        description: Whether this registry is marked as offline.
         x-nullable: true
   RegistryPing:
     type: object

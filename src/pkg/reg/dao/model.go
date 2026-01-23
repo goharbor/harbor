@@ -36,6 +36,7 @@ type Registry struct {
 	Insecure       bool      `orm:"column(insecure)"`
 	Description    string    `orm:"column(description)"`
 	Status         string    `orm:"column(health)"`
+	Offline        bool      `orm:"column(offline)"`
 	CreationTime   time.Time `orm:"column(creation_time);auto_now_add"`
 	UpdateTime     time.Time `orm:"column(update_time);auto_now"`
 }

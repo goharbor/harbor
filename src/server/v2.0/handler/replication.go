@@ -499,6 +499,7 @@ func convertRegistry(registry *model.Registry) *models.Registry {
 		Description:  registry.Description,
 		ID:           registry.ID,
 		Insecure:     registry.Insecure,
+		Offline:      registry.Offline,
 		Name:         registry.Name,
 		Status:       registry.Status,
 		Type:         string(registry.Type),
