@@ -516,7 +516,7 @@ func RevokeOIDCRefreshToken(revokeURL, refreshToken, clientID, clientSecret stri
 	data := url.Values{}
 	data.Set("token", refreshToken)
 	data.Set("token_type_hint", "refresh_token")
-	req, err := http.NewRequest("POST", revokeURL, bytes.NewBufferString(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, revokeURL, bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		return errors.Errorf("failed to create request: %v", err)
 	}

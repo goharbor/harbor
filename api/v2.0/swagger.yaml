@@ -7335,6 +7335,10 @@ definitions:
         type: string
         description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
         x-nullable: true
+      proxy_referrer_api:
+        type: string
+        description: 'Whether the proxy cache project should handle API referrer requests. The valid values are "true", "false".'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
