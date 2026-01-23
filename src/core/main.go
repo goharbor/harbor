@@ -88,7 +88,10 @@ const (
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
-	userMgr := pkguser.Mgr
+	return updateInitPasswordWithMgr(ctx, pkguser.Mgr, userID, password)
+}
+
+func updateInitPasswordWithMgr(ctx context.Context, userMgr pkguser.Manager, userID int, password string) error {
 	user, err := userMgr.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
