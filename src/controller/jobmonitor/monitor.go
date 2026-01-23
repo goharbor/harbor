@@ -17,6 +17,7 @@ package jobmonitor
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -278,12 +279,7 @@ func (w *monitorController) ListQueues(ctx context.Context) ([]*jm.Queue, error)
 }
 
 func skippedUnusedJobType(jobType string) bool {
-	for _, t := range skippedJobTypes {
-		if jobType == t {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(skippedJobTypes, jobType)
 }
 
 func (w *monitorController) PauseJobQueues(ctx context.Context, jobType string) error {

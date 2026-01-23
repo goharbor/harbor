@@ -61,7 +61,10 @@ func newAuthorizer(registry *model.Registry) *authorizer {
 	return &authorizer{
 		registry:        registry,
 		innerAuthorizer: auth.NewAuthorizer(username, password, registry.Insecure),
-		client:          &http.Client{Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))},
+		client: &http.Client{Transport: commonhttp.GetHTTPTransport(
+			commonhttp.WithInsecure(registry.Insecure),
+			commonhttp.WithCACert(registry.CACertificate),
+		)},
 	}
 }
 

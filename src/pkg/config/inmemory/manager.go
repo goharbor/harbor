@@ -16,6 +16,8 @@ package inmemory
 
 import (
 	"context"
+	"errors"
+	"maps"
 	"sync"
 
 	"github.com/goharbor/harbor/src/common"
@@ -41,9 +43,7 @@ func (d *Driver) Load(context.Context) (map[string]any, error) {
 	d.Lock()
 	defer d.Unlock()
 	res := make(map[string]any)
-	for k, v := range d.cfgMap {
-		res[k] = v
-	}
+	maps.Copy(res, d.cfgMap)
 	return res, nil
 }
 
@@ -51,10 +51,13 @@ func (d *Driver) Load(context.Context) (map[string]any, error) {
 func (d *Driver) Save(_ context.Context, cfg map[string]any) error {
 	d.Lock()
 	defer d.Unlock()
-	for k, v := range cfg {
-		d.cfgMap[k] = v
-	}
+	maps.Copy(d.cfgMap, cfg)
 	return nil
+}
+
+// TODO
+func (d *Driver) Get(_ context.Context, _ string) (map[string]any, error) {
+	return nil, errors.ErrUnsupported
 }
 
 // NewInMemoryManager create a manager for unit testing, doesn't involve database or REST

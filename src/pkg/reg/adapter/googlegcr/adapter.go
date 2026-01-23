@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 
 	"github.com/opencontainers/go-digest"
 
@@ -195,10 +196,8 @@ func (a adapter) listGcrTagsByRef(repository, reference string) ([]string, strin
 	}
 	// for tag as reference
 	for d, m := range tgs.Manifest {
-		for _, t := range m.Tag {
-			if t == reference {
-				return m.Tag, d, nil
-			}
+		if slices.Contains(m.Tag, reference) {
+			return m.Tag, d, nil
 		}
 	}
 	return nil, "", nil

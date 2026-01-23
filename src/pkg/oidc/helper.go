@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -392,11 +393,8 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 	}
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
 	if len(setting.AdminGroup) > 0 {
-		for _, g := range res.Groups {
-			if g == setting.AdminGroup {
-				res.AdminGroupMember = true
-				break
-			}
+		if slices.Contains(res.Groups, setting.AdminGroup) {
+			res.AdminGroupMember = true
 		}
 	}
 	return res, nil
@@ -404,6 +402,7 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 
 // groupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
 // If the claims does not have the claim defined as k, the second return value will be false, otherwise true
+// Some OIDC providers return groups as a single string when user belongs to one group, so we handle both formats
 func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 	res := make([]string, 0)
 	claimMap := make(map[string]any)
@@ -411,22 +410,36 @@ func groupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
 		log.Errorf("failed to fetch claims, error: %v", err)
 		return res, false
 	}
-	g, ok := claimMap[k].([]any)
-	if !ok {
+
+	claim, exists := claimMap[k]
+	if !exists {
 		if len(strings.TrimSpace(k)) > 0 {
-			log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)
+			log.Warningf("Unable to get groups from claims, claim key not found: %s", k)
 		}
 		return res, false
 	}
-	for _, e := range g {
-		s, ok := e.(string)
-		if !ok {
-			log.Warningf("Element in group list is not string: %v, list: %v", e, g)
-			continue
+
+	// Try to handle as array first (multiple groups)
+	if g, ok := claim.([]any); ok {
+		for _, e := range g {
+			s, ok := e.(string)
+			if !ok {
+				log.Warningf("Element in group list is not string: %v, list: %v", e, g)
+				continue
+			}
+			res = append(res, s)
 		}
-		res = append(res, s)
+		return res, true
 	}
-	return res, true
+
+	// Try to handle as single string (single group)
+	if s, ok := claim.(string); ok {
+		res = append(res, s)
+		return res, true
+	}
+
+	log.Warningf("Unable to get groups from claims, claim is neither string nor array: %v, claims: %+v, groups claim key: %s", claim, claimMap, k)
+	return res, false
 }
 
 type populate func(groupNames []string) ([]int, error)
@@ -503,7 +516,7 @@ func RevokeOIDCRefreshToken(revokeURL, refreshToken, clientID, clientSecret stri
 	data := url.Values{}
 	data.Set("token", refreshToken)
 	data.Set("token_type_hint", "refresh_token")
-	req, err := http.NewRequest("POST", revokeURL, bytes.NewBufferString(data.Encode()))
+	req, err := http.NewRequest(http.MethodPost, revokeURL, bytes.NewBufferString(data.Encode()))
 	if err != nil {
 		return errors.Errorf("failed to create request: %v", err)
 	}

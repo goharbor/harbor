@@ -60,9 +60,7 @@ func ParseRepository(repository string) (project, rest string) {
 		rest = repository
 		return
 	}
-	index := strings.Index(repository, "/")
-	project = repository[0:index]
-	rest = repository[index+1:]
+	project, rest, _ = strings.Cut(repository, "/")
 	return
 }
 
@@ -75,7 +73,7 @@ func GenerateRandomStringWithLen(length int) string {
 	if err != nil {
 		log.Warningf("Error reading random bytes: %v", err)
 	}
-	for i := 0; i < length; i++ {
+	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
 	return string(result)
@@ -307,43 +305,7 @@ func ValidateCronString(cron string) error {
 	return nil
 }
 
-// MostMatchSorter is a sorter for the most match, usually invoked in sort Less function
-// usage:
-//
-//	sort.Slice(input, func(i, j int) bool {
-//		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
-//	})
-//
-// a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
-// the return value is true if a is less than b
-// for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
-// it returns with this order {"user", "users", "admin_user", "harbor_user"}
-func MostMatchSorter(a, b string, matchWord string) bool {
-	// exact match always first
-	if a == matchWord {
-		return true
-	}
-	if b == matchWord {
-		return false
-	}
-	// sort by length, then sort by alphabet
-	if len(a) == len(b) {
-		return a < b
-	}
-	return len(a) < len(b)
-}
-
 // IsLocalPath checks if path is local, includes the empty path
 func IsLocalPath(path string) bool {
 	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
-}
-
-// StringInSlice check if the string is in the slice
-func StringInSlice(str string, slice []string) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
-	}
-	return false
 }

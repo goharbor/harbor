@@ -17,9 +17,12 @@ package registry
 import (
 	"context"
 	"math/rand"
+	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -205,12 +208,49 @@ func (c *controller) GetInfo(ctx context.Context, id int64) (*model.RegistryInfo
 	return info, nil
 }
 
+func getWhitelistedAdapters(ctx context.Context) map[string]struct{} {
+	adapterWhitelistRaw := config.GetCfgManager(ctx).Get(ctx, common.ReplicationAdapterWhiteList).GetString()
+	if adapterWhitelistRaw == "" {
+		return nil
+	}
+	adapterWhitelist := make(map[string]struct{})
+	for adapter := range strings.SplitSeq(adapterWhitelistRaw, ",") {
+		adapter = strings.TrimSpace(adapter)
+		if adapter != "" {
+			adapterWhitelist[adapter] = struct{}{}
+		}
+	}
+	return adapterWhitelist
+}
+
 func (c *controller) ListRegistryProviderTypes(ctx context.Context) ([]string, error) {
-	return c.regMgr.ListRegistryProviderTypes(ctx)
+	allAdapters, err := c.regMgr.ListRegistryProviderTypes(ctx)
+	if err != nil {
+		return []string{}, err
+	}
+	whitelistedAdapters := getWhitelistedAdapters(ctx)
+	var filtered []string
+	for _, t := range allAdapters {
+		if _, ok := whitelistedAdapters[t]; ok {
+			filtered = append(filtered, t)
+		}
+	}
+	return filtered, nil
 }
 
 func (c *controller) ListRegistryProviderInfos(ctx context.Context) (map[string]*model.AdapterPattern, error) {
-	return c.regMgr.ListRegistryProviderInfos(ctx)
+	allAdaptersInfo, err := c.regMgr.ListRegistryProviderInfos(ctx)
+	if err != nil {
+		return nil, err
+	}
+	whitelistedAdapters := getWhitelistedAdapters(ctx)
+	filtered := make(map[string]*model.AdapterPattern)
+	for k, v := range allAdaptersInfo {
+		if _, ok := whitelistedAdapters[k]; ok {
+			filtered[k] = v
+		}
+	}
+	return filtered, nil
 }
 
 func (c *controller) StartRegularHealthCheck(ctx context.Context, closing, done chan struct{}) {

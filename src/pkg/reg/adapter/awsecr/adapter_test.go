@@ -191,10 +191,10 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "ppp",
 		}
 		svc, _ = getAwsSvc(
-			"test-region", registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, &server.URL)
+			"test-region", registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, "", &server.URL)
 	} else {
 		svc, _ = getAwsSvc(
-			"test-region", "", "", registry.Insecure, &server.URL)
+			"test-region", "", "", registry.Insecure, "", &server.URL)
 	}
 	return &adapter{
 		registry: registry,
@@ -301,7 +301,7 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	)
 	defer server.Close()
 	svc, err := getAwsSvc(
-		"test-region", "xxx", "ppp", true, &server.URL)
+		"test-region", "xxx", "ppp", true, "", &server.URL)
 	require.Nil(t, err)
 	a, _ := NewAuth("xxx", svc).(*awsAuthCredential)
 	req := httptest.NewRequest(http.MethodGet, "https://1234.dkr.ecr.test-region.amazonaws.com/v2/", nil)
@@ -329,7 +329,7 @@ func compileRegexpEveryTime(url string) (string, string, error) {
 }
 
 func BenchmarkGetAccountRegion(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, url := range urlForBenchmark {
 			parseAccountRegion(url)
 		}
@@ -337,7 +337,7 @@ func BenchmarkGetAccountRegion(b *testing.B) {
 }
 
 func BenchmarkCompileRegexpEveryTime(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		for _, url := range urlForBenchmark {
 			compileRegexpEveryTime(url)
 		}

@@ -14,7 +14,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 * Chat with us on the CNCF Slack ([get an invitation here][cncf-slack] )
   * [#harbor][users-slack] for end-user discussions
   * [#harbor-dev][dev-slack] for development of Harbor
-* Want long-form communication instead of Slack? We have two distributions lists:
+* Want long-form communication instead of Slack? We have two distribution lists:
   * [harbor-users][users-dl] for end-user discussions
   * [harbor-dev][dev-dl] for development of Harbor
 
@@ -49,7 +49,7 @@ To build the project, please refer the [build](https://goharbor.io/docs/edge/bui
 
 ### Repository Structure
 
-Here is the basic structure of the harbor code base. Some key folders / files are commented for your references.
+Here is the basic structure of the Harbor code base. Some key folders / files are commented for your reference.
 ```
 .
 ...
@@ -168,13 +168,14 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 | 2.11   | 1.22.3      |
 | 2.12   | 1.23.2      |
 | 2.13   | 1.23.8      |
+| 2.14   | 1.24.6      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
 #### Web
 
-Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup web UI development environment, please make sure the [npm](https://www.npmjs.com/get-npm) tool is installed first.
+Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup a web UI development environment, please make sure that the [npm](https://www.npmjs.com/get-npm) tool is installed first.
 
 |  Harbor  |  Requires Angular  |  Requires Clarity  |
 |----------|--------------------|--------------------|
@@ -204,7 +205,7 @@ PR are always welcome, even if they only contain small fixes like typos or a few
 
 Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot of features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to `main` will not break anything. Otherwise, it can not be merged until this feature complete.
+Note: If you split your pull request to small changes, please make sure any of the changes goes to `main` will not break anything. Otherwise, it can not be merged until this feature completed.
 
 ### Fork and clone
 
@@ -260,8 +261,48 @@ go list ./... | grep -v -E 'tests' | xargs -L1 fgt golint
 
 ```
 
-Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
+## Recommended Make Commands
 
+Harbor provides a Makefile-driven developer workflow. Use these commands during development and testing.
+
+### Testing & Validation
+```sh
+make go_check      # Run tests, API generation, lint, vet, race, spell checks
+```
+
+### Build Specific Services
+```sh
+make compile_core        # Build the core Harbor service binary
+make compile_jobservice  # Build the jobservice binary (for background jobs)
+make compile_registryctl # Build the registryctl binary (for registry management)
+```
+
+### TLS / Cert Generation
+```sh
+make gen_tls                     # Only generate TLS certificates
+```
+
+### Cleanup & Reset
+```sh
+make cleanall       # Remove all binaries, images, and generated configs
+make cleanbinary    # Remove only compiled binaries
+make cleanimage     # Remove only built Docker images
+make cleanconfig    # Remove only generated configuration files
+```
+
+---
+
+### Running Tests
+
+Before submitting a pull request, you should ensure that your changes are well-tested.  
+Harbor uses separate testing frameworks for backend services and the web UI:
+
+- **Backend (Go) services**: Use the built-in `go testing` framework.  
+- **Web UI (Angular/Clarity)**: Use [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html).
+
+It is recommended to run all tests locally to catch issues early before creating a PR.
+
+Unit test cases should be added to cover the new code. 
 Run go test cases:
 ```sh
 #cd #working_dir/src/[package]
@@ -278,7 +319,7 @@ To build the code, please refer to [build](https://goharbor.io/docs/edge/build-c
 
 **Note**: from v2.0, Harbor uses [go-swagger](https://github.com/go-swagger/go-swagger) to generate API server from Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)). To add or change the APIs, first update the `api/v2.0/swagger.yaml` file, then run `make gen_apis` to generate the API server, finally, implement or update the API handlers in `src/server/v2.0/handler` package.
 
-As now Harbor uses `controller/manager/dao` programming model, we suggest to use [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add mock config in the `src/.mockery.yaml`, then run `make gen_mocks` to generate mocks.
+As Harbor now uses `controller/manager/dao` programming model, we suggest using [testify mock](https://github.com/stretchr/testify/blob/master/mock/doc.go) to test `controller` and `manager`. Harbor integrates [mockery](https://github.com/vektra/mockery) to generate mocks for golang interfaces using the testify mock package. To generate mocks for the interface, first add mock config in the `src/.mockery.yaml`, then run `make gen_mocks` to generate mocks.
 
 ###  Keep sync with upstream
 
@@ -317,15 +358,15 @@ curl https://cdn.jsdelivr.net/gh/tommarshall/git-good-commit@v0.6.1/hook.sh > .g
 ```
 
 ### Automated Testing
-Once your pull request has been opened, harbor will run two CI pipelines against it.
+Once your pull request has been opened, Harbor will run two CI pipelines against it.
 1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also, all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
-* If the coverage dramatic decline, you need to commit unit test to coverage your code.
-2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
-* Registry Basic Verification, to validate the image can be pulled and pushed successful.
-* Trivy Basic Verification, to validate the image can be scanned successful.
-* Notary Basic Verification, to validate the image can be signed successful.
-* Ldap Basic Verification, to validate harbor can work in LDAP environment.
+* If the coverage dramatically declines, then you need to commit a unit test to cover your code.
+2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of Harbor, like:
+* Registry Basic Verification, to validate that the image can be pulled and pushed successfully.
+* Trivy Basic Verification, to validate that the image can be scanned successfully.
+* Notary Basic Verification, to validate that the image can be signed successfully.
+* Ldap Basic Verification, to validate that Harbor can work in LDAP environment.
 
 ### Push and Create PR
 When ready for review, push your branch to your fork repository on `github.com`:
@@ -344,7 +385,7 @@ Commit changes made in response to review comments to the same branch on your fo
 
 It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on GitHub and follow the template to fill in required information.
 
-Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplication.
+Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplicate.
 If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
 
 When reporting issues, always include:
