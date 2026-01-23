@@ -245,7 +245,9 @@
         "CONNECTION_LIMIT": "Conexão máxima ao repositório remoto",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "A conexão máxima ao repositório remoto para este projeto de cache proxy, se -1, então não há limite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, insira -1 ou um número inteiro maior que 0.",
-        "NO_PROJECT": "Não encontramos nenhum projeto"
+        "NO_PROJECT": "Não encontramos nenhum projeto",
+        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
