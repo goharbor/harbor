@@ -123,6 +123,10 @@ positively or negatively.
 
 For further details please see our complete [security release process](SECURITY.md).
 
+### OpenSSF Scorecard report
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/goharbor/harbor/badge)](https://scorecard.dev/viewer/?uri=github.com/goharbor/harbor)
+
 ## License
 
 Harbor is available under the [Apache 2 license](LICENSE).
