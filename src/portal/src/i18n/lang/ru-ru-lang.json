@@ -259,7 +259,9 @@
         "NO_PROJECT": "Мы не смогли найти никаких проектов",
         "CONNECTION_LIMIT": "Максимальное соединение с вышестоящим реестром",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Максимальное соединение с вышестоящим реестром для этого прокси-кэш проекта, если -1, то ограничения нет",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Пожалуйста, введите -1 или целое число больше 0."
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Пожалуйста, введите -1 или целое число больше 0.",
+        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",

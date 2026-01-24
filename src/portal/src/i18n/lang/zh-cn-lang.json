@@ -245,7 +245,10 @@
         "CONNECTION_LIMIT": "上游仓库最大连接数",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "此镜像代理项目到上游仓库的最大连接数，如果为 -1 则不限制",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "请输入 -1 或大于 0 的整数。",
-        "NO_PROJECT": "未找到任何项目"
+        "NO_PROJECT": "未找到任何项目",
+        "PROXY_CACHE_ENDPOINT": "镜像代理地址",
+        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
