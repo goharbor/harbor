@@ -41,6 +41,9 @@ on:
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
 
+permissions:
+  contents: read
+
 jobs:
   UTTEST:
     env:

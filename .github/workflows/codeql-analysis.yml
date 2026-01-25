@@ -6,10 +6,15 @@ on:
   schedule:
     - cron: '0 16 * * 6'
 
+permissions:
+  contents: read
+
 jobs:
   CodeQL-Build:
 
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
 
     steps:
     - name: Checkout repository

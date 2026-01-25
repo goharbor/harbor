@@ -7,6 +7,9 @@ on:
     branches:
       - main
       - release-*
+
+permissions:
+  contents: read
 jobs:
   BUILD_PACKAGE:
     env:
