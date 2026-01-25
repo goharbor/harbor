@@ -3,7 +3,7 @@ header:
   expiration-date: '2027-01-25T19:00:00.000Z'
   last-updated: '2026-01-25'
   last-reviewed: '2026-01-25'
-  commit-hash: a5301a778f082984e56238c2335d3611b0e739b6
+  commit-hash: 2c02ba7800da05993ce6fc0b86a97d2d7df3f97e
   project-url: https://github.com/goharbor/harbor
   changelog: https://github.com/goharbor/harbor/blob/main/CHANGELOG.md
   license: https://github.com/goharbor/harbor/blob/main/LICENSE
