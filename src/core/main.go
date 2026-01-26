@@ -88,7 +88,10 @@ const (
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
-	userMgr := pkguser.Mgr
+	return updateInitPasswordWithMgr(ctx, pkguser.Mgr, userID, password)
+}
+
+func updateInitPasswordWithMgr(ctx context.Context, userMgr pkguser.Manager, userID int, password string) error {
 	user, err := userMgr.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
@@ -98,10 +101,12 @@ func updateInitPassword(ctx context.Context, userID int, password string) error 
 		if err != nil {
 			return fmt.Errorf("failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
-
 		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
+		if userID == adminUserID && password != "" {
+			log.Warning("Admin password from config (HARBOR_ADMIN_PASSWORD) ignored: password already exists in database. Use Harbor UI or API to change.")
+		}
 	}
 	return nil
 }
