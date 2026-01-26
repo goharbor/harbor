@@ -7,9 +7,6 @@ on:
   pull_request_target:
     types: [opened, reopened, ready_for_review]
 
-permissions:
-  contents: read
-
 jobs:
   # Automatically assigns reviewers and owner
   add-reviews:

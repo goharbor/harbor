@@ -8,12 +8,13 @@ on:
       - main
       - release-*
 
-permissions:
-  contents: read
+
 jobs:
   BUILD_PACKAGE:
     env:
         BUILD_PACKAGE: true
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials

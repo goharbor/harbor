@@ -9,13 +9,12 @@ on:
   schedule:
     - cron: '0 6 * * *'
 
-permissions:
-  contents: read
-
 jobs:
   CONFORMANCE_TEST:
     env:
       CONFORMANCE_TEST: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64

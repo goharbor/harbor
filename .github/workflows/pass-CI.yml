@@ -26,41 +26,50 @@ on:
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
 
-permissions:
-  contents: read
-
 jobs:
   UTTEST:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:
       - run: 'echo "No run required"'
 
   APITEST_DB:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:
       - run: 'echo "No run required"'
 
   APITEST_DB_PROXY_CACHE:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:
       - run: 'echo "No run required"'
 
   APITEST_LDAP:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:
       - run: 'echo "No run required"'
 
   OFFLINE:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:
       - run: 'echo "No run required"'
 
   UI_UT:
+    permissions:
+      contents: read
     runs-on:
       - ubuntu-latest
     steps:

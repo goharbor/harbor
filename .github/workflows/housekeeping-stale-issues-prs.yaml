@@ -3,13 +3,11 @@ on:
   schedule:
     - cron: '0 9 * * *'
 
-permissions:
-  contents: read
-
 jobs:
   stale:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       issues: write
       pull-requests: write
     steps:
