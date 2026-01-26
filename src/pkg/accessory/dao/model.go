@@ -32,6 +32,7 @@ type Accessory struct {
 	SubjectArtifactRepo   string    `orm:"column(subject_artifact_repo)" json:"subject_artifact_repo"`
 	SubjectArtifactDigest string    `orm:"column(subject_artifact_digest)" json:"subject_artifact_digest"`
 	Type                  string    `orm:"column(type)" json:"type"`
+	Source                string    `orm:"column(source)" json:"source"`
 	Size                  int64     `orm:"column(size)" json:"size"`
 	Digest                string    `orm:"column(digest)" json:"digest"`
 	CreationTime          time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
