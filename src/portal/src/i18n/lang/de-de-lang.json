@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
+        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen.",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
