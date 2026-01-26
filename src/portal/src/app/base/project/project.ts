@@ -37,10 +37,12 @@ export class Project {
         retention_id: number;
         bandwidth: number;
         max_upstream_conn: number;
+        proxy_referrer_api: string | boolean;
     };
     constructor() {
         this.metadata = <any>{};
         this.metadata.public = false;
         this.metadata.max_upstream_conn = -1;
+        this.metadata.proxy_referrer_api = false;
     }
 }
