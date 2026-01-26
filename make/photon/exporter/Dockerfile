@@ -30,5 +30,7 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
 
 WORKDIR /harbor
 USER harbor
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -fs http://127.0.0.1:8001/metrics || exit 1
 
 ENTRYPOINT ["/harbor/entrypoint.sh"]
