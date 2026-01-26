@@ -121,6 +121,34 @@
                     </clr-control-error>
                 </div>
             </div>
+            <div class="row-inline ml-2" clrInline>
+                <clr-checkbox-wrapper class="ml-1">
+                    <input
+                        id="proxy_referrer_api"
+                        type="checkbox"
+                        clrCheckbox
+                        [(ngModel)]="projectPolicy.ProxyReferrerAPI"
+                        name="proxy_referrer_api"
+                        [disabled]="!allowUpdateProxyCacheConfiguration" />
+                    <label for="proxy_referrer_api">
+                        {{ 'PROJECT.PROXY_REFERRER_API_LABEL' | translate }}
+                        <clr-tooltip>
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="lg"
+                                *clrIfOpen>
+                                <span>{{
+                                    'PROJECT.PROXY_REFERRER_API_TIP' | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+            </div>
         </div>
 
         <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
