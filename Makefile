@@ -304,7 +304,7 @@ lint_apis:
 	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
 
 SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
-SWAGGER_VERSION=v0.31.0
+SWAGGER_VERSION=v0.32.0
 SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
 SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
