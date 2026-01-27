@@ -124,7 +124,6 @@ positively or negatively.
 
 For further details please see our complete [security release process](SECURITY.md).
 
-
 ## License
 
 Harbor is available under the [Apache 2 license](LICENSE).
