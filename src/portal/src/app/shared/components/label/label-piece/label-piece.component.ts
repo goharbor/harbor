@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, OnChanges } from '@angular/core';
-import { LabelColor } from '../../../entities/shared.const';
 import { Label } from '../../../../../../ng-swagger-gen/models/label';
+import { getTextColorForBackground } from '../../../units/utils';
 
 @Component({
     selector: 'hbr-label-piece',
@@ -25,7 +25,7 @@ export class LabelPieceComponent implements OnChanges {
     @Input() labelWidth: number;
     @Input() hasIcon: boolean = true;
     @Input() withTooltip: boolean = false;
-    labelColor: { [key: string]: string };
+    labelColor: { color: string; textColor: string };
 
     ngOnChanges(): void {
         if (this.label) {
@@ -33,7 +33,11 @@ export class LabelPieceComponent implements OnChanges {
             if (!color) {
                 color = '#FFFFFF';
             }
-            this.labelColor = LabelColor.find(data => data.color === color);
+            // Calculate text color dynamically based on luminance
+            this.labelColor = {
+                color: color,
+                textColor: getTextColorForBackground(color),
+            };
         }
     }
 }

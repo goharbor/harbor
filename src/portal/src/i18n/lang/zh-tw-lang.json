@@ -1121,7 +1121,8 @@
         "DELETION_TITLE_TARGET": "確認刪除標籤",
         "DELETION_SUMMARY_TARGET": "您確定要刪除 {{param}} 嗎？",
         "PLACEHOLDER": "找不到任何標籤！",
-        "NAME_ALREADY_EXISTS": "標籤名稱已存在。"
+        "NAME_ALREADY_EXISTS": "標籤名稱已存在。",
+        "INVALID_COLOR": "無效的十六進制顏色代碼（例如 #RRGGBB 或 #RGB）"
     },
     "QUOTA": {
         "PROJECT": "專案",
