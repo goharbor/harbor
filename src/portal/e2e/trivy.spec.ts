@@ -9,6 +9,36 @@ const ip: string = process.env.IP;
 const user: string = process.env.HARBOR_ADMIN || 'admin';
 const pwd: string = process.env.HARBOR_PASSWORD || 'Harbor12345';
 
+test('Trivy is default scanner and it is immutable', async ({ page }) => {
+  test.setTimeout(60 * 1000); //1 minutes
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // switch to scanners page
+  await page.getByText(' Interrogation Services ').click();
+  await page.getByRole('link', {name: /^Scanners$/i}).click();
+  await expect(page.getByRole('button', {name: ' SET AS DEFAULT '})).toBeVisible();
+
+  // Should display default trivy scanner
+  await expect(page.getByRole('gridcell', {name: 'Trivy Default'})).toBeVisible();
+
+  // Trivy scanner should be immutable
+  const trivyRow = page.getByRole('row').filter({ 
+    has: page.getByRole('gridcell', { name: 'Trivy' }) 
+  });
+  await expect(trivyRow).toBeVisible();
+  await trivyRow.getByRole('gridcell', {name: 'Select'}).click();
+  await page.locator('#action-scanner').click();
+  await page.getByRole('menuitem', {name: 'DELETE'}).click();
+  await page.getByRole('button', {name: 'DELETE'}).click();
+  await expect(page.getByText("registration Trivy is not allowed to delete as it is immutable: scanner API: delete")).toBeVisible();
+})
+
 test('login and scan the things', async ({ page }) => {
   test.setTimeout(60 * 60 * 1000); // 60 minutes
 const tag = 'v2.2.0';
