@@ -21,7 +21,6 @@ import (
 	"sort"
 
 	"github.com/docker/distribution"
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -68,7 +67,6 @@ type ArtifactRegistry interface {
 	CanBeMount(digest string) (mount bool, repository string, err error) // check whether the blob can be mounted from the remote registry
 	DeleteTag(repository, tag string) error
 	ListTags(repository string) (tags []string, err error)
-	ListReferrers(repository, digest, rawQuery string) (*ocispec.Index, map[string][]string, error)
 }
 
 // RegisterFactory registers one adapter factory to the registry
