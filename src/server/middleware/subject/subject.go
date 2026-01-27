@@ -24,6 +24,8 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -41,12 +43,19 @@ var (
 
 	// cosign media type  in config layer, which would support in oci-spec1.1
 	mediaTypeCosignConfig = "application/vnd.dev.cosign.artifact.sig.v1+json"
+	// cosign media type in artifact type (New Format)
+	mediaTypeCosignArtifactType = "application/vnd.dev.sigstore.bundle.v0.3+json"
 
 	// annotation of nydus image
 	layerAnnotationNydusBootstrap = "containerd.io/snapshot/nydus-bootstrap"
 
 	// media type of harbor sbom
 	mediaTypeHarborSBOM = "application/vnd.goharbor.harbor.sbom.v1"
+
+	// source of accessory artifact is local, means the accessory is created by harbor itself
+	sourceLocal = "local"
+	// source of accessory artifact is from proxycache, means the accessory is created by proxycache service
+	sourceProxyCache = "proxycache"
 )
 
 /*
@@ -155,7 +164,7 @@ func Middleware() func(http.Handler) http.Handler {
 				}
 			case mediaTypeNotationLayer:
 				accData.Type = model.TypeNotationSignature
-			case mediaTypeCosignConfig:
+			case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
 				accData.Type = model.TypeCosignSignature
 			case mediaTypeHarborSBOM:
 				accData.Type = model.TypeHarborSBOM
@@ -164,6 +173,13 @@ func Middleware() func(http.Handler) http.Handler {
 				accData.SubArtifactID = subjectArt.ID
 			}
 			if err := orm.WithTransaction(func(ctx context.Context) error {
+				source := sourceLocal
+				securityCtx, exist := security.FromContext(ctx)
+				if !exist && securityCtx != nil && securityCtx.GetUsername() == proxycachesecret.ProxyCacheService {
+					source = sourceProxyCache
+				}
+				logger.Debugf("source: %s", source)
+				accData.Source = source
 				_, err := accessory.Mgr.Create(ctx, accData)
 				return err
 			})(orm.SetTransactionOpNameToContext(ctx, "tx-create-subject-accessory")); err != nil {

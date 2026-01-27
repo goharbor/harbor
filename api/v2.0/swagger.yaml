@@ -1276,7 +1276,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -6696,6 +6696,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -7325,6 +7335,10 @@ definitions:
         type: string
         description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
         x-nullable: true
+      proxy_referrer_api:
+        type: string
+        description: 'Whether to enable proxy cache for OCI 1.1 referrer API. The valid values are "true", "false".'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -7532,6 +7546,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7577,6 +7595,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7608,6 +7630,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object

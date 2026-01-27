@@ -194,7 +194,7 @@ func TestProxyCacheRemoteRepo(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getRemoteRepo(tt.in)
+			got := GetRemoteRepo(tt.in)
 			if got != tt.want {
 				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}
