@@ -1,6 +1,7 @@
 
 import { test, expect } from '@playwright/test';
 import { execSync } from 'child_process';
+import { execArgv } from 'process';
 
 // variables
 const LOCAL_REGISTRY: string = process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
@@ -21,7 +22,7 @@ test('Trivy is default scanner and it is immutable', async ({ page }) => {
 
   // switch to scanners page
   await page.getByText(' Interrogation Services ').click();
-  await page.getByRole('link', {name: /^Scanners$/i}).click();
+  await page.getByRole('link', {name: 'Scanners', exact: true}).click();
   await expect(page.getByRole('button', {name: ' SET AS DEFAULT '})).toBeVisible();
 
   // Should display default trivy scanner
@@ -37,6 +38,50 @@ test('Trivy is default scanner and it is immutable', async ({ page }) => {
   await page.getByRole('menuitem', {name: 'DELETE'}).click();
   await page.getByRole('button', {name: 'DELETE'}).click();
   await expect(page.getByText("registration Trivy is not allowed to delete as it is immutable: scanner API: delete")).toBeVisible();
+})
+
+test('Disable Scan Schedule', async ({ page }) => {
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // switch to vulnerabilities page
+  await page.getByText(' Interrogation Services ').click();
+  await page.getByRole('link', {name: 'Vulnerability', exact: true}).click();
+  await expect(page.getByRole('button', {name: 'SCAN NOW'})).toBeVisible();
+
+  // Disable Scan Schedule
+  await page.getByRole('button', {name: 'EDIT'}).click();
+  const selectPolicyDropDown = page.getByRole('combobox');
+  await selectPolicyDropDown.click();
+  await selectPolicyDropDown.selectOption({value: 'None'});
+  await page.getByRole('button', {name: 'SAVE'}).click();
+
+  // logout
+  await page.goto('/');
+  await page.getByRole('button', { name: 'admin', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'admin', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Log Out' }).click();
+
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // switch to vulnerabilities page
+  await page.getByText(' Interrogation Services ').click();
+  await page.getByRole('link', {name: 'Vulnerability', exact: true}).click();
+  await expect(page.getByRole('button', {name: 'SCAN NOW'})).toBeVisible();
+
+  // check that scan schedule is disabled
+  await expect(page.getByText('None', {exact: true})).toBeVisible();
 })
 
 test('login and scan the things', async ({ page }) => {
