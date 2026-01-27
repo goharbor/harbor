@@ -125,6 +125,8 @@ type Client interface {
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
 	// Do send generic HTTP requests to the target registry service
 	Do(req *http.Request) (*http.Response, error)
+	// ListReferrers return all referrers
+	ListReferrers(repository, ref string, rawQuery string) (*v1.Index, map[string][]string, error)
 }
 
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
@@ -132,17 +134,29 @@ type Client interface {
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	authorizer := auth.NewAuthorizer(username, password, insecure)
-	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
+	return NewClientWithAuthorizer(url, authorizer, insecure, "", interceptors...)
+}
+
+// NewClientWithCACert creates a registry client with custom CA certificate
+func NewClientWithCACert(url, username, password string, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure, caCert)
+	return NewClientWithAuthorizer(url, authorizer, insecure, caCert, interceptors...)
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	// When CACertificate is set, it takes precedence and Insecure is ignored
+	transport := commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	)
+
 	return &client{
 		url:          url,
 		authorizer:   authorizer,
 		interceptors: interceptors,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
+			Transport: transport,
 			Timeout:   registryHTTPClientTimeout,
 		},
 	}
@@ -686,6 +700,50 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+func (c *client) ListReferrers(repository, ref string, rawQuery string) (*v1.Index, map[string][]string, error) {
+	remoteURL := buildReferrersURL(c.url, repository, ref, rawQuery)
+	req, err := http.NewRequest(http.MethodGet, remoteURL, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	log.Debugf("upstream url %v", remoteURL)
+
+	if c.authorizer == nil {
+		log.Debug("registry client authorizer is nil")
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	// HTTP Status check
+	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, nil, errors.New(nil).WithCode(errors.NotFoundCode).
+				WithMessagef("referrers for %s:%s not found", repository, ref)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		return nil, nil, fmt.Errorf("upstream returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Decode JSON into ocispec.Index
+	var index v1.Index
+	decoder := json.NewDecoder(resp.Body)
+	// copy the header to headerMap
+	headerMap := make(map[string][]string)
+	for k, v := range resp.Header {
+		headerMap[k] = v
+	}
+	log.Debugf("headerMap from upstream %v", headerMap)
+	if err := decoder.Decode(&index); err != nil {
+		return nil, nil, err
+	}
+
+	return &index, headerMap, nil
+}
+
 // parse the next page link from the link header
 func next(link string) string {
 	links := lib.ParseLinks(link)
@@ -723,6 +781,14 @@ func buildMountBlobURL(endpoint, repository, digest, from string) string {
 
 func buildInitiateBlobUploadURL(endpoint, repository string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repository)
+}
+
+func buildReferrersURL(endpoint, repository, ref, rawQuery string) string {
+	url := fmt.Sprintf("%s/v2/%s/referrers/%s", endpoint, repository, ref)
+	if len(rawQuery) > 0 {
+		url = url + "?" + rawQuery
+	}
+	return url
 }
 
 func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {

@@ -15,3 +15,7 @@ BEGIN
         INSERT INTO properties (k, v) VALUES ('skip_audit_log_database', 'false');
     END IF;
 END $$;
+
+ALTER TABLE registry ADD COLUMN IF NOT EXISTS ca_certificate TEXT;
+
+ALTER TABLE artifact_accessory ADD COLUMN IF NOT EXISTS source varchar(50) DEFAULT '';

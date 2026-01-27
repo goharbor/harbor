@@ -179,7 +179,7 @@ func NewEnforcer() Enforcer {
 
 // EnforcePolicy enforces preheating action by the given policy
 func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (int64, error) {
-	// Get the the given policy data
+	// Get the given policy data
 	pl, err := de.policyMgr.Get(ctx, policyID)
 	if err != nil {
 		return -1, enforceError(err)
