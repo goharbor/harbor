@@ -7337,7 +7337,7 @@ definitions:
         x-nullable: true
       proxy_referrer_api:
         type: string
-        description: 'Whether the proxy cache project should handle API referrer requests. The valid values are "true", "false".'
+        description: 'Whether to enable proxy cache for OCI 1.1 referrer API. The valid values are "true", "false".'
         x-nullable: true
   ProjectSummary:
     type: object
