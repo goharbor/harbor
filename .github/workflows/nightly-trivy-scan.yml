@@ -17,7 +17,6 @@ jobs:
         images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare]
     permissions:
       contents: read
-      security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
 
     runs-on: ubuntu-latest
     steps:
