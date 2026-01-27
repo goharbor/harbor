@@ -245,10 +245,7 @@
         "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "이 프록시 캐시 프로젝트의 업스트림 레지스트리에 대한 최대 연결 수입니다. -1이면 제한이 없습니다",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "-1 또는 0보다 큰 정수를 입력하세요.",
-        "NO_PROJECT": "프로젝트를 찾을 수 없습니다",
-        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",
