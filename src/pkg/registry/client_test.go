@@ -26,7 +26,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib"
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type clientTestSuite struct {
@@ -384,51 +383,6 @@ func (c *clientTestSuite) TestMountBlob() {
 
 	err := NewClient(server.URL, "", "", true).MountBlob("library/alpine", "digest", "library/hello-world")
 	c.Require().Nil(err)
-}
-
-func (c *clientTestSuite) TestListReferrers() {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		index := ocispec.Index{
-			MediaType: ocispec.MediaTypeImageIndex,
-			Manifests: []ocispec.Descriptor{
-				{
-					MediaType: "application/vnd.oci.image.manifest.v1+json",
-					Digest:    "digest1",
-				},
-				{
-					MediaType: "application/vnd.oci.image.manifest.v1+json",
-					Digest:    "digest2",
-				},
-			},
-		}
-		encoder := json.NewEncoder(w)
-		err := encoder.Encode(&index)
-		c.Require().Nil(err)
-	}
-
-	server := test.NewServer(
-		&test.RequestHandlerMapping{
-			Method:  "GET",
-			Pattern: "/v2/library/hello-world/referrers/digest",
-			Handler: handler,
-		})
-	defer server.Close()
-
-	referrers, headerMap, err := NewClient(server.URL, "", "", true).ListReferrers("library/hello-world", "digest", "")
-	c.Require().Nil(err)
-	c.NotNil(headerMap)
-	c.Len(referrers.Manifests, 2)
-	for i, manifest := range referrers.Manifests {
-		c.Equal("digest"+strconv.Itoa(i+1), string(manifest.Digest))
-	}
-}
-
-func (c *clientTestSuite) TestBuildReferrersURL() {
-	url := buildReferrersURL("https://example.com", "library/hello-world", "digest", "")
-	c.Equal("https://example.com/v2/library/hello-world/referrers/digest", url)
-
-	url = buildReferrersURL("https://example.com", "library/hello-world", "digest", "mediaType=sbom")
-	c.Equal("https://example.com/v2/library/hello-world/referrers/digest?mediaType=sbom", url)
 }
 
 func TestClientTestSuite(t *testing.T) {
