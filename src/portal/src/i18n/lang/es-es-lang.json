@@ -246,10 +246,7 @@
         "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
-        "NO_PROJECT": "No pudimos encontrar ningún proyecto",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
