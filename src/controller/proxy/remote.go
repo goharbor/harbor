@@ -20,6 +20,7 @@ import (
 	"io"
 
 	"github.com/docker/distribution"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/reg"
@@ -37,6 +38,8 @@ type RemoteInterface interface {
 	ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error)
 	// ListTags returns all tags of the repo
 	ListTags(repo string) ([]string, error)
+	// ListReferrers return all referrers
+	ListReferrers(repo string, ref string, rawQuery string) (*ocispec.Index, map[string][]string, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
@@ -107,4 +110,8 @@ func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distributi
 
 func (r *remoteHelper) ListTags(repo string) ([]string, error) {
 	return r.registry.ListTags(repo)
+}
+
+func (r *remoteHelper) ListReferrers(repo string, ref string, rawQuery string) (*ocispec.Index, map[string][]string, error) {
+	return r.registry.ListReferrers(repo, ref, rawQuery)
 }
