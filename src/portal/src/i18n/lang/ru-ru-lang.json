@@ -253,7 +253,7 @@
         "QUOTA_UNLIMIT_TIP": "Для неограниченной квоты введите '-1'.",
         "TYPE": "Тип",
         "PROXY_CACHE": "Прокси-кэш",
-        "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
+        "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
         "ENDPOINT": "Конечная точка",
         "PROXY_CACHE_ENDPOINT": "Конечная точка прокси-кэша",
         "NO_PROJECT": "Мы не смогли найти никаких проектов",

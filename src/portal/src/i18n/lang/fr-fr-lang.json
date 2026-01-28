@@ -240,7 +240,7 @@
         "QUOTA_UNLIMIT_TIP": "Espace maximum logique pouvant être utilisé par le projet. Pour un quota illimité, entrez '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Cache proxy",
-        "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache de pull pour un espace de noms particulier dans un registre cible. Harbor ne peut agir en tant que proxy que pour les registres DockerHub et Harbor.",
+        "PROXY_CACHE_TOOLTIP": "Activez cette option pour permettre à ce projet d'agir comme un cache proxy pour une instance de registre cible particulière. Harbor ne peut agir en tant que proxy que pour les registres DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR et JFrog Artifactory.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Endpoint du Proxy Cache",
         "CONNECTION_LIMIT": "Connexion maximale au registre en amont",
