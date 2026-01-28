@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "프로젝트에서 사용할 수 있는 최대 논리적 공간입니다. 할당량을 무제한으로 설정하려면 '-1'을 입력하세요.",
         "TYPE": "종류",
         "PROXY_CACHE": "프록시 캐시",
-        "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
+        "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 프록시 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
         "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
         "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",

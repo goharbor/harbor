@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "專案所能使用的最大邏輯空間。輸入 '-1' 表示無限制配額。",
         "TYPE": "類型",
         "PROXY_CACHE": "代理快取",
-        "PROXY_CACHE_TOOLTIP": "啟用此選項，可讓此專案作為特定目標 Registry 執行個體的通透快取。Harbor 僅能代理 DockerHub、Docker Registry、Harbor、AWS ECR、Azure ACR、阿里雲 ACR、Quay、Google GCR、GitHub GHCR 及 JFrog Artifactory。",
+        "PROXY_CACHE_TOOLTIP": "啟用此選項，可讓此專案作為特定目標 Registry 執行個體的代理快取。Harbor 僅能代理 DockerHub、Docker Registry、Harbor、Aws ECR、Azure ACR、Alibaba Cloud ACR、Quay、Google GCR、Github GHCR 及 JFrog Artifactory。",
         "ENDPOINT": "端點",
         "PROXY_CACHE_ENDPOINT": "代理快取端點",
         "CONNECTION_LIMIT": "上游 Registry 最大連線數",
