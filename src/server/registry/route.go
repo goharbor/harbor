@@ -123,7 +123,6 @@ func RegisterRoutes() {
 		Method(http.MethodGet).
 		Path("/*/referrers/:reference").
 		Middleware(metric.InjectOpIDMiddleware(metric.ReferrersOperationID)).
-		Middleware(repoproxy.ProxyReferrerMiddleware()).
 		Handler(newReferrersHandler())
 	// others
 	root.NewRoute().Path("/*").Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).Handler(proxy)
