@@ -665,6 +665,72 @@ test('Scan a Tag in the Repo', async ({ page }) => {
   await pullImage(ip, user, pwd, project, image, tag);
 })
 
+test('Scan As An Unprivileged User', async ({ page }) => {
+  test.setTimeout(2 * 60 * 1000); //5 mins
+  const project = `project${Date.now()}`;
+  const image = 'hello-world';
+
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // create a project(public)
+  await page.getByRole('button', { name: 'New Project' }).click();
+  await page.locator('#create_project_name').click();
+  await page.locator('#create_project_name').fill(project);
+  await page.locator("input[name='public'] ~ label.clr-control-label").check();
+  await page.getByRole('button', { name: 'OK' }).click();
+
+  await pushImage(ip, user, pwd, project, image);
+
+  // logout
+  await page.goto('/');
+  await page.getByRole('button', { name: 'admin', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'admin', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Log Out' }).click();
+
+  // create a new user (unpriveledged)
+  await page.goto('/');
+  await page.getByRole('link', {name: 'Sign up for an account'}).click();
+  await page.locator('#username').click();
+  await page.locator('#username').fill('User@01');
+  await page.locator('#email').click();
+  await page.locator('#email').fill('test_01@example.com');
+  await page.getByRole('textbox', { name: 'First and last name*' }).click();
+  await page.getByRole('textbox', { name: 'First and last name*' }).fill('User01');
+  await page.getByRole('textbox', { name: 'Password*', exact: true}).click();
+  await page.getByRole('textbox', { name: 'Password*', exact: true}).fill('Test1@01');
+  await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
+  await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Test1@01');
+  await page.getByRole('button', { name: 'SIGN UP' }).click();
+
+  // login to the new user
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('User@01');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Test1@01');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // go into the repo
+  await page.getByRole('link', {name: 'Projects'}).click();
+  await page.getByRole('link', {name: project}).click();
+  await page.getByRole('link', {name: project + '/' + image}).click();
+
+  // Select artifact
+  await page.waitForTimeout(1000);
+  await page.getByRole('gridcell', { name: 'Select Select' }).locator('label').click();
+  await page.waitForTimeout(1000);
+  await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
+
+  // Scan should be disabled
+  await expect(page.getByRole('button', { name: 'Scan vulnerability' })).toBeDisabled();
+
+})
+
 
 /* PLAYWRIGHT UTILITY FUNCTIONS */
 
