@@ -17,5 +17,3 @@ BEGIN
 END $$;
 
 ALTER TABLE registry ADD COLUMN IF NOT EXISTS ca_certificate TEXT;
-
-ALTER TABLE artifact_accessory ADD COLUMN IF NOT EXISTS source varchar(50) DEFAULT '';

@@ -22,7 +22,6 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/opencontainers/go-digest"
-	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -112,9 +111,6 @@ func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) er
 }
 func (f *fakeRegistry) ListTags(repository string) (tags []string, err error) {
 	return nil, nil
-}
-func (f *fakeRegistry) ListReferrers(repository, ref string, rawQuery string) (*v1.Index, map[string][]string, error) {
-	return nil, nil, nil
 }
 
 func TestFactory(t *testing.T) {
