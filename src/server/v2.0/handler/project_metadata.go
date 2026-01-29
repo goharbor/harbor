@@ -168,7 +168,8 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 				WithCode(errors.BadRequestCode).
 				WithMessagef("invalid value: %s", value)
 		}
-		if v == 0 || v < -1 {
+
+		if v <= 0 && v != -1 {
 			return nil, errors.New(nil).
 				WithCode(errors.BadRequestCode).
 				WithMessagef("invalid value for %s: %d", key, v)
