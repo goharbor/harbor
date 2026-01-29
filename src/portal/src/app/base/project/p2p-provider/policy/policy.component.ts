@@ -455,21 +455,42 @@ export class PolicyComponent implements OnInit, OnDestroy {
             if (filter && filter.length) {
                 filter.forEach(item => {
                     if (item.type === FILTER_TYPE.REPOS && item.value) {
-                        let str: string = item.value;
+                        let str: string;
+                        if (Array.isArray(item.value)) {
+                            str = item.value.join(',');
+                        } else if (typeof item.value === 'string') {
+                            str = item.value;
+                        } else {
+                            str = '';
+                        }
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }
                         this.addP2pPolicyComponent.repos = str;
                     }
                     if (item.type === FILTER_TYPE.TAG && item.value) {
-                        let str: string = item.value;
+                        let str: string;
+                        if (Array.isArray(item.value)) {
+                            str = item.value.join(',');
+                        } else if (typeof item.value === 'string') {
+                            str = item.value;
+                        } else {
+                            str = '';
+                        }
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }
                         this.addP2pPolicyComponent.tags = str;
                     }
                     if (item.type === FILTER_TYPE.LABEL && item.value) {
-                        let str: string = item.value;
+                        let str: string;
+                        if (Array.isArray(item.value)) {
+                            str = item.value.join(',');
+                        } else if (typeof item.value === 'string') {
+                            str = item.value;
+                        } else {
+                            str = '';
+                        }
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }
