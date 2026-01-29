@@ -1,7 +1,6 @@
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { execSync } from 'child_process';
-import { execArgv } from 'process';
 
 // variables
 const LOCAL_REGISTRY: string = process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
@@ -562,6 +561,106 @@ await page.getByRole('button', { name: 'DELETE', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 });
 
+test('Manual Scan All', async ({ page }) => {
+  test.setTimeout(3 * 60 * 1000); // 3 minuites
+  const project = `project${Date.now()}`
+  const image = 'redis'
+  const sha256 = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
+
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // create a project
+  await page.getByRole('button', { name: 'New Project' }).click();
+  await page.locator('#create_project_name').click();
+  await page.locator('#create_project_name').fill(project);
+  await page.getByRole('button', { name: 'OK' }).click();
+
+  await pushImage({
+      ip,
+      user,
+      pwd,
+      project,
+      image, 
+      sha256
+    })
+
+  // switch to vulnerabilities page
+  await page.getByRole('link', {name: 'Interrogation Services'}).click();
+  await page.getByRole('link', {name: 'Vulnerability', exact: true}).click();
+  await expect(page.getByRole('button', {name: 'SCAN NOW'})).toBeVisible(); 
+
+  // Start scan and wait for it to be finished
+  await page.getByRole('button', {name: 'SCAN NOW'}).click();
+  await expect(page.getByRole('button', {name: 'SCAN NOW'})).toBeEnabled({timeout: 2 * 60 * 1000});
+
+  // go into the repo
+  await page.getByRole('link', {name: 'Projects'}).click();
+  await page.getByRole('link', {name: project}).click();
+  await page.getByRole('link', {name: project + '/' + image}).click();
+
+  // Check that the vulnerabilites are visible in list row
+  await scanResultShouldDisplayInListRow(page, sha256);
+
+  // Check the repo scan details
+  await page.getByRole('link', {name: 'sha256'}).click();
+  await viewRepoScanDetails(page, ['Critical']);
+})
+
+
+/* PLAYWRIGHT UTILITY FUNCTIONS */
+
+async function viewRepoScanDetails(page: Page, vuln_levels: string[]) {
+  const vuln_table = page.locator('hbr-artifact-vulnerabilities');
+  await expect(vuln_table).toBeVisible({timeout : 10000});
+  for(const vuln_level of vuln_levels) {
+    const row = vuln_table
+      .getByRole('row')
+      .filter({hasText: vuln_level})
+      .first();
+
+      await row.scrollIntoViewIfNeeded();
+      await expect(row).toBeVisible();
+      console.log(`checked for ${vuln_level}`);
+    }
+  await page.getByRole('tab', {name: ' Build History '}).click();
+}
+
+async function scanResultShouldDisplayInListRow(
+  page: Page, 
+  tagOrDigest: string, 
+  hasNoVulnerability: boolean = false
+): Promise<void> {
+  
+  if (hasNoVulnerability) {
+    // Look for row containing both 'No vulnerability' and the tag/digest and tooltip
+    const vuln_cell = page.getByRole('row')
+      .filter({ hasText: tagOrDigest })
+      .getByRole('gridcell', { name: 'No vulnerability' });
+    
+    await expect(vuln_cell).toBeVisible();
+    await vuln_cell.hover({timeout: 5000});
+    const tooltip = vuln_cell.getByRole('tooltip');
+    await expect(tooltip).toBeVisible({ timeout: 10000 });
+    
+  } else {
+    // Case 2: Image HAS vulnerabilities
+    const vuln_cell = page.getByRole('row')
+      .filter({ hasText: tagOrDigest })
+      .getByRole('gridcell', { name: /Total.*Fixable/ })
+    
+    // Verify the vulnerability summary is visible in the row and the tooltip
+    await expect(vuln_cell).toBeVisible();
+    await vuln_cell.hover({timeout: 5000});
+    const tooltip = vuln_cell.getByRole('tooltip');
+    await expect(tooltip).toBeVisible({ timeout: 10000 });
+  }
+}
 
 
 // /**
@@ -656,4 +755,82 @@ function pushImageWithTag(
 
   // Logout after push
   runCommand(`docker logout ${ip}`);
+}
+
+interface PushImageOptions {
+  ip: string;
+  user: string;
+  pwd: string;
+  project: string;
+  image: string;
+  needPullFirst?: boolean;
+  sha256?: string;
+  isRobot?: boolean;
+  localRegistry?: string;
+  localNamespace?: string;
+}
+
+async function pushImage(options: PushImageOptions): Promise<void> {
+  const {
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    needPullFirst = true,
+    sha256,
+    isRobot = false,
+    localRegistry = LOCAL_REGISTRY,
+    localNamespace = LOCAL_REGISTRY_NAMESPACE
+  } = options;
+
+  console.log(`Running docker push ${image}...`);
+
+  let imageInUse: string;
+  let imageInUseWithTag: string;
+
+  if (sha256) {
+    // SHA256 provided - use digest format for pulling
+    imageInUse = `${image}@sha256:${sha256}`;
+    // Use SHA256 as tag name for pushing
+    imageInUseWithTag = `${image}:${sha256}`;
+  } else {
+    // No SHA256 - use image as-is
+    imageInUse = image;
+    imageInUseWithTag = image;
+  }
+
+  if (!needPullFirst) {
+    imageInUse = image;
+  }
+
+  try {
+    if (needPullFirst) {
+      const sourceImage = `${localRegistry}/${localNamespace}/${imageInUse}`;
+      console.log(`Pulling ${sourceImage} from Docker Hub...`);
+      runCommand(`docker pull ${sourceImage}`);
+    }
+
+    const username = isRobot 
+      ? `robot$${project}+${user}` 
+      : user;
+    
+    runCommand(`docker login -u ${user} -p ${pwd} ${ip}`);
+
+    const sourceImageForTag = needPullFirst 
+      ? `${localRegistry}/${localNamespace}/${imageInUse}`
+      : imageInUse;
+    
+    const targetImage = `${ip}/${project}/${imageInUseWithTag}`;
+    
+    console.log(`Tagging ${sourceImageForTag} as ${targetImage}...`);
+    runCommand(`docker tag ${sourceImageForTag} ${targetImage}`);
+
+    console.log(`Pushing ${targetImage}...`);
+    runCommand(`docker push ${targetImage}`);
+    console.log('Push successful');
+
+  } finally {
+    runCommand(`docker logout ${ip}`);
+  }
 }
