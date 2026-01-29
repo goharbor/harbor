@@ -581,14 +581,14 @@ test('Manual Scan All', async ({ page }) => {
   await page.locator('#create_project_name').fill(project);
   await page.getByRole('button', { name: 'OK' }).click();
 
-  await pushImage({
+  await pushImage(
       ip,
       user,
       pwd,
       project,
       image, 
       sha256
-    })
+    )
 
   // switch to vulnerabilities page
   await page.getByRole('link', {name: 'Interrogation Services'}).click();
@@ -610,6 +610,59 @@ test('Manual Scan All', async ({ page }) => {
   // Check the repo scan details
   await page.getByRole('link', {name: 'sha256'}).click();
   await viewRepoScanDetails(page, ['Critical']);
+})
+
+test('Scan a Tag in the Repo', async ({ page }) => {
+  test.setTimeout(3 * 60 * 1000); //3 minuites
+  const project = `project${Date.now()}`;
+  const imageNamespace = 'vmware';
+  const image = 'photon';
+  const tag = '1.0';
+  
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // create a project
+  await page.getByRole('button', { name: 'New Project' }).click();
+  await page.locator('#create_project_name').click();
+  await page.locator('#create_project_name').fill(project);
+  await page.getByRole('button', { name: 'OK' }).click();
+
+  await pushImageWithTag(
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    tag,
+    'latest',
+    'docker.io',
+    imageNamespace,
+  );
+
+  // go into the repo
+  await page.getByRole('link', {name: 'Projects'}).click();
+  await page.getByRole('link', {name: project}).click();
+  await page.getByRole('link', {name: project + '/' + image}).click();
+
+  //scan the repo
+  await page.waitForTimeout(1000);
+  await page.getByRole('gridcell', { name: 'Select Select' }).locator('label').click();
+  await page.waitForTimeout(1000);
+  await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
+  await page.waitForTimeout(5000);
+  await page.getByRole('button', { name: 'Scan vulnerability' }).click();
+  await page.getByRole('gridcell', { name: /Total/ }).waitFor();
+
+  await scanResultShouldDisplayInListRow(page, tag);
+  
+  // pull image 
+  await pullImage(ip, user, pwd, project, image, tag);
 })
 
 
@@ -734,11 +787,13 @@ function pushImageWithTag(
   project: string,
   image: string,
   tag: string,
-  tag1: string = 'latest'
+  tag1: string = 'latest',
+  localRegistry: string = LOCAL_REGISTRY,
+  localNamespace: string = LOCAL_REGISTRY_NAMESPACE,
 ): void {
   console.log(`\n🚀 Running docker push for ${image}...`);
 
-  const sourceImage = `${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}`;
+  const sourceImage = `${localRegistry}/${localNamespace}/${image}:${tag1}`;
   const targetImage = `${ip}/${project}/${image}:${tag}`;
 
   // Pull image from local registry
@@ -757,32 +812,17 @@ function pushImageWithTag(
   runCommand(`docker logout ${ip}`);
 }
 
-interface PushImageOptions {
-  ip: string;
-  user: string;
-  pwd: string;
-  project: string;
-  image: string;
-  needPullFirst?: boolean;
-  sha256?: string;
-  isRobot?: boolean;
-  localRegistry?: string;
-  localNamespace?: string;
-}
-
-async function pushImage(options: PushImageOptions): Promise<void> {
-  const {
-    ip,
-    user,
-    pwd,
-    project,
-    image,
-    needPullFirst = true,
-    sha256,
-    isRobot = false,
-    localRegistry = LOCAL_REGISTRY,
-    localNamespace = LOCAL_REGISTRY_NAMESPACE
-  } = options;
+async function pushImage(  ip: string,
+  user: string,
+  pwd: string,
+  project: string,
+  image: string,
+  sha256?: string,
+  needPullFirst: boolean = true,
+  isRobot: boolean = false,
+  localRegistry: string = LOCAL_REGISTRY,
+  localNamespace: string = LOCAL_REGISTRY_NAMESPACE
+): Promise<void> {
 
   console.log(`Running docker push ${image}...`);
 
@@ -833,4 +873,38 @@ async function pushImage(options: PushImageOptions): Promise<void> {
   } finally {
     runCommand(`docker logout ${ip}`);
   }
+}
+
+async function pullImage(
+    ip: string,
+    user: string,
+    pwd: string,
+    project: string,
+    image: string,
+    tag?: string,
+    isRobot = false
+): Promise<string> {
+
+  console.log(`\nRunning docker pull ${image}...`);
+
+  const imageWithTag = tag ? `${image}:${tag}` : image;
+
+  const username = isRobot 
+    ? `robot$${project}+${user}` 
+    : user;
+  
+  dockerLogin(ip, username, pwd);
+
+  const output = runCommand(`docker pull ${ip}/${project}/${imageWithTag}`);
+
+  return output;
+}
+
+function dockerLogin(ip: string, username: string, password: string) {
+  console.log(`Logging in to ${ip}...`);
+  runCommand(`docker login -u '${username}' -p '${password}' ${ip}`);
+}
+
+function dockerLogout(ip: string) {
+  runCommand(`docker logout ${ip}`);
 }
