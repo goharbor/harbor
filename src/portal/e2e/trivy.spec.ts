@@ -731,6 +731,57 @@ test('Scan As An Unprivileged User', async ({ page }) => {
 
 })
 
+test('Scan Image With Empty Vul', async ({ page }) => {
+  test.setTimeout(3 * 60 * 1000); //3 minuites
+  const project = `project${Date.now()}`;
+  const imageNamespace = 'library';
+  const image = 'photon';
+  const tag = '1.0';
+  
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // create a project
+  await page.getByRole('button', { name: 'New Project' }).click();
+  await page.locator('#create_project_name').click();
+  await page.locator('#create_project_name').fill(project);
+  await page.getByRole('button', { name: 'OK' }).click();
+
+  await pushImageWithTag(
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    tag,
+    'latest',
+    'docker.io',
+    imageNamespace,
+  );
+
+  // go into the repo
+  await page.getByRole('link', {name: 'Projects'}).click();
+  await page.getByRole('link', {name: project}).click();
+  await page.getByRole('link', {name: project + '/' + image}).click();
+
+  //scan the repo to find no vulns
+  await page.waitForTimeout(1000);
+  await page.getByRole('gridcell', { name: 'Select Select' }).locator('label').click();
+  await page.waitForTimeout(1000);
+  await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
+  await page.waitForTimeout(5000);
+  await page.getByRole('button', { name: 'Scan vulnerability' }).click();
+  await page.getByRole('gridcell', { name: 'No vulnerability' }).waitFor();
+
+  await scanResultShouldDisplayInListRow(page, tag, true);
+  
+})
+
 
 /* PLAYWRIGHT UTILITY FUNCTIONS */
 
