@@ -253,13 +253,13 @@
         "QUOTA_UNLIMIT_TIP": "Для неограниченной квоты введите '-1'.",
         "TYPE": "Тип",
         "PROXY_CACHE": "Прокси-кэш",
-        "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
+        "PROXY_CACHE_TOOLTIP": "Включите это, чтобы разрешить проекту действовать как прокси-кэш для определенного экземпляра реестра. Harbor может действовать как прокси для DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR и JFrog Artifactory.",
         "ENDPOINT": "Конечная точка",
         "PROXY_CACHE_ENDPOINT": "Конечная точка прокси-кэша",
         "NO_PROJECT": "Мы не смогли найти никаких проектов",
-        "CONNECTION_LIMIT": "Max connection to upstream registry",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
-        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. "
+        "CONNECTION_LIMIT": "Максимальное соединение с вышестоящим реестром",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Максимальное соединение с вышестоящим реестром для этого прокси-кэш проекта, если -1, то ограничения нет",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Пожалуйста, введите -1 или целое число больше 0."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",
@@ -288,7 +288,9 @@
         "PREVENT_VULNERABLE_2": "и выше.",
         "SCAN": "Сканирование уязвимостей",
         "AUTOSCAN_TOGGLE": "Автоматически сканировать образы при отправке",
-        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта."
+        "AUTOSCAN_POLICY": "Автоматически сканировать образы, когда они отправляются в реестр проекта.",
+        "AUTOSBOM_TOGGLE": "Автоматически генерировать SBOM при отправке",
+        "AUTOSBOM_POLICY": "Автоматически генерировать SBOM, когда образы отправляются в реестр проекта."
     },
     "MEMBER": {
         "NEW_USER": "Добавить пользователя",
@@ -696,9 +698,11 @@
         "DELETED_SUCCESS": "Конечные точки успешно удалены.",
         "DELETED_FAILED": "Не удалось удалить конечные точки.",
         "CANNOT_EDIT": "Конечную точку нельзя изменить, пока правило репликации активно.",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "Не удалось удалить используемую конечную точку.",
         "PLACEHOLDER": "Мы не смогли найти ни одной конечной точки!",
-        "DEPRECATED": "Helm Hub переходит на Artifact Hub"
+        "DEPRECATED": "Helm Hub переходит на Artifact Hub",
+        "CA_CERTIFICATE": "Сертификат CA",
+        "CA_CERTIFICATE_TOOLTIP": "Укажите сертификат CA в формате PEM для проверки TLS-сертификата реестра. Оставьте пустым для использования системного пула CA. Это поле доступно только при включенной опции 'Проверять удаленный сертификат'.",
+        "CA_CERTIFICATE_HELPER": "Необязательно. Вставьте здесь сертификат CA в формате PEM для доверия самоподписанным или частным сертификатам CA для этой конечной точки. Если оставить пустым, Harbor будет использовать системный пул CA."
 },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Копировать Хэш",
