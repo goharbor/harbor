@@ -111,17 +111,17 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.65.0
-TRIVYADAPTERVERSION=v0.34.0-rc.1
+TRIVYVERSION=v0.68.2
+TRIVYADAPTERVERSION=v0.35.0-rc.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=release/2.8
+REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.1
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
 # dependency binaries
-REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
+REGISTRYURL=
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 
@@ -407,7 +407,8 @@ build:
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
+	 -e RELEASEVERSION=$(RELEASEVERSION) -e GITCOMMIT=$(GITCOMMIT)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
