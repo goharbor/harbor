@@ -40,6 +40,7 @@ import (
 func init() {
 	// register the execution status refresh task if enable the async update
 	if interval := config.GetExecutionStatusRefreshIntervalSeconds(); interval > 0 {
+		executionRefreshInterval = time.Duration(interval) * time.Second
 		gtask.DefaultPool().AddTask(scanAndRefreshOutdateStatus, time.Duration(interval)*time.Second)
 	}
 }
@@ -56,6 +57,7 @@ var (
 	// the regex used to parse exec id and vendor type from the key.
 	// e.g. execution:id:100:vendor:REPLICATION:status_outdate
 	execStatusOutdateKeyRegex = regexp.MustCompile(`execution:id:(\d+):vendor:([A-Z0-9_]+):status_outdate`)
+	executionRefreshInterval  time.Duration
 )
 
 // ExecutionStatusChangePostFunc is the function called after the execution status changed
@@ -483,6 +485,26 @@ func (e *executionDAO) AsyncRefreshStatus(ctx context.Context, id int64, vendor 
 // scanAndRefreshOutdateStatus scans the outdate execution status from redis and then refresh the status to db,
 // do not want to expose to external use so keep it as private.
 func scanAndRefreshOutdateStatus(ctx context.Context) {
+	lockKey := "execution:status:refresh:lock"
+	if cache.Default().Contains(ctx, lockKey) {
+		log.Debug("another instance is refreshing the outdate execution status, skip")
+		return
+	}
+
+	err := cache.Default().Save(ctx, lockKey, "1", executionRefreshInterval)
+	if err != nil {
+		log.Errorf("failed to set lock to refresh outdate execution status, error: %v", err)
+		return
+	}
+
+	defer func() {
+		if delErr := cache.Default().Delete(ctx, lockKey); delErr != nil {
+			log.Errorf("failed to delete lock key: %v", delErr)
+		}
+	}()
+
+	log.Debug("acquire lock to refresh outdate execution status")
+
 	iter, err := cache.Default().Scan(ctx, "execution:id:*vendor:*status_outdate")
 	if err != nil {
 		log.Errorf("failed to scan the outdate executions, error: %v", err)
@@ -498,10 +520,7 @@ func scanAndRefreshOutdateStatus(ctx context.Context) {
 		log.Debug("skip to refresh, no outdate execution status found")
 		return
 	}
-	// TODO: refactor
-	// shuffle the keys to avoid the conflict and improve efficiency when multiple core instance existed,
-	// but currently if multiple instances get the same set of keys at the same time, then eventually everyone
-	// will still need to repeat the same work(refresh same execution), which needs to be optimized later.
+	// shuffle the keys to avoid the conflict and improve efficiency when multiple core instance existed
 	lib.ShuffleStringSlice(keys)
 
 	log.Infof("scanned out %d executions with outdate status, refresh status to db", len(keys))
