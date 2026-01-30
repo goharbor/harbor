@@ -208,7 +208,7 @@ func (e *executionManager) Stop(ctx context.Context, id int64) error {
 func (e *executionManager) StopAndWait(ctx context.Context, id int64, timeout time.Duration) error {
 	var (
 		overtime bool
-		errChan  = make(chan error)
+		errChan  = make(chan error, 1)
 		lock     = sync.RWMutex{}
 	)
 	go func() {

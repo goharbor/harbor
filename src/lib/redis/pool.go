@@ -135,6 +135,12 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 	redisOptions := sentinelOptions
 
 	if u.User != nil {
+		username := u.User.Username()
+		// Only adding for debugging when username is explicitly set
+		if username != "" {
+			log.Debug(name, "redis has username:", username)
+		}
+		redisOptions = append(redisOptions, redis.DialUsername(username))
 		password, isSet := u.User.Password()
 		if isSet {
 			log.Debug(name, "redis has password")
