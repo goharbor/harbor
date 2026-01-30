@@ -224,7 +224,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
-	created, art, err := c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
+	created, art, err := c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, false)
 	c.Require().Nil(err)
 	c.False(created)
 	c.Equal(int64(1), art.ID)
@@ -239,10 +239,11 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
+	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, false)
 	c.Require().Nil(err)
 	c.True(created)
 	c.Equal(int64(1), art.ID)
+	c.Equal(time.Time{}, art.PullTime)
 
 	// reset the mock
 	c.SetupTest()
@@ -254,10 +255,26 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
 	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), errors.ConflictError(nil))
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
+	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, false)
 	c.Require().Error(err, errors.NotFoundError(nil))
 	c.False(created)
 	c.Require().Nil(art)
+
+	// reset the mock
+	c.SetupTest()
+
+	c.repoMgr.On("GetByName", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
+		ProjectID: 1,
+	}, nil)
+	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
+	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	c.abstractor.On("AbstractMetadata").Return(nil)
+	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, true)
+	c.Require().Nil(err)
+	c.True(created)
+	c.Equal(int64(1), art.ID)
+	c.NotEqual(time.Time{}, art.PullTime)
+	c.Equal(art.PullTime, art.PushTime)
 }
 
 func (c *controllerTestSuite) TestEnsure() {
