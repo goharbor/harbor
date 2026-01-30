@@ -1,0 +1,142 @@
+<clr-wizard
+    #wizard
+    [(clrWizardOpen)]="addRoleOpened"
+    [clrWizardSize]="'lg'"
+    (clrWizardOnCancel)="cancel()">
+    <clr-wizard-title
+        ><h3 *ngIf="!isEditMode" class="modal-title">
+            {{ 'ROLE.CREATE_ROLE' | translate }}
+        </h3>
+        <h3 *ngIf="isEditMode" class="modal-title">
+            {{ 'ROLE.EDIT_ROLE' | translate }} {{ !roleBasicForm.valid }} - {{checkNameOnGoing}} - {{isNameExisting}} - {{!isEditMode}}
+        </h3>
+        <p *ngIf="!isEditMode" class="mt-0">
+            {{ 'ROLE.CREATEROLE_SUMMARY' | translate }}
+        </p>
+        <p *ngIf="isEditMode" class="mt-0">
+            {{ 'ROLE.EDIT_ROLE_SUMMARY' | translate }}
+        </p></clr-wizard-title
+    >
+    <clr-wizard-button [type]="'cancel'">{{
+        'BUTTON.CANCEL' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [type]="'previous'">{{
+        'ROLE.BACK' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [type]="'next'">{{
+        'ROLE.NEXT' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-button [clrLoading]="saveBtnState" [type]="'finish'">{{
+        'ROLE.FINISH' | translate
+    }}</clr-wizard-button>
+    <clr-wizard-page
+        [clrWizardPageNextDisabled]="
+            (!roleBasicForm.valid || checkNameOnGoing || isNameExisting) && !isEditMode
+        ">
+        <ng-template clrPageTitle>{{
+            'ROLE.BASIC_INFO' | translate
+        }}</ng-template>
+        <form
+            #roleBasicForm="ngForm"
+            class="clr-form clr-form-horizontal mt-1">
+            <section class="form-block">
+                <div class="clr-form-control">
+                    <label for="name" class="clr-control-label required"
+                        >{{ 'P2P_PROVIDER.NAME' | translate }}
+                        <clr-tooltip *ngIf="!isEditMode">
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-right"
+                                clrSize="lg"
+                                *clrIfOpen>
+                                <span>{{
+                                    'ROLE.FINAL_PROJECT_NAME_TIP'
+                                        | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                    <div
+                        class="clr-control-container"
+                        [class.clr-error]="
+                            ((name.dirty || name.touched) && name.invalid) ||
+                            isNameExisting
+                        ">
+                        <div class="clr-input-wrapper">
+                            <input
+                                class="clr-input input-width"
+                                [disabled]="loading || isEditMode"
+                                type="text"
+                                id="name"
+                                [(ngModel)]="role.name"
+                                required
+                                maxLengthExt="255"
+                                autocomplete="off"
+                                size="30"
+                                name="name"
+                                #name="ngModel"
+                                (keyup)="inputName()" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                            <span
+                                class="spinner spinner-inline"
+                                [hidden]="!checkNameOnGoing"></span>
+                        </div>
+                        <clr-control-error
+                            *ngIf="
+                                ((name.dirty || name.touched) &&
+                                    name.invalid) ||
+                                isNameExisting
+                            ">
+                            <span
+                                *ngIf="
+                                    !(
+                                        (name.dirty || name.touched) &&
+                                        name.invalid
+                                    ) && isNameExisting
+                                "
+                                >{{
+                                    'ROLE.ACCOUNT_EXISTING' | translate
+                                }}</span
+                            >
+                            <span
+                                *ngIf="
+                                    (name.dirty || name.touched) && name.invalid
+                                "
+                                >{{
+                                    'ROLE.NAME_TOOLTIP' | translate
+                                }}</span
+                            >
+                        </clr-control-error>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page
+        (clrWizardPageOnLoad)="clrWizardPageOnLoad()"
+        (clrWizardPageOnCommit)="save()"
+        [clrWizardPagePreventDefaultNext]="true"
+        [clrWizardPageNextDisabled]="disabled()">
+        <ng-template clrPageTitle>{{
+            'ROLE.SELECT_PERMISSIONS' | translate
+        }}</ng-template>
+        <inline-alert></inline-alert>
+        
+        <form class="clr-form clr-form-horizontal mt-1">
+            <section class="form-block">
+                <role-permissions-panel
+                    [mode]="PermissionSelectPanelModes.NORMAL"
+                    [(permissionsModel)]="role.permissions[0].access"
+                    [candidatePermissions]="roleMetadata?.role">
+                </role-permissions-panel>
+            </section>
+        </form>
+        
+    </clr-wizard-page>
+</clr-wizard>

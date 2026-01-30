@@ -88,6 +88,7 @@ type scope string
 const (
 	ScopeSystem  = scope("System")
 	ScopeProject = scope("Project")
+	ScopeRole    = scope("Role")
 )
 
 // RobotPermissionProvider defines the permission provider for robot account
@@ -157,6 +158,10 @@ func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
 			&types.Policy{Resource: ResourceMember, Action: ActionList},
 			&types.Policy{Resource: ResourceMember, Action: ActionDelete})
 	}
+	if s == ScopeRole {
+		return append(n.BaseProvider.GetPermissions(ScopeRole))
+	}
+
 	return []*types.Policy{}
 }
 
@@ -310,6 +315,102 @@ var (
 			{Resource: ResourceLabel, Action: ActionUpdate},
 
 			{Resource: ResourceQuota, Action: ActionRead},
+		},
+		ScopeRole: {
+			{Resource: ResourceSelf, Action: ActionRead},
+			{Resource: ResourceSelf, Action: ActionUpdate},
+			{Resource: ResourceSelf, Action: ActionDelete},
+
+			{Resource: ResourceMember, Action: ActionCreate},
+			{Resource: ResourceMember, Action: ActionRead},
+			{Resource: ResourceMember, Action: ActionUpdate},
+			{Resource: ResourceMember, Action: ActionDelete},
+			{Resource: ResourceMember, Action: ActionList},
+
+			{Resource: ResourceMetadata, Action: ActionCreate},
+			{Resource: ResourceMetadata, Action: ActionRead},
+			{Resource: ResourceMetadata, Action: ActionUpdate},
+			{Resource: ResourceMetadata, Action: ActionDelete},
+
+			{Resource: ResourceLog, Action: ActionList},
+
+			{Resource: ResourceLabel, Action: ActionCreate},
+			{Resource: ResourceLabel, Action: ActionRead},
+			{Resource: ResourceLabel, Action: ActionUpdate},
+			{Resource: ResourceLabel, Action: ActionDelete},
+			{Resource: ResourceLabel, Action: ActionList},
+
+			{Resource: ResourceQuota, Action: ActionRead},
+
+			{Resource: ResourceRepository, Action: ActionCreate},
+			{Resource: ResourceRepository, Action: ActionRead},
+			{Resource: ResourceRepository, Action: ActionUpdate},
+			{Resource: ResourceRepository, Action: ActionDelete},
+			{Resource: ResourceRepository, Action: ActionList},
+			{Resource: ResourceRepository, Action: ActionPull},
+			{Resource: ResourceRepository, Action: ActionPush},
+
+			{Resource: ResourceTagRetention, Action: ActionCreate},
+			{Resource: ResourceTagRetention, Action: ActionRead},
+			{Resource: ResourceTagRetention, Action: ActionUpdate},
+			{Resource: ResourceTagRetention, Action: ActionDelete},
+			{Resource: ResourceTagRetention, Action: ActionList},
+			{Resource: ResourceTagRetention, Action: ActionOperate},
+
+			{Resource: ResourceImmutableTag, Action: ActionCreate},
+			{Resource: ResourceImmutableTag, Action: ActionUpdate},
+			{Resource: ResourceImmutableTag, Action: ActionDelete},
+			{Resource: ResourceImmutableTag, Action: ActionList},
+
+			{Resource: ResourceConfiguration, Action: ActionRead},
+			{Resource: ResourceConfiguration, Action: ActionUpdate},
+
+			{Resource: ResourceRobot, Action: ActionCreate},
+			{Resource: ResourceRobot, Action: ActionRead},
+			{Resource: ResourceRobot, Action: ActionUpdate},
+			{Resource: ResourceRobot, Action: ActionDelete},
+			{Resource: ResourceRobot, Action: ActionList},
+
+			{Resource: ResourceNotificationPolicy, Action: ActionCreate},
+			{Resource: ResourceNotificationPolicy, Action: ActionUpdate},
+			{Resource: ResourceNotificationPolicy, Action: ActionDelete},
+			{Resource: ResourceNotificationPolicy, Action: ActionList},
+			{Resource: ResourceNotificationPolicy, Action: ActionRead},
+
+			{Resource: ResourceScan, Action: ActionCreate},
+			{Resource: ResourceScan, Action: ActionRead},
+			{Resource: ResourceScan, Action: ActionStop},
+			{Resource: ResourceSBOM, Action: ActionCreate},
+			{Resource: ResourceSBOM, Action: ActionStop},
+			{Resource: ResourceSBOM, Action: ActionRead},
+
+			{Resource: ResourceScanner, Action: ActionRead},
+			{Resource: ResourceScanner, Action: ActionCreate},
+
+			{Resource: ResourceArtifact, Action: ActionCreate},
+			{Resource: ResourceArtifact, Action: ActionRead},
+			{Resource: ResourceArtifact, Action: ActionDelete},
+			{Resource: ResourceArtifact, Action: ActionList},
+			{Resource: ResourceArtifactAddition, Action: ActionRead},
+
+			{Resource: ResourceTag, Action: ActionList},
+			{Resource: ResourceTag, Action: ActionCreate},
+			{Resource: ResourceTag, Action: ActionDelete},
+
+			{Resource: ResourceAccessory, Action: ActionList},
+
+			{Resource: ResourceArtifactLabel, Action: ActionCreate},
+			{Resource: ResourceArtifactLabel, Action: ActionDelete},
+
+			{Resource: ResourcePreatPolicy, Action: ActionCreate},
+			{Resource: ResourcePreatPolicy, Action: ActionRead},
+			{Resource: ResourcePreatPolicy, Action: ActionUpdate},
+			{Resource: ResourcePreatPolicy, Action: ActionDelete},
+			{Resource: ResourcePreatPolicy, Action: ActionList},
+
+			{Resource: ResourceExportCVE, Action: ActionCreate},
+			{Resource: ResourceExportCVE, Action: ActionRead},
+			{Resource: ResourceExportCVE, Action: ActionList},
 		},
 	}
 )

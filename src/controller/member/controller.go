@@ -227,6 +227,7 @@ func (c *controller) Create(ctx context.Context, projectNameOrID any, req Reques
 }
 
 func isValidRole(role int) bool {
+	/* TODO MGS validate that role is allowed (no escalation)
 	switch role {
 	case common.RoleProjectAdmin,
 		common.RoleMaintainer,
@@ -236,7 +237,8 @@ func isValidRole(role int) bool {
 		return true
 	default:
 		return false
-	}
+	}*/
+	return true
 }
 
 func (c *controller) List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error) {

@@ -51,6 +51,15 @@ const routes: Routes = [
                         m => m.UserModule
                     ),
             },
+            // MGS TODO
+            {
+                path: 'roles',
+                canActivate: [SystemAdminGuard],
+                loadChildren: () =>
+                    import(
+                        './left-side-nav/roles/roles.module'
+                    ).then(m => m.RolesModule),
+            },
             {
                 path: 'robot-accounts',
                 canActivate: [SystemAdminGuard],
