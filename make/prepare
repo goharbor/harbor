@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 # If compiling source code this dir is harbor's make dir.
 # If installing harbor via package, this dir is harbor's root dir.

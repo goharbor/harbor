@@ -32,6 +32,9 @@ import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
+import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { Role } from '../../../../../../ng-swagger-gen/models/role';
+
 
 @Component({
     selector: 'add-member',
@@ -55,17 +58,28 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     searcher: Subject<string> = new Subject<string>();
     nameCheckerSub: Subscription;
     searcherSub: Subscription;
+    roleS: Subject<string> = new Subject<string>();
+    roleSub: Subscription;
     checkOnGoing: boolean = false;
     searchedUserLists: UserResp[] = [];
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     roleId: number = 1; // default value is 1(project admin)
 
+    loadingData: boolean = false;
+    role_names: string[] = ['test1', 'test2'];
+    roles: Role[];
+
+
     constructor(
+        private roleService: RoleService,
         private memberService: MemberService,
         private userService: UserService,
         private messageHandlerService: MessageHandlerService,
         private route: ActivatedRoute
     ) {}
+
+
+
 
     ngOnInit(): void {
         let resolverData = this.route.snapshot.parent.parent.data;
@@ -75,6 +89,16 @@ export class AddMemberComponent implements OnInit, OnDestroy {
                 .has_project_admin_role;
         }
         if (hasProjectAdminRole) {
+            
+            this.roleSub = this.roleService.ListRole({
+                                    page: 1,
+                                    pageSize: 10
+                                }).subscribe(res => {
+                        if (res) {
+                            this.roles = res;
+                        }
+                    });
+            
             if (!this.searcherSub) {
                 this.searcherSub = this.searcher
                     .pipe(
@@ -148,6 +172,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.searcherSub.unsubscribe();
             this.searcherSub = null;
         }
+        if (this.roleSub) {
+            this.roleSub.unsubscribe();
+            this.roleSub = null;
+        }
     }
 
     onSubmit(): void {
@@ -184,6 +212,9 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.nameChecker.next(username);
         this.searchedUserLists = [];
     }
+
+
+
 
     onCancel() {
         this.addMemberOpened = false;

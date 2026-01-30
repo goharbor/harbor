@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/namespace"
@@ -31,7 +32,7 @@ import (
 type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller, ctl_r role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
 			// anonymous access
@@ -41,10 +42,18 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 			}
 		}
 
-		roles, err := ctl.ListRoles(ctx, p.ProjectID, user)
+		roles_ids, err := ctl.ListRoles(ctx, p.ProjectID, user)
 		if err != nil {
 			log.Errorf("failed to list roles: %v", err)
 			return nil
+		}
+
+		var roles []*role.Role
+
+		for _, role_id := range roles_ids {
+			var r *role.Role
+			r, err = ctl_r.Get(ctx, int64(role_id), &role.Option{WithPermission: true, Operator: "test"})
+			roles = append(roles, r)
 		}
 
 		return &rbacUser{

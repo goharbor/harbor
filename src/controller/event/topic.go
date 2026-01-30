@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/auditext/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	robotModel "github.com/goharbor/harbor/src/pkg/robot/model"
+	roleModel "github.com/goharbor/harbor/src/pkg/role/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -50,11 +51,14 @@ const (
 	TopicTagRetention      = "TAG_RETENTION"
 	TopicCreateRobot       = "CREATE_ROBOT"
 	TopicDeleteRobot       = "DELETE_ROBOT"
+	TopicCreateRole        = "CREATE_ROLE"
+	TopicDeleteRole        = "DELETE_ROLE"
 	TopicCommonEvent       = "COMMON_API"
 	ResourceTypeProject    = "project"
 	ResourceTypeArtifact   = "artifact"
 	ResourceTypeRepository = "repository"
 	ResourceTypeRobot      = "robot"
+	ResourceTypeRole       = "role"
 	ResourceTypeTag        = "tag"
 )
 
@@ -450,4 +454,56 @@ func (c *DeleteRobotEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 func (c *DeleteRobotEvent) String() string {
 	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
 		c.Robot.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// CreateRobotEvent is the creating robot event
+type CreateRoleEvent struct {
+	EventType string
+	Role      *roleModel.Role
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (c *CreateRoleEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionCreate.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeRole,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("create role: %s", c.Role.Name),
+		Resource:             c.Role.Name}
+	return auditLog, nil
+}
+
+func (c *CreateRoleEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		c.Role.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// DeleteRobotEvent is the deleting robot event
+type DeleteRoleEvent struct {
+	EventType string
+	Role      *roleModel.Role
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (c *DeleteRoleEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		OpTime:               c.OccurAt,
+		Operation:            rbac.ActionDelete.String(),
+		Username:             c.Operator,
+		ResourceType:         ResourceTypeRole,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("delete robot: %s", c.Role.Name),
+		Resource:             c.Role.Name}
+	return auditLog, nil
+}
+
+func (c *DeleteRoleEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		c.Role.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
 }

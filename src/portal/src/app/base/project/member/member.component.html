@@ -136,9 +136,7 @@
                     <span
                         *ngIf="ChangeRoleOngoing(m.id)"
                         class="spinner spinner-inline"></span>
-                    <span *ngIf="!ChangeRoleOngoing(m.id)">{{
-                        roleInfo[m.role_id] | translate
-                    }}</span>
+                    <span *ngIf="!ChangeRoleOngoing(m.id)">{{m.role_name}}</span>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>

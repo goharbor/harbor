@@ -3210,6 +3210,79 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /roles:
+    get:
+      summary: Get roles
+      description: List the roles with the specified level and permissions.
+      tags:
+        - role
+      operationId: ListRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of roles
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a role
+      description: Create a role
+      tags:
+        - role
+      operationId: CreateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/RoleCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+            Location:
+              description: The location of the resource
+              type: string
+          schema:
+            $ref: '#/definitions/RoleCreated'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+
+
+
   '/quotas':
     get:
       summary: List quotas
@@ -3423,6 +3496,82 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /roles/{role_id}:
+    get:
+      summary: Get a role
+      description: This endpoint returns specific role information by role ID.
+      tags:
+        - role
+      operationId: GetRoleByID
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          description: Return matched role information.
+          schema:
+            $ref: '#/definitions/Role'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a role account
+      description: This endpoint updates specific role information by role ID.
+      tags:
+        - role
+      operationId: UpdateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a role account
+      description: This endpoint deletes specific role information by role ID.
+      tags:
+        - role
+      operationId: DeleteRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
   /replication/policies:
     get:
       summary: List replication policies
@@ -6342,6 +6491,12 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+  roleId:
+    name: role_id
+    in: path
+    description: Role ID
+    required: true
+    type: integer
   gcId:
     name: gc_id
     in: path
@@ -7310,8 +7465,7 @@ definitions:
         x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false". If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
         x-nullable: true
       retention_id:
         type: string
@@ -7916,6 +8070,75 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Access'
+  Role:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+  RoleCreate:
+    type: object
+    description: The request for role creation.
+    properties:
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+  RoleCreated:
+    type: object
+    description: The response for role creation.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      secret:
+        type: string
+        description: The secret of the role
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the role.
+  RolePermission:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: The kind of the permission
+      namespace:
+        type: string
+        description: The namespace of the permission
+      access:
+        type: array
+        items:
+          $ref: '#/definitions/Access'
+
   Access:
     type: object
     properties:
@@ -7928,6 +8151,7 @@ definitions:
       effect:
         type: string
         description: The effect of the access
+
   RobotCreateV1:
     type: object
     properties:
@@ -9638,6 +9862,12 @@ definitions:
         description: The project level permissions
         items:
           $ref: '#/definitions/Permission'
+      role:
+        type: array
+        description: The role project level permissions
+        items:
+          $ref: '#/definitions/Permission'
+
   OIDCCliSecretReq:
     type: object
     properties:

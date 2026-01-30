@@ -74,8 +74,8 @@
         <clr-dg-cell>{{
             roleInfo[p.current_user_role_id]
                 ? (roleInfo[p.current_user_role_id] | translate)
-                : '-'
-        }}</clr-dg-cell>
+                : p.current_user_role_ids 
+        }}</clr-dg-cell><!-- TODO MGS create mapping logic for role ids to role names -->
         <clr-dg-cell>{{
             projectTypeMap[p.registry_id ? 1 : 0] | translate
         }}</clr-dg-cell>

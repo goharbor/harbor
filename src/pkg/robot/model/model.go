@@ -21,9 +21,11 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func init() {
+	log.Debug("*** register robot ORM model")
 	orm.RegisterModel(&Robot{})
 }
 

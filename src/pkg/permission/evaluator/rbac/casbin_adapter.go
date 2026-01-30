@@ -21,6 +21,7 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -32,8 +33,11 @@ func policyLinesOfRole(rbacRole types.RBACRole) []string {
 	lines := []string{}
 
 	roleName := rbacRole.GetRoleName()
+	log.Debug("*** Casbin queried role name and got " + roleName)
+
 	// returns empty policy lines if role name is empty
 	if roleName == "" {
+		log.Debug("*** did not found policies for the role ")
 		return lines
 	}
 
@@ -72,8 +76,12 @@ func (a *adapter) getPolicyLines() []string {
 
 	lines = append(lines, policyLinesOfRBACUser(a.rbacUser)...)
 
+	// lines = append(lines, policyLinesOfRole(role)...)
 	for _, role := range a.rbacUser.GetRoles() {
-		lines = append(lines, policyLinesOfRole(role)...)
+		for _, policy := range role.GetPolicies() {
+			line := fmt.Sprintf("p, %s, %s, %s, %s", role.GetRoleName(), policy.Resource, policy.Action, policy.GetEffect())
+			lines = append(lines, line)
+		}
 		lines = append(lines, fmt.Sprintf("g, %s, %s", username, role.GetRoleName()))
 	}
 

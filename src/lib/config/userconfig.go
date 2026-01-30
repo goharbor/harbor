@@ -217,6 +217,11 @@ func RobotPrefix(ctx context.Context) string {
 	return DefaultMgr().Get(ctx, common.RobotNamePrefix).GetString()
 }
 
+// RolePrefix user defined role name prefix.
+func RolePrefix(ctx context.Context) string {
+	return DefaultMgr().Get(ctx, common.RoleNamePrefix).GetString()
+}
+
 // SplitAndTrim ...
 func SplitAndTrim(s, sep string) []string {
 	res := make([]string, 0)

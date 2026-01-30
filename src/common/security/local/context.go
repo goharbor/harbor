@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -33,6 +34,7 @@ const ContextName = "local"
 type SecurityContext struct {
 	user      *models.User
 	ctl       project.Controller
+	ctl_r     role.Controller
 	evaluator evaluator.Evaluator
 	once      sync.Once
 }
@@ -40,8 +42,9 @@ type SecurityContext struct {
 // NewSecurityContext ...
 func NewSecurityContext(user *models.User) *SecurityContext {
 	return &SecurityContext{
-		user: user,
-		ctl:  project.Ctl,
+		user:  user,
+		ctl:   project.Ctl,
+		ctl_r: role.Ctl,
 	}
 }
 
@@ -91,7 +94,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
 
-		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl)))
+		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl, s.ctl_r)))
 
 		s.evaluator = evaluators
 	})

@@ -1,0 +1,143 @@
+<h2 class="custom-h2">{{ 'ROLE.ROLE_NAV' | translate }}</h2>
+<div class="row role-space">
+    <div>
+        <div class="row flex-items-xs-between rightPos">
+            <div class="flex-xs-middle option-left"></div>
+            <div class="flex-xs-middle option-right">
+                <hbr-filter
+                    [width]="240"
+                    [withDivider]="true"
+                    filterPlaceholder="{{
+                        'SYSTEM_ROBOT.SEARCH_BY_NAME' | translate
+                    }}"></hbr-filter>
+                <span class="refresh-btn" (click)="refresh()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-dg-action-bar>
+            <button
+                [disabled]="loadingData || loadingMetadata"
+                [clrLoading]="addBtnState"
+                class="btn btn-secondary"
+                (click)="openNewRoleModal(false)">
+                <span>
+                    <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
+                        'ROLE.NEW_ROLE' | translate
+                    }}
+                </span>
+            </button>
+            <clr-dropdown
+                [clrCloseMenuOnItemClick]="false"
+                class="btn btn-link"
+                clrDropdownTrigger>
+                <span
+                    >{{ 'MEMBER.ACTION' | translate
+                    }}<clr-icon
+                        shape="caret
+            down"></clr-icon
+                ></span>
+                <clr-dropdown-menu *clrIfOpen>
+                    <button
+                        [disabled]="
+                            loadingData ||
+                            !(selectedRows && selectedRows.length === 1)
+                        "
+                        clrDropdownItem
+                        (click)="openNewRoleModal(true)">
+                        <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
+                        <span id="system-robot-edit">{{
+                            'BUTTON.EDIT' | translate
+                        }}</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button
+                        [disabled]="
+                            loadingData ||
+                            !(selectedRows && selectedRows.length >= 1)
+                        "
+                        clrDropdownItem
+                        (click)="openDeleteRolesDialog()">
+                        <clr-icon shape="window-close" size="16"></clr-icon
+                        >&nbsp;
+                        <span id="system-robot-delete">{{
+                            'BUTTON.DELETE' | translate
+                        }}</span>
+                    </button>
+                </clr-dropdown-menu>
+            </clr-dropdown>
+        </clr-dg-action-bar>
+        <clr-datagrid
+            (clrDgRefresh)="clrLoad($event)"
+            [clrDgLoading]="loading"
+            [(clrDgSelected)]="selectedRows">
+            <clr-dg-column [clrDgSortBy]="'name'">{{
+                'ROLE.NAME' | translate
+            }}</clr-dg-column>
+            <clr-dg-column>{{
+                'ROLE.MASK' | translate
+            }}</clr-dg-column>
+            <clr-dg-column class="permission-col">{{
+                'ROLE.PERMISSIONS' | translate
+            }}</clr-dg-column>
+            <clr-dg-placeholder>{{
+                'SYSTEM_ROBOT.NOT_FOUND' | translate
+            }}</clr-dg-placeholder>
+            <clr-dg-row *ngFor="let r of roles" [clrDgItem]="r">
+                <clr-dg-cell>{{ r.name }}</clr-dg-cell>
+                <clr-dg-cell>{{ r.role_code }}</clr-dg-cell>
+
+                <clr-dg-cell>
+                    <span *ngIf="!getRoleAccess(r)?.length">
+                        {{ 'SCHEDULE.NONE' | translate }}
+                    </span>
+                    <robot-permissions-panel
+                        *ngIf="getRoleAccess(r)?.length"
+                        [mode]="PermissionSelectPanelModes.MODAL"
+                        [permissionsModel]="getRoleAccess(r)"
+                        [candidatePermissions]="getRoleAccess(r)">
+                        <button class="btn btn-link btn-sm m-0 p-0" modal>
+                            {{ getRoleAccess(r)?.length }}
+                            {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                            <clr-icon
+                                class="icon"
+                                size="12"
+                                shape="caret down"></clr-icon>
+                        </button>
+                    </robot-permissions-panel>
+                </clr-dg-cell>
+
+            </clr-dg-row>
+            <clr-dg-footer>
+                <clr-dg-pagination
+                    #pagination
+                    [clrDgPageSize]="pageSize"
+                    [(clrDgPage)]="currentPage"
+                    [clrDgTotalItems]="total">
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
+                    <span *ngIf="total"
+                        >{{ pagination.firstItem + 1 }}
+                        -
+                        {{ pagination.lastItem + 1 }}
+                        {{ 'ROLE.OF' | translate }}
+                    </span>
+                    {{ total }} {{ 'ROLE.ITEMS' | translate }}
+                </clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>
+
+<add-role
+    (addSuccess)="addSuccess($event)"
+    [roleMetadata]="roleMetadata"></add-role>
+
+<view-token (refreshSuccess)="refresh()"></view-token>
+
