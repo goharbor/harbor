@@ -229,6 +229,16 @@ export class PolicyComponent implements OnInit, OnDestroy {
         );
     }
 
+    convertFilterValueToString(value: any): string {
+        if (Array.isArray(value)) {
+            return value.join(',');
+        } else if (typeof value === 'string') {
+            return value;
+        } else {
+            return '';
+        }
+    }
+
     getProviders() {
         this.preheatService
             .ListProvidersUnderProject({ projectName: this.projectName })
@@ -455,21 +465,27 @@ export class PolicyComponent implements OnInit, OnDestroy {
             if (filter && filter.length) {
                 filter.forEach(item => {
                     if (item.type === FILTER_TYPE.REPOS && item.value) {
-                        let str: string = item.value;
+                        const str = this.convertFilterValueToString(
+                            item.value
+                        );
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }
                         this.addP2pPolicyComponent.repos = str;
                     }
                     if (item.type === FILTER_TYPE.TAG && item.value) {
-                        let str: string = item.value;
+                        const str = this.convertFilterValueToString(
+                            item.value
+                        );
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }
                         this.addP2pPolicyComponent.tags = str;
                     }
                     if (item.type === FILTER_TYPE.LABEL && item.value) {
-                        let str: string = item.value;
+                        const str = this.convertFilterValueToString(
+                            item.value
+                        );
                         if (/^{\S+}$/.test(str)) {
                             return str.slice(1, str.length - 1);
                         }

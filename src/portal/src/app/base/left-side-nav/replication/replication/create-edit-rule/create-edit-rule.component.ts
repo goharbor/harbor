@@ -383,9 +383,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.copyStringForLabelFilter = '';
             rule.filters.forEach(item => {
                 if (item.type === FilterType.LABEL) {
-                    this.stringForLabelFilter = (item.value as string[]).join(
-                        ','
-                    );
+                    if (Array.isArray(item.value)) {
+                        this.stringForLabelFilter = item.value.join(',');
+                    } else if (typeof item.value === 'string') {
+                        this.stringForLabelFilter = item.value || '';
+                    } else {
+                        // Handle other types gracefully
+                        this.stringForLabelFilter = '';
+                    }
                     this.copyStringForLabelFilter = this.stringForLabelFilter;
                 }
             });
@@ -549,7 +554,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 if (item.type === FilterType.LABEL) {
                     item.value = this.stringForLabelFilter
                         .split(',')
-                        .filter(item => item);
+                        .filter(label => label.trim() !== '') as any;
                 }
             });
         }

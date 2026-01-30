@@ -7503,7 +7503,6 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        type: object
         description: 'The value of replication policy filter.'
       decoration:
         type: string
