@@ -63,6 +63,7 @@
     "@angular/cli": "^16.2.16",
     "@angular/compiler-cli": "^16.2.9",
     "@cypress/schematic": "^2.5.2",
+    "@playwright/test": "^1.55.0",
     "@types/express": "^4.17.21",
     "@types/jasmine": "~4.3.1",
     "@types/node": "^16.18.108",
