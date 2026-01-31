@@ -74,7 +74,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
-      - name: Configure Docker to trust Harbor certificate 
+      - name: Configure Docker to trust Harbor certificate
         run: |
           cd src/github.com/goharbor/harbor
           # Copy Harbor CA certificate to trusted certificates (both system wide and docker)
@@ -86,6 +86,14 @@ jobs:
           sudo systemctl restart docker
           # Wait for Docker to be ready
           sleep 5
+      - name: Start Webhook Server for E2E tests
+        run: |
+          cd src/github.com/goharbor/harbor/src/portal/e2e/webhook-server
+          docker compose up -d
+          # Wait for webhook server to be ready
+          sleep 10
+          # Set webhook endpoint for tests
+          echo "WEBHOOK_ENDPOINT_UI=$IP:8084" >> $GITHUB_ENV
       - name: Install Playwright dependencies
         run: |
           cd src/github.com/goharbor/harbor/src/portal
