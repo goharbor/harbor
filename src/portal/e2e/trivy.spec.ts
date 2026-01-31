@@ -782,6 +782,65 @@ test('Scan Image With Empty Vul', async ({ page }) => {
   
 })
 
+test('Scan Image On Push', async ({ page }) => {
+  test.setTimeout(2 * 60 * 1000); //5 mins
+  const project = `project${Date.now()}`;
+  const image = 'memcached';
+  const tag = 'latest';
+
+  // login to harbor
+  await page.goto('/');
+  await page.getByRole('textbox', { name: 'Username' }).click();
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin');
+  await page.getByRole('textbox', { name: 'Password' }).click();
+  await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
+  await page.getByRole('button', { name: 'LOG IN' }).click();
+
+  // create a project(public)
+  await page.getByRole('button', { name: 'New Project' }).click();
+  await page.locator('#create_project_name').click();
+  await page.locator('#create_project_name').fill(project);
+  await page.locator("input[name='public'] ~ label.clr-control-label").check();
+  await page.getByRole('button', { name: 'OK' }).click();
+
+  // go into project
+  await page.getByRole('link', { name: project }).click();
+
+  // go into project configs
+  await page.locator('button[title="More"]').click();
+  await page.getByRole('tab', {name: 'Configuration'}).click();
+
+  // enable scan on push in settings
+  await expect(page.locator('#scan-image-on-push-wrapper input')).not.toBeChecked();
+  await page.locator('#scan-image-on-push-wrapper label').check();
+  await expect(page.locator('#scan-image-on-push-wrapper input')).toBeChecked();
+
+  await page.getByRole('button', {name: 'SAVE'}).click();
+
+  await pushImageWithTag(
+    ip,
+    user,
+    pwd,
+    project,
+    image,
+    tag,
+    'latest',
+    'docker.io',
+    'library'
+  );
+
+  // go into the repo
+  await page.getByRole('link', {name: 'Projects'}).click();
+  await page.getByRole('link', {name: project}).click();
+  await page.getByRole('link', {name: project + '/' + image}).click();
+
+  await scanResultShouldDisplayInListRow(page, tag);
+
+  // check the repo scan details
+  await page.getByRole('link', {name: 'sha256'}).click();
+  await viewRepoScanDetails(page, ['Critical', 'High']);
+})
+
 
 /* PLAYWRIGHT UTILITY FUNCTIONS */
 
@@ -816,7 +875,7 @@ async function scanResultShouldDisplayInListRow(
     await expect(vuln_cell).toBeVisible();
     await vuln_cell.hover({timeout: 5000});
     const tooltip = vuln_cell.getByRole('tooltip');
-    await expect(tooltip).toBeVisible({ timeout: 10000 });
+    await expect(tooltip).toBeVisible({ timeout: 5 * 60 * 1000 }); //wait for scan to complete(if happening) 
     
   } else {
     // Case 2: Image HAS vulnerabilities
@@ -828,7 +887,7 @@ async function scanResultShouldDisplayInListRow(
     await expect(vuln_cell).toBeVisible();
     await vuln_cell.hover({timeout: 5000});
     const tooltip = vuln_cell.getByRole('tooltip');
-    await expect(tooltip).toBeVisible({ timeout: 10000 });
+    await expect(tooltip).toBeVisible({ timeout: 5 * 60 * 1000 }); //wait for scan to complete(if happening) 
   }
 }
 
