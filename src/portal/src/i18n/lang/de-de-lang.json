@@ -1118,7 +1118,8 @@
         "DELETION_TITLE_TARGET": "Bestätige Löschung des Labels",
         "DELETION_SUMMARY_TARGET": "Soll {{param}} gelöscht werden?",
         "PLACEHOLDER": "Keine Label gefunden!",
-        "NAME_ALREADY_EXISTS": "Label existiert bereits."
+        "NAME_ALREADY_EXISTS": "Label existiert bereits.",
+        "INVALID_COLOR": "Ungültiger Hex-Farbcode (z.B. #RRGGBB oder #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Projekt",
