@@ -246,6 +246,8 @@
         "CONNECTION_LIMIT": "Connexion maximale au registre en amont",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La connexion maximale au registre en amont pour ce projet de cache proxy, si -1, alors il n'y a pas de limite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Veuillez entrer -1 ou un entier supérieur à 0.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir les images depuis le cache local lorsqu'elles sont supprimées du registre amont",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Lorsque cette option est activée, les images présentes dans le cache local seront servies même si elles ont été supprimées du registre amont.",
         "NO_PROJECT": "Nous n'avons trouvé aucun projet"
     },
     "PROJECT_DETAIL": {

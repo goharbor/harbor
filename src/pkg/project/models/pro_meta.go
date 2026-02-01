@@ -24,6 +24,7 @@ const (
 	ProMetaAutoScan                 = "auto_scan"
 	ProMetaReuseSysCVEAllowlist     = "reuse_sys_cve_allowlist"
 	ProMetaAutoSBOMGen              = "auto_sbom_generation"
-	ProMetaProxySpeed               = "proxy_speed_kb"
-	ProMetaMaxUpstreamConn          = "max_upstream_conn"
+	ProMetaProxySpeed                   = "proxy_speed_kb"
+	ProMetaMaxUpstreamConn              = "max_upstream_conn"
+	ProMetaProxyCacheLocalOnNotFound    = "proxy_cache_local_on_not_found"
 )
