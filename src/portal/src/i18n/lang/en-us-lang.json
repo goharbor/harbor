@@ -245,6 +245,8 @@
         "CONNECTION_LIMIT": "Max connection to upstream registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "The max connection to the upstream registry for this proxy cache project, if -1, then there is no limit",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Serve images from local cache when removed from upstream",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "When enabled, images that exist in the local cache will be served even if they have been removed from the upstream registry.",
         "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {

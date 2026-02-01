@@ -58,7 +58,7 @@ type Controller interface {
 	// UseLocalBlob check if the blob should use local copy
 	UseLocalBlob(ctx context.Context, art lib.ArtifactInfo) bool
 	// UseLocalManifest check manifest should use local copy
-	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error)
+	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface, p *proModels.Project) (bool, *ManifestList, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
@@ -169,7 +169,7 @@ func (c *controller) getManifestDigestInLocal(ctx context.Context, art lib.Artif
 // the return error should be nil when it is not found in local and need to delegate to remote registry
 // the return error should be NotFoundError when it is not found in remote registry
 // the error will be captured by framework and return 404 to client
-func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *ManifestList, error) {
+func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface, p *proModels.Project) (bool, *ManifestList, error) {
 	a, err := c.local.GetManifest(ctx, art)
 	if err != nil {
 		return false, nil, err
@@ -188,7 +188,8 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, err
 	}
 	if !exist || desc == nil {
-		if a != nil { // if not found, use local if it exists, because a exist, otherwise return error
+		// if not found in remote and local artifact exists, check if we should serve from local cache
+		if a != nil && p != nil && p.ProxyCacheLocalOnNotFound() {
 			log.Infof("Artifact not found in remote registry but exists in local cache, serving from local: %v:%v", art.Repository, art.Tag)
 			return true, nil, nil
 		}
