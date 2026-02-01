@@ -121,6 +121,29 @@
                     </clr-control-error>
                 </div>
             </div>
+            <clr-checkbox-container clrInline class="mt-1">
+                <clr-checkbox-wrapper id="proxy-cache-local-on-not-found">
+                    <input
+                        type="checkbox"
+                        id="proxy-cache-local-on-not-found-input"
+                        clrCheckbox
+                        [(ngModel)]="projectPolicy.ProxyCacheLocalOnNotFound"
+                        name="proxy-cache-local-on-not-found"
+                        [disabled]="!hasChangeConfigRole" />
+                    <label for="proxy-cache-local-on-not-found-input">
+                        {{
+                            'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND'
+                                | translate
+                        }}
+                    </label>
+                </clr-checkbox-wrapper>
+                <clr-control-helper class="config-subtext">
+                    {{
+                        'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP'
+                            | translate
+                    }}
+                </clr-control-helper>
+            </clr-checkbox-container>
         </div>
 
         <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
