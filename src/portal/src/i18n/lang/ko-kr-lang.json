@@ -60,7 +60,7 @@
         "PULL_BASED": "원격 레지스트리의 리소스를 로컬 'Harbor'로 가져옵니다.",
         "DESTINATION_NAMESPACE": "대상 네임스페이스를 지정합니다. 비어 있으면 리소스는 소스와 동일한 네임스페이스에 배치됩니다.",
         "OVERRIDE": "동일한 이름의 리소스가 있는 경우 대상의 리소스를 재정의할지 여부를 지정합니다.",
-        "SINGLE_ACTIVE_REPLICATION": "Specify whether to skip execution until the previous active execution finishes, avoiding the execution of the same replication rules multiple times in parallel.",
+        "SINGLE_ACTIVE_REPLICATION": "이전 활성 실행이 완료될 때까지 실행을 건너뛰어 동일한 복제 규칙이 병렬로 여러 번 실행되는 것을 방지할지 여부를 지정합니다.",
         "EMAIL": "이메일은 name@example.com과 같은 유효한 이메일 주소여야 합니다.",
         "USER_NAME": "특수 문자를 포함할 수 없으며 최대 길이는 255자입니다.",
         "FULL_NAME": "최대 길이는 20자입니다.",
@@ -89,7 +89,7 @@
         "OIDC_AUTOONBOARD": "온보딩 화면을 건너뛰면 사용자가 사용자 이름을 변경할 수 없습니다. 사용자 이름은 ID 토큰에서 제공됩니다.",
         "OIDC_USER_CLAIM": "사용자 이름을 검색하는 ID 토큰의 클레임 이름입니다. 지정하지 않으면 기본값은 'name'입니다.",
         "NEW_SECRET": "시크릿은 대문자 1개, 소문자 1개, 숫자 1개 이상이 포함된 8자 이상이여야합니다",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
+        "OIDC_LOGOUT": "ID 공급자에서 현재 세션을 로그아웃합니다."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "현재 비밀번호를 입력하세요",
@@ -167,8 +167,8 @@
             "INTERROGATION_SERVICES": "질의 서비스"
         },
         "LOGS": "로그",
-        "AUDIT_LOGS": "Audit Logs",
-        "LEGACY_LOGS": "Audit Logs (Legacy)",
+        "AUDIT_LOGS": "감사 로그",
+        "LEGACY_LOGS": "감사 로그 (레거시)",
         "TASKS": "테스크",
         "HARBOR_API_MANAGEMENT": "Harbor API V2.0",
         "DISTRIBUTIONS": {
@@ -239,9 +239,13 @@
         "QUOTA_UNLIMIT_TIP": "프로젝트에서 사용할 수 있는 최대 논리적 공간입니다. 할당량을 무제한으로 설정하려면 '-1'을 입력하세요.",
         "TYPE": "종류",
         "PROXY_CACHE": "프록시 캐시",
-        "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 풀스루 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
+        "PROXY_CACHE_TOOLTIP": "이 프로젝트가 특정 대상 레지스트리 인스턴스에 대한 프록시 캐시 역할을 할 수 있도록 하려면 이 옵션을 활성화합니다. Harbor는 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR 및 JFrog Artifactory 레지스트리에 대해서만 프록시 역할을 할 수 있습니다.",
         "ENDPOINT": "엔드포인트",
-        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트"
+        "PROXY_CACHE_ENDPOINT": "프록시 캐시 엔드포인트",
+        "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "이 프록시 캐시 프로젝트의 업스트림 레지스트리에 대한 최대 연결 수입니다. -1이면 제한이 없습니다",
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "-1 또는 0보다 큰 정수를 입력하세요.",
+        "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "요약",
@@ -268,7 +272,11 @@
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "취약점 스캔",
         "AUTOSCAN_TOGGLE": "푸시 시 이미지 자동 스캔",
-        "AUTOSCAN_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 이미지를 스캔합니다."
+        "AUTOSCAN_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 이미지를 스캔합니다.",
+        "AUTOSBOM_TOGGLE": "푸시 시 SBOM 자동 생성",
+        "AUTOSBOM_POLICY": "이미지가 프로젝트 레지스트리에 푸시되면 자동으로 SBOM을 생성합니다.",
+        "CONTENT_TRUST_POLICY": "확인된 이미지만 배포되도록 허용합니다.",
+        "SBOM": "SBOM 생성"
     },
     "MEMBER": {
         "NEW_MEMBER": "새 구성원",
@@ -490,6 +498,7 @@
         "RESOURCE_TYPE": "리소스 종류"
     },
     "REPLICATION": {
+        "REPLICATION_TRIGGER": "트리거",
         "PUSH_BASED_ONLY": "푸시 기반 복제에만 해당됩니다",
         "YES": "예",
         "SECONDS": "초",
@@ -500,14 +509,14 @@
         "DAY_WEEK": "해당 주의 일",
         "CRON_TITLE": "cron '* * * * * *'에 대한 패턴 설명입니다. cron 문자열은 UTC 시간을 기반으로 합니다.",
         "FIELD_NAME": "필드 이름",
-        "MANDATORY": "Mandatory?",
+        "MANDATORY": "필수 항목입니까?",
         "ALLOWED_VALUES": "허용되는 값",
         "ALLOWED_CHARACTERS": "허용되는 특수 문자",
         "TOTAL": "총",
-        "OVERRIDE": "Override",
-        "SINGLE_ACTIVE_REPLICATION": "Single active replication",
+        "OVERRIDE": "재정의",
+        "SINGLE_ACTIVE_REPLICATION": "단일 활성 복제",
         "ENABLED_RULE": "규칙 활성화",
-        "OVERRIDE_INFO": "Override",
+        "OVERRIDE_INFO": "재정의",
         "OPERATION": "작업",
         "CURRENT": "현재",
         "FILTER_PLACEHOLDER": "작업 필터",
@@ -564,10 +573,10 @@
         "ERROR": "에러",
         "STOPPED": "중지 됨",
         "FINISHED": "완료 됨",
-        "SIMPLE": "Simple",
-        "ADVANCED": "Advanced",
+        "SIMPLE": "기본",
+        "ADVANCED": "고급",
         "STATUS": "상태",
-        "CREATION_TIME": "종료 시간",
+        "CREATION_TIME": "생성 시간",
         "UPDATE_TIME": "갱신 시간",
         "END_TIME": "종료 시간",
         "LOGS": "로그",
@@ -666,7 +675,10 @@
         "DELETED_SUCCESS": "엔드포인트를 성공적으로 삭제했습니다.",
         "DELETED_FAILED": "엔드포인트 삭제를 실패했습니다.",
         "CANNOT_EDIT": "복제 규칙이 활성화된 동안에는 엔드포인트를 변경할 수 없습니다..",
-        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!"
+        "PLACEHOLDER": "엔드포인트를 찾을 수 없습니다!",
+        "CA_CERTIFICATE": "CA 인증서",
+        "CA_CERTIFICATE_TOOLTIP": "레지스트리의 TLS 인증서를 확인하기 위해 PEM 인코딩된 CA 인증서를 제공하십시오. 비워두면 시스템 CA 풀을 사용합니다. 이 필드는 '원격 인증서 확인'이 활성화된 경우에만 사용할 수 있습니다.",
+        "CA_CERTIFICATE_HELPER": "선택 사항입니다. 이 엔드포인트에 대한 자체 서명 또는 개인 CA 인증서를 신뢰하려면 여기에 PEM 인코딩된 CA 인증서를 붙여넣으십시오. 비워두면 Harbor는 시스템 CA 풀을 사용합니다."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Digest 복사",
@@ -715,7 +727,7 @@
         "ADD_LABEL_TO_IMAGE": "이 이미지에 라벨 추가",
         "FILTER_ARTIFACT_BY_LABEL": "라벨별로 아티팩트 필터",
         "ADD_LABELS": "라벨 추가",
-        "STOP": "Stop",
+        "STOP": "중지",
         "RETAG": "복사",
         "ACTION": "동작",
         "ADDITIONAL_INFO": "추가 정보 추가",
@@ -749,6 +761,7 @@
         "SUB_TITLE": "보기"
     },
     "CONFIG": {
+        "WEBHOOK_NOTIFICATION_ENABLED": "웹훅 활성화됨",
         "SECURITY": "보안",
         "TITLE": "설정",
         "AUTH": "인증",
@@ -830,7 +843,9 @@
             "LDAP_GROUP_MEMBERSHIP": "LDAP Group 멤버쉽",
             "LDAP_GROUP_MEMBERSHIP_INFO": "속성은 LDAP 그룹의 멤버십을 나타내며 기본값은 memberof이며 일부 LDAP 서버에서는 \"ismemberof\"일 수 있습니다. LDAP 그룹 관련 기능을 활성화해야 하는 경우 이 필드를 비워둘 수 없습니다.",
             "GROUP_SCOPE": "LDAP 그룹 검색 범위",
-            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다."
+            "GROUP_SCOPE_INFO": "그룹을 검색할 범위는 기본적으로 Subtree를 선택합니다.",
+            "GROUP_ATTACH_PARALLEL": "LDAP 그룹 병렬 연결",
+            "GROUP_ATTACH_PARALLEL_INFO": "그룹이 너무 많을 때 시간 초과를 방지하기 위해 그룹을 병렬로 연결하려면 이 옵션을 활성화하세요. 비활성화하면 LDAP 그룹 정보가 순차적으로 연결됩니다."
         },
         "UAA": {
             "ENDPOINT": "UAA 엔드포인트",
@@ -979,7 +994,8 @@
             "FOOT_ITEMS": "아이템",
             "FOOT_OF": "of",
             "IN_ALLOW_LIST": "CVE 허용 목록에 나열됨",
-            "CVSS3": "CVSS3"
+            "CVSS3": "CVSS3",
+            "COLUMN_STATUS": "상태"
         },
         "CHART": {
             "SCANNING_TIME": "스캔 완료 시간:",
@@ -1003,12 +1019,12 @@
         "PLACEHOLDER": "취약점 필터",
         "PACKAGE": "패키지",
         "PACKAGES": "패키지들",
-        "SCAN_NOW": "Scan vulnerability",
-        "SCAN_BY": "{{scanner}로 스캔",
+        "SCAN_NOW": "취약점 스캔",
+        "SCAN_BY": "{{scanner}}로 스캔",
         "REPORTED_BY": "{{scanner}}로 보고 됨",
         "NO_SCANNER": "스캐너 없음",
         "TRIGGER_STOP_SUCCESS": "트리거 중지 스캔이 성공적으로 수행되었습니다",
-        "STOP_NOW": "Stop Scan Vulnerability"
+        "STOP_NOW": "스캔 중지"
     },
     "PUSH_IMAGE": {
         "TITLE": "푸시 명령어",
@@ -1038,7 +1054,9 @@
         "ALL": "모두",
         "PLACEHOLDER": "아티팩트를 찾을 수 없음!",
         "SCAN_UNSUPPORTED": "지원되지 않음",
-        "SBOM_UNSUPPORTED": "Unsupported",
+        "SBOM_UNSUPPORTED": "지원되지 않음",
+        "LICENSE": "라이선스",
+        "FILES": "파일",
         "SUMMARY": "요약",
         "DEPENDENCIES": "종속성",
         "VALUES": "값",
@@ -1412,6 +1430,10 @@
         "UNHEALTHY": "위험한",
         "SCANNERS": "스캐너들",
         "SCANNER": "스캐너",
+        "SBOM": "SBOM",
+        "VULNERABILITY": "취약점",
+        "SUPPORTED": "지원됨",
+        "NOT_SUPPORTED": "지원되지 않음",
         "EDIT": "편집",
         "NOT_AVAILABLE": "사용 불가",
         "ADAPTER": "Adapter",

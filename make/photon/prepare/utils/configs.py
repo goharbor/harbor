@@ -214,6 +214,8 @@ def parse_yaml_config(config_file_path, with_trivy):
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_skip_java_db_update'] = trivy_configs.get("skip_java_db_update") or False
+    config_dict['trivy_db_repository'] = trivy_configs.get("db_repository") or 'ghcr.io/aquasecurity/trivy-db'
+    config_dict['trivy_java_db_repository'] = trivy_configs.get("java_db_repository") or 'ghcr.io/aquasecurity/trivy-java-db'
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
     config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False

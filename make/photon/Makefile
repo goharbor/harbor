@@ -205,7 +205,7 @@ _build_standalone_db_migrator:
 _compile_and_build_exporter:
 	@$(call _build_base,$(EXPORTER),$(DOCKERFILEPATH_EXPORTER))
 	@echo "compiling and building image for exporter..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) --build-arg harbor_version=$(RELEASEVERSION) --build-arg git_commit=$(GITCOMMIT) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
 	@echo "Done."
 
 define _extract_archive
