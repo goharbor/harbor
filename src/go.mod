@@ -28,7 +28,6 @@ require (
 	github.com/go-openapi/strfmt v0.25.0
 	github.com/go-openapi/swag v0.23.1
 	github.com/go-openapi/validate v0.25.1
-	github.com/go-redis/redis/v8 v8.11.4
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
@@ -51,6 +50,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/client_model v0.6.2
+	github.com/redis/go-redis/v9 v9.17.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.11.1

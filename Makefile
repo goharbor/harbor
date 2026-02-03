@@ -112,7 +112,7 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.68.2
-TRIVYADAPTERVERSION=v0.34.2
+TRIVYADAPTERVERSION=v0.35.0-rc.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
@@ -121,7 +121,7 @@ REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.1
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
 # dependency binaries
-REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
+REGISTRYURL=
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 
@@ -487,7 +487,7 @@ misspell:
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint

@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "项目可以使用的最大逻辑空间。如果您想要不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的代理缓存。仅支持 DockerHub、Docker Registry、Harbor、Aws ECR、Azure ACR、Alibaba Cloud ACR、Quay、Google GCR、Github GHCR 和 JFrog Artifactory 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址",
         "CONNECTION_LIMIT": "上游仓库最大连接数",
