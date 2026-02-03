@@ -802,7 +802,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Enable sign up.",
             "SELF_REGISTRATION_DISABLE": "Deactivate sign up.",
-            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
+            "VERIFY_REMOTE_CERT": "Determine whether the image replication should verify the certificate for a remote registry.  Uncheck this box when skip verify remote registry endpoint cert.",
             "AUTH_MODE": "By default the authentication mode is database, i.e. the credentials are stored in a local database. Set it to LDAP if you want to verify a user's credential against an LDAP server.",
             "PRIMARY_AUTH_MODE": "This auth mode becomes the default way for users to login. The login screen where the user selects to login via the identity provider or via local DB will automatically redirect the user to this identity provider. Login via DB is possible when visiting the url '/account/sign-in' explicitly.",
             "LDAP_SEARCH_DN": "A user's DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.",
