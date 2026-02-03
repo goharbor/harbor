@@ -7320,8 +7320,9 @@ definitions:
         x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        description: |-
+          Whether this project reuse the system level CVE allowlist as the allowlist of its own. The valid values are "true", "false".
+          If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.
         x-nullable: true
       retention_id:
         type: string
