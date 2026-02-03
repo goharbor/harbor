@@ -34,7 +34,12 @@ linters:
       - linters:
           - revive
         text: "var-naming: avoid meaningless package names"
-        path: "(common/|core/utils/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/)"
+        path: "(common/|core/utils/|core/api/|jobservice/api/|registryctl/api/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/)"
+      # TODO: Fix package naming - these packages conflict with Go stdlib
+      - linters:
+          - revive
+        text: "var-naming: avoid package names that conflict with Go standard library package names"
+        path: "(common/http/|lib/errors/|lib/http/)"
     paths:
       - third_party$
       - builtin$
