@@ -26,10 +26,6 @@ type projectRBACRole struct {
 	role      *role.Role
 }
 
-// GetRoleName returns role name for the visitor role
-// TODO MGS remove this !!!
-// get the role names dynamically from the roles service
-
 func (role *projectRBACRole) GetRoleName() string {
 	log.Debug("*** get roleName", role.role.Name)
 
