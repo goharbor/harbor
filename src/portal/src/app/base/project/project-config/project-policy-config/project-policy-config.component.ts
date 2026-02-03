@@ -59,7 +59,6 @@ export class ProjectPolicy {
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
     MaxUpstreamConn?: number | null;
-    ProxyReferrerAPI?: boolean;
 
     constructor() {
         this.Public = false;
@@ -73,7 +72,6 @@ export class ProjectPolicy {
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
         this.MaxUpstreamConn = -1;
-        this.ProxyReferrerAPI = false;
     }
 
     initByProject(pro: Project) {
@@ -95,8 +93,6 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = pro.metadata.max_upstream_conn
             ? pro.metadata.max_upstream_conn
             : -1;
-        this.ProxyReferrerAPI =
-            pro.metadata.proxy_referrer_api === 'true' ? true : false;
     }
 }
 const PAGE_SIZE: number = 100;

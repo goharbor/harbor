@@ -106,13 +106,6 @@ func TestParseScopes(t *testing.T) {
 	assert.Equal(t, scopeActionPull, scopes[1].Actions[0])
 	assert.Equal(t, scopeActionPush, scopes[1].Actions[1])
 
-	// referrers
-	req, _ = http.NewRequest(http.MethodGet, "/v2/library/hello-world/referrers/sha256:eec76eedea59f7bf39a2713bfd995c82cfaa97724ee5b7f5aba253e07423d0ae", nil)
-	scopes = parseScopes(req)
-	require.Len(t, scopes, 1)
-	assert.Equal(t, scopeTypeRepository, scopes[0].Type)
-	assert.Equal(t, "library/hello-world", scopes[0].Name)
-
 	// no match
 	req, _ = http.NewRequest(http.MethodPost, "/api/others", nil)
 	scopes = parseScopes(req)
