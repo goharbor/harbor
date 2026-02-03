@@ -27,7 +27,7 @@ const RegistryCollectorName = "RegistryCollector"
 
 var (
 	registryStatus = typedDesc{
-		desc:      newDescWithLables("", "registry_status", "Status of the registry", "name", "url", "type"),
+		desc:      newDescWithLables("", "harbor_registry_health", "Status of the registry", "name", "url", "type"),
 		valueType: prometheus.GaugeValue,
 	}
 )
