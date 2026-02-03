@@ -92,7 +92,7 @@ func (l *localHelper) init() {
 	log.Debugf("core url:%s, local core url: %v", config.GetCoreURL(), config.LocalCoreURL())
 	// the traffic is internal only
 	registryURL := config.LocalCoreURL()
-	l.registry = registry.NewClientWithAuthorizer(registryURL, secret.NewAuthorizer(), true)
+	l.registry = registry.NewClientWithAuthorizer(registryURL, secret.NewAuthorizer(), true, "")
 	l.cache = cache.Default()
 }
 
