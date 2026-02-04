@@ -53,7 +53,7 @@ func getRealmService(host string, insecure bool, caCert string) (string, string,
 		Transport: util.GetHTTPTransport(insecure, caCert),
 	}
 
-	// for ut
+	// Allow tests to override the host (e.g., inject mock server URL) via resolveHost
 	host = resolveHost(host)
 
 	resp, err := client.Get(host + "/v2/")
