@@ -52,7 +52,7 @@ func NewBuilderForUser(user *models.User, ctl project.Controller, ctl_r role.Con
 
 		for _, role_id := range roles_ids {
 			var r *role.Role
-			r, err = ctl_r.Get(ctx, int64(role_id), &role.Option{WithPermission: true, Operator: "test"})
+			r, err = ctl_r.Get(ctx, int64(role_id), &role.Option{WithPermission: true})
 			roles = append(roles, r)
 		}
 
