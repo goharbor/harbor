@@ -35,7 +35,7 @@ func Test_getRegionRegistryNamer(t *testing.T) {
 }
 
 func Test_getRealmService(t *testing.T) {
-	// mock registry：/v2/ return bearer challenge
+	// mock registry: /v2/ returns bearer challenge
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v2/" {
 			http.NotFound(w, r)
