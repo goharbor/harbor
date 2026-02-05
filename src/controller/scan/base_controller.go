@@ -387,6 +387,10 @@ func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bo
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
+	// propagate optional scan-all scope from context into execution extra attrs
+	if scope := FromContextScope(ctx); scope != nil {
+		extra["scope"] = scope
+	}
 	executionID, err := bc.execMgr.Create(ctx, job.ScanAllVendorType, 0, trigger, extra)
 	if err != nil {
 		return 0, err
@@ -458,6 +462,72 @@ func (bc *basicController) isScanAllStopped(ctx context.Context, execID int64) b
 
 func (bc *basicController) startScanAll(ctx context.Context, executionID int64) error {
 	batchSize := 50
+
+	// Build optional artifact query based on stored scope on execution
+	var artQuery *q.Query
+	if exec, err := bc.execMgr.Get(ctx, executionID); err == nil && exec != nil {
+		if exec.ExtraAttrs != nil {
+			if s, ok := exec.ExtraAttrs["scope"].(map[string]any); ok {
+				artQuery = &q.Query{Keywords: map[string]any{}}
+				// project ids
+				if arr, ok := s["project_ids"].([]any); ok {
+					vals := make([]any, 0, len(arr))
+					for _, v := range arr {
+						switch t := v.(type) {
+						case float64:
+							vals = append(vals, int64(t))
+						case int64:
+							vals = append(vals, t)
+						}
+					}
+					if len(vals) > 0 {
+						artQuery.Keywords["ProjectID"] = &q.OrList{Values: vals}
+					}
+				}
+				if arr, ok := s["ProjectIDs"].([]any); ok && artQuery.Keywords["ProjectID"] == nil {
+					vals := make([]any, 0, len(arr))
+					for _, v := range arr {
+						switch t := v.(type) {
+						case float64:
+							vals = append(vals, int64(t))
+						case int64:
+							vals = append(vals, t)
+						}
+					}
+					if len(vals) > 0 {
+						artQuery.Keywords["ProjectID"] = &q.OrList{Values: vals}
+					}
+				}
+				// repositories
+				if arr, ok := s["repositories"].([]any); ok {
+					vals := make([]any, 0, len(arr))
+					for _, v := range arr {
+						if name, ok := v.(string); ok {
+							vals = append(vals, name)
+						}
+					}
+					if len(vals) > 0 {
+						artQuery.Keywords["RepositoryName"] = &q.OrList{Values: vals}
+					}
+				}
+				if arr, ok := s["Repositories"].([]any); ok && artQuery.Keywords["RepositoryName"] == nil {
+					vals := make([]any, 0, len(arr))
+					for _, v := range arr {
+						if name, ok := v.(string); ok {
+							vals = append(vals, name)
+						}
+					}
+					if len(vals) > 0 {
+						artQuery.Keywords["RepositoryName"] = &q.OrList{Values: vals}
+					}
+				}
+				// if query is empty, keep as nil to scan all
+				if len(artQuery.Keywords) == 0 {
+					artQuery = nil
+				}
+			}
+		}
+	}
 
 	summary := struct {
 		TotalCount        int `json:"total_count"`
