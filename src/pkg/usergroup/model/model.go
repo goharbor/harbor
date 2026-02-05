@@ -30,6 +30,11 @@ func (u *UserGroup) TableName() string {
 	return UserGroupTable
 }
 
+// GetID returns the ID of the user group
+func (u *UserGroup) GetID() int64 {
+	return int64(u.ID)
+}
+
 // UserGroupsFromName ...
 func UserGroupsFromName(groupNames []string, groupType int) []UserGroup {
 	groups := make([]UserGroup, 0)
