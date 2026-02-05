@@ -7320,8 +7320,9 @@ definitions:
         x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        description: |-
+          Whether this project reuse the system level CVE allowlist as the allowlist of its own. The valid values are "true", "false".
+          If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.
         x-nullable: true
       retention_id:
         type: string
@@ -7334,10 +7335,6 @@ definitions:
       max_upstream_conn:
         type: string
         description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
-        x-nullable: true
-      proxy_referrer_api:
-        type: string
-        description: 'Whether the proxy cache project should handle API referrer requests. The valid values are "true", "false".'
         x-nullable: true
   ProjectSummary:
     type: object
