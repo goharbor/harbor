@@ -8,6 +8,7 @@
 ![OCI Distribution Conformance Tests](https://github.com/goharbor/harbor/workflows/CONFORMANCE_TEST/badge.svg)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
 [![Helm Chart on Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor)](https://artifacthub.io/packages/helm/harbor/harbor)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/goharbor/harbor/badge)](https://scorecard.dev/viewer/?uri=github.com/goharbor/harbor)
 </br>
 
 |![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
@@ -51,7 +52,6 @@ For learning the architecture design of Harbor, check the document [Architecture
   * Part 1: [New or changed APIs](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/main/api/v2.0/swagger.yaml)
 
 ## Install & Run
-
 **System requirements:**
 
 **On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
@@ -61,6 +61,26 @@ Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/rele
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
 Refer to the **[documentation](https://goharbor.io/docs/)** for more details on how to use Harbor.
+### Verifying Release Signatures
+Starting with v2.15.0, Harbor release artifacts are cryptographically signed using Cosign to ensure authenticity and integrity.
+
+Download the installers and signature bundles from the Harbor releases page.
+
+#### Quick Verification
+```bash
+# Install Cosign (v2.0+)
+brew install sigstore/tap/cosign
+
+# Verify signature
+cosign verify-blob \
+  --bundle harbor-offline-installer-v2.15.0.tgz.sigstore.json \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/publish_release.yml@refs/tags/v.*$' \
+  harbor-offline-installer-v2.15.0.tgz
+```
+- *Expected output:* Verified OK
+
+- *Full verification guide:* [docs/signature-verification.md](docs/signature-verification.md)
 
 ## OCI Distribution Conformance Tests
 
