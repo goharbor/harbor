@@ -16,6 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../../shared/services/session.service';
 import { SessionUser } from '../../../shared/entities/session-user';
 import { Project } from '../project';
+import { CommonRoutes } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-project-config',
@@ -44,6 +45,16 @@ export class ProjectConfigComponent implements OnInit {
             this.projectName = pro.name;
             if (pro.registry_id) {
                 this.isProxyCacheProject = true;
+            }
+
+            // Check user role and redirect if Limited Guest or Guest
+            const userRole = pro.role_name;
+            const excludedRoles = ['MEMBER.LIMITED_GUEST', 'MEMBER.GUEST'];
+
+            if (excludedRoles.includes(userRole)) {
+                // Redirect to repositories page
+                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                return;
             }
         }
     }
