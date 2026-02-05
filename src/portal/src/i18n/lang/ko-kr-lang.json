@@ -105,7 +105,7 @@
         "TITLE": "사용자 프로필",
         "USER_NAME": "사용자 이름",
         "EMAIL": "이메일",
-        "FULL_NAME": "성과 이름",
+        "FULL_NAME": "이름(성명)",
         "COMMENT": "코맨트",
         "PASSWORD": "비밀번호",
         "SAVE_SUCCESS": "사용자 프로필이 성공적으로 저장됐습니다.",
