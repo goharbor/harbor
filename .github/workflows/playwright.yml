@@ -69,23 +69,23 @@ jobs:
           curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
+      - name: Configure Docker to trust Harbor certificate
+        run: |
+          cd src/github.com/goharbor/harbor
+          # Copy Harbor CA certificate to system trusted certificates
+          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          # Add to Docker's certificate directory for the specific registry IP
+          sudo mkdir -p /etc/docker/certs.d/$IP
+          sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$IP/ca.crt
+          # Restart Docker to pick up new certificates 
+          sudo systemctl restart docker
+          sleep 5
       - name: Start Harbor for E2E
         run: |
           cd src/github.com/goharbor/harbor
           docker system prune -a -f
           bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
-      - name: Configure Docker to trust Harbor certificate
-        run: |
-          cd src/github.com/goharbor/harbor
-          # Copy Harbor CA certificate to trusted certificates (both system wide and docker)
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo mkdir -p /etc/docker/certs.d/$IP
-          sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$IP/ca.crt
-          # Restart Docker to pick up new certificates
-          sudo systemctl restart docker
-          # Wait for Docker to be ready
-          sleep 5
       - name: Start Webhook Server for E2E tests
         run: |
           cd src/github.com/goharbor/harbor/src/portal/e2e/webhook-server
