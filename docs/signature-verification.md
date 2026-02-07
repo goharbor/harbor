@@ -75,6 +75,46 @@ cosign verify-blob \
   harbor-online-installer-v2.15.0.tgz
 ```
 
+### 4. Verify Container Image Signatures
+
+All Harbor container images are signed using Cosign keyless signing on both Docker Hub and GHCR.
+
+```bash
+# Verify a Docker Hub image
+cosign verify \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/publish_release.yml@refs/tags/v.*$' \
+  docker.io/goharbor/harbor-core:v2.15.0
+
+# Verify a GHCR image
+cosign verify \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github.com/goharbor/harbor/.github/workflows/publish_release.yml@refs/tags/v.*$' \
+  ghcr.io/goharbor/harbor-core:v2.15.0
+```
+
+Replace `harbor-core` with any Harbor component (e.g., `harbor-portal`, `harbor-jobservice`, `harbor-db`, `nginx-photon`, `redis-photon`, `registry-photon`, `harbor-registryctl`, `harbor-log`, `prepare`, `trivy-adapter-photon`, `harbor-exporter`).
+
+### 5. Retrieve and Inspect SBOM
+
+SPDX-formatted SBOMs are attached to every Harbor container image.
+
+```bash
+# Download the SBOM for a specific image
+cosign download sbom docker.io/goharbor/harbor-core:v2.15.0 > harbor-core-sbom.spdx.json
+
+# Inspect the SBOM contents
+cat harbor-core-sbom.spdx.json | jq '.packages | length'
+
+# Download from GHCR
+cosign download sbom ghcr.io/goharbor/harbor-core:v2.15.0 > harbor-core-sbom.spdx.json
+```
+
+A consolidated SBOM covering all Harbor images is also available as a release asset:
+```bash
+wget https://github.com/goharbor/harbor/releases/download/v2.15.0/harbor-sbom-v2.15.0.spdx.json
+```
+
 ## Troubleshooting
 
 ### Certificate identity doesn't match
@@ -98,6 +138,8 @@ cosign verify-blob \
 - **File authenticity** - Signed by official Harbor CI/CD workflow  
 - **File integrity** - No modifications since signing  
 - **Build provenance** - Logged in public Sigstore transparency log
+- **Container image authenticity** - Each image signed with keyless Cosign signature on Docker Hub and GHCR
+- **Software bill of materials** - SPDX SBOM attached to each container image and included as a consolidated release asset
 
 ## Resources
 

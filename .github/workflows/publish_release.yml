@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
       id-token: write  # Required for Cosign keyless signing
+      packages: write   # Required for GHCR image signing and SBOM attachment
     steps:
       - uses: actions/checkout@v6
       - name: Setup env
@@ -53,6 +54,8 @@ jobs:
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4.0.0
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
       - name: Sign Release Artifacts
         run: |
           cosign sign-blob --yes \
@@ -80,9 +83,24 @@ jobs:
           tar -zxf ${{ env.OFFLINE_PACKAGE_PATH }}
           docker load -i ./harbor/harbor.${{ env.BASE_TAG }}.tar.gz
           images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${{ env.BASE_TAG }}' | xargs)"
+          echo "HARBOR_IMAGES=$images" >> $GITHUB_ENV
           source tools/release/release_utils.sh
           publishImages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" $images
           publishPackages ${{ env.CUR_TAG }} ${{ env.BASE_TAG }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }} $images
+      - name: Generate SBOMs
+        run: |
+          mkdir -p ./assets/sboms
+          source tools/release/release_utils.sh
+          generateSBOMs "${{ env.CUR_TAG }}" "${{ env.BASE_TAG }}" "./assets/sboms" ${{ env.HARBOR_IMAGES }}
+          echo "SBOM_CONSOLIDATED_PATH=./assets/sboms/harbor-sbom-${{ env.CUR_TAG }}.spdx.json" >> $GITHUB_ENV
+      - name: Sign Container Images and Attach SBOMs
+        run: |
+          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          source tools/release/release_utils.sh
+          signAndAttachSBOMs "${{ env.CUR_TAG }}" "./assets/sboms" ${{ env.HARBOR_IMAGES }}
+          docker logout
+          docker logout ghcr.io
       - name: Generate release notes
         run: |
           release_notes_path=$(pwd)/release-notes.txt
@@ -97,6 +115,7 @@ jobs:
             ${{ env.OFFLINE_PACKAGE_PATH }}
             ${{ env.OFFLINE_SIGSTORE_PATH }}
             ${{ env.MD5SUM_PATH }}
+            ${{ env.SBOM_CONSOLIDATED_PATH }}
       - name: GA Release
         uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'false' }}
@@ -108,3 +127,4 @@ jobs:
             ${{ env.ONLINE_PACKAGE_PATH }}
             ${{ env.ONLINE_SIGSTORE_PATH }}
             ${{ env.MD5SUM_PATH }}
+            ${{ env.SBOM_CONSOLIDATED_PATH }}
