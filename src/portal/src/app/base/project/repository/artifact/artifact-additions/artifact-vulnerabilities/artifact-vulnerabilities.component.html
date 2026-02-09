@@ -64,7 +64,7 @@
             <clr-dg-column [clrDgSortBy]="cvssSort">{{
                 'VULNERABILITY.GRID.CVSS3' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{
+            <clr-dg-column [clrDgField]="'status'">{{
                 'VULNERABILITY.GRID.COLUMN_STATUS' | translate
             }}</clr-dg-column>
             <clr-dg-column [clrDgField]="'package'">{{
