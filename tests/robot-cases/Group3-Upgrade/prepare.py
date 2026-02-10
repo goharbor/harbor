@@ -120,7 +120,7 @@ class HarborAPI:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
                 for _repo in project["repo"]:
-                    pull_image(args.endpoint+"/"+ project["name"]+"/"+_repo["cache_image_namespace"]+"/"+_repo["cache_image"])
+                    get_manifest(args.endpoint, project["name"], _repo["cache_image_namespace"], _repo["cache_image"], user=USER_ADMIN["username"], password=USER_ADMIN["password"])
                     time.sleep(180)
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
                     repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
@@ -637,6 +637,29 @@ def pull_image(*image):
     for i in image:
         print("docker pulling image: ", i)
         os.system("docker pull "+i)
+
+def get_manifest(endpoint, project, namespace, image, tag="latest", user="admin", password="Harbor12345"):
+    """
+    Get manifest from Harbor registry via HTTP request
+    """
+    manifest_url = f"https://{endpoint}/v2/{project}/{namespace}/{image}/manifests/{tag}"
+    print(f"Getting manifest from: {manifest_url}")
+    try:
+        resp = requests.get(
+            manifest_url,
+            auth=(user, password),
+            verify=False,
+            headers={'Accept': 'application/vnd.docker.distribution.manifest.v2+json'}
+        )
+        if resp.status_code == 200:
+            print(f"Successfully retrieved manifest for {project}/{namespace}/{image}:{tag}")
+            return resp.json()
+        else:
+            print(f"Failed to get manifest: {resp.status_code} - {resp.text}")
+            return None
+    except Exception as e:
+        print(f"Error getting manifest: {str(e)}")
+        return None
 
 def push_image(image, project):
     os.system("docker tag "+image+" "+args.endpoint+"/"+project+"/"+image)
