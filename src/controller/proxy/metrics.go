@@ -22,6 +22,6 @@ var (
 )
 
 func init() {
-	prometheus.MustRegister(ProxyRequestsTotal)
-	prometheus.MustRegister(ProxyUpstreamRequestsTotal)
+	_ = prometheus.Register(ProxyRequestsTotal)
+	_ = prometheus.Register(ProxyUpstreamRequestsTotal)
 }
