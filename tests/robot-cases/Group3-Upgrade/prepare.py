@@ -121,7 +121,7 @@ class HarborAPI:
                 repo = Repository()
                 for _repo in project["repo"]:
                     get_manifest(args.endpoint, project["name"], _repo["cache_image_namespace"], _repo["cache_image"], user=USER_ADMIN["username"], password=USER_ADMIN["password"])
-                    time.sleep(180)
+                    time.sleep(360)
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
                     repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
             return
