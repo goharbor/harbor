@@ -121,9 +121,8 @@ class HarborAPI:
                 repo = Repository()
                 for _repo in project["repo"]:
                     get_manifest(args.endpoint, project["name"], _repo["cache_image_namespace"], _repo["cache_image"], user=USER_ADMIN["username"], password=USER_ADMIN["password"])
-                    time.sleep(360)
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
-                    repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                    repo_data = wait_for_repository(repo, project["name"], repo_name, timeout=900, poll_interval=5)
             return
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
@@ -660,6 +659,36 @@ def get_manifest(endpoint, project, namespace, image, tag="latest", user="admin"
     except Exception as e:
         print(f"Error getting manifest: {str(e)}")
         return None
+
+def wait_for_repository(repo_obj, project_name, repo_name, timeout=360, poll_interval=5):
+    """
+    Wait for repository to be available with timeout and polling
+    """
+    import time
+    start_time = time.time()
+    attempt = 0
+    
+    while time.time() - start_time < timeout:
+        attempt += 1
+        try:
+            print(f"Checking repository availability (attempt {attempt})...")
+            repo_data = repo_obj.get_repository(project_name, repo_name)
+            if repo_data:
+                elapsed = int(time.time() - start_time)
+                print(f"Repository {project_name}/{repo_name} is now available (after {elapsed}s)")
+                return repo_data
+        except Exception as e:
+            print(f"Repository not yet available: {str(e)}")
+        
+        elapsed = time.time() - start_time
+        remaining = timeout - elapsed
+        if remaining > 0:
+            wait_time = min(poll_interval, remaining)
+            print(f"Waiting {wait_time}s before next check... ({int(elapsed)}s/{timeout}s elapsed)")
+            time.sleep(wait_time)
+    
+    print(f"Timeout: Repository {project_name}/{repo_name} not available after {timeout}s")
+    return None
 
 def push_image(image, project):
     os.system("docker tag "+image+" "+args.endpoint+"/"+project+"/"+image)
