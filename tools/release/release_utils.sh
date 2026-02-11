@@ -97,3 +97,85 @@ function retry {
         fi
     done
 }
+
+function generateSBOMs {
+    # Generate SPDX SBOMs for all Harbor container images using Syft
+    # Args: curTag baseTag sbomsDir images...
+    local curTag=$1
+    local baseTag=$2
+    local sbomsDir=$3
+    local images=${@:4}
+
+    mkdir -p "$sbomsDir"
+
+    for image in $images
+    do
+        local shortName=$(basename "$image")
+        local sbomFile="$sbomsDir/${shortName}.spdx.json"
+
+        echo "Generating SBOM for $image:$baseTag -> $sbomFile"
+        retry 3 syft "$image:$baseTag" -o spdx-json="$sbomFile"
+    done
+
+    echo "Creating consolidated SBOM..."
+    local consolidatedFile="$sbomsDir/harbor-sbom-${curTag}.spdx.json"
+    mergeConsolidatedSBOM "$curTag" "$sbomsDir" "$consolidatedFile"
+    echo "Consolidated SBOM written to $consolidatedFile"
+}
+
+function mergeConsolidatedSBOM {
+    # Merge per-image SPDX JSONs into a single consolidated SPDX 2.3 document
+    # Args: curTag sbomsDir outputFile
+    local curTag=$1
+    local sbomsDir=$2
+    local outputFile=$3
+
+    jq -n \
+      --arg name "harbor-${curTag}" \
+      --arg ns "https://github.com/goharbor/harbor/releases/${curTag}" \
+      '{
+        spdxVersion: "SPDX-2.3",
+        dataLicense: "CC0-1.0",
+        SPDXID: "SPDXRef-DOCUMENT",
+        name: $name,
+        documentNamespace: $ns,
+        creationInfo: {
+          created: (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
+          creators: ["Tool: syft", "Organization: goharbor"]
+        },
+        packages: [inputs.packages[]?],
+        relationships: [inputs.relationships[]?],
+        documentDescribes: [inputs.documentDescribes[]?]
+      }' "$sbomsDir"/*.spdx.json > "$outputFile"
+}
+
+function signAndAttachSBOMs {
+    # Sign container images with Cosign keyless signing and attach SBOMs
+    # Must be called while logged into Docker Hub and GHCR
+    # Args: curTag sbomsDir images 
+    local curTag=$1
+    local sbomsDir=$2
+    local images=${@:3}
+
+    for image in $images
+    do
+        local shortName=$(basename "$image")
+        local sbomFile="$sbomsDir/${shortName}.spdx.json"
+        local dockerHubRef="$image:$curTag"
+        local ghcrRef="ghcr.io/$image:$curTag"
+
+        echo "=== Processing $shortName ==="
+
+        echo "Signing $dockerHubRef ..."
+        retry 5 cosign sign --yes "$dockerHubRef"
+
+        echo "Signing $ghcrRef ..."
+        retry 5 cosign sign --yes "$ghcrRef"
+
+        echo "Attaching SBOM to $dockerHubRef ..."
+        retry 5 cosign attach sbom --type spdx --sbom "$sbomFile" "$dockerHubRef"
+
+        echo "Attaching SBOM to $ghcrRef ..."
+        retry 5 cosign attach sbom --type spdx --sbom "$sbomFile" "$ghcrRef"
+    done
+}

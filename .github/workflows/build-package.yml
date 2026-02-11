@@ -104,3 +104,20 @@ jobs:
           echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
 
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+      - name: Generate Dev Image SBOMs
+        if: startsWith(github.ref, 'refs/heads/release-')
+        run: |
+          cd src/github.com/goharbor/harbor
+          target_release_version=$(cat ./VERSION)
+          mkdir -p ./sboms
+          images="$(docker images --format "{{.Repository}}" --filter=reference='goharbor/*:${target_release_version}' | xargs)"
+          for image in $images; do
+            shortName=$(basename "$image")
+            echo "Generating SBOM for $image:${target_release_version}"
+            syft "$image:${target_release_version}" -o spdx-json="./sboms/${shortName}.spdx.json" || true
+          done
+          for f in ./sboms/*.spdx.json; do
+            aws s3 cp "$f" "s3://${{ env.harbor_target_bucket }}/sboms/$(basename $f)"
+          done
