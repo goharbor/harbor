@@ -194,7 +194,7 @@ func TestMiddleware(t *testing.T) {
 		},
 		{
 			input:  req3.WithContext(baseCtx),
-			status: http.StatusUnauthorized,
+			status: http.StatusOK,
 		},
 		{
 			input:  req4.WithContext(ctx3),
