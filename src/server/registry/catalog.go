@@ -15,15 +15,20 @@
 package registry
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"sort"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	repositorymodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/server/registry/util"
 )
 
@@ -54,12 +59,18 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	}
 
 	repoNames := make([]string, 0)
-	// get all the non repositories
+	secCtx, ok := security.FromContext(req.Context())
+	if !ok || !secCtx.IsAuthenticated() {
+		r.sendResponse(w, req, repoNames)
+		return
+	}
+	// get all the non-empty repositories
 	repoRecords, err := r.repoMgr.NonEmptyRepos(req.Context())
 	if err != nil {
 		lib_http.SendError(w, err)
 		return
 	}
+	repoRecords = r.filterByPermission(req.Context(), repoRecords)
 	if len(repoRecords) <= 0 {
 		r.sendResponse(w, req, repoNames)
 		return
@@ -126,6 +137,26 @@ func (r *repositoryHandler) sendResponse(w http.ResponseWriter, _ *http.Request,
 		lib_http.SendError(w, err)
 		return
 	}
+}
+
+// filterByPermission returns all records only for system admins; other authenticated users are filtered by pull access.
+func (r *repositoryHandler) filterByPermission(ctx context.Context, repoRecords []*repositorymodel.RepoRecord) []*repositorymodel.RepoRecord {
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return nil
+	}
+	if secCtx.IsSysAdmin() {
+		return repoRecords
+	}
+
+	authorizedRepos := make([]*repositorymodel.RepoRecord, 0, len(repoRecords))
+	for _, repo := range repoRecords {
+		repoResource := rbac_project.NewNamespace(repo.ProjectID).Resource(rbac.ResourceRepository)
+		if secCtx.Can(ctx, rbac.ActionPull, repoResource) {
+			authorizedRepos = append(authorizedRepos, repo)
+		}
+	}
+	return authorizedRepos
 }
 
 type catalogAPIResponse struct {
