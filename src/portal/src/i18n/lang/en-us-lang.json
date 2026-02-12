@@ -677,8 +677,8 @@
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
         "PLACEHOLDER": "We couldn't find any endpoints!",
         "CA_CERTIFICATE": "CA Certificate",
-        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to verify the registry's TLS certificate. Leave empty to use the system CA pool. This field is only available when 'Verify Remote Cert' is enabled.",
-        "CA_CERTIFICATE_HELPER": "Optional. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint. If left empty, Harbor will use the system CA pool."
+        "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to trust additional CA certificates for this registry. The custom CA will be added to the system CA pool, allowing Harbor to trust both system-signed and custom-signed certificates. Leave empty to use only the system CA pool. This field is only available when 'Verify Remote Cert' is enabled.",
+        "CA_CERTIFICATE_HELPER": "Optional. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint. The certificate will be added to the system CA pool, not replace it."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",
