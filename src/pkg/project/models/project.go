@@ -184,6 +184,15 @@ func (p *Project) MaxUpstreamConnection() int {
 	return int(cnt)
 }
 
+// ProxyCacheLocalOnNotFound returns true if images should be served from local cache when removed from upstream
+func (p *Project) ProxyCacheLocalOnNotFound() bool {
+	val, exist := p.GetMetadata(ProMetaProxyCacheLocalOnNotFound)
+	if !exist {
+		return false
+	}
+	return isTrue(val)
+}
+
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
