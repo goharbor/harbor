@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/pkg/metrics"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -290,6 +291,7 @@ func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remot
 func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
+
 	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return 0, nil, err
@@ -298,8 +300,22 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 	size, bReader, err := rHelper.BlobReader(remoteRepo, art.Digest)
 	if err != nil {
 		log.Errorf("failed to pull blob, error %v", err)
+		// Track failed upstream request
+		metrics.ProxyUpstreamRequestsTotal.WithLabelValues(
+			art.ProjectName,
+			remoteRepo,
+			"error",
+		).Inc()
 		return 0, nil, err
 	}
+
+	// Track successful upstream request (cache miss)
+	metrics.ProxyUpstreamRequestsTotal.WithLabelValues(
+		art.ProjectName,
+		remoteRepo,
+		"200",
+	).Inc()
+
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
 	go func() {
 		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
