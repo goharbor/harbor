@@ -30,6 +30,7 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
 
 WORKDIR /harbor
 USER harbor
+# Default port 8001 matches helm chart; docker-compose sets HARBOR_EXPORTER_PORT=8080 via env template
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD sh -c 'curl -fs http://127.0.0.1:${HARBOR_EXPORTER_PORT:-8001}/metrics || exit 1'
 
