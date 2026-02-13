@@ -78,6 +78,15 @@ export class ProjectDetailComponent
     hasScannerReadPermission: boolean;
     hasP2pProviderReadPermission: boolean;
     hasQuotaReadPermission: boolean = false;
+
+    // Check if current user role is Limited Guest or Guest
+    isLimitedGuestOrGuest(): boolean {
+        return (
+            this.roleName === 'MEMBER.LIMITED_GUEST' ||
+            this.roleName === 'MEMBER.GUEST'
+        );
+    }
+
     tabLinkNavList = [
         {
             linkName: 'summary',
@@ -108,7 +117,8 @@ export class ProjectDetailComponent
             linkName: 'scanner',
             tabLinkInOverflow: false,
             showTabName: 'SCANNER.SCANNER',
-            permissions: () => this.hasScannerReadPermission,
+            permissions: () =>
+                this.hasScannerReadPermission && !this.isLimitedGuestOrGuest(),
         },
         {
             linkName: 'p2p-provider',
@@ -147,7 +157,9 @@ export class ProjectDetailComponent
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.CONFIG',
             permissions: () =>
-                this.isSessionValid && this.hasConfigurationListPermission,
+                this.isSessionValid &&
+                this.hasConfigurationListPermission &&
+                !this.isLimitedGuestOrGuest(),
         },
     ];
     previousWindowWidth: number;
