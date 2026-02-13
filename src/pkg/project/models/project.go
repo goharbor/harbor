@@ -184,6 +184,15 @@ func (p *Project) MaxUpstreamConnection() int {
 	return int(cnt)
 }
 
+// OfflineUpstreamRegistry ...
+func (p *Project) OnlineUpstreamRegistry() bool {
+	online, exist := p.GetMetadata(ProMetaUpstreamRegistryOnline)
+	if !exist {
+		return true // default value is true
+	}
+	return isTrue(online)
+}
+
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
