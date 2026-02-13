@@ -1093,3 +1093,50 @@ export enum PageSizeMapKeys {
     PENDING_LIST_COMPONENT = 'PendingListComponent',
     SECURITY_HUB_VUL = 'SecurityHubComponent',
 }
+
+/**
+ * Calculate the relative luminance of a color
+ * Based on WCAG 2.0 formula: https://www.w3.org/TR/WCAG20/#relativeluminancedef
+ * @param hex The hex color code (with or without #)
+ * @returns The relative luminance value (0-1)
+ */
+export function calculateLuminance(hex: string): number {
+    // Remove # if present
+    const color = hex.replace('#', '');
+
+    // Convert to RGB
+    const r = parseInt(color.substring(0, 2), 16) / 255;
+    const g = parseInt(color.substring(2, 4), 16) / 255;
+    const b = parseInt(color.substring(4, 6), 16) / 255;
+
+    // Apply gamma correction
+    const rLinear =
+        r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+    const gLinear =
+        g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+    const bLinear =
+        b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+
+    // Calculate luminance
+    return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
+}
+
+/**
+ * Determine if text should be white or black based on background color luminance
+ * @param hex The hex color code of the background
+ * @returns 'white' or 'black' for optimal contrast
+ */
+export function getTextColorForBackground(hex: string): string {
+    const luminance = calculateLuminance(hex);
+    // Use 0.5 as threshold - colors with luminance > 0.5 are considered light
+    return luminance > 0.5 ? 'black' : 'white';
+}
+
+/**
+ * Validate if a string is a valid hex color code
+ * @param hex The hex color code to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidHexColor(hex: string): boolean {
+    return /^#?([0-9A-F]{3}){1,2}$/i.test(hex);
+}
