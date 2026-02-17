@@ -15,7 +15,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.6.0",
-    "webpack": "^5.94.0",
+    "webpack": "^5.105.2",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.15.2"
   }
