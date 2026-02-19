@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ClrLoadingState } from '@clr/angular';
 import { finalize } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -28,6 +28,7 @@ import { ProjectService } from '../../../../../ng-swagger-gen/services/project.s
 import { DEFAULT_PAGE_SIZE } from '../../../shared/units/utils';
 import { forkJoin, Observable } from 'rxjs';
 import { Project } from '../../../../../ng-swagger-gen/models/project';
+import { CommonRoutes } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'scanner',
@@ -49,12 +50,28 @@ export class ScannerComponent implements OnInit {
         private msgHandler: MessageHandlerService,
         private errorHandler: ErrorHandler,
         private route: ActivatedRoute,
+        private router: Router,
         private userPermissionService: UserPermissionService,
         private translate: TranslateService,
         private projectService: ProjectService
     ) {}
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
+
+        // Check user role and redirect if Limited Guest or Guest
+        const resolverData = this.route.snapshot.parent.parent.data;
+        if (resolverData && resolverData['projectResolver']) {
+            const project = resolverData['projectResolver'];
+            const userRole = project.role_name;
+            const excludedRoles = ['MEMBER.LIMITED_GUEST', 'MEMBER.GUEST'];
+
+            if (excludedRoles.includes(userRole)) {
+                // Redirect to repositories page
+                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                return;
+            }
+        }
+
         this.getPermission();
         this.init();
     }
