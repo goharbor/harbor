@@ -679,8 +679,8 @@
         "CANNOT_EDIT": "Endereço não pode ser alterado enquando a regra de replicação estiver ativa.",
         "PLACEHOLDER": "Não há endereços cadastrados",
         "CA_CERTIFICATE": "Certificado CA",
-        "CA_CERTIFICATE_TOOLTIP": "Forneça um certificado CA codificado em PEM para verificar o certificado TLS do registro. Deixe em branco para usar o pool de CA do sistema. Este campo está disponível apenas quando 'Verificar Certificado Remoto' está habilitado.",
-        "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. Se deixado em branco, o Harbor usará o pool de CA do sistema."
+        "CA_CERTIFICATE_TOOLTIP": "Forneça um certificado CA codificado em PEM para confiar em certificados CA adicionais para este registro. O CA personalizado será adicionado ao pool de CA do sistema, permitindo que o Harbor confie em certificados assinados pelo sistema e por assinatura personalizada. Deixe em branco para usar apenas o pool de CA do sistema. Este campo está disponível apenas quando 'Verificar Certificado Remoto' está habilitado.",
+        "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. O certificado será adicionado ao pool de CA do sistema, não o substituirá."
     },
     "REPOSITORY": {
         "BUILD_HISTORY": "Histórico de Build",
@@ -805,7 +805,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar cadastro de usuários.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar cadastro de usuários.",
-            "VERIFY_REMOTE_CERT": "Determina se a replicação da imagem deve verificar o certificado do Harbor remoto. Desmarque se o servidor remoto utilizar um certificado auto-assinado ou não confiável.",
+            "VERIFY_REMOTE_CERT": "Determine se a replicação de imagens deve verificar o certificado para um registro remoto. Desmarque esta caixa ao ignorar a verificação do certificado de endpoint do registro remoto.",
             "AUTH_MODE": "Por padrão, o modo de autenticação é via banco de dados, ex. As credenciais são armazenadas em um Banco de Dados local. Altere para LDAP se você deseja verificar as credenciais de um usuário utilizando um servidor LDAP.",
             "PRIMARY_AUTH_MODE": "This auth mode becomes the default way for users to login. The login screen where the user selects to login via the identity provider or via local DB will automatically redirect the user to this identity provider. Login via DB is possible when visiting the url '/account/sign-in' explicitly.",
             "LDAP_SEARCH_DN": "A DN de um usuário que possui permissão para buscar no servidor LDAP/AD. Se o seu servidor LDAP/AD não suportar buscas anônimas, você deve configurar esse DN e ldap_search_pwd.",
