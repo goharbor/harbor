@@ -50,10 +50,10 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.23
+      - name: Set up Go 1.25
         uses: actions/setup-go@v5
         with:
-           go-version: 1.23.2
+           go-version: 1.25.7
         id: go
       - uses: actions/checkout@v6
         with:

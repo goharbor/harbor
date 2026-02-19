@@ -240,16 +240,13 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Bu kotayı sınırsız istiyorsanız, lütfen -1 girin.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a pull-through cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a proxy cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Bu proxy önbellek projesi için üst kayıt defterine maksimum bağlantı, -1 ise sınır yoktur",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
-        "NO_PROJECT": "Herhangi bir proje bulunamadı",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "NO_PROJECT": "Herhangi bir proje bulunamadı"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",
