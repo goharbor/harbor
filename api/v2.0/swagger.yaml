@@ -7504,8 +7504,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        type: object
-        description: 'The value of replication policy filter.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
       decoration:
         type: string
         description: 'matches or excludes the result'
