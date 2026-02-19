@@ -1668,7 +1668,7 @@
         "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Input secret again",
         "INCONSISTENT": "Two secrets are inconsistent",
-        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAME_TOOLTIP": "Robot name should be 1~255 characters long with lower case characters, numbers and ._- and must start with characters or numbers.",
         "ENABLE_NEW_SECRET": "Enable this option to manually specify a new secret",
         "DELETE": "Delete",
         "ARTIFACT_LABEL": "Artifact label",
