@@ -37,6 +37,7 @@ export class Project {
         retention_id: number;
         bandwidth: number;
         max_upstream_conn: number;
+        proxy_cache_local_on_not_found?: string | boolean;
     };
     constructor() {
         this.metadata = <any>{};
