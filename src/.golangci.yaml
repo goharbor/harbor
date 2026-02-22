@@ -39,7 +39,7 @@ linters:
       - linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
-        path: "(common/http/|lib/errors/|lib/http/)"
+        path: "(common/http/|lib/errors/|lib/http/|core/service/token/|pkg/token/)"
     paths:
       - third_party$
       - builtin$
