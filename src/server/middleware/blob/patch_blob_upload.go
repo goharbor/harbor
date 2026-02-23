@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -39,6 +40,7 @@ func PatchBlobUploadMiddleware() func(http.Handler) http.Handler {
 
 		sessionID := distribution.ParseSessionID(r.URL.Path)
 
+		log.Debugf("caching blob size %d for session %s", size, sessionID)
 		return blobController.SetAcceptedBlobSize(r.Context(), sessionID, size)
 	})
 }

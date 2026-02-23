@@ -93,6 +93,9 @@ type Controller interface {
 
 	// Delete deletes the blob by its id
 	Delete(ctx context.Context, id int64) error
+
+	// CleanupInvalidBlobSizeKeys removes all zero or negative blob size keys from Redis
+	CleanupInvalidBlobSizeKeys(ctx context.Context) error
 }
 
 // NewController creates an instance of the default repository controller
@@ -322,6 +325,12 @@ func (c *controller) Sync(ctx context.Context, references []distribution.Descrip
 }
 
 func (c *controller) SetAcceptedBlobSize(ctx context.Context, sessionID string, size int64) error {
+	// Only cache positive sizes - don't reject, just don't cache
+	if size <= 0 {
+		log.Debugf("skipping cache for non-positive blob size %d for session %s", size, sessionID)
+		return nil // Success, but not cached
+	}
+
 	key := blobSizeKey(sessionID)
 	rc, err := libredis.GetRegistryClient()
 	if err != nil {
@@ -351,6 +360,12 @@ func (c *controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) 
 		}
 
 		return 0, err
+	}
+
+	// If we find a zero or negative size in Redis, treat it as "key not found"
+	if size <= 0 {
+		log.Debugf("found invalid blob size %d in Redis for session %s, treating as not found", size, sessionID)
+		return 0, nil // Return 0 as if key didn't exist
 	}
 
 	return size, nil
@@ -390,4 +405,46 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 
 func blobSizeKey(sessionID string) string {
 	return fmt.Sprintf("upload:%s:size", sessionID)
+}
+
+// CleanupInvalidBlobSizeKeys removes all zero or negative blob size keys from Redis
+func (c *controller) CleanupInvalidBlobSizeKeys(ctx context.Context) error {
+	rc, err := libredis.GetRegistryClient()
+	if err != nil {
+		return err
+	}
+
+	// Scan for all upload:*:size keys
+	keys, err := rc.Keys(ctx, "upload:*:size").Result()
+	if err != nil {
+		return err
+	}
+
+	cleanedCount := 0
+	for _, key := range keys {
+		size, err := rc.Get(ctx, key).Int64()
+		if err != nil {
+			if err == redis.Nil {
+				continue // Key doesn't exist anymore, skip
+			}
+			log.Errorf("failed to get blob size for key %s during cleanup, error: %v", key, err)
+			continue
+		}
+
+		// If we find a zero or negative size, delete it
+		if size <= 0 {
+			if err := rc.Del(ctx, key).Err(); err != nil {
+				log.Errorf("failed to delete invalid blob size key %s during cleanup, error: %v", key, err)
+			} else {
+				cleanedCount++
+				log.Infof("cleaned up invalid blob size key %s with value %d", key, size)
+			}
+		}
+	}
+
+	if cleanedCount > 0 {
+		log.Infof("cleanup completed: removed %d invalid blob size keys from Redis", cleanedCount)
+	}
+
+	return nil
 }

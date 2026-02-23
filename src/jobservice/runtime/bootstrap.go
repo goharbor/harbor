@@ -40,6 +40,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/rediscleanup"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scandataexport"
@@ -333,6 +334,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			"IMAGE_GC":                           (*legacy.GarbageCollectionScheduler)(nil),
 			"IMAGE_SCAN_ALL":                     (*legacy.ScanAllScheduler)(nil),
 			job.SystemArtifactCleanupVendorType:  (*systemartifact.Cleanup)(nil),
+			job.RedisCleanupVendorType:           (*rediscleanup.Cleanup)(nil),
 			job.ExecSweepVendorType:              (*task.SweepJob)(nil),
 			job.AuditLogsGDPRCompliantVendorType: (*gdpr.AuditLogsDataMasking)(nil),
 		}); err != nil {
