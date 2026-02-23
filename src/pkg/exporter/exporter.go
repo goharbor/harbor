@@ -49,6 +49,7 @@ func NewExporter(opt *Opt) *Exporter {
 	}
 	err := exporter.RegisterCollector(NewHealthCollect(hbrCli),
 		NewSystemInfoCollector(hbrCli),
+		NewRegistryCollector(),
 		NewProjectCollector(),
 		NewJobServiceCollector(),
 		NewStatisticsCollector(),
