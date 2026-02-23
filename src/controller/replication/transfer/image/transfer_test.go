@@ -16,6 +16,7 @@ package image
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -111,6 +112,36 @@ func (f *fakeRegistry) MountBlob(srcRepository, digest, dstRepository string) er
 }
 func (f *fakeRegistry) ListTags(repository string) (tags []string, err error) {
 	return nil, nil
+}
+
+// fakeRegistryMountFail is a variant of fakeRegistry where CanBeMount returns
+// true but MountBlob always returns an error, simulating a failed cross-repo mount.
+type fakeRegistryMountFail struct {
+	fakeRegistry
+}
+
+func (f *fakeRegistryMountFail) CanBeMount(digest string) (bool, string, error) {
+	return true, "source-repo", nil
+}
+
+func (f *fakeRegistryMountFail) MountBlob(srcRepository, digest, dstRepository string) error {
+	return fmt.Errorf("blob mount from %s to %s failed for %s: expected 201 Created but got 202",
+		srcRepository, dstRepository, digest)
+}
+
+func TestTryMountBlobFallbackOnMountError(t *testing.T) {
+	stopFunc := func() bool { return false }
+	tr := &transfer{
+		logger:    log.DefaultLogger(),
+		isStopped: stopFunc,
+		dst:       &fakeRegistryMountFail{},
+	}
+
+	// When MountBlob fails, tryMountBlob should return (false, nil) to trigger
+	// a fallback to regular blob copy, not a hard error that aborts the transfer.
+	mounted, err := tr.tryMountBlob("", "destination", "sha256:abc123")
+	assert.False(t, mounted)
+	require.Nil(t, err)
 }
 
 func TestFactory(t *testing.T) {

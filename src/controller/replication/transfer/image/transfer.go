@@ -349,8 +349,9 @@ func (t *transfer) tryMountBlob(_, dstRepo, digest string) (bool, error) {
 	}
 	if mount {
 		if err = t.dst.MountBlob(repository, digest, dstRepo); err != nil {
-			t.logger.Errorf("failed to mount the blob %s on the destination registry: %v", digest, err)
-			return false, err
+			t.logger.Warningf("failed to mount blob %s from %s, falling back to regular copy: %v",
+				digest, repository, err)
+			return false, nil
 		}
 		t.logger.Infof("the blob %s mounted from the repository %s on the destination registry directly", digest, repository)
 		return true, nil

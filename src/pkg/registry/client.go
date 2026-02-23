@@ -573,6 +573,14 @@ func (c *client) MountBlob(srcRepository, digest, dstRepository string) error {
 		return err
 	}
 	defer resp.Body.Close()
+	// Per the OCI Distribution Spec, only 201 Created means the mount succeeded.
+	// 202 Accepted means the registry did not mount the blob and instead started a
+	// regular upload session. Treating 202 as success causes the blob to never be
+	// transferred, leading to MANIFEST_BLOB_UNKNOWN errors on manifest push.
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("blob mount from %s to %s failed for %s: expected 201 Created but got %d",
+			srcRepository, dstRepository, digest, resp.StatusCode)
+	}
 	return nil
 }
 
