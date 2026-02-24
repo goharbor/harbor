@@ -344,7 +344,7 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: '18'
       - uses: actions/checkout@v6
