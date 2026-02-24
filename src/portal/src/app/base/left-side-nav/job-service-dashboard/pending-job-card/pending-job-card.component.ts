@@ -35,6 +35,10 @@ import {
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-pending-job-card',
@@ -51,7 +55,8 @@ export class PendingCardComponent implements OnInit, OnDestroy {
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
         private operationService: OperationService,
-        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -104,6 +109,7 @@ export class PendingCardComponent implements OnInit, OnDestroy {
         }
         this.jobServiceDashboardSharedDataService
             .retrieveJobQueues(true)
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(res => {
                 this.timeout = setTimeout(() => {

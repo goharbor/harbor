@@ -406,6 +406,33 @@ func (suite *gcTestSuite) TestSaveRes() {
 	suite.Nil(saveGCRes(ctx, 123456, 100, 100))
 }
 
+func (suite *gcTestSuite) TestFormatSize() {
+	tests := []struct {
+		name     string
+		size     int64
+		expected string
+	}{
+		{name: "zero bytes", size: 0, expected: "0 B"},
+		{name: "500 bytes", size: 500, expected: "500 B"},
+		{name: "1 KiB", size: 1024, expected: "1.00 KiB"},
+		{name: "1.5 KiB", size: 1536, expected: "1.50 KiB"},
+		{name: "1 MiB", size: 1048576, expected: "1.00 MiB"},
+		{name: "2.5 MiB", size: 2621440, expected: "2.50 MiB"},
+		{name: "1 GiB", size: 1073741824, expected: "1.00 GiB"},
+		{name: "3.5 GiB", size: 3758096384, expected: "3.50 GiB"},
+		{name: "1 TiB", size: 1099511627776, expected: "1.00 TiB"},
+		{name: "2 TiB", size: 2199023255552, expected: "2.00 TiB"},
+		// truncation: 1615981465 / 1024^3 = 1.5049... → should be "1.50 GiB", not "1.51 GiB"
+		{name: "truncation GiB", size: 1615981465, expected: "1.50 GiB"},
+		// truncation: 1579520 / 1024^2 = 1.50625 → should be "1.50 MiB", not "1.51 MiB"
+		{name: "truncation MiB", size: 1579520, expected: "1.50 MiB"},
+	}
+
+	for _, tc := range tests {
+		suite.Equal(tc.expected, formatSize(tc.size), tc.name)
+	}
+}
+
 func TestGCTestSuite(t *testing.T) {
 	t.Setenv("UTTEST", "true")
 	suite.Run(t, &gcTestSuite{})

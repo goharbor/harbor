@@ -158,9 +158,20 @@ describe('ProjectAuditLogComponent', () => {
         });
     });
     it('should support pagination', async () => {
+        component.projectName = 'test-project';
+        component.pageSize = 15;
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
-        let el: HTMLButtonElement =
+        // Pagination controls are only rendered when page.last > 1; wait for data to load
+        let attempts = 0;
+        while (component.totalRecordCount === 0 && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            fixture.detectChanges();
+            attempts++;
+        }
+        expect(component.totalRecordCount).toBe(18);
+        fixture.detectChanges();
+        const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
         el.click();
