@@ -27,7 +27,8 @@ old_private_key_pem_path, old_crt_path)
 @click.command()
 @click.option('--conf', default=input_config_path, help="the path of Harbor configuration file")
 @click.option('--with-trivy', is_flag=True, help="the Harbor instance is to be deployed with Trivy")
-def prepare(conf, with_trivy):
+@click.option('--with-podman', is_flag=True, help="the Harbor instance will be deployed using Podman (avoid Docker logging options)")
+def prepare(conf, with_trivy, with_podman):
 
     delfile(config_dir)
     config_dict = parse_yaml_config(conf, with_trivy=with_trivy)
@@ -65,4 +66,4 @@ def prepare(conf, with_trivy):
     if with_trivy:
         prepare_trivy_adapter(config_dict)
 
-    prepare_docker_compose(config_dict, with_trivy)
+    prepare_docker_compose(config_dict, with_trivy, with_podman)
