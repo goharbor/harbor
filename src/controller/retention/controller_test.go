@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
+	testingMetadata "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
@@ -67,6 +68,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 	retentionLauncher := &fakeLauncher{}
 	execMgr := &testingTask.ExecutionManager{}
 	taskMgr := &testingTask.Manager{}
+	proMetaMgr := &testingMetadata.Manager{}
 	retentionMgr := retention.NewManager()
 	execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
@@ -94,6 +96,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 	}}, nil)
 	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
+	proMetaMgr.On("Delete", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	c := defaultController{
 		manager:        retentionMgr,
@@ -103,6 +106,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 		projectManager: projectMgr,
 		repositoryMgr:  repositoryMgr,
 		scheduler:      retentionScheduler,
+		proMetaMgr:     proMetaMgr,
 	}
 
 	p1 := &policy.Metadata{
@@ -194,6 +198,83 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().NotNil(err)
 	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
 	s.Require().Nil(p1)
+}
+
+func (s *ControllerTestSuite) TestDeleteRetentionCleansUpMetadata() {
+	projectMgr := &project.Manager{}
+	repositoryMgr := &repository.Manager{}
+	retentionScheduler := &fakeRetentionScheduler{}
+	retentionLauncher := &fakeLauncher{}
+	execMgr := &testingTask.ExecutionManager{}
+	taskMgr := &testingTask.Manager{}
+	proMetaMgr := &testingMetadata.Manager{}
+	retentionMgr := retention.NewManager()
+
+	execMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{}, nil)
+	proMetaMgr.On("Delete", mock.Anything, int64(1), "retention_id").Return(nil)
+
+	c := defaultController{
+		manager:        retentionMgr,
+		execMgr:        execMgr,
+		taskMgr:        taskMgr,
+		launcher:       retentionLauncher,
+		projectManager: projectMgr,
+		repositoryMgr:  repositoryMgr,
+		scheduler:      retentionScheduler,
+		proMetaMgr:     proMetaMgr,
+	}
+
+	ctx := orm.Context()
+
+	// create a policy with project reference = 1
+	p1 := &policy.Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Template: "latestPushedK",
+				Parameters: rule.Parameters{
+					"latestPushedK": 10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "**",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    "**",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &policy.Trigger{
+			Kind: "",
+		},
+		Scope: &policy.Scope{
+			Level:     "project",
+			Reference: 1,
+		},
+	}
+
+	id, err := c.CreateRetention(ctx, p1)
+	s.Require().NoError(err)
+	s.Require().True(id > 0)
+
+	// delete the retention policy
+	err = c.DeleteRetention(ctx, id)
+	s.Require().NoError(err)
+
+	// verify proMetaMgr.Delete was called with the correct project ID and "retention_id" key
+	proMetaMgr.AssertCalled(s.T(), "Delete", mock.Anything, int64(1), "retention_id")
 }
 
 func (s *ControllerTestSuite) TestExecution() {
