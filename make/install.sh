@@ -21,6 +21,38 @@ with_trivy=$false
 # flag to using docker compose v1 or v2, default would using v1 docker-compose
 DOCKER_COMPOSE=docker-compose
 
+# Prompt user for admin password
+prompt_admin_password() {
+  while true; do
+    echo -n "Enter admin password for Harbor: "
+    read -s ADMIN_PASSWORD
+    echo
+    echo -n "Confirm password: "
+    read -s CADMIN_PASSWORD
+    echo
+
+    if [ -z "$ADMIN_PASSWORD" ]; then
+      echo "Password cannot be empty. Please try again."
+    elif [ "$ADMIN_PASSWORD" != "$CADMIN_PASSWORD" ]; then
+      echo "Passwords do not match. Please try again."
+    else
+      unset CADMIN_PASSWORD
+      break
+    fi
+  done
+}
+
+validate_password_and_set() {
+  # Ensure the `harbor.yml` file exists
+  if [ ! -f ./harbor.yml ]; then
+    echo "harbor.yml not found in the current directory. Aborting."
+    exit 1
+  fi
+
+  #Add password to the yml file
+  echo "harbor_admin_password: $ADMIN_PASSWORD" >> ./harbor.yml
+}
+
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
@@ -50,6 +82,21 @@ then
     docker load -i ./harbor*.tar.gz
 fi
 echo ""
+
+# Prompt for Admin Password and validate it
+h2 "[Step $item]: checking for admin password ..."; let item+=1
+if ! grep -q '^[[:space:]]*harbor_admin_password:' ./harbor.yml; then
+    if [ ! -z "$HARBOR_ADMIN_PASSWD" ]; then
+	echo "#Using environment variable for Admin Password" >> ./harbor.yml
+	echo "harbor_admin_password: $HARBOR_ADMIN_PASSWD" >> ./harbor.yml
+    else 
+	prompt_admin_password
+	validate_password_and_set
+    fi
+else
+    echo "Password has been set in the yaml file"
+fi
+
 
 h2 "[Step $item]: preparing environment ...";  let item+=1
 if [ -n "$host" ]
