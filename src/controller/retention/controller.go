@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -81,6 +82,7 @@ type defaultController struct {
 	projectManager project.Manager
 	repositoryMgr  repository.Manager
 	scheduler      scheduler.Scheduler
+	proMetaMgr     metadata.Manager
 	wp             *lib.WorkerPool
 }
 
@@ -214,7 +216,13 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
-	return r.manager.DeletePolicy(ctx, id)
+
+	if err = r.manager.DeletePolicy(ctx, id); err != nil {
+		return err
+	}
+
+	// clean up retention_id from project metadata
+	return r.proMetaMgr.Delete(ctx, p.Scope.Reference, "retention_id")
 }
 
 // deleteExecs delete executions
@@ -460,6 +468,7 @@ func NewController() Controller {
 		projectManager: pkg.ProjectMgr,
 		repositoryMgr:  pkg.RepositoryMgr,
 		scheduler:      scheduler.Sched,
+		proMetaMgr:     pkg.ProjectMetaMgr,
 		wp:             lib.NewWorkerPool(10),
 	}
 }
