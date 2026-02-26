@@ -1,0 +1,45 @@
+header:
+  schema-version: 1.0.0
+  expiration-date: '2027-01-25T19:00:00.000Z'
+  last-updated: '2026-01-25'
+  last-reviewed: '2026-01-25'
+  commit-hash: 2c02ba7800da05993ce6fc0b86a97d2d7df3f97e
+  project-url: https://github.com/goharbor/harbor
+  changelog: https://github.com/goharbor/harbor/blob/main/CHANGELOG.md
+  license: https://github.com/goharbor/harbor/blob/main/LICENSE
+
+project-lifecycle:
+  status: active
+  bug-fixes-only: false
+  core-maintainers:
+    - https://github.com/goharbor/community/blob/main/MAINTAINERS.md
+  release-cycle: https://github.com/goharbor/harbor/blob/main/RELEASES.md
+
+security-contacts:
+  - type: email
+    value: cncf-harbor-security@lists.cncf.io
+    primary: true
+
+vulnerability-reporting:
+  accepts-vulnerability-reports: true
+  email-contact: cncf-harbor-security@lists.cncf.io
+  security-policy: https://github.com/goharbor/harbor/blob/main/SECURITY.md
+
+contribution-policy:
+  accepts-pull-requests: true
+  accepts-automated-pull-requests: true
+  automated-tools-list:
+    - automated-tool: Dependabot
+      action: allow
+  contributing-policy: https://github.com/goharbor/harbor/blob/main/CONTRIBUTING.md
+  code-of-conduct: https://github.com/goharbor/community/blob/main/CODE_OF_CONDUCT.md
+
+distribution-points:
+  - https://github.com/goharbor/harbor/releases
+  - https://hub.docker.com/u/goharbor
+
+dependencies:
+  third-party-packages: true
+  dependencies-lists:
+    - https://github.com/goharbor/harbor/blob/main/src/go.mod
+    - https://github.com/goharbor/harbor/blob/main/src/portal/package.json
