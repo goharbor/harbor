@@ -56,7 +56,7 @@ func (c *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	if len(ce.RequestPayload) > payloadSizeLimit {
 		ce.RequestPayload = fmt.Sprintf("%v...", ce.RequestPayload[:payloadSizeLimit])
 	}
-	e.OperationDescription = fmt.Sprintf("update configuration: %v", ce.RequestPayload)
+	e.OperationDescription = fmt.Sprintf("update configuration: %v", e.Payload)
 	if ce.ResponseCode == http.StatusOK {
 		e.IsSuccessful = true
 	}
