@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
@@ -70,6 +71,7 @@ func TestNewOptionsECDSA(t *testing.T) {
 		{"P-521 SEC1", elliptic.P521(), "EC PRIVATE KEY", "ES512"},
 		{"P-256 PKCS8", elliptic.P256(), "PRIVATE KEY", "ES256"},
 		{"P-384 PKCS8", elliptic.P384(), "PRIVATE KEY", "ES384"},
+		{"P-521 PKCS8", elliptic.P521(), "PRIVATE KEY", "ES512"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -184,4 +186,29 @@ func TestGetKeyECDSA(t *testing.T) {
 		assert.IsType(t, (*ecdsa.PublicKey)(nil), result)
 		assert.Equal(t, &key.PublicKey, result)
 	})
+}
+
+func TestNewAndRawWithECDSA(t *testing.T) {
+	keyFile := writeECKeyFile(t, elliptic.P256(), "EC PRIVATE KEY")
+	defer os.Remove(keyFile)
+
+	opt, err := NewOptions("", "test-issuer", keyFile)
+	require.NoError(t, err)
+
+	claims := &jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		Issuer:    "test-issuer",
+	}
+
+	token, err := New(opt, claims)
+	require.NoError(t, err)
+
+	tokenStr, err := token.Raw()
+	require.NoError(t, err)
+	require.NotEmpty(t, tokenStr)
+
+	parsedToken, err := Parse(opt, tokenStr, &jwt.RegisteredClaims{})
+	require.NoError(t, err)
+	require.NotNil(t, parsedToken)
+	assert.Equal(t, "ES256", parsedToken.Header["alg"])
 }

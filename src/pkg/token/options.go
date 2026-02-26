@@ -109,7 +109,9 @@ func DefaultTokenOptions() *Options {
 	return opt
 }
 
-// NewOptions create Options based on input parms
+// NewOptions creates Options based on the input parameters.
+// The first parameter is deprecated and ignored; the signing method is
+// automatically determined from the key type.
 func NewOptions(_, iss, keyPath string) (*Options, error) {
 	pkBytes, err := os.ReadFile(keyPath)
 	if err != nil {
