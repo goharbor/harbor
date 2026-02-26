@@ -112,7 +112,7 @@ func (ej *EmailJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init email job
-func (ej *EmailJob) init(ctx job.Context, params map[string]any) error {
+func (ej *EmailJob) init(ctx job.Context, _ map[string]any) error {
 	ej.logger = ctx.GetLogger()
 	return nil
 }
