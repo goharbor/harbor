@@ -238,6 +238,8 @@ func manifestListContentTypeKey(rep string, art lib.ArtifactInfo) string {
 }
 
 func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
+	//Count the totalrequest
+	ProxyRequestsTotal.WithLabelValues(art.ProjectName, art.Repository, "GET").Inc()
 	var man distribution.Manifest
 	remoteRepo := getRemoteRepo(art)
 	ref := getReference(art)
@@ -245,6 +247,8 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	if err != nil {
 		return man, err
 	}
+	
+	ProxyUpstreamRequestsTotal.WithLabelValues(art.ProjectName, art.Repository, "GET").Inc()
 	ct, _, err := man.Payload()
 	if err != nil {
 		return man, err
@@ -288,8 +292,12 @@ func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remot
 }
 
 func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
+	//Count the total request
+	ProxyRequestsTotal.WithLabelValues(art.ProjectName, art.Repository, "GET").Inc()
 	remoteRepo := getRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
+	//Count the upstream request
+	ProxyUpstreamRequestsTotal.WithLabelValues(art.ProjectName, art.Repository, "GET").Inc()
 	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return 0, nil, err
