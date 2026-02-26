@@ -111,8 +111,8 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.68.2
-TRIVYADAPTERVERSION=v0.35.0-rc.1
+TRIVYVERSION=v0.69.1
+TRIVYADAPTERVERSION=v0.35.0-rc.2
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
@@ -151,7 +151,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.25.6
+GOBUILDIMAGE=golang:1.25.7
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
