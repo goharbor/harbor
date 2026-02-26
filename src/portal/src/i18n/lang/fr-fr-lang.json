@@ -681,8 +681,8 @@
         "CANNOT_EDIT": "L'endpoint ne peut pas être modifié tant que la règle de réplication est activée.",
         "PLACEHOLDER": "Nous n'avons trouvé aucun endpoint !",
         "CA_CERTIFICATE": "Certificat CA",
-        "CA_CERTIFICATE_TOOLTIP": "Fournissez un certificat CA encodé en PEM pour vérifier le certificat TLS du registre. Laissez vide pour utiliser le pool de CA système. Ce champ n'est disponible que lorsque 'Vérifier le certificat distant' est activé.",
-        "CA_CERTIFICATE_HELPER": "Optionnel. Collez ici le certificat CA encodé en PEM pour faire confiance aux certificats auto-signés ou de CA privées pour cet endpoint. Si laissé vide, Harbor utilisera le pool de CA système."
+        "CA_CERTIFICATE_TOOLTIP": "Fournissez un certificat CA encodé en PEM pour faire confiance à des certificats CA supplémentaires pour ce registre. Le CA personnalisé sera ajouté au pool de CA du système, ce qui permet à Harbor de faire confiance à la fois aux certificats signés par le système et à ceux signés de manière personnalisée. Laissez vide pour utiliser uniquement le pool de CA du système. Ce champ n'est disponible que lorsque 'Vérifier le certificat distant' est activé.",
+        "CA_CERTIFICATE_HELPER": "Optionnel. Collez ici le certificat CA encodé en PEM pour faire confiance aux certificats auto-signés ou de CA privées pour cet endpoint. Le certificat sera ajouté au pool de CA du système, non remplacé."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copier le Digest",
@@ -806,7 +806,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activer l'inscription.",
             "SELF_REGISTRATION_DISABLE": "Désactiver l'inscription.",
-            "VERIFY_REMOTE_CERT": "Détermine si la réplication de l'image doit vérifier le certificat d'un dépôt Harbor distant. Décochez cette case lorsque le registre distant utilise un certificat auto-signé ou non approuvé.",
+            "VERIFY_REMOTE_CERT": "Déterminez si la réplication de l'image doit vérifier le certificat d'un registre distant. Décochez cette case lorsque vous souhaitez ignorer la vérification du certificat du point de terminaison du registre distant.",
             "AUTH_MODE": "Par défaut, le mode d'authentification est la base de données, c-a-d que les informations d'identification sont stockées dans une base de données locale. Définissez-le sur LDAP si vous voulez vérifier l'identité d'un utilisateur par rapport à un serveur LDAP.",
             "PRIMARY_AUTH_MODE": "Ce mode d'authentification devient le mode de connexion par défaut pour les utilisateurs. La page de connexion où l'utilisateur sélectionne la connexion via le fournisseur d'identité ou via la BDD sera automatiquement redirigée vers le fournisseur d'identité. La connexion via la BDD est possible en utilisant l'URL '/account/sign-in' explicitement.",
             "LDAP_SEARCH_DN": "Le DN d'un utilisateur qui a la permission de rechercher sur le serveur LDAP/AD. Si votre serveur LDAP/AD ne prend pas en charge la recherche anonyme, vous devez configurer ce DN et ldap_search_pwd.",
