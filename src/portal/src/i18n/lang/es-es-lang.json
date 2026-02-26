@@ -240,16 +240,13 @@
         "QUOTA_UNLIMIT_TIP": "El espacio lógico máximo que puede utilizar el proyecto. Para una cuota ilimitada, introduzca '-1'.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché de extracción para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, AWS ECR, Azure ACR, Quay, Google GCR, JFrog Artifactory y Github GHCR.",
+        "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché proxy para una instancia de registro de destino en particular. Harbor solo puede actuar como proxy para los registros DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR y JFrog Artifactory.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
-        "NO_PROJECT": "No pudimos encontrar ningún proyecto",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
@@ -683,8 +680,8 @@
         "CANNOT_EDIT": "El endpoint no puede ser cambiado mientras la regla de replicación está activa.",
         "PLACEHOLDER": "No pudimos encontrar ningún punto final!",
         "CA_CERTIFICATE": "Certificado CA",
-        "CA_CERTIFICATE_TOOLTIP": "Proporcione un certificado CA codificado en PEM para verificar el certificado TLS del registro. Déjelo vacío para usar el conjunto de CA del sistema. Este campo solo está disponible cuando 'Verificar certificado remoto' está habilitado.",
-        "CA_CERTIFICATE_HELPER": "Opcional. Pegue aquí el certificado CA codificado en PEM para confiar en certificados autofirmados o de CA privadas para este endpoint. Si se deja vacío, Harbor usará el conjunto de CA del sistema."
+        "CA_CERTIFICATE_TOOLTIP": "Proporcione un certificado CA codificado en PEM para confiar certificados CA adicionales para este registro. El CA personalizado se agregará al conjunto de CA del sistema, lo que permite que Harbor confíe tanto en certificados con firma de sistema como con firma personalizada. Déjelo vacío para usar solo el conjunto de CA del sistema. Este campo solo está disponible cuando 'Verificar certificado remoto' está habilitado.",
+        "CA_CERTIFICATE_HELPER": "Opcional. Pegue aquí el certificado CA codificado en PEM para confiar en certificados autofirmados o de CA privadas para este endpoint. El certificado se agregará al conjunto de CA del sistema, no lo reemplazará."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copiar Digest",
@@ -808,7 +805,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Desactivar registro.",
-            "VERIFY_REMOTE_CERT": "Determina si la replicación de la imagen debería verificar el certificado de un registro Harbor remoto. Desmarque esta opción cuando el registro remoto use un certificado de confianza o autofirmado.",
+            "VERIFY_REMOTE_CERT": "Determine si la replicación de imágenes debe verificar el certificado para un registro remoto. Desmarque esta casilla cuando desee omitir la verificación del certificado del punto final del registro remoto.",
             "AUTH_MODE": "Por defecto el modo de autentificación es base de datos, es decir, las credenciales se almacenan en una base de datos local. Seleccione LDAP si quiere verificar las credenciales de usuarios a través del servidor LDAP.",
             "PRIMARY_AUTH_MODE": "Este modo de autenticación se convierte en la forma predeterminada para que los usuarios inicien sesión. La pantalla de inicio de sesión en la que el usuario selecciona iniciar sesión a través del proveedor de identidad o a través de la base de datos local redireccionará automáticamente al usuario a este proveedor de identidad. El inicio de sesión a través de la base de datos es posible al visitar la URL '/account/sign-in' explícitamente.",
             "LDAP_SEARCH_DN": "Un DN de usuario que tenga permisos para buscar el servidor LDAP/AD. Si el servidor LDAP/AD no soporta búsquedas anónimas, debería configurar este DN y ldap_search_pwd.",

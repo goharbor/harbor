@@ -239,16 +239,13 @@
         "QUOTA_UNLIMIT_TIP": "项目可以使用的最大逻辑空间。如果您想要不设置上限，请输入-1。",
         "TYPE": "类型",
         "PROXY_CACHE": "镜像代理",
-        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的镜像代理.仅支持 DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, 和 Github GHCR 类型的仓库",
+        "PROXY_CACHE_TOOLTIP": "开启此项，以使得该项目成为目标仓库的代理缓存。仅支持 DockerHub、Docker Registry、Harbor、Aws ECR、Azure ACR、Alibaba Cloud ACR、Quay、Google GCR、Github GHCR 和 JFrog Artifactory 类型的仓库",
         "ENDPOINT": "地址",
         "PROXY_CACHE_ENDPOINT": "镜像代理地址",
         "CONNECTION_LIMIT": "上游仓库最大连接数",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "此镜像代理项目到上游仓库的最大连接数，如果为 -1 则不限制",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "请输入 -1 或大于 0 的整数。",
-        "NO_PROJECT": "未找到任何项目",
-        "PROXY_CACHE_ENDPOINT": "镜像代理地址",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "NO_PROJECT": "未找到任何项目"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
@@ -682,8 +679,8 @@
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
         "PLACEHOLDER": "未发现任何复制目标!",
         "CA_CERTIFICATE": "CA 证书",
-        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以验证仓库的 TLS 证书。留空将使用系统 CA 池。此字段仅在启用\"验证远程证书\"时可用。",
-        "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。如果留空，Harbor 将使用系统 CA 池。"
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以信任此仓库的其他 CA 证书。自定义 CA 将被添加到系统 CA 池，允许 Harbor 信任系统签名和自定义签名的证书。留空将仅使用系统 CA 池。此字段仅在启用\"验证远程证书\"时可用。",
+        "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。证书将被添加到系统 CA 池，而不是替代它。"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",
@@ -807,7 +804,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "激活注册功能。",
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
-            "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
+            "VERIFY_REMOTE_CERT": "确定镜像复制是否应验证远程仓库的证书。当跳过验证远程仓库端点证书时，取消选中此项。",
             "AUTH_MODE": "默认认证模式为数据库认证，即用户凭证存储在本地数据库。如果使用LDAP来认证用户，则设置为LDAP。",
             "PRIMARY_AUTH_MODE": "使得此认证模式变为用户的默认登录方式。开启此项后，登录操作将被直接导航至该认证模式指定的提供商登录页面。显式访问路径 '/account/sign-in' 时可打开 Harbor 的登录页面。",
             "LDAP_SEARCH_DN": "有搜索权限的LDAP用户DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN及其密码。",
