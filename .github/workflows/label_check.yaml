@@ -15,6 +15,9 @@ jobs:
   check-label:
     name: Check release-note label set
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: mheap/github-action-required-labels@v5
         with:

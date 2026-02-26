@@ -45,6 +45,8 @@ jobs:
   UTTEST:
     env:
        UTTEST: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -106,6 +108,8 @@ jobs:
   APITEST_DB:
     env:
       APITEST_DB: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -167,6 +171,8 @@ jobs:
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -228,6 +234,8 @@ jobs:
   APITEST_LDAP:
     env:
       APITEST_LDAP: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -287,6 +295,8 @@ jobs:
   OFFLINE:
     env:
       OFFLINE: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -339,6 +349,8 @@ jobs:
   UI_UT:
     env:
       UI_UT: true
+    permissions:
+      contents: read
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
