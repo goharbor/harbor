@@ -99,7 +99,7 @@ func (aj *AMQPJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init amqp job
-func (aj *AMQPJob) init(ctx job.Context, params map[string]any) error {
+func (aj *AMQPJob) init(ctx job.Context, _ map[string]any) error {
 	aj.logger = ctx.GetLogger()
 	return nil
 }
