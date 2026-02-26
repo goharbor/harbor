@@ -330,6 +330,37 @@
                     </clr-control-error>
                 </div>
             </div>
+            <clr-checkbox-container
+                [style.visibility]="
+                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
+                ">
+                <label class="clr-control-label">
+                    {{ 'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="bottom-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP'
+                                    | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <clr-checkbox-wrapper>
+                    <input
+                        clrCheckbox
+                        type="checkbox"
+                        id="proxy_cache_local_on_not_found"
+                        [(ngModel)]="project.metadata.proxy_cache_local_on_not_found"
+                        name="proxy_cache_local_on_not_found" />
+                </clr-checkbox-wrapper>
+            </clr-checkbox-container>
         </form>
     </div>
     <div class="modal-footer">

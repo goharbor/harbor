@@ -227,7 +227,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if err != nil {
 		return err
 	}
-	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote)
+	useLocal, man, err := proxyCtl.UseLocalManifest(ctx, art, remote, p)
 	if err != nil {
 		return err
 	}
