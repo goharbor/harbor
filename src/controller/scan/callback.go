@@ -72,6 +72,31 @@ func scanAllCallback(ctx context.Context, param string) error {
 		if op, ok := params["operator"].(string); ok {
 			ctx = context.WithValue(ctx, operator.ContextKey{}, op)
 		}
+
+		// optional: scope
+		if s, ok := params["scope"].(map[string]any); ok {
+			var scope ScanAllScope
+			// project_ids
+			if arr, ok := s["project_ids"].([]any); ok {
+				for _, v := range arr {
+					switch t := v.(type) {
+					case float64:
+						scope.ProjectIDs = append(scope.ProjectIDs, int64(t))
+					case int64:
+						scope.ProjectIDs = append(scope.ProjectIDs, t)
+					}
+				}
+			}
+			// repositories
+			if arr, ok := s["repositories"].([]any); ok {
+				for _, v := range arr {
+					if name, ok := v.(string); ok {
+						scope.Repositories = append(scope.Repositories, name)
+					}
+				}
+			}
+			ctx = WithScanAllScope(ctx, &scope)
+		}
 	}
 
 	_, err := scanCtl.ScanAll(ctx, task.ExecutionTriggerSchedule, true)
