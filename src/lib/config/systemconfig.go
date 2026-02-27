@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 )
@@ -168,6 +169,42 @@ func ExtURL() (string, error) {
 // SecretKey returns the secret key to encrypt the password of target
 func SecretKey() (string, error) {
 	return keyProvider.Get(nil)
+}
+
+// EncryptSecret encrypts a plaintext secret for persistence using ReversibleEncrypt and SecretKey.
+// If plaintext is empty or already prefixed with the v1 encryption header, it is returned unchanged.
+// If SecretKey cannot be loaded, returns an error.
+func EncryptSecret(plaintext string) (string, error) {
+	if len(plaintext) == 0 {
+		return plaintext, nil
+	}
+	if strings.HasPrefix(plaintext, utils.EncryptHeaderV1) {
+		return plaintext, nil
+	}
+	secretKey, err := SecretKey()
+	if err != nil {
+		log.Errorf("failed to get secret key, error: %v", err)
+		return "", err
+	}
+	return utils.ReversibleEncrypt(plaintext, secretKey)
+}
+
+// DecryptSecret decrypts a ciphertext secret after loading from storage using ReversibleDecrypt and SecretKey.
+// Values without the v1 encryption header prefix are returned unchanged for legacy plaintext.
+// If ciphertext is empty or SecretKey cannot be loaded, return an error
+func DecryptSecret(ciphertext string) (string, error) {
+	if len(ciphertext) == 0 {
+		return "", nil
+	}
+	if !strings.HasPrefix(ciphertext, utils.EncryptHeaderV1) {
+		return ciphertext, nil
+	}
+	secretKey, err := SecretKey()
+	if err != nil {
+		log.Errorf("failed to get secret key, error: %v", err)
+		return "", err
+	}
+	return utils.ReversibleDecrypt(ciphertext, secretKey)
 }
 
 func initKeyProvider() {
