@@ -25,6 +25,9 @@ import {
     isSameObject,
     setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
+    calculateLuminance,
+    getTextColorForBackground,
+    isValidHexColor,
 } from './utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { QuotaUnit } from '../entities/shared.const';
@@ -168,5 +171,52 @@ describe('functions in utils.ts should work', () => {
             true,
             true,
         ]);
+    });
+
+    it('function calculateLuminance() should work', () => {
+        expect(calculateLuminance).toBeTruthy();
+        // Test black color (low luminance)
+        expect(calculateLuminance('#000000')).toBeLessThan(0.1);
+        // Test white color (high luminance)
+        expect(calculateLuminance('#FFFFFF')).toBeGreaterThan(0.9);
+        // Test without # prefix
+        expect(calculateLuminance('FFFFFF')).toBeGreaterThan(0.9);
+        // Test a mid-range color
+        const midLuminance = calculateLuminance('#808080');
+        expect(midLuminance).toBeGreaterThan(0.1);
+        expect(midLuminance).toBeLessThan(0.9);
+    });
+
+    it('function getTextColorForBackground() should work', () => {
+        expect(getTextColorForBackground).toBeTruthy();
+        // Dark backgrounds should have white text
+        expect(getTextColorForBackground('#000000')).toEqual('white');
+        expect(getTextColorForBackground('#0065AB')).toEqual('white');
+        // Light backgrounds should have black text
+        expect(getTextColorForBackground('#FFFFFF')).toEqual('black');
+        expect(getTextColorForBackground('#FFDC0B')).toEqual('black');
+        // Test without # prefix
+        expect(getTextColorForBackground('000000')).toEqual('white');
+        expect(getTextColorForBackground('FFFFFF')).toEqual('black');
+    });
+
+    it('function isValidHexColor() should work', () => {
+        expect(isValidHexColor).toBeTruthy();
+        // Valid 6-digit hex codes
+        expect(isValidHexColor('#FFFFFF')).toBeTruthy();
+        expect(isValidHexColor('#000000')).toBeTruthy();
+        expect(isValidHexColor('#abc123')).toBeTruthy();
+        // Valid 3-digit hex codes
+        expect(isValidHexColor('#FFF')).toBeTruthy();
+        expect(isValidHexColor('#000')).toBeTruthy();
+        expect(isValidHexColor('#a1b')).toBeTruthy();
+        // Valid without # prefix
+        expect(isValidHexColor('FFFFFF')).toBeTruthy();
+        expect(isValidHexColor('FFF')).toBeTruthy();
+        // Invalid hex codes
+        expect(isValidHexColor('#GGGGGG')).toBeFalsy();
+        expect(isValidHexColor('#12345')).toBeFalsy();
+        expect(isValidHexColor('invalid')).toBeFalsy();
+        expect(isValidHexColor('')).toBeFalsy();
     });
 });

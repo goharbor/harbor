@@ -1118,7 +1118,8 @@
         "DELETION_TITLE_TARGET": "Confirm Label Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete {{param}}?",
         "PLACEHOLDER": "We couldn't find any labels!",
-        "NAME_ALREADY_EXISTS": "Label name already exists."
+        "NAME_ALREADY_EXISTS": "Label name already exists.",
+        "INVALID_COLOR": "Invalid hex color code (e.g., #RRGGBB or #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Project",

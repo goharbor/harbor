@@ -1119,7 +1119,8 @@
         "DELETION_TITLE_TARGET": "Etiket silmeyi onayla",
         "DELETION_SUMMARY_TARGET": "Silmek istiyor musunuz {{param}}?",
         "PLACEHOLDER": "Etiket bulamadık!",
-        "NAME_ALREADY_EXISTS": "Etiket adı zaten var."
+        "NAME_ALREADY_EXISTS": "Etiket adı zaten var.",
+        "INVALID_COLOR": "Geçersiz onaltılık renk kodu (örn. #RRGGBB veya #RGB)"
     },
     "QUOTA": {
         "PROJECT": "Proje",

@@ -38,7 +38,7 @@
                     <clr-dropdown-menu *clrIfOpen>
                         <label
                             class="dropdown-item"
-                            (click)="labelModel.color = i.color"
+                            (click)="selectPresetColor(i.color)"
                             *ngFor="let i of labelColor"
                             [class.borderSty]="i.color === '#FFFFFF'"
                             [ngStyle]="{
@@ -49,16 +49,29 @@
                         >
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <input
-                    class="label-color-input"
-                    clrInput
-                    type="text"
-                    id="color"
-                    size="8"
-                    name="color"
-                    disabled
-                    [(ngModel)]="labelModel.color"
-                    #color="ngModel" />
+                <label
+                    class="clr-control-container"
+                    [class.clr-error]="!isValidColor && labelModel.color">
+                    <input
+                        class="label-color-input"
+                        clrInput
+                        type="text"
+                        id="color"
+                        size="8"
+                        name="color"
+                        placeholder="#RRGGBB"
+                        [(ngModel)]="labelModel.color"
+                        (ngModelChange)="validateColor()"
+                        #color="ngModel" />
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <clr-control-error
+                        class="position-ab"
+                        *ngIf="!isValidColor && labelModel.color">
+                        {{ 'LABEL.INVALID_COLOR' | translate }}
+                    </clr-control-error>
+                </label>
             </label>
             <label>
                 <label for="description">{{
