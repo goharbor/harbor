@@ -63,7 +63,6 @@ func RegisterRoutes() {
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.ManifestMiddleware()).
 		Middleware(contenttrust.ContentTrust()).
-		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
 	root.NewRoute().
 		Method(http.MethodDelete).
