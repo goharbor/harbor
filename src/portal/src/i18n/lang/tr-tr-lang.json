@@ -678,8 +678,8 @@
         "CANNOT_EDIT": "Çoğaltma kuralı etkinken uç noktası değiştirilemez.",
         "PLACEHOLDER": "Uç noktaları bulamadık!",
         "CA_CERTIFICATE": "CA Sertifikası",
-        "CA_CERTIFICATE_TOOLTIP": "Kayıt defterinin TLS sertifikasını doğrulamak için PEM kodlu bir CA sertifikası sağlayın. Sistem CA havuzunu kullanmak için boş bırakın. Bu alan yalnızca 'Uzak Sertifikayı Doğrula' etkinleştirildiğinde kullanılabilir.",
-        "CA_CERTIFICATE_HELPER": "İsteğe bağlı. Bu uç nokta için kendi imzalı veya özel CA sertifikalarına güvenmek için PEM kodlu CA sertifikasını buraya yapıştırın. Boş bırakılırsa, Harbor sistem CA havuzunu kullanacaktır."
+        "CA_CERTIFICATE_TOOLTIP": "Bu kayıt defteri için ek CA sertifikalarına güvenmek üzere PEM kodlu bir CA sertifikası sağlayın. Özel CA, sistem CA havuzuna eklenecek ve Harbor'ın hem sistem tarafından imzalanan hem de özel olarak imzalanan sertifikaları kabul etmesini sağlayacaktır. Yalnızca sistem CA havuzunu kullanmak için boş bırakın. Bu alan yalnızca 'Uzak Sertifikayı Doğrula' etkinleştirildiğinde kullanılabilir.",
+        "CA_CERTIFICATE_HELPER": "İsteğe bağlı. Bu uç nokta için kendi imzalı veya özel CA sertifikalarına güvenmek üzere PEM kodlu CA sertifikasını buraya yapıştırın. Sertifika sistem CA havuzuna eklenecek, onu değiştirmeyecektir."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Özet Kopyala",
@@ -803,7 +803,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Kaydolmayı etkinleştir.",
             "SELF_REGISTRATION_DISABLE": "Kaydolmayı devre dışı bırak.",
-            "VERIFY_REMOTE_CERT": "İmaj çoğaltmanın uzak Harbor kayıt defterinin sertifikasını doğrulaması gerekip gerekmediğini belirleyin. Uzak kayıt defteri kendinden imzalı veya güvenilmeyen bir sertifika kullandığında bu kutunun işaretini kaldırın.",
+            "VERIFY_REMOTE_CERT": "İmaj çoğaltmanın uzak bir kayıt defteri için sertifikayı doğrulaması gerekip gerekmediğini belirleyin. Uzak kayıt defteri uç noktası sertifikası doğrulamasını atlamak istediğinizde bu kutuyu işaretini kaldırın.",
             "AUTH_MODE": "Varsayılan olarak kimlik doğrulama modu veritabanıdır, yani kimlik bilgileri yerel bir veritabanında saklanır. Bir LDAP sunucusunda bir kullanıcının kimlik bilgilerini doğrulamak istiyorsanız, LDAP olarak ayarlayın.",
             "PRIMARY_AUTH_MODE": "This auth mode becomes the default way for users to login. The login screen where the user selects to login via the identity provider or via local DB will automatically redirect the user to this identity provider. Login via DB is possible when visiting the url '/account/sign-in' explicitly.",
             "LDAP_SEARCH_DN": "LDAP / AD sunucusunu arama iznine sahip bir kullanıcının DN'si. LDAP / AD sunucunuz anonim aramayı desteklemiyorsa, bu DN ve ldap_search_pwd'yi yapılandırmanız gerekir.",
