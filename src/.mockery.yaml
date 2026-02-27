@@ -97,6 +97,11 @@ packages:
       Controller:
         config:
           dir: testing/controller/repository
+  github.com/goharbor/harbor/src/controller/registry:
+    interfaces:
+      Controller:
+        config:
+          dir: testing/controller/registry
   github.com/goharbor/harbor/src/controller/purge:
     interfaces:
       Controller:
