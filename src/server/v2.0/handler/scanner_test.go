@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	scanauth "github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
@@ -441,7 +442,7 @@ func (suite *ScannerTestSuite) TestSetScannerAsDefault() {
 }
 
 func (suite *ScannerTestSuite) TestUpdateScanner() {
-	times := 7
+	times := 9
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 
@@ -522,6 +523,56 @@ func (suite *ScannerTestSuite) TestUpdateScanner() {
 		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
 			"name": "reg",
 			"url":  "http://reg:8080",
+		})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+
+	{
+		// empty access_credential preserves stored secret when auth type still requires it
+		regWithCreds := &scanner.Registration{
+			Name:             "reg",
+			URL:              "http://reg:8080",
+			UUID:             "uuid",
+			Auth:             scanauth.Basic,
+			AccessCredential: "existing-secret",
+		}
+		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(regWithCreds, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "UpdateRegistration").Run(func(args mock.Arguments) {
+			reg := args.Get(1).(*scanner.Registration)
+			suite.Equal("existing-secret", reg.AccessCredential)
+			suite.Equal(scanauth.Basic, reg.Auth)
+		}).Return(nil).Once()
+
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
+			"name": "reg2",
+			"url":  "http://reg:8080",
+			"auth": scanauth.Basic,
+		})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+
+	{
+		// clearing auth also clears credential (do not preserve when auth no longer needs it)
+		regWithCreds := &scanner.Registration{
+			Name:             "reg",
+			URL:              "http://reg:8080",
+			UUID:             "uuid",
+			Auth:             scanauth.Basic,
+			AccessCredential: "existing-secret",
+		}
+		mock.OnAnything(suite.scannerCtl, "GetRegistration").Return(regWithCreds, nil).Once()
+		mock.OnAnything(suite.scannerCtl, "UpdateRegistration").Run(func(args mock.Arguments) {
+			reg := args.Get(1).(*scanner.Registration)
+			suite.Equal("", reg.AccessCredential)
+			suite.Equal("", reg.Auth)
+		}).Return(nil).Once()
+
+		res, err := suite.PutJSON("/scanners/uuid", map[string]any{
+			"name": "reg",
+			"url":  "http://reg:8080",
+			"auth": "",
 		})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)

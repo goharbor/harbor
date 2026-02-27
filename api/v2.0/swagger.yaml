@@ -2039,7 +2039,13 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the specified P2P provider instance
-      description: Update the specified P2P provider instance
+      description: |
+        Update the specified P2P provider instance.
+
+        If `auth_info` is omitted or empty in the request body and the effective `auth_mode` is not `NONE`
+        (either sent in the request or left unchanged from the stored registration), the previously stored
+        auth credentials are kept. Send a non-empty `auth_info` object to set or replace credentials.
+        Set `auth_mode` to `NONE` to disable authentication without retaining the old credentials.
       tags:
         - preheat
       operationId: UpdateInstance
@@ -5400,6 +5406,10 @@ paths:
       summary: Update a scanner registration
       description: |
         Updates the specified scanner registration.
+
+        If `access_credential` is omitted or empty in the request body and the registration still uses
+        an authentication type that requires a credential (Basic, Bearer, or APIKey), the existing stored
+        credential is left unchanged. Send a non-empty `access_credential` to set or rotate the secret.
       tags:
         - scanner
       operationId: updateScanner
@@ -5413,7 +5423,7 @@ paths:
         - name: registration
           in: body
           required: true
-          description: A scanner registraiton to be updated.
+          description: A scanner registration to be updated.
           schema:
             $ref: '#/definitions/ScannerRegistrationReq'
       responses:
@@ -7026,7 +7036,11 @@ definitions:
         description: The authentication way supported
       auth_info:
         type: object
-        description: The auth credential data if exists
+        description: |
+          The auth credential data if it exists.
+
+          When updating an instance (PUT `/p2p/preheat/instances/{preheat_instance_name}`), if this object
+          is omitted or empty and `auth_mode` is not `NONE`, the previously stored credentials are kept.
         additionalProperties:
           type: string
       status:
@@ -8590,6 +8604,11 @@ definitions:
         type: string
         description: |
           An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+
+          When updating a registration (PUT `/scanners/{registration_id}`), if this field is omitted or empty
+          and `auth` is still one of Basic, Bearer, or APIKey, the previously stored credential is kept
+          unchanged. Provide a non-empty value to set or rotate the credential. Clearing `auth` removes the
+          need for a credential; in that case an empty `access_credential` does not restore the old secret.
         example: "Bearer: JWTTOKENGOESHERE"
       skip_certVerify:
         type: boolean
