@@ -93,6 +93,24 @@ func (_m *Manager) Delete(ctx context.Context, id int64) error {
 	return r0
 }
 
+// DeleteRetentionID provides a mock function with given fields: ctx, projectID, retentionID
+func (_m *Manager) DeleteRetentionID(ctx context.Context, projectID int64, retentionID int64) error {
+	ret := _m.Called(ctx, projectID, retentionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteRetentionID")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64) error); ok {
+		r0 = rf(ctx, projectID, retentionID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Get provides a mock function with given fields: ctx, idOrName
 func (_m *Manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
 	ret := _m.Called(ctx, idOrName)
