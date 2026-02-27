@@ -220,3 +220,30 @@ func Test_parseProjectName(t *testing.T) {
 		})
 	}
 }
+
+func (suite *ArtifactHandlerTestSuite) TestUpdateParentArtifactPullTime() {
+	// Setup mock artifact manager
+	suite.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{
+			ID:       1,
+			ParentID: 100,
+			ChildID:  200,
+		},
+		{
+			ID:       2,
+			ParentID: 100,
+			ChildID:  200,
+		},
+	}, nil)
+
+	suite.artMgr.On("UpdatePullTime", mock.Anything, int64(100), mock.Anything).Return(nil)
+
+	handler := &ArtifactEventHandler{artMgr: suite.artMgr}
+	pullTime := time.Now()
+
+	// Test updating parent pull time
+	handler.updateParentArtifactPullTime(suite.ctx, 200, pullTime)
+
+	// UpdatePullTime should only be called once
+	suite.artMgr.AssertNumberOfCalls(suite.T(), "UpdatePullTime", 1)
+}
