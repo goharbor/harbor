@@ -18,6 +18,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -51,6 +54,9 @@ var (
 	// Ctl is a global proxy controller instance
 	ctl  Controller
 	once sync.Once
+
+	// BlobCache is the global LRU cache instance managing Proxy blob eviction
+	BlobCache *LocalLRUCache
 )
 
 // Controller defines the operations related with pull through proxy
@@ -92,6 +98,18 @@ func ControllerInstance() Controller {
 			cache:           cache.Default(),
 			handlerRegistry: NewCacheHandlerRegistry(l),
 		}
+
+		// Initialize LRU proxy blob cache with an environment variable limit (default 10GB)
+		// Eviction callback physically deletes the cached file
+		sizeLimitMBStr := os.Getenv("PROXY_LOCAL_CACHE_SIZE_MB")
+		var sizeLimit int64 = 10 * 1024 * 1024 * 1024 // 10GB default
+		if parsed, err := strconv.ParseInt(sizeLimitMBStr, 10, 64); err == nil && parsed > 0 {
+			sizeLimit = parsed * 1024 * 1024
+		}
+		BlobCache = NewLocalLRUCache(sizeLimit, func(digest string) error {
+			cachePath := filepath.Join(os.TempDir(), "lru_blob_cache", digest)
+			return os.Remove(cachePath)
+		})
 	})
 
 	return ctl

@@ -106,6 +106,12 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 	}
 	defer inflightChecker.removeRequest(artName)
 	err := l.registry.PushBlob(localRepo, ref, desc.Size, bReader)
+	if err == nil && BlobCache != nil {
+		// Log tracking addition
+		log.Debugf("LRU Cache: Tracking pulled blob %v (Size: %d bytes)", desc.Digest, desc.Size)
+		// Assuming we pass context.TODO() here as we just want background tracking
+		BlobCache.Add(context.TODO(), string(desc.Digest), desc.Size)
+	}
 	return err
 }
 
