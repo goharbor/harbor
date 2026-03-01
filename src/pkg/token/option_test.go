@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"os"
@@ -87,8 +88,20 @@ func TestNewOptionsECDSA(t *testing.T) {
 }
 
 func TestGetKeyECDSA(t *testing.T) {
-	t.Run("private key only", func(t *testing.T) {
+	t.Run("private key only (SEC1)", func(t *testing.T) {
 		keyFile := writeECKeyFile(t, elliptic.P256(), "EC PRIVATE KEY")
+		defer os.Remove(keyFile)
+
+		opt, err := NewOptions("", "test-issuer", keyFile)
+		require.NoError(t, err)
+
+		key, err := opt.GetKey()
+		require.NoError(t, err)
+		assert.IsType(t, (*ecdsa.PrivateKey)(nil), key)
+	})
+
+	t.Run("private key only (PKCS8)", func(t *testing.T) {
+		keyFile := writeECKeyFile(t, elliptic.P256(), "PRIVATE KEY")
 		defer os.Remove(keyFile)
 
 		opt, err := NewOptions("", "test-issuer", keyFile)
@@ -189,26 +202,168 @@ func TestGetKeyECDSA(t *testing.T) {
 }
 
 func TestNewAndRawWithECDSA(t *testing.T) {
-	keyFile := writeECKeyFile(t, elliptic.P256(), "EC PRIVATE KEY")
-	defer os.Remove(keyFile)
+	cases := []struct {
+		name    string
+		curve   elliptic.Curve
+		pemType string
+		wantAlg string
+	}{
+		{"P-256 SEC1", elliptic.P256(), "EC PRIVATE KEY", "ES256"},
+		{"P-384 SEC1", elliptic.P384(), "EC PRIVATE KEY", "ES384"},
+		{"P-521 SEC1", elliptic.P521(), "EC PRIVATE KEY", "ES512"},
+		{"P-256 PKCS8", elliptic.P256(), "PRIVATE KEY", "ES256"},
+		{"P-384 PKCS8", elliptic.P384(), "PRIVATE KEY", "ES384"},
+		{"P-521 PKCS8", elliptic.P521(), "PRIVATE KEY", "ES512"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			keyFile := writeECKeyFile(t, tc.curve, tc.pemType)
+			defer os.Remove(keyFile)
 
-	opt, err := NewOptions("", "test-issuer", keyFile)
-	require.NoError(t, err)
+			opt, err := NewOptions("", "test-issuer", keyFile)
+			require.NoError(t, err)
 
-	claims := &jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-		Issuer:    "test-issuer",
+			claims := &jwt.RegisteredClaims{
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+				Issuer:    "test-issuer",
+			}
+
+			token, err := New(opt, claims)
+			require.NoError(t, err)
+
+			tokenStr, err := token.Raw()
+			require.NoError(t, err)
+			require.NotEmpty(t, tokenStr)
+
+			parsedToken, err := Parse(opt, tokenStr, &jwt.RegisteredClaims{})
+			require.NoError(t, err)
+			require.NotNil(t, parsedToken)
+			assert.Equal(t, tc.wantAlg, parsedToken.Header["alg"])
+		})
+	}
+}
+
+func TestGetKeyRSA(t *testing.T) {
+	genRSAPEM := func(t *testing.T) (priv, pub []byte) {
+		t.Helper()
+		key, err := rsa.GenerateKey(rand.Reader, 2048)
+		require.NoError(t, err)
+		priv = pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
+		pubDER, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+		require.NoError(t, err)
+		pub = pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubDER})
+		return
 	}
 
-	token, err := New(opt, claims)
+	t.Run("no keys provided", func(t *testing.T) {
+		opt := &Options{SignMethod: jwt.SigningMethodRS256}
+		key, err := opt.GetKey()
+		assert.Error(t, err)
+		assert.Nil(t, key)
+		assert.Contains(t, err.Error(), "no key provided")
+	})
+
+	t.Run("public key only", func(t *testing.T) {
+		_, pubPEM := genRSAPEM(t)
+		opt := &Options{SignMethod: jwt.SigningMethodRS256, PublicKey: pubPEM}
+		key, err := opt.GetKey()
+		require.NoError(t, err)
+		assert.IsType(t, (*rsa.PublicKey)(nil), key)
+	})
+
+	t.Run("mismatched public private keys", func(t *testing.T) {
+		priv1, _ := genRSAPEM(t)
+		_, pub2 := genRSAPEM(t)
+		opt := &Options{
+			SignMethod:  jwt.SigningMethodRS256,
+			PrivateKey: priv1,
+			PublicKey:  pub2,
+		}
+		key, err := opt.GetKey()
+		assert.Error(t, err)
+		assert.Nil(t, key)
+		assert.Contains(t, err.Error(), "the public key and private key are not match")
+	})
+
+	t.Run("matching public private keys", func(t *testing.T) {
+		privPEM, pubPEM := genRSAPEM(t)
+		opt := &Options{
+			SignMethod:  jwt.SigningMethodRS256,
+			PrivateKey: privPEM,
+			PublicKey:  pubPEM,
+		}
+		result, err := opt.GetKey()
+		require.NoError(t, err)
+		assert.IsType(t, (*rsa.PrivateKey)(nil), result)
+	})
+}
+
+func TestNewOptionsErrors(t *testing.T) {
+	t.Run("file not found", func(t *testing.T) {
+		_, err := NewOptions("", "issuer", "/nonexistent/path/to/key.pem")
+		assert.Error(t, err)
+	})
+
+	t.Run("empty file", func(t *testing.T) {
+		f, err := os.CreateTemp("", "harbor-empty-*.pem")
+		require.NoError(t, err)
+		f.Close()
+		defer os.Remove(f.Name())
+		_, err = NewOptions("", "issuer", f.Name())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to decode PEM")
+	})
+
+	t.Run("unsupported PEM type only", func(t *testing.T) {
+		f, err := os.CreateTemp("", "harbor-cert-*.pem")
+		require.NoError(t, err)
+		require.NoError(t, pem.Encode(f, &pem.Block{Type: "CERTIFICATE", Bytes: []byte("dummy")}))
+		f.Close()
+		defer os.Remove(f.Name())
+		_, err = NewOptions("", "issuer", f.Name())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "unsupported private key type")
+	})
+}
+
+func TestNewOptionsMultiBlockPEM(t *testing.T) {
+	// OpenSSL sometimes generates EC private keys with a leading EC PARAMETERS
+	// block. NewOptions should skip it and successfully load the key that follows.
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err)
 
-	tokenStr, err := token.Raw()
+	f, err := os.CreateTemp("", "harbor-ec-params-*.pem")
 	require.NoError(t, err)
-	require.NotEmpty(t, tokenStr)
+	defer os.Remove(f.Name())
 
-	parsedToken, err := Parse(opt, tokenStr, &jwt.RegisteredClaims{})
+	// P-256 curve OID as a minimal EC PARAMETERS block.
+	p256OID := []byte{0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07}
+	require.NoError(t, pem.Encode(f, &pem.Block{Type: "EC PARAMETERS", Bytes: p256OID}))
+
+	der, err := x509.MarshalECPrivateKey(key)
 	require.NoError(t, err)
-	require.NotNil(t, parsedToken)
-	assert.Equal(t, "ES256", parsedToken.Header["alg"])
+	require.NoError(t, pem.Encode(f, &pem.Block{Type: "EC PRIVATE KEY", Bytes: der}))
+	f.Close()
+
+	opt, err := NewOptions("", "test-issuer", f.Name())
+	require.NoError(t, err)
+	assert.Equal(t, jwt.SigningMethodES256, opt.SignMethod)
+}
+
+func TestNewOptionsRSAPKCS8(t *testing.T) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	der, err := x509.MarshalPKCS8PrivateKey(key)
+	require.NoError(t, err)
+
+	f, err := os.CreateTemp("", "harbor-rsa-pkcs8-*.pem")
+	require.NoError(t, err)
+	defer os.Remove(f.Name())
+	require.NoError(t, pem.Encode(f, &pem.Block{Type: "PRIVATE KEY", Bytes: der}))
+	f.Close()
+
+	opt, err := NewOptions("", "test-issuer", f.Name())
+	require.NoError(t, err)
+	assert.Equal(t, jwt.SigningMethodRS256, opt.SignMethod)
 }

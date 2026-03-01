@@ -65,9 +65,9 @@ func (o *Options) GetKey() (any, error) {
 			if publicKey != nil {
 				return publicKey, nil
 			}
-			return nil, fmt.Errorf("key is provided")
+			return nil, fmt.Errorf("no key provided")
 		}
-		if publicKey != nil && publicKey.E != privateKey.E && publicKey.N.Cmp(privateKey.N) != 0 {
+		if publicKey != nil && (publicKey.E != privateKey.E || publicKey.N.Cmp(privateKey.N) != 0) {
 			return nil, fmt.Errorf("the public key and private key are not match")
 		}
 		return privateKey, nil
