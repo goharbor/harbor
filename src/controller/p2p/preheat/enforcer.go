@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scan"
-	"github.com/goharbor/harbor/src/core/service/token"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -167,7 +167,7 @@ func NewEnforcer() Enforcer {
 					Actions: []string{resourcePullAction},
 				},
 			}
-			t, err := token.MakeToken(ctx, "distributor", token.Registry, ac)
+			t, err := tokensvc.MakeToken(ctx, "distributor", tokensvc.Registry, ac)
 			if err != nil {
 				return "", err
 			}

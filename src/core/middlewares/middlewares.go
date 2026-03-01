@@ -33,7 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
-	"github.com/goharbor/harbor/src/server/middleware/trace"
+	mwtrace "github.com/goharbor/harbor/src/server/middleware/trace"
 	"github.com/goharbor/harbor/src/server/middleware/transaction"
 	"github.com/goharbor/harbor/src/server/middleware/url"
 )
@@ -87,7 +87,7 @@ func MiddleWares() []web.MiddleWare {
 	return []web.MiddleWare{
 		url.Middleware(),
 		mergeslash.Middleware(),
-		trace.Middleware(),
+		mwtrace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
 		session.Middleware(),

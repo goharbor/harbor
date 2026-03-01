@@ -1,4 +1,4 @@
-package token
+package jwttoken
 
 import (
 	"crypto/ecdsa"

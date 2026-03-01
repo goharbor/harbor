@@ -45,7 +45,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	"github.com/goharbor/harbor/src/core/service/token"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/core/session"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -192,7 +192,7 @@ func main() {
 	ctx := context.Background()
 	config.InitTraceConfig(ctx)
 	shutdownTracerProvider := tracelib.InitGlobalTracer(ctx)
-	token.InitCreators()
+	tokensvc.InitCreators()
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)

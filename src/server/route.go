@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/controllers"
-	"github.com/goharbor/harbor/src/core/service/token"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/server/handler"
 	"github.com/goharbor/harbor/src/server/router"
 )
@@ -56,7 +56,7 @@ func registerRoutes() {
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/retention/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler())
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
 
-	web.Router("/service/token", &token.Handler{})
+	web.Router("/service/token", &tokensvc.Handler{})
 
 	// Error pages
 	web.ErrorController(&controllers.ErrorController{})
