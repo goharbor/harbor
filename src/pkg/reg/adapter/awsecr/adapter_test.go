@@ -115,6 +115,17 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	})
 	assert.Nil(t, err)
 	assert.NotNil(t, adapter)
+
+	adapter, err = newAdapter(&model.Registry{
+		Type: model.RegistryTypeAwsEcr,
+		Credential: &model.Credential{
+			AccessKey:    "xxx",
+			AccessSecret: "ppp",
+		},
+		URL: "https://api.ecr-public.us-east-1.amazonaws.com",
+	})
+	assert.Nil(t, err)
+	assert.NotNil(t, adapter)
 }
 
 func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Server) {
