@@ -25,7 +25,10 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/project"
 	svc_token "github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
@@ -68,6 +71,23 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 	if !ok {
 		logger.Warningf("invalid token claims.")
 		return nil
+	}
+	if ai := lib.GetArtifactInfo(req.Context()); ai != (lib.ArtifactInfo{}) {
+		pName, _ := utils.ParseRepository(ai.Repository)
+		p, err := project.Ctl.GetByName(req.Context(), pName)
+		if err != nil {
+			logger.Warningf("failed to get project %s: %v", pName, err)
+			return nil
+		}
+		if p == nil {
+			logger.Warningf("project %s not found", pName)
+			return nil
+		}
+		// Reject token if it was issued before the project was created (e.g. project recreated)
+		if claims.IssuedAt != nil && claims.IssuedAt.Time.Before(p.CreationTime) {
+			logger.Warningf("token issued at %v is older than project %s creation time %v", claims.IssuedAt.Time, pName, p.CreationTime)
+			return nil
+		}
 	}
 	return v2token.New(req.Context(), claims.Subject, claims.Access)
 }
