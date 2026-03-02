@@ -17,6 +17,7 @@ package proxy
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/docker/distribution"
 
@@ -49,6 +50,8 @@ type localInterface interface {
 	CheckDependencies(ctx context.Context, repo string, man distribution.Manifest) []distribution.Descriptor
 	// DeleteManifest cleanup delete tag from local cache
 	DeleteManifest(repo, ref string)
+	// UpdatePullTime update the artifact pull time
+	UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error
 }
 
 func (l *localHelper) GetManifest(ctx context.Context, art lib.ArtifactInfo) (*artifact.Artifact, error) {
@@ -72,6 +75,7 @@ type localHelper struct {
 
 type artifactController interface {
 	GetByReference(ctx context.Context, repository, reference string, option *artifact.Option) (artifact *artifact.Artifact, err error)
+	UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) (err error)
 }
 
 // newLocalHelper create the localInterface
@@ -149,6 +153,38 @@ func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man di
 	}
 	log.Debugf("Check dependency result %v", waitDesc)
 	return waitDesc
+}
+
+func (l *localHelper) UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error {
+	log.Debugf("Update artifact pull time, artifact: %v:%v", art.Repository, getReference(art))
+	ref := getReference(art)
+	if len(ref) == 0 {
+		log.Warningf("Reference is empty, skip update pull time, artifact: %v:%v", art.Repository, ref)
+		return nil
+	}
+	a, err := l.artifactCtl.GetByReference(ctx, art.Repository, ref, &artifact.Option{WithTag: true})
+	if err != nil {
+		return err
+	}
+	if a == nil {
+		log.Warningf("Artifact not found when update pull time, artifact: %v:%v", art.Repository, getReference(art))
+		return nil
+	}
+
+	var tagID int64
+	if len(art.Tag) > 0 && len(a.Tags) > 0 {
+		for _, tag := range a.Tags {
+			if tag.Name == art.Tag {
+				tagID = tag.ID
+				break
+			}
+		}
+		if tagID == 0 {
+			log.Warningf("Tag not found when update pull time, artifact: %v:%v tag: %v", art.Repository, ref, art.Tag)
+		}
+	}
+
+	return l.artifactCtl.UpdatePullTime(ctx, a.ID, tagID, time.Now())
 }
 
 // SendPullEvent send a pull image event
