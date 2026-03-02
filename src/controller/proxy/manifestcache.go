@@ -166,7 +166,19 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	if strings.HasPrefix(reference, "sha256:") {
 		reference = string(newDig)
 	}
-	return m.local.PushManifest(repo, reference, newMan)
+	err = m.local.PushManifest(repo, reference, newMan)
+	if err != nil {
+		log.Errorf("failed to push manifest list, error %v", err)
+		return err
+	}
+	log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
+	log.Debug("update artifact pull time to avoid it is removed by GC before the manifest list is pushed to local")
+	artForPullTime := art
+	artForPullTime.Digest = reference
+	if err := m.local.UpdatePullTime(ctx, artForPullTime); err != nil {
+		log.Errorf("failed to update pull time for artifact %v:%v, error %v", artForPullTime.Repository, reference, err)
+	}
+	return nil
 }
 
 // ManifestCache default Manifest handler
