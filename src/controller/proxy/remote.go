@@ -71,6 +71,9 @@ func (r *remoteHelper) init(ctx context.Context) error {
 	if reg == nil {
 		return fmt.Errorf("failed to get registry, registryID: %v", r.regID)
 	}
+	if reg.Offline {
+		return fmt.Errorf("registry is offline, regID:%v, Name:%v", reg.ID, reg.Name)
+	}
 	if reg.Status != model.Healthy {
 		return fmt.Errorf("current registry is unhealthy, regID:%v, Name:%v, Status: %v", reg.ID, reg.Name, reg.Status)
 	}
