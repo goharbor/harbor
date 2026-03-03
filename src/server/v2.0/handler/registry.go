@@ -147,6 +147,9 @@ func (r *registryAPI) UpdateRegistry(ctx context.Context, params operation.Updat
 		}
 		if params.Registry.Offline != nil {
 			registry.Offline = *params.Registry.Offline
+			if registry.Offline {
+				registry.Status = model.Unhealthy
+			}
 		}
 		if registry.Credential == nil {
 			registry.Credential = &model.Credential{}
