@@ -761,6 +761,8 @@
         "EDIT": "Edit",
         "DELETE": "Delete",
         "OFFLINE": "Offline",
+        "OFFLINE_STATUS": "Offline Status",
+        "ONLINE": "Online",
         "OFFLINE_SUCCESS": "Registry marked as offline successfully.",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",

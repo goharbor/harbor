@@ -69,6 +69,9 @@
                 <clr-dg-column class="flex-min-width">{{
                     'DESTINATION.STATUS' | translate
                 }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'offline'" class="flex-min-width">{{
+                    'DESTINATION.OFFLINE_STATUS' | translate
+                }}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'url'" class="flex-min-width">{{
                     'DESTINATION.URL' | translate
                 }}</clr-dg-column>
@@ -103,6 +106,18 @@
                         <ng-template #elseBlock>
                             <span class="label label-danger">{{
                                 'SCANNER.UNHEALTHY' | translate
+                            }}</span>
+                        </ng-template>
+                    </clr-dg-cell>
+                    <clr-dg-cell class="flex-min-width">
+                        <span
+                            *ngIf="t.offline; else onlineBlock"
+                            class="label label-warning"
+                            >{{ 'DESTINATION.OFFLINE' | translate }}</span
+                        >
+                        <ng-template #onlineBlock>
+                            <span class="label label-info">{{
+                                'DESTINATION.ONLINE' | translate
                             }}</span>
                         </ng-template>
                     </clr-dg-cell>

@@ -760,6 +760,8 @@
         "EDIT": "编辑",
         "DELETE": "删除",
         "OFFLINE": "离线",
+        "OFFLINE_STATUS": "离线状态",
+        "ONLINE": "在线",
         "OFFLINE_SUCCESS": "已成功将仓库标记为离线。",
         "TESTING_CONNECTION": "正在测试连接...",
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
