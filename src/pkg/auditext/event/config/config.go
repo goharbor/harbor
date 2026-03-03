@@ -53,10 +53,10 @@ func (c *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	e.ResourceName = rbac.ResourceConfiguration.String()
 	e.Payload = ext.Redact(ce.RequestPayload, c.SensitiveAttributes)
 	e.OcurrAt = time.Now()
-	if len(ce.RequestPayload) > payloadSizeLimit {
-		ce.RequestPayload = fmt.Sprintf("%v...", ce.RequestPayload[:payloadSizeLimit])
+	if len(e.Payload) > payloadSizeLimit {
+		e.Payload = fmt.Sprintf("%v...", e.Payload[:payloadSizeLimit])
 	}
-	e.OperationDescription = fmt.Sprintf("update configuration: %v", ce.RequestPayload)
+	e.OperationDescription = fmt.Sprintf("update configuration: %v", e.Payload)
 	if ce.ResponseCode == http.StatusOK {
 		e.IsSuccessful = true
 	}
