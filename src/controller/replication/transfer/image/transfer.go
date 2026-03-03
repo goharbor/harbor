@@ -219,7 +219,16 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 	// check the existence of the artifact on the destination registry
 	exist, digest2, err := t.exist(dstRepo, dstRef)
 	if err != nil {
-		return err
+		var httpErr *common_http.Error
+		if errors.As(err, &httpErr) && httpErr.Code == http.StatusPreconditionFailed {
+			// deployment security is preventing check but the artifact exists - overwrite needed
+			t.logger.Infof("artifact %s:%s existence check blocked by deployment security, treating as existing artifact requiring override",
+				dstRepo, dstRef)
+			exist = true
+			digest2 = ""
+		} else {
+			return err
+		}
 	}
 	if exist {
 		// the same artifact already exists
