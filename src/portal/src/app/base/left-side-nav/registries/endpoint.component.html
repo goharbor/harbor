@@ -52,6 +52,16 @@
                             'DESTINATION.DELETE' | translate
                         }}
                     </button>
+                    <button
+                        id="offline"
+                        type="button"
+                        class="btn btn-secondary"
+                        [disabled]="!(selectedRow.length === 1) || isSelectedRegistryOffline()"
+                        (click)="setOffline(selectedRow[0])">
+                        <clr-icon shape="ban" size="16"></clr-icon>&nbsp;{{
+                            'DESTINATION.OFFLINE' | translate
+                        }}
+                    </button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgSortBy]="'name'" class="flex-min-width">{{
                     'DESTINATION.NAME' | translate

@@ -50,6 +50,7 @@ import { EndpointService } from '../../../shared/services/endpoint.service';
 import { RegistryService } from '../../../../../ng-swagger-gen/services/registry.service';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { Registry } from '../../../../../ng-swagger-gen/models/registry';
+import { RegistryUpdate } from '../../../../../ng-swagger-gen/models/registry-update';
 
 @Component({
     selector: 'hbr-endpoint',
@@ -201,6 +202,42 @@ export class EndpointComponent implements OnInit, OnDestroy {
             let id: number | string = target.id;
             this.createEditEndpointComponent.openCreateEditTarget(editable, id);
         }
+    }
+
+    isSelectedRegistryOffline(): boolean {
+        if (this.selectedRow && this.selectedRow.length === 1) {
+            return this.selectedRow[0].offline === true;
+        }
+        return false;
+    }
+
+    setOffline(registry: Registry) {
+        if (!registry || !registry.id) {
+            return;
+        }
+        const update: RegistryUpdate = { offline: true };
+        this.endpointService
+            .updateRegistry({
+                id: registry.id,
+                registry: update,
+            })
+            .pipe(
+                finalize(() => {
+                    this.refreshTargets();
+                })
+            )
+            .subscribe({
+                next: () => {
+                    this.translateService
+                        .get('DESTINATION.OFFLINE_SUCCESS')
+                        .subscribe(msg =>
+                            this.errorHandlerEntity.info(msg)
+                        );
+                },
+                error: err => {
+                    this.errorHandlerEntity.error(err);
+                },
+            });
     }
 
     deleteTargets(targets: Registry[]) {
