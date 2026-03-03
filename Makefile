@@ -319,7 +319,13 @@ define swagger_generate_server
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
 endef
 
-gen_apis:
+check_docker:
+	@if ! [ -x "$$(command -v $(DOCKERCMD))" ]; then \
+		echo "Error: Docker is not installed or not in PATH." >&2; \
+		exit 1; \
+	fi
+
+gen_apis: check_docker
 	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
