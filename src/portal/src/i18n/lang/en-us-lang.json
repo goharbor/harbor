@@ -764,6 +764,7 @@
         "OFFLINE_STATUS": "Offline Status",
         "ONLINE": "Online",
         "OFFLINE_SUCCESS": "Registry marked as offline successfully.",
+        "ONLINE_SUCCESS": "Registry marked as online successfully.",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",

@@ -53,13 +53,13 @@
                         }}
                     </button>
                     <button
-                        id="offline"
+                        id="offline-online"
                         type="button"
                         class="btn btn-secondary"
-                        [disabled]="!(selectedRow.length === 1) || isSelectedRegistryOffline()"
-                        (click)="setOffline(selectedRow[0])">
-                        <clr-icon shape="ban" size="16"></clr-icon>&nbsp;{{
-                            'DESTINATION.OFFLINE' | translate
+                        [disabled]="!(selectedRow.length === 1)"
+                        (click)="toggleOfflineStatus(selectedRow[0])">
+                        <clr-icon [attr.shape]="isSelectedRegistryOffline() ? 'link' : 'ban'" size="16"></clr-icon>&nbsp;{{
+                            (isSelectedRegistryOffline() ? 'DESTINATION.ONLINE' : 'DESTINATION.OFFLINE') | translate
                         }}
                     </button>
                 </clr-dg-action-bar>

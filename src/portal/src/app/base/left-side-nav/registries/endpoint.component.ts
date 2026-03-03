@@ -211,11 +211,15 @@ export class EndpointComponent implements OnInit, OnDestroy {
         return false;
     }
 
-    setOffline(registry: Registry) {
+    toggleOfflineStatus(registry: Registry) {
         if (!registry || !registry.id) {
             return;
         }
-        const update: RegistryUpdate = { offline: true };
+        const setOffline = registry.offline !== true;
+        const update: RegistryUpdate = { offline: setOffline };
+        const successKey = setOffline
+            ? 'DESTINATION.OFFLINE_SUCCESS'
+            : 'DESTINATION.ONLINE_SUCCESS';
         this.endpointService
             .updateRegistry({
                 id: registry.id,
@@ -229,7 +233,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
             .subscribe({
                 next: () => {
                     this.translateService
-                        .get('DESTINATION.OFFLINE_SUCCESS')
+                        .get(successKey)
                         .subscribe(msg =>
                             this.errorHandlerEntity.info(msg)
                         );

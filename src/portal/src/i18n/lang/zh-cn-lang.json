@@ -763,6 +763,7 @@
         "OFFLINE_STATUS": "离线状态",
         "ONLINE": "在线",
         "OFFLINE_SUCCESS": "已成功将仓库标记为离线。",
+        "ONLINE_SUCCESS": "已成功将仓库标记为在线。",
         "TESTING_CONNECTION": "正在测试连接...",
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",
