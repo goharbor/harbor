@@ -270,15 +270,7 @@ func (c *controller) StartRegularHealthCheck(ctx context.Context, closing, done 
 			}
 			for _, registry := range registries {
 				if registry.Offline {
-					status := model.Unhealthy
-					if registry.Status != status {
-						registry.Status = status
-						if err = c.regMgr.Update(ctx, registry, "Status"); err != nil {
-							log.Errorf("failed to update the status of registry %d: %v", registry.ID, err)
-							continue
-						}
-						log.Debugf("update the status of registry %d to %s", registry.ID, status)
-					}
+					// Skip health check entirely when registry is marked offline
 					continue
 				}
 				isHealthy, err := c.IsHealthy(ctx, registry)
