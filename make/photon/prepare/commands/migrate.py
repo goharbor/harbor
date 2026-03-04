@@ -10,7 +10,7 @@ from migrations import accept_versions
 @click.command()
 @click.option('-i', '--input', 'input_', required=True, help="The path of original config file")
 @click.option('-o', '--output', default='', help="the path of output config file")
-@click.option('-t', '--target', default='2.14.0', help="target version of input path")
+@click.option('-t', '--target', default='2.15.0', help="target version of input path")
 def migrate(input_, output, target):
     """
     migrate command will migrate config file style to specific version

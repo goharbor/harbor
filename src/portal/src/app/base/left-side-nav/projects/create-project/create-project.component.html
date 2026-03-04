@@ -330,37 +330,6 @@
                     </clr-control-error>
                 </div>
             </div>
-            <div
-                class="clr-checkbox-container mt-05"
-                [style.visibility]="
-                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
-                ">
-                <clr-checkbox-wrapper>
-                    <input
-                        id="proxy-referrer-api"
-                        type="checkbox"
-                        clrCheckbox
-                        [(ngModel)]="project.metadata.proxy_referrer_api"
-                        name="proxy-referrer-api" />
-                    <label for="proxy-referrer-api">
-                        {{ 'PROJECT.PROXY_REFERRER_API_LABEL' | translate }}
-                        <clr-tooltip>
-                            <clr-icon
-                                clrTooltipTrigger
-                                shape="info-circle"
-                                size="24"></clr-icon>
-                            <clr-tooltip-content
-                                clrPosition="top-right"
-                                clrSize="lg"
-                                *clrIfOpen>
-                                <span>{{
-                                    'PROJECT.PROXY_REFERRER_API_TIP' | translate
-                                }}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
-                    </label>
-                </clr-checkbox-wrapper>
-            </div>
         </form>
     </div>
     <div class="modal-footer">

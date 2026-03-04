@@ -245,11 +245,7 @@
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
-        "NO_PROJECT": "Es konnte kein Projekt gefunden werden",
-        "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
-        "PROXY_REFERRER_API_TIP": "Check this to enable proxy the OCI 1.1 referrer API request to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
-
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
@@ -681,8 +677,8 @@
         "CANNOT_EDIT": "Endpunkt kann nicht geändert werden, während die Replikationsregel aktiviert ist.",
         "PLACEHOLDER": "Wir konnten keine Endpunkt finden.",
         "CA_CERTIFICATE": "CA-Zertifikat",
-        "CA_CERTIFICATE_TOOLTIP": "Geben Sie ein PEM-kodiertes CA-Zertifikat an, um das TLS-Zertifikat der Registry zu überprüfen. Leer lassen, um den System-CA-Pool zu verwenden. Dieses Feld ist nur verfügbar, wenn 'Fernzertifikat überprüfen' aktiviert ist.",
-        "CA_CERTIFICATE_HELPER": "Optional. Fügen Sie hier das PEM-kodierte CA-Zertifikat ein, um selbstsignierten oder privaten CA-Zertifikaten für diesen Endpunkt zu vertrauen. Wenn leer gelassen, verwendet Harbor den System-CA-Pool."
+        "CA_CERTIFICATE_TOOLTIP": "Stellen Sie ein PEM-kodiertes CA-Zertifikat bereit, um zusätzliche CA-Zertifikate für diese Registry zu vertrauen. Das benutzerdefinierte CA wird zum System-CA-Pool hinzugefügt, wodurch Harbor sowohl System-signierte als auch benutzerdefiniert signierte Zertifikate vertrauen kann. Leer lassen, um nur den System-CA-Pool zu verwenden. Dieses Feld ist nur verfügbar, wenn 'Fernzertifikat überprüfen' aktiviert ist.",
+        "CA_CERTIFICATE_HELPER": "Optional. Fügen Sie hier das PEM-kodierte CA-Zertifikat ein, um selbstsignierten oder privaten CA-Zertifikaten für diesen Endpunkt zu vertrauen. Das Zertifikat wird zum System-CA-Pool hinzugefügt, ersetzt es nicht."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Kopiere Digest",
@@ -806,7 +802,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Registrierung erlaubt. Nutzer können im Anmeldedialog selbstständig Accounts anlegen. Haken entfernen um Selbst-Registrierung zu verbieten.",
             "SELF_REGISTRATION_DISABLE": "Registrierung verboten. Haken setzen um Selbst-Registrierung zu erlauben.",
-            "VERIFY_REMOTE_CERT": "Festlegen, ob die Image-Replikation das Zertifikat der Gegenstelle überprüfen soll. Deaktiviere die Box, wenn der E-Mail-Server ein selbstsigniertes oder nicht-vertrauenswürdiges Zertifikat verwendet.",
+            "VERIFY_REMOTE_CERT": "Bestimmen Sie, ob die Image-Replikation das Zertifikat für eine Remote-Registry überprüfen soll. Deaktivieren Sie diese Box, wenn Sie die Überprüfung des Zertifikats des Remote-Registry-Endpunkts überspringen möchten.",
             "AUTH_MODE": "Der Standard Authentifizierungsmodus ist Datenbank, die Zugriffsdaten werden hierbei in einer lokalen Datenbank gespeichert. Wähle einen alternativen Authentifizierungsmodus, um die Nutzer gegen den konfigurierten Dienst zu verifizieren.",
             "PRIMARY_AUTH_MODE": "Dieser Anmeldemodus wird zur Standardmethode für die Benutzeranmeldung. Der Anmeldebildschirm, in dem der Benutzer auswählt, ob er sich über den Identitätsanbieter oder über die lokale DB anmelden möchte, leitet den Benutzer automatisch an diesen Identitätsanbieter weiter. Die Anmeldung über die DB ist möglich, wenn die URL '/account/sign-in' explizit aufgerufen wird.",
             "LDAP_SEARCH_DN": "DN eines Nutzers, der die Berechtigungen auf dem LDAP/AD Server hat. Falls der LDAP/AD server anonyme Suche nicht unterstützt, muss der DN und das ldap_search_pwd konfiguriert werden.",

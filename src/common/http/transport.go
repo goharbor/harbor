@@ -149,6 +149,7 @@ func parseCertificatesFromPEM(pemData string) ([]*x509.Certificate, error) {
 }
 
 // WithCustomCACert returns a TransportOption that configures custom CA certificates (supports chains)
+// The custom CA certificates are appended to the system CA pool, so both system CAs and custom CAs are trusted.
 func WithCustomCACert(caCert string) func(*http.Transport) {
 	return func(tr *http.Transport) {
 		caCert = normalizePEM(caCert)
@@ -168,7 +169,14 @@ func WithCustomCACert(caCert string) func(*http.Transport) {
 			return
 		}
 
-		caCertPool := x509.NewCertPool()
+		// Start with system CA pool to maintain trust in system certificates
+		caCertPool, err := x509.SystemCertPool()
+		if err != nil {
+			log.Warningf("Failed to load system CA pool, using empty pool: %v", err)
+			caCertPool = x509.NewCertPool()
+		}
+
+		// Append custom CA certificates to the pool
 		for _, cert := range certs {
 			caCertPool.AddCert(cert)
 		}
@@ -178,7 +186,7 @@ func WithCustomCACert(caCert string) func(*http.Transport) {
 		}
 
 		tr.TLSClientConfig.RootCAs = caCertPool
-		log.Debugf("Configured HTTP transport with custom CA certificate.")
+		log.Debugf("Configured HTTP transport with custom CA certificate appended to system CA pool.")
 	}
 }
 
