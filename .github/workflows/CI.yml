@@ -102,6 +102,7 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   APITEST_DB:
     env:
@@ -362,3 +363,4 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
