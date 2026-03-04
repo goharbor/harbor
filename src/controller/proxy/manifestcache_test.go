@@ -170,6 +170,7 @@ func (suite *CacheTestSuite) TestPushManifestList() {
 
 	suite.local.On("PushManifest", repo, originDigest, mock.Anything).Return(fmt.Errorf("wrong digest"))
 	suite.local.On("PushManifest", repo, mock.Anything, mock.Anything).Return(nil)
+	suite.local.On("UpdatePullTime", ctx, mock.Anything).Return(nil)
 
 	err = suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
 	suite.Require().Nil(err)
