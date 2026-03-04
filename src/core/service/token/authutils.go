@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package token
+package tokensvc
 
 import (
 	"context"
@@ -30,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	tokenpkg "github.com/goharbor/harbor/src/pkg/token"
+	jwttoken "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
 )
 
@@ -111,7 +111,7 @@ func filterAccess(ctx context.Context, access []*token.ResourceActions,
 
 // MakeToken makes a valid jwt token based on parms.
 func MakeToken(ctx context.Context, username, service string, access []*token.ResourceActions) (*models.Token, error) {
-	options, err := tokenpkg.NewOptions(signingMethod, v2.Issuer, privateKey)
+	options, err := jwttoken.NewOptions(signingMethod, v2.Issuer, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func MakeToken(ctx context.Context, username, service string, access []*token.Re
 		},
 		Access: access,
 	}
-	tok, err := tokenpkg.New(options, claims)
+	tok, err := jwttoken.New(options, claims)
 	if err != nil {
 		return nil, err
 	}

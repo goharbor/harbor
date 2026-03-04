@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/service/token"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -108,7 +108,7 @@ func getChallenge(req *http.Request, accessList []access) string {
 		}
 		scope += a.scopeStr(req.Context())
 	}
-	challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, token.Registry)
+	challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, tokensvc.Registry)
 	if len(scope) > 0 {
 		challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
 	}
