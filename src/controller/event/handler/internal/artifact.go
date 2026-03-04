@@ -206,6 +206,40 @@ func (a *ArtifactEventHandler) syncFlushPullTime(ctx context.Context, artifactID
 	if err := artifact.Ctl.UpdatePullTime(ctx, artifactID, tagID, time); err != nil {
 		log.Warningf("failed to update pull time for artifact %d, %v", artifactID, err)
 	}
+
+	a.updateParentArtifactPullTime(ctx, artifactID, time)
+}
+
+// update the pull time of parent artifacts that reference this artifact
+func (a *ArtifactEventHandler) updateParentArtifactPullTime(ctx context.Context, childArtifactID int64, pullTime time.Time) {
+	artMgr := pkg.ArtifactMgr
+	// for UT mock
+	if a.artMgr != nil {
+		artMgr = a.artMgr
+	}
+	references, err := artMgr.ListReferences(ctx, q.New(q.KeyWords{"ChildID": childArtifactID}))
+	if err != nil {
+		log.Warningf("failed to list parent references for artifact %d when updating pull time: %v", childArtifactID, err)
+		return
+	}
+
+	// filter out duplicates
+	var parentIDs []int64
+	uniqueParents := make(map[int64]struct{})
+	for _, ref := range references {
+		uniqueParents[ref.ParentID] = struct{}{}
+	}
+	for parentID := range uniqueParents {
+		parentIDs = append(parentIDs, parentID)
+	}
+
+	for _, id := range parentIDs {
+		if err := artMgr.UpdatePullTime(ctx, id, pullTime); err != nil {
+			log.Warningf("failed to update pull time for parent artifact %d: %v", id, err)
+		} else {
+			log.Debugf("updated pull time for parent artifact %d (child: %d)", id, childArtifactID)
+		}
+	}
 }
 
 func (a *ArtifactEventHandler) syncFlushPullCount(ctx context.Context, repositoryID int64, count uint64) {
