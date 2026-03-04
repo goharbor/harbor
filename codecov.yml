@@ -22,7 +22,7 @@ parsers:
       macro: no
 
 fixes:
-  - "src/github.com/goharbor/harbor/src/::src/"
+  - "github.com/goharbor/harbor/::src/github.com/goharbor/harbor/"
 
 comment:
   layout: "reach,diff,flags,tree"
