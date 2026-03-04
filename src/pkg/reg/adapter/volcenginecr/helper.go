@@ -46,10 +46,15 @@ func getRegionRegistryName(url string) (string, string, error) {
 	return "", "", errors.New("invalid region")
 }
 
+var resolveHost = func(host string) string { return host }
+
 func getRealmService(host string, insecure bool, caCert string) (string, string, error) {
 	client := &http.Client{
 		Transport: util.GetHTTPTransport(insecure, caCert),
 	}
+
+	// Allow tests to override the host (e.g., inject mock server URL) via resolveHost
+	host = resolveHost(host)
 
 	resp, err := client.Get(host + "/v2/")
 	if err != nil {
