@@ -74,6 +74,8 @@ func TestTokenIssuedAfterProjectCreation(t *testing.T) {
 		{"after creation - allowed", "myproject", after, proj, nil, true},
 		{"before creation - rejected", "myproject", before, proj, nil, false},
 		{"exact creation time - allowed", "myproject", projectCreated, proj, nil, true},
+		{"within leeway window - allowed", "myproject", projectCreated.Add(-30 * time.Second), proj, nil, true},
+		{"just outside leeway - rejected", "myproject", projectCreated.Add(-61 * time.Second), proj, nil, false},
 		{"no project in context - skipped", "", after, nil, nil, true},
 		{"project lookup error - rejected", "myproject", after, nil, fmt.Errorf("not found"), false},
 	}
