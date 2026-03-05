@@ -13,10 +13,13 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SessionService } from '../../../shared/services/session.service';
+import {
+    CommonRoutes,
+    RoleMapping,
+} from 'src/app/shared/entities/shared.const';
 import { SessionUser } from '../../../shared/entities/session-user';
+import { SessionService } from '../../../shared/services/session.service';
 import { Project } from '../project';
-import { CommonRoutes } from 'src/app/shared/entities/shared.const';
 
 @Component({
     selector: 'app-project-config',
@@ -49,7 +52,7 @@ export class ProjectConfigComponent implements OnInit {
 
             // Check user role and redirect if Limited Guest or Guest
             const userRole = pro.role_name;
-            const excludedRoles = ['MEMBER.LIMITED_GUEST', 'MEMBER.GUEST'];
+            const excludedRoles = [RoleMapping.limitedGuest, RoleMapping.guest];
 
             if (excludedRoles.includes(userRole)) {
                 // Redirect to repositories page
