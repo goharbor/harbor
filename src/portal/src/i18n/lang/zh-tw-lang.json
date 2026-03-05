@@ -730,7 +730,6 @@
         "ADD_LABELS": "新增標籤",
         "STOP": "停止",
         "RETAG": "複製",
-        "FILTER_ARTIFACT_BY_LABEL": "透過標籤篩選 Artifact",
         "ACTION": "操作",
         "ADDITIONAL_INFO": "新增資訊",
         "REPO_NAME": "映像檔儲存庫",
