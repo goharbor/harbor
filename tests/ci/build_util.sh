@@ -10,7 +10,7 @@ function s3_to_https() {
     local bucket="${BASH_REMATCH[1]}"
     local path="${BASH_REMATCH[2]}"
     # current s3 bucket is create in this region
-    local region="us-west-1"  
+    local region="us-west-1"
     echo "https://${bucket}.s3.${region}.amazonaws.com/${path}"
   else
     echo "Invalid S3 URL: $s3_url" >&2
@@ -39,7 +39,8 @@ function publishImage {
     # rename the images with tag "dev" and push to Docker Hub
     docker images
     docker login -u $3 -p $4
-    docker images | grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
+    # format the output to be compatible with both old and new Docker versions.
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}"| grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     echo "Images are published successfully"
     docker images
 }
