@@ -17,7 +17,9 @@ import { SharedModule } from '../shared/shared.module';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { SignUpPageComponent } from './sign-up/sign-up-page.component';
 import { SignInComponent } from './sign-in/sign-in.component';
+import { InitialSetupComponent } from './initial-setup/initial-setup.component';
 import { SignInGuard } from '../shared/router-guard/sign-in-guard-activate.service';
+import { SetupGuard } from '../shared/router-guard/setup-guard.service';
 import { TopRepoService } from './sign-in/top-repo/top-repository.service';
 import { TopRepoComponent } from './sign-in/top-repo/top-repo.component';
 
@@ -27,6 +29,11 @@ const routes: Routes = [
         canActivate: [SignInGuard],
         component: SignInComponent,
     },
+    {
+        path: 'initial-setup',
+        canActivate: [SetupGuard],
+        component: InitialSetupComponent,
+    },
 ];
 @NgModule({
     imports: [RouterModule.forChild(routes), SharedModule],
@@ -34,6 +41,7 @@ const routes: Routes = [
         SignUpComponent,
         SignUpPageComponent,
         SignInComponent,
+        InitialSetupComponent,
         TopRepoComponent,
     ],
     providers: [TopRepoService],
