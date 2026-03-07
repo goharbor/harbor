@@ -94,6 +94,7 @@ const (
 	MaxJobWorkers                    = "max_job_workers"
 	TokenExpiration                  = "token_expiration"
 	AdminInitialPassword             = "admin_initial_password"
+	AdminInitialized                 = "admin_initialized"
 	WithTrivy                        = "with_trivy"
 	ScanAllPolicy                    = "scan_all_policy"
 	UAAEndpoint                      = "uaa_endpoint"
