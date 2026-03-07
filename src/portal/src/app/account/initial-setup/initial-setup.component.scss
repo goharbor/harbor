@@ -1,0 +1,68 @@
+.login-wrapper {
+    flex-wrap: wrap;
+
+    .login {
+        background: transparent;
+    }
+}
+
+.title {
+    position: absolute;
+    top: 10rem;
+}
+
+.login-group {
+    width: 70%;
+    position: absolute;
+    top: 10rem;
+}
+
+.setup-info {
+    text-align: center;
+    margin-bottom: 1.2rem;
+}
+
+.setup-icon {
+    color: #0072a3;
+    margin-bottom: 0.5rem;
+}
+
+.setup-heading {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.setup-description {
+    font-size: 0.65rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+.pw-eye {
+    margin-left: -20px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.pwd-input {
+    padding-right: 26px;
+}
+
+.password-hint {
+    font-size: 0.55rem;
+    color: #c25400;
+    margin-top: 0.15rem;
+    margin-bottom: 0.15rem;
+}
+
+.password-mismatch {
+    font-size: 0.55rem;
+    color: #c92100;
+    margin-top: 0.15rem;
+    margin-bottom: 0.15rem;
+}
+
+.login {
+    padding-bottom: 180px;
+}
