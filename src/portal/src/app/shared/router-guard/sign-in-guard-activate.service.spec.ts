@@ -15,6 +15,7 @@ import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SignInGuard } from './sign-in-guard-activate.service';
 import { SessionService } from '../services/session.service';
+import { SetupService } from '../../services/setup.service';
 import { of } from 'rxjs';
 import { UserPermissionService } from '../services';
 
@@ -25,6 +26,11 @@ describe('SignInGuard', () => {
         },
     };
     const fakeSessionService = null;
+    const fakeSetupService = {
+        isSetupRequired() {
+            return of(false);
+        },
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -36,6 +42,7 @@ describe('SignInGuard', () => {
                     useValue: fakeUserPermissionService,
                 },
                 { provide: SessionService, useValue: fakeSessionService },
+                { provide: SetupService, useValue: fakeSetupService },
             ],
         });
     });
