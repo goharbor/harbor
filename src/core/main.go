@@ -229,8 +229,39 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get admin's initial password: %v", err)
 	}
-	if err := updateInitPassword(ctx, adminUserID, password); err != nil {
-		log.Error(err)
+
+	// Determine admin initialization state for one-time setup flow
+	cfgMgr := config.GetCfgManager(ctx)
+	adminInitialized := cfgMgr.Get(ctx, common.AdminInitialized).GetBool()
+
+	adminUser, adminErr := pkguser.Mgr.Get(ctx, adminUserID)
+	if adminErr != nil {
+		log.Fatalf("failed to get admin user: %v", adminErr)
+	}
+
+	if adminUser.Salt != "" {
+		// Admin password already exists in DB (existing deployment or previously set)
+		if !adminInitialized {
+			cfgMgr.Set(ctx, common.AdminInitialized, true)
+			if err := cfgMgr.Save(ctx); err != nil {
+				log.Errorf("failed to persist AdminInitialized flag: %v", err)
+			}
+			log.Info("Admin already has a password. Set admin_initialized=true for backwards compatibility.")
+		}
+	} else if password != "" {
+		// No password in DB but initial password provided via config/env
+		if err := updateInitPassword(ctx, adminUserID, password); err != nil {
+			log.Error(err)
+		} else {
+			cfgMgr.Set(ctx, common.AdminInitialized, true)
+			if err := cfgMgr.Save(ctx); err != nil {
+				log.Errorf("failed to persist AdminInitialized flag: %v", err)
+			}
+			log.Info("Admin password seeded from config. Set admin_initialized=true.")
+		}
+	} else {
+		// No password in DB and no initial password in config -> setup pending
+		log.Info("No admin password configured. One-time setup page will be available at /setup.")
 	}
 
 	// Allow user to disable writing audit log to db by env while initialize
