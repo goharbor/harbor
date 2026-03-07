@@ -18,6 +18,22 @@
         "OR": "ИЛИ",
         "VIA_LOCAL_DB": "ВОЙТИ ЧЕРЕЗ ЛОКАЛЬНУЮ БАЗУ ДАННЫХ"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "Регистрация"
     },
@@ -703,7 +719,7 @@
         "CA_CERTIFICATE": "Сертификат CA",
         "CA_CERTIFICATE_TOOLTIP": "Укажите сертификат CA в формате PEM, чтобы доверять дополнительным сертификатам CA для этого реестра. Пользовательский CA будет добавлен в системный пул CA, что позволит Harbor доверять как системным подписанным, так и пользовательским подписанным сертификатам. Оставьте пустым для использования только системного пула CA. Это поле доступно только при включенной опции 'Проверять удаленный сертификат'.",
         "CA_CERTIFICATE_HELPER": "Необязательно. Вставьте здесь сертификат CA в формате PEM для доверия самоподписанным или частным сертификатам CA для этой конечной точки. Сертификат будет добавлен в системный пул CA, а не заменит его."
-},
+    },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Копировать Хэш",
         "DELETE": "Удалить",

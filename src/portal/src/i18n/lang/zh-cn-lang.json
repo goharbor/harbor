@@ -12,6 +12,22 @@
         "OR": "或",
         "VIA_LOCAL_DB": "通过本地数据库登录"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "注册"
     },
@@ -923,8 +939,7 @@
         "COPYRIGHT": "Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，通过添加一些企业必需的功能特性，例如安全、标识和管理等，扩展了开源Docker Distribution。作为一个企业级私有Registry服务器，Harbor提供了更好的性能和安全。提升用户使用Registry构建和运行环境传输镜像的效率。",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "受欢迎的镜像仓库",
     "STATISTICS": {
         "PRO_ITEM": "项目",

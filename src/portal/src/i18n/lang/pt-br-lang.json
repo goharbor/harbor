@@ -12,6 +12,22 @@
         "OR": "OU",
         "VIA_LOCAL_DB": "LOGIN COM BANCO DE DADOS LOCAL"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "Cadastro de conta"
     },
@@ -924,8 +940,7 @@
         "COPYRIGHT": "O Projeto Harbor é um projeto de Registry Cloud Nativo, com código aberto e confiável que armazena, assina e analisa conteúdos. Harbor estende o projeto Opensource Docker Distribution adicionando funcionalidades, como segurança, identidade e gerenciamento. Harbor suporta funcionalidades avançadas como gerenciamento de usuários, controle de acesso, auditoria de atividades e replicação entre instâncias. Ter um repositório de imagens mais perto do ambiente de desenvolvimento e produção pode melhorar a eficiência de transferência de imagens.",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Repositórios Populares",
     "STATISTICS": {
         "PRO_ITEM": "PROJETOS",

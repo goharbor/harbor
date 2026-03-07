@@ -12,6 +12,22 @@
         "OR": "OR",
         "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "Kayıt ol"
     },
@@ -922,8 +938,7 @@
         "COPYRIGHT": "Project Harbor, içeriği depolayan, imzalayan ve tarayan açık kaynaklı, güvenilir bir bulut yerel kayıt defteri projesidir. Harbor, güvenlik, kimlik ve yönetim gibi kullanıcılar tarafından genellikle istenen işlevleri ekleyerek açık kaynaklı Docker Dağıtımını genişletir. Harbor, kullanıcı yönetimi, erişim kontrolü, etkinlik izleme ve örnekler arasında çoğaltma gibi gelişmiş özellikleri destekler. Yapı ve çalıştırma ortamına daha yakın bir kayıt defterine sahip olmak da görüntü aktarma verimliliğini artırabilir.",
         "OPEN_SOURCE_LICENSE": "Açık Kaynak / Üçüncü Parti Lisansı"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Popüler Depolar",
     "STATISTICS": {
         "PRO_ITEM": "PROJELER",

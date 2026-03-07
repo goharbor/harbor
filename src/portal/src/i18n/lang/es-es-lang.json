@@ -12,6 +12,22 @@
         "OR": "OR",
         "VIA_LOCAL_DB": "LOGIN VIA LOCAL DB"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "Registrarse"
     },
@@ -230,7 +246,7 @@
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
-        "PROXY_CACHE_BANDWIDTH":"Establezca el ancho de banda de red máximo para extraer imágenes desde el servidor proxy-cache. Para un ancho de banda ilimitado, ingrese -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Establezca el ancho de banda de red máximo para extraer imágenes desde el servidor proxy-cache. Para un ancho de banda ilimitado, ingrese -1. ",
         "BANDWIDTH": "Ancho de banda",
         "SPEED_LIMIT_TIP": "Por favor, introduzca -1 o un número entero mayor que 0. ",
         "OF": "de",
@@ -924,8 +940,7 @@
         "COPYRIGHT": "Project Harbor es un proyecto de código abierto de cloud native registry confiable que almacena, firma y escanea contenido. Harbor extiende la distribución Docker de código abierto agregando las funcionalidades que suelen requerir los usuarios, como seguridad, identidad y administración. Harbor admite funciones avanzadas, como administración de usuarios, control de acceso, monitoreo de actividad y replicación entre instancias. Tener un registro más cerca del entorno de compilación y ejecución también puede mejorar la eficiencia de la transferencia de imágenes.",
         "OPEN_SOURCE_LICENSE": "Código Abierto/Licencias de Terceros"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Repositorios Populares",
     "STATISTICS": {
         "PRO_ITEM": "PROYECTOS",
@@ -1106,7 +1121,6 @@
         "ADD_TAG": "AGREGAR TAG",
         "REMOVE_TAG": "REMOVER TAG",
         "NAME_ALREADY_EXISTS": "Tag ya existe en el repositorio"
-
     },
     "LABEL": {
         "LABEL": "Etiqueta",

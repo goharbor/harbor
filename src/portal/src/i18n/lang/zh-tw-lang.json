@@ -12,6 +12,22 @@
         "OR": "或",
         "VIA_LOCAL_DB": "透過本機資料庫登入"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "註冊"
     },
@@ -924,8 +940,7 @@
         "COPYRIGHT": "Harbor 是一個開源、受信賴的雲原生 Docker Registry 專案，用於儲存、簽署和以及掃描映像檔內容。它擴展了開源的 Docker Distribution，加入了如安全性、身份認證和用戶管理等功能。Harbor 也支援資源監控和不同實例間的同步。將 Registry 靠近部署和執行環境可以提高傳輸效率。",
         "OPEN_SOURCE_LICENSE": "開源/第三方授權條款"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "熱門儲存庫",
     "STATISTICS": {
         "PRO_ITEM": "專案",

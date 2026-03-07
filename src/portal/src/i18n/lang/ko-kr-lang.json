@@ -12,6 +12,22 @@
         "OR": "OR",
         "VIA_LOCAL_DB": "로컬 DB를 통해 로그인"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "등록하기"
     },
@@ -921,8 +937,7 @@
         "COPYRIGHT": "프로젝트 'Harbor'는 콘텐츠를 저장, 서명 및 검색하는 신뢰할 수 있는 오픈 소스 클라우드 네이티브 레지스트리 프로젝트입니다. 'Harbor'는 보안, ID, 관리 등 사용자에게 일반적으로 필요한 기능을 추가하여 오픈 소스 Docker 배포를 확장합니다. 'Harbor'는 사용자 관리, 액세스 제어, 활동 모니터링, 인스턴스 간 복제와 같은 고급 기능을 지원합니다. 레지스트리를 빌드 및 실행 환경에 더 가깝게 두면 이미지 전송 효율성도 향상될 수 있습니다.",
         "OPEN_SOURCE_LICENSE": "오픈소스/서드 파티 라이선스"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "인기 저장소",
     "STATISTICS": {
         "PRO_ITEM": "프로젝트",

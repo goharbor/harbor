@@ -12,6 +12,22 @@
         "OR": "OU",
         "VIA_LOCAL_DB": "LOGIN VIA BASE LOCALE"
     },
+    "INITIAL_SETUP": {
+        "TITLE": "Initial Admin Setup",
+        "DESCRIPTION": "This is a one-time setup step. Please set the administrator password for your Harbor instance. Keep this password safe — you will need it to sign in.",
+        "PASSWORD": "Admin Password",
+        "PASSWORD_PLACEHOLDER": "Enter new password",
+        "CONFIRM_PASSWORD": "Confirm Password",
+        "CONFIRM_PASSWORD_PLACEHOLDER": "Re-enter password",
+        "PASSWORD_REQUIRED": "Password is required.",
+        "PASSWORD_HINT": "Password must be 8-128 characters with at least 1 uppercase letter, 1 lowercase letter, and 1 number.",
+        "PASSWORD_MISMATCH": "Passwords do not match.",
+        "SUBMIT": "SET ADMIN PASSWORD",
+        "SUCCESS": "Admin password set successfully! Redirecting to sign-in page...",
+        "ERROR_ALREADY_COMPLETED": "Setup has already been completed.",
+        "ERROR_WEAK_PASSWORD": "Password does not meet strength requirements.",
+        "ERROR_GENERIC": "An error occurred. Please try again."
+    },
     "SIGN_UP": {
         "TITLE": "S'inscrire"
     },
@@ -923,8 +939,7 @@
         "COPYRIGHT": "Le Project Harbor est un projet de registre cloud native fiable et open source qui stocke, signe et analyse le contenu. Harbor étend la distribution open source Docker en ajoutant les fonctionnalités généralement requises par les utilisateurs telles que la sécurité, l'authentification et la gestion. Harbor prend en charge des fonctionnalités avancées telles que la gestion des utilisateurs, le contrôle d'accès, la surveillance des activités et la réplication entre les instances. Un registre plus proche de l'environnement de build et d'exécution peut également améliorer l'efficacité du transfert d'image.",
         "OPEN_SOURCE_LICENSE": "Licence Open Source / Tierce Partie"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Dépôts populaires",
     "STATISTICS": {
         "PRO_ITEM": "Projets",
