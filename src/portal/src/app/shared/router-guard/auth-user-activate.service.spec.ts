@@ -15,13 +15,20 @@ import { TestBed, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SessionService } from '../services/session.service';
 import { AppConfigService } from '../../services/app-config.service';
+import { SetupService } from '../../services/setup.service';
 import { MessageHandlerService } from '../services/message-handler.service';
 import { SearchTriggerService } from '../components/global-search/search-trigger.service';
 import { AuthCheckGuard } from './auth-user-activate.service';
+import { of } from 'rxjs';
 
 describe('AuthCheckGuard', () => {
     const fakeSessionService = null;
     const fakeAppConfigService = null;
+    const fakeSetupService = {
+        isSetupRequired() {
+            return of(false);
+        },
+    };
     const fakeMessageHandlerService = null;
     const fakeSearchTriggerService = null;
 
@@ -32,6 +39,7 @@ describe('AuthCheckGuard', () => {
                 AuthCheckGuard,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: AppConfigService, useValue: fakeAppConfigService },
+                { provide: SetupService, useValue: fakeSetupService },
                 {
                     provide: MessageHandlerService,
                     useValue: fakeMessageHandlerService,
