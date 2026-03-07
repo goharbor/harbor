@@ -39,6 +39,8 @@ func registerRoutes() {
 	web.Router("/c/login", &controllers.CommonController{}, "post:Login")
 	web.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
 	web.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
+	web.Router("/c/setup/status", &controllers.CommonController{}, "get:SetupStatus")
+	web.Router("/c/setup", &controllers.CommonController{}, "post:Setup")
 	web.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	web.Router(common.OIDCLoginoutPath, &controllers.OIDCController{}, "get:RedirectLogout")
 	web.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
