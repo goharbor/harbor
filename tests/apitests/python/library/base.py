@@ -106,14 +106,8 @@ def _get_string_from_unicode(udata):
         result = result + tmp.strip('\n\r\t')
     return result
 
-def getenv_bool(name: str, default: bool = False) -> bool:
-    val = os.getenv(name)
-    if val is None:
-        return default
-    return val.strip().lower() in ( "true", "1")
-
 def restart_process(process):
-    if "dockerd" in process:
+    if process == "dockerd":
         full_process_name = process
     elif process == "containerd":
         full_process_name = "/usr/local/bin/containerd"

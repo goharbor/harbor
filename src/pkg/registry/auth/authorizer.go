@@ -32,22 +32,12 @@ import (
 )
 
 // NewAuthorizer creates an authorizer that can handle different auth schemes
-func NewAuthorizer(username, password string, insecure bool, caCert ...string) lib.Authorizer {
-	var transport http.RoundTripper
-	if len(caCert) > 0 && caCert[0] != "" {
-		transport = commonhttp.GetHTTPTransport(
-			commonhttp.WithInsecure(insecure),
-			commonhttp.WithCACert(caCert[0]),
-		)
-	} else {
-		transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure))
-	}
-
+func NewAuthorizer(username, password string, insecure bool) lib.Authorizer {
 	return &authorizer{
 		username: username,
 		password: password,
 		client: &http.Client{
-			Transport: transport,
+			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
 		},
 	}
 }

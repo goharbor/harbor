@@ -240,7 +240,7 @@ func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.U
 	}, "Description"); err != nil {
 		return r.SendError(ctx, err)
 	}
-	return operation.NewUpdateRepositoryOK()
+	return operation.NewDeleteRepositoryOK()
 }
 
 func (r *repositoryAPI) DeleteRepository(ctx context.Context, params operation.DeleteRepositoryParams) middleware.Responder {

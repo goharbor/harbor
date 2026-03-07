@@ -77,7 +77,6 @@ type controller struct {
 func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (int64, error) {
 	para := make(map[string]any)
 	para["delete_untagged"] = policy.DeleteUntagged
-	para["delete_tag"] = policy.DeleteTag
 	para["dry_run"] = policy.DryRun
 	para["workers"] = policy.Workers
 	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
@@ -206,7 +205,6 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
 	extras := make(map[string]any)
 	extras["delete_untagged"] = policy.DeleteUntagged
-	extras["delete_tag"] = policy.DeleteTag
 	extras["workers"] = policy.Workers
 	return c.schedulerMgr.Schedule(ctx, job.GarbageCollectionVendorType, -1, cronType, cron, job.GarbageCollectionVendorType, policy, extras)
 }
@@ -236,7 +234,6 @@ func convertTask(task *task.Task) *Task {
 		StatusMessage:  task.StatusMessage,
 		RunCount:       task.RunCount,
 		DeleteUntagged: task.GetBoolFromExtraAttrs("delete_untagged"),
-		DeleteTag:      task.GetBoolFromExtraAttrs("delete_tag"),
 		DryRun:         task.GetBoolFromExtraAttrs("dry_run"),
 		Workers:        int(task.GetNumFromExtraAttrs("workers")),
 		JobID:          task.JobID,

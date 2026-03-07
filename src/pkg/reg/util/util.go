@@ -26,13 +26,7 @@ import (
 )
 
 // GetHTTPTransport can be used to share the common HTTP transport
-func GetHTTPTransport(insecure bool, caCert string) http.RoundTripper {
-	if caCert != "" {
-		return commonhttp.GetHTTPTransport(
-			commonhttp.WithInsecure(insecure),
-			commonhttp.WithCACert(caCert),
-		)
-	}
+func GetHTTPTransport(insecure bool) http.RoundTripper {
 	if insecure {
 		return commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true))
 	}
@@ -41,7 +35,7 @@ func GetHTTPTransport(insecure bool, caCert string) http.RoundTripper {
 
 func Ping(registry *model.Registry) (string, string, error) {
 	client := &http.Client{
-		Transport: GetHTTPTransport(registry.Insecure, registry.CACertificate),
+		Transport: GetHTTPTransport(registry.Insecure),
 	}
 
 	resp, err := client.Get(registry.URL + "/v2/")

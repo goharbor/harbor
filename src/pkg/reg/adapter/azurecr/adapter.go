@@ -15,10 +15,6 @@
 package azurecr
 
 import (
-	"fmt"
-	"net/http"
-	"net/url"
-
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -35,8 +31,7 @@ func init() {
 
 func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	return &adapter{
-		Adapter:     native.NewAdapterWithAuthorizer(registry, newAuthorizer(registry)),
-		registryURL: registry.URL,
+		Adapter: native.NewAdapterWithAuthorizer(registry, newAuthorizer(registry)),
 	}, nil
 }
 
@@ -55,7 +50,6 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 
 type adapter struct {
 	*native.Adapter
-	registryURL string
 }
 
 var (
@@ -85,39 +79,4 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
-}
-
-// DeleteTag deletes a tag from a repository in Azure Container Registry. it is implemented by untag api operation
-func (a *adapter) DeleteTag(repository, tag string) error {
-	// Azure Container Registry uses the standard Docker Registry API for tag deletion
-	// The "untag" operation is implemented by deleting the manifest by tag
-	// This follows the same pattern as other registry adapters
-
-	// Build the manifest deletion URL for Azure Container Registry
-	// Use the standard /v2/{repository}/manifests/{tag} endpoint
-	manifestURL, err := url.Parse(fmt.Sprintf("%s/v2/%s/manifests/%s", a.registryURL, repository, tag))
-	if err != nil {
-		return fmt.Errorf("failed to build manifest deletion URL: %v", err)
-	}
-
-	// Create DELETE request
-	req, err := http.NewRequest(http.MethodDelete, manifestURL.String(), nil)
-	if err != nil {
-		return fmt.Errorf("failed to create delete request: %v", err)
-	}
-
-	// Use the existing client with authorizer to make the request
-	resp, err := a.Client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to delete tag %s from repository %s: %v", tag, repository, err)
-	}
-	defer resp.Body.Close()
-
-	// Check response status - Azure CR returns 202 Accepted for successful deletions
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("failed to delete tag %s from repository %s: HTTP %d", tag, repository, resp.StatusCode)
-	}
-
-	log.Infof("Successfully deleted tag %s from repository %s", tag, repository)
-	return nil
 }

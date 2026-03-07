@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
-	"github.com/goharbor/harbor/src/lib"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
@@ -42,9 +41,6 @@ import (
 )
 
 func main() {
-	// Start pprof server
-	lib.StartPprof()
-
 	cfgLib.DefaultCfgManager = common.RestCfgManager
 	if err := cfgLib.DefaultMgr().Load(context.Background()); err != nil {
 		panic(fmt.Sprintf("failed to load configuration, error: %v", err))

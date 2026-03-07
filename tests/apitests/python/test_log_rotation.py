@@ -53,7 +53,7 @@ class TestLogRotation(unittest.TestCase, object):
         # 5. Verify purge audit log job status is Success
         job_status = None
         job_id = None
-        for i in range(20):
+        for i in range(10):
             print("wait for the job to finish:", i)
             if job_id == None:
                 latest_job = self.purge.get_latest_purge_job()

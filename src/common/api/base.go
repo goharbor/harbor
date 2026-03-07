@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/beego/beego/v2/core/validation"
 	"github.com/beego/beego/v2/server/web"
@@ -99,11 +98,11 @@ func (b *BaseAPI) Validate(v any) (bool, error) {
 	}
 
 	if !isValid {
-		var message strings.Builder
+		message := ""
 		for _, e := range validator.Errors {
-			message.WriteString(fmt.Sprintf("%s %s \n", e.Field, e.Message))
+			message += fmt.Sprintf("%s %s \n", e.Field, e.Message)
 		}
-		return false, errors.New(message.String())
+		return false, errors.New(message)
 	}
 	return true, nil
 }

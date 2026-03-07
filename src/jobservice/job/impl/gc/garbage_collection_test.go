@@ -159,7 +159,6 @@ func (suite *gcTestSuite) TestInit() {
 	}
 	params := map[string]any{
 		"delete_untagged": true,
-		"delete_tag":      true,
 		"redis_url_reg":   "redis url",
 		"time_window":     1,
 		"workers":         float64(3),
@@ -168,33 +167,27 @@ func (suite *gcTestSuite) TestInit() {
 	mock.OnAnything(gc.registryCtlClient, "Health").Return(nil)
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
-	suite.True(gc.deleteTag)
 	suite.Equal(3, gc.workers)
 
 	params = map[string]any{
 		"delete_untagged": "unsupported",
-		"delete_tag":      "unsupported",
 		"redis_url_reg":   "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
-	suite.True(gc.deleteTag)
 
 	params = map[string]any{
 		"delete_untagged": false,
-		"delete_tag":      false,
 		"redis_url_reg":   "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.False(gc.deleteUntagged)
-	suite.False(gc.deleteTag)
 
 	params = map[string]any{
 		"redis_url_reg": "redis url",
 	}
 	suite.Nil(gc.init(ctx, params))
 	suite.True(gc.deleteUntagged)
-	suite.True(gc.deleteTag)
 }
 
 func (suite *gcTestSuite) TestStop() {
@@ -217,7 +210,6 @@ func (suite *gcTestSuite) TestStop() {
 		registryCtlClient: suite.registryCtlClient,
 		artCtl:            suite.artifactCtl,
 		deleteUntagged:    true,
-		deleteTag:         true,
 	}
 
 	suite.Equal(errGcStop, gc.mark(ctx))

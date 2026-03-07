@@ -187,7 +187,7 @@ func (o *searchOK) WithPayload(payload *models.Search) *searchOK {
 }
 
 func (o *searchOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-	rw.WriteHeader(http.StatusOK)
+	rw.WriteHeader(200)
 
 	if o.Payload != nil {
 		payload := o.Payload

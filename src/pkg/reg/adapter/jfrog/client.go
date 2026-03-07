@@ -47,10 +47,7 @@ func newClient(reg *model.Registry) *client {
 	return &client{
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(
-					common_http.WithInsecure(reg.Insecure),
-					common_http.WithCACert(reg.CACertificate),
-				),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(reg.Insecure)),
 			},
 			basic.NewAuthorizer(username, password),
 		),
@@ -61,9 +58,10 @@ func newClient(reg *model.Registry) *client {
 	}
 }
 
-func (c *client) getAllRepositories() ([]*repository, error) {
+// getDockerRepositories gets docker repositories from jfrog
+func (c *client) getDockerRepositories() ([]*repository, error) {
 	var repositories []*repository
-	url := fmt.Sprintf("%s/artifactory/api/repositories", c.url)
+	url := fmt.Sprintf("%s/artifactory/api/repositories?packageType=docker", c.url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return repositories, err

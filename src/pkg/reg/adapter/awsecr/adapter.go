@@ -50,7 +50,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	svc, err := getAwsSvc(
-		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, registry.CACertificate, nil)
+		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -235,14 +235,6 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
 		RepositoryName: &repository,
 		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &reference}},
-	})
-	return err
-}
-
-func (a *adapter) DeleteTag(repository, tag string) error {
-	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
-		RepositoryName: &repository,
-		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &tag}},
 	})
 	return err
 }

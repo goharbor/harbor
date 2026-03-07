@@ -298,8 +298,8 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	if err := u.requireModifiable(ctx, uid); err != nil {
 		return u.SendError(ctx, err)
 	}
-	if matchUserID(ctx, uid) {
-		sctx, _ := security.FromContext(ctx)
+	sctx, _ := security.FromContext(ctx)
+	if matchUserID(sctx, uid) {
 		ok, err := u.ctl.VerifyPassword(ctx, sctx.GetUsername(), params.Password.OldPassword)
 		if err != nil {
 			log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
@@ -320,7 +320,7 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	}
 	ok, err := u.ctl.VerifyPassword(ctx, user.Username, newPwd)
 	if err != nil {
-		log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", user.Username, err)
+		log.G(ctx).Errorf("Failed to verify password for user: %s, error: %v", sctx.GetUsername(), err)
 		return u.SendError(ctx, errors.UnknownError(nil).WithMessage("Failed to verify password"))
 	}
 	if ok {
@@ -354,10 +354,14 @@ func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
 	if a != common.OIDCAuth {
 		return errors.PreconditionFailedError(nil).WithMessagef("unable to update CLI secret under authmode: %s", a)
 	}
-	if matchUserID(ctx, id) {
-		return nil
+	sctx, ok := security.FromContext(ctx)
+	if !ok || !sctx.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
 	}
-	return u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser)
+	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) {
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to update the CLI secret for user: %d", id)
+	}
+	return nil
 }
 
 func (u *usersAPI) requireCreatable(ctx context.Context) error {
@@ -385,17 +389,25 @@ func (u *usersAPI) requireCreatable(ctx context.Context) error {
 }
 
 func (u *usersAPI) requireReadable(ctx context.Context, id int) error {
-	if matchUserID(ctx, id) {
-		return nil
+	sctx, ok := security.FromContext(ctx)
+	if !ok || !sctx.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
 	}
-	return u.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceUser)
+	if !matchUserID(sctx, id) && !sctx.Can(ctx, rbac.ActionRead, rbac.ResourceUser) {
+		return errors.ForbiddenError(nil).WithMessagef("Not authorized to read user: %d", id)
+	}
+	return nil
 }
 
 func (u *usersAPI) requireDeletable(ctx context.Context, id int) error {
-	if err := u.RequireSystemAccess(ctx, rbac.ActionDelete, rbac.ResourceUser); err != nil {
-		return err
+	sctx, ok := security.FromContext(ctx)
+	if !ok || !sctx.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
 	}
-	if matchUserID(ctx, id) || id == 1 {
+	if !sctx.Can(ctx, rbac.ActionDelete, rbac.ResourceUser) {
+		return errors.ForbiddenError(nil).WithMessage("Not authorized to delete users")
+	}
+	if matchUserID(sctx, id) || id == 1 {
 		return errors.ForbiddenError(nil).WithMessagef("User with ID %d cannot be deleted", id)
 	}
 	return nil
@@ -406,22 +418,27 @@ func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
 	if err != nil {
 		return err
 	}
-	if a == common.DBAuth {
-		// In db auth, admin can update anyone's info, and regular user can update his own
-		if matchUserID(ctx, id) {
-			return nil
-		}
-		return u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser)
+	sctx, ok := security.FromContext(ctx)
+	if !ok || !sctx.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
 	}
-	// In none db auth, only the local admin's password can be updated.
-	if id != 1 {
+	if !modifiable(ctx, a, id) {
 		return errors.ForbiddenError(nil).WithMessagef("User with ID %d can't be updated", id)
 	}
-	return u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser)
+	return nil
 }
 
-func matchUserID(ctx context.Context, id int) bool {
+func modifiable(ctx context.Context, authMode string, id int) bool {
 	sctx, _ := security.FromContext(ctx)
+	if authMode == common.DBAuth {
+		// In db auth, admin can update anyone's info, and regular user can update his own
+		return sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser) || matchUserID(sctx, id)
+	}
+	// In none db auth, only the local admin's password can be updated.
+	return id == 1 && sctx.Can(ctx, rbac.ActionUpdate, rbac.ResourceUser)
+}
+
+func matchUserID(sctx security.Context, id int) bool {
 	if localSCtx, ok := sctx.(*local.SecurityContext); ok {
 		return localSCtx.User().UserID == id
 	}

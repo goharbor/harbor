@@ -69,8 +69,8 @@ func SendHookWithPolicies(ctx context.Context, policies []*policy_model.Policy, 
 
 // GetNameFromImgRepoFullName gets image name from repo full name with format `repoName/imageName`
 func GetNameFromImgRepoFullName(repo string) string {
-	_, after, _ := strings.Cut(repo, "/")
-	return after
+	idx := strings.Index(repo, "/")
+	return repo[idx+1:]
 }
 
 // BuildImageResourceURL ...

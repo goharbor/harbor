@@ -515,9 +515,6 @@ func convertRegistry(registry *model.Registry) *models.Registry {
 		}
 		r.Credential = credential
 	}
-	if len(registry.CACertificate) > 0 {
-		r.CaCertificate = &registry.CACertificate
-	}
 	return r
 }
 

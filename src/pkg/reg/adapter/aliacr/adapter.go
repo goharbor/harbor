@@ -125,10 +125,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 			return nil, err
 		}
 	}
-	authorizer := bearer.NewAuthorizer(realm, service, NewAuth(acrAPI), commonhttp.GetHTTPTransport(
-		commonhttp.WithInsecure(registry.Insecure),
-		commonhttp.WithCACert(registry.CACertificate),
-	))
+	authorizer := bearer.NewAuthorizer(realm, service, NewAuth(acrAPI), commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure)))
 	return &adapter{
 		acrAPI:   acrAPI,
 		registry: registry,

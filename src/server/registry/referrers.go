@@ -229,7 +229,7 @@ func (o *listReferrersOK) WriteResponse(rw http.ResponseWriter) {
 		rw.Header().Set("X-Total-Count", xTotalCount)
 	}
 
-	rw.WriteHeader(http.StatusOK)
+	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
 		// return empty index

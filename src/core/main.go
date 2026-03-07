@@ -47,7 +47,6 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/core/session"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory" // memory cache
 	_ "github.com/goharbor/harbor/src/lib/cache/redis"  // redis cache
@@ -88,10 +87,7 @@ const (
 )
 
 func updateInitPassword(ctx context.Context, userID int, password string) error {
-	return updateInitPasswordWithMgr(ctx, pkguser.Mgr, userID, password)
-}
-
-func updateInitPasswordWithMgr(ctx context.Context, userMgr pkguser.Manager, userID int, password string) error {
+	userMgr := pkguser.Mgr
 	user, err := userMgr.Get(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user, userID: %d %v", userID, err)
@@ -101,12 +97,10 @@ func updateInitPasswordWithMgr(ctx context.Context, userMgr pkguser.Manager, use
 		if err != nil {
 			return fmt.Errorf("failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
+
 		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
-		if userID == adminUserID && password != "" {
-			log.Warning("Admin password from config (HARBOR_ADMIN_PASSWORD) ignored: password already exists in database. Use Harbor UI or API to change.")
-		}
 	}
 	return nil
 }
@@ -136,9 +130,6 @@ func gracefulShutdown(closing, done chan struct{}, shutdowns ...func()) {
 }
 
 func main() {
-	// Start pprof server
-	lib.StartPprof()
-
 	runMode := flag.String("mode", "normal", "The harbor-core container run mode, it could be normal, migrate or skip-migrate, default is normal")
 	flag.Parse()
 

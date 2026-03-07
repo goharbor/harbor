@@ -60,7 +60,9 @@ func ParseRepository(repository string) (project, rest string) {
 		rest = repository
 		return
 	}
-	project, rest, _ = strings.Cut(repository, "/")
+	index := strings.Index(repository, "/")
+	project = repository[0:index]
+	rest = repository[index+1:]
 	return
 }
 

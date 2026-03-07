@@ -57,10 +57,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		token:    registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(
-					common_http.WithInsecure(registry.Insecure),
-					common_http.WithCACert(registry.CACertificate),
-				),
+				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
 			}),
 	}
 	return client, nil
