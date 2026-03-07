@@ -18,6 +18,7 @@ import {
     RouterStateSnapshot,
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
+import { SetupService } from '../../services/setup.service';
 import { Observable } from 'rxjs';
 import { CommonRoutes } from '../entities/shared.const';
 
@@ -25,7 +26,11 @@ import { CommonRoutes } from '../entities/shared.const';
     providedIn: 'root',
 })
 export class SignInGuard {
-    constructor(private authService: SessionService, private router: Router) {}
+    constructor(
+        private authService: SessionService,
+        private setupService: SetupService,
+        private router: Router
+    ) {}
 
     canActivate(
         route: ActivatedRouteSnapshot,
@@ -33,38 +38,57 @@ export class SignInGuard {
     ): Observable<boolean> | boolean {
         // If user has logged in, should not login again
         return new Observable(observer => {
-            // If signout appended
-            let queryParams = route.queryParams;
-            if (queryParams && queryParams['signout']) {
-                this.authService.signOff().subscribe(
-                    () => {
-                        this.authService.clear(); // Destroy session cache
+            // First check if one-time setup is required
+            this.setupService.isSetupRequired().subscribe(
+                setupRequired => {
+                    if (setupRequired) {
+                        this.router.navigate(['/account/initial-setup']);
+                        return observer.next(false);
+                    }
+                    this.proceedWithSignInCheck(route, observer);
+                },
+                () => {
+                    // If setup status check fails, proceed normally
+                    this.proceedWithSignInCheck(route, observer);
+                }
+            );
+        });
+    }
 
-                        return observer.next(true);
+    private proceedWithSignInCheck(
+        route: ActivatedRouteSnapshot,
+        observer: any
+    ): void {
+        // If signout appended
+        let queryParams = route.queryParams;
+        if (queryParams && queryParams['signout']) {
+            this.authService.signOff().subscribe(
+                () => {
+                    this.authService.clear(); // Destroy session cache
+                    return observer.next(true);
+                },
+                error => {
+                    console.error(error);
+                    return observer.next(false);
+                }
+            );
+        } else {
+            let user = this.authService.getCurrentUser();
+            if (user === null) {
+                this.authService.retrieveUser().subscribe(
+                    () => {
+                        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                        return observer.next(false);
                     },
                     error => {
-                        console.error(error);
-                        return observer.next(false);
+                        return observer.next(true);
                     }
                 );
             } else {
-                let user = this.authService.getCurrentUser();
-                if (user === null) {
-                    this.authService.retrieveUser().subscribe(
-                        () => {
-                            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                            return observer.next(false);
-                        },
-                        error => {
-                            return observer.next(true);
-                        }
-                    );
-                } else {
-                    this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                    return observer.next(false);
-                }
+                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                return observer.next(false);
             }
-        });
+        }
     }
 
     canActivateChild(
