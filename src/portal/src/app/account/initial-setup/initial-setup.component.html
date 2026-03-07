@@ -1,0 +1,178 @@
+<clr-main-container>
+    <div
+        class="login-wrapper"
+        [ngStyle]="{
+            'background-image': customLoginBgImg
+                ? 'url(/images/' + customLoginBgImg + ')'
+                : '',
+        }">
+        <form #setupForm="ngForm" class="login">
+            <label class="title">
+                {{
+                    customAppTitle
+                        ? customAppTitle
+                        : ('APP_TITLE.HARBOR' | translate)
+                }}
+            </label>
+            <div class="login-group">
+                <div class="setup-info">
+                    <clr-icon
+                        shape="lock"
+                        size="24"
+                        class="setup-icon"></clr-icon>
+                    <h4 class="setup-heading">
+                        {{ 'INITIAL_SETUP.TITLE' | translate }}
+                    </h4>
+                    <p class="setup-description">
+                        {{ 'INITIAL_SETUP.DESCRIPTION' | translate }}
+                    </p>
+                </div>
+
+                <!-- Password field -->
+                <div class="clr-form-control">
+                    <label for="setup_password" class="clr-control-label">
+                        {{ 'INITIAL_SETUP.PASSWORD' | translate }}
+                    </label>
+                    <div
+                        class="clr-control-container"
+                        [class.clr-error]="
+                            passwordInput.invalid &&
+                            (passwordInput.dirty || passwordInput.touched)
+                        ">
+                        <div class="clr-input-wrapper">
+                            <input
+                                class="clr-input pwd-input"
+                                [type]="showPwd ? 'text' : 'password'"
+                                required
+                                minlength="8"
+                                maxlength="128"
+                                [(ngModel)]="password"
+                                name="setup_password"
+                                id="setup_password"
+                                placeholder="{{
+                                    'INITIAL_SETUP.PASSWORD_PLACEHOLDER'
+                                        | translate
+                                }}"
+                                #passwordInput="ngModel" />
+                            <clr-icon
+                                *ngIf="!showPwd"
+                                shape="eye"
+                                class="pw-eye"
+                                (click)="showPwd = !showPwd"></clr-icon>
+                            <clr-icon
+                                *ngIf="showPwd"
+                                shape="eye-hide"
+                                class="pw-eye"
+                                (click)="showPwd = !showPwd"></clr-icon>
+                        </div>
+                        <clr-control-error
+                            *ngIf="
+                                passwordInput.invalid &&
+                                (passwordInput.dirty || passwordInput.touched)
+                            ">
+                            {{ 'INITIAL_SETUP.PASSWORD_REQUIRED' | translate }}
+                        </clr-control-error>
+                    </div>
+                </div>
+
+                <!-- Password strength hint -->
+                <p
+                    class="password-hint"
+                    *ngIf="password.length > 0 && !isPasswordStrong()">
+                    {{ 'INITIAL_SETUP.PASSWORD_HINT' | translate }}
+                </p>
+
+                <!-- Confirm Password field -->
+                <div class="clr-form-control">
+                    <label
+                        for="setup_confirm_password"
+                        class="clr-control-label">
+                        {{ 'INITIAL_SETUP.CONFIRM_PASSWORD' | translate }}
+                    </label>
+                    <div
+                        class="clr-control-container"
+                        [class.clr-error]="
+                            confirmPasswordInput.invalid &&
+                            (confirmPasswordInput.dirty ||
+                                confirmPasswordInput.touched)
+                        ">
+                        <div class="clr-input-wrapper">
+                            <input
+                                class="clr-input pwd-input"
+                                [type]="showConfirmPwd ? 'text' : 'password'"
+                                required
+                                minlength="8"
+                                maxlength="128"
+                                [(ngModel)]="confirmPassword"
+                                name="setup_confirm_password"
+                                id="setup_confirm_password"
+                                placeholder="{{
+                                    'INITIAL_SETUP.CONFIRM_PASSWORD_PLACEHOLDER'
+                                        | translate
+                                }}"
+                                #confirmPasswordInput="ngModel" />
+                            <clr-icon
+                                *ngIf="!showConfirmPwd"
+                                shape="eye"
+                                class="pw-eye"
+                                (click)="
+                                    showConfirmPwd = !showConfirmPwd
+                                "></clr-icon>
+                            <clr-icon
+                                *ngIf="showConfirmPwd"
+                                shape="eye-hide"
+                                class="pw-eye"
+                                (click)="
+                                    showConfirmPwd = !showConfirmPwd
+                                "></clr-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password mismatch warning -->
+                <p class="password-mismatch" *ngIf="passwordMismatch">
+                    {{ 'INITIAL_SETUP.PASSWORD_MISMATCH' | translate }}
+                </p>
+
+                <!-- Error message -->
+                <div *ngIf="isError" class="error active">
+                    <span>{{ errorMessage | translate }}</span>
+                </div>
+
+                <!-- Success message -->
+                <div *ngIf="isSuccess" class="alert alert-success" role="alert">
+                    <div class="alert-items">
+                        <div class="alert-item static">
+                            <div class="alert-icon-wrapper">
+                                <clr-icon
+                                    class="alert-icon"
+                                    shape="check-circle"></clr-icon>
+                            </div>
+                            <span class="alert-text">
+                                {{ 'INITIAL_SETUP.SUCCESS' | translate }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    [disabled]="isOnGoing || !isValid"
+                    type="submit"
+                    class="btn btn-primary mt-2"
+                    (click)="submitSetup()"
+                    id="setup_submit">
+                    {{ 'INITIAL_SETUP.SUBMIT' | translate }}
+                </button>
+
+                <div class="more-info pt-1">
+                    <a
+                        rel="noopener noreferrer"
+                        href="https://github.com/goharbor/harbor"
+                        target="_blank"
+                        >{{ 'BUTTON.MORE_INFO' | translate }}</a
+                    >
+                </div>
+            </div>
+        </form>
+    </div>
+</clr-main-container>
