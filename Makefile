@@ -111,8 +111,8 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.69.2
-TRIVYADAPTERVERSION=v0.35.0-rc.2
+TRIVYVERSION=v0.69.3
+TRIVYADAPTERVERSION=v0.35.1-rc.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
