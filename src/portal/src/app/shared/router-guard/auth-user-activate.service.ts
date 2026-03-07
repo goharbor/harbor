@@ -20,6 +20,7 @@ import {
 } from '@angular/router';
 import { SessionService } from '../services/session.service';
 import { AppConfigService } from '../../services/app-config.service';
+import { SetupService } from '../../services/setup.service';
 import { MessageHandlerService } from '../services/message-handler.service';
 import { SearchTriggerService } from '../components/global-search/search-trigger.service';
 import { Observable } from 'rxjs';
@@ -34,6 +35,7 @@ export class AuthCheckGuard {
         private authService: SessionService,
         private router: Router,
         private appConfigService: AppConfigService,
+        private setupService: SetupService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService
     ) {}
@@ -64,26 +66,53 @@ export class AuthCheckGuard {
                         if (
                             !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)
                         ) {
-                            let navigatorExtra: NavigationExtras = {
-                                queryParams: { redirect_url: state.url },
-                            };
-                            // if primary auth mode enabled, skip the first step
-                            if (
-                                this.appConfigService.getConfig().auth_mode ==
-                                    CONFIG_AUTH_MODE.OIDC_AUTH &&
-                                this.appConfigService.getConfig()
-                                    .primary_auth_mode
-                            ) {
-                                window.location.href =
-                                    '/c/oidc/login?redirect_url=' +
-                                    encodeURI(state.url);
-                                return observer.next(false);
-                            }
-                            this.router.navigate(
-                                [CommonRoutes.EMBEDDED_SIGN_IN],
-                                navigatorExtra
+                            // Check if one-time setup is required before redirecting to sign-in
+                            this.setupService.isSetupRequired().subscribe(
+                                setupRequired => {
+                                    if (setupRequired) {
+                                        this.router.navigate([
+                                            '/account/initial-setup',
+                                        ]);
+                                        return observer.next(false);
+                                    }
+                                    let navigatorExtra: NavigationExtras = {
+                                        queryParams: {
+                                            redirect_url: state.url,
+                                        },
+                                    };
+                                    // if primary auth mode enabled, skip the first step
+                                    if (
+                                        this.appConfigService.getConfig()
+                                            .auth_mode ==
+                                            CONFIG_AUTH_MODE.OIDC_AUTH &&
+                                        this.appConfigService.getConfig()
+                                            .primary_auth_mode
+                                    ) {
+                                        window.location.href =
+                                            '/c/oidc/login?redirect_url=' +
+                                            encodeURI(state.url);
+                                        return observer.next(false);
+                                    }
+                                    this.router.navigate(
+                                        [CommonRoutes.EMBEDDED_SIGN_IN],
+                                        navigatorExtra
+                                    );
+                                    return observer.next(false);
+                                },
+                                () => {
+                                    // If setup status check fails, fall back to sign-in
+                                    let navigatorExtra: NavigationExtras = {
+                                        queryParams: {
+                                            redirect_url: state.url,
+                                        },
+                                    };
+                                    this.router.navigate(
+                                        [CommonRoutes.EMBEDDED_SIGN_IN],
+                                        navigatorExtra
+                                    );
+                                    return observer.next(false);
+                                }
                             );
-                            return observer.next(false);
                         } else {
                             return observer.next(true);
                         }
