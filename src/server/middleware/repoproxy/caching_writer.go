@@ -11,6 +11,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
+// cacheDirPerm restricts cache directory access to owner only.
+const cacheDirPerm = 0700
+
 type CachingResponseWriter struct {
 	http.ResponseWriter
 	file       *os.File
@@ -18,25 +21,28 @@ type CachingResponseWriter struct {
 	written    int64
 	tempPath   string
 	statusCode int
+	writeErr   bool // set on first disk write failure
 }
 
 func NewCachingResponseWriter(w http.ResponseWriter, digest string) *CachingResponseWriter {
 	cacheDir := filepath.Join(os.TempDir(), "lru_blob_cache")
-	os.MkdirAll(cacheDir, 0755)
+	os.MkdirAll(cacheDir, cacheDirPerm)
 
-	tempPath := filepath.Join(cacheDir, digest+".tmp")
-	f, err := os.OpenFile(tempPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	// Use a per-request unique temp file to avoid races when multiple
+	// goroutines pull the same digest concurrently.
+	f, err := os.CreateTemp(cacheDir, digest+".*.tmp")
 	if err != nil {
-		log.Errorf("Failed to open cache temp file for %s: %v", digest, err)
-		f = nil
+		log.Errorf("Failed to create cache temp file for %s: %v", digest, err)
+		return &CachingResponseWriter{ResponseWriter: w, digest: digest}
 	}
+	// Restrict file permissions to owner only.
+	os.Chmod(f.Name(), 0600)
 
 	return &CachingResponseWriter{
 		ResponseWriter: w,
 		file:           f,
 		digest:         digest,
-		tempPath:       tempPath,
-		statusCode:     0,
+		tempPath:       f.Name(),
 	}
 }
 
@@ -52,9 +58,16 @@ func (w *CachingResponseWriter) Write(b []byte) (int, error) {
 		w.WriteHeader(http.StatusOK)
 	}
 	n, err := w.ResponseWriter.Write(b)
-	if w.statusCode >= 200 && w.statusCode < 300 && n > 0 && w.file != nil {
-		w.file.Write(b[:n])
-		w.written += int64(n)
+	if w.statusCode >= 200 && w.statusCode < 300 && n > 0 && w.file != nil && !w.writeErr {
+		if _, wErr := w.file.Write(b[:n]); wErr != nil {
+			log.Errorf("LRU Cache: disk write error for %s, abandoning cache: %v", w.digest, wErr)
+			w.writeErr = true
+			w.file.Close()
+			os.Remove(w.tempPath)
+			w.file = nil
+		} else {
+			w.written += int64(n)
+		}
 	}
 	return n, err
 }
@@ -63,13 +76,17 @@ func (w *CachingResponseWriter) Close() {
 	if w.file != nil {
 		w.file.Close()
 
-		if w.statusCode >= 200 && w.statusCode < 300 {
+		if w.statusCode >= 200 && w.statusCode < 300 && !w.writeErr {
 			contentLengthStr := w.Header().Get("Content-Length")
 			expectedSize, _ := strconv.ParseInt(contentLengthStr, 10, 64)
 
 			if expectedSize > 0 && w.written == expectedSize {
 				finalPath := filepath.Join(filepath.Dir(w.tempPath), w.digest)
-				os.Rename(w.tempPath, finalPath)
+				if err := os.Rename(w.tempPath, finalPath); err != nil {
+					log.Errorf("LRU Cache: failed to finalize blob %s: %v", w.digest, err)
+					os.Remove(w.tempPath)
+					return
+				}
 				if proxy.BlobCache != nil {
 					proxy.BlobCache.Add(context.Background(), w.digest, w.written)
 				}

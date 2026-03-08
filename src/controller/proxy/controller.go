@@ -100,15 +100,21 @@ func ControllerInstance() Controller {
 		}
 
 		// Initialize LRU proxy blob cache with an environment variable limit (default 10GB)
+		// Set PROXY_LOCAL_CACHE_SIZE_MB=0 to disable caching/eviction.
 		// Eviction callback physically deletes the cached file
 		sizeLimitMBStr := os.Getenv("PROXY_LOCAL_CACHE_SIZE_MB")
 		var sizeLimit int64 = 10 * 1024 * 1024 * 1024 // 10GB default
-		if parsed, err := strconv.ParseInt(sizeLimitMBStr, 10, 64); err == nil && parsed > 0 {
-			sizeLimit = parsed * 1024 * 1024
+		if sizeLimitMBStr != "" {
+			if parsed, err := strconv.ParseInt(sizeLimitMBStr, 10, 64); err == nil {
+				sizeLimit = parsed * 1024 * 1024
+			}
 		}
 		BlobCache = NewLocalLRUCache(sizeLimit, func(digest string) error {
 			cachePath := filepath.Join(os.TempDir(), "lru_blob_cache", digest)
-			return os.Remove(cachePath)
+			if err := os.Remove(cachePath); err != nil && !os.IsNotExist(err) {
+				return err
+			}
+			return nil
 		})
 	})
 
