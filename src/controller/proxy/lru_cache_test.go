@@ -67,6 +67,7 @@ func TestLocalLRUCache(t *testing.T) {
 	cache.Add(ctx, "fail-1", 40)
 	cache.Add(ctx, "fail-2", 20)
 
-	// Because eviction callback returned error, we still remove it from tracking to prevent infinite loops.
-	assert.Equal(t, int64(20), cache.GetCurrentSize())
+	// Eviction callback failed, so fail-1 is re-added to keep disk/memory consistent.
+	// Both entries remain tracked and the cache sits over-limit until the I/O error resolves.
+	assert.Equal(t, int64(60), cache.GetCurrentSize())
 }

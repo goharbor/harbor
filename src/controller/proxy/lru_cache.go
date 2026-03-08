@@ -24,7 +24,8 @@ import (
 )
 
 // LRUEntry represents an item in the LRU Cache tracking system.
-// We only track the digest and size; the actual blob data remains on the filesystem (local registry).
+// We only track the digest and size; the actual blob data resides in the
+// local disk cache directory (os.TempDir()/lru_blob_cache).
 type LRUEntry struct {
 	Digest       string
 	Size         int64
@@ -101,7 +102,14 @@ func (c *LocalLRUCache) Add(ctx context.Context, digest string, size int64) {
 	for _, v := range victims {
 		if c.evictionCallback != nil {
 			if err := c.evictionCallback(v.Digest); err != nil {
-				log.Errorf("LRU Cache: Failed to evict blob digest %s: %v", v.Digest, err)
+				log.Errorf("LRU Cache: Failed to evict blob digest %s: %v, re-adding to tracker", v.Digest, v.Size)
+				// Re-add the entry so in-memory accounting stays consistent
+				// with disk usage.
+				c.mu.Lock()
+				ent := c.evictList.PushBack(v)
+				c.items[v.Digest] = ent
+				c.currentSize += v.Size
+				c.mu.Unlock()
 			} else {
 				log.Infof("LRU Cache: Successfully evicted proxy blob %s (size: %d) to maintain cache limits", v.Digest, v.Size)
 			}

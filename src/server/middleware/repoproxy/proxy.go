@@ -107,16 +107,14 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		if proxy.BlobCache != nil {
 			proxy.BlobCache.Access(art.Digest)
 		}
+		setHeaders(w, stat.Size(), "", art.Digest)
 		http.ServeFile(w, r, cachePath)
 		return nil
 	}
 	// ------------------------------------
 
-	cw := NewCachingResponseWriter(w, art.Digest)
-	defer cw.Close()
-
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
-		next.ServeHTTP(cw, r)
+		next.ServeHTTP(w, r)
 		return nil
 	}
 
@@ -140,6 +138,13 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return err
 	}
 	defer reader.Close()
+
+	cw := NewCachingResponseWriter(w, art.Digest)
+	defer cw.Close()
+
+	// Set headers before streaming so they reach the client.
+	setHeaders(cw, size, "", art.Digest)
+
 	// Use io.CopyN to avoid out of memory when pulling big blob
 	written, err := io.CopyN(cw, reader, size)
 	if err != nil {
@@ -148,7 +153,6 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if written != size {
 		return errors.Errorf("The size mismatch, actual:%d, expected: %d", written, size)
 	}
-	setHeaders(cw, size, "", art.Digest)
 	return nil
 }
 
