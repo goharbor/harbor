@@ -47,10 +47,6 @@ export class SignInGuard {
                     }
                     this.proceedWithSignInCheck(route, observer);
                 },
-                () => {
-                    // If setup status check fails, proceed normally
-                    this.proceedWithSignInCheck(route, observer);
-                }
             );
         });
     }
