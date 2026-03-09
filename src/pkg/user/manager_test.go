@@ -134,6 +134,32 @@ func TestManager(t *testing.T) {
 	suite.Run(t, &mgrTestSuite{})
 }
 
+func (m *mgrTestSuite) TestSetInitialPasswordSuccess() {
+	m.dao.On("SetPasswordWhereEmpty", mock.Anything, 1, testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string")).
+		Return(true, nil).Once()
+	err := m.mgr.SetInitialPassword(context.Background(), 1, "NewPass123")
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSetInitialPasswordAlreadySet() {
+	m.dao.On("SetPasswordWhereEmpty", mock.Anything, 1, testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string")).
+		Return(false, nil).Once()
+	err := m.mgr.SetInitialPassword(context.Background(), 1, "NewPass123")
+	m.NotNil(err)
+	m.True(errors.IsConflictErr(err))
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSetInitialPasswordDBError() {
+	m.dao.On("SetPasswordWhereEmpty", mock.Anything, 1, testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string"), testifymock.AnythingOfType("string")).
+		Return(false, fmt.Errorf("db error")).Once()
+	err := m.mgr.SetInitialPassword(context.Background(), 1, "NewPass123")
+	m.NotNil(err)
+	m.Contains(err.Error(), "db error")
+	m.dao.AssertExpectations(m.T())
+}
+
 func TestInjectPasswd(t *testing.T) {
 	u := &models.User{
 		UserID: 9,

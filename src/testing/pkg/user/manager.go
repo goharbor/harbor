@@ -385,3 +385,21 @@ func NewManager(t interface {
 
 	return mock
 }
+
+// SetInitialPassword provides a mock function with given fields: ctx, id, newPassword
+func (_m *Manager) SetInitialPassword(ctx context.Context, id int, newPassword string) error {
+	ret := _m.Called(ctx, id, newPassword)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetInitialPassword")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, string) error); ok {
+		r0 = rf(ctx, id, newPassword)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}

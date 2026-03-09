@@ -37,6 +37,10 @@ type DAO interface {
 	Delete(ctx context.Context, userID int) error
 	// SearchByName search users by names with fuzzy search
 	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
+	// SetPasswordWhereEmpty atomically sets the password, salt, and password_version for the
+	// given user only if the current salt is empty (compare-and-swap). Returns true if
+	// exactly one row was updated.
+	SetPasswordWhereEmpty(ctx context.Context, userID int, password, salt, passwordVersion string) (bool, error)
 }
 
 // New returns an instance of the default DAO
@@ -144,4 +148,23 @@ func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*
 		retUsers = append(retUsers, mU)
 	}
 	return retUsers, nil
+}
+
+func (d *dao) SetPasswordWhereEmpty(ctx context.Context, userID int, password, salt, passwordVersion string) (bool, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	res, err := o.Raw(
+		"UPDATE harbor_user SET password=?, salt=?, password_version=? WHERE user_id=? AND salt=''",
+		password, salt, passwordVersion, userID,
+	).Exec()
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n == 1, nil
 }

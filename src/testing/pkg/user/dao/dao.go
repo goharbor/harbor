@@ -189,3 +189,31 @@ func NewDAO(t interface {
 
 	return mock
 }
+
+// SetPasswordWhereEmpty provides a mock function with given fields: ctx, userID, password, salt, passwordVersion
+func (_m *DAO) SetPasswordWhereEmpty(ctx context.Context, userID int, password string, salt string, passwordVersion string) (bool, error) {
+	ret := _m.Called(ctx, userID, password, salt, passwordVersion)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetPasswordWhereEmpty")
+	}
+
+	var r0 bool
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, string, string, string) (bool, error)); ok {
+		return rf(ctx, userID, password, salt, passwordVersion)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int, string, string, string) bool); ok {
+		r0 = rf(ctx, userID, password, salt, passwordVersion)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int, string, string, string) error); ok {
+		r1 = rf(ctx, userID, password, salt, passwordVersion)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

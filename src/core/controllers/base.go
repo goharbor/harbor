@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	pkguser "github.com/goharbor/harbor/src/pkg/user"
@@ -239,18 +240,6 @@ func (cc *CommonController) Setup() {
 		return
 	}
 
-	// Check precondition: admin DB record has no password
-	admin, err := pkguser.Mgr.Get(ctx, 1)
-	if err != nil {
-		log.Errorf("Setup: failed to get admin user: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		return
-	}
-	if admin.Salt != "" {
-		cc.CustomAbort(http.StatusForbidden, "Admin password already exists.")
-		return
-	}
-
 	// Read password from JSON body or form param
 	var password string
 	if strings.Contains(cc.Ctx.Input.Header("Content-Type"), "application/json") {
@@ -275,21 +264,15 @@ func (cc *CommonController) Setup() {
 		return
 	}
 
-	// Re-check preconditions to guard against race conditions
-	admin, err = pkguser.Mgr.Get(ctx, 1)
-	if err != nil {
-		log.Errorf("Setup: failed to re-check admin user: %v", err)
-		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		return
-	}
-	if admin.Salt != "" {
-		cc.CustomAbort(http.StatusConflict, "Admin password was set by another request.")
-		return
-	}
-
-	// Update admin password
-	if err := pkguser.Mgr.UpdatePassword(ctx, 1, password); err != nil {
-		log.Errorf("Setup: failed to update admin password: %v", err)
+	// Atomically set admin password only if salt is still empty (compare-and-swap).
+	// This prevents the race where two concurrent requests both observe an empty salt
+	// and both call UpdatePassword.
+	if err := pkguser.Mgr.SetInitialPassword(ctx, 1, password); err != nil {
+		if errors.IsConflictErr(err) {
+			cc.CustomAbort(http.StatusConflict, "Admin password was set by another request.")
+			return
+		}
+		log.Errorf("Setup: failed to set admin password: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Failed to set admin password.")
 		return
 	}

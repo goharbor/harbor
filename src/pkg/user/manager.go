@@ -56,6 +56,9 @@ type Manager interface {
 	UpdateProfile(ctx context.Context, user *commonmodels.User, col ...string) error
 	// UpdatePassword updates user's password
 	UpdatePassword(ctx context.Context, id int, newPassword string) error
+	// SetInitialPassword atomically sets the admin password only if no password has been set yet
+	// (salt is empty). Returns an error if the password was already set (race-condition safe).
+	SetInitialPassword(ctx context.Context, id int, newPassword string) error
 	// MatchLocalPassword tries to match the record in DB based on the input, the first return value is
 	// the user model corresponding to the entry in DB
 	MatchLocalPassword(ctx context.Context, username, password string) (*commonmodels.User, error)
@@ -157,6 +160,19 @@ func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string
 	}
 	injectPasswd(user, newPassword)
 	return m.dao.Update(ctx, user, "salt", "password", "password_version")
+}
+
+func (m *manager) SetInitialPassword(ctx context.Context, id int, newPassword string) error {
+	u := &commonmodels.User{}
+	injectPasswd(u, newPassword)
+	ok, err := m.dao.SetPasswordWhereEmpty(ctx, id, u.Password, u.Salt, u.PasswordVersion)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.ConflictError(nil).WithMessage("password has already been set")
+	}
+	return nil
 }
 
 func (m *manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
