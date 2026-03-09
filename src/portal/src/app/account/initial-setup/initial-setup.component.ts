@@ -14,9 +14,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
-import { SetupService } from '../../../services/setup.service';
-import { SkinableConfig } from '../../../services/skinable-config.service';
-import { CommonRoutes } from '../../../shared/entities/shared.const';
+import { SetupService } from '../../services/setup.service';
+import { SkinableConfig } from '../../services/skinable-config.service';
+import { CommonRoutes } from '../../shared/entities/shared.const';
 
 const STATUS_NORMAL = 0;
 const STATUS_ONGOING = 1;

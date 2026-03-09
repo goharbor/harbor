@@ -13,8 +13,8 @@
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InitialSetupComponent } from './initial-setup.component';
-import { SetupService } from '../../../services/setup.service';
-import { SkinableConfig } from '../../../services/skinable-config.service';
+import { SetupService } from '../../services/setup.service';
+import { SkinableConfig } from '../../services/skinable-config.service';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { throwError as observableThrowError } from 'rxjs/internal/observable/throwError';
