@@ -188,22 +188,14 @@ func (cc *CommonController) UserExists() {
 // GET /c/setup/status
 func (cc *CommonController) SetupStatus() {
 	ctx := cc.Ctx.Request.Context()
-	cfgMgr := config.GetCfgManager(ctx)
-	initialized := cfgMgr.Get(ctx, common.AdminInitialized).GetBool()
-
-	setupRequired := false
-	if !initialized {
-		// Double-check: admin DB record has no salt
-		admin, err := pkguser.Mgr.Get(ctx, 1)
-		if err != nil {
-			log.Errorf("SetupStatus: failed to get admin user: %v", err)
-			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
-			return
-		}
-		if admin.Salt == "" {
-			setupRequired = true
-		}
+	// Check if admin passowrd salt is present in DB
+	admin, err := pkguser.Mgr.Get(ctx, 1)
+	if err != nil {
+		log.Errorf("SetupStatus: failed to get admin user: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		return
 	}
+	setupRequired := admin.Salt == ""
 
 	cc.Data["json"] = map[string]bool{"setup_required": setupRequired}
 	if err := cc.ServeJSON(); err != nil {
