@@ -54,6 +54,7 @@ var (
 		event.TopicDeleteArtifact:    eventType("artifact.deleted"),
 		event.TopicPullArtifact:      eventType("artifact.pulled"),
 		event.TopicPushArtifact:      eventType("artifact.pushed"),
+		event.TopicCreateTag:         eventType("tag.created"),
 		event.TopicQuotaExceed:       eventType("quota.exceeded"),
 		event.TopicQuotaWarning:      eventType("quota.warned"),
 		event.TopicReplication:       eventType("replication.status.changed"),
