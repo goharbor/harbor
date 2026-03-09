@@ -226,8 +226,14 @@ func (cc *CommonController) Setup() {
 	ctx := cc.Ctx.Request.Context()
 	cfgMgr := config.GetCfgManager(ctx)
 
-	// Check precondition: admin not yet initialized
-	if cfgMgr.Get(ctx, common.AdminInitialized).GetBool() {
+	admin, err := pkguser.Mgr.Get(ctx, 1)
+	if err != nil {
+		log.Errorf("Setup: failed to get admin user: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		return
+	}
+	// Check precondition: admin salt empty
+	if admin.Salt != "" {
 		cc.CustomAbort(http.StatusForbidden, "Setup has already been completed.")
 		return
 	}
