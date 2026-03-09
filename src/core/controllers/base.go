@@ -209,14 +209,16 @@ type setupRequest struct {
 	Password string `json:"password"`
 }
 
+var (
+	hasLower = regexp.MustCompile(`[a-z]`)
+	hasUpper = regexp.MustCompile(`[A-Z]`)
+	hasNumber = regexp.MustCompile(`[0-9]`)
+)
 // validSetupPassword validates password strength: 8-128 chars, at least 1 uppercase, 1 lowercase, 1 number.
 func validSetupPassword(password string) bool {
 	if len(password) < 8 || len(password) > 128 {
 		return false
 	}
-	hasLower := regexp.MustCompile(`[a-z]`)
-	hasUpper := regexp.MustCompile(`[A-Z]`)
-	hasNumber := regexp.MustCompile(`[0-9]`)
 	return hasLower.MatchString(password) && hasUpper.MatchString(password) && hasNumber.MatchString(password)
 }
 
