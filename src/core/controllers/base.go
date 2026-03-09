@@ -234,16 +234,16 @@ func (cc *CommonController) Setup() {
 
 	// Read password from JSON body or form param
 	var password string
-	if strings.Contains(cc.Ctx.Input.Header("Content-Type"), "application/json") {
-		var req setupRequest
-		if err := json.Unmarshal(cc.Ctx.Input.RequestBody, &req); err != nil {
-			cc.CustomAbort(http.StatusBadRequest, "Invalid request body.")
-			return
-		}
-		password = req.Password
-	} else {
-		password = cc.GetString("password")
+	if !strings.Contains(cc.Ctx.Input.Header("Content-Type"), "application/json") {
+		cc.CustomAbort(http.StatusBadRequest, "Content-Type 'application/json' is required")
+		return;
 	}
+	var req setupRequest
+	if err := json.Unmarshal(cc.Ctx.Input.RequestBody, &req); err!=nil {
+		cc.CustomAbort(http.StatusBadRequest, "Invalid Request Body")
+		return
+	}
+	password = req.Password
 
 	if password == "" {
 		cc.CustomAbort(http.StatusBadRequest, "Password is required.")
