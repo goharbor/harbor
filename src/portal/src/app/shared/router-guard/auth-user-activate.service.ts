@@ -67,52 +67,37 @@ export class AuthCheckGuard {
                             !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)
                         ) {
                             // Check if one-time setup is required before redirecting to sign-in
-                            this.setupService.isSetupRequired().subscribe(
-                                setupRequired => {
-                                    if (setupRequired) {
-                                        this.router.navigate([
-                                            '/account/initial-setup',
-                                        ]);
-                                        return observer.next(false);
-                                    }
-                                    let navigatorExtra: NavigationExtras = {
-                                        queryParams: {
-                                            redirect_url: state.url,
-                                        },
-                                    };
-                                    // if primary auth mode enabled, skip the first step
-                                    if (
-                                        this.appConfigService.getConfig()
-                                            .auth_mode ==
-                                            CONFIG_AUTH_MODE.OIDC_AUTH &&
-                                        this.appConfigService.getConfig()
-                                            .primary_auth_mode
-                                    ) {
-                                        window.location.href =
-                                            '/c/oidc/login?redirect_url=' +
-                                            encodeURI(state.url);
-                                        return observer.next(false);
-                                    }
-                                    this.router.navigate(
-                                        [CommonRoutes.EMBEDDED_SIGN_IN],
-                                        navigatorExtra
-                                    );
-                                    return observer.next(false);
+                            this.setupService.isSetupRequired().subscribe(setupRequired => {
+                            if (setupRequired) {
+                                this.router.navigate(['/account/initial-setup']);
+                                return observer.next(false);
+                            }
+
+                            let navigatorExtra: NavigationExtras = {
+                                queryParams: {
+                                    redirect_url: state.url,
                                 },
-                                () => {
-                                    // If setup status check fails, fall back to sign-in
-                                    let navigatorExtra: NavigationExtras = {
-                                        queryParams: {
-                                            redirect_url: state.url,
-                                        },
-                                    };
-                                    this.router.navigate(
-                                        [CommonRoutes.EMBEDDED_SIGN_IN],
-                                        navigatorExtra
-                                    );
-                                    return observer.next(false);
-                                }
+                            };
+
+                            // if primary auth mode enabled, skip the first step
+                            if (
+                                this.appConfigService.getConfig().auth_mode ==
+                                    CONFIG_AUTH_MODE.OIDC_AUTH &&
+                                this.appConfigService.getConfig().primary_auth_mode
+                            ) {
+                                window.location.href =
+                                    '/c/oidc/login?redirect_url=' + encodeURI(state.url);
+                                return observer.next(false);
+                            }
+
+                            this.router.navigate(
+                                [CommonRoutes.EMBEDDED_SIGN_IN],
+                                navigatorExtra
                             );
+
+                            return observer.next(false);
+                        });
+
                         } else {
                             return observer.next(true);
                         }
