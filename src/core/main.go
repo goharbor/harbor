@@ -261,7 +261,7 @@ func main() {
 		}
 	} else {
 		// No password in DB and no initial password in config -> setup pending
-		log.Info("No admin password configured. One-time setup page will be available at /setup.")
+		log.Info("No admin password configured. One-time setup page will be available at /account/initial-setup.")
 	}
 
 	// Allow user to disable writing audit log to db by env while initialize
