@@ -39,6 +39,10 @@ import {
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-schedule-card',
@@ -58,7 +62,8 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
         private eventService: EventService,
         private operationService: OperationService,
         private scheduleService: ScheduleService,
-        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -120,6 +125,7 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
             .getSchedulePaused({
                 jobType: JobType.ALL,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(finalize(() => (this.loadingStatus = false)))
             .subscribe(res => {
                 this.isPaused = res?.paused;
@@ -133,6 +139,7 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
     getScheduleCount() {
         this.jobServiceDashboardSharedDataService
             .retrieveScheduleListResponse()
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe({
                 next: res => {},
                 error: err => {
