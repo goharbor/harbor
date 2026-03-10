@@ -31,6 +31,10 @@ import { PurgeHistoryComponent } from '../history/purge-history.component';
 import { NgForm } from '@angular/forms';
 import { AuditlogService } from 'ng-swagger-gen/services';
 import { AuditLogEventType } from 'ng-swagger-gen/models';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
 
 const ONE_MINUTE: number = 60000;
 const ONE_DAY: number = 24;
@@ -68,7 +72,8 @@ export class SetJobComponent implements OnInit, OnDestroy {
     constructor(
         private purgeService: PurgeService,
         private logService: AuditlogService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -128,6 +133,7 @@ export class SetJobComponent implements OnInit, OnDestroy {
                 pageSize: 1,
                 sort: '-update_time',
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(res => {
                 if (res?.length) {
                     this.isDryRun = JSON.parse(res[0]?.job_parameters).dry_run;

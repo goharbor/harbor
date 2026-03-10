@@ -31,14 +31,17 @@ import (
 
 func TestSession(t *testing.T) {
 	carrySession := false
+	skipRenewal := false
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		carrySession = lib.GetCarrySession(r.Context())
+		skipRenewal = lib.GetSkipSessionRenewal(r.Context())
 	})
 	// no session
 	req, err := http.NewRequest("POST", "http://127.0.0.1:8080/api/users", nil)
 	require.Nil(t, err)
 	Middleware()(handler).ServeHTTP(nil, req)
 	assert.False(t, carrySession)
+	assert.False(t, skipRenewal)
 
 	// contains session
 	web.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
@@ -57,4 +60,16 @@ func TestSession(t *testing.T) {
 	require.Nil(t, err)
 	Middleware()(handler).ServeHTTP(nil, req)
 	assert.True(t, carrySession)
+	assert.False(t, skipRenewal)
+
+	// With no-session-renewal header.
+	req.Header.Set(HeaderNoSessionRenewal, "true")
+	Middleware()(handler).ServeHTTP(nil, req)
+	assert.True(t, carrySession)
+	assert.True(t, skipRenewal)
+
+	// Without no-session-renewal header.
+	req.Header.Del(HeaderNoSessionRenewal)
+	Middleware()(handler).ServeHTTP(nil, req)
+	assert.False(t, skipRenewal)
 }
