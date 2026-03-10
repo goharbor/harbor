@@ -134,16 +134,12 @@
                     name="proxy-cache-local-on-not-found"
                     [disabled]="!hasChangeConfigRole" />
                 <label for="proxy-cache-local-on-not-found-input">
-                    {{
-                        'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND'
-                            | translate
-                    }}
+                    {{ 'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND' | translate }}
                 </label>
             </clr-checkbox-wrapper>
             <clr-control-helper class="config-subtext">
                 {{
-                    'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP'
-                        | translate
+                    'PROJECT.PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP' | translate
                 }}
             </clr-control-helper>
         </clr-checkbox-container>
