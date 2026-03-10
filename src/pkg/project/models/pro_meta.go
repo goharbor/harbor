@@ -16,14 +16,15 @@ package models
 
 // keys of project metadata and severity values
 const (
-	ProMetaPublic                   = "public"
-	ProMetaEnableContentTrust       = "enable_content_trust"
-	ProMetaEnableContentTrustCosign = "enable_content_trust_cosign"
-	ProMetaPreventVul               = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity                 = "severity"
-	ProMetaAutoScan                 = "auto_scan"
-	ProMetaReuseSysCVEAllowlist     = "reuse_sys_cve_allowlist"
-	ProMetaAutoSBOMGen              = "auto_sbom_generation"
-	ProMetaProxySpeed               = "proxy_speed_kb"
-	ProMetaMaxUpstreamConn          = "max_upstream_conn"
+	ProMetaPublic                    = "public"
+	ProMetaEnableContentTrust        = "enable_content_trust"
+	ProMetaEnableContentTrustCosign  = "enable_content_trust_cosign"
+	ProMetaPreventVul                = "prevent_vul" // prevent vulnerable images from being pulled
+	ProMetaSeverity                  = "severity"
+	ProMetaAutoScan                  = "auto_scan"
+	ProMetaReuseSysCVEAllowlist      = "reuse_sys_cve_allowlist"
+	ProMetaAutoSBOMGen               = "auto_sbom_generation"
+	ProMetaProxySpeed                = "proxy_speed_kb"
+	ProMetaMaxUpstreamConn           = "max_upstream_conn"
+	ProMetaProxyCacheLocalOnNotFound = "proxy_cache_local_on_not_found"
 )
