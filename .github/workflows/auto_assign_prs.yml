@@ -1,5 +1,7 @@
 ---
 name: "Auto Assign"
+permissions:
+  contents: read
 
 # pull_request_target means that this will run on pull requests, but in
 # the context of the base repo. This should mean PRs from forks are supported.
