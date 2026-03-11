@@ -156,7 +156,7 @@ func (l *localHelper) CheckDependencies(ctx context.Context, repo string, man di
 }
 
 func (l *localHelper) UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error {
-	log.Debugf("Update artifact pull time, artifact: %v:%v", art.Repository, getReference(art))
+	log.Debugf("update artifact pull time, artifact: %v:%v", art.Repository, getReference(art))
 	ref := getReference(art)
 	if len(ref) == 0 {
 		log.Warningf("Reference is empty, skip update pull time, artifact: %v:%v", art.Repository, ref)

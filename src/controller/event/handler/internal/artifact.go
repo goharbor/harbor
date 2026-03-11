@@ -223,21 +223,18 @@ func (a *ArtifactEventHandler) updateParentArtifactPullTime(ctx context.Context,
 		return
 	}
 
-	// filter out duplicates
-	var parentIDs []int64
-	uniqueParents := make(map[int64]struct{})
+	// deduplicate parent IDs and update pull time
+	seen := make(map[int64]bool, len(references))
 	for _, ref := range references {
-		uniqueParents[ref.ParentID] = struct{}{}
-	}
-	for parentID := range uniqueParents {
-		parentIDs = append(parentIDs, parentID)
-	}
+		if seen[ref.ParentID] {
+			continue
+		}
+		seen[ref.ParentID] = true
 
-	for _, id := range parentIDs {
-		if err := artMgr.UpdatePullTime(ctx, id, pullTime); err != nil {
-			log.Warningf("failed to update pull time for parent artifact %d: %v", id, err)
+		if err := artMgr.UpdatePullTime(ctx, ref.ParentID, pullTime); err != nil {
+			log.Warningf("failed to update pull time for parent artifact %d: %v", ref.ParentID, err)
 		} else {
-			log.Debugf("updated pull time for parent artifact %d (child: %d)", id, childArtifactID)
+			log.Debugf("updated pull time for parent artifact %d (child: %d)", ref.ParentID, childArtifactID)
 		}
 	}
 }
