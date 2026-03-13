@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/pkg/metrics"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -100,9 +101,22 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	}
 
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
+		// Track total request (cache hit or local serve)
+		metrics.RegistryRequestsTotal.WithLabelValues(
+			art.ProjectName,
+			art.Repository,
+			r.Method,
+		).Inc()
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	// Track total request (will be cache miss)
+	metrics.RegistryRequestsTotal.WithLabelValues(
+		art.ProjectName,
+		art.Repository,
+		r.Method,
+	).Inc()
 
 	if p.MaxUpstreamConnection() > 0 {
 		client, err := redis.GetHarborClient()
@@ -232,6 +246,12 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return err
 	}
 	if useLocal {
+		// Track total request (cache hit)
+		metrics.RegistryRequestsTotal.WithLabelValues(
+			art.ProjectName,
+			art.Repository,
+			r.Method,
+		).Inc()
 		if man != nil {
 			w.Header().Set(contentLength, fmt.Sprintf("%v", len(man.Content)))
 			w.Header().Set(contentType, man.ContentType)
@@ -248,6 +268,13 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
+
+	// Track total request (will be cache miss)
+	metrics.RegistryRequestsTotal.WithLabelValues(
+		art.ProjectName,
+		art.Repository,
+		r.Method,
+	).Inc()
 	if p.MaxUpstreamConnection() > 0 {
 		client, err := redis.GetHarborClient()
 		if err != nil {
