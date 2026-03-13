@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -184,16 +184,16 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 		URL:  server.URL,
 	}
 
-	var svc *awsecrapi.ECR
+	var svc *ecr.Client
 	if hasCred {
 		registry.Credential = &model.Credential{
 			AccessKey:    "xxx",
 			AccessSecret: "ppp",
 		}
-		svc, _ = getAwsSvc(
+		svc, _ = getAwsCfg(
 			"test-region", registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, "", &server.URL)
 	} else {
-		svc, _ = getAwsSvc(
+		svc, _ = getAwsCfg(
 			"test-region", "", "", registry.Insecure, "", &server.URL)
 	}
 	return &adapter{
@@ -300,7 +300,7 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 		},
 	)
 	defer server.Close()
-	svc, err := getAwsSvc(
+	svc, err := getAwsCfg(
 		"test-region", "xxx", "ppp", true, "", &server.URL)
 	require.Nil(t, err)
 	a, _ := NewAuth("xxx", svc).(*awsAuthCredential)
