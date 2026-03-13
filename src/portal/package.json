@@ -73,7 +73,7 @@
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "express": "^4.21.0",
+    "express": "^4.22.1",
     "https-proxy-agent": "^5.0.1",
     "jasmine-core": "~4.5.0",
     "jasmine-spec-reporter": "~7.0.0",
