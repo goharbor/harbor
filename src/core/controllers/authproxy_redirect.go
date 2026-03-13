@@ -74,5 +74,14 @@ func (apc *AuthProxyController) HandleRedirect() {
 	if uri == "" {
 		uri = "/"
 	}
+	// Validate redirect URI to prevent open redirect attacks
+	// Only allow relative paths, not absolute URLs
+	if len(uri) > 0 && uri[0] != '/' {
+		uri = "/"
+	}
+	// Block protocol-relative URLs (//evil.com)
+	if len(uri) > 1 && uri[0] == '/' && uri[1] == '/' {
+		uri = "/"
+	}
 	apc.Ctx.Redirect(http.StatusMovedPermanently, uri)
 }
