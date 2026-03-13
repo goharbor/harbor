@@ -141,9 +141,7 @@
                                             [usedInDropdown]="true"
                                             [dropdownOpened]="true"
                                             [width]="200"
-                                            [ownedLabels]="
-                                                selectedRow[0]?.labels
-                                            "
+                                            [ownedLabels]="selectedCommonLabels"
                                             (clickLabel)="stickLabel($event)"
                                             [projectId]="projectId"
                                             [scope]="'p'"></app-label-selector>
