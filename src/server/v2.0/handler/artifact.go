@@ -253,14 +253,6 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 		return a.SendError(ctx, err)
 	}
 
-	// fire event
-	notification.AddEvent(ctx, &metadata.CreateTagEventMetadata{
-		Ctx:              ctx,
-		Tag:              tag.Name,
-		Labels:           art.AbstractLabelNames(),
-		AttachedArtifact: &art.Artifact,
-	})
-
 	// as we provide no API for get the single tag, ignore setting the location header here
 	return operation.NewCreateTagCreated()
 }
