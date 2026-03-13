@@ -18,6 +18,10 @@ import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { PENDING, RUNNING, TIMEOUT } from '../../retention';
 import { RetentionService } from '../../../../../../../../ng-swagger-gen/services/retention.service';
 import { TagRetentionService } from '../../tag-retention.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-tag-retention-tasks',
@@ -38,7 +42,8 @@ export class TagRetentionTasksComponent implements OnDestroy {
     constructor(
         private tagRetentionService: TagRetentionService,
         private retentionService: RetentionService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     ngOnDestroy() {
         if (this.tasksTimeout) {
@@ -84,6 +89,7 @@ export class TagRetentionTasksComponent implements OnDestroy {
                         page: this.page,
                         pageSize: this.pageSize,
                     })
+                    .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                     .pipe(finalize(() => (this.loading = false)))
                     .subscribe(res => {
                         this.handleResponse(res);

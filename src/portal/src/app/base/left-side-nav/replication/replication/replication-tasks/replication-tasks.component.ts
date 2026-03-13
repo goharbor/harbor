@@ -40,6 +40,10 @@ import { ReplicationExecution } from '../../../../../../../ng-swagger-gen/models
 import { ReplicationService } from '../../../../../../../ng-swagger-gen/services';
 import ListReplicationTasksParams = ReplicationService.ListReplicationTasksParams;
 import { ReplicationTask } from '../../../../../../../ng-swagger-gen/models/replication-task';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
 
 const executionStatus = 'InProgress';
 const STATUS_MAP = {
@@ -80,7 +84,8 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
         private router: Router,
         private replicationService: ReplicationService,
         private errorHandler: ErrorHandler,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -101,6 +106,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
                 .getReplicationExecution({
                     id: +this.executionId,
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.inProgress = false)))
                 .subscribe(
                     res => {
@@ -237,6 +243,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
         }
         this.replicationService
             .listReplicationTasksResponse(param)
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;
