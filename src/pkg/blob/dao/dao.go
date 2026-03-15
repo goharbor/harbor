@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
@@ -246,21 +247,35 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 		return nil, err
 	}
 
-	sql := `SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob IN (%s)`
-	params := []any{projectID}
-	for _, blob := range blobs {
-		params = append(params, blob.Digest)
-	}
-
-	var digests []string
-	_, err = o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(blobs))), params...).QueryRows(&digests)
-	if err != nil {
-		return nil, err
-	}
+	// blobBatchSize caps how many blobs are checked per UNION query to avoid
+	// generating excessively large SQL statements.
+	const blobBatchSize = 100
 
 	shouldAssociated := map[string]bool{}
-	for _, digest := range digests {
-		shouldAssociated[digest] = true
+	for i := 0; i < len(blobs); i += blobBatchSize {
+		end := i + blobBatchSize
+		if end > len(blobs) {
+			end = len(blobs)
+		}
+		batch := blobs[i:end]
+
+		// Each subquery uses LIMIT 1 so it short-circuits as soon as one
+		// matching artifact is found, avoiding full scans per blob.
+		var unionParts []string
+		var params []interface{}
+		for _, blob := range batch {
+			unionParts = append(unionParts, `(SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob = ? LIMIT 1)`)
+			params = append(params, projectID, blob.Digest)
+		}
+
+		var digests []string
+		_, err = o.Raw(strings.Join(unionParts, " UNION "), params...).QueryRows(&digests)
+		if err != nil {
+			return nil, err
+		}
+		for _, digest := range digests {
+			shouldAssociated[digest] = true
+		}
 	}
 
 	var results []*models.Blob
