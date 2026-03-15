@@ -324,6 +324,42 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 
 }
 
+func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProjectBatching() {
+	ctx := suite.Context()
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		artifact := suite.DigestString()
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
+		suite.ExecSQL(sql, artifact, projectID, 10)
+		defer suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ?`, projectID)
+
+		// Create 110 blobs to exercise batching (batch size is 100).
+		// The first 100 are associated with the artifact; the last 10 are not.
+		const total = 110
+		const associated = 100
+		var ol q.OrList
+		for i := 0; i < total; i++ {
+			digest := suite.DigestString()
+			blobID, err := suite.dao.CreateBlob(ctx, &models.Blob{Digest: digest})
+			if suite.Nil(err) {
+				suite.dao.CreateProjectBlob(ctx, projectID, blobID)
+			}
+			if i < associated {
+				suite.dao.CreateArtifactAndBlob(ctx, artifact, digest)
+			}
+			ol.Values = append(ol.Values, digest)
+		}
+
+		blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &ol}))
+		suite.Nil(err)
+		suite.Len(blobs, total)
+
+		results, err := suite.dao.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
+		suite.Nil(err)
+		suite.Len(results, total-associated)
+	})
+}
+
 func (suite *DaoTestSuite) TestCreateProjectBlob() {
 	ctx := suite.Context()
 
