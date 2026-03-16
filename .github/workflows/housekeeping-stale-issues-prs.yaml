@@ -1,4 +1,6 @@
 name: Housekeeping - Close stale issues and PRs
+permissions:
+  contents: read
 on:
   schedule:
     - cron: '0 9 * * *'
