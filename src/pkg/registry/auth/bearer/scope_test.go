@@ -110,4 +110,38 @@ func TestParseScopes(t *testing.T) {
 	req, _ = http.NewRequest(http.MethodPost, "/api/others", nil)
 	scopes = parseScopes(req)
 	require.Nil(t, scopes)
+
+	// path prefix: get manifest
+	req, _ = http.NewRequest(http.MethodGet, "/prefix/v2/library/hello-world/manifests/latest", nil)
+	scopes = parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRepository, scopes[0].Type)
+	assert.Equal(t, "library/hello-world", scopes[0].Name)
+	require.Len(t, scopes[0].Actions, 1)
+	assert.Equal(t, scopeActionPull, scopes[0].Actions[0])
+
+	// path prefix: catalog
+	req, _ = http.NewRequest(http.MethodGet, "/prefix/v2/_catalog", nil)
+	scopes = parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRegistry, scopes[0].Type)
+	assert.Equal(t, "catalog", scopes[0].Name)
+
+	// path prefix: list tags
+	req, _ = http.NewRequest(http.MethodGet, "/prefix/v2/library/hello-world/tags/list", nil)
+	scopes = parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRepository, scopes[0].Type)
+	assert.Equal(t, "library/hello-world", scopes[0].Name)
+	require.Len(t, scopes[0].Actions, 1)
+	assert.Equal(t, scopeActionPull, scopes[0].Actions[0])
+
+	// deep path prefix: get blob
+	req, _ = http.NewRequest(http.MethodGet, "/deep/nested/v2/library/hello-world/blobs/sha256:eec76eedea59f7bf39a2713bfd995c82cfaa97724ee5b7f5aba253e07423d0ae", nil)
+	scopes = parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRepository, scopes[0].Type)
+	assert.Equal(t, "library/hello-world", scopes[0].Name)
+	require.Len(t, scopes[0].Actions, 1)
+	assert.Equal(t, scopeActionPull, scopes[0].Actions[0])
 }
