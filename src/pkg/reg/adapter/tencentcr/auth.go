@@ -96,5 +96,5 @@ func (q *qcloudAuthCredential) getTempInstanceToken() (err error) {
 }
 
 func isSecretID(key string) (ok bool) {
-	return strings.Index(key, "AKID") == 0
+	return strings.Index(key, "AKID") == 0 || strings.Index(key, "IKID") == 0
 }
