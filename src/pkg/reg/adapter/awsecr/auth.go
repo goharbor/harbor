@@ -15,6 +15,7 @@
 package awsecr
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -23,11 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -40,7 +39,7 @@ type Credential modifier.Modifier
 // Implements interface Credential
 type awsAuthCredential struct {
 	accessKey string
-	awssvc    *awsecrapi.ECR
+	awssvc    *ecr.Client
 
 	cacheToken   *cacheToken
 	cacheExpired *time.Time
@@ -89,36 +88,32 @@ func (a *awsAuthCredential) Modify(req *http.Request) error {
 	return nil
 }
 
-func getAwsSvc(region, accessKey, accessSecret string, insecure bool, caCertificate string, forceEndpoint *string) (*awsecrapi.ECR, error) {
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, err
-	}
-	var cred *credentials.Credentials
-	log.Debugf("Aws Ecr getAuthorization %s", accessKey)
-	if accessKey != "" {
-		cred = credentials.NewStaticCredentials(
-			accessKey,
-			accessSecret,
-			"")
-	}
-
-	config := &aws.Config{
-		Credentials: cred,
-		Region:      &region,
-		HTTPClient: &http.Client{
+func getAwsCfg(region, accessKey, accessSecret string, insecure bool, caCertificate string, forceEndpoint *string) (*ecr.Client, error) {
+	opts := []func(*config.LoadOptions) error{
+		config.WithRegion(region),
+		config.WithHTTPClient(&http.Client{
 			Transport: commonhttp.GetHTTPTransport(
 				commonhttp.WithInsecure(insecure),
 				commonhttp.WithCACert(caCertificate),
 			),
-		},
-	}
-	if forceEndpoint != nil {
-		config.Endpoint = forceEndpoint
+		}),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(accessKey, accessSecret, ""),
+		),
 	}
 
-	svc := awsecrapi.New(sess, config)
-	return svc, nil
+	if forceEndpoint != nil {
+		opts = append(opts, config.WithBaseEndpoint(*forceEndpoint))
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(), opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	client := ecr.NewFromConfig(cfg)
+
+	return client, nil
 }
 
 func (a *awsAuthCredential) getAuthorization(url string) (string, string, string, *time.Time, error) {
@@ -127,18 +122,16 @@ func (a *awsAuthCredential) getAuthorization(url string) (string, string, string
 		return "", "", "", nil, err
 	}
 
-	var input *awsecrapi.GetAuthorizationTokenInput
+	var input *ecr.GetAuthorizationTokenInput
 	if id != "" {
-		input = &awsecrapi.GetAuthorizationTokenInput{RegistryIds: []*string{&id}}
+		input = &ecr.GetAuthorizationTokenInput{
+			RegistryIds: []string{id},
+		}
 	}
 	svc := a.awssvc
-	result, err := svc.GetAuthorizationToken(input)
+	result, err := svc.GetAuthorizationToken(context.TODO(), input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			return "", "", "", nil, fmt.Errorf("%s: %s", aerr.Code(), aerr.Error())
-		}
-
-		return "", "", "", nil, err
+		return "", "", "", nil, fmt.Errorf("ecr get authorization token: %w", err)
 	}
 
 	// Double check
@@ -172,7 +165,7 @@ func (a *awsAuthCredential) isTokenValid() bool {
 }
 
 // NewAuth new aws auth
-func NewAuth(accessKey string, awssvc *awsecrapi.ECR) Credential {
+func NewAuth(accessKey string, awssvc *ecr.Client) Credential {
 	return &awsAuthCredential{
 		accessKey: accessKey,
 		awssvc:    awssvc,

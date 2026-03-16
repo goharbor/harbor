@@ -15,12 +15,13 @@
 package awsecr
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -49,7 +50,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	if err != nil {
 		return nil, err
 	}
-	svc, err := getAwsSvc(
+	svc, err := getAwsCfg(
 		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, registry.CACertificate, nil)
 	if err != nil {
 		return nil, err
@@ -91,7 +92,7 @@ var (
 type adapter struct {
 	*native.Adapter
 	registry *model.Registry
-	cacheSvc *awsecrapi.ECR
+	cacheSvc *ecr.Client
 }
 
 func (*adapter) Info() (info *model.RegistryInfo, err error) {
@@ -207,23 +208,21 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			log.Infof("Namespace %s already exist in AWS ECR, skip it.", resource.Metadata.Repository.Name)
 			continue
 		}
-		err = a.createRepository(resource.Metadata.Repository.Name)
-		if err != nil {
+		if err = a.createRepository(resource.Metadata.Repository.Name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (a *adapter) checkRepository(repository string) (exists bool, err error) {
-	out, err := a.cacheSvc.DescribeRepositories(&awsecrapi.DescribeRepositoriesInput{
-		RepositoryNames: []*string{&repository},
+func (a *adapter) checkRepository(repository string) (bool, error) {
+	out, err := a.cacheSvc.DescribeRepositories(context.TODO(), &ecr.DescribeRepositoriesInput{
+		RepositoryNames: []string{repository},
 	})
 	if err != nil {
-		if e, ok := err.(awserr.Error); ok {
-			if e.Code() == awsecrapi.ErrCodeRepositoryNotFoundException {
-				return false, nil
-			}
+		var notFound *types.RepositoryNotFoundException
+		if errors.As(err, &notFound) {
+			return false, nil
 		}
 		return false, err
 	}
@@ -231,14 +230,13 @@ func (a *adapter) checkRepository(repository string) (exists bool, err error) {
 }
 
 func (a *adapter) createRepository(repository string) error {
-	_, err := a.cacheSvc.CreateRepository(&awsecrapi.CreateRepositoryInput{
+	_, err := a.cacheSvc.CreateRepository(context.TODO(), &ecr.CreateRepositoryInput{
 		RepositoryName: &repository,
 	})
 	if err != nil {
-		if e, ok := err.(awserr.Error); ok {
-			if e.Code() == awsecrapi.ErrCodeRepositoryAlreadyExistsException {
-				return nil
-			}
+		var alreadyExists *types.RepositoryAlreadyExistsException
+		if errors.As(err, &alreadyExists) {
+			return nil
 		}
 		return err
 	}
@@ -247,17 +245,17 @@ func (a *adapter) createRepository(repository string) error {
 
 // DeleteManifest ...
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+	_, err := a.cacheSvc.BatchDeleteImage(context.TODO(), &ecr.BatchDeleteImageInput{
 		RepositoryName: &repository,
-		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &reference}},
+		ImageIds:       []types.ImageIdentifier{{ImageTag: &reference}},
 	})
 	return err
 }
 
 func (a *adapter) DeleteTag(repository, tag string) error {
-	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+	_, err := a.cacheSvc.BatchDeleteImage(context.TODO(), &ecr.BatchDeleteImageInput{
 		RepositoryName: &repository,
-		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &tag}},
+		ImageIds:       []types.ImageIdentifier{{ImageTag: &tag}},
 	})
 	return err
 }
