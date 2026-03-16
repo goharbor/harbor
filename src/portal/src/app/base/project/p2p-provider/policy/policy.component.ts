@@ -60,6 +60,11 @@ import {
 import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
 import { JobType } from '../../../left-side-nav/job-service-dashboard/job-service-dashboard.interface';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
+
 // The route path which will display this component
 const URL_TO_DISPLAY: RegExp =
     /\/harbor\/projects\/(\d+)\/p2p-provider\/policies/;
@@ -124,7 +129,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
         private userPermissionService: UserPermissionService,
         private preheatService: PreheatService,
         private event: EventService,
-        private scheduleService: ScheduleService
+        private scheduleService: ScheduleService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -606,6 +612,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     pageSize: this.pageSize,
                     q: params,
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.jobsLoading = false)))
                 .subscribe(
                     response => {

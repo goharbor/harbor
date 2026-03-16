@@ -15,10 +15,18 @@
 package session
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
+)
+
+const (
+	// HeaderNoSessionRenewal is the header to indicate that the request
+	// should not renew the session TTL. Used by frontend background polling
+	// requests to prevent the session from being kept alive indefinitely.
+	HeaderNoSessionRenewal = "X-Harbor-No-Session-Renewal"
 )
 
 // Middleware returns a session middleware that populates the information indicates whether
@@ -32,6 +40,11 @@ func Middleware() func(http.Handler) http.Handler {
 			if err == nil {
 				r = r.WithContext(lib.WithCarrySession(r.Context(), true))
 			}
+			fmt.Printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx: %#v\n", r.Header)
+			if r.Header.Get(HeaderNoSessionRenewal) != "" {
+				r = r.WithContext(lib.WithSkipSessionRenewal(r.Context(), true))
+			}
+
 			handler.ServeHTTP(w, r)
 		})
 	}
