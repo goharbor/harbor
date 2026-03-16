@@ -246,6 +246,8 @@
         "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Bu proxy önbellek projesi için üst kayıt defterine maksimum bağlantı, -1 ise sınır yoktur",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Üst kaynak kullanılamadığında önbelleğe alınmış içeriği sun",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Bu projenin, yapıt üst kayıt defterinde bulunamasa veya üst kayıt defteri kullanılamasa bile önbelleğe alınmış içeriği sunmaya devam etmesine izin vermek için bunu etkinleştirin. Üst kayıt defteri kullanılamıyorsa bu, eski içeriğin sunulmasına yol açabilir.",
         "NO_PROJECT": "Herhangi bir proje bulunamadı"
     },
     "PROJECT_DETAIL": {

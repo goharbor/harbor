@@ -245,6 +245,8 @@
         "CONNECTION_LIMIT": "Conexão máxima ao repositório remoto",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "A conexão máxima ao repositório remoto para este projeto de cache proxy, se -1, então não há limite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, insira -1 ou um número inteiro maior que 0.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir conteúdo em cache quando o registro upstream estiver indisponível",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opção para permitir que este projeto continue servindo conteúdo em cache mesmo se o artefato não for encontrado no registro upstream ou se o registro upstream estiver indisponível. Isso pode resultar em conteúdo desatualizado sendo servido se o registro upstream estiver indisponível.",
         "NO_PROJECT": "Não encontramos nenhum projeto"
     },
     "PROJECT_DETAIL": {

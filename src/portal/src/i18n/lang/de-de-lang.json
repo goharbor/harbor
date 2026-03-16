@@ -245,6 +245,8 @@
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Veraltete Inhalte bereitstellen, wenn der Upstream nicht verfügbar ist",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Aktivieren Sie diese Option, damit dieses Projekt weiterhin zwischengespeicherte Inhalte bereitstellt, auch wenn das Artefakt im Upstream-Registry nicht gefunden wird oder das Upstream-Registry nicht verfügbar ist. Dies kann dazu führen, dass veraltete Inhalte bereitgestellt werden, wenn das Upstream-Registry nicht verfügbar ist.",
         "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
