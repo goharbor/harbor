@@ -376,13 +376,31 @@ func (c *clientTestSuite) TestMountBlob() {
 					w.WriteHeader(http.StatusNotFound)
 					return
 				}
-				w.WriteHeader(http.StatusAccepted)
+				w.WriteHeader(http.StatusCreated)
 			},
 		})
 	defer server.Close()
 
 	err := NewClient(server.URL, "", "", true).MountBlob("library/alpine", "digest", "library/hello-world")
 	c.Require().Nil(err)
+}
+
+func (c *clientTestSuite) TestMountBlobFallbackOn202() {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "POST",
+			Pattern: "/v2/library/hello-world/blobs/uploads/",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				// 202 Accepted means the registry did not mount the blob and started
+				// an upload session instead. MountBlob must treat this as failure.
+				w.WriteHeader(http.StatusAccepted)
+			},
+		})
+	defer server.Close()
+
+	err := NewClient(server.URL, "", "", true).MountBlob("library/alpine", "digest", "library/hello-world")
+	c.Require().NotNil(err)
+	c.Contains(err.Error(), "expected 201 Created but got 202")
 }
 
 func TestClientTestSuite(t *testing.T) {
