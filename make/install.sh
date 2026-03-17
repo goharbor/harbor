@@ -9,6 +9,7 @@ set +o noglob
 
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
 Please set --with-trivy if needs enable Trivy in Harbor.
+Please set --with-podman if you want to force prepare to treat the Docker CLI as Podman.
 Please do NOT set --with-chartmuseum, as chartmusuem has been deprecated and removed.
 Please do NOT set --with-notary, as notary has been deprecated and removed.'
 item=0
@@ -17,6 +18,8 @@ item=0
 with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
+# podman option not enabled by default
+with_podman=$false
 
 # flag to using docker compose v1 or v2, default would using v1 docker-compose
 DOCKER_COMPOSE=docker-compose
@@ -28,6 +31,8 @@ while [ $# -gt 0 ]; do
             exit 0;;
             --with-trivy)
             with_trivy=true;;
+            --with-podman)
+            with_podman=true;;
             *)
             note "$usage"
             exit 1;;
@@ -64,13 +69,23 @@ then
     prepare_para="${prepare_para} --with-trivy"
 fi
 
+if [ $with_podman ]
+then
+    prepare_para="${prepare_para} --with-podman"
+fi
+
 ./prepare $prepare_para
+
 echo ""
 
-if [ -n "$DOCKER_COMPOSE ps -q"  ]
-    then
-        note "stopping existing Harbor instance ..." 
-        $DOCKER_COMPOSE down -v
+# Check if any containers started by compose are present. Capture the compose
+# output and filter to only valid container IDs so vendor warnings (for
+# example "Emulate Docker CLI using podman...") don't make the check true.
+compose_ps_output=$($DOCKER_COMPOSE ps -q 2>/dev/null | grep -E '^[0-9a-fA-F]+$' || true)
+if [ -n "$compose_ps_output" ]
+then
+    note "stopping existing Harbor instance ..."
+    $DOCKER_COMPOSE down -v
 fi
 echo ""
 
