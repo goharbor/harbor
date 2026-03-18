@@ -43,21 +43,65 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			Pattern: "/artifactory/api/repositories",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`[
-    {
-        "key": "cyzhang",
-        "description": "",
-        "type": "LOCAL",
-        "url": "http://49.4.2.82:8081/artifactory/cyzhang",
-        "packageType": "Docker"
-    },
-    {
-        "key": "mydocker",
-        "type": "LOCAL",
-        "url": "http://49.4.2.82:8081/artifactory/mydocker",
-        "packageType": "Docker"
-    }
-]`))
+				r.ParseForm()
+				typeParam := r.Form.Get("packageType")
+				// respond with different data based on the "type" query param
+				if len(typeParam) == 0 {
+					// no type param, return all repos
+					w.Write([]byte(`[
+						{
+							"key": "cyzhang",
+							"description": "",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/cyzhang",
+							"packageType": "Docker"
+						},
+						{
+							"key": "mydocker",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/mydocker",
+							"packageType": "Docker"
+						},
+						{
+							"key": "oci-repo",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/myoci",
+							"packageType": "OCI"
+						} 
+					]`))
+					return
+				} else if typeParam == "docker" {
+					// only docker repos
+					w.Write([]byte(`[
+						{
+							"key": "cyzhang",
+							"description": "",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/cyzhang",
+							"packageType": "Docker"
+						},
+						{
+							"key": "mydocker",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/mydocker",
+							"packageType": "Docker"
+						}
+					]`))
+					return
+				} else if typeParam == "oci" {
+					// only oci repos
+					w.Write([]byte(`[
+						{
+							"key": "oci-repo",
+							"type": "LOCAL",
+							"url": "http://49.4.2.82:8081/artifactory/myoci",
+							"packageType": "OCI"
+						} ]`))
+					return
+				}
+
+				w.Write([]byte(`[]`))
+
 			},
 		},
 		&test.RequestHandlerMapping{
@@ -201,4 +245,13 @@ func TestAdapter_FetchArtifacts(t *testing.T) {
 	assert.Equal(t, "mydocker/nginx", res[0].Metadata.Repository.Name)
 	assert.Len(t, res[0].Metadata.Artifacts, 1)
 	assert.Equal(t, "v1", res[0].Metadata.Artifacts[0].Tags[0])
+}
+
+func TestAdapter_ListAllRepositories(t *testing.T) {
+	a, s := getMockAdapter(t, true, true)
+	defer s.Close()
+
+	repos, err := a.listAllRepositories()
+	assert.Nil(t, err)
+	assert.Len(t, repos, 3) // 2 docker + 1 oci
 }

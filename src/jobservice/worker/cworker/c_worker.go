@@ -134,7 +134,16 @@ func (w *basicWorker) Start() error {
 	// Start the periodic scheduler
 	w.scheduler.Start()
 
+	// Start the backend worker pool
+	// Add middleware
+	w.pool.Middleware((*workerContext).logJob)
+	// Non blocking call
+	w.pool.Start()
+	logger.Infof("Basic worker is started")
+
 	// Listen to the system signal
+	// IMPORTANT: This goroutine must be started AFTER w.pool.Start() returns
+	// to avoid a race condition between Start() and Stop() in the gocraft/work library.
 	w.context.WG.Add(1)
 	go func() {
 		defer func() {
@@ -145,13 +154,6 @@ func (w *basicWorker) Start() error {
 		<-w.context.SystemContext.Done()
 		w.pool.Stop()
 	}()
-
-	// Start the backend worker pool
-	// Add middleware
-	w.pool.Middleware((*workerContext).logJob)
-	// Non blocking call
-	w.pool.Start()
-	logger.Infof("Basic worker is started")
 
 	// Start the reaper
 	w.knownJobs.Range(func(k any, _ any) bool {

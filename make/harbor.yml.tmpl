@@ -102,6 +102,11 @@ trivy:
   # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
   skip_java_db_update: false
   #
+  # OCI repository to retrieve the trivy vulnerability database from.
+  db_repository: ghcr.io/aquasecurity/trivy-db
+  # OCI repository to retrieve the Java trivy vulnerability database from.
+  java_db_repository: ghcr.io/aquasecurity/trivy-java-db
+  #
   # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
@@ -176,7 +181,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.14.0
+_version: 2.15.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -210,8 +215,6 @@ _version: 2.14.0
 #   host: redis:6379
 #   password: 
 #   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
-#   # there's a known issue when using external redis username ref:https://github.com/goharbor/harbor/issues/18892
-#   # if you care about the image pull/push performance, please refer to this https://github.com/goharbor/harbor/wiki/Harbor-FAQs#external-redis-username-password-usage
 #   # username:
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:

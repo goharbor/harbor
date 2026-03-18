@@ -47,7 +47,7 @@ func WrapConflictError(err error, format string, args ...any) error {
 	return err
 }
 
-// AsNotFoundError checks whether the err is orm.ErrNoRows. If it it, wrap it
+// AsNotFoundError checks whether the err is orm.ErrNoRows. If it is, wrap it
 // as a src/internal/error.Error with not found error code, else return nil
 func AsNotFoundError(err error, messageFormat string, args ...any) *errors.Error {
 	if errors.Is(err, orm.ErrNoRows) {
@@ -72,7 +72,7 @@ func AsConflictError(err error, messageFormat string, args ...any) *errors.Error
 	return nil
 }
 
-// AsForeignKeyError checks whether the err is violating foreign key constraint error. If it it, wrap it
+// AsForeignKeyError checks whether the err is violating foreign key constraint error. If it is, wrap it
 // as a src/internal/error.Error with violating foreign key constraint error code, else return nil
 func AsForeignKeyError(err error, messageFormat string, args ...any) *errors.Error {
 	if isViolatingForeignKeyConstraintError(err) {
