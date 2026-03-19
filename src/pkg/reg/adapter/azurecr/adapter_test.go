@@ -29,4 +29,5 @@ func TestInfo(t *testing.T) {
 	assert.NotNil(t, info)
 	assert.EqualValues(t, 1, len(info.SupportedResourceTypes))
 	assert.EqualValues(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+	assert.True(t, info.SupportedCopyByChunk)
 }
