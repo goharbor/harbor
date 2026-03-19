@@ -84,6 +84,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedCopyByChunk: true,
 	}, nil
 }
 
