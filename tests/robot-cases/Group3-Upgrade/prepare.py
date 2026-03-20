@@ -120,7 +120,7 @@ class HarborAPI:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
                 for _repo in project["repo"]:
-                    pull_image(args.endpoint+"/"+ project["name"]+"/"+_repo["cache_image_namespace"]+"/"+_repo["cache_image"])
+                    get_image(project["name"], _repo["cache_image_namespace"], _repo["cache_image"], _repo.get("tag", "latest"))
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
                     # Retry repository lookup every minute for up to 10 minutes total
                     deadline = time.time() + 600
@@ -645,6 +645,37 @@ def pull_image(*image):
     for i in image:
         print("docker pulling image: ", i)
         os.system("docker pull "+i)
+
+def get_image(project_name, cache_image_namespace, cache_image, tag, timeout=30, retry=10, interval=10):
+    manifest_url = "https://{}/v2/{}/{}/{}/manifests/{}".format(
+        args.endpoint,
+        project_name,
+        cache_image_namespace,
+        cache_image,
+        tag,
+    )
+    headers = {
+        "Accept": "application/vnd.docker.distribution.manifest.v2+json"
+    }
+    last_error = None
+    for attempt in range(retry):
+        try:
+            print("requesting image manifest: ", manifest_url)
+            resp = requests.get(
+                manifest_url,
+                verify=False,
+                auth=("admin", "Harbor12345"),
+                headers=headers,
+                timeout=timeout,
+            )
+            if resp.status_code < 400:
+                return resp
+            last_error = Exception("status code {}: {}".format(resp.status_code, resp.text))
+        except Exception as e:
+            last_error = e
+        if attempt < retry - 1:
+            time.sleep(interval)
+    raise Exception("failed to GET image manifest {} after {} attempts: {}".format(manifest_url, retry, last_error))
 
 def push_image(image, project):
     os.system("docker tag "+image+" "+args.endpoint+"/"+project+"/"+image)
