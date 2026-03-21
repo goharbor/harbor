@@ -115,8 +115,8 @@ func getAdapterInfo() *model.AdapterPattern {
 			EndpointType: model.EndpointPatternTypeFix,
 			Endpoints: []*model.Endpoint{
 				{
-					Key:   "hub.docker.com",
-					Value: "https://hub.docker.com",
+					Key:   "docker.io",
+					Value: registryURL,
 				},
 			},
 		},
