@@ -42,7 +42,7 @@ jobs:
         if: |
             contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
             contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+            contains(steps.changed-files.outputs.modified, '.github/workflows/build-package.yml') ||
             github.ref == 'refs/heads/main'
         run: |
           set -x
