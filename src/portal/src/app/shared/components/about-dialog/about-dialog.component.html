@@ -16,7 +16,7 @@
             <div>
                 {{ customName ? customName : ('APP_TITLE.HARBOR' | translate) }}
             </div>
-            <div>
+            <div *ngIf="version">
                 <span class="p5 about-version"
                     >{{ 'ABOUT.VERSION' | translate }} {{ version }}</span
                 >
