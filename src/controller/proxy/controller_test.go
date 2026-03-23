@@ -81,6 +81,11 @@ func (l *localInterfaceMock) CheckDependencies(ctx context.Context, repo string,
 func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
 }
 
+func (l *localInterfaceMock) UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error {
+	args := l.Called(ctx, art)
+	return args.Error(0)
+}
+
 type proxyControllerTestSuite struct {
 	suite.Suite
 	local  *localInterfaceMock
