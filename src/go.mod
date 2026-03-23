@@ -3,7 +3,6 @@ module github.com/goharbor/harbor/src
 go 1.25.7
 
 require (
-	github.com/CloudNativeAI/model-spec v0.0.5
 	github.com/FZambia/sentinel v1.1.0
 	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/aliyun/alibaba-cloud-sdk-go v1.63.107
@@ -42,6 +41,7 @@ require (
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/jpillora/backoff v1.0.0
+	github.com/modelpack/model-spec v0.0.7
 	github.com/ncw/swift v1.0.49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/olekukonko/tablewriter v0.0.5

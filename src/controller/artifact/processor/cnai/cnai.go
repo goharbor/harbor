@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
-	modelspec "github.com/CloudNativeAI/model-spec/specs-go/v1"
+	modelspec "github.com/modelpack/model-spec/specs-go/v1"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	ps "github.com/goharbor/harbor/src/controller/artifact/processor"
