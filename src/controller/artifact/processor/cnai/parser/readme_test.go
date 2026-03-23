@@ -22,8 +22,8 @@ import (
 	"io"
 	"testing"
 
-	modelspec "github.com/CloudNativeAI/model-spec/specs-go/v1"
 	"github.com/goharbor/harbor/src/testing/mock"
+	modelspec "github.com/modelpack/model-spec/specs-go/v1"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 
