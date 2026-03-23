@@ -245,6 +245,8 @@
         "CONNECTION_LIMIT": "업스트림 레지스트리 최대 연결",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "이 프록시 캐시 프로젝트의 업스트림 레지스트리에 대한 최대 연결 수입니다. -1이면 제한이 없습니다",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "-1 또는 0보다 큰 정수를 입력하세요.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "업스트림을 사용할 수 없을 때 캐시된 콘텐츠 제공",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "업스트림 레지스트리에서 아티팩트를 찾을 수 없거나 업스트림 레지스트리를 사용할 수 없는 경우에도 이 프로젝트가 캐시된 콘텐츠를 계속 제공할 수 있도록 하려면 이 옵션을 활성화하세요. 업스트림 레지스트리를 사용할 수 없는 경우 오래된 콘텐츠가 제공될 수 있습니다.",
         "NO_PROJECT": "프로젝트를 찾을 수 없습니다"
     },
     "PROJECT_DETAIL": {

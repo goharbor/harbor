@@ -246,6 +246,8 @@
         "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir contenido en caché cuando el registro de origen no está disponible",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opción para permitir que este proyecto continúe sirviendo contenido en caché incluso si el artefacto no se encuentra en el registro de origen o si el registro de origen no está disponible. Esto puede provocar que se sirva contenido obsoleto si el registro de origen no está disponible.",
         "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
