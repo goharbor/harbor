@@ -42,6 +42,7 @@ func init() {
 	_ = notifier.Subscribe(event.TopicScanningFailed, &scan.Handler{})
 	_ = notifier.Subscribe(event.TopicScanningStopped, &scan.Handler{})
 	_ = notifier.Subscribe(event.TopicScanningCompleted, &scan.Handler{})
+	_ = notifier.Subscribe(event.TopicCreateTag, &artifact.Handler{})
 	_ = notifier.Subscribe(event.TopicReplication, &artifact.ReplicationHandler{})
 	_ = notifier.Subscribe(event.TopicTagRetention, &artifact.RetentionHandler{})
 
