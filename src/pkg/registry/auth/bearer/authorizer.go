@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -109,6 +110,8 @@ func (a *authorizer) fetchToken(scopes []*scope) (*token, error) {
 	if err != nil {
 		return nil, err
 	}
+	// set user agent to avoid some registry (e.g. docker hub) return 403 when user agent is not set to harbor-registry-client
+	utils.SetUserAgentHeader(req)
 	if a.authorizer != nil {
 		if err = a.authorizer.Modify(req); err != nil {
 			return nil, err
