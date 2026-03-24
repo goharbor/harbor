@@ -132,17 +132,29 @@ type Client interface {
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	authorizer := auth.NewAuthorizer(username, password, insecure)
-	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
+	return NewClientWithAuthorizer(url, authorizer, insecure, "", interceptors...)
+}
+
+// NewClientWithCACert creates a registry client with custom CA certificate
+func NewClientWithCACert(url, username, password string, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure, caCert)
+	return NewClientWithAuthorizer(url, authorizer, insecure, caCert, interceptors...)
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	// When CACertificate is set, it takes precedence and Insecure is ignored
+	transport := commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	)
+
 	return &client{
 		url:          url,
 		authorizer:   authorizer,
 		interceptors: interceptors,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
+			Transport: transport,
 			Timeout:   registryHTTPClientTimeout,
 		},
 	}
