@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.versions }}'
           severity: 'CRITICAL,HIGH'
