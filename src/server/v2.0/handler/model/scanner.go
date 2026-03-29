@@ -41,7 +41,6 @@ func (s *ScannerRegistration) ToSwagger(_ context.Context) *models.ScannerRegist
 		URL:              strfmt.URI(s.URL),
 		Description:      s.Description,
 		Auth:             s.Auth,
-		AccessCredential: s.AccessCredential,
 		SkipCertVerify:   &s.SkipCertVerify,
 		UseInternalAddr:  &s.UseInternalAddr,
 		IsDefault:        &s.IsDefault,
