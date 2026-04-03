@@ -1,6 +1,8 @@
 package volcenginecr
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,6 +35,31 @@ func Test_getRegionRegistryNamer(t *testing.T) {
 }
 
 func Test_getRealmService(t *testing.T) {
+	// mock registry: /v2/ returns bearer challenge
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v2/" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("WWW-Authenticate",
+			`Bearer realm="https://cr-cn-beijing.volces.com/token",service="token-service"`)
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer srv.Close()
+
+	orig := resolveHost
+	resolveHost = func(host string) string {
+		switch host {
+		case "https://cr-cn-beijing.volces.com":
+			return srv.URL
+		case "https://cr-test-cn-beijing.volces.com":
+			return ""
+		default:
+			return host
+		}
+	}
+	t.Cleanup(func() { resolveHost = orig })
+
 	tests := []struct {
 		name     string
 		host     string

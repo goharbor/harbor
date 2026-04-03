@@ -13,7 +13,7 @@
 
 ## Overview
 
-Harbor release artifacts (installers) are cryptographically signed using [Cosign](https://docs.sigstore.dev/cosign/overview/) with keyless signing. This allows you to verify that downloads are authentic and unmodified.
+Harbor release artifacts (installers) are cryptographically signed using [Cosign](https://docs.sigstore.dev/quickstart/quickstart-cosign/) with keyless signing. This allows you to verify that downloads are authentic and unmodified.
 
 ## Why Verify
 

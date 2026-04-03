@@ -23,6 +23,7 @@ import (
 
 	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -34,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
 )
 
@@ -124,7 +124,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// fire event, ignore the HEAD request and pulling request from replication service
-	if req.Method == http.MethodHead || req.UserAgent() == registry.UserAgent {
+	if req.Method == http.MethodHead || req.UserAgent() == common.UserAgent {
 		return
 	}
 
