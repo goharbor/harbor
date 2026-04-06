@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
-      id-token: write  # Required for Cosign keyless signing
+      id-token: write   # Required for Cosign keyless signing
+      packages: write   # Required for pushing images to ghcr.io
     steps:
       - uses: actions/checkout@v6
       - name: Setup env

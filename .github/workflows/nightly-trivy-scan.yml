@@ -10,11 +10,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # maintain the versions of harbor that need to be actively
-        # security scanned
-        versions: [dev, v2.12.0-dev]
+        # maintain the tags of harbor that need to be actively security scanned on a nightly basis, 
+        # it is the image tags that need to be scanned in the dockerhub goharbor, for example: goharbor/harbor-core:dev, dev is the tag.
+        tags: [dev]
         # list of images that need to be scanned
-        images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare]
+        images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare, registry-photon, nginx-photon, redis-photon, trivy-adapter-photon]
     permissions:
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
 
@@ -23,9 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        # tag 0.35.0, get the commit hash from https://github.com/aquasecurity/trivy-action.git
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
-          image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.versions }}'
+          image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.tags }}'
           severity: 'CRITICAL,HIGH'
           format: 'template'
           template: '@/contrib/sarif.tpl'

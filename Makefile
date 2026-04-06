@@ -111,8 +111,8 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.68.2
-TRIVYADAPTERVERSION=v0.35.0-rc.1
+TRIVYVERSION=v0.69.3
+TRIVYADAPTERVERSION=v0.35.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
@@ -151,7 +151,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.25.6
+GOBUILDIMAGE=golang:1.25.7
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -319,7 +319,17 @@ define swagger_generate_server
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
 endef
 
-gen_apis:
+check_docker:
+	@if [ -z "$(DOCKERCMD)" ]; then \
+		echo "Error: Docker is not installed or not in PATH." >&2; \
+		exit 1; \
+	fi
+	@if ! $(DOCKERCMD) info > /dev/null 2>&1; then \
+		echo "Error: Docker daemon is not running. Please start Docker and retry." >&2; \
+		exit 1; \
+	fi
+
+gen_apis: check_docker
 	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 

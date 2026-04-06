@@ -7336,6 +7336,10 @@ definitions:
         type: string
         description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
         x-nullable: true
+      proxy_cache_local_on_not_found:
+        type: string
+        description: 'Whether to serve images from local cache when they are removed from the upstream registry. The valid values are "true", "false".'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -7504,8 +7508,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        type: object
-        description: 'The value of replication policy filter.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
       decoration:
         type: string
         description: 'matches or excludes the result'
