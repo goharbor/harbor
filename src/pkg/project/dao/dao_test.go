@@ -430,6 +430,78 @@ func (suite *DaoTestSuite) TestListRoles() {
 	}
 }
 
+func (suite *DaoTestSuite) TestListSortByRepoCount() {
+	suite.WithUser(func(userID int64, username string) {
+		o, err := orm.FromContext(orm.Context())
+		suite.Nil(err)
+
+		// Create two projects
+		projA := &models.Project{Name: "sort-rc-a-" + suite.RandString(5), OwnerID: int(userID)}
+		projB := &models.Project{Name: "sort-rc-b-" + suite.RandString(5), OwnerID: int(userID)}
+		idA, err := suite.dao.Create(orm.Context(), projA)
+		suite.Nil(err)
+		idB, err := suite.dao.Create(orm.Context(), projB)
+		suite.Nil(err)
+		defer suite.dao.Delete(orm.Context(), idA)
+		defer suite.dao.Delete(orm.Context(), idB)
+
+		// Add 2 repos to projA, 0 to projB
+		for i := range 2 {
+			repoName := fmt.Sprintf("sort-rc-a-%d-%s", i, suite.RandString(5))
+			_, err := o.Raw("INSERT INTO repository (name, project_id) VALUES (?, ?)", repoName, idA).Exec()
+			suite.Nil(err)
+			defer o.Raw("DELETE FROM repository WHERE name = ?", repoName).Exec()
+		}
+
+		// Sort ascending: projB (0 repos) should come before projA (2 repos)
+		query := q.New(q.KeyWords{"project_id__in": []int64{idA, idB}})
+		query.Sorts = []*q.Sort{{Key: "repo_count", DESC: false}}
+		projects, err := suite.dao.List(orm.Context(), query)
+		suite.Nil(err)
+		suite.Require().Len(projects, 2)
+		suite.Equal(idB, projects[0].ProjectID)
+		suite.Equal(idA, projects[1].ProjectID)
+
+		// Sort descending: projA (2 repos) should come first
+		query2 := q.New(q.KeyWords{"project_id__in": []int64{idA, idB}})
+		query2.Sorts = []*q.Sort{{Key: "repo_count", DESC: true}}
+		projects2, err := suite.dao.List(orm.Context(), query2)
+		suite.Nil(err)
+		suite.Require().Len(projects2, 2)
+		suite.Equal(idA, projects2[0].ProjectID)
+		suite.Equal(idB, projects2[1].ProjectID)
+	})
+}
+
+func (suite *DaoTestSuite) TestListSortByOwnerName() {
+	suite.WithUser(func(userIDA int64, usernameA string) {
+		suite.WithUser(func(userIDB int64, usernameB string) {
+			projA := &models.Project{Name: "sort-on-a-" + suite.RandString(5), OwnerID: int(userIDA)}
+			projB := &models.Project{Name: "sort-on-b-" + suite.RandString(5), OwnerID: int(userIDB)}
+			idA, err := suite.dao.Create(orm.Context(), projA)
+			suite.Nil(err)
+			idB, err := suite.dao.Create(orm.Context(), projB)
+			suite.Nil(err)
+			defer suite.dao.Delete(orm.Context(), idA)
+			defer suite.dao.Delete(orm.Context(), idB)
+
+			// Determine expected order based on username alphabetical comparison
+			firstID, secondID := idA, idB
+			if usernameA > usernameB {
+				firstID, secondID = idB, idA
+			}
+
+			query := q.New(q.KeyWords{"project_id__in": []int64{idA, idB}})
+			query.Sorts = []*q.Sort{{Key: "owner_name", DESC: false}}
+			projects, err := suite.dao.List(orm.Context(), query)
+			suite.Nil(err)
+			suite.Require().Len(projects, 2)
+			suite.Equal(firstID, projects[0].ProjectID)
+			suite.Equal(secondID, projects[1].ProjectID)
+		}, "bbb-"+suite.RandString(3))
+	}, "aaa-"+suite.RandString(3))
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }
