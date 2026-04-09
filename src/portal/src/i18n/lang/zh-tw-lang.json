@@ -677,8 +677,8 @@
         "CANNOT_EDIT": "當複製規則啟用時，端點無法修改。",
         "PLACEHOLDER": "未找到任何端點！",
         "CA_CERTIFICATE": "CA 憑證",
-        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 編碼的 CA 憑證以驗證倉庫的 TLS 憑證。留空將使用系統 CA 池。此欄位僅在啟用「驗證遠端憑證」時可用。",
-        "CA_CERTIFICATE_HELPER": "選填。在此貼上 PEM 編碼的 CA 憑證，以信任此端點的自簽名或私有 CA 憑證。如果留空，Harbor 將使用系統 CA 池。"
+        "CA_CERTIFICATE_TOOLTIP": "提供 PEM 編碼的 CA 憑證以信任此倉庫的其他 CA 憑證。自訂 CA 將被新增至系統 CA 池，允許 Harbor 信任系統簽署和自訂簽署的憑證。留空將僅使用系統 CA 池。此欄位僅在啟用「驗證遠端憑證」時可用。",
+        "CA_CERTIFICATE_HELPER": "選填。在此貼上 PEM 編碼的 CA 憑證，以信任此端點的自簽名或私有 CA 憑證。憑證將新增至系統 CA 池，而不是替代它。"
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "複製 Digest",
@@ -805,7 +805,7 @@
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "啟用註冊。",
             "SELF_REGISTRATION_DISABLE": "停用註冊。",
-            "VERIFY_REMOTE_CERT": "決定映像檔複製是否應驗證遠端 Harbor Registry 的憑證。當遠端 Registry 使用自簽章或不受信任的憑證時，請取消勾選此核取方塊。",
+            "VERIFY_REMOTE_CERT": "決定映像檔複製是否應驗證遠端登錄庫的憑證。當跳過驗證遠端登錄庫端點憑證時，請取消勾選此核取方塊。",
             "AUTH_MODE": "預設認證模式為資料庫，即憑證儲存在本機資料庫中。若要根據 LDAP 伺服器驗證使用者憑證，請設為 LDAP。",
             "PRIMARY_AUTH_MODE": "此認證模式將成為使用者的預設登入方式。使用者在登入畫面選擇透過身分提供者或本機資料庫登入時，將自動重新導向至此身分提供者。若要透過資料庫登入，需明確存取 URL '/account/sign-in'。",
             "LDAP_SEARCH_DN": "具有搜尋 LDAP/AD 伺服器權限的使用者 DN。如果您的 LDAP/AD 伺服器不支援匿名搜尋，您應設定此 DN 及 ldap_search_pwd。",

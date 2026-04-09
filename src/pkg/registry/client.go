@@ -35,6 +35,7 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -64,7 +65,6 @@ var (
 
 // const definition
 const (
-	UserAgent = "harbor-registry-client"
 	// DefaultHTTPClientTimeout is the default timeout for registry http client.
 	DefaultHTTPClientTimeout = 30 * time.Minute
 )
@@ -670,7 +670,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
-	req.Header.Set("User-Agent", UserAgent)
+	utils.SetUserAgentHeader(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

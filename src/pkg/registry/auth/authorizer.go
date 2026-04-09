@@ -25,6 +25,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
@@ -88,12 +89,24 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if a.authorizer != nil {
 		return nil
 	}
-	url, err := url.Parse(u.Scheme + "://" + u.Host + "/v2/")
+	// Extract the path prefix before "/v2/" so that registries served under
+	// a sub-path (e.g. https://hostname/prefix/v2/...) are probed correctly.
+	prefix := ""
+	if idx := strings.Index(u.Path, "/v2/"); idx > 0 {
+		prefix = u.Path[:idx]
+	}
+	url, err := url.Parse(u.Scheme + "://" + u.Host + prefix + "/v2/")
 	if err != nil {
 		return err
 	}
 	a.url = url
-	resp, err := a.client.Get(a.url.String())
+	req, err := http.NewRequest(http.MethodGet, a.url.String(), nil)
+	if err != nil {
+		return err
+	}
+	// set user agent to avoid some registry (e.g. docker hub) return 403 when user agent is not set to harbor-registry-client
+	utils.SetUserAgentHeader(req)
+	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -119,7 +132,7 @@ func (a *authorizer) initialize(u *url.URL) error {
 		a.authorizer = basic.NewAuthorizer(a.username, a.password)
 		return nil
 	}
-	return fmt.Errorf("unspported auth scheme: %v", challenges)
+	return fmt.Errorf("unsupported auth scheme: %v", challenges)
 }
 
 // Check whether the request targets to the registry.
