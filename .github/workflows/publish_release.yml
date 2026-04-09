@@ -48,11 +48,15 @@ jobs:
 
           for arch in amd64 arm64; do
             src_offline=harbor-offline-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
-            src_online=harbor-online-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
             dst_offline=harbor-offline-installer-${cur}-${arch}.tgz
-            dst_online=harbor-online-installer-${cur}-${arch}.tgz
+            dst_online=
             aws s3 cp s3://${bucket}/${branch}/${src_offline} s3://${bucket}/${branch}/${dst_offline}
-            aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
+
+            if [ "${{ env.PRERELEASE }}" = "false" ]; then
+              src_online=harbor-online-installer-${base}-${{ env.BUILD_NO }}-${arch}.tgz
+              dst_online=harbor-online-installer-${cur}-${arch}.tgz
+              aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
+            fi
             source tools/release/release_utils.sh && getAssets ${bucket} ${branch} ${dst_offline} ${dst_online} ${{ env.PRERELEASE }} ${assets_path}
           done
 
