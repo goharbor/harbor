@@ -51,7 +51,7 @@ func (md *metaDAO) DeleteByUserID(ctx context.Context, uid int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw(sql, uid).Exec()
+	_, err = ormer.RawWithCtx(ctx, sql, uid).Exec()
 	return err
 }
 
@@ -65,7 +65,7 @@ func (md *metaDAO) GetByUsername(ctx context.Context, username string) (*models.
 		return nil, err
 	}
 	res := &models.OIDCUser{}
-	if err := ormer.Raw(sql, username).QueryRow(res); err != nil {
+	if err := ormer.RawWithCtx(ctx, sql, username).QueryRow(res); err != nil {
 		if errors.Is(err, orm.ErrNoRows) {
 			return nil, fmt.Errorf("oidc user data with username %s not found", username)
 		}

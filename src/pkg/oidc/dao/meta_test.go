@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -109,6 +110,20 @@ func (suite *MetaDaoTestSuite) TestDeleteByUserId() {
 func (suite *MetaDaoTestSuite) appendClearSQL(uid int) {
 	suite.ClearSQLs = append(suite.ClearSQLs, fmt.Sprintf("DELETE FROM oidc_user WHERE user_id = %d", uid))
 	suite.ClearSQLs = append(suite.ClearSQLs, fmt.Sprintf("DELETE FROM harbor_user WHERE user_id = %d", uid))
+}
+
+func (suite *MetaDaoTestSuite) TestGetByUsernameWithCancelledContext() {
+	ctx, cancel := context.WithCancel(orm.Context())
+	cancel() // cancel the context immediately to verify context propagation
+	_, err := suite.dao.GetByUsername(ctx, suite.username)
+	suite.Error(err)
+}
+
+func (suite *MetaDaoTestSuite) TestDeleteByUserIDWithCancelledContext() {
+	ctx, cancel := context.WithCancel(orm.Context())
+	cancel() // cancel the context immediately to verify context propagation
+	err := suite.dao.DeleteByUserID(ctx, suite.deleteUserID)
+	suite.Error(err)
 }
 
 func TestMetaDaoTestSuite(t *testing.T) {
