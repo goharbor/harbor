@@ -108,12 +108,17 @@ jobs:
           set -euo pipefail
           cur=${{ env.CUR_TAG }}
           printf '%s\n' "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          printf '%s\n' "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           sort -u "$GITHUB_WORKSPACE/_images_all.txt" | while IFS= read -r repo; do
             [ -z "$repo" ] && continue
             docker buildx imagetools create -t "${repo}:${cur}" \
               "${repo}:${cur}-amd64" \
               "${repo}:${cur}-arm64"
+            docker buildx imagetools create -t "ghcr.io/${repo}:${cur}" \
+              "ghcr.io/${repo}:${cur}-amd64" \
+              "ghcr.io/${repo}:${cur}-arm64"
           done
+          docker logout ghcr.io
           docker logout
       - name: Generate release notes
         run: |
