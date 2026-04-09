@@ -8,7 +8,7 @@ FROM ${build_image} AS build
 
 ARG harbor_version
 ARG git_commit
-ARG TARGETARCH
+ARG TARGETARCH=amd64
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux

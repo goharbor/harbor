@@ -95,10 +95,10 @@ jobs:
           sudo make package_online ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
-          mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
-          mv "${harbor_online_build_bundle}" "harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
-          harbor_offline_build_bundle="harbor-offline-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
-          harbor_online_build_bundle="harbor-online-installer-${Harbor_Assets_Version}-${ARCH}.tgz"
+          mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          mv "${harbor_online_build_bundle}" "harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          harbor_offline_build_bundle="harbor-offline-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          harbor_online_build_bundle="harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
 
           source tests/ci/build_util.sh
           cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest-${ARCH}.tgz"
@@ -126,11 +126,13 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/download-artifact@v4
         with:
           pattern: repos-*
           merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Determine image tag
         id: tag
         run: |

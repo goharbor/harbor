@@ -8,7 +8,7 @@ function getAssets {
     local onlinePackage=$4
     local prerelease=$5
     local assetsPath=$6
-    mkdir -p $assetsPath && pushd $assetsPath
+    mkdir -p "$assetsPath" && pushd "$assetsPath"
     aws s3 cp s3://$bucket/$branch/$offlinePackage .
     md5sum $offlinePackage > md5sum
     # Pre-release does not handle online installer packages
@@ -57,7 +57,7 @@ function publishImages {
     local images=${@:5}
     local suffix=""
     if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
-    docker login -u $dockerHubUser -p $dockerHubPassword
+    printf '%s\n' "$dockerHubPassword" | docker login --username "$dockerHubUser" --password-stdin
     for image in $images
     do
         echo "push image: $image"
@@ -75,7 +75,7 @@ function publishPackages {
     local images=${@:5}
     local suffix=""
     if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
-    docker login ghcr.io -u $ghcrUser -p $ghcrPassword
+    printf '%s\n' "$ghcrPassword" | docker login ghcr.io --username "$ghcrUser" --password-stdin
     for image in $images
     do
         echo "push image: $image"
