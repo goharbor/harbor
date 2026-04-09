@@ -35,4 +35,12 @@ updates:
       - "release-note/bump-version"
       - "branch/release-2.14.0"
 
+  - package-ecosystem: "npm"
+    directory: "/src/portal"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    labels:
+      - "release-note/bump-version"
+
   # More will be needed

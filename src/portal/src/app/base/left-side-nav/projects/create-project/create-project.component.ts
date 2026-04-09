@@ -395,6 +395,10 @@ export class CreateProjectComponent
                             this.project.metadata.bandwidth.toString(),
                         max_upstream_conn:
                             this.project.metadata.max_upstream_conn.toString(),
+                        proxy_cache_local_on_not_found: this.project.metadata
+                            .proxy_cache_local_on_not_found
+                            ? 'true'
+                            : 'false',
                     },
                     storage_limit: +storageByte,
                     registry_id: registryId,
@@ -440,6 +444,7 @@ export class CreateProjectComponent
         this.selectedSpeedLimitUnit = BandwidthUnit.KB;
         this.speedLimit = -1;
         this.project.metadata.max_upstream_conn = -1;
+        this.project.metadata.proxy_cache_local_on_not_found = false;
     }
 
     public get isValid(): boolean {

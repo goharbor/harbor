@@ -44,23 +44,67 @@ describe('PullCommandComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should not display pull command for chart', async () => {
-        // Mock the artifact input with a valid value
-        component.artifact = {
+    const artifactTestCases = [
+        {
+            type: ArtifactType.IMAGE,
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForRuntimeByTag(artifact),
+        },
+        {
+            type: ArtifactType.CNAB,
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForCNABByTag(artifact),
+        },
+        {
             type: ArtifactType.CHART,
-            tagNumber: 0,
-            digest: 'sha256@digest',
-            tags: [],
-        };
-        component.getPullCommandForChart(component.artifact);
-        expect(
-            component.getPullCommandForChart(component.artifact).length
-        ).toBe(0);
-        fixture.detectChanges();
-        await fixture.whenStable();
-        const modal =
-            fixture.nativeElement.querySelector(`#pullCommandForChart`);
-        expect(modal).toBeFalsy();
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForChart(artifact),
+        },
+    ];
+
+    artifactTestCases.forEach(({ type, method }) => {
+        it(`should not display pull command modal when tag is undefined for artifact type: ${type}`, async () => {
+            // Arrange: mock artifact with missing tag data
+            component.artifact = {
+                type,
+                tagNumber: undefined,
+                digest: 'sha256@digest',
+                tags: undefined,
+            };
+
+            const pullCommand = method(component, component.artifact);
+            expect(pullCommand.length).toBe(0);
+
+            fixture.detectChanges();
+            await fixture.whenStable();
+
+            const modal = fixture.nativeElement.querySelector(
+                '#pullCommandForChart'
+            );
+            expect(modal).toBeFalsy();
+        });
+    });
+
+    artifactTestCases.forEach(({ type, method }) => {
+        it(`should not display pull command modal when no tag for artifact type: ${type}`, async () => {
+            component.artifact = {
+                type,
+                tagNumber: 0,
+                digest: 'sha256@digest',
+                tags: [],
+            };
+
+            const pullCommand = method(component, component.artifact);
+            expect(pullCommand.length).toBe(0);
+
+            fixture.detectChanges();
+            await fixture.whenStable();
+
+            const modal = fixture.nativeElement.querySelector(
+                '#pullCommandForChart'
+            );
+            expect(modal).toBeFalsy();
+        });
     });
 
     it('should display when pull command for chart is available', async () => {

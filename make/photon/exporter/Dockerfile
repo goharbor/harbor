@@ -1,9 +1,13 @@
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
+ARG harbor_version=dev
+ARG git_commit=unknown
 
 FROM ${build_image} AS build
 
+ARG harbor_version
+ARG git_commit
 ARG TARGETARCH
 
 ENV CGO_ENABLED=0
@@ -12,7 +16,7 @@ ENV GOARCH=${TARGETARCH}
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
-RUN go build -o /out/harbor_exporter
+RUN go build -ldflags "-w -s -X github.com/goharbor/harbor/src/pkg/version.ReleaseVersion=${harbor_version} -X github.com/goharbor/harbor/src/pkg/version.GitCommit=${git_commit}" -o /out/harbor_exporter
 
 FROM ${harbor_base_namespace}/harbor-exporter-base:${harbor_base_image_version}
 

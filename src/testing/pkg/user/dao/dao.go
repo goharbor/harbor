@@ -121,6 +121,36 @@ func (_m *DAO) List(ctx context.Context, query *q.Query) ([]*models.User, error)
 	return r0, r1
 }
 
+// SearchByName provides a mock function with given fields: ctx, name, limitSize
+func (_m *DAO) SearchByName(ctx context.Context, name string, limitSize int) ([]*models.User, error) {
+	ret := _m.Called(ctx, name, limitSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SearchByName")
+	}
+
+	var r0 []*models.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, int) ([]*models.User, error)); ok {
+		return rf(ctx, name, limitSize)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, int) []*models.User); ok {
+		r0 = rf(ctx, name, limitSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = rf(ctx, name, limitSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, user, props
 func (_m *DAO) Update(ctx context.Context, user *models.User, props ...string) error {
 	_va := make([]interface{}, len(props))
