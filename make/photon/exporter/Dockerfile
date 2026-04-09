@@ -1,9 +1,10 @@
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-ARG TARGETARCH
 
 FROM ${build_image} AS build
+
+ARG TARGETARCH
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux

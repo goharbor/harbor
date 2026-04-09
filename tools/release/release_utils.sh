@@ -8,7 +8,7 @@ function getAssets {
     local onlinePackage=$4
     local prerelease=$5
     local assetsPath=$6
-    mkdir $assetsPath && pushd $assetsPath
+    mkdir -p $assetsPath && pushd $assetsPath
     aws s3 cp s3://$bucket/$branch/$offlinePackage .
     md5sum $offlinePackage > md5sum
     # Pre-release does not handle online installer packages
@@ -50,7 +50,7 @@ function generateReleaseNotes {
 }
 
 function publishImages {
-    # Push images to Docker Hub; if $ARCH is set, push :${curTag}-$ARCH (per-arch)
+    # Create curTag and push it to the goharbor namespace of dockerhub
     local curTag=$1
     local baseTag=$2
     local dockerHubUser=$3
@@ -69,7 +69,6 @@ function publishImages {
 }
 
 function publishPackages {
-    # Push images to GHCR; if $ARCH is set, push :${curTag}-$ARCH (per-arch)
     local curTag=$1
     local baseTag=$2
     local ghcrUser=$3
