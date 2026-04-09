@@ -123,6 +123,8 @@ jobs:
   CREATE_MANIFEST:
     needs: [BUILD_PACKAGE]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
