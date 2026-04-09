@@ -16,6 +16,11 @@ WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
 PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
+# Force BuildKit so --platform takes effect and TARGETARCH auto-populates.
+# 'override' wins over the caller's environment even when the parent
+# Makefile calls this sub-make with -e (environment-overrides).
+override DOCKER_BUILDKIT := 1
+export DOCKER_BUILDKIT
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
