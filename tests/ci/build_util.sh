@@ -43,7 +43,9 @@ function publishImage {
     fi
     # rename the images with tag "dev" and push to Docker Hub
     docker images
-    docker login -u $3 -p $4
+    set +x
+    printf '%s\n' "$4" | docker login --username "$3" --password-stdin
+    set -x
     # format the output to be compatible with both old and new Docker versions.
     docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}"| grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:${image_tag}${arch_suffix};docker push \1:${image_tag}${arch_suffix}|p" | bash
     echo "Images are published successfully"

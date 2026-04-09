@@ -107,7 +107,7 @@ jobs:
         run: |
           set -euo pipefail
           cur=${{ env.CUR_TAG }}
-          docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          printf '%s\n' "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
           sort -u "$GITHUB_WORKSPACE/_images_all.txt" | while IFS= read -r repo; do
             [ -z "$repo" ] && continue
             docker buildx imagetools create -t "${repo}:${cur}" \

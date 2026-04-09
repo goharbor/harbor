@@ -142,7 +142,7 @@ jobs:
             echo "image_tag=${version}" >> $GITHUB_OUTPUT
           fi
       - name: Login to Docker Hub
-        run: docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_PASSWORD }}"
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Create multi-arch manifests
         run: |
           set -euo pipefail
