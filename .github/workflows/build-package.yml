@@ -107,6 +107,15 @@ jobs:
           uploader "${harbor_online_build_bundle}"                     $harbor_target_bucket
           uploader "harbor-offline-installer-latest-${ARCH}.tgz"      $harbor_target_bucket
           uploader "harbor-online-installer-latest-${ARCH}.tgz"       $harbor_target_bucket
+          # Backwards compatibility: keep the unsuffixed legacy "latest" name
+          # pointing to amd64 (what it historically was) so existing downstream
+          # consumers that expect harbor-*-installer-latest.tgz don't break.
+          if [ "${ARCH}" = "amd64" ]; then
+            cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest.tgz"
+            cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest.tgz"
+            uploader "harbor-offline-installer-latest.tgz"             $harbor_target_bucket
+            uploader "harbor-online-installer-latest.tgz"              $harbor_target_bucket
+          fi
           echo "BUILD_BUNDLE=${harbor_offline_build_bundle}" >> $GITHUB_ENV
           echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
 
