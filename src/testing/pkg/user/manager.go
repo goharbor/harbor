@@ -281,6 +281,36 @@ func (_m *Manager) Onboard(ctx context.Context, _a1 *commonmodels.User) error {
 	return r0
 }
 
+// SearchByName provides a mock function with given fields: ctx, name, limitSize
+func (_m *Manager) SearchByName(ctx context.Context, name string, limitSize int) (commonmodels.Users, error) {
+	ret := _m.Called(ctx, name, limitSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SearchByName")
+	}
+
+	var r0 commonmodels.Users
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, int) (commonmodels.Users, error)); ok {
+		return rf(ctx, name, limitSize)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, int) commonmodels.Users); ok {
+		r0 = rf(ctx, name, limitSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(commonmodels.Users)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = rf(ctx, name, limitSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // SetSysAdminFlag provides a mock function with given fields: ctx, id, admin
 func (_m *Manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
 	ret := _m.Called(ctx, id, admin)

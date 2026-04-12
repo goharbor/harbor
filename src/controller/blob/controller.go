@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"

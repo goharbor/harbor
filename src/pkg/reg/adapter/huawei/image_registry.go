@@ -33,7 +33,7 @@ func (a *adapter) FetchArtifacts(_ []*model.Filter) ([]*model.Resource, error) {
 
 	urls := fmt.Sprintf("%s/dockyard/v2/repositories?filter=center::self", a.registry.URL)
 
-	r, err := http.NewRequest("GET", urls, nil)
+	r, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return resources, err
 	}
@@ -77,7 +77,7 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, desc 
 
 	urls := fmt.Sprintf("%s/v2/%s/manifests/%s", a.registry.URL, repository, reference)
 
-	r, err := http.NewRequest("GET", urls, nil)
+	r, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return exist, nil, err
 	}
@@ -125,7 +125,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 
 	urls := fmt.Sprintf("%s/v2/%s/manifests/%s", a.registry.URL, repository, reference)
 
-	r, err := http.NewRequest("DELETE", urls, nil)
+	r, err := http.NewRequest(http.MethodDelete, urls, nil)
 	if err != nil {
 		return err
 	}
@@ -204,7 +204,7 @@ type hwRepoQueryResult struct {
 func getJwtToken(a *adapter, repository string) (token jwtToken, err error) {
 	urls := fmt.Sprintf("%s/swr/auth/v2/registry/auth?scope=repository:%s:push,pull", a.registry.URL, repository)
 
-	r, err := http.NewRequest("GET", urls, nil)
+	r, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return token, err
 	}
