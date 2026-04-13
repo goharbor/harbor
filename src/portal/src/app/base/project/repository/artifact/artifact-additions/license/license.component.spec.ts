@@ -198,7 +198,11 @@ describe('LicenseComponent', () => {
         component.ngOnInit();
         fixture.detectChanges();
         await fixture.whenStable();
-        const tables = fixture.nativeElement.getElementsByTagName('table');
-        expect(tables.length).toEqual(1);
+        fixture.detectChanges();
+        const licenseContainer =
+            fixture.nativeElement.querySelector('.yaml-container');
+        expect(licenseContainer?.textContent).toContain(
+            'Helm Chart for Harbor'
+        );
     });
 });

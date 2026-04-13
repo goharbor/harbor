@@ -20,6 +20,7 @@ import { ArtifactDependency } from '../models';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import { ClarityModule } from '@clr/angular';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('DependenciesComponent', () => {
     let component: DependenciesComponent;
@@ -48,7 +49,11 @@ describe('DependenciesComponent', () => {
     };
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [TranslateModule.forRoot(), ClarityModule],
+            imports: [
+                TranslateModule.forRoot(),
+                ClarityModule,
+                NoopAnimationsModule,
+            ],
             declarations: [DependenciesComponent],
             providers: [
                 TranslateService,

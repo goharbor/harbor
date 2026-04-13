@@ -84,19 +84,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "harbor-portal:build",
-            "proxyConfig": "proxy.config.mjs"
+            "proxyConfig": "proxy.config.mjs",
+            "buildTarget": "harbor-portal:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "harbor-portal:build:production"
+              "buildTarget": "harbor-portal:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "harbor-portal:build"
+            "buildTarget": "harbor-portal:build"
           }
         },
         "test": {

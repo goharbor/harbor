@@ -1,6 +1,6 @@
 <div class="row content-wrapper" *ngIf="!loading">
     <div class="col-md-8 md-container pl-1" *ngIf="readme">
-        <div class="md-div" [innerHTML]="readme | markdown"></div>
+        <div class="md-div" [innerHTML]="readme | markdown | async"></div>
     </div>
     <div *ngIf="!readme">
         <div *ngIf="type === 'CNAI'">

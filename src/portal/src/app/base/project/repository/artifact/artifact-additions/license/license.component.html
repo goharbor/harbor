@@ -4,7 +4,7 @@
             <div
                 *ngIf="license"
                 class="yaml-container"
-                [innerHTML]="license | language | markdown"></div>
+                [innerHTML]="license | language | markdown | async"></div>
         </div>
         <div *ngIf="!license">
             <div class="col-md-8 md-container pl-1" *ngIf="fileTooLargeStatus">

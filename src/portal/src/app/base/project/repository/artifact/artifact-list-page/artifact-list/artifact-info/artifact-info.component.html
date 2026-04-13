@@ -32,7 +32,7 @@
                 <div *ngIf="imageInfo" class="info-div">
                     <div
                         class="info-pre"
-                        [innerHTML]="imageInfo | markdown"></div>
+                        [innerHTML]="imageInfo | markdown | async"></div>
                 </div>
             </ng-container>
         </div>
