@@ -89,7 +89,13 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if a.authorizer != nil {
 		return nil
 	}
-	url, err := url.Parse(u.Scheme + "://" + u.Host + "/v2/")
+	// Extract the path prefix before "/v2/" so that registries served under
+	// a sub-path (e.g. https://hostname/prefix/v2/...) are probed correctly.
+	prefix := ""
+	if idx := strings.Index(u.Path, "/v2/"); idx > 0 {
+		prefix = u.Path[:idx]
+	}
+	url, err := url.Parse(u.Scheme + "://" + u.Host + prefix + "/v2/")
 	if err != nil {
 		return err
 	}
