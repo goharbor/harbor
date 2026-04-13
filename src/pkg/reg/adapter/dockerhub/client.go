@@ -15,11 +15,14 @@
 package dockerhub
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+
+	"strings"
+	"sync"
+	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -29,9 +32,17 @@ import (
 // Client is a client to interact with DockerHub
 type Client struct {
 	client     *http.Client
-	token      string
 	host       string
 	credential LoginCredential
+
+	tokenCache map[string]*repoTokenInfo // repo -> token info
+	tokenMu    sync.Mutex
+}
+
+// repoTokenInfo holds a Bearer token and its expiry for a repo scope
+type repoTokenInfo struct {
+	Token     string
+	ExpiresAt time.Time
 }
 
 // NewClient creates a new DockerHub client.
@@ -52,60 +63,20 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		return client, nil
 	}
 
-	// Login to DockerHub to get access token, default expire date is 30d.
+	// Set credentials for Bearer token flow
 	client.credential = LoginCredential{
 		User:     registry.Credential.AccessKey,
 		Password: registry.Credential.AccessSecret,
-	}
-	err := client.refreshToken()
-	if err != nil {
-		return nil, fmt.Errorf("login to dockerhub error: %v", err)
 	}
 
 	return client, nil
 }
 
-// refreshToken login to DockerHub with user/password, and retrieve access token.
-func (c *Client) refreshToken() error {
-	b, err := json.Marshal(c.credential)
-	if err != nil {
-		return fmt.Errorf("marshal credential error: %v", err)
-	}
-
-	request, err := http.NewRequest(http.MethodPost, baseURL+loginPath, bytes.NewReader(b))
-	if err != nil {
-		return err
-	}
-	request.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.client.Do(request)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode/100 != 2 {
-		return fmt.Errorf("login to dockerhub error: %s", string(body))
-	}
-
-	token := &TokenResp{}
-	err = json.Unmarshal(body, token)
-	if err != nil {
-		return fmt.Errorf("unmarshal token response error: %v", err)
-	}
-
-	c.token = token.Token
-	return nil
-}
-
 // Do performs http request to DockerHub, it will set token automatically.
+// Do performs http request to DockerHub, setting Bearer token for the given repo.
+// The repo is expected in the path as /v2/<namespace>/<repo>/...
 func (c *Client) Do(method, path string, body io.Reader) (*http.Response, error) {
-	url := baseURL + path
+	url := c.host + path
 	log.Infof("%s %s", method, url)
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -114,7 +85,67 @@ func (c *Client) Do(method, path string, body io.Reader) (*http.Response, error)
 	if body != nil || method == http.MethodPost || method == http.MethodPut {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("JWT %s", c.token))
-
+	// Extract repo from path: expect /v2/<namespace>/<repo>/...
+	repo := ""
+	parts := strings.Split(path, "/")
+	if len(parts) >= 4 && parts[1] == "v2" {
+		repo = parts[2] + "/" + parts[3]
+	}
+	if repo != "" {
+		token, err := c.getBearerToken(repo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get bearer token for repo %s: %v", repo, err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	return c.client.Do(req)
+}
+
+// getBearerToken returns a valid Bearer token for the given repo (namespace/repo), refreshing if needed.
+func (c *Client) getBearerToken(repo string) (string, error) {
+	c.tokenMu.Lock()
+	defer c.tokenMu.Unlock()
+	if c.tokenCache == nil {
+		c.tokenCache = make(map[string]*repoTokenInfo)
+	}
+	now := time.Now()
+	if info, ok := c.tokenCache[repo]; ok && now.Before(info.ExpiresAt.Add(-10*time.Second)) {
+		// Token is still valid (with 10s buffer)
+		return info.Token, nil
+	}
+
+	// Build auth endpoint
+	authURL := fmt.Sprintf("%s%s?service=registry.docker.io&scope=repository:%s:pull", authDomainURL, authTokenPath, repo)
+	req, err := http.NewRequest(http.MethodGet, authURL, nil)
+	if err != nil {
+		return "", err
+	}
+	if c.credential.User != "" && c.credential.Password != "" {
+		req.SetBasicAuth(c.credential.User, c.credential.Password)
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode/100 != 2 {
+		return "", fmt.Errorf("failed to get token for repo %s: %s", repo, string(body))
+	}
+	var tokenResp struct {
+		Token     string `json:"token"`
+		ExpiresIn int    `json:"expires_in"`
+	}
+	if err := json.Unmarshal(body, &tokenResp); err != nil {
+		return "", fmt.Errorf("unmarshal token response error: %v", err)
+	}
+	expiresAt := now.Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
+	c.tokenCache[repo] = &repoTokenInfo{
+		Token:     tokenResp.Token,
+		ExpiresAt: expiresAt,
+	}
+	return tokenResp.Token, nil
 }
