@@ -3,26 +3,26 @@
         <div class="card-block">
             <h4 class="head">{{ 'STATISTICS.PRO_ITEM' | translate }}</h4>
             <div class="clr-row" *ngIf="isValidSession">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_PRIVATE' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.private_project_count }}
                 </div>
             </div>
             <div class="clr-row">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_PUB' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.public_project_count }}
                 </div>
             </div>
             <div class="clr-row" *ngIf="isValidSession">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_TOTAL' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.total_project_count }}
                 </div>
             </div>
@@ -32,26 +32,26 @@
         <div class="card-block">
             <h4 class="head">{{ 'STATISTICS.REPO_ITEM' | translate }}</h4>
             <div class="clr-row" *ngIf="isValidSession">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_PRIVATE' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.private_repo_count }}
                 </div>
             </div>
             <div class="clr-row">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_PUB' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.public_repo_count }}
                 </div>
             </div>
             <div class="clr-row" *ngIf="isValidSession">
-                <div class="clr-col">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_TOTAL' | translate }}
                 </div>
-                <div class="clr-col font-weight-700">
+                <div class="clr-col font-weight-700 stat-value">
                     {{ originalCopy?.total_repo_count }}
                 </div>
             </div>

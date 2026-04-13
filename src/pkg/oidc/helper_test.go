@@ -143,9 +143,11 @@ func (fc *fakeClaims) Claims(n any) error {
 
 func TestGroupsFromClaim(t *testing.T) {
 	in := map[string]any{
-		"user":     "user1",
-		"groups":   []any{"group1", "group2"},
-		"groups_2": []any{"group1", "group2", 2},
+		"user":         "user1",
+		"groups":       []any{"group1", "group2"},
+		"groups_2":     []any{"group1", "group2", 2},
+		"single_group": "onlygroup",
+		"empty_string": "",
 	}
 
 	m := []struct {
@@ -155,10 +157,11 @@ func TestGroupsFromClaim(t *testing.T) {
 		ok     bool
 	}{
 		{
+			// Test single string value (supported for OIDC providers that return string for single group)
 			in,
 			"user",
-			[]string{},
-			false,
+			[]string{"user1"},
+			true,
 		},
 		{
 			in,
@@ -176,6 +179,20 @@ func TestGroupsFromClaim(t *testing.T) {
 			in,
 			"groups_2",
 			[]string{"group1", "group2"},
+			true,
+		},
+		{
+			// Test single string group
+			in,
+			"single_group",
+			[]string{"onlygroup"},
+			true,
+		},
+		{
+			// Test empty string group
+			in,
+			"empty_string",
+			[]string{""},
 			true,
 		},
 	}

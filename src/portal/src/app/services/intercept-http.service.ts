@@ -22,6 +22,10 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { errorHandler } from '../shared/units/shared.utils';
+import {
+    SkipSessionRenewalService,
+    HEADER_NO_SESSION_RENEWAL,
+} from './skip-session-renewal.service';
 
 export const SAFE_METHODS: string[] = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
 
@@ -34,7 +38,7 @@ enum INVALID_CSRF_TOKEN {
     providedIn: 'root',
 })
 export class InterceptHttpService implements HttpInterceptor {
-    constructor() {}
+    constructor(private skipSessionRenewalService: SkipSessionRenewalService) {}
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
         // Get the csrf token from localstorage
@@ -52,6 +56,17 @@ export class InterceptHttpService implements HttpInterceptor {
                 });
             }
         }
+
+        // Check if the current request should skip session renewal.
+        // The flag was set synchronously by skipSessionRenewal() operator
+        // within the same call stack.
+        if (this.skipSessionRenewalService.shouldSkip) {
+            this.skipSessionRenewalService.end();
+            request = request.clone({
+                headers: request.headers.set(HEADER_NO_SESSION_RENEWAL, 'true'),
+            });
+        }
+
         return next
             .handle(request)
             .pipe(

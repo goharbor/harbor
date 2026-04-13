@@ -35,6 +35,7 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -64,7 +65,6 @@ var (
 
 // const definition
 const (
-	UserAgent = "harbor-registry-client"
 	// DefaultHTTPClientTimeout is the default timeout for registry http client.
 	DefaultHTTPClientTimeout = 30 * time.Minute
 )
@@ -132,17 +132,29 @@ type Client interface {
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	authorizer := auth.NewAuthorizer(username, password, insecure)
-	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
+	return NewClientWithAuthorizer(url, authorizer, insecure, "", interceptors...)
+}
+
+// NewClientWithCACert creates a registry client with custom CA certificate
+func NewClientWithCACert(url, username, password string, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure, caCert)
+	return NewClientWithAuthorizer(url, authorizer, insecure, caCert, interceptors...)
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	// When CACertificate is set, it takes precedence and Insecure is ignored
+	transport := commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	)
+
 	return &client{
 		url:          url,
 		authorizer:   authorizer,
 		interceptors: interceptors,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
+			Transport: transport,
 			Timeout:   registryHTTPClientTimeout,
 		},
 	}
@@ -658,7 +670,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
-	req.Header.Set("User-Agent", UserAgent)
+	utils.SetUserAgentHeader(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

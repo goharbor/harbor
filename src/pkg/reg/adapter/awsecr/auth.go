@@ -89,7 +89,7 @@ func (a *awsAuthCredential) Modify(req *http.Request) error {
 	return nil
 }
 
-func getAwsSvc(region, accessKey, accessSecret string, insecure bool, forceEndpoint *string) (*awsecrapi.ECR, error) {
+func getAwsSvc(region, accessKey, accessSecret string, insecure bool, caCertificate string, forceEndpoint *string) (*awsecrapi.ECR, error) {
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
@@ -107,7 +107,10 @@ func getAwsSvc(region, accessKey, accessSecret string, insecure bool, forceEndpo
 		Credentials: cred,
 		Region:      &region,
 		HTTPClient: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
+			Transport: commonhttp.GetHTTPTransport(
+				commonhttp.WithInsecure(insecure),
+				commonhttp.WithCACert(caCertificate),
+			),
 		},
 	}
 	if forceEndpoint != nil {
