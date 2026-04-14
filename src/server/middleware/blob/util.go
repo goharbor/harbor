@@ -39,12 +39,13 @@ func probeBlob(r *http.Request, digest string) error {
 		return err
 	}
 
+	// always touch the blob to refresh the update_time to avoid it being GCed
+	if err := blobController.Touch(r.Context(), bb); err != nil {
+		logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
+		return errors.Wrapf(err, "the request id is: %s", r.Header.Get(requestid.HeaderXRequestID))
+	}
+
 	switch bb.Status {
-	case models.StatusNone, models.StatusDelete, models.StatusDeleteFailed:
-		if err := blobController.Touch(r.Context(), bb); err != nil {
-			logger.Errorf("failed to update blob: %s status to StatusNone, error:%v", bb.Digest, err)
-			return errors.Wrapf(err, "the request id is: %s", r.Header.Get(requestid.HeaderXRequestID))
-		}
 	case models.StatusDeleting:
 		now := time.Now().UTC()
 		// if the deleting exceed 2 hours, marks the blob as StatusDeleteFailed

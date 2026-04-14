@@ -86,6 +86,38 @@ func (suite *HeadBlobUploadMiddlewareTestSuite) TestHeadBlobStatusDeleting() {
 	})
 }
 
+func (suite *HeadBlobUploadMiddlewareTestSuite) TestHeadBlobStatusDeleteFailed() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		digest := suite.DigestString()
+
+		id, err := blob.Ctl.Ensure(suite.Context(), digest, "application/octet-stream", 512)
+		suite.Nil(err)
+
+		// status-none -> status-delete -> status-deleting -> status-deletefailed
+		b := &blob_models.Blob{ID: id, Status: blob_models.StatusDelete}
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), b)
+		suite.Nil(err)
+		b.Status = blob_models.StatusDeleting
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), b)
+		suite.Nil(err)
+		b.Status = blob_models.StatusDeleteFailed
+		_, err = pkg_blob.Mgr.UpdateBlobStatus(suite.Context(), b)
+		suite.Nil(err)
+
+		req := suite.makeRequest(projectName, digest)
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusOK, map[string]string{"Docker-Content-Digest": digest})
+		HeadBlobMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusOK, res.Code)
+
+		blob, err := blob.Ctl.Get(suite.Context(), digest)
+		suite.Nil(err)
+		suite.Equal(digest, blob.Digest)
+		suite.Equal(blob_models.StatusNone, blob.Status)
+	})
+}
+
 func TestHeadBlobUploadMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &HeadBlobUploadMiddlewareTestSuite{})
 }

@@ -131,7 +131,20 @@ func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []st
 
 func (c *controller) AssociateWithProjectByID(ctx context.Context, blobID int64, projectID int64) error {
 	_, err := c.blobMgr.AssociateWithProject(ctx, blobID, projectID)
-	return err
+	if err != nil {
+		return err
+	}
+	// always touch the blob when it's associated with a project to avoid it being GCed
+	query := &q.Query{
+		Keywords: map[string]any{
+			"id": blobID,
+		},
+	}
+	blobs, err := c.blobMgr.List(ctx, query)
+	if err != nil || len(blobs) == 0 {
+		return err
+	}
+	return c.Touch(ctx, blobs[0])
 }
 
 func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDigest string, projectID int64) error {
@@ -141,7 +154,11 @@ func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDiges
 	}
 
 	_, err = c.blobMgr.AssociateWithProject(ctx, blob.ID, projectID)
-	return err
+	if err != nil {
+		return err
+	}
+	// always touch the blob when it's associated with a project to avoid it being GCed
+	return c.Touch(ctx, blob)
 }
 
 func (c *controller) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error) {

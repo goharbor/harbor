@@ -40,10 +40,17 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		}
 
 		contentType := r.Header.Get("Content-Type")
-		_, descriptor, err := distribution.UnmarshalManifest(contentType, body)
+		manifest, descriptor, err := distribution.UnmarshalManifest(contentType, body)
 		if err != nil {
 			logger.Errorf("unmarshal manifest failed, error: %v", err)
 			return errors.Wrapf(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
+		}
+
+		// touch all referenced blobs to avoid them being GCed
+		for _, reference := range manifest.References() {
+			if err := probeBlob(r, reference.Digest.String()); err != nil {
+				return err
+			}
 		}
 
 		return probeBlob(r, descriptor.Digest.String())
