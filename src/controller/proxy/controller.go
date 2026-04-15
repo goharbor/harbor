@@ -65,6 +65,9 @@ type Controller interface {
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
 	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
+	// GetManifestWithVulnerabilityPrevention gets the manifest from the remote server while returning an error
+	// to the client that it's being downloaded when vulnerability prevention is enabled for the proxy project
+	GetManifestWithVulnerabilityPrevention(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface, severity string) error
 	// HeadManifest send manifest head request to the remote server
 	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error)
 	// EnsureTag ensure tag for digest
@@ -274,6 +277,16 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	}(operator.FromContext(ctx))
 
 	return man, nil
+}
+
+func (c *controller) GetManifestWithVulnerabilityPrevention(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface, severity string) error {
+	_, err := c.ProxyManifest(ctx, art, remote)
+	if err != nil {
+		return err
+	}
+	msg := fmt.Sprintf(`image is being downloaded from upstream and scanned due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+		`Please try again momentarily.`, severity)
+	return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 }
 
 func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
