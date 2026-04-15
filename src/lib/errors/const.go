@@ -119,3 +119,8 @@ func IsChallengesUnsupportedErr(err error) bool {
 func IsRateLimitError(err error) bool {
 	return IsErr(err, RateLimitCode)
 }
+
+// IsProjectPolicyViolationError returns true when the error is PROJECTPOLICYVIOLATION
+func IsProjectPolicyViolationError(err error) bool {
+	return IsErr(err, PROJECTPOLICYVIOLATION)
+}
