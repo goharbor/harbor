@@ -102,6 +102,7 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   APITEST_DB:
     env:
@@ -344,7 +345,7 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: '18'
       - uses: actions/checkout@v6
@@ -362,3 +363,4 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}

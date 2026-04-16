@@ -81,6 +81,11 @@ func (l *localInterfaceMock) CheckDependencies(ctx context.Context, repo string,
 func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
 }
 
+func (l *localInterfaceMock) UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error {
+	args := l.Called(ctx, art)
+	return args.Error(0)
+}
+
 type proxyControllerTestSuite struct {
 	suite.Suite
 	local  *localInterfaceMock
@@ -106,7 +111,7 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_True() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
 
-	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
 	p.Assert().Nil(err)
 	p.Assert().True(result)
 }
@@ -118,7 +123,7 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_False() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(true, desc, nil)
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
-	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
 	p.Assert().Nil(err)
 	p.Assert().False(result)
 }
@@ -130,7 +135,7 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_429() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, errors.New("too many requests").WithCode(errors.RateLimitCode))
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
-	_, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	_, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
 	p.Assert().NotNil(err)
 	errors.IsRateLimitError(err)
 }
@@ -142,19 +147,40 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_429ToLocal() {
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, errors.New("too many requests").WithCode(errors.RateLimitCode))
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
-	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
 	p.Assert().Nil(err)
 	p.Assert().True(result)
 }
 
-func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_False() {
+func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_True() {
 	ctx := context.Background()
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
 	desc := &distribution.Descriptor{}
+	// Set up project with ProxyCacheLocalOnNotFound enabled
+	proj := &proModels.Project{
+		RegistryID: 1,
+		Metadata:   map[string]string{proModels.ProMetaProxyCacheLocalOnNotFound: "true"},
+	}
 	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
 	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, nil)
-	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote)
-	p.Assert().True(errors.IsNotFoundErr(err))
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, proj)
+	p.Assert().Nil(err)
+	p.Assert().True(result)
+}
+
+func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_NotFoundWhenOptionDisabled() {
+	ctx := context.Background()
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
+	desc := &distribution.Descriptor{}
+	// Set up project without ProxyCacheLocalOnNotFound enabled
+	proj := &proModels.Project{
+		RegistryID: 1,
+		Metadata:   map[string]string{},
+	}
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, desc, nil)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, proj)
+	p.Assert().NotNil(err)
 	p.Assert().False(result)
 }
 

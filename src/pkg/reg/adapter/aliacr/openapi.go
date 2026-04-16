@@ -27,7 +27,7 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr_ee"
 
-	"github.com/goharbor/harbor/src/pkg/registry"
+	"github.com/goharbor/harbor/src/common"
 )
 
 type repository struct {
@@ -64,7 +64,7 @@ var _ openapi = &acrOpenapi{}
 // newAcrOpenapi creates a new acrOpenapi instance.
 func newAcrOpenapi(accessKeyID string, accessKeySecret string, regionID string, rateLimiter http.RoundTripper) (openapi, error) {
 	config := sdk.NewConfig().
-		WithUserAgent(registry.UserAgent).
+		WithUserAgent(common.UserAgent).
 		WithAutoRetry(true)
 	config.Transport = rateLimiter
 
@@ -194,7 +194,7 @@ var _ openapi = &acreeOpenapi{}
 // newAcreeOpenapi creates a new acreeOpenapi instance.
 func newAcreeOpenapi(accessKeyID string, accessKeySecret string, regionID string, instanceID string, rateLimiter http.RoundTripper) (openapi, error) {
 	config := sdk.NewConfig().
-		WithUserAgent(registry.UserAgent).
+		WithUserAgent(common.UserAgent).
 		WithAutoRetry(true)
 	config.Transport = rateLimiter
 

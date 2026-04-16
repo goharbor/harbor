@@ -54,9 +54,7 @@ func TestConfigureEventResolver_Resolve(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &resolver{
-				SensitiveAttributes: tt.fields.SensitiveAttributes,
-			}
+			c := &resolver{}
 			if err := c.Resolve(tt.args.ce, tt.args.evt); (err != nil) != tt.wantErr {
 				t.Errorf("ConfigureEventResolver.Resolve() error = %v, wantErr %v", err, tt.wantErr)
 				if tt.args.evt.Data != nil {
@@ -98,9 +96,7 @@ func TestConfigureEventResolver_PreCheck(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &resolver{
-				SensitiveAttributes: tt.fields.SensitiveAttributes,
-			}
+			c := &resolver{}
 			got, got1 := c.PreCheck(tt.args.ctx, tt.args.url, tt.args.method)
 			if got != tt.want {
 				t.Errorf("ConfigureEventResolver.PreCheck() got = %v, want %v", got, tt.want)

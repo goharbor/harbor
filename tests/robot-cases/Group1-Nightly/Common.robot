@@ -765,7 +765,7 @@ Test Case - WASM Push And Pull To Harbor
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  project${d}
-    Run  wget https://github.com/engineerd/wasm-to-oci/blob/v0.1.2/testdata/hello.wasm
+    Run  wget https://harbor-releases.s3.us-west-1.amazonaws.com/ci-artifacts/hello.wasm
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  wasm-to-oci push hello.wasm ${ip}/project${d}/wasm-to-oci:v1
     Wait Unitl Command Success  wasm-to-oci pull ${ip}/project${d}/wasm-to-oci:v1 --out test.wasm
