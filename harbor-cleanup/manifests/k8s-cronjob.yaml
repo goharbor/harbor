@@ -1,0 +1,177 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: harbor-cleanup
+  namespace: monitoring
+  labels:
+    app: harbor-cleanup
+    component: maintenance
+spec:
+  # Run weekly on Sunday at 2 AM (reduce frequency for long-running jobs)
+  schedule: "0 2 * * 0"
+  timeZone: "Asia/Kolkata"
+  # Suspend the CronJob by default - manually enable when ready
+  suspend: true
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      # Removed activeDeadlineSeconds - no timeout for long-running jobs
+      # Set high completion timeout for long-running jobs
+      ttlSecondsAfterFinished: 86400  # Keep completed jobs for 24 hours
+      template:
+        metadata:
+          labels:
+            app: harbor-cleanup
+            component: maintenance
+        spec:
+          restartPolicy: Never
+          # Add node selector for stable nodes (optional - customize as needed)
+          # nodeSelector:
+          #   node-type: stable
+          # Add tolerations for long-running jobs (optional - customize as needed)
+          # tolerations:
+          # - key: "long-running"
+          #   operator: "Equal"
+          #   value: "true"
+          #   effect: "NoSchedule"
+          containers:
+          - name: harbor-cleanup
+            # TODO: Replace with actual image once built
+            image: c.rzp.io/razorpay/harbor-cleanup:test-4301ef864b464f849faecfb8a9890795201dcf5d
+            # command: ["sh", "-c"]
+            # args:
+            #   - |
+            #     echo "🚀 Harbor Cleanup CronJob Started (Long-Running Mode)"
+            #     echo "📋 Configuration:"
+            #     echo "   Harbor URL: $HARBOR_URL"
+            #     echo "   Project: $HARBOR_PROJECT" 
+            #     echo "   Username: $HARBOR_USERNAME"
+            #     echo "   Dry Run: $DRY_RUN"
+            #     echo "   Repositories: $REPO_LIST"
+            #     echo "   Parallel: $ENABLE_PARALLEL"
+            #     echo "   Slack: $SLACK_ENABLED"
+            #     echo ""
+            #     echo "⚠️  WARNING: This job can run for DAYS"
+            #     echo "🕐 No timeout configured - job will run until completion"
+            #     echo "🔄 Schedule: Weekly (Sundays at 2 AM IST)"
+            #     echo ""
+            #     echo "⏰ Simulating long-running job (60 seconds dummy run)..."
+            #     for i in {1..6}; do
+            #       echo "   Progress: ${i}/6 - Still running..."
+            #       sleep 10
+            #     done
+            #     echo "✅ Harbor Cleanup CronJob Completed (dummy)"
+            env:
+            # Harbor connection details
+            - name: HARBOR_URL
+              value: "https://harbor.razorpay.com"
+            - name: HARBOR_PROJECT
+              value: "razorpay"
+            - name: HARBOR_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-cleanup
+                  key: HARBOR_USERNAME
+            - name: HARBOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-cleanup
+                  key: HARBOR_PASSWORD
+            
+            # Cleanup policies (days)
+            - name: PROD_LABEL_CLEANUP_DAYS
+              value: "45"
+            - name: NON_PROD_LABEL_CLEANUP_DAYS
+              value: "14"
+            - name: EMPTY_LABEL_CLEANUP_DAYS
+              value: "45"
+            - name: OTHER_LABEL_CLEANUP_DAYS
+              value: "45"
+            
+            # Additional label mappings
+            - name: ADDITIONAL_PROD_LABELS
+              value: ""
+            - name: ADDITIONAL_NONPROD_LABELS
+              value: ""
+            
+            # Repository selection
+            - name: REPO_LIST
+              value: "authz"
+            - name: USE_REPO_LIST
+              value: "true"
+            
+            # Retention policies
+            - name: RETAIN_LAST_PROD
+              value: "100"
+            - name: RETAIN_LAST_NON_PROD
+              value: "0"
+            - name: RETAIN_LAST_NO_LABEL
+              value: "500"
+            - name: RETAIN_LAST_OTHER
+              value: "0"
+            
+            # Parallel processing configuration
+            - name: ENABLE_PARALLEL
+              value: "true"
+            - name: MAX_WORKERS
+              value: "5"
+            - name: MAX_PAGE_WORKERS
+              value: "10"
+            - name: PARALLEL_PAGE_THRESHOLD
+              value: "200"
+            - name: MIN_ARTIFACTS_THRESHOLD
+              value: "5"
+            
+            # Logging configuration
+            - name: LOG_LEVEL
+              value: "DEBUG"
+            - name: VERBOSE_ARTIFACTS
+              value: "false"
+            
+            # Dry run configuration
+            - name: DRY_RUN
+              value: "true"
+            
+            # Garbage collection configuration
+            - name: TRIGGER_GC_AFTER_CLEANUP
+              value: "true"
+            
+            # API retry configuration
+            - name: API_RETRY_COUNT
+              value: "3"
+            - name: API_RETRY_DELAY
+              value: "1.0"
+            
+            # Slack notification configuration
+            - name: SLACK_ENABLED
+              value: "true"
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-cleanup
+                  key: SLACK_BOT_TOKEN
+            - name: SLACK_CHANNEL_ID
+              value: "C098TEY9A3Z"
+            - name: SLACK_TIMEZONE
+              value: "Asia/Kolkata"
+            
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "200m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"
+            
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1001
+              runAsGroup: 1001
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL

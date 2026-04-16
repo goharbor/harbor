@@ -1,0 +1,54 @@
+name: Harbor Cleanup Tool
+on:
+  push:
+    paths:
+      - .github/workflows/ci-harbor-cleanup.yaml
+      - 'harbor-cleanup/**'
+
+jobs:
+  build-harbor-cleanup:
+    runs-on: [non-api, '${{ matrix.platform }}']
+    name: Build Harbor Cleanup Tool image
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux-amd64
+          - linux-arm64
+    steps:
+      - name: Build and push
+        if: ${{ github.event_name == 'push' }}
+        uses: razorpay/actions/docker-image-build-push@master
+        with:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          registry: c.rzp.io
+          repository: harbor-cleanup
+          context: tools/harbor-cleanup
+          file: tools/harbor-cleanup/docker/Dockerfile
+          custom-tag: ${{ (github.ref_name == 'master' && format('{0}-{1}', github.sha, matrix.platform)) || format('test-{0}-{1}', github.sha, matrix.platform) }}
+          enable-login: true
+          push: true
+          use-default-caching: "true"
+          cache-registry-username: ${{ secrets.HARBOR_CACHE_DOCKER_USERNAME }}
+          cache-registry-password: ${{ secrets.HARBOR_CACHE_DOCKER_PASSWORD }}
+
+  harbor-cleanup-multiarch:
+    needs: [build-harbor-cleanup]
+    runs-on: [non-api, linux-arm64]
+    name: Build multiarch Harbor Cleanup Tool image
+    steps:
+      - name: Combine Multi-Arch Image
+        if: ${{ github.event_name == 'push' }}
+        uses: razorpay/actions/docker-image-build-push@master
+        with:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          registry: c.rzp.io
+          repository: harbor-cleanup
+          custom-tag: ${{ (github.ref_name == 'master' && github.sha) || format('test-{0}', github.sha) }}
+          trigger-multiarch-image-build: true
+          multiarch-suffixes: |
+            -linux-amd64
+            -linux-arm64
+          enable-login: true

@@ -1,0 +1,48 @@
+# Git and version control
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# CI/CD files
+.github/
+
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment files
+setup_local_env.sh.local
+*.local
+
+# Logs
+*.log
+
+# Test files
+tests/
+*_test.py
+test_*
+
+# Development tools
+.pylintrc
+pytest.ini 
