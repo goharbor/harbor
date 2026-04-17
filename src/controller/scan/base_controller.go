@@ -817,7 +817,7 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 			return vulnerable, nil
 		}
 		// Fall through to use the available scan data for vulnerability assessment
-		log.G(ctx).Warningf("artifact %s@%s has scan status %q but previous scan data exists, "+
+		log.G(ctx).Debugf("artifact %s@%s has scan status %q but previous scan data exists, "+
 			"using last successful scan results for vulnerability assessment",
 			artifact.RepositoryName, artifact.Digest, scanStatus)
 		vulnerable.ScanStatus = job.SuccessStatus.String()
