@@ -333,7 +333,7 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProjectBatching() 
 		suite.ExecSQL(sql, artifact, projectID, 10)
 		defer suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ?`, projectID)
 
-		// Create 110 blobs to exercise batching (batch size is 100).
+		// Create blobs with a mix of associated and unassociated.
 		// The first 100 are associated with the artifact; the last 10 are not.
 		const total = 110
 		const associated = 100

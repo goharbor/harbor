@@ -247,35 +247,33 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 		return nil, err
 	}
 
-	// blobBatchSize caps how many blobs are checked per UNION query to avoid
-	// generating excessively large SQL statements.
-	const blobBatchSize = 100
+	// Build a VALUES list for all blob digests and use EXISTS to check
+	// association. EXISTS short-circuits on the first match, and targeting
+	// one digest at a time gives the planner high selectivity to use the index.
+	valueParts := make([]string, len(blobs))
+	params := make([]interface{}, len(blobs)+1)
+	for i, blob := range blobs {
+		valueParts[i] = "(?)"
+		params[i] = blob.Digest
+	}
+	params[len(blobs)] = projectID
+
+	sql := `SELECT v.digest_blob FROM (VALUES ` + strings.Join(valueParts, ", ") + `) AS v(digest_blob)
+WHERE EXISTS (
+  SELECT 1 FROM artifact a
+  JOIN artifact_blob b ON a.digest = b.digest_af
+  WHERE a.project_id = ? AND b.digest_blob = v.digest_blob
+)`
+
+	var digests []string
+	_, err = o.Raw(sql, params...).QueryRows(&digests)
+	if err != nil {
+		return nil, err
+	}
 
 	shouldAssociated := map[string]bool{}
-	for i := 0; i < len(blobs); i += blobBatchSize {
-		end := i + blobBatchSize
-		if end > len(blobs) {
-			end = len(blobs)
-		}
-		batch := blobs[i:end]
-
-		// Each subquery uses LIMIT 1 so it short-circuits as soon as one
-		// matching artifact is found, avoiding full scans per blob.
-		var unionParts []string
-		var params []interface{}
-		for _, blob := range batch {
-			unionParts = append(unionParts, `(SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob = ? LIMIT 1)`)
-			params = append(params, projectID, blob.Digest)
-		}
-
-		var digests []string
-		_, err = o.Raw(strings.Join(unionParts, " UNION "), params...).QueryRows(&digests)
-		if err != nil {
-			return nil, err
-		}
-		for _, digest := range digests {
-			shouldAssociated[digest] = true
-		}
+	for _, digest := range digests {
+		shouldAssociated[digest] = true
 	}
 
 	var results []*models.Blob
