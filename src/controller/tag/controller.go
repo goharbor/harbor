@@ -118,8 +118,17 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.PushTime = time.Now()
 		tagID, err = c.Create(ctx, tag)
 		return err
-	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
-		return 0, err
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil {
+		if !errors.IsConflictErr(err) {
+			return 0, err
+		}
+		// A concurrent request won the unique-constraint race and inserted
+		// the tag first. Re-run Ensure so we fall into the "tag exists"
+		// branch above and update its ArtifactID/PushTime to match this
+		// request. Without this retry we returned (0, nil), which caused
+		// callers such as proxy.controller.EnsureTag to subsequently look
+		// up tag id 0 and fail with NotFoundError (harbor#23118).
+		return c.Ensure(ctx, repositoryID, artifactID, name)
 	}
 
 	return tagID, nil
