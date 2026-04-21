@@ -52,6 +52,7 @@ export class ProjectPolicy {
     ContentTrust: boolean;
     ContentTrustCosign: boolean;
     PreventVulImg: boolean;
+    PreventUnscannedImages: boolean;
     PreventVulImgSeverity: string;
     ScanImgOnPush: boolean;
     GenerateSbomOnPush: boolean;
@@ -67,6 +68,7 @@ export class ProjectPolicy {
         this.ContentTrust = false;
         this.ContentTrustCosign = false;
         this.PreventVulImg = false;
+        this.PreventUnscannedImages = false;
         this.PreventVulImgSeverity = LOW;
         this.ScanImgOnPush = false;
         this.GenerateSbomOnPush = false;
@@ -84,6 +86,8 @@ export class ProjectPolicy {
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';
         this.PreventVulImg = pro.metadata.prevent_vul === 'true';
+        this.PreventUnscannedImages =
+            pro.metadata.prevent_unscanned === 'true';
         if (pro.metadata.severity) {
             this.PreventVulImgSeverity = pro.metadata.severity;
         }
@@ -138,7 +142,6 @@ export class ProjectPolicyConfigComponent implements OnInit {
         { severity: 'high', severityLevel: 'VULNERABILITY.SEVERITY.HIGH' },
         { severity: 'medium', severityLevel: 'VULNERABILITY.SEVERITY.MEDIUM' },
         { severity: 'low', severityLevel: 'VULNERABILITY.SEVERITY.LOW' },
-        { severity: 'none', severityLevel: 'VULNERABILITY.SEVERITY.NONE' },
     ];
     userSystemAllowlist: boolean = true;
     showAddModal: boolean = false;

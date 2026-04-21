@@ -269,6 +269,7 @@
         "PUBLIC_POLICY": "將專案儲存庫設為公開會讓所有人都能夠存取所有儲存庫。",
         "SECURITY": "部署安全",
         "CONTENT_TRUST_POLCIY": "只允許部署已驗證的映像檔。",
+        "PREVENT_UNSCANNED_TOGGLE": "阻止未掃描的映像檔執行。",
         "PREVENT_VULNERABLE_TOGGLE": "阻止有弱點的映像檔執行。",
         "PREVENT_VULNERABLE_1": "阻止具有",
         "PREVENT_VULNERABLE_2": "或更高危險級別的映像檔部署。",
