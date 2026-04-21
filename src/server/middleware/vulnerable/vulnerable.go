@@ -56,8 +56,10 @@ func Middleware() func(http.Handler) http.Handler {
 			return err
 		}
 
-		if !proj.VulPrevented() {
-			// vulnerability prevention disabled, skip the checking
+		preventVulnerable := proj.VulPrevented()
+		preventUnscanned := proj.UnscannedPrevented()
+		if !preventVulnerable && !preventUnscanned {
+			// all vulnerability-related pull prevention disabled, skip the checking
 			logger.Debugf("project %s vulnerability prevention deactivated, skip the checking", proj.Name)
 			return nil
 		}
@@ -95,10 +97,12 @@ func Middleware() func(http.Handler) http.Handler {
 				logger.Debugf("artifact %s@%s does not have a scan report, and it is not scannable, skip the checking", art.RepositoryName, art.Digest)
 				return nil
 			}
-			// If the artifact is scannable but there's no report, it's a violation.
-			msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, projectSeverity)
-			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			if preventUnscanned {
+				msg := "current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent unscanned images from running.' To continue with pull, please contact your project administrator for help."
+				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			}
+			logger.Debugf("artifact %s@%s does not have a scan report, and unscanned image prevention is deactivated, skip the checking", art.RepositoryName, art.Digest)
+			return nil
 		} else if err != nil {
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
 			return err
@@ -115,9 +119,13 @@ func Middleware() func(http.Handler) http.Handler {
 		}
 
 		if !vulnerable.IsScanSuccess() {
-			msg := fmt.Sprintf(`current image with "%s" status of vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, vulnerable.ScanStatus, projectSeverity)
-			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			if preventUnscanned {
+				msg := fmt.Sprintf(`current image with "%s" status of vulnerability scanning cannot be pulled due to configured policy in 'Prevent unscanned images from running.' `+
+					`To continue with pull, please contact your project administrator for help.`, vulnerable.ScanStatus)
+				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
+			}
+			logger.Debugf("artifact %s@%s scan status is %s, and unscanned image prevention is deactivated, skip the checking", art.RepositoryName, art.Digest, vulnerable.ScanStatus)
+			return nil
 		}
 
 		// Do judgement
