@@ -22,6 +22,7 @@ import (
 	"net/http"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 )
@@ -51,6 +52,7 @@ func newClient(reg *model.Registry) *client {
 					common_http.WithInsecure(reg.Insecure),
 					common_http.WithCACert(reg.CACertificate),
 				),
+				Timeout: config.RegistryHTTPClientTimeout(),
 			},
 			basic.NewAuthorizer(username, password),
 		),
