@@ -91,6 +91,13 @@ export class ProjectPolicy {
         if (pro.metadata.severity) {
             this.PreventVulImgSeverity = pro.metadata.severity;
         }
+
+        // Normalize legacy severity=none to a supported policy combination.
+        if (this.PreventVulImgSeverity?.toLowerCase() === 'none') {
+            this.PreventVulImg = true;
+            this.PreventUnscannedImages = true;
+            this.PreventVulImgSeverity = LOW;
+        }
         this.ScanImgOnPush = pro.metadata.auto_scan === 'true';
         this.GenerateSbomOnPush = pro.metadata.auto_sbom_generation === 'true';
         this.ProxyCacheEnabled = pro.registry_id ? true : false;

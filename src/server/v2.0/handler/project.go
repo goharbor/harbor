@@ -180,6 +180,8 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		return a.SendError(ctx, err)
 	}
 
+	model.NormalizeLegacySeverityPolicy(req.Metadata)
+
 	var ownerID int
 	// TODO: revise the ownerID in project model.
 	// set the owner as the system admin when the API being called by replication
@@ -578,6 +580,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
 	}
+	model.NormalizeLegacySeverityPolicy(params.Project.Metadata)
 	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
 		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
 	}

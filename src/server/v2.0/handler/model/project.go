@@ -26,6 +26,32 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 )
 
+const (
+	metadataTrue        = "true"
+	normalizedSeverity  = "low"
+	legacyNoneSeverity  = "none"
+)
+
+// NormalizeLegacySeverityPolicy rewrites legacy severity=none to the equivalent
+// supported policy combination.
+func NormalizeLegacySeverityPolicy(md *models.ProjectMetadata) {
+	if md == nil || md.Severity == nil {
+		return
+	}
+
+	if strings.ToLower(*md.Severity) != legacyNoneSeverity {
+		return
+	}
+
+	md.Severity = stringPtr(normalizedSeverity)
+	md.PreventVul = stringPtr(metadataTrue)
+	md.PreventUnscanned = stringPtr(metadataTrue)
+}
+
+func stringPtr(s string) *string {
+	return &s
+}
+
 // Project model
 type Project struct {
 	*project.Project
@@ -51,6 +77,7 @@ func (p *Project) ToSwagger() *models.Project {
 			severity := strings.ToLower(vuln.ParseSeverityVersion3(*m.Severity).String())
 			m.Severity = &severity
 		}
+		NormalizeLegacySeverityPolicy(&m)
 
 		md = &m
 	}
