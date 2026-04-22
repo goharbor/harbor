@@ -128,8 +128,8 @@ func Middleware() func(http.Handler) http.Handler {
 			return nil
 		}
 
-		// Do judgement
-		if vulnerable.Severity != nil && vulnerable.Severity.Code() >= projectSeverity.Code() {
+		// Do judgement only when vulnerability prevention is enabled.
+		if preventVulnerable && vulnerable.Severity != nil && vulnerable.Severity.Code() >= projectSeverity.Code() {
 			thing := "vulnerability"
 			if vulnerable.VulnerabilitiesCount > 1 {
 				thing = "vulnerabilities"
