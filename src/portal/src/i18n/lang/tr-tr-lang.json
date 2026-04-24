@@ -246,7 +246,9 @@
         "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Bu proxy önbellek projesi için üst kayıt defterine maksimum bağlantı, -1 ise sınır yoktur",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
-        "NO_PROJECT": "Herhangi bir proje bulunamadı"
+        "NO_PROJECT": "Herhangi bir proje bulunamadı",
+        "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",
