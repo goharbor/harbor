@@ -198,14 +198,15 @@
             <span *ngIf="model.auth_mode === 'BASIC'">
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isBasicCredentialRequired()"
                         for="auth_data_username"
                         >{{ 'DISTRIBUTION.USERNAME' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isBasicCredentialRequired()"
                         type="text"
                         id="auth_data_username"
                         [(ngModel)]="authData['username']"
@@ -221,14 +222,15 @@
                 </clr-input-container>
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isBasicCredentialRequired()"
                         for="auth_data_password"
                         >{{ 'DISTRIBUTION.PASSWORD' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isBasicCredentialRequired()"
                         type="password"
                         id="auth_data_password"
                         [(ngModel)]="authData['password']"
@@ -246,14 +248,15 @@
             <span *ngIf="model.auth_mode === 'OAUTH'">
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isOAuthTokenRequired()"
                         for="auth_data_token"
                         >{{ 'DISTRIBUTION.TOKEN' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isOAuthTokenRequired()"
                         type="password"
                         id="auth_data_token"
                         [(ngModel)]="authData['token']"
