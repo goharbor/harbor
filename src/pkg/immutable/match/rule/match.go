@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
@@ -70,12 +71,12 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		}
 		tagSelector := r.TagSelectors[0]
 		// this helps to exclude untagged artifacts for both matches and excludes tag selectors.
-		untagged := "{\"untagged\": false}" // matches excludes untagged artifacts
-		if tagSelector.Decoration == "excludes" {
-			untagged = "{\"untagged\": true}" // excludes includes untagged artifacts
+		extra := "{\"untagged\": false}" // matches excludes untagged artifacts
+		if tagSelector.Decoration == doublestar.Excludes {
+			extra = "{\"untagged\": true}" // excludes includes untagged artifacts
 		}
 		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
-			tagSelector.Pattern, untagged)
+			tagSelector.Pattern, extra)
 		if err != nil {
 			return false, err
 		}
