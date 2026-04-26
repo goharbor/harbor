@@ -18,9 +18,7 @@
         <button
             type="button"
             class="btn btn-primary"
-            [ngxClipboard]="digestTarget"
-            (cbOnSuccess)="onSuccess($event)"
-            (cbOnError)="onError($event)">
+            (click)="copyToClipboard(digestTarget.value)">
             {{ 'BUTTON.COPY' | translate }}
         </button>
     </div>
