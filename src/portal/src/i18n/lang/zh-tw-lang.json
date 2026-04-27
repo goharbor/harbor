@@ -245,7 +245,9 @@
         "CONNECTION_LIMIT": "上游 Registry 最大連線數",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "此代理快取專案到上游 Registry 的最大連線數，若為 -1 則不限制",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "請輸入 -1 或大於 0 的整數。",
-        "NO_PROJECT": "找不到任何專案"
+        "NO_PROJECT": "找不到任何專案",
+        "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",
