@@ -1,0 +1,9 @@
+[photon-snapshot]
+name=VMware Photon Linux $releasever ($basearch) Snapshot for Updates
+baseurl=https://packages.broadcom.com/photon/$releasever/photon_$releasever_$basearch
+snapshot=https://packages.broadcom.com/photon/5.0/photon_snapshots_5.0_x86_64/91/snapshot-91-Update832.x86_64.list
+gpgkey=file:///etc/pki/rpm-gpg/VMWARE-RPM-GPG-KEY file:///etc/pki/rpm-gpg/VMWARE-RPM-GPG-KEY-4096
+gpgcheck=1
+enabled=1
+skip_if_unavailable=1
+skip_md_filelists=1
