@@ -1,15 +1,4 @@
-FROM photon:5.0
-
-# 1. Copy your customized snapshot repo file into the container
-COPY ./make/photon/common/photon-snapshot.repo /etc/yum.repos.d/photon-snapshot.repo
-
-# 2. Use tdnf to disable all default repos, enable only the snapshot, and update/install
-# The --disablerepo="*" flag turns off the mainline public repos
-# The --enablerepo="photon-snapshot" flag explicitly targets your template
-RUN tdnf --disablerepo="*" --enablerepo="photon-snapshot" makecache \
-    && tdnf --disablerepo="*" --enablerepo="photon-snapshot" distro-sync -y \
-    && tdnf --disablerepo="*" --enablerepo="photon-snapshot" install -y \
-    glibc-libs glibc nss-libs curl curl-libs sqlite-libs
+FROM goharbor/photon:5.0
 
 RUN tdnf install -y rpm shadow >> /dev/null \
     && tdnf clean all \
