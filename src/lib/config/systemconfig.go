@@ -19,6 +19,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -27,6 +29,42 @@ import (
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 )
+
+const (
+	// defaultRegistryHTTPClientTimeoutMinutes is the default timeout (in minutes)
+	// for the registry related http clients (backend registry client, registry
+	// auth challenge/token client and reg adapters).
+	defaultRegistryHTTPClientTimeoutMinutes = 30
+)
+
+var (
+	registryHTTPClientTimeoutOnce  sync.Once
+	registryHTTPClientTimeoutValue time.Duration
+)
+
+// RegistryHTTPClientTimeout returns the timeout for registry related HTTP clients.
+// It reads the env variable REGISTRY_HTTP_CLIENT_TIMEOUT (in minutes). When the env
+// is empty, invalid or non-positive, the default value (30 minutes) is used.
+// The value is read once and cached for the lifetime of the process.
+func RegistryHTTPClientTimeout() time.Duration {
+	registryHTTPClientTimeoutOnce.Do(func() {
+		minutes := int64(defaultRegistryHTTPClientTimeoutMinutes)
+		if env := os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"); len(env) > 0 {
+			v, err := strconv.ParseInt(env, 10, 64)
+			if err != nil {
+				log.Errorf("failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT=%q, use default value: %d minutes, error: %v",
+					env, defaultRegistryHTTPClientTimeoutMinutes, err)
+			} else if v <= 0 {
+				log.Errorf("invalid REGISTRY_HTTP_CLIENT_TIMEOUT=%q (must be > 0), use default value: %d minutes",
+					env, defaultRegistryHTTPClientTimeoutMinutes)
+			} else {
+				minutes = v
+			}
+		}
+		registryHTTPClientTimeoutValue = time.Duration(minutes) * time.Minute
+	})
+	return registryHTTPClientTimeoutValue
+}
 
 var (
 	// SecretStore manages secrets
