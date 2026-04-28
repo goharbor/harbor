@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Clipboard } from '@angular/cdk/clipboard'; // ✅ change ClipboardModule → Clipboard
 
 @Component({
     selector: 'app-copy-digest',
@@ -23,47 +24,33 @@ export class CopyDigestComponent {
     digestId: string;
     @ViewChild('digestTarget') textInput: ElementRef;
     copyFailed: boolean = false;
-    constructor() {}
+
+    constructor(private clipboard: Clipboard) {} // ✅ inject Clipboard service
+
     onSuccess($event: any): void {
         this.copyFailed = false;
-        // Directly close dialog
         this.showTagManifestOpened = false;
     }
 
     onError($event: any): void {
-        // Show error
         this.copyFailed = true;
-        // Select all text
         if (this.textInput) {
             this.textInput.nativeElement.select();
         }
     }
+
     showDigestId(digest: string) {
         this.digestId = digest;
         this.showTagManifestOpened = true;
         this.copyFailed = false;
     }
+
     copyToClipboard(text: string): void {
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(text).then(
-                () => this.onSuccess(null),
-                () => this.onError(null)
-            );
+        const result = this.clipboard.copy(text); // ✅ CDK clipboard
+        if (result) {
+            this.onSuccess(null);
         } else {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                this.onSuccess(null);
-            } catch (err) {
-                this.onError(null);
-            }
-            document.body.removeChild(textArea);
+            this.onError(null);
         }
     }
 }
