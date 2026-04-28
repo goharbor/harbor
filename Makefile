@@ -95,7 +95,7 @@ PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
 # for skip build prepare and log container while BUILD_INSTALLER=false
 BUILD_INSTALLER=true
-BUILDBASETARGET=trivy-adapter core db jobservice nginx portal redis registry registryctl exporter
+BUILDBASETARGET=trivy-adapter core db jobservice nginx portal valkey registry registryctl exporter
 ifeq ($(BUILD_INSTALLER), true)
 	BUILDBASETARGET += prepare log
 endif
@@ -250,7 +250,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/valkey-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
 
