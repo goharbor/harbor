@@ -255,4 +255,10 @@ const (
 
 	// The replication adapter whitelist
 	ReplicationAdapterWhiteList = "REPLICATION_ADAPTER_WHITELIST"
+
+	// UserAgentHeaderName is the HTTP header key for user agent.
+	UserAgentHeaderName = "User-Agent"
+
+	// UserAgent is the default user-agent header for registry client requests
+	UserAgent = "harbor-registry-client"
 )

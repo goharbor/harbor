@@ -102,6 +102,7 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   APITEST_DB:
     env:
@@ -167,6 +168,7 @@ jobs:
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
+    if: ${{ github.event.repository.custom_properties.SKIP_PROXY_CACHE != 'true' }}
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -362,3 +364,4 @@ jobs:
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
