@@ -24,6 +24,7 @@ import (
 	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -47,6 +48,7 @@ func NewClient(registry *model.Registry) (*Client, error) {
 				commonhttp.WithInsecure(registry.Insecure),
 				commonhttp.WithCACert(registry.CACertificate),
 			),
+			Timeout: config.RegistryHTTPClientTimeout(),
 		},
 	}
 
