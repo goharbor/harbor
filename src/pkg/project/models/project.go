@@ -184,6 +184,15 @@ func (p *Project) MaxUpstreamConnection() int {
 	return int(cnt)
 }
 
+// ProxyReferrerAPI
+func (p *Project) ProxyReferrerAPI() bool {
+	enable, exist := p.GetMetadata(ProMetaProxyReferrerAPI)
+	if !exist {
+		return false
+	}
+	return isTrue(enable)
+}
+
 // ProxyCacheLocalOnNotFound returns true if images should be served from local cache when removed from upstream
 func (p *Project) ProxyCacheLocalOnNotFound() bool {
 	val, exist := p.GetMetadata(ProMetaProxyCacheLocalOnNotFound)
