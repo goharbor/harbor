@@ -323,7 +323,6 @@ gen_apis:
 	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
-
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
 MOCKERY_VERSION=v2.53.3
 MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
@@ -335,7 +334,7 @@ gen_mocks:
 
 mocks_check: gen_mocks
 	@echo checking mocks...
-	@res=$$(git status -s src/ | awk '{ printf("%s\n", $$2) }' | egrep .*.go); \
+	@res=$$(git status -s src/ | awk '{ printf("%s\n", $$2) }' | egrep '\.go$$' | grep -v '^src/vendor/'); \
 	if [ -n "$${res}" ]; then \
 		echo mocks of the interface are out of date... ; \
 		echo "$${res}"; \
@@ -473,7 +472,7 @@ go_check: gen_apis mocks_check misspell commentfmt lint
 
 commentfmt:
 	@echo checking comment format...
-	@res=$$(find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
+	@res=$$(find . -type d \( -path ./tests -o -path ./src/vendor \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
 	if [ -n "$${res}" ]; then \
 		echo checking comment format fail.. ; \
 		echo missing whitespace between // and comment body;\
@@ -483,7 +482,7 @@ commentfmt:
 
 misspell:
 	@echo checking misspell...
-	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
+	@find . -type d \( -path ./tests -o -path ./src/vendor \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2

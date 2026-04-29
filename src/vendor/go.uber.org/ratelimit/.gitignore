@@ -1,0 +1,11 @@
+/bin
+/vendor
+cover.html
+cover.out
+profile.out
+stat.csv
+stat.txt
+stat.html
+
+*.swp
+.idea
