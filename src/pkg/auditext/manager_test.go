@@ -15,6 +15,7 @@
 package auditext
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -82,6 +83,12 @@ func (m *managerTestSuite) TestCreate() {
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 	m.Equal(int64(1), id)
+}
+
+func (m *managerTestSuite) TestCreateNil() {
+	id, err := m.mgr.Create(context.Background(), nil)
+	m.Require().Nil(err)
+	m.Equal(int64(0), id)
 }
 
 func (m *managerTestSuite) TestDelete() {

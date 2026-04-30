@@ -48,7 +48,7 @@ Test Case - Disable Scan Schedule
 Test Case - Security Hub
     [Tags]  security_hub
     ${d}=  Get Current Date  result_format=%m%s
-    ${images}=  Create List  goharbor/harbor-log-base  goharbor/harbor-prepare-base  goharbor/harbor-redis-base  goharbor/harbor-nginx-base  goharbor/harbor-registry-base
+    ${images}=  Create List  goharbor/harbor-log-base  goharbor/harbor-prepare-base  goharbor/harbor-valkey-base  goharbor/harbor-nginx-base  goharbor/harbor-registry-base
     ${tag}=  Set Variable  v2.2.0
     ${digest}=  Set Variable  sha256:7bf979f25c6a6986eab83e100a7b78bd5195c9bcac03e823e64492bb17fa4dad
     ${cve_id}=  Set Variable  CVE-2021-22926
