@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -40,7 +41,10 @@ func NewAuthorizer(realm, service string, a lib.Authorizer, transport http.Round
 		cache:      newCache(cacheCapacity),
 	}
 
-	authorizer.client = &http.Client{Transport: transport}
+	authorizer.client = &http.Client{
+		Transport: transport,
+		Timeout:   config.RegistryHTTPClientTimeout(),
+	}
 	return authorizer
 }
 
