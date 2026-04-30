@@ -304,17 +304,26 @@ func (t *taskDAO) UpdateStatusInBatch(ctx context.Context, jobIDs []string, stat
 	if err != nil {
 		return err
 	}
-	sql := "update task set status = ?, update_time = ? where job_id in (%s)"
-	if len(jobIDs) <= batchSize {
-		realSQL := fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(jobIDs)))
-		_, err = ormer.Raw(realSQL, status, time.Now(), jobIDs).Exec()
+
+	processBatch := func(ids []string) error {
+		valueParts := make([]string, len(ids))
+		params := make([]any, 0, 2+len(ids))
+		params = append(params, status, time.Now())
+		for i, id := range ids {
+			valueParts[i] = "(?)"
+			params = append(params, id)
+		}
+		sql := fmt.Sprintf(`UPDATE task SET status = ?, update_time = ? WHERE EXISTS (
+			SELECT 1 FROM (VALUES %s) AS v(jid) WHERE v.jid = task.job_id
+		)`, strings.Join(valueParts, ", "))
+		_, err := ormer.Raw(sql, params...).Exec()
 		return err
 	}
-	subSetIDs := make([]string, batchSize)
-	copy(subSetIDs, jobIDs[:batchSize])
-	sql = fmt.Sprintf(sql, orm.ParamPlaceholderForIn(batchSize))
-	_, err = ormer.Raw(sql, status, time.Now(), subSetIDs).Exec()
-	if err != nil {
+
+	if len(jobIDs) <= batchSize {
+		return processBatch(jobIDs)
+	}
+	if err := processBatch(jobIDs[:batchSize]); err != nil {
 		log.Errorf("failed to update status in batch, error: %v", err)
 		return err
 	}

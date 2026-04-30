@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -245,19 +246,26 @@ func (d *dao) ListRoles(ctx context.Context, user *models.User, projectID int64)
 			where entity_type = 'u' and entity_id = ? and project_id = ? `
 	params = append(params, user.UserID, projectID)
 	if len(user.GroupIDs) > 0 {
+		valueParts := make([]string, len(user.GroupIDs))
+		groupParams := make([]any, len(user.GroupIDs))
+		for i, gid := range user.GroupIDs {
+			valueParts[i] = "(?)"
+			groupParams[i] = gid
+		}
+		params = append(params, projectID)
+		params = append(params, groupParams...)
 		sql += fmt.Sprintf(`union
 			select role
 			from project_member
-			where entity_type = 'g' and entity_id in ( %s ) and project_id = ? `, orm.ParamPlaceholderForIn(len(user.GroupIDs)))
-		params = append(params, user.GroupIDs)
-		params = append(params, projectID)
+			where entity_type = 'g' and project_id = ?
+			and EXISTS (SELECT 1 FROM (VALUES %s) AS v(gid) WHERE v.gid = project_member.entity_id) `, strings.Join(valueParts, ", "))
 	}
 	roles := []int{}
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_, err = o.Raw(sql, params).QueryRows(&roles)
+	_, err = o.Raw(sql, params...).QueryRows(&roles)
 	if err != nil {
 		return nil, err
 	}

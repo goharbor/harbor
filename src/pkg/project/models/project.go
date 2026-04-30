@@ -239,13 +239,13 @@ func (p *Project) FilterByMember(_ context.Context, qs orm.QuerySeter, _ string,
 	}
 
 	if len(query.GroupIDs) > 0 {
-		var elems []string
+		var valueParts []string
 		for _, groupID := range query.GroupIDs {
-			elems = append(elems, strconv.Itoa(groupID))
+			valueParts = append(valueParts, fmt.Sprintf("(%d)", groupID))
 		}
 
-		tpl := "(%s) UNION (SELECT project_id FROM project_member pm, user_group ug WHERE pm.entity_id = ug.id AND pm.entity_type = 'g' AND ug.id IN (%s))"
-		subQuery = fmt.Sprintf(tpl, subQuery, strings.TrimSpace(strings.Join(elems, ", ")))
+		tpl := "(%s) UNION (SELECT pm.project_id FROM project_member pm JOIN user_group ug ON pm.entity_id = ug.id WHERE pm.entity_type = 'g' AND EXISTS (SELECT 1 FROM (VALUES %s) AS v(gid) WHERE v.gid = ug.id))"
+		subQuery = fmt.Sprintf(tpl, subQuery, strings.Join(valueParts, ", "))
 	}
 
 	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
@@ -262,11 +262,11 @@ func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, 
 		return qs
 	}
 
-	var names []string
+	var valueParts []string
 	for _, v := range query.Names {
-		names = append(names, `'`+v+`'`)
+		valueParts = append(valueParts, fmt.Sprintf("(%s)", orm.QuoteLiteral(v)))
 	}
-	subQuery := fmt.Sprintf("SELECT project_id FROM project where name IN (%s)", strings.Join(names, ","))
+	subQuery := fmt.Sprintf("SELECT p.project_id FROM (VALUES %s) AS v(pname) JOIN project p ON p.name = v.pname", strings.Join(valueParts, ","))
 
 	if query.WithPublic {
 		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)

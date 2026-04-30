@@ -17,6 +17,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -160,24 +161,37 @@ func (sm *sweepManager) ListCandidates(ctx context.Context, vendorType string, r
 }
 
 func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
+	if len(execIDs) == 0 {
+		return nil
+	}
+
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	// construct sql params
-	params := make([]any, 0, len(execIDs))
-	for _, eid := range execIDs {
-		params = append(params, eid)
+
+	valueParts := make([]string, len(execIDs))
+	params := make([]any, len(execIDs))
+	for i, eid := range execIDs {
+		valueParts[i] = "(?)"
+		params[i] = eid
 	}
-	// delete tasks
-	sql := fmt.Sprintf("DELETE FROM task WHERE status_code = %d AND execution_id IN (%s)", finalStatusCode, orm.ParamPlaceholderForIn(len(params)))
-	_, err = ormer.Raw(sql, params...).Exec()
+	valuesClause := strings.Join(valueParts, ", ")
+
+	// delete tasks whose execution_id is in the provided list
+	taskSQL := fmt.Sprintf(`DELETE FROM task WHERE status_code = %d AND EXISTS (
+		SELECT 1 FROM (VALUES %s) AS v(eid) WHERE v.eid = task.execution_id
+	)`, finalStatusCode, valuesClause)
+	_, err = ormer.Raw(taskSQL, params...).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete tasks")
 	}
-	// delete executions
-	sql = fmt.Sprintf("DELETE FROM execution WHERE id IN (%s) AND id NOT IN (SELECT DISTINCT execution_id FROM task)", orm.ParamPlaceholderForIn(len(params)))
-	_, err = ormer.Raw(sql, params...).Exec()
+
+	// delete executions that have no remaining tasks
+	execSQL := `DELETE FROM execution WHERE EXISTS (
+		SELECT 1 FROM (VALUES ` + valuesClause + `) AS v(eid) WHERE v.eid = execution.id
+	) AND NOT EXISTS (SELECT 1 FROM task WHERE task.execution_id = execution.id)`
+	_, err = ormer.Raw(execSQL, params...).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete executions")
 	}

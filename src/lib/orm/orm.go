@@ -250,12 +250,21 @@ func CreateInClause(ctx context.Context, sql string, args ...any) (string, error
 	if len(ids) == 0 {
 		ids = append(ids, -1)
 	}
+
+	// For large ID lists, use VALUES + EXISTS to avoid query planner issues
+	// with wide IN clauses that can cause full table scans.
+	if len(ids) > 100 {
+		valueParts := make([]string, len(ids))
+		for i, id := range ids {
+			valueParts[i] = fmt.Sprintf("(%d)", id)
+		}
+		return fmt.Sprintf(`IN (SELECT v.id FROM (VALUES %s) AS v(id))`, strings.Join(valueParts, ",")), nil
+	}
+
 	var idStrs []string
 	for _, id := range ids {
 		idStrs = append(idStrs, strconv.FormatInt(id, 10))
 	}
-	// there is no too many arguments issue like https://github.com/goharbor/harbor/issues/12269
-	// when concat the in clause directly
 	return fmt.Sprintf(`IN (%s)`, strings.Join(idStrs, ",")), nil
 }
 

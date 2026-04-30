@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
 
@@ -27,12 +28,9 @@ import (
 )
 
 const (
-	// This sql template aims to select vuln data from database,
-	// which receive one parameter:
-	// 1. artifacts id sets
-	// consider for performance, the caller will slice the artifact ids to multi
-	// groups if it's length over limit, so rowNum offset is designed to ensure the
-	// final row id is sequence in the final output csv file.
+	// VulnScanReportQueryTemplate selects vuln data from database.
+	// Uses a parameterized VALUES clause joined via EXISTS instead of IN (%s)
+	// to avoid query planner issues with large artifact ID lists.
 	VulnScanReportQueryTemplate = `
 select
     artifact.digest as artifact_digest,
@@ -53,8 +51,9 @@ from
     left outer join artifact_reference on artifact.id = artifact_reference.child_id
     inner join vulnerability_record on report_vulnerability_record.vuln_record_id = vulnerability_record.id
     inner join scanner_registration on scan_report.registration_uuid = scanner_registration.uuid
-and artifact.id in (%s)
-
+WHERE EXISTS (
+    SELECT 1 FROM (VALUES %s) AS v(aid) WHERE v.aid = artifact.id
+)
 group by
     package,
     vulnerability_record.severity,
@@ -141,16 +140,14 @@ func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, erro
 }
 
 func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_orm.RawSeter, error) {
-	artIDs := ""
-	for _, artID := range params.ArtifactIDs {
-		if len(artIDs) == 0 {
-			artIDs += fmt.Sprintf("%d", artID)
-		} else {
-			artIDs += fmt.Sprintf(",%d", artID)
-		}
+	valueParts := make([]string, len(params.ArtifactIDs))
+	queryParams := make([]any, len(params.ArtifactIDs))
+	for i, artID := range params.ArtifactIDs {
+		valueParts[i] = "(?)"
+		queryParams[i] = artID
 	}
 
-	sql := fmt.Sprintf(VulnScanReportQueryTemplate, artIDs)
+	sql := fmt.Sprintf(VulnScanReportQueryTemplate, strings.Join(valueParts, ", "))
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -164,8 +161,6 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		PageSize:   pageSize,
 		Sorting:    "",
 	}
-	paginationParams := make([]any, 0)
-	query, pageLimits := orm.PaginationOnRawSQL(q, sql, paginationParams)
-	// user can open ORM_DEBUG for log the sql
+	query, pageLimits := orm.PaginationOnRawSQL(q, sql, queryParams)
 	return ormer.Raw(query, pageLimits), nil
 }

@@ -25,6 +25,8 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
+	harbor_orm "github.com/goharbor/harbor/src/lib/orm"
 )
 
 func init() {
@@ -128,7 +130,7 @@ func (b *Blob) FilterByArtifactDigest(_ context.Context, qs orm.QuerySeter, _ st
 	if !ok {
 		return qs
 	}
-	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+v+`'`)
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af = %s)", harbor_orm.QuoteLiteral(v))
 	return qs.FilterRaw("digest", sql)
 }
 
@@ -138,12 +140,13 @@ func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ s
 	if !ok {
 		return qs
 	}
-	var afs []string
+	var valueParts []string
 	for _, v := range artifactDigests {
-		afs = append(afs, `'`+v+`'`)
+		valueParts = append(valueParts, fmt.Sprintf("(%s)", harbor_orm.QuoteLiteral(v)))
 	}
 
-	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(afs, ","))
+	sql := fmt.Sprintf(`IN (SELECT ab.digest_blob FROM (VALUES %s) AS v(af_digest)
+		JOIN artifact_blob ab ON ab.digest_af = v.af_digest)`, strings.Join(valueParts, ","))
 	return qs.FilterRaw("digest", sql)
 }
 
