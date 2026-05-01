@@ -220,16 +220,14 @@ func (d *dao) ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) 
 	var membersG []models.Member
 	if len(user.GroupIDs) > 0 {
 		valueParts := make([]string, len(user.GroupIDs))
-		params := make([]any, len(user.GroupIDs))
 		for i, gid := range user.GroupIDs {
-			valueParts[i] = "(?)"
-			params[i] = gid
+			valueParts[i] = fmt.Sprintf("(%d)", gid)
 		}
 		sqlG := fmt.Sprintf(`select b.* from project as a
 			left join project_member as b on a.project_id = b.project_id
 			where a.deleted = 'f' and b.entity_type = 'g' and b.role = 1
 			and EXISTS (SELECT 1 FROM (VALUES %s) AS v(gid) WHERE v.gid = b.entity_id);`, strings.Join(valueParts, ", "))
-		_, err = o.Raw(sqlG, params...).QueryRows(&membersG)
+		_, err = o.Raw(sqlG).QueryRows(&membersG)
 		if err != nil {
 			return nil, err
 		}

@@ -171,10 +171,8 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 	}
 
 	valueParts := make([]string, len(execIDs))
-	params := make([]any, len(execIDs))
 	for i, eid := range execIDs {
-		valueParts[i] = "(?)"
-		params[i] = eid
+		valueParts[i] = fmt.Sprintf("(%d)", eid)
 	}
 	valuesClause := strings.Join(valueParts, ", ")
 
@@ -182,7 +180,7 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 	taskSQL := fmt.Sprintf(`DELETE FROM task WHERE status_code = %d AND EXISTS (
 		SELECT 1 FROM (VALUES %s) AS v(eid) WHERE v.eid = task.execution_id
 	)`, finalStatusCode, valuesClause)
-	_, err = ormer.Raw(taskSQL, params...).Exec()
+	_, err = ormer.Raw(taskSQL).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete tasks")
 	}
@@ -191,7 +189,7 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 	execSQL := `DELETE FROM execution WHERE EXISTS (
 		SELECT 1 FROM (VALUES ` + valuesClause + `) AS v(eid) WHERE v.eid = execution.id
 	) AND NOT EXISTS (SELECT 1 FROM task WHERE task.execution_id = execution.id)`
-	_, err = ormer.Raw(execSQL, params...).Exec()
+	_, err = ormer.Raw(execSQL).Exec()
 	if err != nil {
 		return errors.Wrap(err, "failed to delete executions")
 	}

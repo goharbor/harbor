@@ -247,13 +247,10 @@ func (d *dao) ListRoles(ctx context.Context, user *models.User, projectID int64)
 	params = append(params, user.UserID, projectID)
 	if len(user.GroupIDs) > 0 {
 		valueParts := make([]string, len(user.GroupIDs))
-		groupParams := make([]any, len(user.GroupIDs))
 		for i, gid := range user.GroupIDs {
-			valueParts[i] = "(?)"
-			groupParams[i] = gid
+			valueParts[i] = fmt.Sprintf("(%d)", gid)
 		}
 		params = append(params, projectID)
-		params = append(params, groupParams...)
 		sql += fmt.Sprintf(`union
 			select role
 			from project_member

@@ -141,10 +141,8 @@ func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, erro
 
 func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_orm.RawSeter, error) {
 	valueParts := make([]string, len(params.ArtifactIDs))
-	queryParams := make([]any, len(params.ArtifactIDs))
 	for i, artID := range params.ArtifactIDs {
-		valueParts[i] = "(?)"
-		queryParams[i] = artID
+		valueParts[i] = fmt.Sprintf("(%d)", artID)
 	}
 
 	sql := fmt.Sprintf(VulnScanReportQueryTemplate, strings.Join(valueParts, ", "))
@@ -161,6 +159,6 @@ func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_o
 		PageSize:   pageSize,
 		Sorting:    "",
 	}
-	query, pageLimits := orm.PaginationOnRawSQL(q, sql, queryParams)
+	query, pageLimits := orm.PaginationOnRawSQL(q, sql, nil)
 	return ormer.Raw(query, pageLimits), nil
 }
