@@ -83,6 +83,10 @@ HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
 NPM_REGISTRY=https://registry.npmjs.org
+# Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
+#   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
+#   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
+OPENAPI_GENERATOR_CLI_URL ?= https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
 BUILDTARGET=build
 GEN_TLS=
 
@@ -561,7 +565,7 @@ restart: down prepare start
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
+	wget "$(OPENAPI_GENERATOR_CLI_URL)" -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
