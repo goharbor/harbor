@@ -8,7 +8,8 @@ Make Swagger Client
     LogAll  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  pip install -U pip setuptools
     LogAll  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  OPENAPI_GENERATOR_CLI_URL=${OPENAPI_GENERATOR_CLI_URL_DEFAULT} PIP_INDEX_URL=${PIP_INDEX_URL} make swagger_client
+    ${openapi_url}=  Get Environment Variable  OPENAPI_GENERATOR_CLI_URL  ${OPENAPI_GENERATOR_CLI_URL_DEFAULT}
+    ${rc}  ${output}=  Run And Return Rc And Output  OPENAPI_GENERATOR_CLI_URL=${openapi_url} PIP_INDEX_URL=${PIP_INDEX_URL} make swagger_client
     LogAll  ${output}
     [Return]  ${rc}
 
