@@ -31,6 +31,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -175,6 +176,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		client: commonhttp.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			credential,
 		),

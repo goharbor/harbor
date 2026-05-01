@@ -245,7 +245,10 @@
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
-        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden",
+        "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",

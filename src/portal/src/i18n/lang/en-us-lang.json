@@ -247,7 +247,9 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Please enter -1 or an integer greater than 0. ",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Serve stale content when upstream is unavailable",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Enable this to allow this project to keep serving cached content even if the artifact is not found in the upstream registry or the upstream registry is unavailable. This can lead to stale content being served if the upstream registry is unavailable.",
-        "NO_PROJECT": "We couldn't find any projects"
+        "NO_PROJECT": "We couldn't find any projects",
+        "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

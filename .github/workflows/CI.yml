@@ -168,6 +168,7 @@ jobs:
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
+    if: ${{ github.event.repository.custom_properties.SKIP_PROXY_CACHE != 'true' }}
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64

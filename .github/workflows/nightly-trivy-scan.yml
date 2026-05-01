@@ -10,11 +10,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # maintain the tags of harbor that need to be actively security scanned on a nightly basis, 
+        # maintain the tags of harbor that need to be actively security scanned on a nightly basis,
         # it is the image tags that need to be scanned in the dockerhub goharbor, for example: goharbor/harbor-core:dev, dev is the tag.
         tags: [dev]
         # list of images that need to be scanned
-        images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare, registry-photon, nginx-photon, redis-photon, trivy-adapter-photon]
+        images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare, registry-photon, nginx-photon, valkey-photon, trivy-adapter-photon]
     permissions:
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
 
