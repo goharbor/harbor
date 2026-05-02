@@ -130,17 +130,8 @@ func (c *controller) AssociateWithArtifact(ctx context.Context, blobDigests []st
 }
 
 func (c *controller) AssociateWithProjectByID(ctx context.Context, blobID int64, projectID int64) error {
-	if _, err := c.blobMgr.AssociateWithProject(ctx, blobID, projectID); err != nil {
-		return err
-	}
-	blobs, err := c.blobMgr.List(ctx, q.New(q.KeyWords{"ID": blobID}))
-	if err != nil {
-		return err
-	}
-	if len(blobs) == 0 {
-		return errors.NotFoundError(nil).WithMessagef("blob %d not found", blobID)
-	}
-	return c.Touch(ctx, blobs[0])
+	_, err := c.blobMgr.AssociateWithProject(ctx, blobID, projectID)
+	return err
 }
 
 func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDigest string, projectID int64) error {
@@ -149,10 +140,8 @@ func (c *controller) AssociateWithProjectByDigest(ctx context.Context, blobDiges
 		return err
 	}
 
-	if _, err := c.blobMgr.AssociateWithProject(ctx, blob.ID, projectID); err != nil {
-		return err
-	}
-	return c.Touch(ctx, blob)
+	_, err = c.blobMgr.AssociateWithProject(ctx, blob.ID, projectID)
+	return err
 }
 
 func (c *controller) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeign bool) (int64, error) {
