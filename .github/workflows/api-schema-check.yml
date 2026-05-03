@@ -1,0 +1,21 @@
+name: API Schema Check
+
+on:
+  pull_request:
+    paths:
+      - 'api/v2.0/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: delimit-ai/delimit-action@v1
+        with:
+          spec: api/v2.0/swagger.yaml
