@@ -14,14 +14,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CopyDigestComponent } from './copy-digest.component';
 import { SharedTestingModule } from '../../../../../../../../shared/shared.module';
+import { Clipboard } from '@angular/cdk/clipboard';
 
 describe('CopyDigestComponent', () => {
     let component: CopyDigestComponent;
     let fixture: ComponentFixture<CopyDigestComponent>;
+    let clipboardSpy: jasmine.SpyObj<Clipboard>;
+
     beforeEach(async () => {
+        // Create a spy for the Angular CDK Clipboard service
+        clipboardSpy = jasmine.createSpyObj('Clipboard', ['copy']);
+
         await TestBed.configureTestingModule({
             declarations: [CopyDigestComponent],
             imports: [SharedTestingModule],
+            // Provide the Clipboard spy instead of the real service
+            providers: [
+                { provide: Clipboard, useValue: clipboardSpy },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(CopyDigestComponent);
@@ -41,5 +51,34 @@ describe('CopyDigestComponent', () => {
         const textArea: HTMLTextAreaElement =
             fixture.nativeElement.querySelector(`textarea`);
         expect(textArea.textContent).toEqual(digest);
+    });
+
+    // Test that copyToClipboard calls the CDK Clipboard service with correct text
+    it('should copy text to clipboard successfully', () => {
+        clipboardSpy.copy.and.returnValue(true);
+        component.copyToClipboard('sha256@test');
+        expect(clipboardSpy.copy).toHaveBeenCalledWith('sha256@test');
+        // On success modal should close and copyFailed should be false
+        expect(component.copyFailed).toBeFalse();
+        expect(component.showTagManifestOpened).toBeFalse();
+    });
+
+    // Test that copyFailed is set to true when clipboard copy fails
+    it('should handle clipboard copy failure', () => {
+        clipboardSpy.copy.and.returnValue(false);
+        component.copyToClipboard('sha256@test');
+        expect(clipboardSpy.copy).toHaveBeenCalledWith('sha256@test');
+        // On failure copyFailed should be true
+        expect(component.copyFailed).toBeTrue();
+    });
+
+    // Test that showDigestId opens the modal and resets copyFailed
+    it('should open modal and reset state when showDigestId is called', () => {
+        component.copyFailed = true;
+        component.showDigestId('sha256@test');
+        expect(component.showTagManifestOpened).toBeTrue();
+        expect(component.digestId).toEqual('sha256@test');
+        // copyFailed should reset when modal opens
+        expect(component.copyFailed).toBeFalse();
     });
 });

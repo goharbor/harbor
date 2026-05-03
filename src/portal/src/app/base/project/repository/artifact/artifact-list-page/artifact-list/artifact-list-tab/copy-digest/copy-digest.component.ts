@@ -27,12 +27,12 @@ export class CopyDigestComponent {
 
     constructor(private clipboard: Clipboard) {} // injecting Clipboard service
 
-    onSuccess($event: any): void {
+    onSuccess(): void {
         this.copyFailed = false;
         this.showTagManifestOpened = false;
     }
 
-    onError($event: any): void {
+    onError(): void {
         this.copyFailed = true;
         if (this.textInput) {
             this.textInput.nativeElement.select();
@@ -48,9 +48,9 @@ export class CopyDigestComponent {
     copyToClipboard(text: string): void {
         const result = this.clipboard.copy(text); // using Clipboard service to copy text
         if (result) {
-            this.onSuccess(null);
+            this.onSuccess();
         } else {
-            this.onError(null);
+            this.onError();
         }
     }
 }
