@@ -1,0 +1,32 @@
+name: "Dependency Review"
+on:
+  pull_request: {}
+
+permissions: {}
+
+jobs:
+  dependency_review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: low
+          comment-summary-in-pr: on-failure
+          deny-licenses: >
+            GPL-1.0, GPL-1.0+, GPL-1.0-only, GPL-1.0-or-later,
+            GPL-2.0, GPL-2.0+, GPL-2.0-only, GPL-2.0-or-later,
+            GPL-3.0, GPL-3.0+, GPL-3.0-only, GPL-3.0-or-later,
+            AGPL-1.0, AGPL-1.0-only, AGPL-1.0-or-later,
+            AGPL-3.0, AGPL-3.0-only, AGPL-3.0-or-later,
+            LGPL-2.0, LGPL-2.0+, LGPL-2.0-only, LGPL-2.0-or-later,
+            LGPL-2.1, LGPL-2.1+, LGPL-2.1-only, LGPL-2.1-or-later,
+            LGPL-3.0, LGPL-3.0+, LGPL-3.0-only, LGPL-3.0-or-later

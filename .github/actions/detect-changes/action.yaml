@@ -1,0 +1,36 @@
+name: "Detect Changed Project Folders"
+description: "Finds top-level project folders with changes that contain a specified file"
+inputs:
+    file-pattern:
+        description: "Filename to search for in changed folders (e.g., go.mod, Dockerfile)"
+        required: true
+outputs:
+    modules:
+        description: "JSON array of changed project folder paths"
+        value: ${{ steps.detect.outputs.modules }}
+runs:
+    using: composite
+    steps:
+
+      - name: Detect changes/modules
+        id: detect
+        shell: bash
+        run: |
+          # Get unique top-level folders from changed files
+          folders=$(git diff --name-only origin/main...HEAD | cut -d/ -f1 | sort -u)
+
+          # Filter to folders containing the target file
+          matched=()
+          for folder in $folders; do
+            if [ -d "$folder" ] && find "$folder" -maxdepth 3 -name "${{ inputs.file-pattern }}" | grep -q .; then
+              matched+=("$folder")
+            fi
+          done
+
+          # Output as JSON array
+          if [ ${#matched[@]} -eq 0 ]; then
+            echo "modules=[]" >> "$GITHUB_OUTPUT"
+          else
+            modules=$(printf '%s\n' "${matched[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "modules=$modules" >> "$GITHUB_OUTPUT"
+          fi
