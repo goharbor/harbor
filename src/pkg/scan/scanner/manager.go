@@ -19,6 +19,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -89,6 +90,10 @@ func (bm *basicManager) Create(ctx context.Context, registration *scanner.Regist
 		return "", errors.Wrap(err, "create registration")
 	}
 
+	if err := encryptCredential(registration); err != nil {
+		return "", errors.Wrap(err, "encrypt credential: create registration")
+	}
+
 	if _, err := scanner.AddRegistration(ctx, registration); err != nil {
 		return "", errors.Wrap(err, "dao: create registration")
 	}
@@ -102,7 +107,16 @@ func (bm *basicManager) Get(ctx context.Context, registrationUUID string) (*scan
 		return nil, errors.New("empty uuid of registration")
 	}
 
-	return scanner.GetRegistration(ctx, registrationUUID)
+	r, err := scanner.GetRegistration(ctx, registrationUUID)
+	if err != nil {
+		return nil, err
+	}
+	if r != nil {
+		if err := decryptCredential(r); err != nil {
+			return nil, errors.Wrap(err, "decrypt credential: get registration")
+		}
+	}
+	return r, nil
 }
 
 // Update ...
@@ -113,6 +127,10 @@ func (bm *basicManager) Update(ctx context.Context, registration *scanner.Regist
 
 	if err := registration.Validate(true); err != nil {
 		return errors.Wrap(err, "update registration")
+	}
+
+	if err := encryptCredential(registration); err != nil {
+		return errors.Wrap(err, "encrypt credential: update registration")
 	}
 
 	return scanner.UpdateRegistration(ctx, registration)
@@ -129,7 +147,16 @@ func (bm *basicManager) Delete(ctx context.Context, registrationUUID string) err
 
 // List ...
 func (bm *basicManager) List(ctx context.Context, query *q.Query) ([]*scanner.Registration, error) {
-	return scanner.ListRegistrations(ctx, query)
+	regs, err := scanner.ListRegistrations(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range regs {
+		if err := decryptCredential(r); err != nil {
+			return nil, errors.Wrap(err, "decrypt credential: list registrations")
+		}
+	}
+	return regs, nil
 }
 
 // SetAsDefault ...
@@ -143,7 +170,42 @@ func (bm *basicManager) SetAsDefault(ctx context.Context, registrationUUID strin
 
 // GetDefault ...
 func (bm *basicManager) GetDefault(ctx context.Context) (*scanner.Registration, error) {
-	return scanner.GetDefaultRegistration(ctx)
+	r, err := scanner.GetDefaultRegistration(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if r != nil {
+		if err := decryptCredential(r); err != nil {
+			return nil, errors.Wrap(err, "decrypt credential: get default registration")
+		}
+	}
+	return r, nil
+}
+
+// encryptCredential encrypts AccessCredential before persisting to the database.
+func encryptCredential(r *scanner.Registration) error {
+	if len(r.AccessCredential) == 0 {
+		return nil
+	}
+	encrypted, err := config.EncryptSecret(r.AccessCredential)
+	if err != nil {
+		return err
+	}
+	r.AccessCredential = encrypted
+	return nil
+}
+
+// decryptCredential decrypts AccessCredential after reading from the database.
+func decryptCredential(r *scanner.Registration) error {
+	if len(r.AccessCredential) == 0 {
+		return nil
+	}
+	decrypted, err := config.DecryptSecret(r.AccessCredential)
+	if err != nil {
+		return err
+	}
+	r.AccessCredential = decrypted
+	return nil
 }
 
 // DefaultScannerUUID returns the default scanner uuid.
