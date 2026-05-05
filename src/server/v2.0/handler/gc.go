@@ -198,7 +198,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 
 	var hs []*model.GCHistory
 	for _, exec := range execs {
-		extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
+		extraAttrsString, err := json.Marshal(model.CleanExtraAttrs(exec.ExtraAttrs))
 		if err != nil {
 			return g.SendError(ctx, err)
 		}
@@ -236,7 +236,7 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 		return g.SendError(ctx, err)
 	}
 
-	extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
+	extraAttrsString, err := json.Marshal(model.CleanExtraAttrs(exec.ExtraAttrs))
 	if err != nil {
 		return g.SendError(ctx, err)
 	}

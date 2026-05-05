@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/null"
@@ -49,6 +50,7 @@ func NewAuthorizer(username, password string, insecure bool, caCert ...string) l
 		password: password,
 		client: &http.Client{
 			Transport: transport,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}
 }
