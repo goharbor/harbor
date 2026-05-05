@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/pkg/notification/transform"
 )
 
 // WebhookJob implements the job interface, which send notification by http or https.
@@ -101,6 +102,14 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]any) error {
 func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
+
+	if tmpl, ok := params["payload_transform"].(string); ok && tmpl != "" {
+		transformed, err := transform.Apply(tmpl, payload)
+		if err != nil {
+			return errors.Wrap(err, "error applying payload_transform")
+		}
+		payload = transformed
+	}
 
 	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
 	if err != nil {
