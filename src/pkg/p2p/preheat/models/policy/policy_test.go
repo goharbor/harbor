@@ -85,7 +85,7 @@ func (p *PolicyTestSuite) TestDecode() {
 	p.Len(s.Filters, 3)
 	p.NotNil(s.Trigger)
 
-	p.Equal(map[string]interface{}{"key": "value"}, s.ExtraAttrs)
+	p.Equal(map[string]any{"key": "value"}, s.ExtraAttrs)
 
 	// invalid filter or trigger
 	s.FiltersStr = ""
@@ -125,7 +125,7 @@ func (p *PolicyTestSuite) TestEncode() {
 		},
 		TriggerStr: "",
 		Enabled:    false,
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"key": "value",
 		},
 	}

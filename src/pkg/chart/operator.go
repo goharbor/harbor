@@ -70,7 +70,7 @@ func (cho *operator) GetDetails(content []byte) (*VersionDetails, error) {
 		depts = chartData.Metadata.Dependencies
 	}
 
-	var values map[string]interface{}
+	var values map[string]any
 	files := make(map[string]string)
 	// Parse values
 	if chartData.Values != nil {
@@ -130,14 +130,14 @@ func (cho *operator) GetData(content []byte) (*helm_chart.Chart, error) {
 }
 
 // Recursively read value
-func readValue(values map[string]interface{}, keyPrefix string, valueMap map[string]interface{}) {
+func readValue(values map[string]any, keyPrefix string, valueMap map[string]any) {
 	for key, value := range values {
 		longKey := key
 		if keyPrefix != "" {
 			longKey = fmt.Sprintf("%s.%s", keyPrefix, key)
 		}
 
-		if subValues, ok := value.(map[string]interface{}); ok {
+		if subValues, ok := value.(map[string]any); ok {
 			readValue(subValues, longKey, valueMap)
 		} else {
 			valueMap[longKey] = value

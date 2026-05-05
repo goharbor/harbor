@@ -94,7 +94,7 @@ func (suite *ReportTestSuite) TestUpdate() {
 	query1 := &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"artifact_id":       111,
 			"registration_uuid": "ruuid",
 			"mime_type":         v1.MimeTypeSBOMReport,
@@ -110,7 +110,7 @@ func (suite *ReportTestSuite) TestReportList() {
 	query1 := &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"artifact_id":       111,
 			"registration_uuid": "ruuid",
 			"mime_type":         v1.MimeTypeSBOMReport,
@@ -123,7 +123,7 @@ func (suite *ReportTestSuite) TestReportList() {
 	query2 := &q.Query{
 		PageSize:   1,
 		PageNumber: 1,
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"artifact_id": 222,
 		},
 	}

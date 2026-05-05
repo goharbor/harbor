@@ -16,6 +16,7 @@ package export
 
 import (
 	"context"
+	"slices"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -170,10 +171,8 @@ func (dfp *DefaultFilterProcessor) ProcessLabelFilter(_ context.Context, labelID
 		// TODO (as now there should not have many labels, so here just use
 		// for^2, we can convert to use map to reduce the time complex if needed. )
 		for _, label := range art.Labels {
-			for _, labelID := range labelIDs {
-				if labelID == label.ID {
-					return true
-				}
+			if slices.Contains(labelIDs, label.ID) {
+				return true
 			}
 		}
 		return false

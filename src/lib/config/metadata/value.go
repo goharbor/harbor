@@ -169,8 +169,8 @@ func (c *ConfigureValue) GetDuration() time.Duration {
 	return 0
 }
 
-// GetAnyType get the interface{} of current value
-func (c *ConfigureValue) GetAnyType() (interface{}, error) {
+// GetAnyType get the any of current value
+func (c *ConfigureValue) GetAnyType() (any, error) {
 	if item, ok := Instance().GetByName(c.Name); ok {
 		return item.ItemType.get(c.Value)
 	}

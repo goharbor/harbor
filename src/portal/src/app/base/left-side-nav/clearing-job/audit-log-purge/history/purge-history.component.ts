@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { finalize, forkJoin, Subscription, timer } from 'rxjs';
@@ -24,6 +37,10 @@ import {
 import { ConfirmationMessage } from '../../../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationDialogService } from '../../../../global-confirmation-dialog/confirmation-dialog.service';
 import { ExecHistory } from '../../../../../../../ng-swagger-gen/models/exec-history';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-purge-history',
@@ -47,7 +64,8 @@ export class PurgeHistoryComponent implements OnInit, OnDestroy {
     constructor(
         private purgeService: PurgeService,
         private errorHandler: ErrorHandler,
-        private confirmationDialogService: ConfirmationDialogService
+        private confirmationDialogService: ConfirmationDialogService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     ngOnInit() {
         if (!this.subscription) {
@@ -133,6 +151,7 @@ export class PurgeHistoryComponent implements OnInit, OnDestroy {
                 q: q,
                 sort: sort,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(
                 res => {

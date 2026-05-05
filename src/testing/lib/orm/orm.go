@@ -26,39 +26,39 @@ import (
 type FakeOrmer struct {
 }
 
-func (f *FakeOrmer) LoadRelated(md interface{}, name string, args ...utils.KV) (int64, error) {
+func (f *FakeOrmer) LoadRelated(md any, name string, args ...utils.KV) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) QueryM2MWithCtx(ctx context.Context, md interface{}, name string) orm.QueryM2Mer {
+func (f *FakeOrmer) QueryM2MWithCtx(ctx context.Context, md any, name string) orm.QueryM2Mer {
 	return nil
 }
 
-func (f *FakeOrmer) QueryTableWithCtx(ctx context.Context, ptrStructOrTableName interface{}) orm.QuerySeter {
+func (f *FakeOrmer) QueryTableWithCtx(ctx context.Context, ptrStructOrTableName any) orm.QuerySeter {
 	return nil
 }
 
-func (f *FakeOrmer) InsertWithCtx(ctx context.Context, md interface{}) (int64, error) {
+func (f *FakeOrmer) InsertWithCtx(ctx context.Context, md any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) InsertOrUpdateWithCtx(ctx context.Context, md interface{}, colConflitAndArgs ...string) (int64, error) {
+func (f *FakeOrmer) InsertOrUpdateWithCtx(ctx context.Context, md any, colConflitAndArgs ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) InsertMultiWithCtx(ctx context.Context, bulk int, mds interface{}) (int64, error) {
+func (f *FakeOrmer) InsertMultiWithCtx(ctx context.Context, bulk int, mds any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) UpdateWithCtx(ctx context.Context, md interface{}, cols ...string) (int64, error) {
+func (f *FakeOrmer) UpdateWithCtx(ctx context.Context, md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) DeleteWithCtx(ctx context.Context, md interface{}, cols ...string) (int64, error) {
+func (f *FakeOrmer) DeleteWithCtx(ctx context.Context, md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeOrmer) RawWithCtx(ctx context.Context, query string, args ...interface{}) orm.RawSeter {
+func (f *FakeOrmer) RawWithCtx(ctx context.Context, query string, args ...any) orm.RawSeter {
 	return nil
 }
 
@@ -95,68 +95,68 @@ func (f *FakeOrmer) DoTxWithCtxAndOpts(ctx context.Context, opts *sql.TxOptions,
 }
 
 // Read ...
-func (f *FakeOrmer) Read(md interface{}, cols ...string) error {
+func (f *FakeOrmer) Read(md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeOrmer) ReadWithCtx(ctx context.Context, md interface{}, cols ...string) error {
+func (f *FakeOrmer) ReadWithCtx(ctx context.Context, md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeOrmer) ReadForUpdateWithCtx(ctx context.Context, md interface{}, cols ...string) error {
+func (f *FakeOrmer) ReadForUpdateWithCtx(ctx context.Context, md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeOrmer) ReadOrCreateWithCtx(ctx context.Context, md interface{}, col1 string, cols ...string) (bool, int64, error) {
+func (f *FakeOrmer) ReadOrCreateWithCtx(ctx context.Context, md any, col1 string, cols ...string) (bool, int64, error) {
 	return false, 0, nil
 }
 
-func (f *FakeOrmer) LoadRelatedWithCtx(_ context.Context, md interface{}, name string, args ...utils.KV) (int64, error) {
+func (f *FakeOrmer) LoadRelatedWithCtx(_ context.Context, md any, name string, args ...utils.KV) (int64, error) {
 	return 0, nil
 }
 
 // ReadForUpdate ...
-func (f *FakeOrmer) ReadForUpdate(md interface{}, cols ...string) error {
+func (f *FakeOrmer) ReadForUpdate(md any, cols ...string) error {
 	return nil
 }
 
 // ReadOrCreate ...
-func (f *FakeOrmer) ReadOrCreate(md interface{}, col1 string, cols ...string) (bool, int64, error) {
+func (f *FakeOrmer) ReadOrCreate(md any, col1 string, cols ...string) (bool, int64, error) {
 	return false, 0, nil
 }
 
 // Insert ...
-func (f *FakeOrmer) Insert(interface{}) (int64, error) {
+func (f *FakeOrmer) Insert(any) (int64, error) {
 	return 0, nil
 }
 
 // InsertOrUpdate ...
-func (f *FakeOrmer) InsertOrUpdate(md interface{}, colConflitAndArgs ...string) (int64, error) {
+func (f *FakeOrmer) InsertOrUpdate(md any, colConflitAndArgs ...string) (int64, error) {
 	return 0, nil
 }
 
 // InsertMulti ...
-func (f *FakeOrmer) InsertMulti(bulk int, mds interface{}) (int64, error) {
+func (f *FakeOrmer) InsertMulti(bulk int, mds any) (int64, error) {
 	return 0, nil
 }
 
 // Update ...
-func (f *FakeOrmer) Update(md interface{}, cols ...string) (int64, error) {
+func (f *FakeOrmer) Update(md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
 // Delete ...
-func (f *FakeOrmer) Delete(md interface{}, cols ...string) (int64, error) {
+func (f *FakeOrmer) Delete(md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
 // QueryM2M ...
-func (f *FakeOrmer) QueryM2M(md interface{}, name string) orm.QueryM2Mer {
+func (f *FakeOrmer) QueryM2M(md any, name string) orm.QueryM2Mer {
 	return nil
 }
 
 // QueryTable ...
-func (f *FakeOrmer) QueryTable(ptrStructOrTableName interface{}) orm.QuerySeter {
+func (f *FakeOrmer) QueryTable(ptrStructOrTableName any) orm.QuerySeter {
 	return nil
 }
 
@@ -181,7 +181,7 @@ func (f *FakeOrmer) Rollback() error {
 }
 
 // Raw ...
-func (f *FakeOrmer) Raw(query string, args ...interface{}) orm.RawSeter {
+func (f *FakeOrmer) Raw(query string, args ...any) orm.RawSeter {
 	return &FakeRawSeter{}
 }
 
@@ -199,51 +199,51 @@ func (f *FakeOrmer) DBStats() *sql.DBStats {
 type FakeTxOrmer struct {
 }
 
-func (f *FakeTxOrmer) Read(md interface{}, cols ...string) error {
+func (f *FakeTxOrmer) Read(md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeTxOrmer) ReadWithCtx(ctx context.Context, md interface{}, cols ...string) error {
+func (f *FakeTxOrmer) ReadWithCtx(ctx context.Context, md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeTxOrmer) ReadForUpdate(md interface{}, cols ...string) error {
+func (f *FakeTxOrmer) ReadForUpdate(md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeTxOrmer) ReadForUpdateWithCtx(ctx context.Context, md interface{}, cols ...string) error {
+func (f *FakeTxOrmer) ReadForUpdateWithCtx(ctx context.Context, md any, cols ...string) error {
 	return nil
 }
 
-func (f *FakeTxOrmer) ReadOrCreate(md interface{}, col1 string, cols ...string) (bool, int64, error) {
+func (f *FakeTxOrmer) ReadOrCreate(md any, col1 string, cols ...string) (bool, int64, error) {
 	return false, 0, nil
 }
 
-func (f *FakeTxOrmer) ReadOrCreateWithCtx(ctx context.Context, md interface{}, col1 string, cols ...string) (bool, int64, error) {
+func (f *FakeTxOrmer) ReadOrCreateWithCtx(ctx context.Context, md any, col1 string, cols ...string) (bool, int64, error) {
 	return false, 0, nil
 }
 
-func (f *FakeTxOrmer) LoadRelated(md interface{}, name string, args ...utils.KV) (int64, error) {
+func (f *FakeTxOrmer) LoadRelated(md any, name string, args ...utils.KV) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) LoadRelatedWithCtx(ctx context.Context, md interface{}, name string, args ...utils.KV) (int64, error) {
+func (f *FakeTxOrmer) LoadRelatedWithCtx(ctx context.Context, md any, name string, args ...utils.KV) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) QueryM2M(md interface{}, name string) orm.QueryM2Mer {
+func (f *FakeTxOrmer) QueryM2M(md any, name string) orm.QueryM2Mer {
 	return nil
 }
 
-func (f *FakeTxOrmer) QueryM2MWithCtx(ctx context.Context, md interface{}, name string) orm.QueryM2Mer {
+func (f *FakeTxOrmer) QueryM2MWithCtx(ctx context.Context, md any, name string) orm.QueryM2Mer {
 	return nil
 }
 
-func (f *FakeTxOrmer) QueryTable(ptrStructOrTableName interface{}) orm.QuerySeter {
+func (f *FakeTxOrmer) QueryTable(ptrStructOrTableName any) orm.QuerySeter {
 	return nil
 }
 
-func (f *FakeTxOrmer) QueryTableWithCtx(ctx context.Context, ptrStructOrTableName interface{}) orm.QuerySeter {
+func (f *FakeTxOrmer) QueryTableWithCtx(ctx context.Context, ptrStructOrTableName any) orm.QuerySeter {
 	return nil
 }
 
@@ -251,51 +251,51 @@ func (f *FakeTxOrmer) DBStats() *sql.DBStats {
 	return nil
 }
 
-func (f *FakeTxOrmer) Insert(md interface{}) (int64, error) {
+func (f *FakeTxOrmer) Insert(md any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) InsertWithCtx(ctx context.Context, md interface{}) (int64, error) {
+func (f *FakeTxOrmer) InsertWithCtx(ctx context.Context, md any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) InsertOrUpdate(md interface{}, colConflitAndArgs ...string) (int64, error) {
+func (f *FakeTxOrmer) InsertOrUpdate(md any, colConflitAndArgs ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) InsertOrUpdateWithCtx(ctx context.Context, md interface{}, colConflitAndArgs ...string) (int64, error) {
+func (f *FakeTxOrmer) InsertOrUpdateWithCtx(ctx context.Context, md any, colConflitAndArgs ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) InsertMulti(bulk int, mds interface{}) (int64, error) {
+func (f *FakeTxOrmer) InsertMulti(bulk int, mds any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) InsertMultiWithCtx(ctx context.Context, bulk int, mds interface{}) (int64, error) {
+func (f *FakeTxOrmer) InsertMultiWithCtx(ctx context.Context, bulk int, mds any) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) Update(md interface{}, cols ...string) (int64, error) {
+func (f *FakeTxOrmer) Update(md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) UpdateWithCtx(ctx context.Context, md interface{}, cols ...string) (int64, error) {
+func (f *FakeTxOrmer) UpdateWithCtx(ctx context.Context, md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) Delete(md interface{}, cols ...string) (int64, error) {
+func (f *FakeTxOrmer) Delete(md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) DeleteWithCtx(ctx context.Context, md interface{}, cols ...string) (int64, error) {
+func (f *FakeTxOrmer) DeleteWithCtx(ctx context.Context, md any, cols ...string) (int64, error) {
 	return 0, nil
 }
 
-func (f *FakeTxOrmer) Raw(query string, args ...interface{}) orm.RawSeter {
+func (f *FakeTxOrmer) Raw(query string, args ...any) orm.RawSeter {
 	return &FakeRawSeter{}
 }
 
-func (f *FakeTxOrmer) RawWithCtx(ctx context.Context, query string, args ...interface{}) orm.RawSeter {
+func (f *FakeTxOrmer) RawWithCtx(ctx context.Context, query string, args ...any) orm.RawSeter {
 	return nil
 }
 
@@ -323,15 +323,15 @@ func (f FakeRawSeter) Exec() (sql.Result, error) {
 	return nil, nil
 }
 
-func (f FakeRawSeter) QueryRow(containers ...interface{}) error {
+func (f FakeRawSeter) QueryRow(containers ...any) error {
 	return nil
 }
 
-func (f FakeRawSeter) QueryRows(containers ...interface{}) (int64, error) {
+func (f FakeRawSeter) QueryRows(containers ...any) (int64, error) {
 	return 0, nil
 }
 
-func (f FakeRawSeter) SetArgs(i ...interface{}) orm.RawSeter {
+func (f FakeRawSeter) SetArgs(i ...any) orm.RawSeter {
 	return nil
 }
 
@@ -351,7 +351,7 @@ func (f FakeRawSeter) RowsToMap(result *orm.Params, keyCol, valueCol string) (in
 	return 0, nil
 }
 
-func (f FakeRawSeter) RowsToStruct(ptrStruct interface{}, keyCol, valueCol string) (int64, error) {
+func (f FakeRawSeter) RowsToStruct(ptrStruct any, keyCol, valueCol string) (int64, error) {
 	return 0, nil
 }
 

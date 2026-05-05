@@ -42,7 +42,7 @@ type RepoRecord struct {
 }
 
 // FilterByBlobDigest filters the repositories by the blob digest
-func (r *RepoRecord) FilterByBlobDigest(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
+func (r *RepoRecord) FilterByBlobDigest(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	digest, ok := value.(string)
 	if !ok || len(digest) == 0 {
 		return qs

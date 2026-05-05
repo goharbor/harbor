@@ -241,7 +241,7 @@ func (bs *basicScheduler) clearDirtyJobs() {
 
 // Get relevant executions for the periodic job
 func getPeriodicExecutions(conn redis.Conn, key string) ([]string, error) {
-	args := []interface{}{key, 0, "+inf"}
+	args := []any{key, 0, "+inf"}
 
 	list, err := redis.Values(conn.Do("ZRANGEBYSCORE", args...))
 	if err != nil {

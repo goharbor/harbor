@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -111,6 +111,8 @@ export class CreateProjectComponent
 
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
+
+    maxUpstreamConnError: string | null = null;
 
     constructor(
         private projectService: ProjectService,
@@ -320,12 +322,33 @@ export class CreateProjectComponent
             (!Number.isInteger(value) && value !== -1) ||
             (value <= 0 && value !== -1)
         ) {
-            this.bandwidthError =
-                'Please enter -1 or an integer  greater than 0.';
+            this.translateService
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.bandwidthError = res;
+                });
         } else {
             this.bandwidthError = null;
         }
     }
+
+    validateMaxUpstreamConnections(): void {
+        const value = Number(this.project.metadata.max_upstream_conn);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translateService
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.maxUpstreamConnError = res;
+                });
+        } else {
+            this.maxUpstreamConnError = null;
+        }
+    }
+
     convertSpeedValue(realSpeed: number): number {
         if (this.selectedSpeedLimitUnit == BandwidthUnit.MB) {
             return realSpeed * KB_TO_MB;
@@ -339,6 +362,12 @@ export class CreateProjectComponent
         this.validateBandwidth();
         if (this.bandwidthError) {
             this.inlineAlert.showInlineError(this.bandwidthError);
+            return;
+        }
+
+        this.validateMaxUpstreamConnections();
+        if (this.bandwidthError) {
+            this.inlineAlert.showInlineError(this.maxUpstreamConnError);
             return;
         }
 
@@ -364,6 +393,16 @@ export class CreateProjectComponent
                         public: this.project.metadata.public ? 'true' : 'false',
                         proxy_speed_kb:
                             this.project.metadata.bandwidth.toString(),
+                        max_upstream_conn:
+                            this.project.metadata.max_upstream_conn.toString(),
+                        proxy_cache_local_on_not_found: this.project.metadata
+                            .proxy_cache_local_on_not_found
+                            ? 'true'
+                            : 'false',
+                        proxy_referrer_api: this.project.metadata
+                            .proxy_referrer_api
+                            ? 'true'
+                            : 'false',
                     },
                     storage_limit: +storageByte,
                     registry_id: registryId,
@@ -408,6 +447,9 @@ export class CreateProjectComponent
         this.storageLimitUnit = this.storageDefaultLimitUnit;
         this.selectedSpeedLimitUnit = BandwidthUnit.KB;
         this.speedLimit = -1;
+        this.project.metadata.max_upstream_conn = -1;
+        this.project.metadata.proxy_cache_local_on_not_found = false;
+        this.project.metadata.proxy_referrer_api = false;
     }
 
     public get isValid(): boolean {

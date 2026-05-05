@@ -17,6 +17,7 @@ package cached
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -68,14 +69,15 @@ func NewObjectKey(ns string) *ObjectKey {
 // Format formats fields to string.
 // eg. namespace: 'artifact'
 // Format("id", 100, "digest", "aaa"): "artifact:id:100:digest:aaa"
-func (ok *ObjectKey) Format(keysAndValues ...interface{}) (string, error) {
+func (ok *ObjectKey) Format(keysAndValues ...any) (string, error) {
 	// keysAndValues must be paired.
 	if len(keysAndValues)%2 != 0 {
 		return "", errors.Errorf("invalid keysAndValues: %v", keysAndValues...)
 	}
 
-	s := ok.namespace
-	for i := 0; i < len(keysAndValues); i++ {
+	var s strings.Builder
+	s.WriteString(ok.namespace)
+	for i := range len(keysAndValues) {
 		// even is key
 		if i%2 == 0 {
 			key, match := keysAndValues[i].(string)
@@ -83,18 +85,18 @@ func (ok *ObjectKey) Format(keysAndValues ...interface{}) (string, error) {
 				return "", errors.Errorf("key must be string, invalid key type: %#v", keysAndValues[i])
 			}
 
-			s += fmt.Sprintf(":%s", key)
+			s.WriteString(fmt.Sprintf(":%s", key))
 		} else {
 			switch keysAndValues[i].(type) {
 			case int, int16, int32, int64:
-				s += fmt.Sprintf(":%d", keysAndValues[i])
+				s.WriteString(fmt.Sprintf(":%d", keysAndValues[i]))
 			case string:
-				s += fmt.Sprintf(":%s", keysAndValues[i])
+				s.WriteString(fmt.Sprintf(":%s", keysAndValues[i]))
 			default:
 				return "", errors.Errorf("unsupported value type: %#v", keysAndValues[i])
 			}
 		}
 	}
 
-	return s, nil
+	return s.String(), nil
 }

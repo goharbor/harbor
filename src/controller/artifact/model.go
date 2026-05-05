@@ -40,7 +40,7 @@ func (artifact *Artifact) UnmarshalJSON(data []byte) error {
 	type Alias Artifact
 	ali := &struct {
 		*Alias
-		AccessoryItems []interface{} `json:"accessories,omitempty"`
+		AccessoryItems []any `json:"accessories,omitempty"`
 	}{
 		Alias: (*Alias)(artifact),
 	}

@@ -15,12 +15,15 @@
 package registry
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
 	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -32,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
 )
 
@@ -122,7 +124,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// fire event, ignore the HEAD request and pulling request from replication service
-	if req.Method == http.MethodHead || req.UserAgent() == registry.UserAgent {
+	if req.Method == http.MethodHead || req.UserAgent() == common.UserAgent {
 		return
 	}
 
@@ -182,7 +184,26 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	buffer := lib.NewResponseBuffer(w)
+
 	// proxy the req to the backend docker registry
+	// If reference is a tag (not a digest), replace it with the computed digest
+	// before proxying to the backend. This prevents tags from being stored in the
+	// backend registry storage, while Harbor maintains the tag-to-digest mapping in the database.
+	if _, err := digest.Parse(reference); err != nil {
+		// reference is a tag, not a digest
+		data, err := io.ReadAll(req.Body)
+		if err != nil {
+			lib_http.SendError(w, err)
+			return
+		}
+
+		dgst := digest.FromBytes(data)
+		req = req.Clone(req.Context())
+		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + dgst.String()
+		req.URL.RawPath = req.URL.EscapedPath()
+		req.Body = io.NopCloser(bytes.NewReader(data))
+		req.ContentLength = int64(len(data))
+	}
 	proxy.ServeHTTP(buffer, req)
 	if !buffer.Success() {
 		if _, err := buffer.Flush(); err != nil {
@@ -198,15 +219,14 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	var tags []string
 	dgt := reference
 	// the reference is tag, get the digest from the response header
-	if _, err = digest.Parse(reference); err != nil {
+	if _, err := digest.Parse(reference); err != nil {
 		dgt = buffer.Header().Get("Docker-Content-Digest")
 		tags = append(tags, reference)
 	}
 
-	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, &artifact.ArtOption{
+	if _, _, err := artifact.Ctl.Ensure(req.Context(), repo, dgt, &artifact.ArtOption{
 		Tags: tags,
-	})
-	if err != nil {
+	}); err != nil {
 		lib_http.SendError(w, err)
 		return
 	}

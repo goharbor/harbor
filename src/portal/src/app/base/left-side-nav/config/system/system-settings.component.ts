@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
     AfterViewChecked,
     ChangeDetectorRef,
@@ -86,7 +99,7 @@ export class SystemSettingsComponent
                 HarborEvent.REFRESH_BANNER_MESSAGE,
                 () => {
                     this.setValueForBannerMessage();
-                    this.setValueForDisabledAuditLogEventTypes();
+                    this.setValueForEnabledAuditLogEventTypes();
                 }
             );
         }
@@ -94,7 +107,7 @@ export class SystemSettingsComponent
             this.setValueForBannerMessage();
         }
         this.initLogEventTypes();
-        this.setValueForDisabledAuditLogEventTypes();
+        this.setValueForEnabledAuditLogEventTypes();
     }
 
     ngAfterViewChecked() {
@@ -124,6 +137,7 @@ export class SystemSettingsComponent
                         value: event.event_type,
                         id: event.event_type,
                     }));
+                    this.setValueForEnabledAuditLogEventTypes();
                 },
                 error => {
                     this.errorHandler.error(error);
@@ -131,11 +145,18 @@ export class SystemSettingsComponent
             );
     }
 
-    setValueForDisabledAuditLogEventTypes() {
-        const checkedEventTypes =
+    setValueForEnabledAuditLogEventTypes() {
+        const disabledEventTypes =
             this.currentConfig?.disabled_audit_log_event_types?.value;
-        this.selectedLogEventTypes =
-            checkedEventTypes?.split(',')?.filter(evt => evt !== '') ?? [];
+        const disabledEvents =
+            disabledEventTypes?.split(',')?.filter(evt => evt !== '') ?? [];
+
+        const allEventTypes = this.logEventTypes.map(evt => evt.value);
+
+        // Enabled = All - Disabled
+        this.selectedLogEventTypes = allEventTypes.filter(
+            evt => !disabledEvents.includes(evt)
+        );
     }
 
     setValueForBannerMessage() {
@@ -220,22 +241,27 @@ export class SystemSettingsComponent
     }
 
     hasLogEventType(resourceType: string): boolean {
-        return this.selectedLogEventTypes?.indexOf(resourceType) !== -1;
+        return this.selectedLogEventTypes?.includes(resourceType);
     }
 
     setLogEventType(resourceType: string) {
-        if (this.selectedLogEventTypes.indexOf(resourceType) === -1) {
-            this.selectedLogEventTypes.push(resourceType);
-        } else {
-            this.selectedLogEventTypes.splice(
-                this.selectedLogEventTypes.findIndex(
-                    item => item === resourceType
-                ),
-                1
+        if (this.selectedLogEventTypes.includes(resourceType)) {
+            this.selectedLogEventTypes = this.selectedLogEventTypes.filter(
+                evt => evt !== resourceType
             );
+        } else {
+            this.selectedLogEventTypes.push(resourceType);
         }
+
+        const allEventTypes = this.logEventTypes.map(evt => evt.value);
+        // Disabled = All - Enabled
+        const disabled = allEventTypes.filter(
+            evt => !this.selectedLogEventTypes.includes(evt)
+        );
+
+        // Update backend config
         this.currentConfig.disabled_audit_log_event_types.value =
-            this.selectedLogEventTypes.join(',');
+            disabled.join(',');
     }
 
     public getChanges() {

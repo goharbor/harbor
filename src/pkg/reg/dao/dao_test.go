@@ -66,7 +66,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// query by name
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Name": "harbor",
 		},
 	})
@@ -89,7 +89,7 @@ func (d *daoTestSuite) TestList() {
 
 	// query by name
 	registries, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Name": "harbor",
 		},
 	})

@@ -15,12 +15,16 @@
 package registry
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	beegocontext "github.com/beego/beego/v2/server/web/context"
+	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -71,18 +75,14 @@ func (m *manifestTestSuite) TearDownSuite() {
 }
 
 func (m *manifestTestSuite) TestGetManifest() {
-	// doesn't exist
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
-
 	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
 	getManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
 
-	// reset the mock
 	m.SetupTest()
 
-	// exist
 	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodGet && req.URL.Path == "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180" {
 			w.WriteHeader(http.StatusOK)
@@ -91,7 +91,6 @@ func (m *manifestTestSuite) TestGetManifest() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
-	// as we cannot set the beego input in the context, here the request doesn't carry reference part
 	req = httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/", nil)
 	w = &httptest.ResponseRecorder{}
 
@@ -101,14 +100,12 @@ func (m *manifestTestSuite) TestGetManifest() {
 	getManifest(w, req)
 	m.Equal(http.StatusOK, w.Code)
 
-	// if etag match, return 304
 	req = httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/", nil)
 	w = &httptest.ResponseRecorder{}
 	req.Header.Set("If-None-Match", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
 	getManifest(w, req)
 	m.Equal(http.StatusNotModified, w.Code)
 
-	// should get from cache if enable cache.
 	config.DefaultMgr().Set(req.Context(), "cache_enabled", true)
 	defer config.DefaultMgr().Set(req.Context(), "cache_enabled", false)
 	req = httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/", nil)
@@ -121,21 +118,14 @@ func (m *manifestTestSuite) TestGetManifest() {
 }
 
 func (m *manifestTestSuite) TestDeleteManifest() {
-	// doesn't exist
 	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
-
 	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
 	deleteManifest(w, req)
 	m.Equal(http.StatusBadRequest, w.Code)
 
-	// reset the mock
 	m.SetupTest()
 
-	// reset the mock
-	m.SetupTest()
-
-	// exist
 	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodPut && req.URL.Path == "/v2/library/hello-world/manifests/latest" {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -154,10 +144,8 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	deleteManifest(w, req)
 	m.Equal(http.StatusAccepted, w.Code)
 
-	// should get from cache if enable cache.
 	config.DefaultMgr().Set(req.Context(), "cache_enabled", true)
 	defer config.DefaultMgr().Set(req.Context(), "cache_enabled", false)
-	// should delete cache when manifest be deleted.
 	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	input = &beegocontext.BeegoInput{}
 	input.SetParam(":reference", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
@@ -170,36 +158,165 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 }
 
 func (m *manifestTestSuite) TestPutManifest() {
+	manifestContent := []byte(`{"schemaVersion":2}`)
+	expectedDigest := digest.FromBytes(manifestContent).String()
+
 	// the backend registry response with 500
 	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if req.Method == http.MethodPut && req.URL.Path == "/v2/library/hello-world/manifests/latest" {
+		if req.Method == http.MethodPut && strings.Contains(req.URL.Path, "/v2/library/hello-world/manifests/") {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
 	})
-	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", nil)
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
 	w := &httptest.ResponseRecorder{}
 	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	putManifest(w, req)
 	m.Equal(http.StatusInternalServerError, w.Code)
 
-	// reset the mock
 	m.SetupTest()
 
-	// // the backend registry serves the request successfully
+	// the backend registry serves the request successfully
 	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if req.Method == http.MethodPut && req.URL.Path == "/v2/library/hello-world/manifests/latest" {
-			w.Header().Set("Docker-Content-Digest", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+		// After our changes, the URL path will contain the digest, not the tag
+		if req.Method == http.MethodPut && strings.Contains(req.URL.Path, "/v2/library/hello-world/manifests/") {
+			w.Header().Set("Docker-Content-Digest", expectedDigest)
 			w.WriteHeader(http.StatusCreated)
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
 	})
-	req = httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", nil)
+	req = httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
+	input = &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
 	w = &httptest.ResponseRecorder{}
 	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
+	putManifest(w, req)
+	m.Equal(http.StatusCreated, w.Code)
+}
+
+func (m *manifestTestSuite) TestPutManifestWithTagToDigestReplacement() {
+	manifestContent := []byte(`{
+		"schemaVersion": 2,
+		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+		"config": {
+			"mediaType": "application/vnd.docker.container.image.v1+json",
+			"size": 1234,
+			"digest": "sha256:abcd1234"
+		}
+	}`)
+	expectedDigest := digest.FromBytes(manifestContent).String()
+
+	var proxyRequest *http.Request
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		proxyRequest = req
+		if !strings.Contains(req.URL.Path, expectedDigest) {
+			m.T().Errorf("Expected URL path to contain digest %s, got %s", expectedDigest, req.URL.Path)
+		}
+		body, err := io.ReadAll(req.Body)
+		if err != nil {
+			m.T().Errorf("Failed to read body: %v", err)
+		}
+		if len(body) == 0 {
+			m.T().Error("Request body is empty - body restoration failed")
+		}
+		if !bytes.Equal(body, manifestContent) {
+			m.T().Errorf("Body content mismatch. Expected %s, got %s", string(manifestContent), string(body))
+		}
+		if req.ContentLength != int64(len(manifestContent)) {
+			m.T().Errorf("ContentLength mismatch. Expected %d, got %d", len(manifestContent), req.ContentLength)
+		}
+		w.Header().Set("Docker-Content-Digest", expectedDigest)
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
+	req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
+	putManifest(w, req)
+	m.Equal(http.StatusCreated, w.Code)
+	m.NotNil(proxyRequest, "Request was not captured by proxy")
+	m.Contains(proxyRequest.URL.Path, expectedDigest, "URL should contain digest")
+}
+
+func (m *manifestTestSuite) TestPutManifestWithDigest() {
+	manifestContent := []byte(`{
+		"schemaVersion": 2,
+		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+		"config": {
+			"mediaType": "application/vnd.docker.container.image.v1+json",
+			"size": 1234,
+			"digest": "sha256:abcd1234"
+		}
+	}`)
+	providedDigest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
+
+	var proxyRequest *http.Request
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		proxyRequest = req
+		if !strings.Contains(req.URL.Path, providedDigest) {
+			m.T().Errorf("Expected URL path to contain original digest %s, got %s", providedDigest, req.URL.Path)
+		}
+		body, err := io.ReadAll(req.Body)
+		if err != nil {
+			m.T().Errorf("Failed to read body: %v", err)
+		}
+		if len(body) == 0 {
+			m.T().Error("Request body is empty")
+		}
+		w.Header().Set("Docker-Content-Digest", providedDigest)
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/"+providedDigest, bytes.NewReader(manifestContent))
+	req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", providedDigest)
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
+	putManifest(w, req)
+	m.Equal(http.StatusCreated, w.Code)
+	m.NotNil(proxyRequest, "Request was not captured by proxy")
+	m.Contains(proxyRequest.URL.Path, providedDigest, "URL should contain original digest")
+}
+
+func (m *manifestTestSuite) TestPutManifestEmptyBody() {
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		body, _ := io.ReadAll(req.Body)
+		dgst := digest.FromBytes(body).String()
+		w.Header().Set("Docker-Content-Digest", dgst)
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/empty/manifests/latest", bytes.NewReader([]byte{}))
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/empty")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
+
 	putManifest(w, req)
 	m.Equal(http.StatusCreated, w.Code)
 }

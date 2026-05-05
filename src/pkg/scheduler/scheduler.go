@@ -36,15 +36,15 @@ var (
 
 // Schedule describes the detail information about the created schedule
 type Schedule struct {
-	ID           int64                  `json:"id"`
-	VendorType   string                 `json:"vendor_type"`
-	VendorID     int64                  `json:"vendor_id"`
-	CRONType     string                 `json:"cron_type"`
-	CRON         string                 `json:"cron"`
-	ExtraAttrs   map[string]interface{} `json:"extra_attrs"`
-	Status       string                 `json:"status"` // status of the underlying task(jobservice job)
-	CreationTime time.Time              `json:"creation_time"`
-	UpdateTime   time.Time              `json:"update_time"`
+	ID           int64          `json:"id"`
+	VendorType   string         `json:"vendor_type"`
+	VendorID     int64          `json:"vendor_id"`
+	CRONType     string         `json:"cron_type"`
+	CRON         string         `json:"cron"`
+	ExtraAttrs   map[string]any `json:"extra_attrs"`
+	Status       string         `json:"status"` // status of the underlying task(jobservice job)
+	CreationTime time.Time      `json:"creation_time"`
+	UpdateTime   time.Time      `json:"update_time"`
 	// we can extend this model to include more information(e.g. how many times the schedule already
 	// runs; when will the schedule runs next time)
 }
@@ -60,7 +60,7 @@ type Scheduler interface {
 	// function must decode it before using
 	// The customized attributes can be put into the "extraAttrs"
 	Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-		cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error)
+		cron string, callbackFuncName string, callbackFuncParams any, extraAttrs map[string]any) (int64, error)
 	// UnScheduleByID the schedule specified by ID
 	UnScheduleByID(ctx context.Context, id int64) error
 	// UnScheduleByVendor the schedule specified by vendor
@@ -93,7 +93,7 @@ func (s *scheduler) CountSchedules(ctx context.Context, query *q.Query) (int64, 
 }
 
 func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string,
-	cron string, callbackFuncName string, callbackFuncParams interface{}, extraAttrs map[string]interface{}) (int64, error) {
+	cron string, callbackFuncName string, callbackFuncParams any, extraAttrs map[string]any) (int64, error) {
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
@@ -121,7 +121,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 		return 0, err
 	}
 	sched.CallbackFuncParam = string(paramsData)
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	if len(paramsData) > 0 {
 		err = json.Unmarshal(paramsData, &params)
 		if err != nil {
@@ -196,7 +196,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 
 func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 	executions, err := s.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": JobNameScheduler,
 			"VendorID":   id,
 		},
@@ -228,7 +228,7 @@ func (s *scheduler) UnScheduleByID(ctx context.Context, id int64) error {
 
 func (s *scheduler) UnScheduleByVendor(ctx context.Context, vendorType string, vendorID int64) error {
 	q := &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": vendorType,
 		},
 	}
@@ -282,7 +282,7 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 		UpdateTime:   schedule.UpdateTime,
 	}
 	if len(schedule.ExtraAttrs) > 0 {
-		extras := map[string]interface{}{}
+		extras := map[string]any{}
 		if err := json.Unmarshal([]byte(schedule.ExtraAttrs), &extras); err != nil {
 			log.Errorf("failed to unmarshal the extra attributes of schedule %d: %v", schedule.ID, err)
 			return nil, err
@@ -291,7 +291,7 @@ func (s *scheduler) convertSchedule(ctx context.Context, schedule *schedule) (*S
 	}
 
 	executions, err := s.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": JobNameScheduler,
 			"VendorID":   schedule.ID,
 		},

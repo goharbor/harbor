@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { SystemInfoService } from '../../../../shared/services';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
@@ -155,6 +168,46 @@ describe('ProjectPolicyConfigComponent', () => {
             component.projectPolicyConfigComponent.projectPolicy
                 .GenerateSbomOnPush
         ).toBeTruthy();
+    });
+    it('should not allow empty and whitespace CVEs', async () => {
+        // set cveIds with mix of empty and whitespace
+        component.projectPolicyConfigComponent.cveIds = `
+      ,   , \n ,  \t, ,
+    `;
+
+        component.projectPolicyConfigComponent.addToProjectAllowlist();
+
+        const finalIds =
+            component.projectPolicyConfigComponent.projectAllowlist.items.map(
+                i => i.cve_id
+            );
+        expect(finalIds).not.toContain(' ');
+        expect(finalIds).not.toContain('\n');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+
+        // modal should be closed
+        expect(component.projectPolicyConfigComponent.cveIds).toBeNull();
+        expect(component.projectPolicyConfigComponent.showAddModal).toBeFalse();
+    });
+    it('should add only unique CVEs to the allowlist', () => {
+        // set cveIds with duplicates and valid
+        component.projectPolicyConfigComponent.cveIds = `
+      CVE-2024-0002,
+      CVE-2024-0002,
+      CVE-2024-0004
+    `;
+        component.projectPolicyConfigComponent.addToProjectAllowlist();
+        const finalIds =
+            component.projectPolicyConfigComponent.projectAllowlist.items.map(
+                i => i.cve_id
+            );
+        expect(finalIds).toContain('CVE-2024-0004');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+        expect(finalIds.filter(id => id === 'CVE-2024-0002').length).toBe(1); // no duplicates
+
+        // modal should be closed
+        expect(component.projectPolicyConfigComponent.cveIds).toBeNull();
+        expect(component.projectPolicyConfigComponent.showAddModal).toBeFalse();
     });
     it('should get hasChangeConfigRole', () => {
         expect(

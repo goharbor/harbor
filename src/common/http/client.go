@@ -69,7 +69,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 }
 
 // Get ...
-func (c *Client) Get(url string, v ...interface{}) error {
+func (c *Client) Get(url string, v ...any) error {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (c *Client) Head(url string) error {
 }
 
 // Post ...
-func (c *Client) Post(url string, v ...interface{}) error {
+func (c *Client) Post(url string, v ...any) error {
 	var reader io.Reader
 	if len(v) > 0 {
 		if r, ok := v[0].(io.Reader); ok {
@@ -123,7 +123,7 @@ func (c *Client) Post(url string, v ...interface{}) error {
 }
 
 // Put ...
-func (c *Client) Put(url string, v ...interface{}) error {
+func (c *Client) Put(url string, v ...any) error {
 	var reader io.Reader
 	if len(v) > 0 {
 		data, err := json.Marshal(v[0])
@@ -176,7 +176,7 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 
 // GetAndIteratePagination iterates the pagination header and returns all resources
 // The parameter "v" must be a pointer to a slice
-func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 	url, err := url.Parse(endpoint)
 	if err != nil {
 		return err

@@ -28,7 +28,7 @@ func Test_unescapePathParams(t *testing.T) {
 	str := "params"
 
 	type args struct {
-		params     interface{}
+		params     any
 		fieldNames []string
 	}
 	tests := []struct {

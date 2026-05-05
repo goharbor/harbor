@@ -69,7 +69,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	tags, err := t.tagCtl.List(req.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": repository.RepositoryID,
 		}}, nil)
 	if err != nil {

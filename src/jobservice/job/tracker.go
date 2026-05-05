@@ -61,11 +61,11 @@ type Tracker interface {
 
 	// Update the properties of the job stats
 	//
-	// fieldAndValues ...interface{} : One or more properties being updated
+	// fieldAndValues ...any : One or more properties being updated
 	//
 	// Returns:
 	//  error if update failed
-	Update(fieldAndValues ...interface{}) error
+	Update(fieldAndValues ...any) error
 
 	// NumericID returns the numeric ID of periodic job.
 	// Please pay attention, this only for periodic job.
@@ -164,7 +164,7 @@ func (bt *basicTracker) Job() *Stats {
 }
 
 // Update the properties of the job stats
-func (bt *basicTracker) Update(fieldAndValues ...interface{}) error {
+func (bt *basicTracker) Update(fieldAndValues ...any) error {
 	if len(fieldAndValues) == 0 {
 		return errors.New("no properties specified to update")
 	}
@@ -175,7 +175,7 @@ func (bt *basicTracker) Update(fieldAndValues ...interface{}) error {
 	}()
 
 	key := rds.KeyJobStats(bt.namespace, bt.jobID)
-	args := []interface{}{"update_time", time.Now().Unix()} // update timestamp
+	args := []any{"update_time", time.Now().Unix()} // update timestamp
 	args = append(args, fieldAndValues...)
 
 	return rds.HmSet(conn, key, args...)
@@ -215,7 +215,7 @@ func (bt *basicTracker) PeriodicExecutionDone() error {
 		_ = conn.Close()
 	}()
 
-	args := []interface{}{key, "XX", -1, bt.jobID}
+	args := []any{key, "XX", -1, bt.jobID}
 	_, err := conn.Do("ZADD", args...)
 
 	return err
@@ -302,7 +302,7 @@ func (bt *basicTracker) Save() (err error) {
 	stats := bt.jobStats
 
 	key := rds.KeyJobStats(bt.namespace, stats.Info.JobID)
-	args := make([]interface{}, 0)
+	args := make([]any, 0)
 	args = append(args, key)
 	args = append(args,
 		"id", stats.Info.JobID,
@@ -362,7 +362,7 @@ func (bt *basicTracker) Save() (err error) {
 	// Link with its upstream job if upstream job ID exists for future querying
 	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
 		k := rds.KeyUpstreamJobAndExecutions(bt.namespace, stats.Info.UpstreamJobID)
-		zargs := []interface{}{k, "NX", stats.Info.RunAt, stats.Info.JobID}
+		zargs := []any{k, "NX", stats.Info.RunAt, stats.Info.JobID}
 		err = conn.Send("ZADD", zargs...)
 	}
 

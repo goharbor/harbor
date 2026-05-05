@@ -218,7 +218,7 @@ func (d *dao) ListAdminRolesOfUser(ctx context.Context, user commonmodels.User) 
 
 	var membersG []models.Member
 	if len(user.GroupIDs) > 0 {
-		var params []interface{}
+		var params []any
 		params = append(params, user.GroupIDs)
 		sqlG := fmt.Sprintf(`select b.* from project as a 
     		left join project_member as b on a.project_id = b.project_id 

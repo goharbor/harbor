@@ -83,7 +83,7 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 	default:
 		return fmt.Errorf("unsupported manifest media type: %s", artifact.ManifestMediaType)
 	}
-	return processor.Get(artifact.MediaType).AbstractMetadata(ctx, artifact, content)
+	return processor.Get(artifact.ResolveArtifactType()).AbstractMetadata(ctx, artifact, content)
 }
 
 // the artifact is enveloped by docker manifest v1

@@ -59,7 +59,7 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 		return err
 	}
 	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
+		artifact.ExtraAttrs = map[string]any{}
 	}
 	artifact.ExtraAttrs["created"] = config.Created
 	artifact.ExtraAttrs["architecture"] = config.Architecture

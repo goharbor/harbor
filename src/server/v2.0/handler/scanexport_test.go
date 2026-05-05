@@ -74,7 +74,7 @@ func (suite *ScanExportTestSuite) TestAuthorization() {
 		reqs := []struct {
 			method  string
 			url     string
-			body    interface{}
+			body    any
 			headers map[string]string
 		}{
 			{http.MethodPost, "/export/cve", criteria, map[string]string{"X-Scan-Data-Type": v1.MimeTypeGenericVulnerabilityReport}},
@@ -191,7 +191,7 @@ func (suite *ScanExportTestSuite) TestExportScanData() {
 		suite.Equal(200, res.StatusCode)
 
 		suite.Equal(nil, err)
-		respData := make(map[string]interface{})
+		respData := make(map[string]any)
 		json.NewDecoder(res.Body).Decode(&respData)
 		suite.Equal(int64(100), int64(respData["id"].(float64)))
 

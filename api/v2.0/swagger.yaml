@@ -336,6 +336,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -1274,7 +1276,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -1449,7 +1451,14 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
+          enum:
+            - build_history
+            - values.yaml
+            - readme.md
+            - dependencies
+            - sbom
+            - license
+            - files
           required: true
       responses:
         '200':
@@ -1795,7 +1804,7 @@ paths:
             items:
               $ref: '#/definitions/AuditLogEventType'
         '401':
-          $ref: '#/responses/401'      
+          $ref: '#/responses/401'
   /projects/{project_name}/logs:
     get:
       summary: Get recent logs of the projects (deprecated)
@@ -1863,7 +1872,7 @@ paths:
         '401':
           $ref: '#/responses/401'
         '500':
-          $ref: '#/responses/500'          
+          $ref: '#/responses/500'
   /p2p/preheat/providers:
     get:
       summary: List P2P providers
@@ -2030,7 +2039,13 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the specified P2P provider instance
-      description: Update the specified P2P provider instance
+      description: |
+        Update the specified P2P provider instance.
+
+        If `auth_info` is omitted or empty in the request body and the effective `auth_mode` is not `NONE`
+        (either sent in the request or left unchanged from the stored registration), the previously stored
+        auth credentials are kept. Send a non-empty `auth_info` object to set or replace credentials.
+        Set `auth_mode` to `NONE` to disable authentication without retaining the old credentials.
       tags:
         - preheat
       operationId: UpdateInstance
@@ -3022,6 +3037,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -3553,6 +3570,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -3991,6 +4010,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -5385,6 +5406,10 @@ paths:
       summary: Update a scanner registration
       description: |
         Updates the specified scanner registration.
+
+        If `access_credential` is omitted or empty in the request body and the registration still uses
+        an authentication type that requires a credential (Basic, Bearer, or APIKey), the existing stored
+        credential is left unchanged. Send a non-empty `access_credential` to set or rotate the secret.
       tags:
         - scanner
       operationId: updateScanner
@@ -5398,7 +5423,7 @@ paths:
         - name: registration
           in: body
           required: true
-          description: A scanner registraiton to be updated.
+          description: A scanner registration to be updated.
           schema:
             $ref: '#/definitions/ScannerRegistrationReq'
       responses:
@@ -6131,6 +6156,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -6680,6 +6706,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -6949,8 +6985,8 @@ definitions:
         description: The time when this operation is triggered.
   AuditLogEventType:
     type: object
-    properties: 
-      event_type: 
+    properties:
+      event_type:
         type: string
         description: the event type, such as create_user.
         example: create_user
@@ -7000,7 +7036,11 @@ definitions:
         description: The authentication way supported
       auth_info:
         type: object
-        description: The auth credential data if exists
+        description: |
+          The auth credential data if it exists.
+
+          When updating an instance (PUT `/p2p/preheat/instances/{preheat_instance_name}`), if this object
+          is omitted or empty and `auth_mode` is not `NONE`, the previously stored credentials are kept.
         additionalProperties:
           type: string
       status:
@@ -7294,8 +7334,9 @@ definitions:
         x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        description: |-
+          Whether this project reuse the system level CVE allowlist as the allowlist of its own. The valid values are "true", "false".
+          If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.
         x-nullable: true
       retention_id:
         type: string
@@ -7304,6 +7345,18 @@ definitions:
       proxy_speed_kb:
         type: string
         description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
+        x-nullable: true
+      max_upstream_conn:
+        type: string
+        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
+        x-nullable: true
+      proxy_cache_local_on_not_found:
+        type: string
+        description: 'Whether to serve images from local cache when they are removed from the upstream registry. The valid values are "true", "false".'
+        x-nullable: true
+      proxy_referrer_api:
+        type: string
+        description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
         x-nullable: true
   ProjectSummary:
     type: object
@@ -7446,6 +7499,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to skip execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7467,8 +7526,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        type: object
-        description: 'The value of replication policy filter.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
       decoration:
         type: string
         description: 'matches or excludes the result'
@@ -7506,6 +7564,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7551,6 +7613,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7582,6 +7648,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object
@@ -8538,6 +8608,11 @@ definitions:
         type: string
         description: |
           An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+
+          When updating a registration (PUT `/scanners/{registration_id}`), if this field is omitted or empty
+          and `auth` is still one of Basic, Bearer, or APIKey, the previously stored credential is kept
+          unchanged. Provide a non-empty value to set or rotate the credential. Clearing `auth` removes the
+          need for a credential; in that case an empty `access_credential` does not restore the old secret.
         example: "Bearer: JWTTOKENGOESHERE"
       skip_certVerify:
         type: boolean
@@ -9058,6 +9133,9 @@ definitions:
       oidc_extra_redirect_parms:
         $ref: '#/definitions/StringConfigItem'
         description: Extra parameters to add when redirect request to OIDC provider
+      oidc_logout:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user session from the OIDC provider
       robot_token_duration:
         $ref: '#/definitions/IntegerConfigItem'
         description: The robot account token duration in days
@@ -9330,6 +9408,11 @@ definitions:
       oidc_extra_redirect_parms:
         type: string
         description: Extra parameters to add when redirect request to OIDC provider
+        x-omitempty: true
+        x-isnullable: true
+      oidc_logout:
+        type: boolean
+        description: Logout OIDC user session
         x-omitempty: true
         x-isnullable: true
       robot_token_duration:
@@ -10051,6 +10134,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float

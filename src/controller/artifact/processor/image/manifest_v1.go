@@ -44,7 +44,7 @@ func (m *manifestV1Processor) AbstractMetadata(_ context.Context, artifact *arti
 		return err
 	}
 	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
+		artifact.ExtraAttrs = map[string]any{}
 	}
 	artifact.ExtraAttrs["architecture"] = mani.Architecture
 	return nil

@@ -36,7 +36,7 @@ func (p *Handler) Name() string {
 }
 
 // Handle ...
-func (p *Handler) Handle(ctx context.Context, value interface{}) error {
+func (p *Handler) Handle(ctx context.Context, value any) error {
 	switch v := value.(type) {
 	case *event.PushArtifactEvent:
 		return p.handlePushArtifact(ctx, v)

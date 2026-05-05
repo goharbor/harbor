@@ -49,7 +49,7 @@ func (s *ScheduleTestSuite) TestCreateSchedule() {
 	s.scheduler.On("Schedule", mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	dataMap := make(map[string]interface{})
+	dataMap := make(map[string]any)
 	p := purge.JobPolicy{}
 	id, err := s.ctl.Create(nil, job.PurgeAuditVendorType, "Daily", "* * * * * *", purge.SchedulerCallback, p, dataMap)
 	s.Nil(err)
@@ -76,7 +76,7 @@ func (s *ScheduleTestSuite) TestGetSchedule() {
 
 func (s *ScheduleTestSuite) TestListSchedule() {
 	mock.OnAnything(s.scheduler, "ListSchedules").Return([]*scheduler.Schedule{
-		{ID: 1, VendorType: "GARBAGE_COLLECTION", CRON: "0 0 0 * * *", ExtraAttrs: map[string]interface{}{"args": "sample args"}}}, nil).Once()
+		{ID: 1, VendorType: "GARBAGE_COLLECTION", CRON: "0 0 0 * * *", ExtraAttrs: map[string]any{"args": "sample args"}}}, nil).Once()
 	schedules, err := s.scheduler.ListSchedules(nil, nil)
 	s.Assert().Nil(err)
 	s.Assert().Equal(1, len(schedules))

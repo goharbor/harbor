@@ -138,7 +138,7 @@
                         }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>
-                        {{ getStatusStr(j.status) }}
+                        {{ getStatusStr(j.status, j.status_text) }}
                         <clr-tooltip>
                             <clr-icon
                                 *ngIf="j.status_text"
@@ -178,9 +178,12 @@
                         [(clrDgPage)]="currentPage"
                         [clrDgPageSize]="pageSize"
                         [clrDgTotalItems]="totalCount">
-                        <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                            'PAGINATION.PAGE_SIZE' | translate
-                        }}</clr-dg-page-size>
+                        <clr-dg-page-size
+                            [clrPageSizeOptions]="clrPageSizeOptions"
+                            >{{
+                                'PAGINATION.PAGE_SIZE' | translate
+                            }}</clr-dg-page-size
+                        >
                         <span *ngIf="showPaginationIndex"
                             >{{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}

@@ -134,7 +134,7 @@ func (s *selector) tagSelectExclude(artifact *iselector.Candidate) (selected boo
 }
 
 // New is factory method for doublestar selector
-func New(decoration string, pattern interface{}, extras string) iselector.Selector {
+func New(decoration string, pattern any, extras string) iselector.Selector {
 	untagged := true // default behavior for upgrade, active keep the untagged images
 	if decoration == Excludes {
 		untagged = false

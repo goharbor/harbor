@@ -71,51 +71,51 @@ func (dbl *DBLogger) Close() error {
 }
 
 // Debug ...
-func (dbl *DBLogger) Debug(v ...interface{}) {
+func (dbl *DBLogger) Debug(v ...any) {
 	dbl.backendLogger.Debug(v...)
 }
 
 // Debugf with format
-func (dbl *DBLogger) Debugf(format string, v ...interface{}) {
+func (dbl *DBLogger) Debugf(format string, v ...any) {
 	dbl.backendLogger.Debugf(format, v...)
 }
 
 // Info ...
-func (dbl *DBLogger) Info(v ...interface{}) {
+func (dbl *DBLogger) Info(v ...any) {
 	dbl.backendLogger.Info(v...)
 }
 
 // Infof with format
-func (dbl *DBLogger) Infof(format string, v ...interface{}) {
+func (dbl *DBLogger) Infof(format string, v ...any) {
 	dbl.backendLogger.Infof(format, v...)
 }
 
 // Warning ...
-func (dbl *DBLogger) Warning(v ...interface{}) {
+func (dbl *DBLogger) Warning(v ...any) {
 	dbl.backendLogger.Warning(v...)
 }
 
 // Warningf with format
-func (dbl *DBLogger) Warningf(format string, v ...interface{}) {
+func (dbl *DBLogger) Warningf(format string, v ...any) {
 	dbl.backendLogger.Warningf(format, v...)
 }
 
 // Error ...
-func (dbl *DBLogger) Error(v ...interface{}) {
+func (dbl *DBLogger) Error(v ...any) {
 	dbl.backendLogger.Error(v...)
 }
 
 // Errorf with format
-func (dbl *DBLogger) Errorf(format string, v ...interface{}) {
+func (dbl *DBLogger) Errorf(format string, v ...any) {
 	dbl.backendLogger.Errorf(format, v...)
 }
 
 // Fatal error
-func (dbl *DBLogger) Fatal(v ...interface{}) {
+func (dbl *DBLogger) Fatal(v ...any) {
 	dbl.backendLogger.Fatal(v...)
 }
 
 // Fatalf error
-func (dbl *DBLogger) Fatalf(format string, v ...interface{}) {
+func (dbl *DBLogger) Fatalf(format string, v ...any) {
 	dbl.backendLogger.Fatalf(format, v...)
 }

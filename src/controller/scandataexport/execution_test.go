@@ -94,7 +94,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecution() {
 		sysArtifactMgr: suite.sysArtifactMgr,
 	}
 	// get execution succeeds
-	attrs := make(map[string]interface{})
+	attrs := make(map[string]any)
 	attrs[export.JobNameAttribute] = "test-job"
 	attrs[export.UserNameAttribute] = "test-user"
 	attrs[export.DigestKey] = "sha256:d04b98f48e8f8bcc15c6ae5ac050801cd6dcfd428fb5f9e65c4e16e7807340fa"
@@ -154,7 +154,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecutionSysArtifactExistF
 		sysArtifactMgr: suite.sysArtifactMgr,
 	}
 	// get execution succeeds
-	attrs := make(map[string]interface{})
+	attrs := make(map[string]any)
 	attrs[export.JobNameAttribute] = "test-job"
 	attrs[export.UserNameAttribute] = "test-user"
 	{
@@ -194,7 +194,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestGetExecutionList() {
 		sysArtifactMgr: suite.sysArtifactMgr,
 	}
 	// get execution succeeds
-	attrs := make(map[string]interface{})
+	attrs := make(map[string]any)
 	attrs[export.JobNameAttribute] = "test-job"
 	attrs[export.UserNameAttribute] = "test-user"
 	{
@@ -243,7 +243,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestStart() {
 	// execution manager and task manager return successfully
 	{
 		// get execution succeeds
-		attrs := make(map[string]interface{})
+		attrs := make(map[string]any)
 		attrs[export.ProjectIDsAttribute] = []int64{1}
 		attrs[export.JobNameAttribute] = "test-job"
 		attrs[export.UserNameAttribute] = "test-user"
@@ -307,7 +307,7 @@ func (suite *ScanDataExportExecutionTestSuite) TestStartWithTaskManagerError() {
 	{
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, export.CsvJobVendorIDKey, int(-1))
-		attrs := make(map[string]interface{})
+		attrs := make(map[string]any)
 		attrs[export.ProjectIDsAttribute] = []int64{1}
 		attrs[export.JobNameAttribute] = "test-job"
 		attrs[export.UserNameAttribute] = "test-user"
@@ -327,7 +327,7 @@ func (suite *ScanDataExportExecutionTestSuite) TearDownSuite() {
 
 func (suite *ScanDataExportExecutionTestSuite) validateExecutionManagerInvocation(ctx context.Context) {
 	// validate that execution manager has been called with the specified
-	extraAttsMatcher := testifymock.MatchedBy(func(m map[string]interface{}) bool {
+	extraAttsMatcher := testifymock.MatchedBy(func(m map[string]any) bool {
 		jobName, jobNamePresent := m[export.JobNameAttribute]
 		userName, userNamePresent := m[export.UserNameAttribute]
 		return jobNamePresent && userNamePresent && jobName == "test-job" && userName == "test-user"

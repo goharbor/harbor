@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
     DEFAULT_PAGE_SIZE,
     delUrlParam,
@@ -116,7 +129,7 @@ describe('functions in utils.ts should work', () => {
         });
         expect(getPageSizeFromLocalStorage(null)).toEqual(DEFAULT_PAGE_SIZE);
         expect(getPageSizeFromLocalStorage('test', 99)).toEqual(99);
-        expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
+        expect(getPageSizeFromLocalStorage('')).toEqual(DEFAULT_PAGE_SIZE);
         setPageSizeToLocalStorage('test1', null);
         expect(getPageSizeFromLocalStorage('test1')).toEqual(DEFAULT_PAGE_SIZE);
         setPageSizeToLocalStorage('test1', 10);

@@ -22,6 +22,7 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 )
 
@@ -38,7 +39,7 @@ import (
 //
 // // support filter by "Field6", "field6"
 //
-//	func (f *Foo) FilterByField6(ctx context.Context, qs orm.QuerySetter, key string, value interface{}) orm.QuerySetter {
+//	func (f *Foo) FilterByField6(ctx context.Context, qs orm.QuerySetter, key string, value any) orm.QuerySetter {
 //	  ...
 //		 return qs
 //	}
@@ -71,7 +72,7 @@ type Config struct {
 
 type Option func(*Config)
 
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query, options ...Option) (orm.QuerySeter, error) {
+func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Option) (orm.QuerySeter, error) {
 	t := reflect.TypeOf(model)
 	if t.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("<orm.QuerySetter> cannot use non-ptr model struct `%s`", getFullName(t.Elem()))
@@ -127,7 +128,7 @@ func newConfig(opts ...Option) *Config {
 // select a, b, c from mytable order by a limit ? offset ?
 // it appends the " limit ? offset ? " to sql,
 // and appends the limit value and offset value to the params of this query
-func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (string, []interface{}) {
+func PaginationOnRawSQL(query *q.Query, sql string, params []any) (string, []any) {
 	if query != nil && query.PageSize > 0 {
 		sql += ` limit ?`
 		params = append(params, query.PageSize)
@@ -141,7 +142,7 @@ func PaginationOnRawSQL(query *q.Query, sql string, params []interface{}) (strin
 }
 
 // QuerySetterForCount creates the query setter used for count with the sort and pagination information ignored
-func QuerySetterForCount(ctx context.Context, model interface{}, query *q.Query, _ ...string) (orm.QuerySeter, error) {
+func QuerySetterForCount(ctx context.Context, model any, query *q.Query, _ ...string) (orm.QuerySeter, error) {
 	query = q.MustClone(query)
 	query.Sorts = nil
 	query.PageSize = 0
@@ -155,17 +156,41 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 		// The "strings.SplitN()" here is a workaround for the incorrect usage of query which should be avoided
 		// e.g. use the query with the knowledge of underlying ORM implementation, the "OrList" should be used instead:
 		// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/project/controller.go#L348
-		k := strings.SplitN(key, orm.ExprSep, 2)[0]
-		mk, filterable := meta.Filterable(k)
+		keyPieces := strings.Split(key, orm.ExprSep)
+		if len(keyPieces) > 2 {
+			log.Warningf("The separator '%s' is not valid in the query parameter '%s__%s'. Please use the correct field name.", orm.ExprSep, keyPieces[0], keyPieces[1])
+			continue
+		}
+		fieldKey := keyPieces[0]
+		mk, filterable := meta.Filterable(fieldKey)
 		if !filterable {
 			// This is a workaround for the unsuitable usage of query, the keyword format for field and method should be consistent
 			// e.g. "ArtifactDigest" or the snake case format "artifact_digest" should be used instead:
 			// https://github.com/goharbor/harbor/blob/v2.2.0/src/controller/blob/controller.go#L233
-			mk, filterable = meta.Filterable(snakeCase(k))
-			if !filterable {
+			mk, filterable = meta.Filterable(snakeCase(fieldKey))
+			if mk == nil || !filterable {
 				continue
 			}
 		}
+
+		// only accept the below operators
+		if len(keyPieces) == 2 {
+			operator := orm.ExprSep + keyPieces[1]
+			allowedOperators := map[string]struct{}{
+				"__icontains": {},
+				"__in":        {},
+				"__gte":       {},
+				"__lte":       {},
+				"__gt":        {},
+				"__lt":        {},
+				"__exact":     {},
+			}
+			if _, ok := allowedOperators[operator]; !ok {
+				log.Warningf("the operator '%s' in query parameter '%s' is not supported, the query will be skipped.", operator, key)
+				continue
+			}
+		}
+
 		// filter function defined, use it directly
 		if mk.FilterFunc != nil {
 			qs = mk.FilterFunc(ctx, qs, key, value)

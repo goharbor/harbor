@@ -501,10 +501,10 @@ func extractMimeTypes(params job.Parameters) ([]string, error) {
 		return nil, errors.Errorf("missing job parameter '%s'", JobParameterMimes)
 	}
 
-	l, ok := v.([]interface{})
+	l, ok := v.([]any)
 	if !ok {
 		return nil, errors.Errorf(
-			"malformed job parameter '%s', expecting []interface{} but got %s",
+			"malformed job parameter '%s', expecting []any but got %s",
 			JobParameterMimes,
 			reflect.TypeOf(v).String(),
 		)

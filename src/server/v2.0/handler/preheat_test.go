@@ -217,7 +217,6 @@ func Test_convertInstanceToPayload(t *testing.T) {
 				Enabled:        true,
 				Endpoint:       "https://example.com",
 				AuthMode:       "none",
-				AuthInfo:       map[string]string{"name": "harbor"},
 				Status:         "Unknown",
 				Default:        true,
 				Insecure:       true,

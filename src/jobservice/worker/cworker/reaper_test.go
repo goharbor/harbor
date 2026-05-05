@@ -163,11 +163,11 @@ func (suite *ReaperTestSuite) TestSyncOutdatedStats() {
 }
 
 func mockJobData() (string, error) {
-	j := make(map[string]interface{})
+	j := make(map[string]any)
 	j["name"] = job.SampleJob
 	j["id"] = utils.MakeIdentifier()
 	j["t"] = time.Now().Unix()
-	args := make(map[string]interface{})
+	args := make(map[string]any)
 	j["args"] = args
 	args["image"] = "test suite"
 
@@ -193,7 +193,7 @@ func mockJobStats(conn redis.Conn, ns string, jid string) error {
 		return err
 	}
 
-	args := []interface{}{
+	args := []any{
 		sk,
 		"id", jid,
 		"status", job.RunningStatus.String(),

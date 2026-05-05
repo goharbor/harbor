@@ -41,7 +41,7 @@ type Manager interface {
 	// Create submits the job to jobservice and creates a corresponding task record.
 	// An execution must be created first and the task will be linked to it.
 	// The "extraAttrs" can be used to set the customized attributes
-	Create(ctx context.Context, executionID int64, job *Job, extraAttrs ...map[string]interface{}) (id int64, err error)
+	Create(ctx context.Context, executionID int64, job *Job, extraAttrs ...map[string]any) (id int64, err error)
 	// Stop the specified task
 	Stop(ctx context.Context, id int64) (err error)
 	// Get the specified task
@@ -50,7 +50,7 @@ type Manager interface {
 	// Query the "ExtraAttrs" by setting 'query.Keywords["ExtraAttrs.key"]="value"'
 	List(ctx context.Context, query *q.Query) (tasks []*Task, err error)
 	// Update the extra attributes of the specified task
-	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) (err error)
+	UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]any) (err error)
 	// Get the log of the specified task
 	GetLog(ctx context.Context, id int64) (log []byte, err error)
 	// GetLogByJobID get the log of specified job id
@@ -101,7 +101,7 @@ func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
 }
 
-func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraAttrs ...map[string]interface{}) (int64, error) {
+func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraAttrs ...map[string]any) (int64, error) {
 	// create task record in database
 	id, err := m.createTaskRecord(ctx, executionID, extraAttrs...)
 	if err != nil {
@@ -137,12 +137,12 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 	return id, nil
 }
 
-func (m *manager) createTaskRecord(ctx context.Context, executionID int64, extraAttrs ...map[string]interface{}) (int64, error) {
+func (m *manager) createTaskRecord(ctx context.Context, executionID int64, extraAttrs ...map[string]any) (int64, error) {
 	exec, err := m.execDAO.Get(ctx, executionID)
 	if err != nil {
 		return 0, err
 	}
-	extras := map[string]interface{}{}
+	extras := map[string]any{}
 	if len(extraAttrs) > 0 && extraAttrs[0] != nil {
 		extras = extraAttrs[0]
 	}
@@ -255,7 +255,7 @@ func (m *manager) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([
 	return ts, nil
 }
 
-func (m *manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]interface{}) error {
+func (m *manager) UpdateExtraAttrs(ctx context.Context, id int64, extraAttrs map[string]any) error {
 	data, err := json.Marshal(extraAttrs)
 	if err != nil {
 		return err

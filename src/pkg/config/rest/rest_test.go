@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,7 +29,7 @@ import (
 )
 
 func ConfigGetHandler(w http.ResponseWriter, r *http.Request) {
-	cfgs := map[string]interface{}{
+	cfgs := map[string]any{
 		"ldap_url":         &Value{Val: "ldaps://ldap.vmware.com", Editable: true},
 		"ldap_scope":       &Value{Val: 5, Editable: true},
 		"ldap_verify_cert": &Value{Val: true, Editable: true},
@@ -54,10 +55,10 @@ func TestHTTPDriver_Load(t *testing.T) {
 	assert.Equal(t, true, configMap["ldap_verify_cert"])
 }
 
-var configMapForTest = map[string]interface{}{}
+var configMapForTest = map[string]any{}
 
 func ConfigPutHandler(w http.ResponseWriter, r *http.Request) {
-	cfgs := map[string]interface{}{}
+	cfgs := map[string]any{}
 	content, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -66,16 +67,14 @@ func ConfigPutHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for k, v := range cfgs {
-		configMapForTest[k] = v
-	}
+	maps.Copy(configMapForTest, cfgs)
 }
 
 func TestHTTPDriver_Save(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(ConfigPutHandler))
 	defer server.Close()
 	httpDriver := NewRESTDriver(server.URL)
-	configMap := map[string]interface{}{
+	configMap := map[string]any{
 		"ldap_url":         "ldap://www.example.com",
 		"ldap_timeout":     10,
 		"ldap_verify_cert": false,

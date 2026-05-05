@@ -17,6 +17,7 @@ package scandataexport
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -79,7 +80,7 @@ func (sde *ScanDataExport) Validate(_ job.Parameters) error {
 // The related arguments will be injected by the workerpool.
 //
 // ctx Context                   : Job execution context.
-// params map[string]interface{} : parameters with key-pair style for the job execution.
+// params map[string]any : parameters with key-pair style for the job execution.
 //
 // Returns:
 //
@@ -127,7 +128,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	logger.Infof("Export Job Id = %s. CSV file size: %d", params[export.JobID], stat.Size())
 	// earlier return and update status message if the file size is 0, unnecessary to push a empty system artifact.
 	if stat.Size() == 0 {
-		extra := map[string]interface{}{
+		extra := map[string]any{
 			export.StatusMessageAttribute: "No vulnerabilities found or matched",
 		}
 		updateErr := sde.updateExecAttributes(ctx, params, extra)
@@ -148,7 +149,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	logger.Infof("Export Job Id = %s. Created system artifact: %v for report file %s to persistent storage: %v", params[export.JobID], artID, fileName, err)
-	err = sde.updateExecAttributes(ctx, params, map[string]interface{}{export.DigestKey: hash.String()})
+	err = sde.updateExecAttributes(ctx, params, map[string]any{export.DigestKey: hash.String()})
 	if err != nil {
 		logger.Errorf("Export Job Id = %s. Error when updating execution record : %v", params[export.JobID], err)
 		return err
@@ -158,7 +159,7 @@ func (sde *ScanDataExport) Run(ctx job.Context, params job.Parameters) error {
 	return nil
 }
 
-func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, attrs map[string]interface{}) error {
+func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Parameters, attrs map[string]any) error {
 	logger := ctx.GetLogger()
 	execID, err := strconv.ParseInt(params[export.JobID].(string), 10, 64)
 	if err != nil {
@@ -173,9 +174,8 @@ func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Para
 	}
 	// copy old extra
 	attrsToUpdate := exec.ExtraAttrs
-	for k, v := range attrs {
-		attrsToUpdate[k] = v
-	}
+	maps.Copy(attrsToUpdate, attrs)
+
 	return sde.execMgr.UpdateExtraAttrs(ctx.SystemContext(), execID, attrsToUpdate)
 }
 
@@ -295,7 +295,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 }
 
 func (sde *ScanDataExport) extractCriteria(params job.Parameters) (*export.Request, error) {
-	filterMap, ok := params[export.JobRequest].(map[string]interface{})
+	filterMap, ok := params[export.JobRequest].(map[string]any)
 	if !ok {
 		return nil, errors.Errorf("malformed criteria '%v'", params[export.JobRequest])
 	}

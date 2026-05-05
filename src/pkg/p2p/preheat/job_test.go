@@ -58,7 +58,7 @@ func (suite *JobTestSuite) SetupSuite() {
 		ImageName: "busybox",
 		Tag:       "latest",
 		URL:       "https://harbor.com",
-		Headers: map[string]interface{}{
+		Headers: map[string]any{
 			"robot$my": "jwt-token",
 		},
 	}

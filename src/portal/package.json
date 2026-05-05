@@ -1,6 +1,6 @@
 {
   "name": "harbor",
-  "version": "2.11.0",
+  "version": "2.15.0",
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
@@ -23,7 +23,8 @@
     "release": "ng build --configuration production",
     "build-mock-api-server": "tsc -p server",
     "mock-api-server": "npm run build-mock-api-server && node server/dist/server/src/mock-api.js",
-    "generate-build-timestamp": "node scripts/generate-build-timestamp.js"
+    "generate-build-timestamp": "node scripts/generate-build-timestamp.js",
+    "i18n:check": "node scripts/find-missing-i18n.js"
   },
   "private": true,
   "dependencies": {
@@ -70,6 +71,7 @@
     "cypress": "13.1.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^4.2.1",
     "express": "^4.21.0",
     "https-proxy-agent": "^5.0.1",

@@ -224,7 +224,7 @@ func (e *executionDAO) GetMetrics(ctx context.Context, id int64) (*Metrics, erro
 func (e *executionDAO) RefreshStatus(ctx context.Context, id int64) (bool, string, error) {
 	// as the status of the execution can be refreshed by multiple operators concurrently
 	// we use the optimistic locking to avoid the conflict and retry 5 times at most
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		statusChanged, currentStatus, retry, err := e.refreshStatus(ctx, id)
 		if err != nil {
 			return false, "", err
@@ -346,7 +346,7 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 type jsonbStru struct {
 	keyPrefix string
 	key       string
-	value     interface{}
+	value     any
 }
 
 func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
@@ -359,7 +359,7 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options 
 	if query != nil && len(query.Keywords) > 0 {
 		var (
 			jsonbStrus []jsonbStru
-			args       []interface{}
+			args       []any
 		)
 
 		for key, value := range query.Keywords {
@@ -407,13 +407,13 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options 
 // key = extra_attrs.a.b.c
 //
 //	==> sql = "select id from execution where extra_attrs->?->?->>?=?", args = {a, b, c, value}
-func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{}) {
+func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 	if len(jsonbStrus) == 0 {
 		return "", nil
 	}
 
-	var cond string
-	var args []interface{}
+	var cond strings.Builder
+	var args []any
 	sql := "select id from execution where"
 
 	for i, jsonbStr := range jsonbStrus {
@@ -423,9 +423,9 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 		keys := strings.Split(strings.TrimPrefix(jsonbStr.key, jsonbStr.keyPrefix), ".")
 		if len(keys) == 1 {
 			if i == 0 {
-				cond += "extra_attrs->>?=?"
+				cond.WriteString("extra_attrs->>?=?")
 			} else {
-				cond += " and extra_attrs->>?=?"
+				cond.WriteString(" and extra_attrs->>?=?")
 			}
 		}
 		if len(keys) >= 2 {
@@ -435,9 +435,9 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 			}
 			s := strings.Join(elements, "->")
 			if i == 0 {
-				cond += fmt.Sprintf("extra_attrs->%s->>?=?", s)
+				cond.WriteString(fmt.Sprintf("extra_attrs->%s->>?=?", s))
 			} else {
-				cond += fmt.Sprintf(" and extra_attrs->%s->>?=?", s)
+				cond.WriteString(fmt.Sprintf(" and extra_attrs->%s->>?=?", s))
 			}
 		}
 
@@ -447,7 +447,7 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []interface{
 		args = append(args, jsonbStr.value)
 	}
 
-	return fmt.Sprintf("%s %s", sql, cond), args
+	return fmt.Sprintf("%s %s", sql, cond.String()), args
 }
 
 func buildExecStatusOutdateKey(id int64, vendor string) string {

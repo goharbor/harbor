@@ -101,11 +101,12 @@
                         [type]="showNewPwd ? 'text' : 'password'"
                         id="newPassword"
                         required
-                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$"
+                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
                         name="newPassword"
                         [(ngModel)]="newUser.password"
                         #newPassInput="ngModel"
                         size="30"
+                        maxLength="128"
                         (input)="handleValidation('newPassword', false)"
                         (blur)="handleValidation('newPassword', true)" />
                     <clr-icon
@@ -143,11 +144,12 @@
                         [type]="showConfirmPwd ? 'text' : 'password'"
                         id="confirmPassword"
                         required
-                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$"
+                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
                         name="confirmPassword"
                         [(ngModel)]="confirmedPwd"
                         #confirmPassInput="ngModel"
                         size="30"
+                        maxLength="128"
                         (input)="handleValidation('confirmPassword', false)"
                         (blur)="handleValidation('confirmPassword', true)" />
                     <clr-icon

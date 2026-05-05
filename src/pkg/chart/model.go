@@ -23,7 +23,7 @@ import (
 // VersionDetails keeps the detailed data info of the chart version
 type VersionDetails struct {
 	Dependencies []*helm_chart.Dependency `json:"dependencies"`
-	Values       map[string]interface{}   `json:"values"`
+	Values       map[string]any           `json:"values"`
 	Files        map[string]string        `json:"files"`
 	Security     *SecurityReport          `json:"security"`
 }

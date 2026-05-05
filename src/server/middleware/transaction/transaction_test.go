@@ -47,10 +47,10 @@ func (m *mockOrmer) Reset() {
 type mockTxOrmer struct {
 	o.TxOrmer
 	commitErr error
-	records   []interface{}
+	records   []any
 }
 
-func (m *mockTxOrmer) Insert(i interface{}) (int64, error) {
+func (m *mockTxOrmer) Insert(i any) (int64, error) {
 	m.records = append(m.records, i)
 	return int64(len(m.records)), nil
 }

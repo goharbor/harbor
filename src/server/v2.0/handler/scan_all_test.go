@@ -97,7 +97,7 @@ func (suite *ScanAllTestSuite) SetupSuite() {
 }
 
 func (suite *ScanAllTestSuite) TestAuthorization() {
-	newBody := func(body interface{}) io.Reader {
+	newBody := func(body any) io.Reader {
 		if body == nil {
 			return nil
 		}
@@ -114,7 +114,7 @@ func (suite *ScanAllTestSuite) TestAuthorization() {
 	reqs := []struct {
 		method string
 		url    string
-		body   interface{}
+		body   any
 	}{
 		{http.MethodGet, "/scans/all/metrics", nil},
 		{http.MethodGet, "/scans/schedule/metrics", nil},
@@ -185,7 +185,7 @@ func (suite *ScanAllTestSuite) TestGetLatestScanAllMetrics() {
 		// scan all execution not found
 		mock.OnAnything(suite.execMgr, "List").Return(nil, nil).Once()
 
-		var stats map[string]interface{}
+		var stats map[string]any
 		res, err := suite.GetJSON("/scans/all/metrics", &stats)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -223,7 +223,7 @@ func (suite *ScanAllTestSuite) TestGetLatestScheduledScanAllMetrics() {
 		// scan all execution not found
 		mock.OnAnything(suite.execMgr, "List").Return(nil, nil).Once()
 
-		var stats map[string]interface{}
+		var stats map[string]any
 		res, err := suite.GetJSON("/scans/schedule/metrics", &stats)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)

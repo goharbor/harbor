@@ -94,9 +94,9 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 }
 
 // GetUnitTestConfig ...
-func GetUnitTestConfig() map[string]interface{} {
+func GetUnitTestConfig() map[string]any {
 	ipAddress := os.Getenv("IP")
-	return map[string]interface{}{
+	return map[string]any{
 		common.ExtEndpoint:            fmt.Sprintf("https://%s", ipAddress),
 		common.AUTHMode:               "db_auth",
 		common.DatabaseType:           "postgresql",
@@ -130,7 +130,7 @@ func GetUnitTestConfig() map[string]interface{} {
 }
 
 // TraceCfgMap ...
-func TraceCfgMap(cfgs map[string]interface{}) {
+func TraceCfgMap(cfgs map[string]any) {
 	var keys []string
 	for k := range cfgs {
 		keys = append(keys, k)

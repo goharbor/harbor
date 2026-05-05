@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
     REFRESH_TIME_DIFFERENCE,
 } from '../../../../shared/entities/shared.const';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
@@ -75,6 +76,10 @@ import { ReplicationService } from 'ng-swagger-gen/services/replication.service'
 import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationExecutionFilter } from '../replication';
 import { ReplicationExecution } from '../../../../../../ng-swagger-gen/models/replication-execution';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
@@ -88,6 +93,7 @@ const ruleStatus: { [key: string]: any } = [
 ];
 
 export class SearchOption {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     ruleId: number | string;
     ruleName: string = '';
     trigger: string = '';
@@ -164,7 +170,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         private errorHandlerEntity: ErrorHandler,
         private replicationService: ReplicationService,
         private operationService: OperationService,
-        private translateService: TranslateService
+        private translateService: TranslateService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     public get showPaginationIndex(): boolean {
@@ -289,6 +296,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
         this.replicationService
             .listReplicationExecutionsResponse(params)
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(
                 response => {
                     this.totalCount = Number.parseInt(
@@ -642,7 +650,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
     }
 
-    getStatusStr(status: string): string {
+    getStatusStr(status: string, status_text: string): string {
+        // If status is Failed and status_text has 'Execution skipped', it means the replication task is skipped.
+        if (status === 'Failed' && status_text.startsWith('Execution skipped'))
+            return 'Skipped';
+
         if (STATUS_MAP && STATUS_MAP[status]) {
             return STATUS_MAP[status];
         }

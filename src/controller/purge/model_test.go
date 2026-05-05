@@ -18,15 +18,15 @@ import "testing"
 
 func TestString(t *testing.T) {
 	type args struct {
-		extras map[string]interface{}
+		extras map[string]any
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"normal", args{map[string]interface{}{"dry_run": true, "audit_log_retention_hour": 168}}, "{\"audit_log_retention_hour\":168,\"dry_run\":true}"},
-		{"empty", args{map[string]interface{}{}}, "{}"},
+		{"normal", args{map[string]any{"dry_run": true, "audit_log_retention_hour": 168}}, "{\"audit_log_retention_hour\":168,\"dry_run\":true}"},
+		{"empty", args{map[string]any{}}, "{}"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

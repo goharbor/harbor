@@ -61,12 +61,12 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, _ operation.GetStatisti
 	if len(pubProjs) == 0 {
 		statistic.PublicRepoCount = 0
 	} else {
-		var ids []interface{}
+		var ids []any
 		for _, p := range pubProjs {
 			ids = append(ids, p.ProjectID)
 		}
 		n, err := s.repoCtl.Count(ctx, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"ProjectID": q.NewOrList(ids),
 			},
 		})
@@ -108,7 +108,7 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, _ operation.GetStatisti
 		}
 		statistic.TotalStorageConsumption = sum + sysArtifactStorageSize
 	} else {
-		var privProjectIDs []interface{}
+		var privProjectIDs []any
 		if sc, ok := securityCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
 			user := sc.User()
 			member := &project.MemberQuery{
@@ -130,7 +130,7 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, _ operation.GetStatisti
 			statistic.PrivateRepoCount = 0
 		} else {
 			n, err := s.repoCtl.Count(ctx, &q.Query{
-				Keywords: map[string]interface{}{
+				Keywords: map[string]any{
 					"ProjectID": q.NewOrList(privProjectIDs),
 				},
 			})

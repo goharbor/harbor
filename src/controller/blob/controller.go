@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -225,10 +225,10 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 
 	opts := newOptions(options...)
 
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	if digest != "" {
 		ol := q.OrList{
-			Values: []interface{}{
+			Values: []any{
 				digest,
 			},
 		}

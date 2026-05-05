@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectAuditLogComponent } from './audit-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
@@ -145,9 +158,20 @@ describe('ProjectAuditLogComponent', () => {
         });
     });
     it('should support pagination', async () => {
+        component.projectName = 'test-project';
+        component.pageSize = 15;
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
-        let el: HTMLButtonElement =
+        // Pagination controls are only rendered when page.last > 1; wait for data to load
+        let attempts = 0;
+        while (component.totalRecordCount === 0 && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            fixture.detectChanges();
+            attempts++;
+        }
+        expect(component.totalRecordCount).toBe(18);
+        fixture.detectChanges();
+        const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
         el.click();

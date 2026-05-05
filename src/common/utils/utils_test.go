@@ -18,7 +18,6 @@ import (
 	"encoding/base64"
 	"net/http/httptest"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -216,7 +215,7 @@ type testingStruct struct {
 }
 
 func TestConvertMapToStruct(t *testing.T) {
-	dataMap := make(map[string]interface{})
+	dataMap := make(map[string]any)
 	dataMap["Name"] = "testing"
 	dataMap["Count"] = 100
 
@@ -232,7 +231,7 @@ func TestConvertMapToStruct(t *testing.T) {
 
 func TestSafeCastString(t *testing.T) {
 	type args struct {
-		value interface{}
+		value any
 	}
 	tests := []struct {
 		name string
@@ -254,7 +253,7 @@ func TestSafeCastString(t *testing.T) {
 
 func TestSafeCastBool(t *testing.T) {
 	type args struct {
-		value interface{}
+		value any
 	}
 	tests := []struct {
 		name string
@@ -276,7 +275,7 @@ func TestSafeCastBool(t *testing.T) {
 
 func TestSafeCastInt(t *testing.T) {
 	type args struct {
-		value interface{}
+		value any
 	}
 	tests := []struct {
 		name string
@@ -298,7 +297,7 @@ func TestSafeCastInt(t *testing.T) {
 
 func TestSafeCastFloat64(t *testing.T) {
 	type args struct {
-		value interface{}
+		value any
 	}
 	tests := []struct {
 		name string
@@ -342,7 +341,7 @@ func TestTrimLower(t *testing.T) {
 
 func TestGetStrValueOfAnyType(t *testing.T) {
 	type args struct {
-		value interface{}
+		value any
 	}
 	tests := []struct {
 		name string
@@ -357,7 +356,7 @@ func TestGetStrValueOfAnyType(t *testing.T) {
 		{"string", args{"hello world"}, "hello world"},
 		{"bool", args{true}, "true"},
 		{"bool", args{false}, "false"},
-		{"map", args{map[string]interface{}{"key1": "value1"}}, "{\"key1\":\"value1\"}"},
+		{"map", args{map[string]any{"key1": "value1"}}, "{\"key1\":\"value1\"}"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -398,43 +397,6 @@ func TestNextSchedule(t *testing.T) {
 
 type UserGroupSearchItem struct {
 	GroupName string
-}
-
-func Test_sortMostMatch(t *testing.T) {
-	type args struct {
-		input     []*UserGroupSearchItem
-		matchWord string
-		expected  []*UserGroupSearchItem
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{"normal", args{[]*UserGroupSearchItem{
-			{GroupName: "user"}, {GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
-		}, "user", []*UserGroupSearchItem{
-			{GroupName: "user"}, {GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
-		}}},
-		{"duplicate_item", args{[]*UserGroupSearchItem{
-			{GroupName: "user"}, {GroupName: "user"}, {GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
-		}, "user", []*UserGroupSearchItem{
-			{GroupName: "user"}, {GroupName: "user"}, {GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
-		}}},
-		{"miss_exact_match", args{[]*UserGroupSearchItem{
-			{GroupName: "harbor_user"}, {GroupName: "admin_user"}, {GroupName: "users"},
-		}, "user", []*UserGroupSearchItem{
-			{GroupName: "users"}, {GroupName: "admin_user"}, {GroupName: "harbor_user"},
-		}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			sort.Slice(tt.args.input, func(i, j int) bool {
-				return MostMatchSorter(tt.args.input[i].GroupName, tt.args.input[j].GroupName, tt.args.matchWord)
-			})
-			assert.True(t, reflect.DeepEqual(tt.args.input, tt.args.expected))
-		})
-	}
 }
 
 func TestValidateCronString(t *testing.T) {

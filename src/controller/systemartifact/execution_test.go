@@ -137,7 +137,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobNoPreviousSch
 		makeCtx:           func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
 	}
 
-	var extraAttrs map[string]interface{}
+	var extraAttrs map[string]any
 	suite.sched.On("Schedule", mock.Anything,
 		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
 	suite.sched.On("ListSchedules", mock.Anything, mock.Anything).Return(make([]*scheduler2.Schedule, 0), nil)
@@ -163,7 +163,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 		makeCtx:           func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
 	}
 
-	var extraAttrs map[string]interface{}
+	var extraAttrs map[string]any
 	suite.sched.On("Schedule", mock.Anything,
 		job.SystemArtifactCleanupVendorType, int64(0), cronTypeDaily, cronSpec, SystemArtifactCleanupCallback, nil, extraAttrs).Return(int64(1), nil)
 
@@ -200,7 +200,7 @@ func (suite *SystemArtifactCleanupTestSuite) TestScheduleCleanupJobPreviousSched
 
 	ScheduleCleanupTask(ctx)
 
-	extraAttributesMatcher := testifymock.MatchedBy(func(attrs map[string]interface{}) bool {
+	extraAttributesMatcher := testifymock.MatchedBy(func(attrs map[string]any) bool {
 		return len(attrs) == 0
 	})
 	suite.sched.AssertNotCalled(suite.T(), "Schedule", mock.Anything,

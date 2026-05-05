@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -162,9 +163,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if req.RegistryID == nil {
 		req.Metadata.ProxySpeedKb = nil
+		req.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -187,7 +189,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// in most case, it's 1
 	if _, ok := secCtx.(*robotSec.SecurityContext); ok || secCtx.IsSolutionUser() {
 		q := &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"sysadmin_flag": true,
 			},
 			Sorts: []*q.Sort{
@@ -386,12 +388,18 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 	}
 
 	var fetchSummaries []func(context.Context, *project.Project, *models.ProjectSummary)
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+	hasPerm, err := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionRead, rbac.ResourceQuota)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
 	}
-
-	if hasPerm := a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+	hasPerm, err = a.HasProjectPermission(ctx, p.ProjectID, rbac.ActionList, rbac.ResourceMember)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if hasPerm {
 		fetchSummaries = append(fetchSummaries, a.getProjectMemberSummary)
 	}
 
@@ -559,9 +567,10 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
 	if params.Project.Metadata != nil && !p.IsProxy() {
 		params.Project.Metadata.ProxySpeedKb = nil
+		params.Project.Metadata.MaxUpstreamConn = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -753,7 +762,7 @@ func (a *projectAPI) ListArtifactsOfProject(ctx context.Context, params operatio
 		WithPayload(artifacts)
 }
 
-func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{}) (*project.Project, *models.ProjectDeletable, error) {
+func (a *projectAPI) deletable(ctx context.Context, projectNameOrID any) (*project.Project, *models.ProjectDeletable, error) {
 	p, err := a.getProject(ctx, projectNameOrID)
 	if err != nil {
 		return nil, nil, err
@@ -768,7 +777,7 @@ func (a *projectAPI) deletable(ctx context.Context, projectNameOrID interface{})
 	return p, result, nil
 }
 
-func (a *projectAPI) getProject(ctx context.Context, projectNameOrID interface{}, options ...project.Option) (*project.Project, error) {
+func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, options ...project.Option) (*project.Project, error) {
 	p, err := a.projectCtl.Get(ctx, projectNameOrID, options...)
 	if err != nil {
 		return nil, err
@@ -795,13 +804,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if err != nil {
 			return fmt.Errorf("failed to get the registry %d: %v", *req.RegistryID, err)
 		}
+
 		permitted := false
-		for _, t := range config.GetPermittedRegistryTypesForProxyCache() {
-			if string(registry.Type) == t {
-				permitted = true
-				break
-			}
+		if slices.Contains(config.GetPermittedRegistryTypesForProxyCache(), string(registry.Type)) {
+			permitted = true
 		}
+
 		if !permitted {
 			return errors.BadRequestError(fmt.Errorf("unsupported registry type %s", string(registry.Type)))
 		}
@@ -810,6 +818,12 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if ps := req.Metadata.ProxySpeedKb; ps != nil {
 			if _, err := strconv.ParseInt(*ps, 10, 32); err != nil {
 				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_speed_kb should by an int32, but got: '%s', err: %s", *ps, err)
+			}
+		}
+
+		if cnt := req.Metadata.MaxUpstreamConn; cnt != nil {
+			if _, err := strconv.ParseInt(*cnt, 10, 32); err != nil {
+				return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
 			}
 		}
 	}

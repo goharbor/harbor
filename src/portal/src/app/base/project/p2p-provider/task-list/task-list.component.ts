@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -24,6 +37,11 @@ import {
 } from '../p2p-provider.service';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'task-list',
@@ -31,6 +49,7 @@ import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
     styleUrls: ['./task-list.component.scss'],
 })
 export class TaskListComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     projectName: string;
     isOpenFilterTag: boolean;
@@ -61,7 +80,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
         private messageHandlerService: MessageHandlerService,
         private preheatService: PreheatService,
         private p2pProviderService: P2pProviderService,
-        private userPermissionService: UserPermissionService
+        private userPermissionService: UserPermissionService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -102,6 +122,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
                                 pageSize: this.pageSize,
                                 q: params,
                             })
+                            .pipe(
+                                skipSessionRenewal(
+                                    this.skipSessionRenewalService
+                                )
+                            )
                             .pipe(finalize(() => (this.loading = false)));
                     })
                 )
@@ -163,6 +188,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
                     preheatPolicyName: this.preheatPolicyName,
                     executionId: +this.executionId,
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.inProgress = false)))
                 .subscribe(
                     res => {
@@ -307,6 +333,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
                 pageSize: this.pageSize,
                 q: params,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;

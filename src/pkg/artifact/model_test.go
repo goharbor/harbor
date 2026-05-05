@@ -78,7 +78,7 @@ func (m *modelTestSuite) TestArtifactTo() {
 		Size:              1024,
 		PushTime:          time.Now(),
 		PullTime:          time.Now(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"attr1": "value1",
 		},
 		Annotations: map[string]string{

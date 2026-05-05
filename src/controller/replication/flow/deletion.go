@@ -78,7 +78,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},
-			Parameters: map[string]interface{}{
+			Parameters: map[string]any{
 				"src_resource": string(src),
 				"dst_resource": string(dest),
 			},
@@ -89,7 +89,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 			operation = "tag deletion"
 		}
 
-		if _, err = d.taskMgr.Create(ctx, d.executionID, job, map[string]interface{}{
+		if _, err = d.taskMgr.Create(ctx, d.executionID, job, map[string]any{
 			"operation":            operation,
 			"resource_type":        string(resource.Type),
 			"source_resource":      getResourceName(resource),

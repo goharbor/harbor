@@ -64,6 +64,38 @@ func (s *DaoTestSuite) TestCRUDUsergroup() {
 	s.Nil(err5)
 }
 
+func (s *DaoTestSuite) TestSearchByName() {
+	ctx := s.Context()
+	for i := 0; i < 10; i++ {
+		ug := model.UserGroup{
+			GroupName:   "group_" + string(rune(i+'0')),
+			GroupType:   1,
+			LdapGroupDN: "cn=group_" + string(rune(i+'0')) + ",ou=groups,dc=example,dc=com",
+		}
+		_, err := s.dao.Add(ctx, ug)
+		s.Nil(err)
+	}
+	userGroup1 := model.UserGroup{
+		GroupName:   "group",
+		GroupType:   1,
+		LdapGroupDN: "cn=dev_team,ou=groups,dc=example,dc=com",
+	}
+	_, err := s.dao.Add(ctx, userGroup1)
+	s.Nil(err)
+
+	// no result
+	results, err := s.dao.SearchByName(ctx, "dev", 10)
+	s.Nil(err)
+	s.Equal(0, len(results))
+
+	// the total result should limit to 10
+	results2, err := s.dao.SearchByName(ctx, "group", 10)
+	s.Nil(err)
+	s.Equal(10, len(results2))
+	// the first one should be "group"
+	s.Equal("group", results2[0].GroupName)
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }

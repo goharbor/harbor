@@ -116,7 +116,7 @@ func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metad
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
 		if ok && len(cron.(string)) > 0 {
-			extras := make(map[string]interface{})
+			extras := make(map[string]any)
 			if _, err = r.scheduler.Schedule(ctx, schedulerVendorType, id, "", cron.(string), SchedulerCallback, TriggerParam{
 				PolicyID: id,
 				Trigger:  retention.ExecutionTriggerSchedule,
@@ -182,7 +182,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 		}
 	}
 	if needSch {
-		extras := make(map[string]interface{})
+		extras := make(map[string]any)
 		_, err := r.scheduler.Schedule(ctx, schedulerVendorType, p.ID, "", p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  retention.ExecutionTriggerSchedule,
@@ -220,7 +220,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 // deleteExecs delete executions
 func (r *defaultController) deleteExecs(ctx context.Context, vendorID int64) error {
 	executions, err := r.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": job.RetentionVendorType,
 			"VendorID":   vendorID,
 		},
@@ -246,7 +246,7 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		return 0, err
 	}
 
-	extra := map[string]interface{}{
+	extra := map[string]any{
 		"dry_run":  dryRun,
 		"operator": operator.FromContext(ctx),
 	}
@@ -357,7 +357,7 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 // GetTotalOfRetentionExecs Count Retention Executions
 func (r *defaultController) GetTotalOfRetentionExecs(ctx context.Context, policyID int64) (int64, error) {
 	return r.execMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": job.RetentionVendorType,
 			"VendorID":   policyID,
 		},
@@ -398,7 +398,7 @@ func convertTask(t *task.Task) *retention.Task {
 // GetTotalOfRetentionExecTasks Count Retention Execution Histories
 func (r *defaultController) GetTotalOfRetentionExecTasks(ctx context.Context, executionID int64) (int64, error) {
 	return r.taskMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":  job.RetentionVendorType,
 			"ExecutionID": executionID,
 		},

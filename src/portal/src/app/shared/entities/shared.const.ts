@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import locale_fr from '@angular/common/locales/fr';
 import locale_pt from '@angular/common/locales/pt-PT';
 import locale_tr from '@angular/common/locales/tr';
 import locale_de from '@angular/common/locales/de';
+import locale_ru from '@angular/common/locales/ru';
 import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
 
 export const enum AlertType {
@@ -261,6 +262,7 @@ export const LANGUAGES = {
     'pt-br': ['Português do Brasil', locale_pt],
     'tr-tr': ['Türkçe', locale_tr],
     'de-de': ['Deutsch', locale_de],
+    'ru-ru': ['Русский', locale_ru],
 } as const;
 export const supportedLangs = Object.keys(LANGUAGES) as SupportedLanguage[];
 /**
@@ -413,3 +415,5 @@ export enum BandwidthUnit {
     MB = 'Mbps',
     KB = 'Kbps',
 }
+
+export const PAGE_SIZE_OPTIONS = [15, 25, 50, 100];

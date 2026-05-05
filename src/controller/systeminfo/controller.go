@@ -139,7 +139,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	return res, nil
 }
 
-func OIDCProviderName(cfg map[string]interface{}) string {
+func OIDCProviderName(cfg map[string]any) string {
 	authMode := utils.SafeCastString(cfg[common.AUTHMode])
 	if authMode != common.OIDCAuth {
 		return ""

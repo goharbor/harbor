@@ -70,9 +70,9 @@ func InitialInterval(initial time.Duration) Option {
 }
 
 // MaxInterval set max interval
-func MaxInterval(max time.Duration) Option {
+func MaxInterval(maxInterval time.Duration) Option {
 	return func(opts *Options) {
-		opts.MaxInterval = max
+		opts.MaxInterval = maxInterval
 	}
 }
 

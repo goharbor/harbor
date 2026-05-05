@@ -38,6 +38,11 @@ import {
 import { RetentionService } from '../../../../../../ng-swagger-gen/services/retention.service';
 import { RetentionPolicy } from '../../../../../../ng-swagger-gen/models/retention-policy';
 import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 const MIN = 60000;
 const SEC = 1000;
@@ -61,6 +66,7 @@ const DECORATION = {
     styleUrls: ['./tag-retention.component.scss'],
 })
 export class TagRetentionComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;
@@ -90,7 +96,8 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
         private tagRetentionService: TagRetentionService,
         private retentionService: RetentionService,
         private errorHandler: ErrorHandler,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     originCron(): OriginCron {
         let originCron: OriginCron = {
@@ -352,6 +359,7 @@ export class TagRetentionComponent implements OnInit, OnDestroy {
                         page: this.currentPage,
                         pageSize: this.pageSize,
                     })
+                    .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                     .pipe(finalize(() => (this.loadingExecutions = false)))
                     .subscribe(res => {
                         // Get total count

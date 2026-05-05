@@ -40,7 +40,7 @@ func TestSweepJob(t *testing.T) {
 }
 
 func (suite *sweepJobTestSuite) TestRun() {
-	params := map[string]interface{}{
+	params := map[string]any{
 		"execution_retain_counts": map[string]int{
 			"WEBHOOK":     10,
 			"REPLICATION": 20,

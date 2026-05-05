@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
     Component,
     EventEmitter,
@@ -27,6 +40,11 @@ import { Accessory, ScanType } from 'ng-swagger-gen/models';
 import { ScanTypes } from '../../../../../shared/entities/shared.const';
 import { SBOMOverview } from './sbom-overview';
 import { Scanner } from '../../../../left-side-nav/interrogation-services/scanner/scanner';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
+
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
 
@@ -63,7 +81,8 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
         private artifactService: ArtifactService,
         private scanService: ScanService,
         private errorHandler: ErrorHandler,
-        private eventService: EventService
+        private eventService: EventService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -226,6 +245,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 withAccessory: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(
                 (artifact: Artifact) => {
                     // To keep the same summary reference, use value copy.

@@ -82,7 +82,7 @@ func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init webhook job
-func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error {
+func (wj *WebhookJob) init(ctx job.Context, params map[string]any) error {
 	wj.logger = ctx.GetLogger()
 	wj.ctx = ctx
 
@@ -98,7 +98,7 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 }
 
 // execute webhook job
-func (wj *WebhookJob) execute(_ job.Context, params map[string]interface{}) error {
+func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 

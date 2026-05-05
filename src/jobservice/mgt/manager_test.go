@@ -138,7 +138,7 @@ func (suite *BasicManagerTestSuite) TestGetPeriodicExecutions() {
 // TestGetScheduledJobs tests get scheduled jobs
 func (suite *BasicManagerTestSuite) TestGetScheduledJobs() {
 	enqueuer := work.NewEnqueuer(suite.namespace, suite.pool)
-	scheduledJob, err := enqueuer.EnqueueIn(job.SampleJob, 1000, make(map[string]interface{}))
+	scheduledJob, err := enqueuer.EnqueueIn(job.SampleJob, 1000, make(map[string]any))
 	require.NoError(suite.T(), err)
 	stats := &job.Stats{
 		Info: &job.StatsInfo{

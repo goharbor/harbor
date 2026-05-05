@@ -17,4 +17,4 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Variables ***
 ${logs_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Logs')]
-${logs_refresh_btn}  //hbr-log//span[contains(@class,'refresh-btn')]
+${logs_refresh_btn}  //hbr-audit-log//span[contains(@class,'refresh-btn')]

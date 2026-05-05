@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/singleflight"
 
 	// quota driver
@@ -280,7 +280,7 @@ func (c *controller) updateUsageByRedis(ctx context.Context, reference, referenc
 		// calc the quota usage in real time if no key found
 		if err == redis.Nil {
 			// use singleflight to prevent cache penetration and cause pressure on the database.
-			realQuota, err, _ := c.g.Do(key, func() (interface{}, error) {
+			realQuota, err, _ := c.g.Do(key, func() (any, error) {
 				return c.calcQuota(ctx, reference, referenceID)
 			})
 			if err != nil {

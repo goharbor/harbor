@@ -71,7 +71,7 @@ func TestAdapter_PrepareForPush(t *testing.T) {
 
 	repository := &model.Repository{
 		Name:     "domain_repo_new",
-		Metadata: make(map[string]interface{}),
+		Metadata: make(map[string]any),
 	}
 	resource := &model.Resource{}
 	metadata := &model.ResourceMetadata{

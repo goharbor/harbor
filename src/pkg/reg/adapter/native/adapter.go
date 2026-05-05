@@ -72,7 +72,8 @@ func NewAdapter(reg *model.Registry) *Adapter {
 		username = reg.Credential.AccessKey
 		password = reg.Credential.AccessSecret
 	}
-	adapter.Client = registry.NewClient(reg.URL, username, password, reg.Insecure)
+
+	adapter.Client = registry.NewClientWithCACert(reg.URL, username, password, reg.Insecure, reg.CACertificate)
 	return adapter
 }
 
@@ -80,7 +81,7 @@ func NewAdapter(reg *model.Registry) *Adapter {
 func NewAdapterWithAuthorizer(reg *model.Registry, authorizer lib.Authorizer) *Adapter {
 	return &Adapter{
 		registry: reg,
-		Client:   registry.NewClientWithAuthorizer(reg.URL, authorizer, reg.Insecure),
+		Client:   registry.NewClientWithAuthorizer(reg.URL, authorizer, reg.Insecure, reg.CACertificate),
 	}
 }
 

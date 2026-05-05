@@ -45,7 +45,7 @@ func (r *ReplicationHandler) Name() string {
 }
 
 // Handle ...
-func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
+func (r *ReplicationHandler) Handle(ctx context.Context, value any) error {
 	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil

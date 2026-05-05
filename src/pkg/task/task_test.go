@@ -61,7 +61,7 @@ func (t *taskManagerTestSuite) TestCreate() {
 	t.jsClient.On("SubmitJob", mock.Anything).Return("1", nil)
 	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	id, err := t.mgr.Create(nil, 1, &Job{}, map[string]interface{}{"a": "b"})
+	id, err := t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
 	t.Require().Nil(err)
 	t.Equal(int64(1), id)
 	t.dao.AssertExpectations(t.T())
@@ -77,7 +77,7 @@ func (t *taskManagerTestSuite) TestCreate() {
 	t.jsClient.On("SubmitJob", mock.Anything).Return("", errors.New("error"))
 	t.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
 
-	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]interface{}{"a": "b"})
+	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
 	t.Require().NotNil(err)
 	t.dao.AssertExpectations(t.T())
 	t.execDAO.AssertExpectations(t.T())
@@ -129,7 +129,7 @@ func (t *taskManagerTestSuite) TestGet() {
 
 func (t *taskManagerTestSuite) TestUpdateExtraAttrs() {
 	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{})
+	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]any{})
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 }

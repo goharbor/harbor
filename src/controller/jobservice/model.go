@@ -22,7 +22,7 @@ type Execution struct {
 	Status        string
 	StatusMessage string
 	Trigger       string
-	ExtraAttrs    map[string]interface{}
+	ExtraAttrs    map[string]any
 	StartTime     time.Time
 	EndTime       time.Time
 }

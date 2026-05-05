@@ -106,7 +106,7 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init slack job
-func (sj *SlackJob) init(ctx job.Context, params map[string]interface{}) error {
+func (sj *SlackJob) init(ctx job.Context, params map[string]any) error {
 	sj.logger = ctx.GetLogger()
 
 	// default use secure transport
@@ -121,7 +121,7 @@ func (sj *SlackJob) init(ctx job.Context, params map[string]interface{}) error {
 }
 
 // execute slack job
-func (sj *SlackJob) execute(params map[string]interface{}) error {
+func (sj *SlackJob) execute(params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 

@@ -152,7 +152,7 @@ func (bm *basicManager) GetBy(ctx context.Context, artifactID int64, registratio
 		return nil, errors.New("no artifact id to get sbom report data")
 	}
 
-	kws := make(map[string]interface{})
+	kws := make(map[string]any)
 	kws["artifact_id"] = artifactID
 	if len(registrationUUID) > 0 {
 		kws["registration_uuid"] = registrationUUID

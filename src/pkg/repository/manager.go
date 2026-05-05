@@ -74,7 +74,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) 
 
 func (m *manager) GetByName(ctx context.Context, name string) (repository *model.RepoRecord, err error) {
 	repositories, err := m.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Name": name,
 		},
 	})

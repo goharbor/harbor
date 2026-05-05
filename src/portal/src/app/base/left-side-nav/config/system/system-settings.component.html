@@ -317,7 +317,7 @@
         </clr-input-container>
         <div class="clr-form-control">
             <label for="disableAuditLogEventList" class="clr-control-label">
-                {{ 'CLEARANCES.DISABLE_AUDIT_LOG_EVENT_TYPE' | translate }}
+                {{ 'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE' | translate }}
                 <clr-tooltip>
                     <clr-icon
                         clrTooltipTrigger
@@ -328,7 +328,7 @@
                         clrSize="lg"
                         *clrIfOpen>
                         <span>{{
-                            'CLEARANCES.DISABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP'
+                            'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP'
                                 | translate
                         }}</span>
                     </clr-tooltip-content>
@@ -337,7 +337,7 @@
             <div *ngIf="logEventTypes.length === 0">
                 {{ 'CLEARANCES.AUDIT_LOG_EVENT_TYPE_EMPTY' | translate }}
             </div>
-            <div class="clr-control-container">
+            <div class="clr-control-container audit-log-type">
                 <div
                     class="clr-checkbox-wrapper float-left"
                     *ngFor="let item of logEventTypes">

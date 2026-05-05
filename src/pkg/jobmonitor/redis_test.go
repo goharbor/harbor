@@ -59,7 +59,7 @@ func (s *RedisClientTestSuite) TestUntrackJobStatusInBatch() {
 	jobIDs := make([]string, 0)
 	conn := s.redisClient.redisPool.Get()
 	defer conn.Close()
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		k := utils.GenerateRandomStringWithLen(10)
 		jobIDs = append(jobIDs, k)
 		key := rds.KeyJobStats(fmt.Sprintf("{%s}", s.redisClient.namespace), k)
@@ -92,7 +92,7 @@ func (s *RedisClientTestSuite) TestStopPendingJobs() {
 	}
 	conn := s.redisClient.redisPool.Get()
 	defer conn.Close()
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		job := jobInfo{
 			ID:     utils.GenerateRandomStringWithLen(10),
 			Params: utils.GenerateRandomStringWithLen(10),
@@ -107,7 +107,7 @@ func (s *RedisClientTestSuite) TestStopPendingJobs() {
 		}
 	}
 	// job without id
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		job := jobInfo{
 			Params: utils.GenerateRandomStringWithLen(10),
 		}

@@ -48,7 +48,7 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 
 	type args struct {
 		headers        map[string]string
-		fields         map[string]interface{}
+		fields         map[string]any
 		ctxTraceparent string
 	}
 	tests := []struct {
@@ -149,7 +149,6 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 	tracelib.C.Enabled = true
 
 	for _, tt := range tests {
-		tt := tt
 		s.T().Run(tt.name, func(t *testing.T) {
 			b := make([]byte, 0, 200)
 			buf := bytes.NewBuffer(b)

@@ -48,7 +48,7 @@ Test Case - Disable Scan Schedule
 Test Case - Security Hub
     [Tags]  security_hub
     ${d}=  Get Current Date  result_format=%m%s
-    ${images}=  Create List  goharbor/harbor-log-base  goharbor/harbor-prepare-base  goharbor/harbor-redis-base  goharbor/harbor-nginx-base  goharbor/harbor-registry-base
+    ${images}=  Create List  goharbor/harbor-log-base  goharbor/harbor-prepare-base  goharbor/harbor-valkey-base  goharbor/harbor-nginx-base  goharbor/harbor-registry-base
     ${tag}=  Set Variable  v2.2.0
     ${digest}=  Set Variable  sha256:7bf979f25c6a6986eab83e100a7b78bd5195c9bcac03e823e64492bb17fa4dad
     ${cve_id}=  Set Variable  CVE-2021-22926
@@ -86,7 +86,7 @@ Test Case - Security Hub
     # Check the vulnerabilities search
     Retry Wait Element Not Visible  ${add_search_criteria_icon}
     Retry Wait Element Not Visible  ${remove_search_criteria_icon}
-    Retry Wait Element Count  ${vulnerabilities_datagrid_row}  10
+    Retry Wait Element Count  ${vulnerabilities_datagrid_row}  15
     Check The Quick Search
     Check The Search By One Condition  project${d}  project${d}/${images}[2]  ${digest}  ${cve_id}  ${package}  ${tag}  ${cvss_score_v3_from}  ${cvss_score_v3_to}  ${summary}
     Check The Search By All Condition  project${d}  project${d}/${images}[2]  ${digest}  ${cve_id}  ${package}  ${tag}  ${cvss_score_v3_from}  ${cvss_score_v3_to}  ${severity}
@@ -171,10 +171,6 @@ Test Case - Verify SBOM Manual Generation
 Test Case - Generate Image SBOM On Push
     [Tags]  run-once
     Body Of Generate Image SBOM On Push
-
-Test Case - Stop SBOM Manual Generation
-    [Tags]  stop_sbom_gen
-    Body Of Stop SBOM Manual Generation
 
 Test Case - External Scanner CRUD
     [Tags]  external_scanner_crud  need_scanner_endpoint

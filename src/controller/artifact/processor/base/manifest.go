@@ -44,7 +44,7 @@ type ManifestProcessor struct {
 // AbstractMetadata abstracts metadata of artifact
 func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact, content []byte) error {
 	// parse metadata from config layer
-	metadata := map[string]interface{}{}
+	metadata := map[string]any{}
 	if err := m.UnmarshalConfig(ctx, artifact.RepositoryName, content, &metadata); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (m *ManifestProcessor) AbstractMetadata(ctx context.Context, artifact *arti
 	}
 
 	if artifact.ExtraAttrs == nil {
-		artifact.ExtraAttrs = map[string]interface{}{}
+		artifact.ExtraAttrs = map[string]any{}
 	}
 	for _, property := range m.properties {
 		artifact.ExtraAttrs[property] = metadata[property]
@@ -80,7 +80,7 @@ func (m *ManifestProcessor) ListAdditionTypes(_ context.Context, _ *artifact.Art
 }
 
 // UnmarshalConfig unmarshal the config blob of the artifact into the specified object "v"
-func (m *ManifestProcessor) UnmarshalConfig(_ context.Context, repository string, manifest []byte, v interface{}) error {
+func (m *ManifestProcessor) UnmarshalConfig(_ context.Context, repository string, manifest []byte, v any) error {
 	// unmarshal manifest
 	mani := &v1.Manifest{}
 	if err := json.Unmarshal(manifest, mani); err != nil {

@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { ClarityModule } from '@clr/angular';
@@ -105,5 +118,54 @@ describe('DistributionSetupModalComponent', () => {
         endpointInput.dispatchEvent(new Event('input'));
         await fixture.whenStable();
         expect(component.isValid).toBeTruthy();
+    });
+
+    it('should require OAuth token when creating', () => {
+        component.editingMode = false;
+        component.model = { ...instance1, auth_mode: 'OAUTH' };
+        expect(component.isOAuthTokenRequired()).toBe(true);
+    });
+
+    it('should not require OAuth token when editing an OAuth instance', () => {
+        component.editingMode = true;
+        component.originModelForEdit = {
+            ...instance1,
+            auth_mode: 'OAUTH',
+            auth_info: {},
+        };
+        component.model = { ...component.originModelForEdit };
+        expect(component.isOAuthTokenRequired()).toBe(false);
+    });
+
+    it('should require OAuth token when switching to OAuth on edit', () => {
+        component.editingMode = true;
+        component.originModelForEdit = { ...instance1, auth_mode: 'NONE' };
+        component.model = { ...instance1, auth_mode: 'OAUTH' };
+        expect(component.isOAuthTokenRequired()).toBe(true);
+    });
+
+    it('should require Basic credentials when creating', () => {
+        component.editingMode = false;
+        component.model = { ...instance1, auth_mode: 'BASIC' };
+        expect(component.isBasicCredentialRequired()).toBe(true);
+    });
+
+    it('should not require Basic credentials when editing a Basic instance', () => {
+        component.editingMode = true;
+        component.originModelForEdit = {
+            ...instance1,
+            auth_mode: 'BASIC',
+            auth_info: {},
+        };
+        component.model = { ...component.originModelForEdit };
+        component.authData = { username: '', password: '' };
+        expect(component.isBasicCredentialRequired()).toBe(false);
+    });
+
+    it('should require Basic credentials when switching to Basic on edit', () => {
+        component.editingMode = true;
+        component.originModelForEdit = { ...instance1, auth_mode: 'NONE' };
+        component.model = { ...instance1, auth_mode: 'BASIC' };
+        expect(component.isBasicCredentialRequired()).toBe(true);
     });
 });

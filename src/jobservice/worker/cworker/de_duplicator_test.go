@@ -23,7 +23,7 @@ func TestDeDuplicatorTestSuite(t *testing.T) {
 // TestDeDuplicator ...
 func (suite *DeDuplicatorTestSuite) TestDeDuplicator() {
 	jobName := "fake_job"
-	jobParams := map[string]interface{}{
+	jobParams := map[string]any{
 		"image": "ubuntu:latest",
 	}
 

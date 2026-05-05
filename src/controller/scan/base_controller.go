@@ -315,18 +315,18 @@ func (bc *basicController) Scan(ctx context.Context, artifact *ar.Artifact, opti
 	}
 
 	if opts.ExecutionID == 0 {
-		extraAttrs := map[string]interface{}{
-			artfiactKey: map[string]interface{}{
+		extraAttrs := map[string]any{
+			artfiactKey: map[string]any{
 				"id":              artifact.ID,
 				"project_id":      artifact.ProjectID,
 				"repository_name": artifact.RepositoryName,
 				"digest":          artifact.Digest,
 			},
-			registrationKey: map[string]interface{}{
+			registrationKey: map[string]any{
 				"id":   r.ID,
 				"name": r.Name,
 			},
-			enabledCapabilities: map[string]interface{}{
+			enabledCapabilities: map[string]any{
 				"type": opts.GetScanType(),
 			},
 		}
@@ -383,7 +383,7 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 }
 
 func (bc *basicController) ScanAll(ctx context.Context, trigger string, async bool) (int64, error) {
-	extra := make(map[string]interface{})
+	extra := make(map[string]any)
 	if op := operator.FromContext(ctx); op != "" {
 		extra["operator"] = op
 	}
@@ -511,7 +511,7 @@ func (bc *basicController) startScanAll(ctx context.Context, executionID int64) 
 
 	extraAttrs := exec.ExtraAttrs
 	if extraAttrs == nil {
-		extraAttrs = map[string]interface{}{"summary": summary}
+		extraAttrs = map[string]any{"summary": summary}
 	} else {
 		extraAttrs["summary"] = summary
 	}
@@ -597,7 +597,9 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 		return nil, err
 	}
 
-	if !scannable {
+	// When the scanner is unhealthy, the artifact will be recognized as "not scannable", in this case we will not return the error
+	// but return the scanner report with the best effort.
+	if !scannable && r.Health == sc.StatusHealthy {
 		return nil, errors.NotFoundError(nil).WithMessagef("report not found for %s@%s", artifact.RepositoryName, artifact.Digest)
 	}
 
@@ -644,7 +646,7 @@ func (bc *basicController) GetReport(ctx context.Context, artifact *ar.Artifact,
 }
 
 // GetSummary ...
-func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, scanType string, mimeTypes []string) (map[string]interface{}, error) {
+func (bc *basicController) GetSummary(ctx context.Context, artifact *ar.Artifact, scanType string, mimeTypes []string) (map[string]any, error) {
 	handler := sca.GetScanHandler(scanType)
 	return handler.GetSummary(ctx, artifact, mimeTypes)
 }
@@ -663,7 +665,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	if err != nil {
 		return nil, err
 	}
-	artifactMap := map[int64]interface{}{}
+	artifactMap := map[int64]any{}
 	for _, a := range artifacts {
 		artifactMap[a.ID] = struct{}{}
 	}
@@ -751,7 +753,7 @@ func (bc *basicController) GetScanLog(ctx context.Context, artifact *ar.Artifact
 	return b.Bytes(), nil
 }
 
-func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]interface{}) bool {
+func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]any) bool {
 	if task == nil {
 		return false
 	}
@@ -961,7 +963,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 		reportUUIDs[i] = report.UUID
 	}
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[sca.JobParamRegistration] = rJSON
 	params[sca.JobParameterAuthType] = param.Registration.GetRegistryAuthorizationType()
 	params[sca.JobParameterRequest] = sJSON
@@ -979,7 +981,7 @@ func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJ
 
 	// keep the report uuids in array so that when ?| operator support by the FilterRaw method of beego's orm
 	// we can list the tasks of the scan reports by one SQL
-	extraAttrs := map[string]interface{}{
+	extraAttrs := map[string]any{
 		artifactIDKey:  param.Artifact.ID,
 		artifactTagKey: param.Tag,
 		robotIDKey:     robot.ID,
@@ -1110,7 +1112,7 @@ func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (b
 	return false, nil
 }
 
-func getArtifactID(extraAttrs map[string]interface{}) int64 {
+func getArtifactID(extraAttrs map[string]any) int64 {
 	var artifactID float64
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[artifactIDKey]; ok {
@@ -1121,7 +1123,7 @@ func getArtifactID(extraAttrs map[string]interface{}) int64 {
 	return int64(artifactID)
 }
 
-func getArtifactTag(extraAttrs map[string]interface{}) string {
+func getArtifactTag(extraAttrs map[string]any) string {
 	var tag string
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[artifactTagKey]; ok {
@@ -1133,13 +1135,13 @@ func getArtifactTag(extraAttrs map[string]interface{}) string {
 }
 
 // GetReportUUIDs returns the report UUIDs from the extra attributes
-func GetReportUUIDs(extraAttrs map[string]interface{}) []string {
+func GetReportUUIDs(extraAttrs map[string]any) []string {
 	var reportUUIDs []string
 
 	if extraAttrs != nil {
 		value, ok := extraAttrs[reportUUIDsKey]
 		if ok {
-			arr, _ := value.([]interface{})
+			arr, _ := value.([]any)
 			for _, el := range arr {
 				if s, ok := el.(string); ok {
 					reportUUIDs = append(reportUUIDs, s)
@@ -1151,7 +1153,7 @@ func GetReportUUIDs(extraAttrs map[string]interface{}) []string {
 	return reportUUIDs
 }
 
-func getRobotID(extraAttrs map[string]interface{}) int64 {
+func getRobotID(extraAttrs map[string]any) int64 {
 	var trackID float64
 	if extraAttrs != nil {
 		if v, ok := extraAttrs[robotIDKey]; ok {

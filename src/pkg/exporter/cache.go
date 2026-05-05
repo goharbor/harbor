@@ -24,7 +24,7 @@ var c *cache
 const defaultCacheCleanInterval = 10
 
 type cachedValue struct {
-	Value      interface{}
+	Value      any
 	Expiration int64
 }
 
@@ -35,7 +35,7 @@ type cache struct {
 }
 
 // CacheGet get a value from cache
-func CacheGet(key string) (value interface{}, ok bool) {
+func CacheGet(key string) (value any, ok bool) {
 	c.RLock()
 	v, ok := c.store[key]
 	c.RUnlock()
@@ -52,7 +52,7 @@ func CacheGet(key string) (value interface{}, ok bool) {
 }
 
 // CachePut put a value to cache with key
-func CachePut(key, value interface{}) {
+func CachePut(key, value any) {
 	c.Lock()
 	defer c.Unlock()
 	c.store[key.(string)] = cachedValue{

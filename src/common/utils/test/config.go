@@ -18,7 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 )
 
-var defaultConfig = map[string]interface{}{
+var defaultConfig = map[string]any{
 	common.ExtEndpoint:                "https://host01.com",
 	common.AUTHMode:                   common.DBAuth,
 	common.DatabaseType:               "postgresql",
@@ -66,6 +66,6 @@ var defaultConfig = map[string]interface{}{
 }
 
 // GetDefaultConfigMap returns the default config map for easier modification.
-func GetDefaultConfigMap() map[string]interface{} {
+func GetDefaultConfigMap() map[string]any {
 	return defaultConfig
 }

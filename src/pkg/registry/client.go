@@ -21,10 +21,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -35,10 +33,10 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor"
 	"github.com/goharbor/harbor/src/pkg/registry/interceptor/readonly"
@@ -61,33 +59,6 @@ var (
 		schema1.MediaTypeManifest,
 	}
 )
-
-// const definition
-const (
-	UserAgent = "harbor-registry-client"
-	// DefaultHTTPClientTimeout is the default timeout for registry http client.
-	DefaultHTTPClientTimeout = 30 * time.Minute
-)
-
-var (
-	// registryHTTPClientTimeout is the timeout for registry http client.
-	registryHTTPClientTimeout time.Duration
-)
-
-func init() {
-	registryHTTPClientTimeout = DefaultHTTPClientTimeout
-	// override it if read from environment variable, in minutes
-	if env := os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"); len(env) > 0 {
-		timeout, err := strconv.ParseInt(env, 10, 64)
-		if err != nil {
-			log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
-		} else {
-			if timeout > 0 {
-				registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
-			}
-		}
-	}
-}
 
 // Client defines the methods that a registry client should implements
 type Client interface {
@@ -132,18 +103,30 @@ type Client interface {
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool, interceptors ...interceptor.Interceptor) Client {
 	authorizer := auth.NewAuthorizer(username, password, insecure)
-	return NewClientWithAuthorizer(url, authorizer, insecure, interceptors...)
+	return NewClientWithAuthorizer(url, authorizer, insecure, "", interceptors...)
+}
+
+// NewClientWithCACert creates a registry client with custom CA certificate
+func NewClientWithCACert(url, username, password string, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	authorizer := auth.NewAuthorizer(username, password, insecure, caCert)
+	return NewClientWithAuthorizer(url, authorizer, insecure, caCert, interceptors...)
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
-func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, interceptors ...interceptor.Interceptor) Client {
+func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+	// When CACertificate is set, it takes precedence and Insecure is ignored
+	transport := commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	)
+
 	return &client{
 		url:          url,
 		authorizer:   authorizer,
 		interceptors: interceptors,
 		client: &http.Client{
-			Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(insecure)),
-			Timeout:   registryHTTPClientTimeout,
+			Transport: transport,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}
 }
@@ -467,7 +450,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 	resp, err := c.do(req)
 	if err != nil {
 		// if push chunk error, we should query the upload progress for new location and end range.
-		newLocation, newEnd, err1 := c.getUploadStatus(location)
+		newLocation, newEnd, err1 := c.getUploadStatus(url)
 		if err1 == nil {
 			return newLocation, newEnd, err
 		}
@@ -658,7 +641,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	}
-	req.Header.Set("User-Agent", UserAgent)
+	utils.SetUserAgentHeader(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

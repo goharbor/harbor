@@ -38,7 +38,7 @@ func (suite *ManagerTestSuite) SetupSuite() {
 
 func (suite *ManagerTestSuite) isAssociatedWithArtifact(ctx context.Context, blobDigest, artifactDigest string) (bool, error) {
 	ol := q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			blobDigest,
 		},
 	}
@@ -52,7 +52,7 @@ func (suite *ManagerTestSuite) isAssociatedWithArtifact(ctx context.Context, blo
 
 func (suite *ManagerTestSuite) isAssociatedWithProject(ctx context.Context, blobDigest string, projectID int64) (bool, error) {
 	ol := q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			blobDigest,
 		},
 	}
@@ -304,7 +304,7 @@ func (suite *ManagerTestSuite) TestList() {
 	digest2 := suite.DigestString()
 
 	ol := q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			digest1,
 			digest2,
 		},
@@ -317,7 +317,7 @@ func (suite *ManagerTestSuite) TestList() {
 	Mgr.Create(ctx, digest2, "media type", 100)
 
 	ol = q.OrList{
-		Values: []interface{}{
+		Values: []any{
 			digest1,
 			digest2,
 		},

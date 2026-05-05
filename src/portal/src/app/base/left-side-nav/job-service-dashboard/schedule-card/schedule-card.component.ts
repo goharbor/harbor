@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
 import { JobserviceService } from '../../../../../../ng-swagger-gen/services/jobservice.service';
@@ -26,6 +39,10 @@ import {
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { ScheduleService } from '../../../../../../ng-swagger-gen/services/schedule.service';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-schedule-card',
@@ -45,7 +62,8 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
         private eventService: EventService,
         private operationService: OperationService,
         private scheduleService: ScheduleService,
-        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -107,6 +125,7 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
             .getSchedulePaused({
                 jobType: JobType.ALL,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(finalize(() => (this.loadingStatus = false)))
             .subscribe(res => {
                 this.isPaused = res?.paused;
@@ -120,6 +139,7 @@ export class ScheduleCardComponent implements OnInit, OnDestroy {
     getScheduleCount() {
         this.jobServiceDashboardSharedDataService
             .retrieveScheduleListResponse()
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe({
                 next: res => {},
                 error: err => {
