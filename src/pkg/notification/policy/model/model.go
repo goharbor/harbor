@@ -91,9 +91,10 @@ func (w *Policy) ConvertFromDBModel() error {
 
 // EventTarget defines the structure of target a notification send to
 type EventTarget struct {
-	Type           string `json:"type"`
-	Address        string `json:"address"`
-	AuthHeader     string `json:"auth_header,omitempty"`
-	SkipCertVerify bool   `json:"skip_cert_verify"`
-	PayloadFormat  string `json:"payload_format,omitempty"`
+	Type             string `json:"type"`
+	Address          string `json:"address"`
+	AuthHeader       string `json:"auth_header,omitempty"`
+	SkipCertVerify   bool   `json:"skip_cert_verify"`
+	PayloadFormat    string `json:"payload_format,omitempty"`
+	PayloadTransform string `json:"payload_transform,omitempty"`
 }
