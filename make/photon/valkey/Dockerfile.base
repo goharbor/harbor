@@ -1,0 +1,6 @@
+FROM photon:5.0
+
+RUN tdnf install -y shadow >> /dev/null \
+    && groupadd -g 999 valkey \
+    && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey
+RUN tdnf install -y valkey && tdnf clean all
