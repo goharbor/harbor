@@ -399,6 +399,10 @@ export class CreateProjectComponent
                             .proxy_cache_local_on_not_found
                             ? 'true'
                             : 'false',
+                        proxy_referrer_api: this.project.metadata
+                            .proxy_referrer_api
+                            ? 'true'
+                            : 'false',
                     },
                     storage_limit: +storageByte,
                     registry_id: registryId,
@@ -445,6 +449,7 @@ export class CreateProjectComponent
         this.speedLimit = -1;
         this.project.metadata.max_upstream_conn = -1;
         this.project.metadata.proxy_cache_local_on_not_found = false;
+        this.project.metadata.proxy_referrer_api = false;
     }
 
     public get isValid(): boolean {

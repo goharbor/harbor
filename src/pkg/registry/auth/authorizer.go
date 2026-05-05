@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/null"
@@ -49,6 +50,7 @@ func NewAuthorizer(username, password string, insecure bool, caCert ...string) l
 		password: password,
 		client: &http.Client{
 			Transport: transport,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}
 }
@@ -89,7 +91,13 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if a.authorizer != nil {
 		return nil
 	}
-	url, err := url.Parse(u.Scheme + "://" + u.Host + "/v2/")
+	// Extract the path prefix before "/v2/" so that registries served under
+	// a sub-path (e.g. https://hostname/prefix/v2/...) are probed correctly.
+	prefix := ""
+	if idx := strings.Index(u.Path, "/v2/"); idx > 0 {
+		prefix = u.Path[:idx]
+	}
+	url, err := url.Parse(u.Scheme + "://" + u.Host + prefix + "/v2/")
 	if err != nil {
 		return err
 	}

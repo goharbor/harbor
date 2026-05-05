@@ -4,8 +4,11 @@ from __future__ import absolute_import
 import unittest
 import urllib
 import sys
+import os
 
-from testutils import ADMIN_CLIENT, suppress_urllib3_warning, DOCKER_USER, DOCKER_PWD
+import subprocess
+
+from testutils import ADMIN_CLIENT, suppress_urllib3_warning, DOCKER_USER, DOCKER_PWD, JFROG_USER, JFROG_PWD, JFROG_URL, JFROG_NAMESPACE
 from testutils import harbor_server
 from testutils import TEARDOWN
 from library.base import _random_name
@@ -44,15 +47,18 @@ class TestProxyCache(unittest.TestCase):
             4. Pull image from this project by docker CLI;
             5. Pull image from this project by ctr CLI;
             6. Pull manifest index from this project by docker CLI;
-            7. Pull manifest from this project by ctr CLI;
+            7. Pull image (multi-arch tag) from this project by ctr CLI;
             8. Image pulled by docker CLI should be cached;
             9. Image pulled by ctr CLI should be cached;
             10. Manifest index pulled by docker CLI should be cached;
-            11. Manifest index pulled by ctr CLI should be cached;
+            11. Image pulled by ctr CLI should be cached (ctr may cache a single-platform manifest, not a manifest list);
         Tear down:
             1. Delete project(PA);
             2. Delete user(UA).
         """
+        subprocess.run(["docker", "image", "prune", "-a", "-f"], check=False)
+        subprocess.run(["ctr", "image", "prune", "--all"], check=False)
+
         user_id, user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
         USER_CLIENT=dict(endpoint = self.url, username = user_name, password = self.user_password)
 
@@ -65,17 +71,46 @@ class TestProxyCache(unittest.TestCase):
         #1. Create a new registry;
         if registry_type == "docker-hub":
             user_namespace = DOCKER_USER
-            access_key = user_namespace
+            access_key = DOCKER_USER
             access_secret = DOCKER_PWD
             registry = "https://hub.docker.com"
             # Memo: ctr will not send image pull request if manifest list already exist, so we pull different manifest list for different registry;
             index_for_ctr = dict(image = "alpine", tag = "3.12.0")
+        elif registry_type == "jfrog-artifactory":
+            if not (JFROG_URL and JFROG_USER and JFROG_PWD and JFROG_NAMESPACE):
+                self.fail(
+                    "JFrog proxy cache test requires JFROG_URL, JFROG_USER, JFROG_PWD, and "
+                    "JFROG_NAMESPACE. Pass them to Robot (-v JFROG_USER:... -v JFROG_PWD:... ...) or "
+                    "set the same names in the process environment; Harbor API Test forwards them to "
+                    "the Python API tests."
+                )
+            user_namespace = JFROG_NAMESPACE
+            access_key =  JFROG_USER
+            access_secret = JFROG_PWD
+            registry = JFROG_URL
+            index_for_ctr = dict(image = "busybox", tag = "1.32.0")
         else:
             user_namespace = "nightly"
             registry = "https://registry.goharbor.io"
             index_for_ctr = dict(image = "busybox", tag = "1.32.0")
 
-        registry_id, _ = self.registry.create_registry(registry, name=_random_name(registry_type), registry_type=registry_type, access_key = access_key, access_secret = access_secret, insecure=True, **ADMIN_CLIENT)
+        registry_payload = {
+            "url": registry,
+            "name": _random_name(registry_type),
+            "registry_type": registry_type,
+            "access_key": access_key,
+            "access_secret": access_secret,
+            "insecure": True,
+        }
+        registry_id, _ = self.registry.create_registry(
+            registry_payload["url"],
+            name=registry_payload["name"],
+            registry_type=registry_payload["registry_type"],
+            access_key=registry_payload["access_key"],
+            access_secret=registry_payload["access_secret"],
+            insecure=registry_payload["insecure"],
+            **ADMIN_CLIENT
+        )
 
         print("registry_id:", registry_id)
 
@@ -121,15 +156,18 @@ class TestProxyCache(unittest.TestCase):
         print("Index's reference by ctr CLI:", ret_index_by_c.references)
         self.assertTrue(len(ret_index_by_c.references) == 1)
 
-    def test_proxy_cache_from_harbor(self):
-        self.do_validate("harbor")
-
-    #def test_proxy_cache_from_dockerhub(self):
-    #    self.do_validate("docker-hub")
+    def test_proxy_cache(self):
+        proxy_upstream_list = os.getenv("PROXY_UPSTREAM_LIST", "").lower()
+        if not proxy_upstream_list or "harbor" in proxy_upstream_list:
+            self.do_validate("harbor")
+        if "docker-hub" in proxy_upstream_list:
+            self.do_validate("docker-hub")
+        if "jfrog" in proxy_upstream_list:
+            self.do_validate("jfrog-artifactory")
 
 if __name__ == '__main__':
     suite = unittest.TestSuite(unittest.makeSuite(TestProxyCache))
     result = unittest.TextTestRunner(sys.stdout, verbosity=2, failfast=True).run(suite)
     if not result.wasSuccessful():
-        raise Exception(r"Proxy cache test failed: ".format(result))
+        raise Exception("Proxy cache test failed: {}".format(result))
 
