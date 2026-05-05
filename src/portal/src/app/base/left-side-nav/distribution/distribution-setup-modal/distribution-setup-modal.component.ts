@@ -181,6 +181,34 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
         return this.instanceForm && this.instanceForm.valid;
     }
 
+    /** OAuth token is optional on edit when the instance already used OAuth (server keeps existing token). */
+    isOAuthTokenRequired(): boolean {
+        if (this.model.auth_mode !== AuthMode.OAUTH) {
+            return false;
+        }
+        if (!this.editingMode) {
+            return true;
+        }
+        return this.originModelForEdit?.auth_mode !== AuthMode.OAUTH;
+    }
+
+    /** Basic username/password are optional on edit when the instance already used Basic (server keeps stored credentials). */
+    isBasicCredentialRequired(): boolean {
+        if (this.model.auth_mode !== AuthMode.BASIC) {
+            return false;
+        }
+        if (!this.editingMode) {
+            return true;
+        }
+        return this.originModelForEdit?.auth_mode !== AuthMode.BASIC;
+    }
+
+    private isBasicAuthUnchangedForMerge(): boolean {
+        const u = (this.authData?.['username'] ?? '').trim();
+        const p = this.authData?.['password'] ?? '';
+        return !u && !p;
+    }
+
     get title(): string {
         return this.editingMode
             ? 'DISTRIBUTION.EDIT_INSTANCE'
@@ -259,7 +287,22 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
             instance.auth_mode = this.model.auth_mode;
             instance.description = this.model.description;
             if (instance.auth_mode !== AuthMode.NONE) {
-                instance.auth_info = this.authData;
+                if (
+                    instance.auth_mode === AuthMode.OAUTH &&
+                    this.originModelForEdit.auth_mode === AuthMode.OAUTH &&
+                    !this.authData?.['token']
+                ) {
+                    // Empty map lets the API merge stored credentials (see mergePreheatInstanceAuthOnUpdate).
+                    instance.auth_info = {};
+                } else if (
+                    instance.auth_mode === AuthMode.BASIC &&
+                    this.originModelForEdit.auth_mode === AuthMode.BASIC &&
+                    this.isBasicAuthUnchangedForMerge()
+                ) {
+                    instance.auth_info = {};
+                } else {
+                    instance.auth_info = this.authData;
+                }
             } else {
                 delete instance.auth_info;
             }
@@ -414,13 +457,13 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
             } else {
                 if (this.model.auth_mode === AuthMode.BASIC) {
                     if (
-                        this.originModelForEdit.auth_info['username'] !==
+                        this.originModelForEdit.auth_info?.['username'] !==
                         this.authData['username']
                     ) {
                         return true;
                     }
                     if (
-                        this.originModelForEdit.auth_info['password'] !==
+                        this.originModelForEdit.auth_info?.['password'] !==
                         this.authData['password']
                     ) {
                         return true;
@@ -428,7 +471,7 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
                 }
                 if (this.model.auth_mode === AuthMode.OAUTH) {
                     if (
-                        this.originModelForEdit.auth_info['token'] !==
+                        this.originModelForEdit.auth_info?.['token'] !==
                         this.authData['token']
                     ) {
                         return true;

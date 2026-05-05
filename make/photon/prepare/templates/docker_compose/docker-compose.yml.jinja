@@ -264,7 +264,7 @@ services:
         tag: "jobservice"
 {% if external_redis == False %}
   redis:
-    image: goharbor/redis-photon:{{redis_version}}
+    image: goharbor/valkey-photon:{{redis_version}}
     container_name: redis
     restart: always
     cap_drop:
@@ -399,4 +399,3 @@ services:
 networks:
   harbor:
     external: false
-
