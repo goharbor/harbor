@@ -62,9 +62,9 @@ func (uts *UserTestSuite) SetupSuite() {
 			},
 		},
 	}
+
 	uts.Suite.SetupSuite()
 	uts.Security.On("IsAuthenticated").Return(true)
-
 }
 
 func (uts *UserTestSuite) TestUpdateUserPassword() {
@@ -76,6 +76,7 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/2/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Times(1)
+		uts.Security.On("GetUsername").Return("testuser")
 		res, err := uts.Suite.PutJSON(url, &body)
 		uts.NoError(err)
 		uts.Equal(403, res.StatusCode)
@@ -83,6 +84,7 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/1/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+		uts.Security.On("GetUsername").Return("admin")
 
 		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
 		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", "Passw0rd").Return(true, nil).Times(1)

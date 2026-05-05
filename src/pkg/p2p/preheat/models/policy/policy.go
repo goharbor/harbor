@@ -16,7 +16,6 @@ package policy
 
 import (
 	"encoding/json"
-	"strconv"
 	"time"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
@@ -198,24 +197,6 @@ func decodeFilters(filterStr string) ([]*Filter, error) {
 	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
 		return nil, err
 	}
-
-	// Convert value type
-	// TODO: remove switch after UI bug #12579 fixed
-	for _, f := range filters {
-		if f.Type == FilterTypeVulnerability {
-			switch f.Value.(type) {
-			case string:
-				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
-				if err != nil {
-					return nil, errors.Wrapf(err, "parse filters")
-				}
-				f.Value = (int)(sev)
-			case float64:
-				f.Value = (int)(f.Value.(float64))
-			}
-		}
-	}
-
 	return filters, nil
 }
 

@@ -79,7 +79,7 @@ func parseModel(model any) *metadata {
 		Keys: map[string]*key{},
 	}
 	// parse fields of the provided model
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		field := t.Field(i)
 		orm := field.Tag.Get("orm")
 		// isn't the database column, skip
@@ -107,7 +107,7 @@ func parseModel(model any) *metadata {
 	}
 
 	// parse filter methods of the provided model
-	for i := 0; i < ptr.NumMethod(); i++ {
+	for i := range ptr.NumMethod() {
 		methodName := ptr.Method(i).Name
 		if !strings.HasPrefix(methodName, "FilterBy") {
 			continue
@@ -173,7 +173,7 @@ func parseFilterable(field reflect.StructField) bool {
 //	}
 func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 	var defaultSort *q.Sort
-	for _, item := range strings.Split(field.Tag.Get("sort"), ";") {
+	for item := range strings.SplitSeq(field.Tag.Get("sort"), ";") {
 		// isn't sortable, return directly
 		if item == "false" {
 			return nil, false
@@ -202,7 +202,7 @@ func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 // It returns "customized_field1" for "Field1" and returns "field2" for "Field2"
 func parseColumn(field reflect.StructField) string {
 	column := ""
-	for _, item := range strings.Split(field.Tag.Get("orm"), ";") {
+	for item := range strings.SplitSeq(field.Tag.Get("orm"), ";") {
 		if !strings.HasPrefix(item, "column") {
 			continue
 		}
@@ -224,7 +224,7 @@ func snakeCase(str string) string {
 	runes := []rune(str)
 
 	var out []rune
-	for i := 0; i < len(runes); i++ {
+	for i := range len(runes) {
 		if i > 0 &&
 			(unicode.IsUpper(runes[i])) &&
 			((i+1 < len(runes) && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {

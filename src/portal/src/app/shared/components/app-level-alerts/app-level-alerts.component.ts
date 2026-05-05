@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SCANNERS_DOC } from '../../../base/left-side-nav/interrogation-services/scanner/scanner';
 import { SessionService } from '../../services/session.service';
 import { DEFAULT_PAGE_SIZE, delUrlParam } from '../../units/utils';
 import { forkJoin, Observable, Subscription } from 'rxjs';
@@ -37,7 +36,6 @@ const YES: string = 'yes';
     styleUrls: ['./app-level-alerts.component.scss'],
 })
 export class AppLevelAlertsComponent implements OnInit, OnDestroy {
-    scannerDocUrl: string = SCANNERS_DOC;
     showScannerInfo: boolean = false;
     message: Message;
     appLevelMsgSub: Subscription;
@@ -279,5 +277,12 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
             )?.closable;
         }
         return true;
+    }
+
+    hasAdminRole(): boolean {
+        return (
+            this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role
+        );
     }
 }

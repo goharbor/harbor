@@ -48,7 +48,7 @@ func (c *controller) GetHealth(_ context.Context) *OverallHealthStatus {
 	for name, checker := range registry {
 		go check(name, checker, timeout, ch)
 	}
-	for i := 0; i < len(registry); i++ {
+	for range len(registry) {
 		componentStatus := <-ch
 		if len(componentStatus.Error) != 0 {
 			isHealthy = false

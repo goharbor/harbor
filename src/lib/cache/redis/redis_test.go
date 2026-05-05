@@ -112,14 +112,14 @@ func (suite *CacheTestSuite) TestPing() {
 
 func (suite *CacheTestSuite) TestScan() {
 	seed := func(n int) {
-		for i := 0; i < n; i++ {
+		for i := range n {
 			key := fmt.Sprintf("test-scan-%d", i)
 			err := suite.cache.Save(suite.ctx, key, "")
 			suite.NoError(err)
 		}
 	}
 	clean := func(n int) {
-		for i := 0; i < n; i++ {
+		for i := range n {
 			key := fmt.Sprintf("test-scan-%d", i)
 			err := suite.cache.Delete(suite.ctx, key)
 			suite.NoError(err)

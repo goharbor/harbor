@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 )
 
 // DAO the dao for configure items
@@ -30,6 +31,8 @@ type DAO interface {
 	GetConfigEntries(ctx context.Context) ([]*models.ConfigEntry, error)
 	// SaveConfigEntries save configure items provided
 	SaveConfigEntries(ctx context.Context, entries []models.ConfigEntry) error
+	// GetConfigItem get configure item by key
+	GetConfigItem(ctx context.Context, query *q.Query) ([]*models.ConfigEntry, error)
 }
 
 type dao struct {
@@ -84,4 +87,18 @@ func (d *dao) SaveConfigEntries(ctx context.Context, entries []models.ConfigEntr
 		}
 	}
 	return nil
+}
+
+// GetConfigItem get configure item by query
+func (d *dao) GetConfigItem(ctx context.Context, query *q.Query) ([]*models.ConfigEntry, error) {
+	query = q.MustClone(query)
+	qs, err := orm.QuerySetter(ctx, &models.ConfigEntry{}, query)
+	if err != nil {
+		return nil, err
+	}
+	var configs []*models.ConfigEntry
+	if _, err := qs.All(&configs); err != nil {
+		return nil, err
+	}
+	return configs, nil
 }

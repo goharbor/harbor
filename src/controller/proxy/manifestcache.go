@@ -131,7 +131,7 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	// if time exceed, then push a updated manifest list which contains existing manifest
 	var newMan distribution.Manifest
 	var err error
-	for n := 0; n < maxManifestListWait; n++ {
+	for range maxManifestListWait {
 		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, reference)
 		time.Sleep(sleepIntervalSec * time.Second)
 		newMan, err = m.updateManifestList(ctx, repo, man)
@@ -166,7 +166,19 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	if strings.HasPrefix(reference, "sha256:") {
 		reference = string(newDig)
 	}
-	return m.local.PushManifest(repo, reference, newMan)
+	err = m.local.PushManifest(repo, reference, newMan)
+	if err != nil {
+		log.Errorf("failed to push manifest list, error: %v", err)
+		return err
+	}
+	log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
+	log.Debug("update artifact pull time to avoid it is removed by GC before the manifest list is pushed to local")
+	artForPullTime := art
+	artForPullTime.Digest = reference
+	if err := m.local.UpdatePullTime(ctx, artForPullTime); err != nil {
+		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", artForPullTime.Repository, reference, err)
+	}
+	return nil
 }
 
 // ManifestCache default Manifest handler
@@ -177,7 +189,7 @@ type ManifestCache struct {
 // CacheContent ...
 func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, _ string) {
 	var waitBlobs []distribution.Descriptor
-	for n := 0; n < maxManifestWait; n++ {
+	for n := range maxManifestWait {
 		time.Sleep(sleepIntervalSec * time.Second)
 		waitBlobs = m.local.CheckDependencies(ctx, art.Repository, man)
 		if len(waitBlobs) == 0 {

@@ -46,11 +46,7 @@ func (e *evaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candid
 		return artifacts[i].PulledTime > artifacts[j].PulledTime
 	})
 
-	i := e.n
-	if i > len(artifacts) {
-		i = len(artifacts)
-	}
-
+	i := min(e.n, len(artifacts))
 	return artifacts[:i], nil
 }
 

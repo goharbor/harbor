@@ -14,6 +14,8 @@
 
 package q
 
+import "maps"
+
 // KeyWords ...
 type KeyWords = map[string]any
 
@@ -56,9 +58,8 @@ func MustClone(query *Query) *Query {
 	if query != nil {
 		q.PageNumber = query.PageNumber
 		q.PageSize = query.PageSize
-		for k, v := range query.Keywords {
-			q.Keywords[k] = v
-		}
+		maps.Copy(q.Keywords, query.Keywords)
+
 		for _, sort := range query.Sorts {
 			q.Sorts = append(q.Sorts, &Sort{
 				Key:  sort.Key,

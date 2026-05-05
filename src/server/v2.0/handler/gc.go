@@ -100,6 +100,9 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
 		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
+		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()
 			if err != nil {
@@ -123,6 +126,9 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 		}
 		if deleteUntagged, ok := parameters["delete_untagged"].(bool); ok {
 			policy.DeleteUntagged = deleteUntagged
+		}
+		if deleteTag, ok := parameters["delete_tag"].(bool); ok {
+			policy.DeleteTag = deleteTag
 		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
 			wInt, err := workers.Int64()
@@ -192,7 +198,7 @@ func (g *gcAPI) GetGCHistory(ctx context.Context, params operation.GetGCHistoryP
 
 	var hs []*model.GCHistory
 	for _, exec := range execs {
-		extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
+		extraAttrsString, err := json.Marshal(model.CleanExtraAttrs(exec.ExtraAttrs))
 		if err != nil {
 			return g.SendError(ctx, err)
 		}
@@ -230,7 +236,7 @@ func (g *gcAPI) GetGC(ctx context.Context, params operation.GetGCParams) middlew
 		return g.SendError(ctx, err)
 	}
 
-	extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
+	extraAttrsString, err := json.Marshal(model.CleanExtraAttrs(exec.ExtraAttrs))
 	if err != nil {
 		return g.SendError(ctx, err)
 	}

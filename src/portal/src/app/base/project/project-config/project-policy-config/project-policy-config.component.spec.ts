@@ -169,6 +169,46 @@ describe('ProjectPolicyConfigComponent', () => {
                 .GenerateSbomOnPush
         ).toBeTruthy();
     });
+    it('should not allow empty and whitespace CVEs', async () => {
+        // set cveIds with mix of empty and whitespace
+        component.projectPolicyConfigComponent.cveIds = `
+      ,   , \n ,  \t, ,
+    `;
+
+        component.projectPolicyConfigComponent.addToProjectAllowlist();
+
+        const finalIds =
+            component.projectPolicyConfigComponent.projectAllowlist.items.map(
+                i => i.cve_id
+            );
+        expect(finalIds).not.toContain(' ');
+        expect(finalIds).not.toContain('\n');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+
+        // modal should be closed
+        expect(component.projectPolicyConfigComponent.cveIds).toBeNull();
+        expect(component.projectPolicyConfigComponent.showAddModal).toBeFalse();
+    });
+    it('should add only unique CVEs to the allowlist', () => {
+        // set cveIds with duplicates and valid
+        component.projectPolicyConfigComponent.cveIds = `
+      CVE-2024-0002,
+      CVE-2024-0002,
+      CVE-2024-0004
+    `;
+        component.projectPolicyConfigComponent.addToProjectAllowlist();
+        const finalIds =
+            component.projectPolicyConfigComponent.projectAllowlist.items.map(
+                i => i.cve_id
+            );
+        expect(finalIds).toContain('CVE-2024-0004');
+        expect(finalIds).not.toContain(''); // no empty CVEs
+        expect(finalIds.filter(id => id === 'CVE-2024-0002').length).toBe(1); // no duplicates
+
+        // modal should be closed
+        expect(component.projectPolicyConfigComponent.cveIds).toBeNull();
+        expect(component.projectPolicyConfigComponent.showAddModal).toBeFalse();
+    });
     it('should get hasChangeConfigRole', () => {
         expect(
             component.projectPolicyConfigComponent.hasChangeConfigRole

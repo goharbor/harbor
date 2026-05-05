@@ -174,7 +174,12 @@ export class SecurityComponent implements OnInit, OnDestroy {
         this.systemAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
-        this.cveIds.split(/[\n,]+/).forEach(id => {
+        const newCveIds = this.cveIds
+            .split(/[\n,]+/)
+            .map(id => id.trim()) // remove leading/trailing whitespace
+            .filter(id => id.length > 0); // skip empty or whitespace-only strings
+
+        newCveIds.forEach(id => {
             let cveObj: any = {};
             cveObj.cve_id = id.trim();
             if (!map[cveObj.cve_id]) {

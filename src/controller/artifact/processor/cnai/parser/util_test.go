@@ -156,7 +156,7 @@ func TestAddNode(t *testing.T) {
 				// Verify the path exists.
 				current := root
 				parts := filepath.Clean(tt.path)
-				for _, part := range strings.Split(parts, string(filepath.Separator)) {
+				for part := range strings.SplitSeq(parts, string(filepath.Separator)) {
 					if part == "" {
 						continue
 					}

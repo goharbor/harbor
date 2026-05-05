@@ -271,7 +271,7 @@ func Escape(str string) string {
 // e.g. n=3, returns "?,?,?"
 func ParamPlaceholderForIn(n int) string {
 	placeholders := []string{}
-	for i := 0; i < n; i++ {
+	for range n {
 		placeholders = append(placeholders, "?")
 	}
 	return strings.Join(placeholders, ",")

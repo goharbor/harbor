@@ -7,22 +7,18 @@ on:
     branches:
       - main
       - release-*
-
 jobs:
   BUILD_PACKAGE:
     env:
         BUILD_PACKAGE: true
-    runs-on:
-      - ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: 'google-github-actions/auth@v2'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.1.1
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-      - uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: '430.0.0'
-      - run: gcloud info
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
@@ -33,13 +29,13 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
@@ -87,10 +83,11 @@ jobs:
           if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
             echo "Do not need to build base images!"
           else
-            build_base_params=" BUILD_BASE=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+            build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
           fi
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true HTTPPROXY= ${build_base_params}
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true HTTPPROXY= ${build_base_params}
+
+          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
           echo "Package name is: $harbor_offline_build_bundle"
@@ -104,5 +101,6 @@ jobs:
           uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
           uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
           echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
+          echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
 
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"

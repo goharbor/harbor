@@ -22,7 +22,7 @@ import (
 	"io"
 	"testing"
 
-	modelspec "github.com/CloudNativeAI/model-spec/specs-go/v1"
+	modelspec "github.com/modelpack/model-spec/specs-go/v1"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 
@@ -76,6 +76,29 @@ func TestLicenseParser(t *testing.T) {
 				})
 				_, _ = tw.Write(content)
 				tw.Close()
+
+				mc.On("PullBlob", mock.Anything, "sha256:abc123").
+					Return(int64(buf.Len()), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)
+			},
+			expectedType:   contentTypeTextPlain,
+			expectedOutput: []byte("MIT License"),
+		},
+		{
+			name: "LICENSE parse success (raw)",
+			manifest: &ocispec.Manifest{
+				Layers: []ocispec.Descriptor{
+					{
+						MediaType: modelspec.MediaTypeModelDocRaw,
+						Annotations: map[string]string{
+							modelspec.AnnotationFilepath: "LICENSE",
+						},
+						Digest: "sha256:abc123",
+					},
+				},
+			},
+			setupMockReg: func(mc *mockregistry.Client) {
+				var buf bytes.Buffer
+				buf.Write([]byte("MIT License"))
 
 				mc.On("PullBlob", mock.Anything, "sha256:abc123").
 					Return(int64(buf.Len()), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)

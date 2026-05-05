@@ -96,7 +96,7 @@ Check The Search By One Condition
     Select From List By Value  ${vulnerabilities_filter_select}  package
     Retry Text Input  ${vulnerabilities_filter_input}  ${package}
     Retry Button Click  ${security_hub_search_btn}
-    Retry Wait Element Count  //div[@class='datagrid']//clr-dg-cell[7][@title='${package}']  15
+    Retry Wait Element Count  //div[@class='datagrid']//clr-dg-cell[8][@title='${package}']  15
     # Check the search by tag
     Select From List By Value  ${vulnerabilities_filter_select}  tag
     Retry Text Input  ${vulnerabilities_filter_input}  ${tag}
@@ -189,7 +189,6 @@ Check The Search By All Condition
     Retry Text Input  ${cvss3_to_input}  ${cvss_score_v3_to}
     # severity
     Retry Element Click  ${add_search_criteria_icon}
-    Retry Wait Element  ${add_search_criteria_icon_disabled}
     Retry Wait Element  ${remove_search_criteria_icon}
     ${severity_select}=  Format String  {}{}  ${vulnerabilities_filter_select}  [8]
     ${severity_input}=  Format String  {}{}  (//form[contains(@class,'clr-form')]//select)  [9]
@@ -198,7 +197,7 @@ Check The Search By All Condition
     # search
     Retry Button Click  ${security_hub_search_btn}
     Retry Wait Element Count  ${vulnerabilities_datagrid_row}  1
-    ${target_row_xpath}=  Set Variable  //div[@class='datagrid'][..//clr-dg-cell[2][@title='${repository_name}'] and ..//clr-dg-cell[3][@title='${digest}'] and ..//clr-dg-cell[1]//a[text()='${cve_id}'] and ..//clr-dg-cell[7][@title='${package}'] and ..//clr-dg-cell[4][text()='${tag}'] and ..//clr-dg-cell[5][text()>=${cvss_score_v3_from} and text()<=${cvss_score_v3_to}] and ..//clr-dg-cell[6]//span[text()='${severity}']]
+    ${target_row_xpath}=  Set Variable  //div[@class='datagrid'][..//clr-dg-cell[2][@title='${repository_name}'] and ..//clr-dg-cell[3][@title='${digest}'] and ..//clr-dg-cell[1]//a[text()='${cve_id}'] and ..//clr-dg-cell[8][@title='${package}'] and ..//clr-dg-cell[4][text()='${tag}'] and ..//clr-dg-cell[5][text()>=${cvss_score_v3_from} and text()<=${cvss_score_v3_to}] and ..//clr-dg-cell[6]//span[text()='${severity}']]
     Log  ${target_row_xpath}
     Retry Wait Element  ${target_row_xpath}
     FOR  ${index}  IN RANGE  7

@@ -165,11 +165,7 @@ func (sj *SweepJob) sweep(ctx job.Context, vendorType string, retainCount int64)
 			return errStop
 		}
 		// calculate the batch position
-		j := i + sweepBatchSize
-		// avoid overflow
-		if j > total {
-			j = total
-		}
+		j := min(i+sweepBatchSize, total)
 
 		if err = sj.mgr.Clean(ctx.SystemContext(), candidates[i:j]); err != nil {
 			sj.logger.Errorf("[%s] failed to batch clean candidates, error: %v", vendorType, err)

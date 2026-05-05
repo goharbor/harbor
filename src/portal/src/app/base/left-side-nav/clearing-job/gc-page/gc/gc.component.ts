@@ -26,6 +26,10 @@ import {
     WORKER_OPTIONS,
 } from '../../clearing-job-interfact';
 import { clone } from '../../../../../shared/units/utils';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
 
 const ONE_MINUTE = 60000;
 
@@ -42,6 +46,7 @@ export class GcComponent implements OnInit, OnDestroy {
     @ViewChild(CronScheduleComponent)
     cronScheduleComponent: CronScheduleComponent;
     shouldDeleteUntagged: boolean;
+    shouldDeleteTag: boolean;
     workerNum: number = 1;
     workerOptions: number[] = clone(WORKER_OPTIONS);
     dryRunOnGoing: boolean = false;
@@ -54,12 +59,14 @@ export class GcComponent implements OnInit, OnDestroy {
     @ViewChild(GcHistoryComponent) gcHistoryComponent: GcHistoryComponent;
     constructor(
         private gcService: GcService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
         this.getCurrentSchedule(true);
         this.getStatus();
+        this.shouldDeleteTag = true;
     }
     ngOnDestroy() {
         if (this.statusTimeout) {
@@ -76,6 +83,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 pageSize: 1,
                 sort: '-update_time',
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(res => {
                 if (res?.length) {
                     this.isDryRun = JSON.parse(res[0]?.job_parameters).dry_run;
@@ -133,9 +141,13 @@ export class GcComponent implements OnInit, OnDestroy {
             this.shouldDeleteUntagged = JSON.parse(
                 gcHistory.job_parameters
             ).delete_untagged;
+            this.shouldDeleteTag = JSON.parse(
+                gcHistory.job_parameters
+            ).delete_tag;
             this.workerNum = +JSON.parse(gcHistory.job_parameters).workers;
         } else {
             this.shouldDeleteUntagged = false;
+            this.shouldDeleteTag = false;
             this.workerNum = 1;
         }
     }
@@ -151,6 +163,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         delete_untagged: this.shouldDeleteUntagged,
+                        delete_tag: this.shouldDeleteTag,
                         workers: +this.workerNum,
                         dry_run: false,
                     },
@@ -177,6 +190,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 schedule: {
                     parameters: {
                         delete_untagged: this.shouldDeleteUntagged,
+                        delete_tag: this.shouldDeleteTag,
                         workers: +this.workerNum,
                         dry_run: true,
                     },
@@ -209,6 +223,7 @@ export class GcComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             delete_untagged: this.shouldDeleteUntagged,
+                            delete_tag: this.shouldDeleteTag,
                             workers: +this.workerNum,
                             dry_run: false,
                         },
@@ -234,6 +249,7 @@ export class GcComponent implements OnInit, OnDestroy {
                     schedule: {
                         parameters: {
                             delete_untagged: this.shouldDeleteUntagged,
+                            delete_tag: this.shouldDeleteTag,
                             workers: +this.workerNum,
                             dry_run: false,
                         },

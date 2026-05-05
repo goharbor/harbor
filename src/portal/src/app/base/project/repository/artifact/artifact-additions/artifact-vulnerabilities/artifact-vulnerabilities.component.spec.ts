@@ -43,6 +43,7 @@ describe('ArtifactVulnerabilitiesComponent', () => {
         {
             id: '123',
             severity: 'low',
+            status: 'fixed',
             package: 'test',
             version: '1.0',
             links: ['testLink'],
@@ -52,6 +53,7 @@ describe('ArtifactVulnerabilitiesComponent', () => {
         {
             id: '456',
             severity: 'high',
+            status: 'fixed',
             package: 'test',
             version: '1.0',
             links: ['testLink'],
@@ -163,7 +165,7 @@ describe('ArtifactVulnerabilitiesComponent', () => {
         await fixture.whenStable();
         const cols = fixture.nativeElement.querySelectorAll('clr-dg-column');
         expect(cols).toBeTruthy();
-        expect(cols.length).toEqual(7);
+        expect(cols.length).toEqual(8);
         const firstRow = fixture.nativeElement.querySelector('clr-dg-row');
         const cells = firstRow.querySelectorAll('clr-dg-cell');
         expect(cells[cells.length - 1].innerText).toEqual('TAG_RETENTION.YES');

@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
@@ -239,10 +240,8 @@ func (f *fakeSecurityContext) IsSolutionUser() bool {
 }
 func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
 	if actions, ok := f.rcActions[resource]; ok {
-		for _, a := range actions {
-			if a == action {
-				return true
-			}
+		if slices.Contains(actions, action) {
+			return true
 		}
 	}
 	return false

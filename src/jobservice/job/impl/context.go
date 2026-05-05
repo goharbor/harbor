@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"math"
 	"sync"
 	"time"
@@ -116,9 +117,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 
 	// Copy properties
 	if len(c.properties) > 0 {
-		for k, v := range c.properties {
-			jContext.properties[k] = v
-		}
+		maps.Copy(jContext.properties, c.properties)
 	}
 
 	// Refresh config properties
@@ -128,9 +127,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	}
 
 	props := c.cfgMgr.GetAll(c.sysContext)
-	for k, v := range props {
-		jContext.properties[k] = v
-	}
+	maps.Copy(jContext.properties, props)
 
 	// Set loggers for job
 	c.lock.Lock()
@@ -199,10 +196,7 @@ func createLoggers(jobID string) (logger.Interface, error) {
 		if lc.Name == logger.NameFile || lc.Name == logger.NameDB {
 			// Need extra param
 			fSettings := map[string]any{}
-			for k, v := range lc.Settings {
-				// Copy settings
-				fSettings[k] = v
-			}
+			maps.Copy(fSettings, lc.Settings)
 			if lc.Name == logger.NameFile {
 				// Append file name param
 				fSettings["filename"] = fmt.Sprintf("%s.log", jobID)

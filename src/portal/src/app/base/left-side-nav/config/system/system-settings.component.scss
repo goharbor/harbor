@@ -190,6 +190,10 @@ $message-type-width: 12rem;
   margin-right: 0.25rem;
 }
 
+.audit-log-type {
+  max-width: 20rem;
+}
+
 .duration {
   width: $input-width;
   display: flex;

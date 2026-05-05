@@ -17,6 +17,8 @@ package parser
 import (
 	"context"
 	"fmt"
+	"io"
+	"path/filepath"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
@@ -40,6 +42,11 @@ const (
 
 	// defaultFileSizeLimit is the default file size limit.
 	defaultFileSizeLimit = 1024 * 1024 * 4 // 4MB
+
+	// formatTar is the format of tar file.
+	formatTar = ".tar"
+	// formatRaw is the format of raw file.
+	formatRaw = ".raw"
 )
 
 // newBase creates a new base parser.
@@ -70,10 +77,23 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 	}
 
 	defer stream.Close()
-	content, err := untar(stream)
+
+	content, err := decodeContent(layer.MediaType, stream)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to untar the content: %w", err)
+		return "", nil, fmt.Errorf("failed to decode content: %w", err)
 	}
 
 	return contentTypeTextPlain, content, nil
+}
+
+func decodeContent(mediaType string, reader io.Reader) ([]byte, error) {
+	format := filepath.Ext(mediaType)
+	switch format {
+	case formatTar:
+		return untar(reader)
+	case formatRaw:
+		return io.ReadAll(reader)
+	default:
+		return nil, fmt.Errorf("unsupported format: %s", format)
+	}
 }

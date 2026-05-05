@@ -16,6 +16,7 @@ package scanner
 
 import (
 	"encoding/json"
+	"slices"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib"
@@ -140,15 +141,9 @@ func (r *Registration) HasCapability(manifestMimeType string) bool {
 		return false
 	}
 
-	for _, capability := range r.Metadata.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == manifestMimeType {
-				return true
-			}
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(r.Metadata.Capabilities, func(c *v1.ScannerCapability) bool {
+		return slices.Contains(c.ConsumesMimeTypes, manifestMimeType)
+	})
 }
 
 // GetProducesMimeTypes returns produces mime types for the artifact
@@ -162,10 +157,8 @@ func (r *Registration) GetProducesMimeTypes(mimeType string, scanType string) []
 			capType = v1.ScanTypeVulnerability
 		}
 		if scanType == capType {
-			for _, mt := range capability.ConsumesMimeTypes {
-				if mt == mimeType {
-					return capability.ProducesMimeTypes
-				}
+			if slices.Contains(capability.ConsumesMimeTypes, mimeType) {
+				return capability.ProducesMimeTypes
 			}
 		}
 	}
@@ -180,10 +173,8 @@ func (r *Registration) GetCapability(mimeType string) *v1.ScannerCapability {
 	}
 
 	for _, capability := range r.Metadata.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == mimeType {
-				return capability
-			}
+		if slices.Contains(capability.ConsumesMimeTypes, mimeType) {
+			return capability
 		}
 	}
 

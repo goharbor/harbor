@@ -143,7 +143,8 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 
 	switch key {
 	case proModels.ProMetaPublic, proModels.ProMetaEnableContentTrust, proModels.ProMetaEnableContentTrustCosign,
-		proModels.ProMetaAutoSBOMGen, proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist:
+		proModels.ProMetaAutoSBOMGen, proModels.ProMetaPreventVul, proModels.ProMetaAutoScan, proModels.ProMetaReuseSysCVEAllowlist,
+		proModels.ProMetaProxyCacheLocalOnNotFound, proModels.ProMetaProxyReferrerAPI:
 		v, err := strconv.ParseBool(value)
 		if err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
@@ -161,6 +162,12 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
 		}
 		metas[proModels.ProMetaProxySpeed] = strconv.FormatInt(v, 10)
+	case proModels.ProMetaMaxUpstreamConn:
+		v, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
+		}
+		metas[proModels.ProMetaMaxUpstreamConn] = strconv.FormatInt(v, 10)
 	default:
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid key: %s", key)
 	}

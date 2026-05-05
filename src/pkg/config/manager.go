@@ -180,6 +180,11 @@ func (c *CfgManager) UpdateConfig(ctx context.Context, cfgs map[string]any) erro
 	return c.Store.Update(ctx, cfgs)
 }
 
+// GetItemFromDriver ...
+func (c *CfgManager) GetItemFromDriver(ctx context.Context, key string) (map[string]any, error) {
+	return c.Store.GetFromDriver(ctx, key)
+}
+
 // ValidateCfg validate config by metadata. return the first error if exist.
 func (c *CfgManager) ValidateCfg(ctx context.Context, cfgs map[string]any) error {
 	for key, value := range cfgs {

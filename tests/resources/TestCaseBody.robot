@@ -16,10 +16,16 @@
 Documentation  This resource wrap test case body
 Library  ../apitests/python/testutils.py
 Library  ../apitests/python/library/repository.py
+Library  String
 
 *** Variables ***
 
 *** Keywords ***
+Remove Port
+    [Arguments]    ${address}
+    ${result}=    Replace String    ${address}    :9443    ${EMPTY}
+    [Return]    ${result}
+
 Body Of Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
@@ -578,7 +584,8 @@ Verify Webhook By Tag Retention Finished Event
 Verify Webhook By Replication Status Changed Event
     [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{replication_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${ip}
+    ${cleaned_ip}=    Remove Port    ${ip}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${cleaned_ip}
     ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  operator=${user}  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests

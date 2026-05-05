@@ -22,6 +22,7 @@ import (
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
 
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
@@ -46,10 +47,16 @@ func getRegionRegistryName(url string) (string, string, error) {
 	return "", "", errors.New("invalid region")
 }
 
-func getRealmService(host string, insecure bool) (string, string, error) {
+var resolveHost = func(host string) string { return host }
+
+func getRealmService(host string, insecure bool, caCert string) (string, string, error) {
 	client := &http.Client{
-		Transport: util.GetHTTPTransport(insecure),
+		Transport: util.GetHTTPTransport(insecure, caCert),
+		Timeout:   config.RegistryHTTPClientTimeout(),
 	}
+
+	// Allow tests to override the host (e.g., inject mock server URL) via resolveHost
+	host = resolveHost(host)
 
 	resp, err := client.Get(host + "/v2/")
 	if err != nil {

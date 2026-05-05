@@ -78,10 +78,15 @@ REGISTRYSERVER=
 REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
 TRIVYFLAG=false
+EXPORTERFLAG=false
 HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
 NPM_REGISTRY=https://registry.npmjs.org
+# Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
+#   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
+#   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
+OPENAPI_GENERATOR_CLI_URL ?= https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
 BUILDTARGET=build
 GEN_TLS=
 
@@ -92,7 +97,12 @@ VERSIONTAG=dev
 BUILD_BASE=true
 PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
-BUILDBASETARGET=trivy-adapter core db jobservice log nginx portal prepare redis registry registryctl exporter
+# for skip build prepare and log container while BUILD_INSTALLER=false
+BUILD_INSTALLER=true
+BUILDBASETARGET=trivy-adapter core db jobservice nginx portal valkey registry registryctl exporter
+ifeq ($(BUILD_INSTALLER), true)
+	BUILDBASETARGET += prepare log
+endif
 IMAGENAMESPACE=goharbor
 BASEIMAGENAMESPACE=goharbor
 # #input true/false only
@@ -105,17 +115,17 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.61.0
-TRIVYADAPTERVERSION=v0.33.0-rc.2
+TRIVYVERSION=v0.69.3
+TRIVYADAPTERVERSION=v0.35.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=release/2.8
+REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.1
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
 # dependency binaries
-REGISTRYURL=https://storage.googleapis.com/harbor-builds/bin/registry/release-${REGISTRYVERSION}/registry
+REGISTRYURL=
 TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
 TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-trivy/archive/refs/tags/$(TRIVYADAPTERVERSION).tar.gz
 
@@ -129,11 +139,12 @@ endef
 # docker parameters
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
+DOCKERNETWORK=default
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
 DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
-DOCKERCOMPOSECMD=$(shell which docker-compose)
+DOCKERCOMPOSECMD=$(shell which docker-compose 2>/dev/null || echo "docker compose")
 DOCKERTAG=$(DOCKERCMD) tag
 
 # go parameters
@@ -144,7 +155,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.23.8
+GOBUILDIMAGE=golang:1.25.7
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -238,17 +249,26 @@ REGISTRYUSER=
 REGISTRYPASSWORD=
 
 # cmds
-DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/valkey-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
+
+ifeq ($(BUILD_INSTALLER), true)
+	DOCKERSAVE_PARA+= $(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
+endif
+
+ifeq ($(TRIVYFLAG), true)
+	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
+endif
+ifeq ($(EXPORTERFLAG), true)
+	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG)
+endif
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -265,11 +285,6 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/harbor.yml.tmpl
 
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-
-ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= $(IMAGENAMESPACE)/trivy-adapter-photon:$(VERSIONTAG)
-endif
-
 
 RUNCONTAINER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH)
 
@@ -293,7 +308,7 @@ lint_apis:
 	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
 
 SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
-SWAGGER_VERSION=v0.31.0
+SWAGGER_VERSION=v0.33.1
 SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
 SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
@@ -308,13 +323,23 @@ define swagger_generate_server
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
 endef
 
-gen_apis:
+check_docker:
+	@if [ -z "$(DOCKERCMD)" ]; then \
+		echo "Error: Docker is not installed or not in PATH." >&2; \
+		exit 1; \
+	fi
+	@if ! $(DOCKERCMD) info > /dev/null 2>&1; then \
+		echo "Error: Docker daemon is not running. Please start Docker and retry." >&2; \
+		exit 1; \
+	fi
+
+gen_apis: check_docker
 	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
-MOCKERY_VERSION=v2.51.0
+MOCKERY_VERSION=v2.53.3
 MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
 MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
 
@@ -384,22 +409,20 @@ build:
 		echo Do not push base images since no base images built. ; \
 		exit 1; \
 	fi
-# PULL_BASE_FROM_DOCKERHUB should be true if BUILD_BASE is not true
-	@if [ "$(BUILD_BASE)" != "true" ]  && [ "$(PULL_BASE_FROM_DOCKERHUB)" = "false" ] ; then \
-		echo Should pull base images from registry in docker configuration since no base images built. ; \
-		exit 1; \
-	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) -e NODEBUILDIMAGE=$(NODEBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG)  -e DISTRIBUTION_SRC=$(DISTRIBUTION_SRC)\
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
 	 -e VERSIONTAG=$(VERSIONTAG) \
+	 -e DOCKERNETWORK=$(DOCKERNETWORK) \
 	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
+	 -e BUILD_INSTALLER=$(BUILD_INSTALLER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e REGISTRYURL=$(REGISTRYURL) \
 	 -e TRIVY_DOWNLOAD_URL=$(TRIVY_DOWNLOAD_URL) -e TRIVY_ADAPTER_DOWNLOAD_URL=$(TRIVY_ADAPTER_DOWNLOAD_URL) \
 	 -e PULL_BASE_FROM_DOCKERHUB=$(PULL_BASE_FROM_DOCKERHUB) -e BUILD_BASE=$(BUILD_BASE) \
 	 -e REGISTRYUSER=$(REGISTRYUSER) -e REGISTRYPASSWORD=$(REGISTRYPASSWORD) \
-	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE)
+	 -e PUSHBASEIMAGE=$(PUSHBASEIMAGE) -e GOBUILDIMAGE=$(GOBUILDIMAGE) \
+	 -e RELEASEVERSION=$(RELEASEVERSION) -e GITCOMMIT=$(GITCOMMIT)
 
 build_standalone_db_migrator: compile_standalone_db_migrator
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile _build_standalone_db_migrator -e BASEIMAGETAG=$(BASEIMAGETAG) -e VERSIONTAG=$(VERSIONTAG)
@@ -440,7 +463,14 @@ package_online: update_prepare_version
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-package_offline: update_prepare_version compile build
+.PHONY: check_buildinstaller
+check_buildinstaller:
+	@if [ "$(BUILD_INSTALLER)" != "true" ]; then \
+		echo "Must set BUILD_INSTALLER as true while triggering package_offline build" ; \
+		exit 1; \
+	fi
+
+package_offline: check_buildinstaller update_prepare_version compile build
 
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
@@ -471,7 +501,7 @@ misspell:
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
@@ -535,7 +565,7 @@ restart: down prepare start
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
+	wget "$(OPENAPI_GENERATOR_CLI_URL)" -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client

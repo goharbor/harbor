@@ -240,10 +240,10 @@ func SearchAndOnBoardGroup(ctx context.Context, groupKey, altGroupName string) (
 	if userGroup == nil {
 		return 0, ErrorGroupNotExist
 	}
-	if userGroup != nil {
-		err = OnBoardGroup(ctx, userGroup, altGroupName)
+	if err := OnBoardGroup(ctx, userGroup, altGroupName); err != nil {
+		return 0, err
 	}
-	return userGroup.ID, err
+	return userGroup.ID, nil
 }
 
 // PostAuthenticate -

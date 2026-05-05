@@ -17,6 +17,7 @@ package scandataexport
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -173,9 +174,8 @@ func (sde *ScanDataExport) updateExecAttributes(ctx job.Context, params job.Para
 	}
 	// copy old extra
 	attrsToUpdate := exec.ExtraAttrs
-	for k, v := range attrs {
-		attrsToUpdate[k] = v
-	}
+	maps.Copy(attrsToUpdate, attrs)
+
 	return sde.execMgr.UpdateExtraAttrs(ctx.SystemContext(), execID, attrsToUpdate)
 }
 

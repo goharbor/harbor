@@ -48,6 +48,7 @@ type Manager interface {
 	Set(ctx context.Context, key string, value any)
 	Save(ctx context.Context) error
 	Get(ctx context.Context, key string) *metadata.ConfigureValue
+	GetItemFromDriver(ctx context.Context, key string) (map[string]any, error)
 	UpdateConfig(ctx context.Context, cfgs map[string]any) error
 	GetUserCfgs(ctx context.Context) map[string]any
 	ValidateCfg(ctx context.Context, cfgs map[string]any) error

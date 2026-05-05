@@ -113,6 +113,14 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		policy.CopyByChunk = *params.Policy.CopyByChunk
 	}
 
+	if params.Policy.SingleActiveReplication != nil {
+		// Validate and assign SingleActiveReplication only for non-event_based triggers
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
+		}
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
+	}
+
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
 		return r.SendError(ctx, err)
@@ -179,6 +187,14 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.CopyByChunk != nil {
 		policy.CopyByChunk = *params.Policy.CopyByChunk
+	}
+
+	if params.Policy.SingleActiveReplication != nil {
+		// Validate and assign SingleActiveReplication only for non-event_based triggers
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
+		}
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
@@ -446,6 +462,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
+		SingleActiveReplication:   &policy.SingleActiveReplication,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)
@@ -497,6 +514,9 @@ func convertRegistry(registry *model.Registry) *models.Registry {
 			credential.AccessSecret = "*****"
 		}
 		r.Credential = credential
+	}
+	if len(registry.CACertificate) > 0 {
+		r.CaCertificate = &registry.CACertificate
 	}
 	return r
 }

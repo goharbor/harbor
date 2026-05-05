@@ -22,8 +22,8 @@ import (
 	"io"
 	"testing"
 
-	modelspec "github.com/CloudNativeAI/model-spec/specs-go/v1"
 	"github.com/goharbor/harbor/src/testing/mock"
+	modelspec "github.com/modelpack/model-spec/specs-go/v1"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 
@@ -106,6 +106,29 @@ func TestReadmeParser(t *testing.T) {
 				})
 				_, _ = tw.Write(content)
 				tw.Close()
+
+				mc.On("PullBlob", mock.Anything, "sha256:def456").
+					Return(int64(buf.Len()), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)
+			},
+			expectedType:   contentTypeMarkdown,
+			expectedOutput: []byte("# Test README"),
+		},
+		{
+			name: "README parse success (raw)",
+			manifest: &ocispec.Manifest{
+				Layers: []ocispec.Descriptor{
+					{
+						MediaType: modelspec.MediaTypeModelDocRaw,
+						Annotations: map[string]string{
+							modelspec.AnnotationFilepath: "README",
+						},
+						Digest: "sha256:def456",
+					},
+				},
+			},
+			setupMockReg: func(mc *mockregistry.Client) {
+				var buf bytes.Buffer
+				buf.Write([]byte("# Test README"))
 
 				mc.On("PullBlob", mock.Anything, "sha256:def456").
 					Return(int64(buf.Len()), io.NopCloser(bytes.NewReader(buf.Bytes())), nil)

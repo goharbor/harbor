@@ -58,8 +58,8 @@ func parseKeywords(q string) (map[string]any, error) {
 	} else {
 		log.Errorf("failed to unescape the query %s: %v", q, err)
 	}
-	params := strings.Split(q, ",")
-	for _, param := range params {
+
+	for param := range strings.SplitSeq(q, ",") {
 		strs := strings.SplitN(param, "=", 2)
 		if len(strs) != 2 || len(strs[0]) == 0 || len(strs[1]) == 0 {
 			return nil, errors.New(nil).
@@ -82,11 +82,11 @@ func ParseSorting(sort string) []*Sort {
 		return []*Sort{}
 	}
 	var sorts []*Sort
-	for _, sorting := range strings.Split(sort, ",") {
+	for sorting := range strings.SplitSeq(sort, ",") {
 		key := sorting
 		desc := false
-		if strings.HasPrefix(sorting, "-") {
-			key = strings.TrimPrefix(sorting, "-")
+		if after, ok := strings.CutPrefix(sorting, "-"); ok {
+			key = after
 			desc = true
 		}
 		sorts = append(sorts, &Sort{
@@ -176,8 +176,8 @@ func parseList(value string, c rune) ([]any, error) {
 		return nil, fmt.Errorf(`and list must start with "(" and end with ")"`)
 	}
 	var vs []any
-	strs := strings.Split(value[1:length-1], " ")
-	for _, str := range strs {
+
+	for str := range strings.SplitSeq(value[1:length-1], " ") {
 		v := parseValue(str)
 		if s, ok := v.(string); ok && len(s) == 0 {
 			continue

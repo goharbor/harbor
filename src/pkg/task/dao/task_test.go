@@ -256,7 +256,7 @@ func (t *taskDAOTestSuite) TestGetMaxEndTime() {
 func (t *taskDAOTestSuite) TestUpdateStatusInBatch() {
 	jobIDs := make([]string, 0)
 	taskIDs := make([]int64, 0)
-	for i := 0; i < 300; i++ {
+	for i := range 300 {
 		jobID := fmt.Sprintf("job-%d", i)
 		tid, err := t.taskDAO.Create(t.ctx, &Task{
 			JobID:       jobID,
@@ -272,7 +272,7 @@ func (t *taskDAOTestSuite) TestUpdateStatusInBatch() {
 
 	err := t.taskDAO.UpdateStatusInBatch(t.ctx, jobIDs, "Stopped", 10)
 	t.Require().Nil(err)
-	for i := 0; i < 300; i++ {
+	for i := range 300 {
 		tasks, err := t.taskDAO.List(t.ctx, &q.Query{
 			Keywords: q.KeyWords{"job_id": jobIDs[i]}})
 		t.Require().Nil(err)

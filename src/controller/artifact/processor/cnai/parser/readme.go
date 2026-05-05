@@ -17,8 +17,9 @@ package parser
 import (
 	"context"
 	"fmt"
+	"slices"
 
-	modelspec "github.com/CloudNativeAI/model-spec/specs-go/v1"
+	modelspec "github.com/modelpack/model-spec/specs-go/v1"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -47,7 +48,10 @@ func (r *readme) Parse(ctx context.Context, artifact *artifact.Artifact, manifes
 	// lookup the readme file layer.
 	var layer *ocispec.Descriptor
 	for _, desc := range manifest.Layers {
-		if desc.MediaType == modelspec.MediaTypeModelDoc {
+		if slices.Contains([]string{
+			modelspec.MediaTypeModelDoc,
+			modelspec.MediaTypeModelDocRaw,
+		}, desc.MediaType) {
 			if desc.Annotations != nil {
 				filepath := desc.Annotations[modelspec.AnnotationFilepath]
 				if filepath == "README" || filepath == "README.md" {

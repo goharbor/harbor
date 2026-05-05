@@ -43,6 +43,7 @@ export interface Endpoint extends Base {
     };
     description: string;
     insecure: boolean;
+    ca_certificate?: string;
     name: string;
     type: string;
     url: string;
@@ -54,6 +55,7 @@ export interface PingEndpoint extends Base {
     access_secret?: string;
     description: string;
     insecure: boolean;
+    ca_certificate?: string;
     name: string;
     type: string;
     url: string;
@@ -197,6 +199,7 @@ export enum VulnerabilitySeverity {
 export interface VulnerabilityBase {
     id: string;
     severity: string;
+    status: string;
     package: string;
     version: string;
 }
@@ -432,6 +435,11 @@ export interface ProjectRootInterface {
     NAME: string;
     VALUE: number;
     LABEL: string;
+}
+export interface ProjectCVEAllowlist {
+    id?: number;
+    expires_at?: number;
+    items?: Array<{ cve_id: string }>;
 }
 export interface SystemCVEAllowlist {
     id?: number;
