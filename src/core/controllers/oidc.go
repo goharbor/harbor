@@ -339,7 +339,7 @@ func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, u
 
 	user := &models.User{
 		Username:     username,
-		Realname:     username,
+		Realname:     info.Realname,
 		Email:        info.Email,
 		OIDCUserMeta: &oidcUser,
 		Comment:      oidcUserComment,
