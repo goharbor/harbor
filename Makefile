@@ -83,6 +83,10 @@ HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
 NPM_REGISTRY=https://registry.npmjs.org
+# Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
+#   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
+#   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
+OPENAPI_GENERATOR_CLI_URL ?= https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
 BUILDTARGET=build
 GEN_TLS=
 
@@ -95,7 +99,7 @@ PUSHBASEIMAGE=false
 BASEIMAGETAG=dev
 # for skip build prepare and log container while BUILD_INSTALLER=false
 BUILD_INSTALLER=true
-BUILDBASETARGET=trivy-adapter core db jobservice nginx portal redis registry registryctl exporter
+BUILDBASETARGET=trivy-adapter core db jobservice nginx portal valkey registry registryctl exporter
 ifeq ($(BUILD_INSTALLER), true)
 	BUILDBASETARGET += prepare log
 endif
@@ -250,7 +254,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
-		$(IMAGENAMESPACE)/redis-photon:$(VERSIONTAG) \
+		$(IMAGENAMESPACE)/valkey-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/nginx-photon:$(VERSIONTAG) \
 		$(IMAGENAMESPACE)/registry-photon:$(VERSIONTAG)
 
@@ -561,7 +565,7 @@ restart: down prepare start
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
+	wget "$(OPENAPI_GENERATOR_CLI_URL)" -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
