@@ -301,7 +301,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 				Subject:             "",
 				autoOnboardUsername: "airadier@gmail.com",
 				Username:            "airadier@gmail.com",
-				Realname:            "",
+				Realname:            "Alvaro",
 				Email:               "airadier@gmail.com",
 				Groups:              []string{},
 				hasGroupClaim:       false,
@@ -337,7 +337,7 @@ func TestUserInfoFromClaims(t *testing.T) {
 			},
 			expect: &UserInfo{
 				Username:      "jdoe",
-				Realname:      "",
+				Realname:      "jdoe",
 				Email:         "jdoe@example.com",
 				Groups:        []string{},
 				hasGroupClaim: false,

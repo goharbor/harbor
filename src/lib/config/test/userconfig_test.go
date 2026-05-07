@@ -273,7 +273,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
-	assert.Equal(t, "real name", v.UserClaim)
+	assert.Equal(t, "real name", v.RealNameClaim)
 	assert.False(t, v.Logout)
 }
 

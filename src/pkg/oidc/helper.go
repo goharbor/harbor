@@ -412,13 +412,13 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 	}
 
 	if res.Realname == "" {
-        if name, ok := allClaims["name"].(string); ok && name != "" {
-            res.Realname = name
-        } else if res.Username != "" { 
-            // Use the Username we successfully extracted earlier
-            res.Realname = res.Username
-        }
-    }
+		if name, ok := allClaims["name"].(string); ok && name != "" {
+			res.Realname = name
+		} else if res.Username != "" {
+			// Use the Username we successfully extracted earlier
+			res.Realname = res.Username
+		}
+	}
 
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
 	if len(setting.AdminGroup) > 0 {
