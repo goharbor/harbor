@@ -4,7 +4,15 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
-sudo go env -w GO111MODULE=auto
+
+if [ -n "$XDG_CONFIG_HOME" ] && [[ "$XDG_CONFIG_HOME" == *'$HOME'* ]]; then
+    unset XDG_CONFIG_HOME
+fi
+if [ -z "$XDG_CONFIG_HOME" ] || [[ "$XDG_CONFIG_HOME" != /* ]]; then
+    export XDG_CONFIG_HOME="$HOME/.config"
+fi
+
+go env -w GO111MODULE=auto
 pwd
 # cd ./src
 # go get github.com/docker/distribution@latest
@@ -18,7 +26,7 @@ set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
