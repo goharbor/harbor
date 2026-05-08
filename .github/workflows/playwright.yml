@@ -1,38 +1,35 @@
 name: Playwright Tests
 
 env:
-   POSTGRESQL_HOST: localhost
-   POSTGRESQL_PORT: 5432
-   POSTGRESQL_USR: postgres
-   POSTGRESQL_PWD: root123
-   POSTGRESQL_DATABASE: registry
-   DOCKER_COMPOSE_VERSION: 2.27.1
-   HARBOR_ADMIN: admin
-   HARBOR_ADMIN_PASSWD: Harbor12345
-   CORE_SECRET: tempString
-   KEY_PATH: "/data/secret/keys/secretkey"
-   REDIS_HOST: localhost
-   REG_VERSION: v2.7.1-patch-2819-2553
-   UI_BUILDER_VERSION: 1.6.0
+  POSTGRESQL_HOST: localhost
+  POSTGRESQL_PORT: 5432
+  POSTGRESQL_USR: postgres
+  POSTGRESQL_PWD: root123
+  POSTGRESQL_DATABASE: registry
+  HARBOR_ADMIN: admin
+  HARBOR_ADMIN_PASSWD: Harbor12345
+  CORE_SECRET: tempString
+  KEY_PATH: /data/secret/keys/secretkey
+  REDIS_HOST: localhost
+  REG_VERSION: v2.7.1-patch-2819-2553
+  UI_BUILDER_VERSION: 1.6.0
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - 'tests/**'
-      - '!tests/**.sh'
-      - '!tests/apitests/**'
-      - '!tests/ci/**'
-      - '!tests/resources/**'
-      - '!tests/robot-cases/**'
-      - '!tests/robot-cases/Group1-Nightly/**'
+      - "docs/**"
+      - "**.md"
+      - "tests/**"
+      - "!tests/**.sh"
+      - "!tests/apitests/**"
+      - "!tests/ci/**"
+      - "!tests/resources/**"
+      - "!tests/robot-cases/**"
+      - "!tests/robot-cases/Group1-Nightly/**"
 
 permissions:
   contents: read
-  pull-requests: read
-  actions: read
 
 jobs:
   E2E_PLAYWRIGHT:
@@ -45,67 +42,54 @@ jobs:
           go-version: 1.23.2
       - uses: actions/setup-node@v5
         with:
-          node-version: '18'
+          node-version: "18"
       - uses: actions/checkout@v5
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
-          pwd
-          go env
-          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
           echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
-          IP=`hostname -I | awk '{print $1}'`
-          echo "IP=$IP" >> $GITHUB_ENV
-          echo "BASE_URL=https://$IP" >> $GITHUB_ENV
+          IP=$(hostname -I | awk '{print $1}')
+          echo "IP=${IP}" >> $GITHUB_ENV
+          echo "BASE_URL=https://${IP}" >> $GITHUB_ENV
         shell: bash
-      - name: before_install
+      - name: Configure Docker Compose compatibility
         run: |
-          set -x
-          cd src/github.com/goharbor/harbor
-          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
+          docker compose version
+          printf '#!/usr/bin/env bash\nexec docker compose "$@"\n' | sudo tee /usr/local/bin/docker-compose >/dev/null
+          sudo chmod 0755 /usr/local/bin/docker-compose
       - name: Configure Docker to trust Harbor certificate
         run: |
           cd src/github.com/goharbor/harbor
-          # Copy Harbor CA certificate to system trusted certificates
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
-          # Add to Docker's certificate directory for the specific registry IP
-          sudo mkdir -p /etc/docker/certs.d/$IP
-          sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$IP/ca.crt
-          # Restart Docker to pick up new certificates 
+          sudo mkdir -p "/etc/docker/certs.d/${IP}"
+          sudo cp ./tests/harbor_ca.crt "/etc/docker/certs.d/${IP}/ca.crt"
+          echo "NODE_EXTRA_CA_CERTS=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/harbor_ca.crt" >> $GITHUB_ENV
           sudo systemctl restart docker
           sleep 5
       - name: Start Harbor for E2E
         run: |
           cd src/github.com/goharbor/harbor
           docker system prune -a -f
-          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
-      - name: Start Webhook Server for E2E tests
-        run: |
-          cd src/github.com/goharbor/harbor/src/portal/e2e/webhook-server
-          docker compose up -d
-          # Wait for webhook server to be ready
-          sleep 10
-          # Set webhook endpoint for tests
-          echo "WEBHOOK_ENDPOINT_UI=$IP:8084" >> $GITHUB_ENV
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh "${IP}" DB
       - name: Install Playwright dependencies
         run: |
           cd src/github.com/goharbor/harbor/src/portal
           npm ci
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium
       - name: Run Playwright tests
         run: |
           cd src/github.com/goharbor/harbor/src/portal
           npx playwright test
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: ${{ failure() }}
         with:
           name: playwright-report
-          path: src/github.com/goharbor/harbor/src/portal/playwright-report/
-          retention-days: 30
+          path: |
+            src/github.com/goharbor/harbor/src/portal/playwright-report/
+            src/github.com/goharbor/harbor/src/portal/test-results/
+          retention-days: 7
