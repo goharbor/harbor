@@ -1,42 +1,26 @@
 #!/bin/bash
 set -x
 set -e
+
 profile_path=$(pwd)/profile.cov
 echo "profile.cov path: $profile_path"
 
-echo "mode: set" >>"$profile_path"
-
-deps=""
 cd $(dirname $(find . -name go.mod))
-set +x
-# listDeps lists packages referenced by package in $1, 
-# excluding golang standard library
-function listDeps(){
-	pkg=$1
-	deps=$pkg
-	ds=$(echo $(go list -f '{{.Imports}}' $pkg) | sed 's/[][]//g')
-	for d in $ds
-	do
-		if echo $d | grep -q "github.com/goharbor/harbor" && echo $d
-		then
-			deps="$deps,$d"
-		fi
-	done
-}
 
-packages=$(go list ./... | grep -v -E 'tests|testing')
-echo testing packages: $packages
+mapfile -t packages < <(go list ./... | grep -v -E 'tests|testing')
+echo "testing packages: ${packages[*]}"
 
-for package in $packages
-do
-	listDeps $package
+# Build a single coverpkg list from all harbor-internal packages so that
+# cross-package coverage is tracked, matching the previous per-package behavior.
+coverpkg=$(IFS=','; echo "${packages[*]}")
 
-#    echo "DEBUG: testing package $package"
-	echo go test -race -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
-	go test -race -v -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
-	if [ -f profile.tmp ]	
-	then
-		cat profile.tmp | tail -n +2 >> "$profile_path"
-		rm profile.tmp
-	fi	
-done
+# Run packages in parallel; -p controls how many test binaries execute
+# concurrently.  The -race detector forces covermode=atomic automatically.
+NPROC=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+
+go test -race -v \
+    -covermode=atomic \
+    -coverprofile="$profile_path" \
+    -coverpkg="$coverpkg" \
+    -p "$NPROC" \
+    "${packages[@]}"
