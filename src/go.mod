@@ -22,12 +22,12 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667
 	github.com/go-ldap/ldap/v3 v3.4.11
 	github.com/go-openapi/errors v0.22.4
-	github.com/go-openapi/loads v0.23.2
+	github.com/go-openapi/loads v0.23.2 // indirect
 	github.com/go-openapi/runtime v0.29.2
-	github.com/go-openapi/spec v0.22.1
+	github.com/go-openapi/spec v0.22.1 // indirect
 	github.com/go-openapi/strfmt v0.25.0
 	github.com/go-openapi/swag v0.23.1
-	github.com/go-openapi/validate v0.25.1
+	github.com/go-openapi/validate v0.25.1 // indirect
 	github.com/gocarina/gocsv v0.0.0-20210516172204-ca9e8a8ddea8
 	github.com/gocraft/work v0.5.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -65,11 +65,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.43.0
 	go.pinniped.dev v0.37.0
 	go.uber.org/ratelimit v0.3.1
-	golang.org/x/crypto v0.46.0
-	golang.org/x/net v0.48.0
+	golang.org/x/crypto v0.50.0
+	golang.org/x/net v0.52.0
 	golang.org/x/oauth2 v0.34.0
-	golang.org/x/sync v0.19.0
-	golang.org/x/text v0.32.0
+	golang.org/x/sync v0.20.0
+	golang.org/x/text v0.36.0
 	golang.org/x/time v0.12.0
 	gopkg.in/h2non/gock.v1 v1.1.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -194,8 +194,8 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/term v0.38.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/term v0.42.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
