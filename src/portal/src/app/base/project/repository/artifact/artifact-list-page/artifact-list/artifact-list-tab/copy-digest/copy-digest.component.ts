@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Clipboard } from '@angular/cdk/clipboard'; // importing Clipboard from Angular CDK
 
 @Component({
     selector: 'app-copy-digest',
@@ -25,7 +24,7 @@ export class CopyDigestComponent {
     @ViewChild('digestTarget') textInput: ElementRef;
     copyFailed: boolean = false;
 
-    constructor(private clipboard: Clipboard) {} // injecting Clipboard service
+    constructor() {}
 
     onSuccess(): void {
         this.copyFailed = false;
@@ -46,11 +45,10 @@ export class CopyDigestComponent {
     }
 
     copyToClipboard(text: string): void {
-        const result = this.clipboard.copy(text); // using Clipboard service to copy text
-        if (result) {
+        navigator.clipboard.writeText(text).then(() => {
             this.onSuccess();
-        } else {
+        }).catch(() => {
             this.onError();
-        }
+        });
     }
 }
