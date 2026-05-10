@@ -261,6 +261,24 @@ func (_m *Manager) ListWithLatest(ctx context.Context, query *q.Query) ([]*artif
 	return r0, r1
 }
 
+// Touch provides a mock function with given fields: ctx, id
+func (_m *Manager) Touch(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Touch")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Update provides a mock function with given fields: ctx, _a1, props
 func (_m *Manager) Update(ctx context.Context, _a1 *artifact.Artifact, props ...string) error {
 	_va := make([]interface{}, len(props))

@@ -47,6 +47,7 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 		Icon:              a.Icon,
 		PullTime:          strfmt.DateTime(a.PullTime),
 		PushTime:          strfmt.DateTime(a.PushTime),
+		UpdateTime:        strfmt.DateTime(a.UpdateTime),
 		ExtraAttrs:        a.ExtraAttrs,
 		Annotations:       a.Annotations,
 		ArtifactType:      a.ArtifactType,

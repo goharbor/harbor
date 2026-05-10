@@ -155,6 +155,18 @@ func (m *Manager) Update(ctx context.Context, artifact *artifact.Artifact, props
 	return nil
 }
 
+func (m *Manager) Touch(ctx context.Context, id int64) error {
+	art, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err = m.delegator.Touch(ctx, id); err != nil {
+		return err
+	}
+	m.cleanUp(ctx, art)
+	return nil
+}
+
 func (m *Manager) UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) error {
 	art, err := m.Get(ctx, id)
 	if err != nil {

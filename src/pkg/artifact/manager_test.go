@@ -59,6 +59,10 @@ func (f *fakeDao) Update(ctx context.Context, artifact *dao.Artifact, props ...s
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) Touch(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 func (f *fakeDao) UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) error {
 	args := f.Called()
 	return args.Error(0)
@@ -261,6 +265,13 @@ func (m *managerTestSuite) TestUpdate() {
 		ID:       1,
 		PullTime: time.Now(),
 	}, "PullTime")
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestTouch() {
+	m.dao.On("Touch").Return(nil)
+	err := m.mgr.Touch(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

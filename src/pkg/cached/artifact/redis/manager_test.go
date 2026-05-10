@@ -115,6 +115,29 @@ func (m *managerTestSuite) TestUpdate() {
 	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
+func (m *managerTestSuite) TestTouch() {
+	// touch from artMgr error
+	errTouch := errors.New("touch failed")
+	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	m.artMgr.On("Touch", mock.Anything, mock.Anything).Return(errTouch).Once()
+	err := m.cachedManager.Touch(m.ctx, 100)
+	m.ErrorIs(err, errTouch, "touch should error")
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+
+	// touch from artMgr success
+	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		art := args.Get(2).(*artifact.Artifact)
+		art.ID = 100
+		art.RepositoryName = "repo"
+		art.Digest = "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
+	}).Once()
+	m.artMgr.On("Touch", mock.Anything, mock.Anything).Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, "artifact:id:100").Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, "artifact:repository:repo:digest:sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180").Return(nil).Once()
+	err = m.cachedManager.Touch(m.ctx, 100)
+	m.NoError(err, "touch should success")
+}
+
 func (m *managerTestSuite) TestUpdatePullTime() {
 	// update pull time from artMgr error
 	errUpdate := errors.New("update pull time failed")
