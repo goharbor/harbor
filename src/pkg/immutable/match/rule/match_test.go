@@ -149,7 +149,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 
 func (s *MatchTestSuite) TestImmuExclude() {
 	rule := &model.Metadata{
-		ProjectID: 1,
+		ProjectID: 2,
 		Priority:  1,
 		Action:    "immutable",
 		Template:  "immutable_template",
@@ -183,7 +183,7 @@ func (s *MatchTestSuite) TestImmuExclude() {
 		Repository:  "redis",
 		Tags:        []string{"release-1.10"},
 	}
-	isMatch, err := match.Match(orm.Context(), 1, c1)
+	isMatch, err := match.Match(orm.Context(), 2, c1)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -194,7 +194,7 @@ func (s *MatchTestSuite) TestImmuExclude() {
 		Tags:        []string{"1.10"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(orm.Context(), 1, c2)
+	isMatch, err = match.Match(orm.Context(), 2, c2)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -205,7 +205,7 @@ func (s *MatchTestSuite) TestImmuExclude() {
 		Tags:        []string{"9.4.8"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(orm.Context(), 1, c3)
+	isMatch, err = match.Match(orm.Context(), 2, c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -216,7 +216,7 @@ func (s *MatchTestSuite) TestImmuExclude() {
 		Tags:        []string{"world"},
 		Kind:        selector.Image,
 	}
-	isMatch, err = match.Match(orm.Context(), 1, c4)
+	isMatch, err = match.Match(orm.Context(), 2, c4)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
@@ -229,7 +229,7 @@ func (s *MatchTestSuite) TestImmuExclude() {
 		Tags: []string{},
 		Kind: selector.Image,
 	}
-	isMatch, err = match.Match(orm.Context(), 1, c5)
+	isMatch, err = match.Match(orm.Context(), 2, c5)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 }
