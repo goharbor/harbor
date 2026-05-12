@@ -28,8 +28,9 @@
                             "src/i18n"
                         ],
                         "styles": [
-                            "node_modules/@clr/icons/clr-icons.min.css",
                             "node_modules/@clr/ui/clr-ui.min.css",
+                            "node_modules/@cds/core/global.min.css",
+                            "node_modules/@clr/icons/clr-icons.min.css",
                             "node_modules/prismjs/themes/prism-solarizedlight.css",
                             "src/global.scss",
                             {
@@ -107,6 +108,8 @@
                         "karmaConfig": "karma.conf.js",
                         "scripts": ["node_modules/@clr/icons/clr-icons.min.js"],
                         "styles": [
+                            "node_modules/@cds/core/global.min.css",
+                            "node_modules/@cds/core/styles/theme.dark.min.css",
                             "node_modules/@clr/icons/clr-icons.min.css",
                             "node_modules/@clr/ui/clr-ui.min.css",
                             "node_modules/prismjs/themes/prism-solarizedlight.css"

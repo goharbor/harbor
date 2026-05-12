@@ -22,6 +22,10 @@ export class ThemeService {
     constructor(@Inject(DOCUMENT) private document: Document) {}
 
     loadStyle(styleName: string) {
+        // Clarity 17+ / CDS: set before stylesheet swap so tokens apply with first paint
+        const cdsTheme = styleName.includes('dark-theme') ? 'dark' : 'light';
+        this.document.body?.setAttribute('cds-theme', cdsTheme);
+
         const head = this.document.getElementsByTagName('head')[0];
 
         let themeLink = this.document.getElementById(
@@ -37,9 +41,5 @@ export class ThemeService {
 
             head.appendChild(style);
         }
-
-        // Clarity 17+ / CDS: theme tokens follow cds-theme on body
-        const cdsTheme = styleName.includes('dark-theme') ? 'dark' : 'light';
-        this.document.body?.setAttribute('cds-theme', cdsTheme);
     }
 }
