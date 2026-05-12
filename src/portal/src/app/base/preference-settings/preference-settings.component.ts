@@ -46,6 +46,7 @@ import { InlineAlertComponent } from 'src/app/shared/components/inline-alert/inl
     selector: 'preference-settings',
     templateUrl: 'preference-settings.component.html',
     styleUrls: ['preference-settings.component.scss'],
+    standalone: false,
 })
 export class PreferenceSettingsComponent implements OnInit {
     readonly guiLanguages = Object.entries(LANGUAGES);

@@ -75,6 +75,7 @@ describe('RobotPermissionsPanelComponent', () => {
             <robot-permissions-panel [mode]="mode"> </robot-permissions-panel>
         </ng-container>
     `,
+    standalone: false,
 })
 class TestHostComponent {
     @ViewChild(RobotPermissionsPanelComponent)

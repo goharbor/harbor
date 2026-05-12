@@ -63,6 +63,7 @@ const TRUE: string = 'true';
     selector: 'add-p2p-policy',
     templateUrl: './add-p2p-policy.component.html',
     styleUrls: ['./add-p2p-policy.component.scss'],
+    standalone: false,
 })
 export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     severityOptions = [

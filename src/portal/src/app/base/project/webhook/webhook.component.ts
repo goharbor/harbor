@@ -58,6 +58,7 @@ const URL_TO_DISPLAY: RegExp = /^\/harbor\/projects\/(\d+)\/webhook$/;
 @Component({
     templateUrl: './webhook.component.html',
     styleUrls: ['./webhook.component.scss'],
+    standalone: false,
 })
 export class WebhookComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

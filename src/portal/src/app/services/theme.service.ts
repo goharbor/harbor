@@ -37,5 +37,9 @@ export class ThemeService {
 
             head.appendChild(style);
         }
+
+        // Clarity 17+ / CDS: theme tokens follow cds-theme on body
+        const cdsTheme = styleName.includes('dark-theme') ? 'dark' : 'light';
+        this.document.body?.setAttribute('cds-theme', cdsTheme);
     }
 }

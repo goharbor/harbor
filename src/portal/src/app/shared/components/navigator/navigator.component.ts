@@ -51,6 +51,7 @@ import { signInStatusError } from '../../../account/sign-in/sign-in.component';
     selector: 'navigator',
     templateUrl: 'navigator.component.html',
     styleUrls: ['navigator.component.scss'],
+    standalone: false,
 })
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();

@@ -39,6 +39,7 @@ const PREFIX: string = '0 ';
     selector: 'cron-selection',
     templateUrl: './cron-schedule.component.html',
     styleUrls: ['./cron-schedule.component.scss'],
+    standalone: false,
 })
 export class CronScheduleComponent implements OnChanges, OnInit {
     @Input() externalValidation: boolean = true; //extra check
