@@ -38,6 +38,7 @@ import { ScannerService } from '../../../../../../../ng-swagger-gen/services/sca
     selector: 'new-scanner-form',
     templateUrl: 'new-scanner-form.component.html',
     styleUrls: ['new-scanner-form.component.scss'],
+    standalone: false,
 })
 export class NewScannerFormComponent implements AfterViewInit, OnDestroy {
     checkOnGoing: boolean = false;

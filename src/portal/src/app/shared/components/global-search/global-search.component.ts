@@ -41,6 +41,7 @@ const SEARCH_KEY: string = 'globalSearch';
     selector: 'global-search',
     templateUrl: 'global-search.component.html',
     styleUrls: ['search.component.scss'],
+    standalone: false,
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Keep search term as Subject

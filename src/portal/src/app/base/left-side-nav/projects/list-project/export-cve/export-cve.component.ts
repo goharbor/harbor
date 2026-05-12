@@ -38,6 +38,7 @@ const SUPPORTED_MIME_TYPE: string =
     selector: 'export-cve',
     templateUrl: './export-cve.component.html',
     styleUrls: ['./export-cve.component.scss'],
+    standalone: false,
 })
 export class ExportCveComponent {
     @Output() triggerExportSuccess = new EventEmitter<void>();

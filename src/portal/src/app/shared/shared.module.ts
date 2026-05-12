@@ -69,7 +69,7 @@ import {
 } from './services/endpoint.service';
 import { ImageNameInputComponent } from './components/image-name-input/image-name-input.component';
 import { MessageHandlerService } from './services/message-handler.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
@@ -93,6 +93,10 @@ import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
 import { PreferenceSettingsComponent } from '../base/preference-settings/preference-settings.component';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 // register necessary components
 echarts.use([
@@ -256,18 +260,8 @@ export class SharedModule {}
 
 // this module is only for testing, you should only import this module in *.spec.ts files
 @NgModule({
-    imports: [
-        BrowserAnimationsModule,
-        SharedModule,
-        HttpClientTestingModule,
-        RouterTestingModule,
-    ],
-    exports: [
-        BrowserAnimationsModule,
-        SharedModule,
-        HttpClientTestingModule,
-        RouterTestingModule,
-    ],
+    exports: [BrowserAnimationsModule, SharedModule, RouterTestingModule],
+    imports: [BrowserAnimationsModule, SharedModule, RouterTestingModule],
     providers: [
         TranslateStore,
         { provide: ProjectService, useClass: ProjectDefaultService },
@@ -276,6 +270,8 @@ export class SharedModule {}
             provide: UserPermissionService,
             useClass: UserPermissionDefaultService,
         },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
     ],
 })
 export class SharedTestingModule {}

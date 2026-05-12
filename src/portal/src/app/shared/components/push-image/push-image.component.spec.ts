@@ -72,5 +72,6 @@ describe('PushImageButtonComponent (inline template)', () => {
         [projectName]="'testing'"
         [registryUrl]="'https://testing.harbor.com'">
     </hbr-push-image-button>`,
+    standalone: false,
 })
 class TestHostComponent {}

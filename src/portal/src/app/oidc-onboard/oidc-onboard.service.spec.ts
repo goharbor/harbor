@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { TestBed } from '@angular/core/testing';
-import { HttpClient } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+    HttpClient,
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { OidcOnboardService } from './oidc-onboard.service';
 
 describe('OidcOnboardService', () => {
     beforeEach(() =>
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [OidcOnboardService],
+            imports: [],
+            providers: [
+                OidcOnboardService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         })
     );
 

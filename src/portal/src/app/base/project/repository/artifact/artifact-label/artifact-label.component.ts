@@ -18,6 +18,7 @@ import { Artifact } from 'ng-swagger-gen/models/artifact';
     selector: 'artifact-label',
     templateUrl: './artifact-label.component.html',
     styleUrls: ['./artifact-label.component.scss'],
+    standalone: false,
 })
 export class ArtifactLabelComponent implements OnInit {
     @Input() artifactDetails: Artifact;

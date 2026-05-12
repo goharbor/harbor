@@ -33,6 +33,7 @@ import { DEFAULT_LANG_LOCALSTORAGE_KEY } from '../../entities/shared.const';
             useValue: localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY),
         },
     ],
+    standalone: false,
 })
 export class DatePickerComponent implements OnChanges {
     @Input() dateInput: string;

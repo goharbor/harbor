@@ -26,8 +26,8 @@ import { filter, switchMap } from 'rxjs/operators';
     selector: 'search-result',
     templateUrl: 'search-result.component.html',
     styleUrls: ['search.component.scss'],
-
     providers: [GlobalSearchService],
+    standalone: false,
 })
 export class SearchResultComponent implements OnInit, OnDestroy {
     searchResults: SearchResults = new SearchResults();
