@@ -13,11 +13,15 @@
 // limitations under the License.
 import { TestBed, inject, getTestBed } from '@angular/core/testing';
 import {
-    HttpClientTestingModule,
     HttpTestingController,
+    provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { PasswordSettingService } from './password-setting.service';
 import { CURRENT_BASE_HREF } from '../../shared/units/utils';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('PasswordSettingService', () => {
     let injector: TestBed;
@@ -25,8 +29,12 @@ describe('PasswordSettingService', () => {
     let httpMock: HttpTestingController;
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [PasswordSettingService],
+            imports: [],
+            providers: [
+                PasswordSettingService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         });
         injector = getTestBed();
         service = injector.get(PasswordSettingService);

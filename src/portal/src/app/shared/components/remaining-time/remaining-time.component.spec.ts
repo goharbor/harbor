@@ -76,6 +76,7 @@ describe('RemainingTimeComponent', () => {
     template: ` <app-remaining-time
         [deadline]="expires_at"
         [timeDiff]="deltaTime"></app-remaining-time>`,
+    standalone: false,
 })
 class TestHostComponent {
     @ViewChild(RemainingTimeComponent)

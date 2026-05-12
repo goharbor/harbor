@@ -29,6 +29,7 @@ import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
     selector: 'app-schedule-list',
     templateUrl: './schedule-list.component.html',
     styleUrls: ['./schedule-list.component.scss'],
+    standalone: false,
 })
 export class ScheduleListComponent {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

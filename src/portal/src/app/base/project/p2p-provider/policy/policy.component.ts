@@ -72,6 +72,7 @@ const URL_TO_DISPLAY: RegExp =
 @Component({
     templateUrl: './policy.component.html',
     styleUrls: ['./policy.component.scss'],
+    standalone: false,
 })
 export class PolicyComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

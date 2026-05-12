@@ -21,7 +21,7 @@ import {
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AddP2pPolicyComponent } from './add-p2p-policy.component';
 import { P2pProviderService } from '../p2p-provider.service';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
@@ -33,6 +33,10 @@ import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { ProjectService } from '../../../../shared/services';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 describe('AddP2pPolicyComponent', () => {
     let component: AddP2pPolicyComponent;
     let fixture: ComponentFixture<AddP2pPolicyComponent>;
@@ -95,6 +99,7 @@ describe('AddP2pPolicyComponent', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
+            declarations: [AddP2pPolicyComponent, InlineAlertComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -102,9 +107,7 @@ describe('AddP2pPolicyComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [AddP2pPolicyComponent, InlineAlertComponent],
             providers: [
                 P2pProviderService,
                 ErrorHandler,
@@ -113,6 +116,8 @@ describe('AddP2pPolicyComponent', () => {
                 { provide: SessionService, useValue: mockedSessionService },
                 { provide: AppConfigService, useValue: mockedAppConfigService },
                 { provide: ProjectService, useValue: mockedProjectService },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });
