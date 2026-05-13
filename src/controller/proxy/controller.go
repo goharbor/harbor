@@ -285,7 +285,7 @@ func (c *controller) GetManifestWithVulnerabilityPrevention(ctx context.Context,
 		return err
 	}
 	msg := fmt.Sprintf(`image is being downloaded from upstream and requires scanning due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-		`Please try again momentarily.`, severity)
+		`This may take a while - please try again later.`, severity)
 	return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 }
 
