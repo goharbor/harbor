@@ -1044,7 +1044,7 @@ func TestProxyManifestGet_VulnerabilityPrevention(t *testing.T) {
 
 	ctl := &mockProxyController{}
 	policyErr := liberrors.New(nil).WithCode(liberrors.PROJECTPOLICYVIOLATION).WithMessage(
-		`image is being downloaded from upstream and requires scanning due to configured policy in 'Prevent images with vulnerability severity of "critical" or higher from running.' Please try again momentarily.`,
+		`image is being downloaded from upstream and requires scanning due to configured policy in 'Prevent images with vulnerability severity of "critical" or higher from running.' This may take a while - please try again later.`,
 	)
 	ctl.On("GetManifestWithVulnerabilityPrevention", mock.Anything, art, mock.Anything, "critical").Return(policyErr)
 
