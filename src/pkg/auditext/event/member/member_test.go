@@ -49,9 +49,22 @@ func stubLookups() func() {
 	}
 }
 
+func stubAuditEventEnabled(disabledOps map[string]struct{}) func() {
+	origAuditEnabled := auditEventEnabledFn
+	auditEventEnabledFn = func(_ context.Context, operation string) bool {
+		_, disabled := disabledOps[operation]
+		return !disabled
+	}
+	return func() {
+		auditEventEnabledFn = origAuditEnabled
+	}
+}
+
 func TestResolver_PreCheck(t *testing.T) {
 	cleanup := stubLookups()
 	defer cleanup()
+	auditCleanup := stubAuditEventEnabled(nil)
+	defer auditCleanup()
 
 	type args struct {
 		ctx    context.Context
@@ -80,6 +93,38 @@ func TestResolver_PreCheck(t *testing.T) {
 			}
 			if gotName != tt.wantResourceName {
 				t.Errorf("PreCheck() resourceName = %q, want %q", gotName, tt.wantResourceName)
+			}
+		})
+	}
+}
+
+func TestResolver_PreCheck_DisabledAuditEvents(t *testing.T) {
+	cleanup := stubLookups()
+	defer cleanup()
+
+	tests := []struct {
+		name       string
+		disabledOp string
+		url        string
+		method     string
+	}{
+		{"disable create member event", "create", "/api/v2.0/projects/1/members", http.MethodPost},
+		{"disable update member event", "update", "/api/v2.0/projects/1/members/10", http.MethodPut},
+		{"disable delete member event", "delete", "/api/v2.0/projects/1/members/20", http.MethodDelete},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			auditCleanup := stubAuditEventEnabled(map[string]struct{}{tt.disabledOp: {}})
+			defer auditCleanup()
+
+			r := &resolver{}
+			gotCapture, gotName := r.PreCheck(context.Background(), tt.url, tt.method)
+			if gotCapture {
+				t.Errorf("PreCheck() capture = %v, want false", gotCapture)
+			}
+			if len(gotName) != 0 {
+				t.Errorf("PreCheck() resourceName = %q, want empty", gotName)
 			}
 		})
 	}
