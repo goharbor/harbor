@@ -84,7 +84,8 @@ func Middleware() func(http.Handler) http.Handler {
 		vulnerable, err := scanController.GetVulnerable(ctx, art, allowlist, proj.CVEAllowlist.IsExpired())
 		if errors.IsNotFoundErr(err) {
 			// When the scanner is disconnected the artifact will be considered not scannable.
-			// We'll try to check the existing scan report even when it's not scannable, and only if there is no report, we will skip checking the vulnerability.
+			// We'll try to check the existing scan report even when it's not scannable, and if there is no report,
+			// we block the pull for both scannable artifacts (missing report) and unsupported artifacts.
 			checker := scanChecker()
 			scannable, err := checker.IsScannable(ctx, art)
 			if err != nil {
@@ -92,8 +93,9 @@ func Middleware() func(http.Handler) http.Handler {
 				return err
 			}
 			if !scannable {
-				logger.Debugf("artifact %s@%s does not have a scan report, and it is not scannable, skip the checking", art.RepositoryName, art.Digest)
-				return nil
+				msg := fmt.Sprintf(`current image is unsupported for vulnerability scanning and cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+					`To continue with pull, please contact your project administrator for help.`, projectSeverity)
+				return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 			}
 			// If the artifact is scannable but there's no report, it's a violation.
 			msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
