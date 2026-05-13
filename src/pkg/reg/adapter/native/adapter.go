@@ -15,6 +15,7 @@
 package native
 
 import (
+	"crypto/tls"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -73,7 +74,17 @@ func NewAdapter(reg *model.Registry) *Adapter {
 		password = reg.Credential.AccessSecret
 	}
 
-	adapter.Client = registry.NewClientWithCACert(reg.URL, username, password, reg.Insecure, reg.CACertificate)
+	var tlsCerts []tls.Certificate
+	if reg.TLSCertPath != "" && reg.TLSKeyPath != "" {
+		cert, err := tls.LoadX509KeyPair(reg.TLSCertPath, reg.TLSKeyPath)
+		if err != nil {
+			log.Errorf("failed to load TLS certs for registry %s: %v", reg.URL, err)
+		} else {
+			tlsCerts = []tls.Certificate{cert}
+		}
+	}
+
+	adapter.Client = registry.NewClientWithTLSConfig(reg.URL, username, password, reg.Insecure, reg.CACertificate, tlsCerts)
 	return adapter
 }
 

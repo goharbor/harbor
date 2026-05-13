@@ -201,8 +201,9 @@ func NewTransport(opts ...func(*http.Transport)) http.RoundTripper {
 
 // TransportConfig is the configuration for http transport
 type TransportConfig struct {
-	Insecure      bool
-	CACertificate string
+	Insecure           bool
+	CACertificate      string
+	ClientCertificates []tls.Certificate
 }
 
 // TransportOption is the option for http transport
@@ -219,6 +220,15 @@ func WithInsecure(skipVerify bool) TransportOption {
 func WithCACert(caCert string) TransportOption {
 	return func(cfg *TransportConfig) {
 		cfg.CACertificate = caCert
+	}
+}
+
+// WithClientCertificates returns a TransportOption that configures mTLS client certificates.
+// The certificates must already be loaded by the caller; any file I/O or parsing errors
+// are the caller's responsibility, which allows proper error propagation before transport creation.
+func WithClientCertificates(certs ...tls.Certificate) TransportOption {
+	return func(cfg *TransportConfig) {
+		cfg.ClientCertificates = append(cfg.ClientCertificates, certs...)
 	}
 }
 
@@ -239,10 +249,26 @@ func GetHTTPTransport(opts ...TransportOption) http.RoundTripper {
 		opt(cfg)
 	}
 
-	if cfg.CACertificate != "" {
-		return NewTransport(
-			WithCustomCACert(cfg.CACertificate),
-		)
+	hasClientCerts := len(cfg.ClientCertificates) > 0
+
+	if cfg.CACertificate != "" || hasClientCerts {
+		var transportOpts []func(*http.Transport)
+		if cfg.CACertificate != "" {
+			transportOpts = append(transportOpts, WithCustomCACert(cfg.CACertificate))
+		}
+		if cfg.Insecure {
+			transportOpts = append(transportOpts, WithInsecureSkipVerify(true))
+		}
+		if hasClientCerts {
+			certs := cfg.ClientCertificates
+			transportOpts = append(transportOpts, func(tr *http.Transport) {
+				if tr.TLSClientConfig == nil {
+					tr.TLSClientConfig = &tls.Config{}
+				}
+				tr.TLSClientConfig.Certificates = append(tr.TLSClientConfig.Certificates, certs...)
+			})
+		}
+		return NewTransport(transportOpts...)
 	}
 
 	if cfg.Insecure {

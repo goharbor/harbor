@@ -101,6 +101,8 @@ type Registry struct {
 	Credential      *Credential `json:"credential"`
 	Insecure        bool        `json:"insecure"`
 	CACertificate   string      `json:"ca_certificate,omitempty"`
+	TLSCertPath     string      `json:"tls_certificate_path,omitempty"`
+	TLSKeyPath      string      `json:"tls_key_path,omitempty"`
 	Status          string      `json:"status"`
 	CreationTime    time.Time   `json:"creation_time"`
 	UpdateTime      time.Time   `json:"update_time"`
