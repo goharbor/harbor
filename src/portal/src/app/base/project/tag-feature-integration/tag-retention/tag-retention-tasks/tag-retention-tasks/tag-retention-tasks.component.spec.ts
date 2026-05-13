@@ -19,7 +19,6 @@ import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../../../../ng-swagger-gen/models/registry';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { TIMEOUT } from '../../retention';
 import { RetentionService } from '../../../../../../../../ng-swagger-gen/services/retention.service';
 
 describe('TagRetentionTasksComponent', () => {
@@ -119,9 +118,12 @@ describe('TagRetentionTasksComponent', () => {
         await fixture.whenStable();
         fixture.detectChanges();
         await fixture.whenStable();
-        await new Promise<void>(resolve => setTimeout(resolve, TIMEOUT + 50));
+        // Directly trigger the retry load to avoid a real 5-second timer wait
+        component.loadLog();
+        fixture.detectChanges();
+        await fixture.whenStable();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(component.tasks[0].status).toEqual('Success');
-    }, 15000);
+    });
 });
