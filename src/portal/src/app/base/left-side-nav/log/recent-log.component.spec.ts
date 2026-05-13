@@ -142,15 +142,9 @@ describe('RecentLogComponent (inline template)', () => {
     it('should support pagination', async () => {
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
-        let attempts = 0;
-        while (component.totalCount === 0 && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-            fixture.detectChanges();
-            attempts++;
-        }
-        expect(component.totalCount).toBe(18);
         fixture.detectChanges();
         await fixture.whenStable();
+        expect(component.totalCount).toBe(18);
         const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
@@ -178,17 +172,11 @@ describe('RecentLogComponent (inline template)', () => {
     }));
 
     it('should support refreshing', async () => {
+        fixture.autoDetectChanges(true);
+        await fixture.whenStable();
         fixture.detectChanges();
         await fixture.whenStable();
-        let attempts = 0;
-        while (component.totalCount === 0 && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-            fixture.detectChanges();
-            attempts++;
-        }
         expect(component.totalCount).toBe(18);
-        fixture.detectChanges();
-        await fixture.whenStable();
         const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
