@@ -49,7 +49,15 @@ var extractRe = regexp.MustCompile(extractPattern)
 var (
 	lookupMemberFn   = lookupMember
 	resolveProjectFn = resolveProject
+	auditEventEnabledFn = auditLogMemberEventEnabled
 )
+
+func auditLogMemberEventEnabled(ctx context.Context, operation string) bool {
+	if len(operation) == 0 {
+		return false
+	}
+	return config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", operation, rbac.ResourceMember.String()))
+}
 
 // custom resolver for project member events, extracts project id and user/group ids
 func init() {
@@ -65,7 +73,7 @@ func (r *resolver) PreCheck(ctx context.Context, url string, method string) (boo
 	if len(operation) == 0 {
 		return false, ""
 	}
-	if !config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", operation, rbac.ResourceMember.String())) {
+	if !auditEventEnabledFn(ctx, operation) {
 		return false, ""
 	}
 	// for DELETE, resolve member info before the resource is deleted
