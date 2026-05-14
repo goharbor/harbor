@@ -71,6 +71,7 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 			Description: params.Robot.Description,
 			Duration:    params.Robot.Duration,
 			Visible:     true,
+			Secret:      params.Robot.Secret,
 		},
 		Level:           params.Robot.Level,
 		ProjectNameOrID: params.Robot.Permissions[0].Namespace,
