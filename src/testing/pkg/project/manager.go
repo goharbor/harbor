@@ -6,10 +6,8 @@ import (
 	context "context"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
-
-	mock "github.com/stretchr/testify/mock"
-
 	models "github.com/goharbor/harbor/src/pkg/project/models"
+	mock "github.com/stretchr/testify/mock"
 
 	q "github.com/goharbor/harbor/src/lib/q"
 )
