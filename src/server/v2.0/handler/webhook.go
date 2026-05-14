@@ -32,8 +32,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notification/custompayload"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
-	"github.com/goharbor/harbor/src/pkg/notification/transform"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
@@ -431,8 +431,8 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		if len(target.PayloadFormat) == 0 && target.Type == "http" {
 			policy.Targets[i].PayloadFormat = "Default"
 		}
-		if err := transform.Validate(target.PayloadTransform); err != nil {
-			return false, errors.New(err).WithMessagef("invalid payload_transform template: %v", err).WithCode(errors.BadRequestCode)
+		if err := custompayload.Validate(target.CustomPayload); err != nil {
+			return false, errors.New(err).WithMessagef("invalid custom_payload template: %v", err).WithCode(errors.BadRequestCode)
 		}
 	}
 	return true, nil

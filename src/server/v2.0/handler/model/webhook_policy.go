@@ -47,12 +47,12 @@ func (n *WebhookPolicy) ToTargets() []*models.WebhookTargetObject {
 	var results []*models.WebhookTargetObject
 	for _, t := range n.Targets {
 		results = append(results, &models.WebhookTargetObject{
-			Type:             t.Type,
-			Address:          t.Address,
-			AuthHeader:       t.AuthHeader,
-			SkipCertVerify:   t.SkipCertVerify,
-			PayloadFormat:    models.PayloadFormatType(t.PayloadFormat),
-			PayloadTransform: t.PayloadTransform,
+			Type:           t.Type,
+			Address:        t.Address,
+			AuthHeader:     t.AuthHeader,
+			SkipCertVerify: t.SkipCertVerify,
+			PayloadFormat:  models.PayloadFormatType(t.PayloadFormat),
+			CustomPayload:  t.CustomPayload,
 		})
 	}
 	return results
