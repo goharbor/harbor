@@ -483,6 +483,22 @@ package_offline: check_buildinstaller update_prepare_version compile build
 
 go_check: gen_apis mocks_check misspell commentfmt lint
 
+# Install portal dependencies inside Docker to verify package-lock.json is consistent.
+.PHONY: check_package_lock
+check_package_lock:
+	@echo "Checking src/portal/package-lock.json..."
+	$(DOCKERCMD) run --rm \
+		-v "$(BUILDPATH)/src/portal:/portal" \
+		-v "$(BUILDPATH)/api/v2.0/swagger.yaml:/api/v2.0/swagger.yaml" \
+		-w /portal \
+		-e NPM_CONFIG_REGISTRY=$(NPM_REGISTRY) \
+		-e CYPRESS_INSTALL_BINARY=0 \
+		$(NODEBUILDIMAGE) \
+		sh -c 'rm -rf node_modules && npm install'
+
+.PHONY: portal_check
+portal_check: check_package_lock
+
 commentfmt:
 	@echo checking comment format...
 	@res=$$(find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs egrep '(^|\s)\/\/(\S)'|grep -v '//go:generate'); \
