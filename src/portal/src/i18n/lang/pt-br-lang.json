@@ -466,6 +466,7 @@
         "EVENT_TYPE": "Tipo de Evento",
         "EVENT_TYPE_REQUIRED": "Pelo menos um tipo de evento é obrigatório",
         "PAYLOAD_FORMAT": "Payload Format",
+        "CUSTOM_PAYLOAD": "Payload Personalizado",
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "Payload Data",
         "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"

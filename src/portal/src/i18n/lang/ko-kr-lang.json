@@ -435,6 +435,7 @@
         "EVENT_TYPE": "유형 입력",
         "EVENT_TYPE_REQUIRED": "하나 이상의 이벤트 유형이 필요합니다.",
         "PAYLOAD_FORMAT": "페이로드 형식",
+        "CUSTOM_PAYLOAD": "커스텀 페이로드",
         "CLOUD_EVENT": "클라우드이벤트",
         "PAYLOAD_DATA": "페이로드 데이터",
         "SLACK_RATE_LIMIT": "Slack 속도 제한에 유의하세요."

@@ -436,6 +436,7 @@
         "EVENT_TYPE": "Event Type",
         "EVENT_TYPE_REQUIRED": "Require at least one event type",
         "PAYLOAD_FORMAT": "Payload Format",
+        "CUSTOM_PAYLOAD": "Özel Payload",
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "Payload Data",
         "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
