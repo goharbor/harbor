@@ -46,7 +46,6 @@
                         ],
                         "scripts": [
                             "node_modules/@clr/icons/clr-icons.min.js",
-                            "node_modules/marked/marked.min.js",
                             "node_modules/prismjs/prism.js",
                             "node_modules/prismjs/components/prism-yaml.min.js"
                         ],

@@ -33,7 +33,7 @@ describe('OidcOnboardService', () => {
     );
 
     it('should be created', () => {
-        const service: OidcOnboardService = TestBed.get(OidcOnboardService);
+        const service: OidcOnboardService = TestBed.inject(OidcOnboardService);
         expect(service).toBeTruthy();
     });
 });

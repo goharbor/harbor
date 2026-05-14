@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { TestBed, inject, getTestBed } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import {
     HttpTestingController,
     provideHttpClientTesting,
@@ -24,7 +24,6 @@ import {
 } from '@angular/common/http';
 
 describe('PasswordSettingService', () => {
-    let injector: TestBed;
     let service: PasswordSettingService;
     let httpMock: HttpTestingController;
     beforeEach(() => {
@@ -36,9 +35,8 @@ describe('PasswordSettingService', () => {
                 provideHttpClientTesting(),
             ],
         });
-        injector = getTestBed();
-        service = injector.get(PasswordSettingService);
-        httpMock = injector.get(HttpTestingController);
+        service = TestBed.inject(PasswordSettingService);
+        httpMock = TestBed.inject(HttpTestingController);
     });
 
     it('should be created', inject(

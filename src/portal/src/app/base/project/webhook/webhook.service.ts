@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { MarkdownPipe } from 'ngx-markdown/src/markdown.pipe';
+import { MarkdownPipe } from 'ngx-markdown';
 
 const EVENT_TYPES_TEXT_MAP = {
     REPLICATION: 'Replication status changed',

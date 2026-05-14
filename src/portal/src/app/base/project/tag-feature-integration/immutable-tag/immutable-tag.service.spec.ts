@@ -22,7 +22,8 @@ describe('ImmutableTagService', () => {
     );
 
     it('should be created', () => {
-        const service: ImmutableTagService = TestBed.get(ImmutableTagService);
+        const service: ImmutableTagService =
+            TestBed.inject(ImmutableTagService);
         expect(service).toBeTruthy();
     });
     it('should get rules', inject([ImmutableTagService], service => {
