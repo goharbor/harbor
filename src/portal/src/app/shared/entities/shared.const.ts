@@ -18,6 +18,7 @@ import locale_kr from '@angular/common/locales/ko';
 import locale_zh_TW from '@angular/common/locales/zh-Hans-HK';
 import locale_es from '@angular/common/locales/es';
 import locale_fr from '@angular/common/locales/fr';
+import locale_it from '@angular/common/locales/it';
 import locale_pt from '@angular/common/locales/pt-PT';
 import locale_tr from '@angular/common/locales/tr';
 import locale_de from '@angular/common/locales/de';
@@ -259,6 +260,7 @@ export const LANGUAGES = {
     'ko-kr': ['한국어', locale_kr],
     'es-es': ['Español', locale_es],
     'fr-fr': ['Français', locale_fr],
+    'it-it': ['Italiano', locale_it],
     'pt-br': ['Português do Brasil', locale_pt],
     'tr-tr': ['Türkçe', locale_tr],
     'de-de': ['Deutsch', locale_de],
