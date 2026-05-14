@@ -51,6 +51,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
     closable: boolean = true;
     checking: boolean = false;
     submitting: boolean = false;
+    customPayloadPlaceholder = '{"text": "{{.type}} by {{.operator}}"}';
     @Input() projectId: number;
     webhook: WebhookPolicy = {
         enabled: true,
@@ -61,6 +62,7 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
                 address: '',
                 skip_cert_verify: true,
                 payload_format: PAYLOAD_FORMATS[0],
+                custom_payload: '',
             },
         ],
     };
@@ -255,5 +257,10 @@ export class AddWebhookFormComponent implements OnInit, OnDestroy {
             return PAYLOAD_FORMAT_I18N_MAP[v];
         }
         return v;
+    }
+
+    showCustomPayload(): boolean {
+        const target = this.webhook.targets[0];
+        return target.type === 'http' && target.payload_format === 'Custom';
     }
 }
