@@ -59,6 +59,8 @@ export class ProjectPolicy {
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
     MaxUpstreamConn?: number | null;
+    ProxyCacheLocalOnNotFound?: boolean;
+    ProxyReferrerAPI?: boolean;
 
     constructor() {
         this.Public = false;
@@ -72,6 +74,8 @@ export class ProjectPolicy {
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
         this.MaxUpstreamConn = -1;
+        this.ProxyCacheLocalOnNotFound = false;
+        this.ProxyReferrerAPI = false;
     }
 
     initByProject(pro: Project) {
@@ -93,6 +97,10 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = pro.metadata.max_upstream_conn
             ? pro.metadata.max_upstream_conn
             : -1;
+        this.ProxyCacheLocalOnNotFound =
+            pro.metadata.proxy_cache_local_on_not_found === 'true';
+        this.ProxyReferrerAPI =
+            pro.metadata.proxy_referrer_api === 'true' ? true : false;
     }
 }
 const PAGE_SIZE: number = 100;

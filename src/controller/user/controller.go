@@ -71,6 +71,8 @@ type Controller interface {
 	// OnboardOIDCUser inserts the record for basic user info and the oidc metadata
 	// if the onboard process is successful the input parm of user model will be populated with user id
 	OnboardOIDCUser(ctx context.Context, u *commonmodels.User) error
+	// SearchByName search user by name with fuzzy search
+	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
 }
 
 // NewController ...
@@ -240,4 +242,8 @@ func (c *controller) VerifyPassword(ctx context.Context, usernameOrEmail, passwo
 
 func (c *controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) error {
 	return c.mgr.SetSysAdminFlag(ctx, id, adminFlag)
+}
+
+func (c *controller) SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error) {
+	return c.mgr.SearchByName(ctx, name, limitSize)
 }

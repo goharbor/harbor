@@ -8,12 +8,11 @@ function getAssets {
     local onlinePackage=$4
     local prerelease=$5
     local assetsPath=$6
-    mkdir $assetsPath && pushd $assetsPath
+    mkdir -p "$assetsPath" && pushd "$assetsPath"
     aws s3 cp s3://$bucket/$branch/$offlinePackage .
-    md5sum $offlinePackage > md5sum
+    md5sum $offlinePackage >> md5sum
     # Pre-release does not handle online installer packages
-    if [ $prerelease = "false" ]
-    then
+    if [ "$prerelease" = "false" ]; then
         aws s3 cp s3://$bucket/$branch/$onlinePackage .
         md5sum $onlinePackage >> md5sum
     fi
@@ -56,12 +55,14 @@ function publishImages {
     local dockerHubUser=$3
     local dockerHubPassword=$4
     local images=${@:5}
-    docker login -u $dockerHubUser -p $dockerHubPassword
+    local suffix=""
+    if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
+    printf '%s\n' "$dockerHubPassword" | docker login --username "$dockerHubUser" --password-stdin
     for image in $images
     do
         echo "push image: $image"
-        docker tag $image:$baseTag $image:$curTag
-        retry 5 docker push $image:$curTag
+        docker tag $image:$baseTag $image:${curTag}${suffix}
+        retry 5 docker push $image:${curTag}${suffix}
     done
     docker logout
 }
@@ -72,12 +73,14 @@ function publishPackages {
     local ghcrUser=$3
     local ghcrPassword=$4
     local images=${@:5}
-    docker login ghcr.io -u $ghcrUser -p $ghcrPassword
+    local suffix=""
+    if [ -n "${ARCH:-}" ]; then suffix="-$ARCH"; fi
+    printf '%s\n' "$ghcrPassword" | docker login ghcr.io --username "$ghcrUser" --password-stdin
     for image in $images
     do
         echo "push image: $image"
-        docker tag $image:$baseTag "ghcr.io/"$image:$curTag
-        retry 5 docker push "ghcr.io/"$image:$curTag
+        docker tag $image:$baseTag "ghcr.io/${image}:${curTag}${suffix}"
+        retry 5 docker push "ghcr.io/${image}:${curTag}${suffix}"
     done
     docker logout ghcr.io
 }

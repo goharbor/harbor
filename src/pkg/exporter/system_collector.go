@@ -16,11 +16,13 @@ package exporter
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/version"
 )
 
 // SystemInfoCollectorName ...
@@ -76,9 +78,17 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 		}
 	}
 	result := []prometheus.Metric{}
+
+	// Get version directly from package (set at build time via ldflags)
+	harborVersion := version.ReleaseVersion
+	if version.GitCommit != "" {
+		harborVersion = fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit)
+	}
+
+	// Still call API for auth_mode and self_registration (dynamic config)
 	res, err := hbrCli.Get(sysInfoURL)
 	if err != nil {
-		log.Errorf("request health info failed with err: %v", err)
+		log.Errorf("request system info failed with err: %v", err)
 		return result
 	}
 	defer res.Body.Close()
@@ -90,7 +100,7 @@ func (hc *SystemInfoCollector) getSysInfo() []prometheus.Metric {
 	}
 	result = append(result, harborSysInfo.MustNewConstMetric(1,
 		sysInfoResponse.AuthMode,
-		sysInfoResponse.HarborVersion,
+		harborVersion,
 		strconv.FormatBool(sysInfoResponse.SelfRegistration)))
 	if CacheEnabled() {
 		CachePut(systemInfoCollectorName, result)
