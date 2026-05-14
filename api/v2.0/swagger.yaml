@@ -1403,6 +1403,46 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/referrers:
+    get:
+      summary: List referrers
+      description: List referrers of the specific artifact using the OCI referrers API. Returns an OCI Index containing descriptors of all referrers (signatures, SBOMs, etc.) for the given artifact digest. This endpoint uses digest-based querying which supports proxy cache scenarios.
+      tags:
+        - artifact
+      operationId: listReferrers
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: artifactType
+          in: query
+          type: string
+          required: false
+          description: Filter referrers by artifact type
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of referrers
+              type: integer
+            OCI-Filters-Applied:
+              description: Indicates the applied filter
+              type: string
+          schema:
+            type: object
+            description: OCI Index containing referrer descriptors
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities:
     get:
       summary: Get the vulnerabilities addition of the specific artifact

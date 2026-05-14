@@ -54,7 +54,6 @@ import {
     OperationState,
 } from '../../../../../../../shared/components/operation/operate';
 import {
-    AccessoryType,
     artifactDefault,
     ArtifactFilterEvent,
     ArtifactFront as Artifact,
@@ -86,6 +85,7 @@ import { Tag } from '../../../../../../../../../ng-swagger-gen/models/tag';
 import { CopyArtifactComponent } from './copy-artifact/copy-artifact.component';
 import { CopyDigestComponent } from './copy-digest/copy-digest.component';
 import { Scanner } from '../../../../../../left-side-nav/interrogation-services/scanner/scanner';
+import { ReferrerService } from '../../../../../../../shared/services/referrer.service';
 
 export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 
@@ -217,7 +217,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private router: Router,
         private appConfigService: AppConfigService,
-        private artifactListPageService: ArtifactListPageService
+        private artifactListPageService: ArtifactListPageService,
+        private referrerService: ReferrerService
     ) {}
     initRouterData() {
         this.projectId =
@@ -1123,46 +1124,35 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         }
     }
     checkCosignAndSbomAsync(artifacts: ArtifactFront[]) {
-        if (artifacts) {
-            if (artifacts.length) {
-                artifacts.forEach(item => {
-                    item.signed = CHECKING;
-                    const sbomOverview = item?.sbom_overview;
-                    item.sbomDigest = sbomOverview?.sbom_digest;
-                    let queryTypes = `${AccessoryType.COSIGN} ${AccessoryType.NOTATION}`;
-                    if (!item.sbomDigest) {
-                        queryTypes = `${queryTypes} ${AccessoryType.SBOM}`;
-                    }
-                    this.newArtifactService
-                        .listAccessories({
-                            projectName: this.projectName,
-                            repositoryName: dbEncodeURIComponent(this.repoName),
-                            reference: item.digest,
-                            page: 1,
-                            pageSize: ACCESSORY_PAGE_SIZE,
-                            q: encodeURIComponent(`type={${queryTypes}}`),
-                        })
-                        .subscribe({
-                            next: res => {
-                                item.signed = res?.filter(
-                                    item => item.type !== AccessoryType.SBOM
-                                )?.length
-                                    ? TRUE
-                                    : FALSE;
-                                if (!item.sbomDigest) {
-                                    item.sbomDigest =
-                                        res?.filter(
-                                            item =>
-                                                item.type === AccessoryType.SBOM
-                                        )?.[0]?.digest ?? undefined;
-                                }
-                            },
-                            error: err => {
-                                item.signed = FALSE;
-                            },
-                        });
-                });
-            }
+        if (artifacts?.length) {
+            artifacts.forEach(item => {
+                item.signed = CHECKING;
+                const sbomOverview = item?.sbom_overview;
+                item.sbomDigest = sbomOverview?.sbom_digest;
+                // Use the OCI referrers API instead of the Harbor-specific accessory API.
+                // The referrers API queries by digest and repository (OCI standard),
+                // which enables proxy cache support.
+                this.referrerService
+                    .listReferrers(
+                        this.projectName,
+                        dbEncodeURIComponent(this.repoName),
+                        item.digest
+                    )
+                    .subscribe({
+                        next: res => {
+                            item.signed = ReferrerService.hasSignatures(res)
+                                ? TRUE
+                                : FALSE;
+                            if (!item.sbomDigest) {
+                                item.sbomDigest =
+                                    ReferrerService.getSbomDigest(res);
+                            }
+                        },
+                        error: err => {
+                            item.signed = FALSE;
+                        },
+                    });
+            });
         }
     }
     // return true if all selected rows are in "running" state
