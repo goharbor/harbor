@@ -178,7 +178,7 @@ func (p *Project) MaxUpstreamConnection() int {
 	}
 	cnt, err := strconv.ParseInt(countVal, 10, 32)
 	if err != nil {
-		log.Warningf("failed th parse the max_upstream_conn, val:%s error %v", countVal, err)
+		log.Warningf("failed to parse the max_upstream_conn, val:%s error %v", countVal, err)
 		return 0
 	}
 	return int(cnt)
