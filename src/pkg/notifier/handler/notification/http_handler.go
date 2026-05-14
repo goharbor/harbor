@@ -85,11 +85,11 @@ func (h *HTTPHandler) process(ctx context.Context, event *model.HookEvent) error
 	}
 
 	j.Parameters = map[string]any{
-		"payload":           string(payload),
-		"address":           event.Target.Address,
-		"header":            string(headerBytes),
-		"skip_cert_verify":  event.Target.SkipCertVerify,
-		"payload_transform": event.Target.PayloadTransform,
+		"payload":          string(payload),
+		"address":          event.Target.Address,
+		"header":           string(headerBytes),
+		"skip_cert_verify": event.Target.SkipCertVerify,
+		"custom_payload":   event.Target.CustomPayload,
 	}
 	return notification.HookManager.StartHook(ctx, event, j)
 }

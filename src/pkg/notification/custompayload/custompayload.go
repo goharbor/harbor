@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package transform
+package custompayload
 
 import (
 	"bytes"
@@ -21,8 +21,8 @@ import (
 	"text/template"
 )
 
-// maxPayloadTransformSize is the maximum allowed byte size for a payload transform template.
-const maxPayloadTransformSize = 4096
+// maxCustomPayloadSize is the maximum allowed byte size for a custom payload template.
+const maxCustomPayloadSize = 4096
 
 // Apply executes the given template against the JSON payload.
 // If the template is empty, the payload is returned unchanged.
@@ -30,8 +30,8 @@ func Apply(templateString string, rawJSONPayload string) (string, error) {
 	if templateString == "" {
 		return rawJSONPayload, nil
 	}
-	if len(templateString) > maxPayloadTransformSize {
-		return "", fmt.Errorf("payload_transform exceeds max size of %d bytes", maxPayloadTransformSize)
+	if len(templateString) > maxCustomPayloadSize {
+		return "", fmt.Errorf("custom_payload exceeds max size of %d bytes", maxCustomPayloadSize)
 	}
 
 	var eventData map[string]any
@@ -39,16 +39,16 @@ func Apply(templateString string, rawJSONPayload string) (string, error) {
 		return "", fmt.Errorf("invalid payload JSON: %w", err)
 	}
 
-	compiledTemplate, err := template.New("payload_transform").
+	compiledTemplate, err := template.New("custom_payload").
 		Option("missingkey=error"). // reject references to fields that do not exist
 		Parse(templateString)
 	if err != nil {
-		return "", fmt.Errorf("invalid payload_transform template: %w", err)
+		return "", fmt.Errorf("invalid custom_payload template: %w", err)
 	}
 
 	var renderedOutput bytes.Buffer
 	if err := compiledTemplate.Execute(&renderedOutput, eventData); err != nil {
-		return "", fmt.Errorf("failed to execute payload_transform: %w", err)
+		return "", fmt.Errorf("failed to execute custom_payload: %w", err)
 	}
 
 	return renderedOutput.String(), nil
@@ -60,11 +60,11 @@ func Validate(templateString string) error {
 		return nil
 	}
 
-	if len(templateString) > maxPayloadTransformSize {
-		return fmt.Errorf("payload_transform exceeds max size of %d bytes", maxPayloadTransformSize)
+	if len(templateString) > maxCustomPayloadSize {
+		return fmt.Errorf("custom_payload exceeds max size of %d bytes", maxCustomPayloadSize)
 	}
 
-	_, err := template.New("payload_transform").
+	_, err := template.New("custom_payload").
 		Option("missingkey=error").
 		Parse(templateString)
 	return err

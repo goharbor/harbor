@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package transform
+package custompayload
 
 import (
 	"testing"
@@ -67,7 +67,7 @@ func TestApply(t *testing.T) {
 		},
 		{
 			name:    "template exceeding max size returns error",
-			tmpl:    string(make([]byte, maxPayloadTransformSize+1)),
+			tmpl:    string(make([]byte, maxCustomPayloadSize+1)),
 			payload: `{"type":"PUSH_ARTIFACT"}`,
 			wantErr: true,
 		},
@@ -90,5 +90,5 @@ func TestValidate(t *testing.T) {
 	assert.NoError(t, Validate(""))
 	assert.NoError(t, Validate(`{"text": "{{.type}} by {{.operator}}"}`))
 	assert.Error(t, Validate(`{{.type`))
-	assert.Error(t, Validate(string(make([]byte, maxPayloadTransformSize+1))))
+	assert.Error(t, Validate(string(make([]byte, maxCustomPayloadSize+1))))
 }
