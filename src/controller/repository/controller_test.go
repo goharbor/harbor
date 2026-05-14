@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	pkg_artifact "github.com/goharbor/harbor/src/pkg/artifact"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -132,6 +133,24 @@ func (c *controllerTestSuite) TestDelete() {
 	c.repoMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	err := c.ctl.Delete(nil, 1)
 	c.Require().Nil(err)
+}
+
+func (c *controllerTestSuite) TestDeleteNotFoundIgnored() {
+	parent := &artifact.Artifact{Artifact: pkg_artifact.Artifact{ID: 1}}
+	child := &artifact.Artifact{Artifact: pkg_artifact.Artifact{ID: 2}}
+
+	mock.OnAnything(c.argMgr, "ListReferences").Return(nil, nil)
+	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{parent, child}, nil)
+
+	// Simulate parent deletion succeeding, but child deletion returning NotFoundCode
+	// (e.g. because it was already deleted by the parent's cascading delete).
+	c.artCtl.On("Delete", mock.Anything, int64(1)).Return(nil).Once()
+	c.artCtl.On("Delete", mock.Anything, int64(2)).Return(errors.New(nil).WithCode(errors.NotFoundCode)).Once()
+
+	c.repoMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	err := c.ctl.Delete(nil, 1)
+	c.Require().Nil(err, "NotFoundCode should be ignored during artifact deletion")
 }
 
 func (c *controllerTestSuite) TestUpdate() {
