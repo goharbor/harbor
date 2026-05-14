@@ -15,6 +15,8 @@
 package retry
 
 import (
+	"context"
+	stderrors "errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -57,6 +59,7 @@ type Options struct {
 	Timeout         time.Duration                        // the total time before returning if something is wrong, default 1 minute
 	Callback        func(err error, sleep time.Duration) // the callback function for Retry when the f called failed
 	Backoff         bool
+	Ctx             context.Context // optional context; if set, Retry aborts when Ctx is done
 }
 
 // Option ...
@@ -97,6 +100,17 @@ func Backoff(backoff bool) Option {
 	}
 }
 
+// Context attaches a context to Retry so the retry loop aborts when the
+// context is canceled or its deadline is exceeded, instead of spinning until
+// the retry Timeout fires. The inter-attempt sleep also becomes cancellable.
+// When omitted, Retry still treats a context.Canceled / context.DeadlineExceeded
+// error returned by f as terminal and stops immediately.
+func Context(ctx context.Context) Option {
+	return func(opts *Options) {
+		opts.Ctx = ctx
+	}
+}
+
 // Retry retry until f run successfully or timeout
 //
 // NOTE: This function will use exponential backoff and jitter for retrying, see
@@ -133,6 +147,18 @@ func Retry(f func() error, options ...Option) error {
 		}
 	}
 
+	// ctxDone is a nil channel when no context was attached, which makes the
+	// ctx arms in the select statements below never fire (a receive on a nil
+	// channel blocks forever). Assigning opts.Ctx.Done() only when set avoids
+	// needing to branch on opts.Ctx inside the hot loop.
+	var ctxDone <-chan struct{}
+	if opts.Ctx != nil {
+		if err := opts.Ctx.Err(); err != nil {
+			return err
+		}
+		ctxDone = opts.Ctx.Done()
+	}
+
 	var err error
 
 	timeout := time.After(opts.Timeout)
@@ -140,10 +166,20 @@ func Retry(f func() error, options ...Option) error {
 		select {
 		case <-timeout:
 			return errors.New(ErrRetryTimeout).WithCause(err)
+		case <-ctxDone:
+			return opts.Ctx.Err()
 		default:
 			err = f()
 			if err == nil {
 				return nil
+			}
+
+			// A context error from f is always terminal: looping cannot
+			// recover a canceled or deadline-exceeded context and would only
+			// keep pumping load on shared resources (DB, Redis) on behalf of
+			// a caller that is already gone.
+			if stderrors.Is(err, context.Canceled) || stderrors.Is(err, context.DeadlineExceeded) {
+				return err
 			}
 
 			var ab *abort
@@ -160,7 +196,18 @@ func Retry(f func() error, options ...Option) error {
 				opts.Callback(err, sleep)
 			}
 
-			time.Sleep(sleep)
+			if sleep > 0 {
+				t := time.NewTimer(sleep)
+				select {
+				case <-timeout:
+					t.Stop()
+					return errors.New(ErrRetryTimeout).WithCause(err)
+				case <-ctxDone:
+					t.Stop()
+					return opts.Ctx.Err()
+				case <-t.C:
+				}
+			}
 		}
 	}
 }

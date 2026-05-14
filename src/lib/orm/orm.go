@@ -20,6 +20,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -125,6 +126,61 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 	return opName
 }
 
+// hooksKey holds the post-commit hooks sink for the enclosing transaction.
+type hooksKey struct{}
+
+// txHooks collects callbacks registered via AfterCommit. The sink is attached
+// to the context by the outermost WithTransaction call and is invoked only
+// after that outermost transaction commits successfully. Nested WithTransaction
+// calls inherit the same sink, so callbacks registered from any nesting level
+// are batched and fired together when the whole tx finally commits.
+type txHooks struct {
+	mu           sync.Mutex
+	afterCommit  []func()
+}
+
+func (h *txHooks) add(fn func()) {
+	h.mu.Lock()
+	h.afterCommit = append(h.afterCommit, fn)
+	h.mu.Unlock()
+}
+
+func (h *txHooks) drain() []func() {
+	h.mu.Lock()
+	cbs := h.afterCommit
+	h.afterCommit = nil
+	h.mu.Unlock()
+	return cbs
+}
+
+// AfterCommit registers fn to run after the enclosing WithTransaction commits
+// successfully. If the ctx is not inside a WithTransaction scope, fn runs
+// immediately on the caller's goroutine.
+//
+// This is the idiomatic way to schedule side effects that must not extend the
+// lifetime of a Postgres transaction — cache invalidation, metrics, events —
+// so Go code cannot sit holding row locks while waiting on an external system.
+// Panics raised by fn are recovered and logged.
+func AfterCommit(ctx context.Context, fn func()) {
+	if fn == nil {
+		return
+	}
+	if h, ok := ctx.Value(hooksKey{}).(*txHooks); ok && h != nil {
+		h.add(fn)
+		return
+	}
+	safeInvoke(fn)
+}
+
+func safeInvoke(fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("panic in after-commit hook: %v", r)
+		}
+	}()
+	fn()
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
@@ -151,11 +207,27 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 
+		// Attach a post-commit hooks sink so code inside the transaction can
+		// register callbacks (via AfterCommit) that must only run after a
+		// successful commit. Only the outermost WithTransaction (i.e. the one
+		// that does not inherit an existing sink) owns the sink and is
+		// responsible for firing or discarding it.
+		var ownsHooks bool
+		hooks, _ := cx.Value(hooksKey{}).(*txHooks)
+		if hooks == nil {
+			hooks = &txHooks{}
+			cx = context.WithValue(cx, hooksKey{}, hooks)
+			ownsHooks = true
+		}
+
 		// When set multiple times, context.WithValue returns only the last ormer.
 		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
 		cx = NewContext(cx, tx.TxOrmer)
 		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
+			if ownsHooks {
+				hooks.drain() // discard unfired callbacks on rollback
+			}
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
 				log.Errorf("rollback transaction failed: %v", e)
@@ -166,9 +238,18 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		}
 		span.AddEvent("commit transaction")
 		if err := tx.Commit(); err != nil {
+			if ownsHooks {
+				hooks.drain() // commit failed, do not run hooks
+			}
 			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
 			return err
+		}
+
+		if ownsHooks {
+			for _, fn := range hooks.drain() {
+				safeInvoke(fn)
+			}
 		}
 
 		return nil
