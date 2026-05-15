@@ -86,8 +86,7 @@ export class ProjectPolicy {
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';
         this.PreventVulImg = pro.metadata.prevent_vul === 'true';
-        this.PreventUnscannedImages =
-            pro.metadata.prevent_unscanned === 'true';
+        this.PreventUnscannedImages = pro.metadata.prevent_unscanned === 'true';
         if (pro.metadata.severity) {
             this.PreventVulImgSeverity = pro.metadata.severity;
         }
