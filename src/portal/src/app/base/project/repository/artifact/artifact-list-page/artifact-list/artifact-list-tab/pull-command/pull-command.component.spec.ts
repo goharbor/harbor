@@ -156,18 +156,25 @@ describe('PullCommandComponent', () => {
         expect(modal).toBeTruthy();
     });
 
-    it('should use selected tag for image tag pull command even when artifact tags are unavailable', () => {
-        component.selectedTag = '2.0.0';
+    [
+        { tagNumber: 1, tags: [{ name: '1.0.0' }] },
+        { tagNumber: 2, tags: [{ name: '1.0.0' }, { name: 'latest' }] },
+        { tagNumber: 0, tags: [] },
+        { tagNumber: undefined, tags: undefined },
+    ].forEach(({ tagNumber, tags }) => {
+        it(`should use selected tag for image tag pull command when artifact tag number is ${tagNumber}`, () => {
+            component.selectedTag = '2.0.0';
 
-        const pullCommand = component.getPullCommandForRuntimeByTag({
-            type: ArtifactType.IMAGE,
-            tagNumber: undefined,
-            tags: undefined,
+            const pullCommand = component.getPullCommandForRuntimeByTag({
+                type: ArtifactType.IMAGE,
+                tagNumber,
+                tags,
+            });
+
+            expect(pullCommand).toEqual(
+                'docker pull demo.goharbor.io/library/hello-world:2.0.0'
+            );
         });
-
-        expect(pullCommand).toEqual(
-            'docker pull demo.goharbor.io/library/hello-world:2.0.0'
-        );
     });
 
     it('should use selected tag for chart tag pull command even when artifact tags are unavailable', () => {
