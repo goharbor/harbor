@@ -87,6 +87,52 @@ func (suite *ControllerTestSuite) TestAttachToProjectByDigest() {
 	})
 }
 
+func (suite *ControllerTestSuite) TestAssociateUpdatesTimestamp() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		ctx := suite.Context()
+
+		digest := suite.prepareBlob()
+		blob1, err := Ctl.Get(ctx, digest)
+		suite.Nil(err)
+		time1 := blob1.UpdateTime
+
+		// Sleep to ensure time difference
+		time.Sleep(time.Second)
+
+		err = Ctl.AssociateWithProjectByDigest(ctx, digest, projectID)
+		suite.Nil(err)
+
+		blob2, err := Ctl.Get(ctx, digest)
+		suite.Nil(err)
+		time2 := blob2.UpdateTime
+
+		suite.True(time2.After(time1), "UpdateTime should be updated after association")
+	})
+}
+
+func (suite *ControllerTestSuite) TestAssociateByIDUpdatesTimestamp() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		ctx := suite.Context()
+
+		digest := suite.prepareBlob()
+		blob1, err := Ctl.Get(ctx, digest)
+		suite.Nil(err)
+		time1 := blob1.UpdateTime
+
+		// Sleep to ensure time difference
+		time.Sleep(time.Second)
+
+		err = Ctl.AssociateWithProjectByID(ctx, blob1.ID, projectID)
+		suite.Nil(err)
+
+		blob2, err := Ctl.Get(ctx, digest)
+		suite.Nil(err)
+		time2 := blob2.UpdateTime
+
+		suite.True(time2.After(time1), "UpdateTime should be updated after association by ID")
+	})
+}
+
 func (suite *ControllerTestSuite) TestCalculateTotalSizeByProject() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		ctx := suite.Context()
