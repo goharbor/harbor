@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	allowlist "github.com/goharbor/harbor/src/pkg/allowlist/models"
 	art "github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -670,6 +671,117 @@ func (suite *ControllerTestSuite) TestStopScanAll() {
 	suite.execMgr.On("Stop", mock.Anything, mockExecID).Return(nil).Once()
 	err = suite.c.StopScanAll(context.TODO(), mockExecID, false)
 	suite.NoError(err)
+}
+
+func (suite *ControllerTestSuite) TestGetVulnerableNonSuccessWithReportData() {
+	// When scan status is non-success (e.g. Running) but report data exists
+	// from a previous scan, GetVulnerable should fall through and evaluate
+	// vulnerabilities instead of blocking the pull.
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+
+	testArt := &artifact.Artifact{Artifact: art.Artifact{
+		ID: 10, ProjectID: 1, Digest: "digest-running",
+		RepositoryName: "library/photon", ManifestMediaType: v1.MimeTypeDockerArtifact,
+	}}
+	testArt.Type = "IMAGE"
+
+	rp := vuln.Report{
+		GeneratedAt: time.Now().UTC().String(),
+		Scanner:     &v1.Scanner{Name: "Trivy", Vendor: "Harbor", Version: "0.1.0"},
+		Severity:    vuln.High,
+		Vulnerabilities: []*vuln.VulnerabilityItem{
+			{ID: "CVE-2024-0001", Package: "openssl", Version: "1.0", FixVersion: "1.1", Severity: vuln.High},
+		},
+	}
+	reportJSON, err := json.Marshal(rp)
+	require.NoError(suite.T(), err)
+
+	// Report has data from a prior scan but the task is currently Running
+	suite.reportMgr.On("GetBy", mock.Anything, "digest-running", "uuid001",
+		[]string{v1.MimeTypeNativeReport}).Return([]*scan.Report{
+		{
+			UUID:             "rp-running-001",
+			Digest:           "digest-running",
+			RegistrationUUID: "uuid001",
+			MimeType:         v1.MimeTypeNativeReport,
+			Report:           string(reportJSON),
+		},
+	}, nil).Once()
+
+	// assembleReports: task lookup returns Running status
+	suite.taskMgr.On("ListScanTasksByReportUUID", mock.Anything, "rp-running-001").Return([]*task.Task{
+		{Status: "Running", ExtraAttrs: suite.makeExtraAttrs(10, "rp-running-001")},
+	}, nil).Once()
+
+	// FromRelationalSchema returns the full report (with vulns inline)
+	suite.c.reportConverter.(*postprocessorstesting.NativeScanReportConverter).On(
+		"FromRelationalSchema", mock.Anything, "rp-running-001", "digest-running", string(reportJSON),
+	).Return(string(reportJSON), nil).Once()
+
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
+	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(testArt)
+	}).Once()
+	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil).Once()
+
+	v, err := suite.c.GetVulnerable(ctx, testArt, allowlist.CVESet{}, false)
+	require.NoError(suite.T(), err)
+
+	// Should treat as success despite Running status, because report data exists
+	assert.True(suite.T(), v.IsScanSuccess())
+	assert.Equal(suite.T(), 1, v.VulnerabilitiesCount)
+	require.NotNil(suite.T(), v.Severity)
+	assert.Equal(suite.T(), vuln.High, *v.Severity)
+}
+
+func (suite *ControllerTestSuite) TestGetVulnerableNonSuccessNoReportData() {
+	// When scan status is non-success and no report data exists,
+	// GetVulnerable should return early with IsScanSuccess() == false.
+	ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+
+	testArt := &artifact.Artifact{Artifact: art.Artifact{
+		ID: 11, ProjectID: 1, Digest: "digest-empty",
+		RepositoryName: "library/photon", ManifestMediaType: v1.MimeTypeDockerArtifact,
+	}}
+	testArt.Type = "IMAGE"
+
+	// Report exists but has no data (empty placeholder, no prior scan)
+	suite.reportMgr.On("GetBy", mock.Anything, "digest-empty", "uuid001",
+		[]string{v1.MimeTypeNativeReport}).Return([]*scan.Report{
+		{
+			UUID:             "rp-empty-001",
+			Digest:           "digest-empty",
+			RegistrationUUID: "uuid001",
+			MimeType:         v1.MimeTypeNativeReport,
+			Report:           "",
+		},
+	}, nil).Once()
+
+	// assembleReports: task lookup returns Running status
+	suite.taskMgr.On("ListScanTasksByReportUUID", mock.Anything, "rp-empty-001").Return([]*task.Task{
+		{Status: "Running", ExtraAttrs: suite.makeExtraAttrs(11, "rp-empty-001")},
+	}, nil).Once()
+
+	// FromRelationalSchema returns empty (no prior data to reconstruct)
+	suite.c.reportConverter.(*postprocessorstesting.NativeScanReportConverter).On(
+		"FromRelationalSchema", mock.Anything, "rp-empty-001", "digest-empty", "",
+	).Return("", nil).Once()
+
+	mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
+	mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(testArt)
+	}).Once()
+	mock.OnAnything(suite.accessoryMgr, "List").Return(nil, nil).Once()
+
+	v, err := suite.c.GetVulnerable(ctx, testArt, allowlist.CVESet{}, false)
+	require.NoError(suite.T(), err)
+
+	// Should remain non-success since there's no report data to fall back on
+	assert.False(suite.T(), v.IsScanSuccess())
+	assert.Equal(suite.T(), 0, v.VulnerabilitiesCount)
+	assert.Nil(suite.T(), v.Severity)
 }
 
 func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]any {
