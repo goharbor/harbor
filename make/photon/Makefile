@@ -15,10 +15,20 @@ SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
+PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
+# Normalized Go architecture string (arm64/amd64), derived from ARCH.
+# Used as --build-arg TARGETARCH to keep Go builds correct even when this
+# sub-make is invoked directly with ARCH=aarch64 or ARCH=x86_64.
+TARGETARCH = $(if $(filter $(ARCH),aarch64 arm64),arm64,amd64)
+# Force BuildKit so --platform takes effect and TARGETARCH auto-populates.
+# 'override' wins over the caller's environment even when the parent
+# Makefile calls this sub-make with -e (environment-overrides).
+override DOCKER_BUILDKIT := 1
+export DOCKER_BUILDKIT
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK)
+DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK) --platform=$(PLATFORM)
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMAGES=$(DOCKERCMD) images
@@ -205,7 +215,7 @@ _build_standalone_db_migrator:
 _compile_and_build_exporter:
 	@$(call _build_base,$(EXPORTER),$(DOCKERFILEPATH_EXPORTER))
 	@echo "compiling and building image for exporter..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) --build-arg harbor_version=$(RELEASEVERSION) --build-arg git_commit=$(GITCOMMIT) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) --build-arg harbor_version=$(RELEASEVERSION) --build-arg git_commit=$(GITCOMMIT) --build-arg TARGETARCH=$(TARGETARCH) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
 	@echo "Done."
 
 define _extract_archive

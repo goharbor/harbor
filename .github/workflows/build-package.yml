@@ -9,9 +9,14 @@ on:
       - release-*
 jobs:
   BUILD_PACKAGE:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
     env:
         BUILD_PACKAGE: true
-    runs-on: ubuntu-latest
+        ARCH: ${{ matrix.arch }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5.1.1
@@ -86,21 +91,80 @@ jobs:
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
           fi
 
-          sudo make package_offline GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
-          sudo make package_online GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
+          sudo make package_online ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
-          echo "Package name is: $harbor_offline_build_bundle"
-          echo "Package name is: $harbor_online_build_bundle"
+          mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          mv "${harbor_online_build_bundle}" "harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          harbor_offline_build_bundle="harbor-offline-installer-${Harbor_Package_Version}-${ARCH}.tgz"
+          harbor_online_build_bundle="harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
 
           source tests/ci/build_util.sh
-          cp ${harbor_offline_build_bundle}                 harbor-offline-installer-latest.tgz
-          cp ${harbor_online_build_bundle}                  harbor-online-installer-latest.tgz
-          uploader ${harbor_offline_build_bundle}           $harbor_target_bucket
-          uploader ${harbor_online_build_bundle}            $harbor_target_bucket
-          uploader harbor-offline-installer-latest.tgz      $harbor_target_bucket
-          uploader harbor-online-installer-latest.tgz       $harbor_target_bucket
-          echo "BUILD_BUNDLE=$harbor_offline_build_bundle" >> $GITHUB_ENV
+          cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest-${ARCH}.tgz"
+          cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest-${ARCH}.tgz"
+          uploader "${harbor_offline_build_bundle}"                    $harbor_target_bucket
+          uploader "${harbor_online_build_bundle}"                     $harbor_target_bucket
+          uploader "harbor-offline-installer-latest-${ARCH}.tgz"      $harbor_target_bucket
+          uploader "harbor-online-installer-latest-${ARCH}.tgz"       $harbor_target_bucket
+          # Backwards compatibility: keep the unsuffixed legacy "latest" name
+          # pointing to amd64 (what it historically was) so existing downstream
+          # consumers that expect harbor-*-installer-latest.tgz don't break.
+          if [ "${ARCH}" = "amd64" ]; then
+            cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest.tgz"
+            cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest.tgz"
+            uploader "harbor-offline-installer-latest.tgz"             $harbor_target_bucket
+            uploader "harbor-online-installer-latest.tgz"              $harbor_target_bucket
+          fi
+          echo "BUILD_BUNDLE=${harbor_offline_build_bundle}" >> $GITHUB_ENV
           echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
 
-          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}"
+          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+      - name: Save repo list
+        run: |
+          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+      - name: Upload repo list
+        uses: actions/upload-artifact@v4
+        with:
+          name: repos-${{ matrix.arch }}
+          path: ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
+
+  CREATE_MANIFEST:
+    needs: [BUILD_PACKAGE]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: repos-*
+          merge-multiple: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Determine image tag
+        id: tag
+        run: |
+          target_branch="$(echo ${GITHUB_REF#refs/heads/})"
+          version=$(cat ./VERSION)
+          if [[ $target_branch == "main" ]]; then
+            echo "image_tag=dev" >> $GITHUB_OUTPUT
+          elif [[ $target_branch == "release-"* ]]; then
+            echo "image_tag=${version}-dev" >> $GITHUB_OUTPUT
+          else
+            echo "image_tag=${version}" >> $GITHUB_OUTPUT
+          fi
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+      - name: Create multi-arch manifests
+        run: |
+          set -euo pipefail
+          image_tag="${{ steps.tag.outputs.image_tag }}"
+          cat _repos_*.txt | sort -u | while IFS= read -r repo; do
+            [ -z "$repo" ] && continue
+            echo "Creating manifest ${repo}:${image_tag}"
+            docker buildx imagetools create -t "${repo}:${image_tag}" \
+              "${repo}:${image_tag}-amd64" \
+              "${repo}:${image_tag}-arm64"
+          done
+          docker logout
