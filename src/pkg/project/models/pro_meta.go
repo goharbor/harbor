@@ -19,7 +19,7 @@ const (
 	ProMetaPublic                    = "public"
 	ProMetaEnableContentTrust        = "enable_content_trust"
 	ProMetaEnableContentTrustCosign  = "enable_content_trust_cosign"
-	ProMetaPreventVul                = "prevent_vul" // prevent vulnerable images from being pulled
+	ProMetaPreventVul                = "prevent_vul"       // prevent vulnerable images from being pulled
 	ProMetaPreventUnscanned          = "prevent_unscanned" // prevent unscanned images from being pulled
 	ProMetaSeverity                  = "severity"
 	ProMetaAutoScan                  = "auto_scan"

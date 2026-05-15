@@ -27,9 +27,9 @@ import (
 )
 
 const (
-	metadataTrue        = "true"
-	normalizedSeverity  = "low"
-	legacyNoneSeverity  = "none"
+	metadataTrue       = "true"
+	normalizedSeverity = "low"
+	legacyNoneSeverity = "none"
 )
 
 // NormalizeLegacySeverityPolicy rewrites legacy severity=none to the equivalent
