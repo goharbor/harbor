@@ -16,6 +16,7 @@ import {
     NgModule,
     APP_INITIALIZER,
     CUSTOM_ELEMENTS_SCHEMA,
+    SecurityContext,
 } from '@angular/core';
 import { AppComponent } from './app.component';
 import { InterceptHttpService } from './services/intercept-http.service';
@@ -40,6 +41,7 @@ import {
 import { ErrorHandler } from './shared/units/error-handler';
 import { MessageHandlerService } from './shared/services/message-handler.service';
 import { HarborTranslateLoaderService } from './services/harbor-translate-loader.service';
+import { MarkdownModule } from 'ngx-markdown';
 
 function initConfig(
     configService: AppConfigService,
@@ -76,6 +78,7 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
         HttpClientModule,
         HarborRoutingModule,
         CookieModule.forRoot(),
+        MarkdownModule.forRoot({ sanitize: SecurityContext.HTML }),
     ],
     providers: [
         AppConfigService,
