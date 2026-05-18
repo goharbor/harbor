@@ -297,7 +297,11 @@ services:
       - SETUID
       - NET_BIND_SERVICE
     volumes:
-      - ./common/config/nginx:/etc/nginx:z
+      - type: bind
+        source: ./common/config/nginx/nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+      - ./common/config/nginx/conf.d:/etc/nginx/conf.d:z
 {% if protocol == 'https' %}
       - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
