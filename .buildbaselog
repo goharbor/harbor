@@ -5,11 +5,11 @@
 
 %changelog
 
-*   May 15 2026 <aaron.an@broadcom.com>
--   Refresh base image
-
 *   Add date here... Add signature here...
 -   Add your reason here...
+
+*   May 18 2026 <aaron.an@broadcom.com>
+-   Refresh base image
 
 *   Feb 11 2026 <yan-yw.wang@broadcom.com>
 -   Refresh base image
