@@ -113,6 +113,50 @@ class TestAuditLogForword(unittest.TestCase, object):
         
         # 12 Verify that Skip Audit Log Database cannot be enabled without Audit Log Forward
         self.config.set_configurations_of_audit_log_forword(audit_log_forward_endpoint="", expect_status_code=400)
+
+    def testAuditLogForwordForMemberCRUD(self):
+        """
+        Test case:
+            Audit Log Forword For Project Member CRUD
+        Test step and expected result:
+            1. Create two users (owner and member user);
+            2. Create a private project by owner;
+            3. Enable Audit Log Forward;
+            4. Add member user to project;
+            5. Update member role;
+            6. Delete member;
+            7. Verify create/update/delete member audit logs are forwarded to syslog.
+        Tear down:
+            1 Reset audit log forword.
+        """
+        url = ADMIN_CLIENT["endpoint"]
+        owner_password = "Aa123456"
+        member_password = "Aa123456"
+
+        # 1. Create owner and member users
+        _, owner_name = self.user.create_user(user_password = owner_password, **ADMIN_CLIENT)
+        member_user_id, member_name = self.user.create_user(user_password = member_password, **ADMIN_CLIENT)
+        owner_client = dict(endpoint = url, username = owner_name, password = owner_password, with_accessory = True)
+
+        # 2. Create private project by owner user
+        project_id, _ = self.project.create_project(metadata = {"public": "false"}, **owner_client)
+
+        # 3. Enable Audit Log Forward
+        self.config.set_configurations_of_audit_log_forword(audit_log_forward_endpoint = SYSLOG_ENDPOINT, expect_status_code = 200)
+
+        # 4. Add member user to project
+        member_id = self.project.add_project_members(project_id, user_id = member_user_id, member_role_id = 3, **owner_client)
+
+        # 5. Update member role
+        self.project.update_project_member_role(project_id, member_id, member_role_id = 2, **owner_client)
+
+        # 6. Delete member
+        self.project.delete_project_member(project_id, member_id, **owner_client)
+
+        # 7. Verify member create/update/delete logs are forwarded to syslog
+        self.assertTrue(self.verifyLogInSyslogService(owner_name, member_name, "member", "create"))
+        self.assertTrue(self.verifyLogInSyslogService(owner_name, member_name, "member", "update"))
+        self.assertTrue(self.verifyLogInSyslogService(owner_name, member_name, "member", "delete"))
     
     def verifyLogInSyslogService(self, username, resource, resource_type, operation, expected_count=1):
         url = ES_ENDPOINT + "/_count"
