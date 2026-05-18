@@ -2,7 +2,8 @@ FROM photon:5.0
 
 ENV PGDATA /var/lib/postgresql/data
 
-RUN tdnf install -y shadow >> /dev/null \
+RUN tdnf upgrade -y \
+    && tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
