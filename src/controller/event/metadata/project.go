@@ -17,7 +17,7 @@ package metadata
 import (
 	"time"
 
-	event2 "github.com/goharbor/harbor/src/controller/event"
+	controllerevent "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 )
 
@@ -30,9 +30,9 @@ type CreateProjectEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (c *CreateProjectEventMetadata) Resolve(event *event.Event) error {
-	event.Topic = event2.TopicCreateProject
-	event.Data = &event2.CreateProjectEvent{
-		EventType: event2.TopicCreateProject,
+	event.Topic = controllerevent.TopicCreateProject
+	event.Data = &controllerevent.CreateProjectEvent{
+		EventType: controllerevent.TopicCreateProject,
 		ProjectID: c.ProjectID,
 		Project:   c.Project,
 		Operator:  c.Operator,
@@ -50,13 +50,35 @@ type DeleteProjectEventMetadata struct {
 
 // Resolve to the event from the metadata
 func (d *DeleteProjectEventMetadata) Resolve(event *event.Event) error {
-	event.Topic = event2.TopicDeleteProject
-	event.Data = &event2.DeleteProjectEvent{
-		EventType: event2.TopicDeleteProject,
+	event.Topic = controllerevent.TopicDeleteProject
+	event.Data = &controllerevent.DeleteProjectEvent{
+		EventType: controllerevent.TopicDeleteProject,
 		ProjectID: d.ProjectID,
 		Project:   d.Project,
 		Operator:  d.Operator,
 		OccurAt:   time.Now(),
+	}
+	return nil
+}
+
+// UpdateProjectEventMetadata is the metadata from which the update project visibility event can be resolved
+type UpdateProjectEventMetadata struct {
+	ProjectID int64
+	Project   string
+	Operator  string
+	IsPublic  bool
+}
+
+// Resolve to the event from the metadata
+func (u *UpdateProjectEventMetadata) Resolve(event *event.Event) error {
+	event.Topic = controllerevent.TopicUpdateProject
+	event.Data = &controllerevent.UpdateProjectEvent{
+		EventType: controllerevent.TopicUpdateProject,
+		ProjectID: u.ProjectID,
+		Project:   u.Project,
+		Operator:  u.Operator,
+		OccurAt:   time.Now(),
+		IsPublic:  u.IsPublic,
 	}
 	return nil
 }
