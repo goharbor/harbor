@@ -270,6 +270,7 @@
         "PUBLIC_POLICY": "所有人都可访问公开的项目仓库。",
         "SECURITY": "部署安全",
         "CONTENT_TRUST_POLCIY": "仅允许部署通过认证的镜像。",
+        "PREVENT_UNSCANNED_TOGGLE": "阻止未扫描镜像运行。",
         "PREVENT_VULNERABLE_TOGGLE": "阻止潜在漏洞镜像",
         "PREVENT_VULNERABLE_1": "阻止危害级别",
         "PREVENT_VULNERABLE_2": "以上的镜像运行。",
