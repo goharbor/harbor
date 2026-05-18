@@ -80,6 +80,8 @@ func TestResolver_PreCheck(t *testing.T) {
 		{"create", args{context.Background(), "/api/v2.0/projects/1/members", http.MethodPost}, true, ""},
 		{"delete group", args{context.Background(), "/api/v2.0/projects/1/members/10", http.MethodDelete}, true, "g:developers"},
 		{"delete user", args{context.Background(), "/api/v2.0/projects/1/members/20", http.MethodDelete}, true, "u:testuser"},
+		{"delete unknown member", args{context.Background(), "/api/v2.0/projects/1/members/999", http.MethodDelete}, true, "999"},
+		{"delete malformed URL", args{context.Background(), "/api/v2.0/projects/1/members/", http.MethodDelete}, true, ""},
 		{"update", args{context.Background(), "/api/v2.0/projects/1/members/10", http.MethodPut}, true, ""},
 		{"get ignored", args{context.Background(), "/api/v2.0/projects/1/members/10", http.MethodGet}, false, ""},
 		{"list ignored", args{context.Background(), "/api/v2.0/projects/1/members", http.MethodGet}, false, ""},
@@ -253,6 +255,29 @@ func TestResolver_Resolve(t *testing.T) {
 			},
 			wantNil: true,
 		},
+		{
+			name: "supported method with unmatched URL ignored",
+			metadata: &commonevent.Metadata{
+				RequestURL:    "/api/v2.0/projects/1/repositories",
+				RequestMethod: http.MethodPut,
+			},
+			wantNil: true,
+		},
+		{
+			name: "delete pre-resolved fallback",
+			metadata: &commonevent.Metadata{
+				Username:      "admin",
+				RequestURL:    "/api/v2.0/projects/1/members/999",
+				RequestMethod: http.MethodDelete,
+				ResponseCode:  http.StatusOK,
+				ResourceName:  "raw-member-name",
+			},
+			wantOperation:  "delete",
+			wantResource:   "raw-member-name",
+			wantDesc:       "delete member raw-member-name from project myproject",
+			wantSuccessful: true,
+			wantProjectID:  1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -290,6 +315,12 @@ func TestResolver_Resolve(t *testing.T) {
 				t.Errorf("OperationDescription = %q, want %q", data.OperationDescription, tt.wantDesc)
 			}
 		})
+	}
+}
+
+func TestAuditLogMemberEventEnabled_EmptyOperation(t *testing.T) {
+	if auditLogMemberEventEnabled(context.Background(), "") {
+		t.Fatal("auditLogMemberEventEnabled() = true, want false for empty operation")
 	}
 }
 

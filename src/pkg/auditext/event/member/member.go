@@ -47,8 +47,8 @@ var extractRe = regexp.MustCompile(extractPattern)
 
 // overridable for testing
 var (
-	lookupMemberFn   = lookupMember
-	resolveProjectFn = resolveProject
+	lookupMemberFn      = lookupMember
+	resolveProjectFn    = resolveProject
 	auditEventEnabledFn = auditLogMemberEventEnabled
 )
 
