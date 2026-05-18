@@ -52,6 +52,16 @@ func (a *Handler) Handle(ctx context.Context, value any) error {
 		return a.handle(ctx, v.ArtifactEvent)
 	case *event.DeleteArtifactEvent:
 		return a.handle(ctx, v.ArtifactEvent)
+	case *event.CreateTagEvent:
+		return a.handle(ctx, &event.ArtifactEvent{
+			EventType:  v.EventType,
+			Repository: v.Repository,
+			Artifact:   v.AttachedArtifact,
+			Tags:       []string{v.Tag},
+			Labels:     v.Labels,
+			Operator:   v.Operator,
+			OccurAt:    v.OccurAt,
+		})
 	default:
 		log.Errorf("Can not handler this event type! %#v", v)
 	}

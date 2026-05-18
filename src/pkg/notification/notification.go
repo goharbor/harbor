@@ -85,6 +85,7 @@ func initSupportedNotifyType() {
 		event.TopicPushArtifact,
 		event.TopicPullArtifact,
 		event.TopicDeleteArtifact,
+		event.TopicCreateTag,
 		event.TopicQuotaExceed,
 		event.TopicQuotaWarning,
 		event.TopicScanningFailed,

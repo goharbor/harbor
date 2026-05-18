@@ -20,7 +20,9 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -28,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -164,7 +167,26 @@ func (c *controller) Create(ctx context.Context, tag *Tag) (id int64, err error)
 	if !isValidTag(tag.Name) {
 		return 0, errors.BadRequestError(errors.Errorf("invalid tag name: %s", tag.Name))
 	}
-	return c.tagMgr.Create(ctx, &(tag.Tag))
+
+	id, err = c.tagMgr.Create(ctx, &(tag.Tag))
+	if err != nil {
+		return 0, err
+	}
+
+	// Fetch the artifact to pass into the event payload
+	art, artErr := c.artMgr.Get(ctx, tag.ArtifactID)
+	if artErr == nil {
+		e := &metadata.CreateTagEventMetadata{
+			Ctx:              ctx,
+			Tag:              tag.Name,
+			AttachedArtifact: art,
+		}
+		notification.AddEvent(ctx, e)
+	} else {
+		log.Warningf("failed to get artifact %d to fire tag creation event: %v", tag.ArtifactID, artErr)
+	}
+
+	return id, nil
 }
 
 func isValidTag(name string) bool {
