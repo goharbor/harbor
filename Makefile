@@ -83,6 +83,18 @@ HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
 NPM_REGISTRY=https://registry.npmjs.org
+# Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
+#   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
+#   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
+OPENAPI_GENERATOR_CLI_URL ?= https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
+# Pass PIP_INDEX_URL to pip only when it is defined in the environment:
+#   export PIP_INDEX_URL=https://pypi.org/simple
+#   make swagger_client
+ifdef PIP_INDEX_URL
+PIP_INDEX_URL_ENV = PIP_INDEX_URL=$(PIP_INDEX_URL)
+else
+PIP_INDEX_URL_ENV =
+endif
 BUILDTARGET=build
 GEN_TLS=
 
@@ -112,7 +124,7 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.70.0
-TRIVYADAPTERVERSION=v0.36.0-rc.1
+TRIVYADAPTERVERSION=v0.36.0
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
@@ -551,12 +563,12 @@ restart: down prepare start
 
 swagger_client:
 	@echo "Generate swagger client"
-	wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar -O openapi-generator-cli.jar
+	wget "$(OPENAPI_GENERATOR_CLI_URL)" -O openapi-generator-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
-	cd harborclient/harbor_v2_swagger_client; pip install .
-	pip install docker -q
+	cd harborclient/harbor_v2_swagger_client; $(PIP_INDEX_URL_ENV) pip install .
+	$(PIP_INDEX_URL_ENV) pip install docker -q
 	pip freeze
 
 cleanbinary:
