@@ -1,4 +1,4 @@
-FROM photon:5.0
+FROM goharbor/photon:5.0
 
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -g 999 valkey \
