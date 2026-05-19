@@ -323,9 +323,41 @@
                                 <div class="center width-p-100">
                                     <span
                                         #tagsSpan
-                                        class="truncated width-p-75"
-                                        >{{ tagsString(artifact?.tags) }}</span
-                                    >
+                                        class="truncated width-p-75">
+                                        <ng-container
+                                            *ngIf="artifact?.tags?.length > 0">
+                                            <ng-container
+                                                *ngFor="
+                                                    let tag of artifact.tags;
+                                                    let i = index
+                                                ">
+                                                <app-pull-command
+                                                    [isTagMode]="true"
+                                                    [asLink]="true"
+                                                    [artifact]="artifact"
+                                                    [registryUrl]="registryUrl"
+                                                    [projectName]="projectName"
+                                                    [repoName]="repoName"
+                                                    [selectedTag]="
+                                                        tag.name
+                                                    "></app-pull-command>
+                                                <!-- {{ tag.name }} -->
+                                                <!-- Add comma if not last -->
+                                                <span
+                                                    *ngIf="
+                                                        i <
+                                                        artifact.tags.length - 1
+                                                    "
+                                                    >,
+                                                </span>
+                                            </ng-container>
+                                        </ng-container>
+
+                                        <ng-template #noTags>
+                                            No tags available
+                                        </ng-template>
+                                    </span>
+
                                     <span
                                         *ngIf="
                                             artifact?.tags?.length > 1 &&
