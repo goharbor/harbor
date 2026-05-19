@@ -1,4 +1,6 @@
 name: "Build Package Workflow"
+permissions:
+  contents: read
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
