@@ -24,7 +24,7 @@
                 <input
                     type="checkbox"
                     clrCheckbox
-                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [disabled]="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.ProxyCacheEnabled"
                     name="project-proxy-cache-enabled" />
             </clr-checkbox-wrapper>
@@ -44,7 +44,7 @@
                     class="width-164 ml-1"
                     id="registry"
                     name="registry"
-                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [disabled]="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.RegistryId">
                     <option class="display-none" value=""></option>
                     <option *ngFor="let r of registries" [value]="r.id">
@@ -64,7 +64,7 @@
                         id="bandwidth"
                         [(ngModel)]="projectPolicy.ProxySpeedKb"
                         name="bandwidth"
-                        disabled="!allowUpdateProxyCacheConfiguration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off"
                         (ngModelChange)="validateBandwidth()" />
@@ -76,7 +76,7 @@
                         <select
                             id="bandwidth_unit"
                             name="bandwidth_unit"
-                            disabled="!allowUpdateProxyCacheConfiguration"
+                            [disabled]="!allowUpdateProxyCacheConfiguration"
                             [(ngModel)]="speedUnit">
                             <option
                                 *ngFor="let unit of speedUnits"
@@ -104,7 +104,7 @@
                         id="max_upstream_conn"
                         [(ngModel)]="projectPolicy.MaxUpstreamConn"
                         name="max_upstream_conn"
-                        disabled="!allowUpdateProxyCacheConfiguration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off" />
                     <clr-icon
@@ -120,6 +120,34 @@
                         }}
                     </clr-control-error>
                 </div>
+            </div>
+            <div class="row-inline ml-2" clrInline>
+                <clr-checkbox-wrapper class="ml-1">
+                    <input
+                        id="proxy_referrer_api"
+                        type="checkbox"
+                        clrCheckbox
+                        [(ngModel)]="projectPolicy.ProxyReferrerAPI"
+                        name="proxy_referrer_api"
+                        [disabled]="!allowUpdateProxyCacheConfiguration" />
+                    <label for="proxy_referrer_api">
+                        {{ 'PROJECT.PROXY_REFERRER_API_LABEL' | translate }}
+                        <clr-tooltip>
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="lg"
+                                *clrIfOpen>
+                                <span>{{
+                                    'PROJECT.PROXY_REFERRER_API_TIP' | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
             </div>
         </div>
         <clr-checkbox-container

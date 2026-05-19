@@ -31,6 +31,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -111,6 +112,7 @@ func getAwsSvc(region, accessKey, accessSecret string, insecure bool, caCertific
 				commonhttp.WithInsecure(insecure),
 				commonhttp.WithCACert(caCertificate),
 			),
+			Timeout: config.RegistryHTTPClientTimeout(),
 		},
 	}
 	if forceEndpoint != nil {

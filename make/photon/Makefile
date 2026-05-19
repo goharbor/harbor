@@ -15,10 +15,20 @@ SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 CURL=$(shell which curl)
 TIMESTAMP=$(shell date +"%Y%m%d")
+PLATFORM = $(if $(filter $(ARCH),aarch64 arm64),linux/arm64,linux/amd64)
+# Normalized Go architecture string (arm64/amd64), derived from ARCH.
+# Used as --build-arg TARGETARCH to keep Go builds correct even when this
+# sub-make is invoked directly with ARCH=aarch64 or ARCH=x86_64.
+TARGETARCH = $(if $(filter $(ARCH),aarch64 arm64),arm64,amd64)
+# Force BuildKit so --platform takes effect and TARGETARCH auto-populates.
+# 'override' wins over the caller's environment even when the parent
+# Makefile calls this sub-make with -e (environment-overrides).
+override DOCKER_BUILDKIT := 1
+export DOCKER_BUILDKIT
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK)
+DOCKERBUILD=$(DOCKERCMD) build --no-cache --network=$(DOCKERNETWORK) --platform=$(PLATFORM)
 DOCKERBUILD_WITH_PULL_PARA=$(DOCKERBUILD) --pull=$(PULL_BASE_FROM_DOCKERHUB)
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMAGES=$(DOCKERCMD) images
@@ -93,10 +103,10 @@ DOCKERFILEPATH_REGISTRYCTL=$(DOCKERFILEPATH)/$(REGISTRYCTL)
 DOCKERFILENAME_REGISTRYCTL=Dockerfile
 DOCKERIMAGENAME_REGISTRYCTL=$(IMAGENAMESPACE)/harbor-$(REGISTRYCTL)
 
-REDIS=redis
-DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/$(REDIS)
-DOCKERFILENAME_REDIS=Dockerfile
-DOCKERIMAGENAME_REDIS=$(IMAGENAMESPACE)/$(REDIS)-photon
+VALKEY=valkey
+DOCKERFILEPATH_VALKEY=$(DOCKERFILEPATH)/$(VALKEY)
+DOCKERFILENAME_VALKEY=Dockerfile
+DOCKERIMAGENAME_VALKEY=$(IMAGENAMESPACE)/$(VALKEY)-photon
 
 DOCKERFILEPATH_STANDALONE_DB_MIGRATOR=$(DOCKERFILEPATH)/standalone-db-migrator
 DOCKERFILENAME_STANDALONE_DB_MIGRATOR=Dockerfile
@@ -110,7 +120,7 @@ DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-$(EXPORTER)
 _build_prepare:
 	@$(call _build_base,$(PREPARE),$(DOCKERFILEPATH_PREPARE))
 	@echo "building prepare container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg pip_index_url=$(PIP_INDEX_URL) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_db:
@@ -191,10 +201,10 @@ _build_registryctl:
 	@rm -rf $(DOCKERFILEPATH_REG)/binary
 	@echo "Done."
 
-_build_redis:
-	@$(call _build_base,$(REDIS),$(DOCKERFILEPATH_REDIS))
-	@echo "building redis container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(VERSIONTAG) .
+_build_valkey:
+	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY))
+	@echo "building valkey container for photon..."
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_VALKEY)/$(DOCKERFILENAME_VALKEY) -t $(DOCKERIMAGENAME_VALKEY):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_standalone_db_migrator:
@@ -205,7 +215,7 @@ _build_standalone_db_migrator:
 _compile_and_build_exporter:
 	@$(call _build_base,$(EXPORTER),$(DOCKERFILEPATH_EXPORTER))
 	@echo "compiling and building image for exporter..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) --build-arg harbor_version=$(RELEASEVERSION) --build-arg git_commit=$(GITCOMMIT) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg build_image=$(GOBUILDIMAGE) --build-arg harbor_version=$(RELEASEVERSION) --build-arg git_commit=$(GITCOMMIT) --build-arg TARGETARCH=$(TARGETARCH) -f ${DOCKERFILEPATH_EXPORTER}/${DOCKERFILENAME_EXPORTER} -t $(DOCKERIMAGENAME_EXPORTER):$(VERSIONTAG) .
 	@echo "Done."
 
 define _extract_archive
@@ -226,7 +236,7 @@ define _build_base
 		else \
 			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
 		fi ;\
-		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
+		$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
@@ -234,9 +244,9 @@ define _build_base
 endef
 
 ifeq ($(BUILD_INSTALLER), true)
-buildcompt: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_trivy_adapter _build_redis _compile_and_build_exporter
+buildcompt: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_trivy_adapter _build_valkey _compile_and_build_exporter
 else
-buildcompt: _build_db _build_portal _build_core _build_jobservice _build_nginx _build_registry _build_registryctl _build_trivy_adapter _build_redis _compile_and_build_exporter
+buildcompt: _build_db _build_portal _build_core _build_jobservice _build_nginx _build_registry _build_registryctl _build_trivy_adapter _build_valkey _compile_and_build_exporter
 endif
 
 build: buildcompt
