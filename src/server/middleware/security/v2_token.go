@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
-project_ctl "github.com/goharbor/harbor/src/controller/project"
+	project_ctl "github.com/goharbor/harbor/src/controller/project"
 	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
