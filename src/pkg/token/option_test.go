@@ -296,6 +296,19 @@ func TestGetKeyRSA(t *testing.T) {
 		require.NoError(t, err)
 		assert.IsType(t, (*rsa.PrivateKey)(nil), result)
 	})
+
+	t.Run("corrupted public key", func(t *testing.T) {
+		privPEM, _ := genRSAPEM(t)
+		corruptPubPEM := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: []byte("not-valid-der")})
+		opt := &Options{
+			SignMethod:  jwt.SigningMethodRS256,
+			PrivateKey: privPEM,
+			PublicKey:  corruptPubPEM,
+		}
+		key, err := opt.GetKey()
+		assert.Error(t, err)
+		assert.Nil(t, key)
+	})
 }
 
 func TestNewOptionsErrors(t *testing.T) {
@@ -323,6 +336,39 @@ func TestNewOptionsErrors(t *testing.T) {
 		_, err = NewOptions("", "issuer", f.Name())
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "unsupported private key type")
+	})
+
+	t.Run("corrupted RSA PKCS1 content", func(t *testing.T) {
+		f, err := os.CreateTemp("", "harbor-corrupt-rsa-*.pem")
+		require.NoError(t, err)
+		require.NoError(t, pem.Encode(f, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: []byte("not-valid-der")}))
+		f.Close()
+		defer os.Remove(f.Name())
+		_, err = NewOptions("", "issuer", f.Name())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse private key")
+	})
+
+	t.Run("corrupted EC PRIVATE KEY content", func(t *testing.T) {
+		f, err := os.CreateTemp("", "harbor-corrupt-ec-*.pem")
+		require.NoError(t, err)
+		require.NoError(t, pem.Encode(f, &pem.Block{Type: "EC PRIVATE KEY", Bytes: []byte("not-valid-der")}))
+		f.Close()
+		defer os.Remove(f.Name())
+		_, err = NewOptions("", "issuer", f.Name())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse private key")
+	})
+
+	t.Run("corrupted PKCS8 content", func(t *testing.T) {
+		f, err := os.CreateTemp("", "harbor-corrupt-pkcs8-*.pem")
+		require.NoError(t, err)
+		require.NoError(t, pem.Encode(f, &pem.Block{Type: "PRIVATE KEY", Bytes: []byte("not-valid-der")}))
+		f.Close()
+		defer os.Remove(f.Name())
+		_, err = NewOptions("", "issuer", f.Name())
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse private key")
 	})
 }
 
