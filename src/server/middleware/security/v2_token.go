@@ -26,11 +26,11 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/v2token"
-	project_ctl "github.com/goharbor/harbor/src/controller/project"
-	svc_token "github.com/goharbor/harbor/src/core/service/token"
+project_ctl "github.com/goharbor/harbor/src/controller/project"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg/token"
+	jwttoken "github.com/goharbor/harbor/src/pkg/token"
 	v2 "github.com/goharbor/harbor/src/pkg/token/claims/v2"
 )
 
@@ -51,18 +51,18 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	defaultOpt := token.DefaultTokenOptions()
+	defaultOpt := jwttoken.DefaultTokenOptions()
 	if defaultOpt == nil {
 		logger.Warningf("failed to get default options")
 		return nil
 	}
 	cl := &v2TokenClaims{}
-	t, err := token.Parse(defaultOpt, tokenStr, cl)
+	t, err := jwttoken.Parse(defaultOpt, tokenStr, cl)
 	if err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
 	}
-	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway), jwt.WithAudience(svc_token.Registry))
+	var v = jwt.NewValidator(jwt.WithLeeway(common.JwtLeeway), jwt.WithAudience(tokensvc.Registry))
 	if err := v.Validate(t.Claims); err != nil {
 		logger.Warningf("failed to decode bearer token: %v", err)
 		return nil
