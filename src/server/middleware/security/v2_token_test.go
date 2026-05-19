@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-project_ctl "github.com/goharbor/harbor/src/controller/project"
+	project_ctl "github.com/goharbor/harbor/src/controller/project"
 	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
