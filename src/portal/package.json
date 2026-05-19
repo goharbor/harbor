@@ -29,11 +29,11 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.2.20",
+    "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.20",
     "@angular/compiler": "^19.2.20",
     "@angular/core": "^19.2.20",
     "@angular/forms": "^19.2.20",
-    "@angular/cdk": "^19.2.19",
     "@angular/localize": "^19.2.20",
     "@angular/platform-browser": "^19.2.20",
     "@angular/platform-browser-dynamic": "^19.2.20",
@@ -51,6 +51,7 @@
     "ngx-clipboard": "^16.0.0",
     "ngx-cookie": "^6.0.1",
     "ngx-markdown": "^19.1.1",
+    "prismjs": "^1.30.0",
     "rxjs": "^7.4.0",
     "tslib": "^2.7.0",
     "zone.js": "^0.15.1"
