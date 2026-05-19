@@ -106,24 +106,29 @@ describe('TagRetentionTasksComponent', () => {
         }).compileComponents();
     });
 
-    beforeEach(fakeAsync(() => {
+    beforeEach(() => {
         fixture = TestBed.createComponent(TagRetentionTasksComponent);
         component = fixture.componentInstance;
         component.retentionId = 1;
         component.executionId = 57;
         fixture.detectChanges();
-        tick(0);
-    }));
+    });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should retry getting tasks', fakeAsync(() => {
+    it('should retry getting tasks', async () => {
         fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
         // Directly trigger the retry load to avoid a real 5-second timer wait
         component.loadLog();
         fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
         expect(component.tasks[0].status).toEqual('Success');
     }));
 });

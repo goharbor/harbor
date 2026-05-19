@@ -112,6 +112,7 @@ describe('LabelComponent (inline template)', () => {
 
     it('should open create label modal', async () => {
         await fixture.whenStable();
+        fixture.detectChanges();
         comp.editLabel([mockOneData]);
         fixture.detectChanges();
         expect(comp.targets[0].name).toEqual('label0-g');
