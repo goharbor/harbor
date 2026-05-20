@@ -95,6 +95,14 @@ PIP_INDEX_URL=https://pypi.org/simple
 #   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
 #   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
 OPENAPI_GENERATOR_CLI_URL ?= https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
+# Pass PIP_INDEX_URL to pip only when it is defined in the environment:
+#   export PIP_INDEX_URL=https://pypi.org/simple
+#   make swagger_client
+ifdef PIP_INDEX_URL
+PIP_INDEX_URL_ENV = PIP_INDEX_URL=$(PIP_INDEX_URL)
+else
+PIP_INDEX_URL_ENV =
+endif
 BUILDTARGET=build
 GEN_TLS=
 
@@ -167,7 +175,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.25.7
+GOBUILDIMAGE=golang:1.26.3
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -514,7 +522,7 @@ misspell:
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
 GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
@@ -582,8 +590,8 @@ swagger_client:
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_v2_swagger_client
 	java -jar openapi-generator-cli.jar generate -i api/v2.0/swagger.yaml -g python -o harborclient/harbor_v2_swagger_client --package-name v2_swagger_client
-	cd harborclient/harbor_v2_swagger_client; pip install .
-	pip install docker -q
+	cd harborclient/harbor_v2_swagger_client; $(PIP_INDEX_URL_ENV) pip install .
+	$(PIP_INDEX_URL_ENV) pip install docker -q
 	pip freeze
 
 cleanbinary:
