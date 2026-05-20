@@ -24,6 +24,18 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+
+.tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+
+.tag-item {
+  white-space: nowrap;
 }
 
 .right-pos {
