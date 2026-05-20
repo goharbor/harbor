@@ -51,6 +51,7 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
     @Input() projectId: number;
+    @Input() assignableRoleIds: Set<number> | null = null;
     @Output() added = new EventEmitter<boolean>();
     isMemberNameValid: boolean = true;
     memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
@@ -79,6 +80,15 @@ export class AddMemberComponent implements OnInit, OnDestroy {
 
 
     ngOnInit(): void {
+        this.roleSub = this.roleService.ListRole({
+            page: 1,
+            pageSize: 100,
+        }).subscribe(res => {
+            if (res) {
+                this.roles = res;
+            }
+        });
+
         let resolverData = this.route.snapshot.parent.parent.data;
         let hasProjectAdminRole: boolean;
         if (resolverData) {
@@ -86,16 +96,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
                 .has_project_admin_role;
         }
         if (hasProjectAdminRole) {
-            
-            this.roleSub = this.roleService.ListRole({
-                                    page: 1,
-                                    pageSize: 100
-                                }).subscribe(res => {
-                        if (res) {
-                            this.roles = res;
-                        }
-                    });
-            
             if (!this.searcherSub) {
                 this.searcherSub = this.searcher
                     .pipe(
@@ -221,9 +221,11 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.searchedUserLists = [];
     }
     openAddMemberModal(): void {
+        const firstAssignable = this.roles?.find(r => this.isRoleAssignable(r));
         this.currentForm.reset({
-            member_role: 1,
+            member_role: firstAssignable?.id ?? 1,
         });
+        this.roleId = firstAssignable?.id ?? 1;
         this.inlineAlert.close();
         this.member = {};
         this.addMemberOpened = true;
@@ -252,6 +254,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.isMemberNameValid &&
             !this.checkOnGoing
         );
+    }
+
+    isRoleAssignable(role: Role): boolean {
+        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
     }
 
     getRoleDisplayName(role: Role): string {

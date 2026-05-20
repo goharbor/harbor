@@ -77,8 +77,10 @@
                                     name="member_role"
                                     id="add-group-role-{{ r.id }}"
                                     [value]="r.id"
-                                    [(ngModel)]="roleId" />
-                                <label for="add-group-role-{{ r.id }}">
+                                    [(ngModel)]="roleId"
+                                    [disabled]="!isRoleAssignable(r)" />
+                                <label for="add-group-role-{{ r.id }}"
+                                    [class.text-muted]="!isRoleAssignable(r)">
                                     <strong *ngIf="r.is_builtin">{{
                                         getRoleDisplayName(r) | translate
                                     }}</strong>

@@ -62,7 +62,7 @@
                                 !(
                                     selectedRow.length &&
                                     hasUpdateMemberPermission
-                                ) || onlySelf
+                                ) || onlySelf || !isRoleAssignable(role)
                             ">
                             {{ getRoleDisplayName(role) | translate }}
                             <span class="label label-blue role-builtin-badge">{{
@@ -80,7 +80,7 @@
                                 !(
                                     selectedRow.length &&
                                     hasUpdateMemberPermission
-                                ) || onlySelf
+                                ) || onlySelf || !isRoleAssignable(role)
                             ">
                             {{ role.name }}
                         </button>
@@ -145,6 +145,10 @@
     </div>
     <add-member
         [projectId]="projectId"
+        [assignableRoleIds]="assignableRoleIds"
         (added)="addedMember($event)"></add-member>
-    <add-group [projectId]="projectId" (added)="addedGroup($event)"></add-group>
+    <add-group
+        [projectId]="projectId"
+        [assignableRoleIds]="assignableRoleIds"
+        (added)="addedGroup($event)"></add-group>
 </div>

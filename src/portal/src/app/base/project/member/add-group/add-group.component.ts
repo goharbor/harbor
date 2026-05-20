@@ -59,6 +59,7 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     inlineAlert: InlineAlertComponent;
 
     @Input() projectId: number;
+    @Input() assignableRoleIds: Set<number> | null = null;
     @Output() added = new EventEmitter<boolean>();
 
     checkOnGoing: boolean = false;
@@ -235,9 +236,11 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     }
 
     openAddGroupModal(): void {
+        const firstAssignable = this.roles?.find(r => this.isRoleAssignable(r));
         this.currentForm.reset({
-            member_role: 1,
+            member_role: firstAssignable?.id ?? 1,
         });
+        this.roleId = firstAssignable?.id ?? 1;
         this.addGroupOpened = true;
         this.inlineAlert.close();
         this.memberGroup = {
@@ -259,6 +262,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.currentForm.valid &&
             !this.checkOnGoing
         );
+    }
+
+    isRoleAssignable(role: Role): boolean {
+        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
     }
 
     getRoleDisplayName(role: Role): string {
