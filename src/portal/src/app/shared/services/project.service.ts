@@ -181,6 +181,9 @@ export class ProjectDefaultService extends ProjectService {
                             projectPolicy.ProxyCacheLocalOnNotFound
                                 ? 'true'
                                 : 'false',
+                        proxy_referrer_api: projectPolicy.ProxyReferrerAPI
+                            ? 'true'
+                            : 'false',
                     },
                     cve_allowlist: projectAllowlist,
                 },
