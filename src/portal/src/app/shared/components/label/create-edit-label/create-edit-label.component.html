@@ -36,7 +36,10 @@
         <div class="clr-col-auto clr-form-control form-field">
             <label for="color">
                 <span>{{ 'LABEL.COLOR' | translate }}</span>
-                <clr-dropdown class="dropdown-color" [clrCloseMenuOnItemClick]="false" clrDropdownTrigger>
+                <clr-dropdown
+                    class="dropdown-color"
+                    [clrCloseMenuOnItemClick]="false"
+                    clrDropdownTrigger>
                     <clr-icon
                         shape="caret down"
                         class="btn btn-outline btnColor"></clr-icon>
@@ -57,7 +60,6 @@
             </label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-
                     <input
                         class="clr-input label-color-input"
                         type="text"
@@ -73,7 +75,9 @@
 
         <!-- Description -->
         <div class="clr-col clr-form-control form-field">
-            <label for="description">{{ 'LABEL.DESCRIPTION' | translate }}</label>
+            <label for="description">{{
+                'LABEL.DESCRIPTION' | translate
+            }}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
                     <input

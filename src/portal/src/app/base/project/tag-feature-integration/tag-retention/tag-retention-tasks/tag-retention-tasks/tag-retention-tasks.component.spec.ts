@@ -11,7 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+    ComponentFixture,
+    fakeAsync,
+    TestBed,
+    tick,
+} from '@angular/core/testing';
 import { TagRetentionTasksComponent } from './tag-retention-tasks.component';
 import { SharedTestingModule } from '../../../../../../shared/shared.module';
 import { TagRetentionService } from '../../tag-retention.service';
@@ -101,29 +106,24 @@ describe('TagRetentionTasksComponent', () => {
         }).compileComponents();
     });
 
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
         fixture = TestBed.createComponent(TagRetentionTasksComponent);
         component = fixture.componentInstance;
         component.retentionId = 1;
         component.executionId = 57;
         fixture.detectChanges();
-    });
+        tick(0);
+    }));
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should retry getting tasks', async () => {
+    it('should retry getting tasks', fakeAsync(() => {
         fixture.detectChanges();
-        await fixture.whenStable();
-        fixture.detectChanges();
-        await fixture.whenStable();
         // Directly trigger the retry load to avoid a real 5-second timer wait
         component.loadLog();
         fixture.detectChanges();
-        await fixture.whenStable();
-        fixture.detectChanges();
-        await fixture.whenStable();
         expect(component.tasks[0].status).toEqual('Success');
-    });
+    }));
 });
