@@ -9395,6 +9395,11 @@ definitions:
         description: The attribute claims the username
         x-omitempty: true
         x-isnullable: true
+      oidc_realname_claim:
+        type: string
+        description: The attribute claims the realname
+        x-omitempty: true
+        x-isnullable: true
       oidc_verify_cert:
         type: boolean
         description: Verify the OIDC provider's certificate'
