@@ -12,22 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
-import { MessageHandlerService } from '../../../shared/services/message-handler.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ClrLoadingState } from '@clr/angular';
-import { finalize } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { ErrorHandler } from '../../../shared/units/error-handler';
+import { forkJoin, Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import {
+    CommonRoutes,
+    RoleMapping,
+} from 'src/app/shared/entities/shared.const';
+import { Project } from '../../../../../ng-swagger-gen/models/project';
+import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
+import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
 import {
     UserPermissionService,
     USERSTATICPERMISSION,
 } from '../../../shared/services';
-import { InlineAlertComponent } from '../../../shared/components/inline-alert/inline-alert.component';
-import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
+import { MessageHandlerService } from '../../../shared/services/message-handler.service';
+import { ErrorHandler } from '../../../shared/units/error-handler';
 import { DEFAULT_PAGE_SIZE } from '../../../shared/units/utils';
-import { forkJoin, Observable } from 'rxjs';
-import { Project } from '../../../../../ng-swagger-gen/models/project';
+import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scanner';
 
 @Component({
     selector: 'scanner',
@@ -49,12 +53,28 @@ export class ScannerComponent implements OnInit {
         private msgHandler: MessageHandlerService,
         private errorHandler: ErrorHandler,
         private route: ActivatedRoute,
+        private router: Router,
         private userPermissionService: UserPermissionService,
         private translate: TranslateService,
         private projectService: ProjectService
     ) {}
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
+
+        // Check user role and redirect if Limited Guest or Guest
+        const resolverData = this.route.snapshot.parent.parent.data;
+        if (resolverData && resolverData['projectResolver']) {
+            const project = resolverData['projectResolver'];
+            const userRole = project.role_name;
+            const excludedRoles = [RoleMapping.limitedGuest, RoleMapping.guest];
+
+            if (excludedRoles.includes(userRole)) {
+                // Redirect to repositories page
+                this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+                return;
+            }
+        }
+
         this.getPermission();
         this.init();
     }

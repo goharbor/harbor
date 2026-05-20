@@ -12,43 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
-    Component,
-    OnInit,
-    HostListener,
     AfterViewInit,
-    OnDestroy,
     ChangeDetectorRef,
+    Component,
+    HostListener,
+    OnDestroy,
+    OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Project } from '../project';
-import { SessionService } from '../../../shared/services/session.service';
-import { AppConfigService } from '../../../services/app-config.service';
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
-import {
-    UserPermissionService,
-    USERSTATICPERMISSION,
-} from '../../../shared/services';
-import { ErrorHandler } from '../../../shared/units/error-handler';
 import { debounceTime } from 'rxjs/operators';
-import { DOWN, SHOW_ELLIPSIS_WIDTH, UP } from './project-detail.const';
-import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
 import { ProjectSummaryQuota } from '../../../../../ng-swagger-gen/models/project-summary-quota';
+import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
+import { RouteConfigId } from '../../../route-reuse-strategy/harbor-route-reuse-strategy';
+import { AppConfigService } from '../../../services/app-config.service';
+import {
+    EventService,
+    HarborEvent,
+} from '../../../services/event-service/event.service';
 import {
     QUOTA_DANGER_COEFFICIENT,
     QUOTA_WARNING_COEFFICIENT,
     QuotaUnits,
+    RoleMapping,
 } from '../../../shared/entities/shared.const';
+import {
+    UserPermissionService,
+    USERSTATICPERMISSION,
+} from '../../../shared/services';
+import { SessionService } from '../../../shared/services/session.service';
+import { ErrorHandler } from '../../../shared/units/error-handler';
 import {
     clone,
     GetIntegerAndUnit,
     getSizeNumber,
     getSizeUnit,
 } from '../../../shared/units/utils';
-import {
-    EventService,
-    HarborEvent,
-} from '../../../services/event-service/event.service';
-import { RouteConfigId } from '../../../route-reuse-strategy/harbor-route-reuse-strategy';
+import { Project } from '../project';
+import { DOWN, SHOW_ELLIPSIS_WIDTH, UP } from './project-detail.const';
 
 @Component({
     selector: 'project-detail',
@@ -78,6 +79,15 @@ export class ProjectDetailComponent
     hasScannerReadPermission: boolean;
     hasP2pProviderReadPermission: boolean;
     hasQuotaReadPermission: boolean = false;
+
+    // Check if current user role is Limited Guest or Guest
+    isLimitedGuestOrGuest(): boolean {
+        return (
+            this.roleName === RoleMapping.limitedGuest ||
+            this.roleName === RoleMapping.guest
+        );
+    }
+
     tabLinkNavList = [
         {
             linkName: 'summary',
@@ -108,7 +118,8 @@ export class ProjectDetailComponent
             linkName: 'scanner',
             tabLinkInOverflow: false,
             showTabName: 'SCANNER.SCANNER',
-            permissions: () => this.hasScannerReadPermission,
+            permissions: () =>
+                this.hasScannerReadPermission && !this.isLimitedGuestOrGuest(),
         },
         {
             linkName: 'p2p-provider',
@@ -147,7 +158,9 @@ export class ProjectDetailComponent
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.CONFIG',
             permissions: () =>
-                this.isSessionValid && this.hasConfigurationListPermission,
+                this.isSessionValid &&
+                this.hasConfigurationListPermission &&
+                !this.isLimitedGuestOrGuest(),
         },
     ];
     previousWindowWidth: number;
