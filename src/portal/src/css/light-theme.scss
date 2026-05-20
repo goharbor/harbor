@@ -1,7 +1,5 @@
 // Variables for light theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui.min.css";
-
-  
+// CDS global is in angular.json main styles; this bundle is clr-ui + Harbor vars.
 $mode-background-color: #fff;
 $mode-background-color1: $mode-background-color;
 $mode-background-color2: #fafafa;

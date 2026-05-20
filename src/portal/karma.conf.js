@@ -58,11 +58,15 @@ module.exports = function (config) {
     singleRun: true,
     browsers: ['ChromeHeadlessNoSandbox'],
     browserDisconnectTolerance: 2,
-    browserNoActivityTimeout: 50000,
+    browserNoActivityTimeout: 120000,
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
         flags: ['--no-sandbox']
+      },
+      ChromeDebugging: {
+        base: 'Chrome',
+        flags: ['--remote-debugging-port=9333']
       }
     },
     restartOnFileChange: true

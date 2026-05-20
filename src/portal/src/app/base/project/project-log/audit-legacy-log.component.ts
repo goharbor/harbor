@@ -65,6 +65,7 @@ export class SearchOption {
     selector: 'project-audit-legacy-log',
     templateUrl: './audit-legacy-log.component.html',
     styleUrls: ['./audit-legacy-log.component.scss'],
+    standalone: false,
 })
 export class ProjectAuditLegacyLogComponent implements OnInit {
     search: SearchOption = new SearchOption();

@@ -45,6 +45,7 @@ import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-s
     selector: 'app-worker-list',
     templateUrl: './worker-list.component.html',
     styleUrls: ['./worker-list.component.scss'],
+    standalone: false,
 })
 export class WorkerListComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

@@ -1,5 +1,7 @@
 // Variables for dark theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
+// Clarity 17+: CDS global is in angular.json main styles; this bundle adds
+// dark tokens + clr-ui for theme swap (see @clr/ui README).
+@import "../../node_modules/@cds/core/styles/theme.dark.min.css";
 
 $mode-background-color: rgb(27 42 50);
 $mode-background-color1: $mode-background-color !important;

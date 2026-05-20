@@ -222,6 +222,7 @@ describe('ProjectPolicyConfigComponent', () => {
         [projectName]="'testing'"
         [projectId]="1">
     </hbr-project-policy-config>`,
+    standalone: false,
 })
 class TestHostComponent {
     @ViewChild(ProjectPolicyConfigComponent)

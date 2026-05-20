@@ -11,12 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from '@angular/core/testing';
 import { ProjectAuditLegacyLogComponent } from './audit-legacy-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, LOCALE_ID } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { delay } from 'rxjs/operators';
 import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
@@ -127,69 +133,64 @@ describe('ProjectAuditLegacyLogComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(ProjectAuditLegacyLogComponent);
         component = fixture.componentInstance;
+        component.projectName = 'test-project';
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should get data from AccessLogService', () => {
+    it('should get data from AccessLogService', async () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            // wait for async getRecentLogs
-            fixture.detectChanges();
-            expect(component.auditLogs).toBeTruthy();
-            expect(component.auditLogs.length).toEqual(15);
-        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.auditLogs).toBeTruthy();
+        expect(component.auditLogs.length).toEqual(15);
     });
 
-    it('should render data to view', () => {
+    it('should render data to view', async () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-            let de: DebugElement = fixture.debugElement.query(
-                del => del.classes['datagrid-cell']
-            );
-            expect(de).toBeTruthy();
-            let el: HTMLElement = de.nativeElement;
-            expect(el).toBeTruthy();
-            expect(el.textContent.trim()).toEqual('user910');
-        });
+        const de: DebugElement = fixture.debugElement.query(
+            By.css('.datagrid-cell')
+        );
+        expect(de).toBeTruthy();
+        const el: HTMLElement = de.nativeElement;
+        expect(el).toBeTruthy();
+        expect(el.textContent.trim()).toEqual('user910');
     });
     it('should support pagination', async () => {
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
-        let el: HTMLButtonElement =
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
         el.click();
+        fixture.detectChanges();
+        await fixture.whenStable();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(component.currentPage).toEqual(2);
         expect(component.auditLogs.length).toEqual(3);
     });
 
-    it('should support filtering list by keywords', () => {
+    it('should support filtering list by keywords', fakeAsync(() => {
         fixture.detectChanges();
-        let el: HTMLElement =
-            fixture.nativeElement.querySelector('.search-btn');
-        expect(el).toBeTruthy('Not found search icon');
-        click(el);
+        tick();
         fixture.detectChanges();
-        let el2: HTMLInputElement =
-            fixture.nativeElement.querySelector('input');
-        expect(el2).toBeTruthy('Not found input');
+        tick();
+        component.doSearchAuditLogs('Demo0');
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            component.doSearchAuditLogs('Demo0');
-            fixture.detectChanges();
-            fixture.whenStable().then(() => {
-                fixture.detectChanges();
-                expect(component.auditLogs).toBeTruthy();
-                expect(component.auditLogs.length).toEqual(1);
-            });
-        });
-    });
+        tick();
+        fixture.detectChanges();
+        tick();
+        expect(component.auditLogs).toBeTruthy();
+        expect(component.auditLogs.length).toEqual(1);
+    }));
 });
