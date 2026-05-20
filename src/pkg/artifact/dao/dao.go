@@ -44,6 +44,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the artifact. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, artifact *Artifact, props ...string) (err error)
+	// Touch bumps the artifact's update_time to now.
+	Touch(ctx context.Context, id int64) error
 	// UpdatePullTime updates artifact pull time by ID.
 	UpdatePullTime(ctx context.Context, id int64, pullTime time.Time) (err error)
 	// CreateReference creates the artifact reference
@@ -198,6 +200,22 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 	}
 	if n == 0 {
 		return errors.NotFoundError(nil).WithMessagef("artifact %d not found", artifact.ID)
+	}
+	return nil
+}
+
+func (d *dao) Touch(ctx context.Context, id int64) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.QueryTable(new(Artifact)).Filter("ID", id).Update(
+		beegoorm.Params{"update_time": time.Now()})
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return errors.NotFoundError(nil).WithMessagef("artifact %d not found", id)
 	}
 	return nil
 }

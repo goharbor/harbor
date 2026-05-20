@@ -50,6 +50,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.ctl = &controller{
 		tagMgr:       c.tagMgr,
 		artMgr:       c.artMgr,
+		repoMgr:      c.repoMgr,
 		immutableMtr: c.immutableMtr,
 	}
 }
@@ -88,10 +89,15 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
+	c.artMgr.On("Touch", mock.Anything, int64(2)).Return(nil).Once()
+	c.artMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
+	c.repoMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
 	mock.OnAnything(c.immutableMtr, "Match").Return(false, nil)
 	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.repoMgr.AssertExpectations(c.T())
 
 	// reset the mock
 	c.SetupTest()
@@ -99,10 +105,20 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	// the tag doesn't exist under the repository, create it
 	c.tagMgr.On("List", mock.Anything, mock.Anything).Return([]*tag.Tag{}, nil)
 	c.tagMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
-		ID: 1,
-	}, nil)
-	mock.OnAnything(c.immutableMtr, "Match").Return(false, nil)
+	c.artMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
+	c.repoMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
+	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+	c.Require().Nil(err)
+	c.tagMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.repoMgr.AssertExpectations(c.T())
+
+	// reset the mock
+	c.SetupTest()
+
+	// a concurrent create conflict means this request did not change tag state
+	c.tagMgr.On("List", mock.Anything, mock.Anything).Return([]*tag.Tag{}, nil)
+	c.tagMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), errors.ConflictError(nil))
 	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
@@ -145,15 +161,20 @@ func (c *controllerTestSuite) TestGet() {
 func (c *controllerTestSuite) TestDelete() {
 	c.tagMgr.On("Get", mock.Anything, mock.Anything).Return(&tag.Tag{
 		RepositoryID: 1,
+		ArtifactID:   1,
 		Name:         "test",
 	}, nil)
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
+	c.artMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
+	c.repoMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
 	mock.OnAnything(c.immutableMtr, "Match").Return(false, nil)
 	c.tagMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	err := c.ctl.Delete(nil, 1)
 	c.Require().Nil(err)
+	c.artMgr.AssertExpectations(c.T())
+	c.repoMgr.AssertExpectations(c.T())
 }
 
 func (c *controllerTestSuite) TestDeleteImmutable() {
@@ -186,15 +207,20 @@ func (c *controllerTestSuite) TestUpdate() {
 func (c *controllerTestSuite) TestDeleteTags() {
 	c.tagMgr.On("Get", mock.Anything, mock.Anything).Return(&tag.Tag{
 		RepositoryID: 1,
+		ArtifactID:   1,
 	}, nil)
 	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&pkg_artifact.Artifact{
 		ID: 1,
 	}, nil)
+	c.artMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Times(4)
+	c.repoMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Times(4)
 	mock.OnAnything(c.immutableMtr, "Match").Return(false, nil)
 	c.tagMgr.On("Delete", mock.Anything, mock.Anything).Return(nil)
 	ids := []int64{1, 2, 3, 4}
 	err := c.ctl.DeleteTags(nil, ids)
 	c.Require().Nil(err)
+	c.artMgr.AssertExpectations(c.T())
+	c.repoMgr.AssertExpectations(c.T())
 }
 
 func (c *controllerTestSuite) TestAssembleTag() {

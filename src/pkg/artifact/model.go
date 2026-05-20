@@ -43,6 +43,7 @@ type Artifact struct {
 	Icon              string            `json:"icon"`
 	PushTime          time.Time         `json:"push_time"`
 	PullTime          time.Time         `json:"pull_time"`
+	UpdateTime        time.Time         `json:"update_time"`
 	ExtraAttrs        map[string]any    `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string `json:"annotations"`
 	References        []*Reference      `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
@@ -82,6 +83,7 @@ func (a *Artifact) From(art *dao.Artifact) {
 	a.Icon = art.Icon
 	a.PushTime = art.PushTime
 	a.PullTime = art.PullTime
+	a.UpdateTime = art.UpdateTime
 	a.ExtraAttrs = map[string]any{}
 	a.Annotations = map[string]string{}
 	if len(art.ExtraAttrs) > 0 {
@@ -112,6 +114,7 @@ func (a *Artifact) To() *dao.Artifact {
 		Icon:              a.Icon,
 		PushTime:          a.PushTime,
 		PullTime:          a.PullTime,
+		UpdateTime:        a.UpdateTime,
 	}
 	if len(a.ExtraAttrs) > 0 {
 		attrs, err := json.Marshal(a.ExtraAttrs)

@@ -6647,6 +6647,10 @@ definitions:
         type: string
         format: date-time
         description: The latest pull time of the artifact
+      update_time:
+        type: string
+        format: date-time
+        description: The latest update time of the artifact
       extra_attrs:
         $ref: '#/definitions/ExtraAttrs'
       annotations:
