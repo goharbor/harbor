@@ -13,10 +13,14 @@
 // limitations under the License.
 import { TestBed, inject, getTestBed } from '@angular/core/testing';
 import {
-    HttpClientTestingModule,
     HttpTestingController,
+    provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { SkinableConfig } from './skinable-config.service';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('SkinableConfig', () => {
     let injector: TestBed;
@@ -39,8 +43,12 @@ describe('SkinableConfig', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [SkinableConfig],
+            imports: [],
+            providers: [
+                SkinableConfig,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         });
         injector = getTestBed();
         service = injector.get(SkinableConfig);

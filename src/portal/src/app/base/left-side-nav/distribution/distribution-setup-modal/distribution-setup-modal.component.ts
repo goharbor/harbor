@@ -52,6 +52,7 @@ const DEFAULT_PROVIDER: string = 'dragonfly';
     selector: 'dist-setup-modal',
     templateUrl: './distribution-setup-modal.component.html',
     styleUrls: ['./distribution-setup-modal.component.scss'],
+    standalone: false,
 })
 export class DistributionSetupModalComponent implements OnInit, OnDestroy {
     @Input()

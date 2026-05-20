@@ -64,6 +64,7 @@ export const KB_TO_MB: number = 1024;
     selector: 'hbr-create-edit-rule',
     templateUrl: './create-edit-rule.component.html',
     styleUrls: ['./create-edit-rule.component.scss'],
+    standalone: false,
 })
 export class CreateEditRuleComponent implements OnInit, OnDestroy {
     sourceList: Registry[] = [];

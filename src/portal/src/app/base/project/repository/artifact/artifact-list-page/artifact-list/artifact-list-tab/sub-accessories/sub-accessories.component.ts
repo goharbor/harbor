@@ -53,7 +53,8 @@ export const ACCESSORY_PAGE_SIZE: number = 5;
     selector: 'sub-accessories',
     templateUrl: 'sub-accessories.component.html',
     styleUrls: ['./sub-accessories.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush, // use OnPush Strategy to avoid ExpressionChangedAfterItHasBeenCheckedError
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
 })
 export class SubAccessoriesComponent
     implements OnInit, AfterViewInit, OnDestroy

@@ -13,7 +13,7 @@
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, SecurityContext } from '@angular/core';
-import { MarkdownModule, MarkedOptions } from 'ngx-markdown';
+import { MarkdownModule, MARKED_OPTIONS } from 'ngx-markdown';
 import { ValuesComponent } from './values.component';
 import { AdditionsService } from '../additions.service';
 import { of } from 'rxjs';
@@ -48,7 +48,7 @@ describe('ValuesComponent', () => {
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             providers: [
                 { provide: AdditionsService, useValue: fakedAdditionsService },
-                { provide: MarkedOptions, useValue: {} },
+                { provide: MARKED_OPTIONS, useValue: {} },
             ],
         }).compileComponents();
     });
