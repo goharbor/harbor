@@ -61,6 +61,7 @@ def _create_client(server, credential, debug, api_type):
         "replication": v2_swagger_client.ReplicationApi(v2_swagger_client.ApiClient(cfg)),
         "registry": v2_swagger_client.RegistryApi(v2_swagger_client.ApiClient(cfg)),
         "robot": v2_swagger_client.RobotApi(v2_swagger_client.ApiClient(cfg)),
+        "robot": v2_swagger_client.RoleApi(v2_swagger_client.ApiClient(cfg)),
         "gc": v2_swagger_client.GcApi(v2_swagger_client.ApiClient(cfg)),
         "retention": v2_swagger_client.RetentionApi(v2_swagger_client.ApiClient(cfg)),
         "immutable": v2_swagger_client.ImmutableApi(v2_swagger_client.ApiClient(cfg)),

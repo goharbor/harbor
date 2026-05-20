@@ -67,8 +67,13 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 			}
 		}
 	}
+
 	if !isSystemAdmin && !isProjectAdmin {
-		return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))
+		//  TODO Think about which permission shall be used for this - also : is it realy necessary to limit the display of the permissions ?
+		// do nothing
+
+		//	return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))
+
 	}
 
 	provider := rbac.GetPermissionProvider()
@@ -78,11 +83,13 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		// project admin cannot see the system level permissions
 		sysPermissions = provider.GetPermissions(rbac.ScopeSystem)
 	}
+	rolePermissions := provider.GetPermissions(rbac.ScopeRole)
 
-	return permissions.NewGetPermissionsOK().WithPayload(p.convertPermissions(sysPermissions, proPermissions))
+
+	return permissions.NewGetPermissionsOK().WithPayload(p.convertPermissions(sysPermissions, proPermissions, rolePermissions))
 }
 
-func (p *permissionsAPI) convertPermissions(system, project []*types.Policy) *models.Permissions {
+func (p *permissionsAPI) convertPermissions(system, project, role []*types.Policy) *models.Permissions {
 	res := &models.Permissions{}
 	if len(system) > 0 {
 		var sysPermission []*models.Permission
@@ -105,6 +112,18 @@ func (p *permissionsAPI) convertPermissions(system, project []*types.Policy) *mo
 		}
 		res.Project = proPermission
 	}
+
+	if len(role) > 0 {
+		var rolePermission []*models.Permission
+		for _, item := range role {
+			rolePermission = append(rolePermission, &models.Permission{
+				Resource: item.Resource.String(),
+				Action:   item.Action.String(),
+			})
+		}
+		res.Role = rolePermission
+	}
+
 
 	return res
 }

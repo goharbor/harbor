@@ -17,6 +17,7 @@ package evaluator
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -56,11 +57,15 @@ func (evaluators Evaluators) Add(newEvaluators ...Evaluator) Evaluators {
 
 // HasPermission returns true when one of evaluator has action permission for the resource
 func (evaluators Evaluators) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
+	log.Debug("*** Evaluating : r:%s a:%s ", resource.String(), action.String())
+
 	for _, evaluator := range evaluators {
 		if evaluator != nil && evaluator.HasPermission(ctx, resource, action) {
+			log.Debug("*** OK ***")
 			return true
 		}
 	}
 
+	log.Debug("*** KO ***")
 	return false
 }

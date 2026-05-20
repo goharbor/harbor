@@ -65,21 +65,41 @@
                 <label class="clr-control-label">{{
                     'GROUP.ROLE' | translate
                 }}</label>
+
+
                 <div class="clr-control-container">
-                    <clr-radio-wrapper *ngFor="let projectRoot of projectRoots">
-                        <input
-                            clrRadio
-                            type="radio"
-                            name="member_role"
-                            id="{{ 'check_root_project_' + projectRoot.NAME }}"
-                            [value]="projectRoot.VALUE"
-                            [(ngModel)]="roleId" />
-                        <label
-                            for="{{ 'check_root_project_' + projectRoot.NAME }}"
-                            >{{ projectRoot.LABEL | translate }}</label
-                        >
-                    </clr-radio-wrapper>
+                    <div class="role-radio-list">
+                        <div *ngFor="let r of roles; let i = index">
+                            <clr-radio-wrapper>
+                                <input
+                                    clrRadio
+                                    type="radio"
+                                    name="member_role"
+                                    id="add-group-role-{{ r.id }}"
+                                    [value]="r.id"
+                                    [(ngModel)]="roleId" />
+                                <label for="add-group-role-{{ r.id }}">
+                                    <strong *ngIf="r.is_builtin">{{
+                                        getRoleDisplayName(r) | translate
+                                    }}</strong>
+                                    <span *ngIf="!r.is_builtin">{{
+                                        r.name
+                                    }}</span>
+                                    <span
+                                        *ngIf="r.is_builtin"
+                                        class="label label-blue role-builtin-badge"
+                                        >{{
+                                            'MEMBER.BUILT_IN' | translate
+                                        }}</span
+                                    >
+                                </label>
+                            </clr-radio-wrapper>
+                        </div>
+                    </div>
                 </div>
+
+
+
             </div>
         </form>
     </div>
