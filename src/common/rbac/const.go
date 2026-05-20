@@ -331,6 +331,7 @@ var (
 			{Resource: ResourceMetadata, Action: ActionRead},
 			{Resource: ResourceMetadata, Action: ActionUpdate},
 			{Resource: ResourceMetadata, Action: ActionDelete},
+			{Resource: ResourceMetadata, Action: ActionList},
 
 			{Resource: ResourceLog, Action: ActionList},
 

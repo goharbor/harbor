@@ -49,6 +49,29 @@ func (c *CreateRoleEventMetadata) Resolve(event *event.Event) error {
 	return nil
 }
 
+// UpdateRoleEventMetadata is the metadata from which the update role event can be resolved
+type UpdateRoleEventMetadata struct {
+	Ctx  context.Context
+	Role *model.Role
+}
+
+// Resolve to the event from the metadata
+func (u *UpdateRoleEventMetadata) Resolve(event *event.Event) error {
+	data := &event2.UpdateRoleEvent{
+		EventType: event2.TopicUpdateRole,
+		Role:      u.Role,
+		OccurAt:   time.Now(),
+	}
+	cx, exist := security.FromContext(u.Ctx)
+	if exist {
+		data.Operator = cx.GetUsername()
+	}
+	data.Role.Name = fmt.Sprintf("%s%s", config.RolePrefix(u.Ctx), data.Role.Name)
+	event.Topic = event2.TopicUpdateRole
+	event.Data = data
+	return nil
+}
+
 // DeleteRoleEventMetadata is the metadata from which the delete role event can be resolved
 type DeleteRoleEventMetadata struct {
 	Ctx      context.Context

@@ -56,6 +56,8 @@ import { MemberService } from '../../../../../ng-swagger-gen/services/member.ser
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
 import { AddGroupComponent } from './add-group/add-group.component';
+import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
+import { Role } from '../../../../../ng-swagger-gen/models/role';
 
 @Component({
     templateUrl: 'member.component.html',
@@ -83,6 +85,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     isLdapMode: boolean;
     isHttpAuthMode: boolean;
     isOidcMode: boolean;
+    roles: Role[] = [];
     @ViewChild(AddMemberComponent)
     addMemberComponent: AddMemberComponent;
     @ViewChild(AddGroupComponent)
@@ -106,7 +109,8 @@ export class MemberComponent implements OnInit, OnDestroy {
         private operationService: OperationService,
         private appConfigService: AppConfigService,
         private userPermissionService: UserPermissionService,
-        private errorHandlerEntity: ErrorHandler
+        private errorHandlerEntity: ErrorHandler,
+        private roleService: RoleService
     ) {
         this.delSub = OperateDialogService.confirmationConfirm$.subscribe(
             message => {
@@ -136,6 +140,9 @@ export class MemberComponent implements OnInit, OnDestroy {
         this.currentUser = this.session.getCurrentUser();
         // get member permission rule
         this.getMemberPermissionRule(this.projectId);
+        this.roleService.ListRole({ page: 1, pageSize: 100 }).subscribe(res => {
+            this.roles = res ?? [];
+        });
         if (this.appConfigService.isLdapMode()) {
             this.isLdapMode = true;
         }
@@ -379,6 +386,36 @@ export class MemberComponent implements OnInit, OnDestroy {
             }
         );
     }
+    getMemberRoleDisplayName(member: ProjectMemberEntity): string {
+        const role = this.roles.find(r => r.id === member.role_id);
+        if (role) {
+            return this.getRoleDisplayName(role);
+        }
+        return member.role_name;
+    }
+
+    get builtinRoles(): Role[] {
+        return this.roles.filter(r => r.is_builtin);
+    }
+
+    get customRoles(): Role[] {
+        return this.roles.filter(r => !r.is_builtin);
+    }
+
+    getRoleDisplayName(role: Role): string {
+        if (!role.is_builtin) {
+            return role.name;
+        }
+        const keys: Record<string, string> = {
+            projectAdmin: 'MEMBER.PROJECT_ADMIN',
+            maintainer: 'MEMBER.PROJECT_MAINTAINER',
+            developer: 'MEMBER.DEVELOPER',
+            guest: 'MEMBER.GUEST',
+            limitedGuest: 'MEMBER.LIMITED_GUEST',
+        };
+        return keys[role.name] ?? role.name;
+    }
+
     getMemberPermissionRule(projectId: number): void {
         let hasCreateMemberPermission =
             this.userPermissionService.getPermission(

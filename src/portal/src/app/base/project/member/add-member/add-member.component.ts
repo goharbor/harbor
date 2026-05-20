@@ -58,15 +58,12 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     searcher: Subject<string> = new Subject<string>();
     nameCheckerSub: Subscription;
     searcherSub: Subscription;
-    roleS: Subject<string> = new Subject<string>();
     roleSub: Subscription;
     checkOnGoing: boolean = false;
     searchedUserLists: UserResp[] = [];
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     roleId: number = 1; // default value is 1(project admin)
 
-    loadingData: boolean = false;
-    role_names: string[] = ['test1', 'test2'];
     roles: Role[];
 
 
@@ -92,7 +89,7 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             
             this.roleSub = this.roleService.ListRole({
                                     page: 1,
-                                    pageSize: 10
+                                    pageSize: 100
                                 }).subscribe(res => {
                         if (res) {
                             this.roles = res;
@@ -255,5 +252,19 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.isMemberNameValid &&
             !this.checkOnGoing
         );
+    }
+
+    getRoleDisplayName(role: Role): string {
+        if (!role.is_builtin) {
+            return role.name;
+        }
+        const keys: Record<string, string> = {
+            projectAdmin: 'MEMBER.PROJECT_ADMIN',
+            maintainer: 'MEMBER.PROJECT_MAINTAINER',
+            developer: 'MEMBER.DEVELOPER',
+            guest: 'MEMBER.GUEST',
+            limitedGuest: 'MEMBER.LIMITED_GUEST',
+        };
+        return keys[role.name] ?? role.name;
     }
 }

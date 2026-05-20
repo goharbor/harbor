@@ -334,6 +334,16 @@ export class RolesComponent implements OnInit, OnDestroy {
 
 
 
+    isBuiltinSelected(): boolean {
+        return this.selectedRows.some(r => r.is_builtin);
+    }
+
+    getRoleName(r: Role): string {
+        const key = `ROLE.ROLE_NAMES.${r.name}`;
+        const translated = this.translate.instant(key);
+        return translated === key ? r.name : translated;
+    }
+
     getRoleAccess(r: Role): Access[] {
         return getRoleAccess(r);
     }

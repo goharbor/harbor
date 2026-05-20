@@ -51,6 +51,7 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { PermissionSelectPanelModes } from '../../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
+import { Permission } from '../../../../../../ng-swagger-gen/models/permission';
 
 const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 
@@ -81,6 +82,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
     @Input()
     robotMetadata: Permissions;
+
+    @Input()
+    effectivePermissions: Permission[] = [];
 
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
@@ -192,6 +196,18 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         this.isNameExisting = false;
         this._nameSubject.next('');
     }
+    get filteredCandidatePermissions(): Permission[] {
+        const all = this.robotMetadata?.project ?? [];
+        if (!this.effectivePermissions?.length) {
+            return all;
+        }
+        return all.filter(p =>
+            this.effectivePermissions.some(
+                e => e.resource === p.resource && e.action === p.action
+            )
+        );
+    }
+
     disabled(): boolean {
         if (!this.isEditMode) {
             return !this.canAdd();

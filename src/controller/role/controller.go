@@ -97,9 +97,11 @@ func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
 	name := r.Name
 
 	rCreate := &model.Role{
-		Name:     name,
-		RoleMask: r.RoleMask,
-		RoleCode: r.RoleCode,
+		Name:        name,
+		RoleMask:    r.RoleMask,
+		RoleCode:    r.RoleCode,
+		Description: r.Description,
+		CreatedBy:   r.CreatedBy,
 	}
 	roleID, err := d.roleMgr.Create(ctx, rCreate)
 	if err != nil {
@@ -122,6 +124,9 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 	rDelete, err := d.roleMgr.Get(ctx, id)
 	if err != nil {
 		return err
+	}
+	if rDelete.IsBuiltin {
+		return errors.ForbiddenError(nil).WithMessagef("cannot delete built-in role %d", id)
 	}
 	if err := d.roleMgr.Delete(ctx, id); err != nil {
 		return err
@@ -146,11 +151,20 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 	if r == nil {
 		return errors.New("cannot update a nil role").WithCode(errors.BadRequestCode)
 	}
-
-	//TODO allow to modify name !
-	//	if err := d.roleMgr.Update(ctx, &r.Role, "description", "disabled"); err != nil {
-	//		return err
-	//	}
+	existing, err := d.roleMgr.Get(ctx, r.ID)
+	if err != nil {
+		return err
+	}
+	if existing.IsBuiltin {
+		return errors.ForbiddenError(nil).WithMessagef("cannot modify built-in role %d", r.ID)
+	}
+	// update role record fields
+	if err := d.roleMgr.Update(ctx, &model.Role{
+		ID:          r.ID,
+		Description: r.Description,
+	}, "description"); err != nil {
+		return err
+	}
 	// update the permission
 	if option != nil && option.WithPermission {
 		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, r.ID); err != nil && !errors.IsNotFoundErr(err) {
@@ -160,6 +174,11 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 			return err
 		}
 	}
+	// fire event
+	notification.AddEvent(ctx, &metadata.UpdateRoleEventMetadata{
+		Ctx:  ctx,
+		Role: existing,
+	})
 	return nil
 }
 

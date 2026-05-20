@@ -51,7 +51,7 @@ export const NAMESPACE_ALL_PROJECTS: string = '*';
 export const NAMESPACE_SYSTEM: string = '/';
 
 export const ACTION_RESOURCE_I18N_MAP = {
-    push: 'ROLE.PUSH_AND_PULL', // push permission contains pull permission
+    push: 'ROLE.PUSH',
     pull: 'ROLE.PULL',
     read: 'ROLE.READ',
     create: 'ROLE.CREATE',
@@ -62,6 +62,7 @@ export const ACTION_RESOURCE_I18N_MAP = {
     update: 'ROLE.UPDATE',
     'audit-log': 'ROLE.AUDIT_LOG',
     'preheat-instance': 'ROLE.PREHEAT_INSTANCE',
+    '': 'ROLE.PROJECT',
     project: 'ROLE.PROJECT',
     'replication-policy': 'ROLE.REPLICATION_POLICY',
     replication: 'ROLE.REPLICATION',
@@ -142,7 +143,7 @@ export function isCandidate(
     if (candidatePermissions?.length) {
         for (let i = 0; i < candidatePermissions.length; i++) {
             if (
-                candidatePermissions[i].resource === permission.resource &&
+                (candidatePermissions[i].resource ?? '') === (permission.resource ?? '') &&
                 candidatePermissions[i].action === permission.action
             ) {
                 return true;
@@ -159,7 +160,7 @@ export function hasPermission(
     if (permissions?.length) {
         for (let i = 0; i < permissions.length; i++) {
             if (
-                permissions[i].resource === permission.resource &&
+                (permissions[i].resource ?? '') === (permission.resource ?? '') &&
                 permissions[i].action === permission.action
             ) {
                 return true;

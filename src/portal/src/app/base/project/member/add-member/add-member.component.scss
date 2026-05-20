@@ -32,4 +32,17 @@
     overflow: visible;
 }
 
+.role-radio-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.role-builtin-badge {
+    font-size: 10px;
+    padding: 1px 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
 
