@@ -74,16 +74,11 @@ func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRole
 		if s.User() == nil {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty role account"))
 		}
-
-		//TODO MGS implement the rule for non permission raising
-		//creatorRef = int64(s.User().UserID)
-		/*		if !isValidRolePermissionScope(params.Role.Permissions, s.User().Role.) {
-					return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the creator role's permissions: %s", s.User().Name).WithCode(errors.DENIED))
-				}
-		*/
+		r.CreatedBy = s.User().Username
 	default:
 		return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context"))
 	}
+	r.Description = params.Role.Description
 
 	if err := lib.JSONCopy(&r.Permissions, params.Role.Permissions); err != nil {
 		log.Warningf("failed to call JSONCopy on role permission when CreateRole, error: %v", err)
@@ -247,6 +242,7 @@ func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRo
 			log.Warningf("failed to call JSONCopy on role permission when updateV2Role, error: %v", err)
 		}
 	}
+	r.Description = params.Role.Description
 
 	if err := rAPI.roleCtl.Update(ctx, r, &role.Option{
 		WithPermission: true,

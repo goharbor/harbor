@@ -64,6 +64,8 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
 import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
+import { HttpClient } from '@angular/common/http';
+import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
 @Component({
     selector: 'app-robot-account',
@@ -100,6 +102,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
 
     loadingMetadata: boolean = false;
     robotMetadata: Permissions;
+    effectivePermissions: Permission[] = [];
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -110,7 +113,8 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         private translate: TranslateService,
         private sanitizer: DomSanitizer,
         private systemInfoService: SysteminfoService,
-        private permissionService: PermissionsService
+        private permissionService: PermissionsService,
+        private http: HttpClient
     ) {}
     ngOnInit() {
         this.getCurrenTime();
@@ -197,6 +201,14 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => (this.loadingMetadata = false)))
             .subscribe(res => {
                 this.robotMetadata = res;
+                this.http
+                    .get<Permission[]>(
+                        `/api/v2.0/projects/${this.projectName}/permissions/effective`,
+                        { headers: { 'X-Is-Resource-Name': 'true' } }
+                    )
+                    .subscribe(perms => {
+                        this.effectivePermissions = perms ?? [];
+                    });
             });
     }
 

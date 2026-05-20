@@ -53,6 +53,7 @@ const (
 	TopicDeleteRobot       = "DELETE_ROBOT"
 	TopicCreateRole        = "CREATE_ROLE"
 	TopicDeleteRole        = "DELETE_ROLE"
+	TopicUpdateRole        = "UPDATE_ROLE"
 	TopicCommonEvent       = "COMMON_API"
 	ResourceTypeProject    = "project"
 	ResourceTypeArtifact   = "artifact"
@@ -498,7 +499,7 @@ func (c *DeleteRoleEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 		Username:             c.Operator,
 		ResourceType:         ResourceTypeRole,
 		IsSuccessful:         true,
-		OperationDescription: fmt.Sprintf("delete robot: %s", c.Role.Name),
+		OperationDescription: fmt.Sprintf("delete role: %s", c.Role.Name),
 		Resource:             c.Role.Name}
 	return auditLog, nil
 }
@@ -506,4 +507,31 @@ func (c *DeleteRoleEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 func (c *DeleteRoleEvent) String() string {
 	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
 		c.Role.Name, c.Operator, c.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// UpdateRoleEvent is the updating role event
+type UpdateRoleEvent struct {
+	EventType string
+	Role      *roleModel.Role
+	Operator  string
+	OccurAt   time.Time
+}
+
+// ResolveToAuditLog ...
+func (u *UpdateRoleEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		OpTime:               u.OccurAt,
+		Operation:            rbac.ActionUpdate.String(),
+		Username:             u.Operator,
+		ResourceType:         ResourceTypeRole,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("update role: %s", u.Role.Name),
+		Resource:             u.Role.Name,
+	}
+	return auditLog, nil
+}
+
+func (u *UpdateRoleEvent) String() string {
+	return fmt.Sprintf("Name-%s Operator-%s OccurAt-%s",
+		u.Role.Name, u.Operator, u.OccurAt.Format("2006-01-02 15:04:05"))
 }

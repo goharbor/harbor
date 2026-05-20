@@ -17,6 +17,7 @@ package model
 import (
 	"encoding/json"
 	"reflect"
+	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 
@@ -36,12 +37,19 @@ func init() {
 
 }
 
-// Role holds the details of a robot.
+// Role holds the details of a role.
 type Role struct {
-	ID       int64  `orm:"pk;auto;column(role_id)" json:"id"`
-	Name     string `orm:"column(name)" json:"name" sort:"default"`
-	RoleMask int64  `orm:"column(role_mask)" json:"role_mask"`
-	RoleCode string `orm:"column(role_code)" json:"role_code"`
+	ID          int64     `orm:"pk;auto;column(role_id)" json:"id"`
+	Name        string    `orm:"column(name)" json:"name" sort:"default"`
+	RoleMask    int64     `orm:"column(role_mask)" json:"role_mask"`
+	RoleCode    string    `orm:"column(role_code)" json:"role_code"`
+	IsBuiltin   bool      `orm:"column(is_builtin)" json:"is_builtin"`
+	Description string    `orm:"column(description)" json:"description"`
+	Modified    bool      `orm:"column(modified)" json:"modified"`
+	CreatedBy   string    `orm:"column(created_by)" json:"created_by"`
+	CreatedAt   time.Time `orm:"column(created_at);auto_now_add;type(datetime)" json:"created_at"`
+	ModifiedBy  string    `orm:"column(modified_by)" json:"modified_by"`
+	ModifiedAt  time.Time `orm:"column(modified_at);auto_now;type(datetime)" json:"modified_at"`
 }
 
 // TableName ...

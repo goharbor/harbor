@@ -13,15 +13,12 @@
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { SystemRobotAccountsComponent } from './roles.component';
-import { RobotService } from '../../../../../ng-swagger-gen/services/robot.service';
+import { RolesComponent } from './roles.component';
+import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { of, Subscription } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { Robot } from '../../../../../ng-swagger-gen/models/robot';
-import { Action, PermissionsKinds, Resource } from './roles-util';
-import { Project } from '../../../../../ng-swagger-gen/models/project';
-import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
+import { Role } from '../../../../../ng-swagger-gen/models/role';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { OperationService } from '../../../shared/components/operation/operation.service';
 import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
@@ -31,112 +28,41 @@ import { ClarityModule } from '@clr/angular';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HarborDatetimePipe } from '../../../shared/pipes/harbor-datetime.pipe';
+import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
+import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 
-describe('SystemRobotAccountsComponent', () => {
-    let component: SystemRobotAccountsComponent;
-    let fixture: ComponentFixture<SystemRobotAccountsComponent>;
-    const project1: Project = {
-        project_id: 1,
-        name: 'project1',
-    };
-    const project2: Project = {
-        project_id: 2,
-        name: 'project2',
-    };
-    const project3: Project = {
-        project_id: 3,
-        name: 'project3',
-    };
-    const robot1: Robot = {
-        id: 1,
-        name: 'robot1',
-        level: PermissionsKinds.SYSTEM,
-        disable: false,
-        expires_at: (new Date().getTime() + 100000) % 1000,
-        description: 'for test',
-        secret: 'tthf54hfth4545dfgd5g454grd54gd54g',
-        permissions: [
-            {
-                kind: PermissionsKinds.PROJECT,
-                namespace: 'project1',
-                access: [
-                    {
-                        resource: Resource.ARTIFACT,
-                        action: Action.PUSH,
-                    },
-                ],
-            },
-        ],
-    };
-    const robot2: Robot = {
-        id: 2,
-        name: 'robot2',
-        level: PermissionsKinds.SYSTEM,
-        disable: false,
-        expires_at: (new Date().getTime() + 100000) % 1000,
-        description: 'for test',
-        secret: 'fsdf454654654fs6dfe',
-        permissions: [
-            {
-                kind: PermissionsKinds.PROJECT,
-                namespace: 'project2',
-                access: [
-                    {
-                        resource: Resource.ARTIFACT,
-                        action: Action.PUSH,
-                    },
-                ],
-            },
-        ],
-    };
-    const robot3: Robot = {
-        id: 3,
-        name: 'robot3',
-        level: PermissionsKinds.SYSTEM,
-        disable: false,
-        expires_at: (new Date().getTime() + 100000) % 1000,
-        description: 'for test',
-        secret: 'fsdg48454fse84',
-        permissions: [
-            {
-                kind: PermissionsKinds.PROJECT,
-                namespace: 'project3',
-                access: [
-                    {
-                        resource: Resource.ARTIFACT,
-                        action: Action.PUSH,
-                    },
-                ],
-            },
-        ],
-    };
-    const mockProjectService = {
-        listProjectsResponse: () => {
-            const res: HttpResponse<Array<Project>> = new HttpResponse<
-                Array<Project>
-            >({
-                headers: new HttpHeaders({ 'x-total-count': '3' }),
-                body: [project1, project2, project3],
-            });
-            return of(res).pipe(delay(0));
-        },
-    };
-    const fakedRobotService = {
-        ListRobotResponse() {
-            const res: HttpResponse<Array<Robot>> = new HttpResponse<
-                Array<Robot>
-            >({
-                headers: new HttpHeaders({ 'x-total-count': '3' }),
-                body: [robot1, robot2, robot3],
-            });
-            return of(res).pipe(delay(0));
-        },
-    };
-    const fakedMessageHandlerService = {
-        showSuccess() {},
-        error() {},
-    };
+const builtinRole: Role = {
+    id: 1,
+    name: 'projectAdmin',
+    is_builtin: true,
+    permissions: [],
+};
+
+const customRole: Role = {
+    id: 10,
+    name: 'myCustomRole',
+    is_builtin: false,
+    permissions: [],
+};
+
+const fakedRoleService = {
+    ListRoleResponse() {
+        const res: HttpResponse<Array<Role>> = new HttpResponse<Array<Role>>({
+            headers: new HttpHeaders({ 'x-total-count': '2' }),
+            body: [builtinRole, customRole],
+        });
+        return of(res).pipe(delay(0));
+    },
+};
+
+const fakedMessageHandlerService = { showSuccess() {}, error() {} };
+const fakedSystemInfoService = { getSystemInfo: () => of({}) };
+const fakedPermissionsService = { getPermissions: () => of({}) };
+
+describe('RolesComponent', () => {
+    let component: RolesComponent;
+    let fixture: ComponentFixture<RolesComponent>;
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [
@@ -147,24 +73,22 @@ describe('SystemRobotAccountsComponent', () => {
                 RouterTestingModule,
                 BrowserAnimationsModule,
             ],
-            declarations: [SystemRobotAccountsComponent, HarborDatetimePipe],
+            declarations: [RolesComponent],
             providers: [
                 TranslateService,
-                {
-                    provide: MessageHandlerService,
-                    useValue: fakedMessageHandlerService,
-                },
                 ConfirmationDialogService,
                 OperationService,
-                { provide: RobotService, useValue: fakedRobotService },
-                { provide: ProjectService, useValue: mockProjectService },
+                { provide: MessageHandlerService, useValue: fakedMessageHandlerService },
+                { provide: RoleService, useValue: fakedRoleService },
+                { provide: SysteminfoService, useValue: fakedSystemInfoService },
+                { provide: PermissionsService, useValue: fakedPermissionsService },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(SystemRobotAccountsComponent);
+        fixture = TestBed.createComponent(RolesComponent);
         component = fixture.componentInstance;
         component.searchSub = new Subscription();
         fixture.detectChanges();
@@ -173,10 +97,72 @@ describe('SystemRobotAccountsComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should render robot list', async () => {
-        fixture.autoDetectChanges();
-        await fixture.whenStable();
-        const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
-        expect(rows.length).toEqual(3);
+
+    describe('isBuiltinSelected', () => {
+        it('returns false when nothing is selected', () => {
+            component.selectedRows = [];
+            expect(component.isBuiltinSelected()).toBeFalse();
+        });
+
+        it('returns false when only custom roles are selected', () => {
+            component.selectedRows = [customRole];
+            expect(component.isBuiltinSelected()).toBeFalse();
+        });
+
+        it('returns true when a built-in role is selected', () => {
+            component.selectedRows = [builtinRole];
+            expect(component.isBuiltinSelected()).toBeTrue();
+        });
+
+        it('returns true when a mix of built-in and custom roles is selected', () => {
+            component.selectedRows = [builtinRole, customRole];
+            expect(component.isBuiltinSelected()).toBeTrue();
+        });
+    });
+
+    describe('action button disabled state', () => {
+        it('edit button is disabled when a built-in role is selected', async () => {
+            fixture.autoDetectChanges();
+            await fixture.whenStable();
+            component.selectedRows = [builtinRole];
+            fixture.detectChanges();
+            const editBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
+                '#system-robot-edit'
+            )?.closest('button');
+            expect(editBtn?.disabled).toBeTrue();
+        });
+
+        it('edit button is enabled when a custom role is selected', async () => {
+            fixture.autoDetectChanges();
+            await fixture.whenStable();
+            component.selectedRows = [customRole];
+            fixture.detectChanges();
+            const editBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
+                '#system-robot-edit'
+            )?.closest('button');
+            expect(editBtn?.disabled).toBeFalse();
+        });
+
+        it('delete button is disabled when a built-in role is selected', async () => {
+            fixture.autoDetectChanges();
+            await fixture.whenStable();
+            component.selectedRows = [builtinRole];
+            fixture.detectChanges();
+            const deleteBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
+                '#system-robot-delete'
+            )?.closest('button');
+            expect(deleteBtn?.disabled).toBeTrue();
+        });
+
+        it('delete button is disabled when a mix of built-in and custom roles is selected', async () => {
+            fixture.autoDetectChanges();
+            await fixture.whenStable();
+            component.selectedRows = [builtinRole, customRole];
+            fixture.detectChanges();
+            const deleteBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
+                '#system-robot-delete'
+            )?.closest('button');
+            expect(deleteBtn?.disabled).toBeTrue();
+        });
     });
 });

@@ -3,20 +3,14 @@
     [(clrWizardOpen)]="addRoleOpened"
     [clrWizardSize]="'lg'"
     (clrWizardOnCancel)="cancel()">
-    <clr-wizard-title
-        ><h3 *ngIf="!isEditMode" class="modal-title">
-            {{ 'ROLE.CREATE_ROLE' | translate }}
+    <clr-wizard-title>
+        <h3 class="modal-title">
+            {{ (isEditMode ? 'ROLE.EDIT_ROLE' : 'ROLE.CREATE_ROLE') | translate }}
         </h3>
-        <h3 *ngIf="isEditMode" class="modal-title">
-            {{ 'ROLE.EDIT_ROLE' | translate }} {{ !roleBasicForm.valid }} - {{checkNameOnGoing}} - {{isNameExisting}} - {{!isEditMode}}
-        </h3>
-        <p *ngIf="!isEditMode" class="mt-0">
-            {{ 'ROLE.CREATEROLE_SUMMARY' | translate }}
+        <p class="mt-0">
+            {{ (isEditMode ? 'ROLE.EDIT_ROLE_SUMMARY' : 'ROLE.CREATEROLE_SUMMARY') | translate }}
         </p>
-        <p *ngIf="isEditMode" class="mt-0">
-            {{ 'ROLE.EDIT_ROLE_SUMMARY' | translate }}
-        </p></clr-wizard-title
-    >
+    </clr-wizard-title>
     <clr-wizard-button [type]="'cancel'">{{
         'BUTTON.CANCEL' | translate
     }}</clr-wizard-button>
@@ -29,6 +23,8 @@
     <clr-wizard-button [clrLoading]="saveBtnState" [type]="'finish'">{{
         'ROLE.FINISH' | translate
     }}</clr-wizard-button>
+
+    <!-- Page 1: Basic Info -->
     <clr-wizard-page
         [clrWizardPageNextDisabled]="
             (!roleBasicForm.valid || checkNameOnGoing || isNameExisting) && !isEditMode
@@ -40,24 +36,11 @@
             #roleBasicForm="ngForm"
             class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
+
+                <!-- Name -->
                 <div class="clr-form-control">
-                    <label for="name" class="clr-control-label required"
-                        >{{ 'P2P_PROVIDER.NAME' | translate }}
-                        <clr-tooltip *ngIf="!isEditMode">
-                            <clr-icon
-                                clrTooltipTrigger
-                                shape="info-circle"
-                                size="24"></clr-icon>
-                            <clr-tooltip-content
-                                clrPosition="top-right"
-                                clrSize="lg"
-                                *clrIfOpen>
-                                <span>{{
-                                    'ROLE.FINAL_PROJECT_NAME_TIP'
-                                        | translate
-                                }}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
+                    <label for="name" class="clr-control-label required">
+                        {{ 'P2P_PROVIDER.NAME' | translate }}
                     </label>
                     <div
                         class="clr-control-container"
@@ -88,36 +71,43 @@
                         </div>
                         <clr-control-error
                             *ngIf="
-                                ((name.dirty || name.touched) &&
-                                    name.invalid) ||
+                                ((name.dirty || name.touched) && name.invalid) ||
                                 isNameExisting
                             ">
-                            <span
-                                *ngIf="
-                                    !(
-                                        (name.dirty || name.touched) &&
-                                        name.invalid
-                                    ) && isNameExisting
-                                "
-                                >{{
-                                    'ROLE.ACCOUNT_EXISTING' | translate
-                                }}</span
-                            >
-                            <span
-                                *ngIf="
-                                    (name.dirty || name.touched) && name.invalid
-                                "
-                                >{{
-                                    'ROLE.NAME_TOOLTIP' | translate
-                                }}</span
-                            >
+                            <span *ngIf="isNameExisting && !((name.dirty || name.touched) && name.invalid)">
+                                {{ 'ROLE.ACCOUNT_EXISTING' | translate }}
+                            </span>
+                            <span *ngIf="(name.dirty || name.touched) && name.invalid">
+                                {{ 'ROLE.NAME_TOOLTIP' | translate }}
+                            </span>
                         </clr-control-error>
                     </div>
                 </div>
+
+                <!-- Description -->
+                <div class="clr-form-control">
+                    <label for="description" class="clr-control-label">
+                        {{ 'ROLE.DESCRIPTION' | translate }}
+                    </label>
+                    <div class="clr-control-container">
+                        <div class="clr-textarea-wrapper">
+                            <textarea
+                                class="clr-textarea description-input"
+                                id="description"
+                                name="description"
+                                rows="6"
+                                [(ngModel)]="role.description"
+                                placeholder="{{ 'ROLE.DESCRIPTION_PLACEHOLDER' | translate }}">
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+
             </section>
         </form>
     </clr-wizard-page>
 
+    <!-- Page 2: Permissions -->
     <clr-wizard-page
         (clrWizardPageOnLoad)="clrWizardPageOnLoad()"
         (clrWizardPageOnCommit)="save()"
@@ -127,7 +117,6 @@
             'ROLE.SELECT_PERMISSIONS' | translate
         }}</ng-template>
         <inline-alert></inline-alert>
-        
         <form class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
                 <role-permissions-panel
@@ -137,6 +126,5 @@
                 </role-permissions-panel>
             </section>
         </form>
-        
     </clr-wizard-page>
 </clr-wizard>

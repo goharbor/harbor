@@ -15,6 +15,7 @@
 package model
 
 import (
+	"github.com/go-openapi/strfmt"
 	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -44,6 +45,13 @@ func (r *Role) ToSwagger() *models.Role {
 		RoleMask:    r.RoleMask,
 		RoleCode:    r.RoleCode,
 		Permissions: perms,
+		IsBuiltin:   r.IsBuiltin,
+		Description: r.Description,
+		Modified:    r.Modified,
+		CreatedBy:   r.CreatedBy,
+		CreatedAt:   strfmt.DateTime(r.CreatedAt),
+		ModifiedBy:  r.ModifiedBy,
+		ModifiedAt:  strfmt.DateTime(r.ModifiedAt),
 	}
 }
 

@@ -30,7 +30,6 @@ import {
 } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import {
-    ExpirationType,
     NEW_EMPTY_ROLE,
     onlyHasPushPermission,
     PermissionsKinds,
@@ -52,8 +51,6 @@ import { errorHandler } from '../../../../shared/units/shared.utils';
 import { PermissionSelectPanelModes } from '../../../../shared/components/role-permissions-panel/role-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
 
-const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
-
 @Component({
     selector: 'add-role',
     templateUrl: './add-role.component.html',
@@ -68,7 +65,6 @@ export class AddRoleComponent implements OnInit, OnDestroy {
     addSuccess: EventEmitter<Role> = new EventEmitter<Role>();
     addRoleOpened: boolean = false;
     role: Role = clone(NEW_EMPTY_ROLE);
-    expirationType: string = ExpirationType.DAYS;
     isNameExisting: boolean = false;
     loading: boolean = false;
     checkNameOnGoing: boolean = false;
@@ -83,22 +79,24 @@ export class AddRoleComponent implements OnInit, OnDestroy {
     roleMetadata: Permissions;
 
     @ViewChild('wizard') wizard: ClrWizard;
+
     constructor(
         private roleService: RoleService,
         private msgHandler: MessageHandlerService,
         private operationService: OperationService
     ) {}
+
     ngOnInit(): void {
         this.subscribeName();
-        console.log("init new role");
-
     }
+
     ngOnDestroy() {
         if (this._nameSubscription) {
             this._nameSubscription.unsubscribe();
             this._nameSubscription = null;
         }
     }
+
     subscribeName() {
         if (!this._nameSubscription) {
             this._nameSubscription = this._nameSubject
@@ -140,6 +138,7 @@ export class AddRoleComponent implements OnInit, OnDestroy {
                 });
         }
     }
+
     inputName() {
         this._nameSubject.next(this.role.name);
     }
@@ -153,51 +152,59 @@ export class AddRoleComponent implements OnInit, OnDestroy {
     reset() {
         this.open(false);
         this.role = clone(NEW_EMPTY_ROLE);
-        //this.roleBasicForm.reset();
-        this.expirationType = ExpirationType.DAYS;
     }
+
     resetForEdit(role: Role) {
+        if (role.is_builtin) {
+            return;
+        }
         this.open(true);
         this.originalRoleForEdit = clone(role);
         this.role = clone(role);
         this.roleBasicForm.reset({
             name: this.role.name,
+            description: this.role.description,
         });
     }
+
     open(isEditMode: boolean) {
         this.isEditMode = isEditMode;
         this.addRoleOpened = true;
-        //this.inlineAlertComponent.close();
         this.isNameExisting = false;
         this._nameSubject.next('');
     }
+
     disabled(): boolean {
         if (!this.isEditMode) {
             return !this.canAdd();
         }
         return !this.canEdit();
     }
+
     canAdd(): boolean {
         return (
             this.role?.permissions[0]?.access?.length > 0 &&
             !this.roleBasicForm.invalid
         );
     }
-    canEdit() {
+
+    canEdit(): boolean {
         if (!this.canAdd()) {
             return false;
         }
-        // eslint-disable-next-line eqeqeq
-        return !isSameArrayValue(
+        const permissionsChanged = !isSameArrayValue(
             this.role.permissions[0].access,
             this.originalRoleForEdit.permissions[0].access
         );
+        const descriptionChanged =
+            this.role.description !== this.originalRoleForEdit.description;
+        return permissionsChanged || descriptionChanged;
     }
+
     save() {
         const role: Role = clone(this.role);
         role.permissions[0].kind = PermissionsKinds.ROLE;
         role.permissions[0].namespace = this.projectName;
-        // Push permission must work with pull permission
         if (onlyHasPushPermission(role.permissions[0].access)) {
             this.inlineAlertComponent.showInlineError(
                 'ROLE.PUSH_PERMISSION_TOOLTIP'
@@ -218,7 +225,7 @@ export class AddRoleComponent implements OnInit, OnDestroy {
                     role,
                 })
                 .subscribe(
-                    res => {
+                    () => {
                         this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.addSuccess.emit(null);
                         this.cancel();
@@ -245,12 +252,9 @@ export class AddRoleComponent implements OnInit, OnDestroy {
             opeMessage.data.name = `${this.projectName}+${role.name}`;
             this.operationService.publishInfo(opeMessage);
             this.roleService
-                .CreateRole({
-                    role: role,
-                })
+                .CreateRole({ role })
                 .subscribe(
                     res => {
-                        this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.saveBtnState = ClrLoadingState.SUCCESS;
                         this.addSuccess.emit(res);
                         this.cancel();
@@ -268,7 +272,6 @@ export class AddRoleComponent implements OnInit, OnDestroy {
                 );
         }
     }
-
 
     clrWizardPageOnLoad() {
         this.inlineAlertComponent.close();

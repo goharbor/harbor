@@ -321,7 +321,8 @@
         "REMOVE": "Remove",
         "GROUP_NAME_REQUIRED": "Group name is required",
         "NON_EXISTENT_GROUP": "Group name does not exists",
-        "GROUP_ALREADY_ADDED": "Group name has been already added to this project"
+        "GROUP_ALREADY_ADDED": "Group name has been already added to this project",
+        "BUILT_IN": "Built-in"
     },
     "ROBOT_ACCOUNT": {
         "NAME": "Name",
@@ -403,7 +404,6 @@
     "ROLE": {
         "CREATE": "Create",
         "LIST": "List",
-        "PUSH_AND_PULL": "Pull",
         "READ": "Read",
         "STOP": "Stop",
         "ROLE_NAV": "User Roles",
@@ -424,6 +424,9 @@
         "PUSH": "Push",
         "PULL": "Pull",
         "CREATE_ROLE": "Create Role",
+        "CREATEROLE_SUMMARY": "Define a name and optional description for the new role. You will select its permissions in the next step.",
+        "EDIT_ROLE": "Edit Role",
+        "EDIT_ROLE_SUMMARY": "Update the description or permissions of this role. The role name cannot be changed.",
         "DELETE_ROLE_SUCCESS": "Deleted role(s) successfully",
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ACCOUNT_EXISTING": "Role already exists.",
@@ -485,7 +488,22 @@
         "USER": "User",
         "LDAPUSER": "LDAP User",
         "GROUP": "User Group",
-        "MEMBER": "Project Member"
+        "MEMBER": "Project Member",
+        "BUILTIN": "Built-in",
+        "MODIFIED": "Modified",
+        "DESCRIPTION": "Description",
+        "DESCRIPTION_PLACEHOLDER": "Enter a description for this role",
+        "CREATED_BY": "Created By",
+        "CREATED_AT": "Created",
+        "MODIFIED_BY": "Modified By",
+        "MODIFIED_AT": "Last Modified",
+        "ROLE_NAMES": {
+            "projectAdmin": "Project Admin",
+            "developer": "Developer",
+            "guest": "Guest",
+            "master": "Maintainer",
+            "limitedGuest": "Limited Guest"
+        }
     },
 
     "WEBHOOK": {

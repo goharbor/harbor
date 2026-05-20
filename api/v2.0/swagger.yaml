@@ -490,6 +490,34 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  '/projects/{project_name_or_id}/permissions/effective':
+    get:
+      summary: Get the current user's effective permissions for a project
+      description: Returns the subset of project-level permissions that the calling user actually holds. Used to restrict robot account permission selection to the user's own access level.
+      tags:
+        - project
+      operationId: getEffectivePermissions
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/isResourceName'
+        - $ref: '#/parameters/projectNameOrId'
+      responses:
+        '200':
+          description: The effective permissions of the current user in the project.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Permission'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/members':
     get:
       summary: Get all project member information
@@ -8135,6 +8163,29 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/RolePermission'
+      is_builtin:
+        type: boolean
+        description: Whether this is a built-in role that cannot be modified or deleted
+      description:
+        type: string
+        description: Human-readable description of the role
+      modified:
+        type: boolean
+        description: Whether the role has been modified since creation
+      created_by:
+        type: string
+        description: Username of the admin who created the role
+      created_at:
+        type: string
+        format: date-time
+        description: When the role was created
+      modified_by:
+        type: string
+        description: Username of the admin who last modified the role
+      modified_at:
+        type: string
+        format: date-time
+        description: When the role was last modified
   RoleCreate:
     type: object
     description: The request for role creation.
@@ -8148,6 +8199,9 @@ definitions:
       role_code:
         type: string
         description: The code of the role, not used
+      description:
+        type: string
+        description: Human-readable description of the role
       permissions:
         type: array
         items:
