@@ -346,12 +346,12 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '18'
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: 'src/github.com/goharbor/harbor/src/portal/.nvmrc'
       - name: script
         run: |
           echo IP: $IP
