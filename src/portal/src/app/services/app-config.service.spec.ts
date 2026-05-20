@@ -11,18 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { TestBed, inject, getTestBed } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import {
-    HttpClientTestingModule,
     HttpTestingController,
+    provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { CookieService } from 'ngx-cookie';
 import { AppConfigService } from './app-config.service';
 import { AppConfig } from './app-config';
 import { CURRENT_BASE_HREF } from '../shared/units/utils';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('AppConfigService', () => {
-    let injector: TestBed;
     let service: AppConfigService;
     let httpMock: HttpTestingController;
     let fakeCookieService = {
@@ -33,15 +36,16 @@ describe('AppConfigService', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
+            imports: [],
             providers: [
                 AppConfigService,
                 { provide: CookieService, useValue: fakeCookieService },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         });
-        injector = getTestBed();
-        service = injector.get(AppConfigService);
-        httpMock = injector.get(HttpTestingController);
+        service = TestBed.inject(AppConfigService);
+        httpMock = TestBed.inject(HttpTestingController);
     });
     let systeminfo = new AppConfig();
     it('should be created', inject(

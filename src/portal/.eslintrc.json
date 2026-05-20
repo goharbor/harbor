@@ -23,7 +23,10 @@
         "plugin:prettier/recommended"
       ],
       "rules": {
-        "no-console": ["error", { "allow": ["warn", "error"] }]
+        "no-console": ["error", { "allow": ["warn", "error"] }],
+        "@angular-eslint/prefer-standalone": "off",
+        "@angular-eslint/no-output-native": "off",
+        "@angular-eslint/prefer-inject": "off"
       }
     },
     {

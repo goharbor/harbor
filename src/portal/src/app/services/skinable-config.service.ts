@@ -11,12 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, DOCUMENT } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { Observable, throwError as observableThrowError } from 'rxjs';
 import { CustomStyle } from './theme';
-import { DOCUMENT } from '@angular/common';
 import { environment } from 'src/environments/environment';
 @Injectable()
 export class SkinableConfig {

@@ -34,6 +34,14 @@
 
     .login {
         background:transparent;
+
+        .login-group .clr-form-control .error {
+            display: block;
+            border: none;
+            background: none;
+            color: var(--clr-forms-invalid-text-color);
+            padding: var(--clr-base-vertical-offset-m) 0;
+        }
     }
 }
 
@@ -89,14 +97,7 @@
 }
 
 .title {
-    position: absolute;
-    top: 10rem
-}
-
-.login-group {
-    width: 70%;
-    position: absolute;
-    top: 10rem
+    width: 100%;
 }
 
 .more-info {

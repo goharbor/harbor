@@ -11,26 +11,32 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { TestBed, inject, getTestBed } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import {
-    HttpClientTestingModule,
     HttpTestingController,
+    provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { PasswordSettingService } from './password-setting.service';
 import { CURRENT_BASE_HREF } from '../../shared/units/utils';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('PasswordSettingService', () => {
-    let injector: TestBed;
     let service: PasswordSettingService;
     let httpMock: HttpTestingController;
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [PasswordSettingService],
+            imports: [],
+            providers: [
+                PasswordSettingService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         });
-        injector = getTestBed();
-        service = injector.get(PasswordSettingService);
-        httpMock = injector.get(HttpTestingController);
+        service = TestBed.inject(PasswordSettingService);
+        httpMock = TestBed.inject(HttpTestingController);
     });
 
     it('should be created', inject(

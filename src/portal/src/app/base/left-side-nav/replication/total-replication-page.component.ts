@@ -26,6 +26,7 @@ const URL_TO_DISPLAY: string = '/harbor/replications';
     selector: 'total-replication',
     templateUrl: 'total-replication-page.component.html',
     styleUrls: ['./total-replication-page.component.scss'],
+    standalone: false,
 })
 export class TotalReplicationPageComponent implements OnInit, OnDestroy {
     routerSub: Subscription;

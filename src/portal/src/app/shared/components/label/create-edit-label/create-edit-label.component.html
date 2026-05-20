@@ -1,35 +1,43 @@
-<div>
-    <form #labelForm="ngForm" [hidden]="!formShow" class="label-form">
-        <section>
-            <label>
-                <label for="name">{{ 'LABEL.LABEL_NAME' | translate }}</label>
-                <label
-                    class="clr-control-container"
-                    [class.clr-error]="isLabelNameExist">
+<form #labelForm="ngForm" [hidden]="!formShow" class="label-form">
+    <div class="clr-row clr-align-items-center">
+        <!-- Label Name -->
+        <div class="clr-col-auto clr-form-control form-field">
+            <label for="name">{{ 'LABEL.LABEL_NAME' | translate }}</label>
+            <div
+                class="clr-control-container"
+                [class.clr-error]="isLabelNameExist">
+                <div class="clr-input-wrapper">
                     <input
-                        clrInput
+                        class="clr-input"
                         type="text"
                         id="name"
                         name="name"
                         required
-                        size="20"
                         autocomplete="off"
                         [(ngModel)]="labelModel.name"
                         #name="ngModel"
                         (keyup)="existValid(labelModel.name)" />
                     <clr-icon
+                        *ngIf="isLabelNameExist"
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
-                    <clr-control-error
-                        class="position-ab"
-                        *ngIf="isLabelNameExist">
-                        {{ 'LABEL.NAME_ALREADY_EXISTS' | translate }}
-                    </clr-control-error>
-                </label>
-            </label>
-            <label>
-                <label for="color">{{ 'LABEL.COLOR' | translate }}</label>
+                </div>
+
+                <span
+                    class="clr-subtext"
+                    [class.error]="isLabelNameExist"
+                    *ngIf="isLabelNameExist">
+                    {{ 'LABEL.NAME_ALREADY_EXISTS' | translate }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Color -->
+        <div class="clr-col-auto clr-form-control form-field">
+            <label for="color">
+                <span>{{ 'LABEL.COLOR' | translate }}</span>
                 <clr-dropdown
+                    class="dropdown-color"
                     [clrCloseMenuOnItemClick]="false"
                     clrDropdownTrigger>
                     <clr-icon
@@ -49,46 +57,56 @@
                         >
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <input
-                    class="label-color-input"
-                    clrInput
-                    type="text"
-                    id="color"
-                    size="8"
-                    name="color"
-                    disabled
-                    [(ngModel)]="labelModel.color"
-                    #color="ngModel" />
             </label>
-            <label>
-                <label for="description">{{
-                    'LABEL.DESCRIPTION' | translate
-                }}</label>
-                <input
-                    clrInput
-                    type="text"
-                    id="description"
-                    name="description"
-                    size="30"
-                    [(ngModel)]="labelModel.description"
-                    #description="ngModel" />
-            </label>
-            <label>
-                <button
-                    type="button"
-                    class="btn btn-outline"
-                    (click)="onCancel()"
-                    [disabled]="inProgress">
-                    {{ 'BUTTON.CANCEL' | translate }}
-                </button>
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                    (click)="onSubmit()"
-                    [disabled]="!isValid">
-                    {{ 'BUTTON.OK' | translate }}
-                </button>
-            </label>
-        </section>
-    </form>
-</div>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input
+                        class="clr-input label-color-input"
+                        type="text"
+                        id="color"
+                        size="8"
+                        name="color"
+                        disabled
+                        [(ngModel)]="labelModel.color"
+                        #color="ngModel" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="clr-col clr-form-control form-field">
+            <label for="description">{{
+                'LABEL.DESCRIPTION' | translate
+            }}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input
+                        class="clr-input flex-fill"
+                        type="text"
+                        id="description"
+                        name="description"
+                        [(ngModel)]="labelModel.description"
+                        #description="ngModel" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="clr-col-auto">
+            <button
+                type="button"
+                class="btn btn-outline"
+                (click)="onCancel()"
+                [disabled]="inProgress">
+                {{ 'BUTTON.CANCEL' | translate }}
+            </button>
+            <button
+                type="submit"
+                class="btn btn-primary"
+                (click)="onSubmit()"
+                [disabled]="!isValid">
+                {{ 'BUTTON.OK' | translate }}
+            </button>
+        </div>
+    </div>
+</form>
