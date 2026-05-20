@@ -235,7 +235,29 @@
                     </div>
                 </div>
             </div>
-
+            <!-- custom payload -->
+            <div class="clr-form-control" *ngIf="showCustomPayload()">
+                <label
+                    for="custom_payload"
+                    class="clr-control-label">
+                    {{ 'WEBHOOK.CUSTOM_PAYLOAD' | translate }}
+                </label>
+                <div class="clr-control-container">
+                    <div class="clr-textarea-wrapper">
+                        <textarea
+                            autocomplete="off"
+                            class="clr-textarea width-238"
+                            id="custom_payload"
+                            [disabled]="checking"
+                            [(ngModel)]="webhook.targets[0].custom_payload"
+                            name="custom_payload"
+                            rows="5"
+                            maxlength="4096"
+                            [placeholder]="customPayloadPlaceholder">
+                        </textarea>
+                    </div>
+                </div>
+            </div>
             <!-- verify remote cert -->
             <div class="clr-form-control">
                 <label for="verify_remote_cert" class="clr-control-label">
