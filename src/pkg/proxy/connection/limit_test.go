@@ -40,11 +40,13 @@ func TestConnLimiter_Acquire_Release(t *testing.T) {
 	key := "test_max_connection_key"
 	maxConn := 10
 	for range 10 {
-		result := Limiter.Acquire(ctx, rdb, key, maxConn)
+		result, err := Limiter.Acquire(ctx, rdb, key, maxConn)
+		assert.NoError(t, err)
 		assert.True(t, result)
 	}
 	// after max connection reached, it should be false
-	result2 := Limiter.Acquire(ctx, rdb, key, maxConn)
+	result2, err := Limiter.Acquire(ctx, rdb, key, maxConn)
+	assert.NoError(t, err)
 	assert.False(t, result2)
 
 	for range 10 {
