@@ -10,4 +10,4 @@ ALTER TABLE role ADD COLUMN IF NOT EXISTS modified_at  TIMESTAMP WITH TIME ZONE;
 
 -- Mark all roles seeded by migrations as built-in (immutable)
 UPDATE role SET is_builtin = TRUE
-WHERE name IN ('projectAdmin', 'developer', 'guest', 'master', 'limitedGuest');
+WHERE name IN ('projectAdmin', 'developer', 'guest', 'maintainer', 'limitedGuest');
