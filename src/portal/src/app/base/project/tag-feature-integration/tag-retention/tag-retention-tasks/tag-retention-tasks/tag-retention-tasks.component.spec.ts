@@ -130,5 +130,5 @@ describe('TagRetentionTasksComponent', () => {
         fixture.detectChanges();
         await fixture.whenStable();
         expect(component.tasks[0].status).toEqual('Success');
-    }));
+    });
 });
