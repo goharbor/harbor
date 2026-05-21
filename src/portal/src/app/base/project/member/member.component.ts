@@ -436,7 +436,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
 
     private computeAssignableRoles(): void {
-        if (this.currentUser?.sysadmin_flag || this.currentUser?.has_admin_role) {
+        if (this.currentUser?.has_admin_role) {
             this.assignableRoleIds = null;
             return;
         }
