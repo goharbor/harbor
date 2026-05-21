@@ -13,12 +13,7 @@
 // limitations under the License.
 import { Label } from '../../services';
 import { LabelComponent } from './label.component';
-import {
-    ComponentFixture,
-    fakeAsync,
-    TestBed,
-    tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FilterComponent } from '../filter/filter.component';
 import { ConfirmationDialogComponent } from '../confirmation-dialog';
 import { CreateEditLabelComponent } from './create-edit-label/create-edit-label.component';
@@ -87,7 +82,7 @@ describe('LabelComponent (inline template)', () => {
         }).compileComponents();
     });
 
-    beforeEach(fakeAsync(() => {
+    beforeEach(() => {
         fixture = TestBed.createComponent(LabelComponent);
         comp = fixture.componentInstance;
 
@@ -102,19 +97,20 @@ describe('LabelComponent (inline template)', () => {
             of(response).pipe(delay(0))
         );
         fixture.detectChanges();
-        tick(0);
-    }));
+    });
 
     it('should retrieve label data', () => {
         fixture.detectChanges();
         expect(spy.calls.any()).toBeTruthy();
     });
 
-    it('should open create label modal', async () => {
-        await fixture.whenStable();
+    it('should open create label modal', () => {
         fixture.detectChanges();
-        comp.editLabel([mockOneData]);
-        fixture.detectChanges();
-        expect(comp.targets[0].name).toEqual('label0-g');
+        return fixture.whenStable().then(() => {
+            fixture.detectChanges();
+            comp.editLabel([mockOneData]);
+            fixture.detectChanges();
+            expect(comp.targets[0].name).toEqual('label0-g');
+        });
     });
 });
