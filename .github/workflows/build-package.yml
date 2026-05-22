@@ -46,6 +46,9 @@ jobs:
             github.ref == 'refs/heads/main'
         run: |
           set -x
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker build -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
+          docker push goharbor/photon:5.0
           echo "BUILD_BASE=true" >> $GITHUB_ENV
       - name: Build Package
         run: |
