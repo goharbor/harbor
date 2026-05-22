@@ -191,6 +191,21 @@
   width: 75%;
 }
 
+.tag-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.tag-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-left: 2px;
+}
+
 .action-bar {
   display: flex;
   align-items: center;
