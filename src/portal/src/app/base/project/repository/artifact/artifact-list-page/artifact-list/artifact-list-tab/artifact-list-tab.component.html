@@ -201,7 +201,7 @@
                     {{ 'REPOSITORY.PLATFORM' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="tagsComparator">
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
                     {{ 'REPOSITORY.TAGS' | translate }}
                 </ng-template>
