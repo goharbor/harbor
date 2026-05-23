@@ -1,20 +1,5 @@
-# Build valkey from source so the image works on both amd64 and arm64
-# (the photon `valkey` package is not available for all architectures).
-ARG VALKEY_VERSION=9.1.0
+FROM goharbor/photon:5.0
 
-FROM photon:5.0 AS builder
-ARG VALKEY_VERSION
-RUN tdnf install -y gcc make glibc-devel linux-api-headers binutils tar gzip ca-certificates curl openssl-devel >> /dev/null \
-    && tdnf clean all
-WORKDIR /tmp
-RUN curl -fsSL -o valkey.tar.gz "https://github.com/valkey-io/valkey/archive/refs/tags/${VALKEY_VERSION}.tar.gz" \
-    && tar -xzf valkey.tar.gz \
-    && cd "valkey-${VALKEY_VERSION}" \
-    && make -j"$(nproc)" BUILD_TLS=yes \
-    && make PREFIX=/usr/local install \
-    && strip /usr/local/bin/valkey-* || true
-
-FROM photon:5.0
 RUN tdnf install -y shadow openssl >> /dev/null \
     && groupadd -g 999 valkey \
     && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey \
