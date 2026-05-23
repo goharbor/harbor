@@ -107,6 +107,9 @@ VALKEY=valkey
 DOCKERFILEPATH_VALKEY=$(DOCKERFILEPATH)/$(VALKEY)
 DOCKERFILENAME_VALKEY=Dockerfile
 DOCKERIMAGENAME_VALKEY=$(IMAGENAMESPACE)/$(VALKEY)-photon
+# Version of valkey to build from source. Override on the command line, e.g.
+# `make build VALKEYVERSION=9.1.0`.
+VALKEYVERSION?=9.1.0
 
 DOCKERFILEPATH_STANDALONE_DB_MIGRATOR=$(DOCKERFILEPATH)/standalone-db-migrator
 DOCKERFILENAME_STANDALONE_DB_MIGRATOR=Dockerfile
@@ -202,7 +205,18 @@ _build_registryctl:
 	@echo "Done."
 
 _build_valkey:
-	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY))
+	@if [ "$(BUILD_BASE)" = "true" ] ; then \
+		echo "building base image for $(VALKEY) (valkey $(VALKEYVERSION) from source)..." ; \
+		if [ -n "$(REGISTRYUSER)" ] && [ -n "$(REGISTRYPASSWORD)" ] ; then \
+			docker login -u $(REGISTRYUSER) -p $(REGISTRYPASSWORD) ; \
+		else \
+			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
+		fi ; \
+		$(DOCKERBUILD) -f $(DOCKERFILEPATH_VALKEY)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) --build-arg VALKEY_VERSION=$(VALKEYVERSION) -t $(BASEIMAGENAMESPACE)/harbor-$(VALKEY)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ; \
+		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
+			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(VALKEY)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1 ; \
+		fi ; \
+	fi
 	@echo "building valkey container for photon..."
 	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_VALKEY)/$(DOCKERFILENAME_VALKEY) -t $(DOCKERIMAGENAME_VALKEY):$(VERSIONTAG) .
 	@echo "Done."
