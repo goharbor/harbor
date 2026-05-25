@@ -89,8 +89,8 @@ EXPORTERFLAG=false
 HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
-NPM_REGISTRY=https://registry.npmjs.org
-PIP_INDEX_URL=https://pypi.org/simple
+NPM_REGISTRY ?= https://registry.npmjs.org
+PIP_INDEX_URL ?= https://pypi.org/simple
 # Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
 #   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
 #   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
@@ -136,7 +136,7 @@ TRIVYADAPTERVERSION=v0.35.1
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.1
+REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.2
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
