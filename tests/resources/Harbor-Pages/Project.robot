@@ -176,19 +176,19 @@ Do Log Advanced Search
     Retry Element Click  xpath=//project-audit-log//button[contains(., 'Advanced')]
     Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
     #pull log
-    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Pull')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Pull']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
     #create log
     Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
-    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Create')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Create']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'create')]
     #delete log
     Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
-    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Delete')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Delete']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'delete')]
     #others
     Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
-    Retry Element Click  xpath=//project-audit-log//clr-dropdown//a[contains(.,'Others')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Others']
     Retry Element Click  xpath=//project-audit-log//hbr-filter//clr-icon
     Retry Text Input  xpath=//project-audit-log//hbr-filter//input  harbor-jobservice
     Retry Wait Until Page Not Contains Element   //audit-log//clr-dg-row[2]
