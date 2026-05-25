@@ -122,8 +122,10 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 		entityName, entityType = parsePreResolved(ce.ResourceName)
 	case "update":
 		e.IsSuccessful = ce.ResponseCode == http.StatusOK
-		if len(matches) >= 3 && len(matches[2]) > 0 {
+		if e.IsSuccessful && len(matches) >= 3 && len(matches[2]) > 0 {
 			entityName, entityType = lookupMemberFn(matches[1], matches[2])
+		} else if len(matches) >= 3 && len(matches[2]) > 0 {
+			entityName = matches[2]
 		}
 	}
 
