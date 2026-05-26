@@ -382,7 +382,8 @@ Set Audit Log Forward
 
 Enable Skip Audit Log Database
     Switch To System Settings
-    Retry Double Keywords When Error  Click Element  ${skip_audit_log_database_label}  Checkbox Should Be Selected  ${skip_audit_log_database_checkbox}
+    Scroll Element Into View  xpath=${skip_audit_log_database_label}
+    Retry Double Keywords When Error  Click Element  ${skip_audit_log_database_checkbox}  Checkbox Should Be Selected  ${skip_audit_log_database_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
 
 Set Up Retain Image Last Pull Time
