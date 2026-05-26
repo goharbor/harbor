@@ -74,7 +74,7 @@ Test Case - Push CNAB Bundle and Display
     Close Browser
 
 Test Case - Create An New Project
-    [Tags]  Nightly  create_new_project
+    [Tags]  create_new_project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -82,14 +82,14 @@ Test Case - Create An New Project
     Close Browser
 
 Test Case - Delete A Project
-    [Tags]  Nightly  delete_project
+    [Tags]  delete_project
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Delete A Project Without Sign In Harbor
     Close Browser
 
 Test Case - Repo Size
-    [Tags]  Nightly  repo_size
+    [Tags]  repo_size
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -99,7 +99,7 @@ Test Case - Repo Size
     Close Browser
 
 Test Case - Staticsinfo
-    [Tags]  Nightly  staticsinfo
+    [Tags]  staticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -141,7 +141,7 @@ Test Case - Staticsinfo
     Close Browser
 
 Test Case - Push Image
-    [Tags]  Nightly  push_image
+    [Tags]  push_image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -153,7 +153,7 @@ Test Case - Push Image
     Close Browser
 
 Test Case - Project Level Policy Public
-    [Tags]  Nightly  project_level_policy_public
+    [Tags]  project_level_policy_public
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -171,7 +171,7 @@ Test Case - Project Level Policy Public
     Close Browser
 
 Test Case - Verify Download Ca Link
-    [Tags]  Nightly  verify_download_ca_link
+    [Tags]  verify_download_ca_link
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
@@ -179,7 +179,7 @@ Test Case - Verify Download Ca Link
     Close Browser
 
 Test Case - Edit Token Expire
-    [Tags]  Nightly  edit_token_expire
+    [Tags]  edit_token_expire
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
@@ -195,7 +195,7 @@ Test Case - Edit Token Expire
     Close Browser
 
 Test Case - Create A New Labels
-    [Tags]  Nightly  create_new_labels
+    [Tags]  create_new_labels
     Init Chrome Driver
     ${d}=    Get Current Date
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -204,7 +204,7 @@ Test Case - Create A New Labels
     Close Browser
 
 Test Case - Update Label
-    [Tags]  Nightly  update_label
+    [Tags]  update_label
    Init Chrome Driver
    ${d}=    Get Current Date
 
@@ -216,7 +216,7 @@ Test Case - Update Label
    Close Browser
 
 Test Case - Delete Label
-    [Tags]  Nightly  delete_label
+    [Tags]  delete_label
     Init Chrome Driver
     ${d}=    Get Current Date
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -226,7 +226,7 @@ Test Case - Delete Label
     Close Browser
 
 Test Case - User View Projects
-    [Tags]  Nightly  user_view_projects
+    [Tags]  user_view_projects
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user001  Test1@34
