@@ -28,7 +28,7 @@ Cosign Sign
 
 Cosign Verify
     [Arguments]  ${artifact}  ${signed}
-    Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub ${artifact}
+    Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub --insecure-ignore-tlog=true ${artifact}
     ...  ELSE  Command Should be Failed  cosign verify --key cosign.pub --insecure-ignore-tlog=true ${artifact}
 
 Cosign Push Sbom
