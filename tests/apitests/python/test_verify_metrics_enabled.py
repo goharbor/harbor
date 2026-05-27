@@ -77,6 +77,8 @@ class TestMetricsExist(unittest.TestCase):
 
     def verifyMetrics(self, metric_name, metric_text):
         if metric_name == "harbor_project_total":
+            print("self.statistic_data.private_project_count:", self.statistic_data.private_project_count)
+            print("metric_text:", metric_text)
             self.assertTrue('harbor_project_total{public="false"} ' + str(self.statistic_data.private_project_count) in metric_text)
             self.assertTrue('harbor_project_total{public="true"} ' + str(self.statistic_data.public_project_count) in metric_text)
         else:
