@@ -142,7 +142,8 @@ Delete Repo
 Delete Repo on CardView
     [Arguments]  ${reponame}
     Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
-    Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
+    # Only one Delete button is displayed here, so selecting the first match is safe.
+    Retry Element Click  (//button[normalize-space()='Delete'])[1]
     Retry Element Click  ${repo_delete_on_card_view_btn}
 
 Delete Project
