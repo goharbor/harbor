@@ -143,8 +143,14 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	if operation == "delete" {
 		preposition = "from"
 	}
-	e.OperationDescription = fmt.Sprintf("%s %s%s %s %s project %s",
-		operation, label, noun, entityName, preposition, projectName)
+	resourceTarget := fmt.Sprintf("%s%s", label, noun)
+	if len(entityName) > 0 {
+		resourceTarget = fmt.Sprintf("%s %s", resourceTarget, entityName)
+	} else if len(matches) >= 3 && len(matches[2]) > 0 {
+		resourceTarget = fmt.Sprintf("%s ID %s", resourceTarget, matches[2])
+	}
+	e.OperationDescription = fmt.Sprintf("%s %s %s project %s",
+		operation, resourceTarget, preposition, projectName)
 
 	evt.Topic = ctlevent.TopicCommonEvent
 	evt.Data = e

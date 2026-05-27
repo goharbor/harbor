@@ -28,11 +28,11 @@ class TestAuditLogForward(unittest.TestCase, object):
         self.tag = "latest"
         self.tag2 = "test"
         # 1. Reset audit log Forward
-        self.config.set_configurations_of_audit_log_Forward("", False)
+        self.config.set_configurations_of_audit_log_forward("", False)
 
     def tearDown(self):
         # 1. Reset audit log Forward
-        self.config.set_configurations_of_audit_log_Forward("", False)
+        self.config.set_configurations_of_audit_log_forward("", False)
 
     def testAuditLogForward(self):
         """
@@ -67,10 +67,10 @@ class TestAuditLogForward(unittest.TestCase, object):
         self.project.projects_should_exist(dict(public=False), expected_count = 1, expected_project_id = project_id, **user_client)
         
         # 3 Verify that Skip Audit Log Database cannot be enabled without Audit Log Forward
-        self.config.set_configurations_of_audit_log_Forward(skip_audit_log_database=True, expect_status_code=400)
+        self.config.set_configurations_of_audit_log_forward(skip_audit_log_database=True, expect_status_code=400)
         
         # 4 Enable Audit Log Forward
-        self.config.set_configurations_of_audit_log_Forward(audit_log_forward_endpoint=SYSLOG_ENDPOINT, expect_status_code=200)
+        self.config.set_configurations_of_audit_log_forward(audit_log_forward_endpoint=SYSLOG_ENDPOINT, expect_status_code=200)
         # 4.1 Verify configuration
         configurations = self.config.get_configurations()
         self.assertEqual(configurations.audit_log_forward_endpoint.value, SYSLOG_ENDPOINT)
@@ -91,7 +91,7 @@ class TestAuditLogForward(unittest.TestCase, object):
         self.assertTrue(self.verifyLogInSyslogService(user_name, "{}:{}".format(repo_name, tag), "artifact", "create"))
         
         # 8.1 Enable Skip Audit Log Database
-        self.config.set_configurations_of_audit_log_Forward(skip_audit_log_database=True)
+        self.config.set_configurations_of_audit_log_forward(skip_audit_log_database=True)
         # 8.1 Verify configuration
         configurations = self.config.get_configurations()
         self.assertEqual(configurations.audit_log_forward_endpoint.value, SYSLOG_ENDPOINT)
@@ -112,7 +112,7 @@ class TestAuditLogForward(unittest.TestCase, object):
         self.assertTrue(self.verifyLogInSyslogService(user_name, "{}:{}".format(repo_name, self.tag2), "tag", "create"))
         
         # 12 Verify that Skip Audit Log Database cannot be enabled without Audit Log Forward
-        self.config.set_configurations_of_audit_log_Forward(audit_log_forward_endpoint="", expect_status_code=400)
+        self.config.set_configurations_of_audit_log_forward(audit_log_forward_endpoint="", expect_status_code=400)
 
     def testAuditLogForwardForMemberCRUD(self):
         """
@@ -144,11 +144,14 @@ class TestAuditLogForward(unittest.TestCase, object):
         # 3. Enable Audit Log Forward
         self.config.set_configurations_of_audit_log_forward(audit_log_forward_endpoint = SYSLOG_ENDPOINT, expect_status_code = 200)
 
+        guest_role_id = self.project.get_member_role_id("guest")
+        developer_role_id = self.project.get_member_role_id("developer")
+
         # 4. Add member user to project
-        member_id = self.project.add_project_members(project_id, user_id = member_user_id, member_role_id = 3, **owner_client)
+        member_id = self.project.add_project_members(project_id, user_id = member_user_id, member_role_id = guest_role_id, **owner_client)
 
         # 5. Update member role
-        self.project.update_project_member_role(project_id, member_id, member_role_id = 2, **owner_client)
+        self.project.update_project_member_role(project_id, member_id, member_role_id = developer_role_id, **owner_client)
 
         # 6. Delete member
         self.project.delete_project_member(project_id, member_id, **owner_client)
