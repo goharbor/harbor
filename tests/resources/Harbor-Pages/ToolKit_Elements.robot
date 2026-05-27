@@ -18,3 +18,4 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${member_action_xpath}  //*[@id="member-action"]
 ${delete_action_xpath}  (//button[normalize-space()='Remove'])[1]
+${group_select_all_checkbox_xpath}  //input[@id='clr-dg-select-all-clr-id-71']
