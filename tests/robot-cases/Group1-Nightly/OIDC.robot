@@ -154,7 +154,7 @@ Test Case - Delete An OIDC User In Local DB
     Close Browser
 
 Test Case - OIDC Group Filter
-    [Tags]  group_filter
+    [Tags]  oidc_group_filter
     Init Chrome Driver
     ${oidc_user}=  Set Variable  mike02
     ${oidc_pwd}=  Set Variable  zhu88jie
