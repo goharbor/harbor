@@ -43,6 +43,7 @@ Test Case - Project Quota Sorting
     Close Browser
 
 Test Case - Garbage Collection
+    [Tags]  garbage_collection
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -57,6 +58,7 @@ Test Case - Garbage Collection
     Close Browser
 
 Test Case - GC Untagged Images
+    [Tags]  gc_untagged_images
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -86,6 +88,7 @@ Test Case - GC Untagged Images
 
 # Make sure image logstash was pushed to harbor for the 1st time, so GC will delete it.
 Test Case - Project Quotas Control Under GC
+    [Tags]  project_quotas_control_under_gc
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  200
