@@ -23,6 +23,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Get Harbor Version
+    [Tags]  oidc_get_harbor_version
 #Just get harbor version and log it
     Get Harbor Version
 
@@ -39,6 +40,7 @@ Test Case - Update OIDC Provider Name
     Close Browser
 
 Test Case - OIDC User Sign In
+    [Tags]  oidc_user_sign_in
     #Sign in with all 9 users is for user population, other test cases might use these users.
     Sign In Harbor With OIDC User    ${HARBOR_URL}
     Sleep  2
@@ -57,12 +59,14 @@ Test Case - OIDC User Sign In
     Close Browser
 
 Test Case - Create An New Project
+    [Tags]  oidc_create_project
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project And Go Into Project  test${d}
     Close Browser
 
 Test Case - Delete A Project
+    [Tags]  oidc_delete_project
     Init Chrome Driver
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${secret}=  Get Secrete By API  ${HARBOR_URL}
@@ -70,6 +74,7 @@ Test Case - Delete A Project
     Close Browser
 
 Test Case - Manage Project Member
+    [Tags]  oidc_manage_project_member
     Init Chrome Driver
     Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${secret}=  Get Secrete By API  ${HARBOR_URL}
@@ -77,6 +82,7 @@ Test Case - Manage Project Member
     Close Browser
 
 Test Case - Generate User CLI Secret
+    [Tags]  oidc_generate_user_cli_secret
     Init Chrome Driver
     ${d}=    Get current Date  result_format=%m%s
     ${image}=  Set Variable  hello-world
@@ -94,6 +100,7 @@ Test Case - Generate User CLI Secret
     Close Browser
 
 Test Case - Onboard OIDC User Sign In
+    [Tags]  oidc_onboard_user_sign_in
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  is_oidc=${true}
     Check Automatic Onboarding And Save
@@ -111,6 +118,7 @@ Test Case - Onboard OIDC User Sign In
     Close Browser
 
 Test Case - OIDC Group User
+    [Tags]  oidc_group_user
     Init Chrome Driver
     ${d}=    Get current Date  result_format=%m%s
     ${image}=  Set Variable  hello-world
@@ -130,6 +138,7 @@ Test Case - OIDC Group User
     Close Browser
 
 Test Case - Delete An OIDC User In Local DB
+    [Tags]  oidc_delete_user_in_local_db
     Init Chrome Driver
     # sign in with admin role
     ${admin_user}=  Set Variable  admin_user
