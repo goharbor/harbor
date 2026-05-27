@@ -37,7 +37,7 @@ ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${cve_allowlist_expires_btn}  //clr-date-container[.//div[@class='clr-input-group' and not(@hidden)]]//button
 ${cve_allowlist_expires_yesterday}  //td[.//button[@class='day-btn is-today']]/preceding::td[1]
 ${cve_allowlist_expires_tomorrow}  //td[.//button[@class='day-btn is-today']]/following::td[1]
-${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'oidcAutoOnboard')]
+${cfg_auth_automatic_onboarding_checkbox}  (//input[@id='oidcAutoOnboard'])[1]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 
 ${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
