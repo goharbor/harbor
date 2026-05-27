@@ -34,10 +34,11 @@ Select Event Type
     END
 
 Update A Webhook
-    [Arguments]  ${old_webhook_name}  ${new_webhook_name}  ${new_webhook_enpoint}  ${payload_format}=Default
+    [Arguments]  ${old_webhook_name}  ${new_webhook_name}  ${new_webhook_endpoint}  ${payload_format}=Default
     # select one webhook
     Retry Element Click   xpath=//clr-dg-row[contains(.,'${old_webhook_name}')]//div[contains(@class,'datagrid-select')]
     Retry Element Click  ${action_webhook_xpath}
+    Wait Until Element Is Visible    ${action_webhook_edit_button}    timeout=5s
     Retry Element Click  ${action_webhook_edit_button}
 
     #cancel1
@@ -46,7 +47,7 @@ Update A Webhook
     Retry Element Click  ${action_webhook_xpath}
     Retry Element Click  ${action_webhook_edit_button}
     Retry Text Input   ${webhook_name_xpath}   ${new_webhook_name}
-    Retry Text Input  ${webhook_endpoint_id_xpath}  ${new_webhook_enpoint}
+    Retry Text Input  ${webhook_endpoint_id_xpath}  ${new_webhook_endpoint}
     Select Payload Format  ${payload_format}
     Retry Double Keywords When Error  Retry Element Click  ${edit_webhooks_save_button_xpath}  Retry Wait Until Page Not Contains Element  ${edit_webhooks_save_button_xpath}
     Retry Wait Until Page Contains  ${new_webhook_name}
