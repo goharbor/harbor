@@ -114,7 +114,7 @@ Execute Run
     [Arguments]  ${image}  ${result}=${null}
     Retry Element Click  xpath=${project_tag_retention_run_now_xpath}
     Retry Element Click  xpath=${project_tag_retention_execute_run_xpath}
-    Retry Button Click  ${expand_command_xpath}
+    Retry Button Click  xpath=(//button[contains(@class, 'datagrid-expandable-caret-button')])[1]
     Run Keyword If  '${result}' != '${null}'  Execute Result Should Be  ${image}  ${result}
     ${execution_id}=  Get Text  ${project_tag_retention_latest_execution_id_xpath}
     [Return]  ${execution_id}
