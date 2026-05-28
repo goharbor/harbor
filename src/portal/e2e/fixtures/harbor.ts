@@ -11,7 +11,7 @@ type HarborFixtures = {
 };
 
 export async function login(page: Page, baseURL: string | undefined, creds: HarborUser) {
-    await page.goto(baseURL);
+    await page.goto(baseURL || process.env.HARBOR_BASE_URL || process.env.BASE_URL || '/');
     await page.getByRole('textbox', { name: 'Username' }).fill(creds.username);
     await page.getByRole('textbox', { name: 'Password' }).fill(creds.password);
     await page.getByRole('button', { name: 'LOG IN' }).click();
@@ -46,7 +46,7 @@ const harborTest = base.extend<HarborFixtures>({
     },
 
     harborPage: async ({ page, harborUser }, use) => {
-        let baseURL = process.env.HARBOR_BASE_URL;
+        let baseURL = process.env.HARBOR_BASE_URL || process.env.BASE_URL;
         await login(page, baseURL, harborUser);
         await use(page);
         await logoutIfPossible(page, harborUser.username);

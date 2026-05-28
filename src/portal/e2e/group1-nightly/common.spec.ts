@@ -1,6 +1,9 @@
 import { test, expect, login } from '../fixtures/harbor';
 import { createProject, pullImage, cannotPullImage, cannotPushImage, pushImage, pushImageWithTag, waitForProjectInList, cosignGenerateKeyPair, cosignSign, cosignVerify, runCommand } from '../utils';
 
+const harborBaseURL = process.env.HARBOR_BASE_URL || process.env.BASE_URL || '';
+const harborHost = harborBaseURL.replace(/^https?:\/\//, '') || 'localhost';
+
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -133,7 +136,7 @@ test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName);
 
   // Push two images with different tags
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
   const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
   
@@ -371,7 +374,7 @@ test('delete multiple projects', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('link', { name: 'Projects' }).click();
   
   // Push image to first project only
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -417,7 +420,7 @@ test('delete multi repos', async ({ harborPage, harborUser }) => {
   // Create project and push images
   await createProject(harborPage, projectName, false);
   
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   for (const repo of repos) {
     await pushImage({
       ip: harborIp,
@@ -462,7 +465,7 @@ test('delete repo on card view', async ({ harborPage, harborUser }) => {
   // Create project and push image
   await createProject(harborPage, projectName, false);
   
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -507,7 +510,7 @@ test('delete multi artifacts', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName);
 
   // Push images with different tags
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   for (const tag of tags) {
     await pushImageWithTag({
       ip: harborIp,
@@ -636,7 +639,7 @@ test('user view logs', async ({ harborPage, harborUser }) => {
   // Create a new project
   await createProject(harborPage, projectName);
 
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
   const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
 
@@ -763,7 +766,7 @@ test('manage project members', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName, true);
 
   // Push an image to the project
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
   const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
 
@@ -864,7 +867,7 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName, false, true);
 
   // Push image to the project
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
   const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
   
@@ -1134,7 +1137,7 @@ test('edit repo info', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName);
 
   // Push an image to the project
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: testUser,
@@ -1203,7 +1206,7 @@ test('push image', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName);
   
   // Push image using the utility function
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -1255,7 +1258,7 @@ test('project level policy public', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 
   // Login again to verify
-  await login(harborPage, process.env.HARBOR_BASE_URL, harborUser);
+  await login(harborPage, harborBaseURL, harborUser);
   
   // Navigate to Projects page
   await harborPage.getByRole('link', { name: 'Projects' }).click();
@@ -1335,7 +1338,7 @@ test('read only mode', async ({ harborPage, harborUser }) => {
   await harborPage.waitForTimeout(1000);
 
   // Try to push image - should fail in read-only mode
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await cannotPushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -1386,7 +1389,7 @@ test('cannot copy image in readonly mode', async ({ harborPage, harborUser }) =>
   await createProject(harborPage, sourceProject);
 
   // Push image to source project
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImageWithTag({
     ip: harborIp,
     user: harborUser.username,
@@ -1444,7 +1447,7 @@ test('repo size', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, projectName);
   
   // Push image with specific tag using the utility function
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -1487,7 +1490,7 @@ test('edit token expire', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   // Login again to verify
-  await login(harborPage, process.env.HARBOR_BASE_URL, harborUser);
+  await login(harborPage, harborBaseURL, harborUser);
   
   // Navigate to Configuration -> System Settings
   await harborPage.getByRole('link', { name: 'Configuration' }).click();
@@ -1568,7 +1571,7 @@ test('statistics info', async ({ harborPage, harborUser }) => {
   // Create private project and push image
   await createProject(harborPage, privateProjectName, false, false);
   
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImage({
     ip: harborIp,
     user: harborUser.username,
@@ -1660,7 +1663,7 @@ test('copy a image', async ({ harborPage, harborUser }) => {
   await createProject(harborPage, targetProjectName);
 
   // Push image to source project
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   const localRegistry = process.env.LOCAL_REGISTRY || 'docker.io';
   const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
   
@@ -1741,7 +1744,7 @@ test('cosign and cosign deployment security policy', async ({ harborPage, harbor
   await expect(harborPage.getByText('Cosign', { exact: true })).toBeChecked();
 
   // Push image without signing
-  const harborIp = process.env.HARBOR_BASE_URL?.replace(/^https?:\/\//, '') || 'localhost';
+  const harborIp = harborHost;
   await pushImageWithTag({
     ip: harborIp,
     user,
@@ -1992,7 +1995,7 @@ test('banner message', async ({ harborPage, harborUser }) => {
   ];
 
   for (const pageUrl of pages) {
-    await harborPage.goto(`${process.env.HARBOR_BASE_URL}${pageUrl}`);
+    await harborPage.goto(`${harborBaseURL}${pageUrl}`);
     await checkBannerMessage(message, 'danger', true);
   }
 
