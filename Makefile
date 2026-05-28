@@ -188,8 +188,9 @@ PLAYWRIGHT_DOCKER_NETWORK ?= host
 PLAYWRIGHT_DOCKER_SOCKET ?= auto
 PLAYWRIGHT_DOCKER_SOCKET_PATH ?= $(shell $(DOCKERCMD) info --format '{{.Host.RemoteSocket.Path}}' 2>/dev/null || printf '/var/run/docker.sock')
 PLAYWRIGHT_DOCKER_HOST ?= unix:///var/run/docker.sock
-PLAYWRIGHT_CI ?= true
-PLAYWRIGHT_ARGS ?= --reporter=list
+PLAYWRIGHT_CI ?= $(CI)
+PLAYWRIGHT_ARGS ?=
+PLAYWRIGHT_DEBUG ?= pw:api
 PLAYWRIGHT_REPORT_PORT ?= 9323
 PLAYWRIGHT_REPORT_CONTAINER ?= harbor-playwright-report
 
@@ -652,6 +653,7 @@ playwright-test:
 			-e HARBOR_ADMIN=$(HARBOR_ADMIN) \
 			-e HARBOR_PASSWORD=$(HARBOR_PASSWORD) \
 			-e DOCKER_HOST=$(PLAYWRIGHT_DOCKER_HOST) \
+			-e DEBUG=$(PLAYWRIGHT_DEBUG) \
 			-e CI=$(PLAYWRIGHT_CI) \
 			-w /app \
 			$(PLAYWRIGHT_IMAGE) npx playwright test $(PLAYWRIGHT_ARGS)
