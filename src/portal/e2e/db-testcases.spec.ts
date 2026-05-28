@@ -1,5 +1,21 @@
 import { test, expect, Page } from '@playwright/test';
 
+const harborUser = process.env.HARBOR_ADMIN || 'admin';
+const harborPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
+const updatedPassword = 'Test1234';
+
+test.describe.configure({ mode: 'serial', timeout: 60 * 1000 });
+
+async function login(page: Page, username = harborUser, password = harborPassword) {
+    await expect(page.locator('.modal-backdrop')).toBeHidden();
+    const usernameInput = page.getByRole('textbox', { name: 'Username' });
+    const passwordInput = page.getByRole('textbox', { name: 'Password', exact: true });
+    await usernameInput.fill(username);
+    await passwordInput.fill(password);
+    await expect(passwordInput).toHaveValue(password);
+    await page.getByRole('button', { name: 'LOG IN' }).click();
+}
+
 async function createUser(page: Page): Promise<string> {
     await page.goto('/');
     await page.getByRole('link', { name: 'Sign up for an account' }).click();
@@ -15,13 +31,15 @@ async function createUser(page: Page): Promise<string> {
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
     await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
     await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
-    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Comments' }).click();
     await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
 
     await page.getByRole('button', { name: 'SIGN UP' }).click();
+    await expect(page.locator('.modal-backdrop')).toBeHidden();
+    await expect(page.getByRole('textbox', { name: 'Username' })).toBeVisible();
 
     return username;
 }
@@ -29,12 +47,7 @@ async function createUser(page: Page): Promise<string> {
 async function checkSelfRegistration(page: Page) {
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page);
 
     await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
@@ -49,7 +62,7 @@ async function checkSelfRegistration(page: Page) {
     }
 
     //Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: harborUser, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 }
 
@@ -69,12 +82,7 @@ test('Update User Comment', async ({ page }) => {
     const username = await createUser(page);
 
     //Login with user credentials
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill(username);
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill("Harbor12345");
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page, username);
 
     // Updating user comment
     await page.getByRole('button', { name: username }).click();
@@ -92,22 +100,17 @@ test('Update User Password', async ({ page }) => {
     const username = await createUser(page);
 
     // Login with user credentials
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill(username);
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill("Harbor12345");
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page, username);
 
     // Update Password
     await page.getByRole('button', { name: username }).click();
     await page.getByRole('menuitem', { name: 'Change Password' }).click();
     await page.getByRole('textbox', { name: 'Current Password*' }).click();
-    await page.getByRole('textbox', { name: 'Current Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Current Password*' }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'New Password*' }).click();
-    await page.getByRole('textbox', { name: 'New Password*' }).fill('Test1234');
+    await page.getByRole('textbox', { name: 'New Password*' }).fill(updatedPassword);
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
-    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Test1234');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill(updatedPassword);
     await page.getByRole('button', { name: 'OK' }).click();
 
     // Logout after update
@@ -115,12 +118,7 @@ test('Update User Password', async ({ page }) => {
     await page.getByRole('menuitem', { name: 'Log Out' }).click();
 
     // Login with Updated Password
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill(username);
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Test1234');
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page, username, updatedPassword);
 
     // Logout
     await page.getByRole('button', { name: username }).click();
@@ -130,12 +128,7 @@ test('Update User Password', async ({ page }) => {
 test('Edit Self Registration', async ({ page }) => {
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page);
 
     await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
@@ -150,7 +143,7 @@ test('Edit Self Registration', async ({ page }) => {
     }
 
     //Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: harborUser, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 
     // Checks whether Signup is visible or not
@@ -158,12 +151,7 @@ test('Edit Self Registration', async ({ page }) => {
 
     // Login
     await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
-
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page);
 
     await expect(page.getByRole('link', { name: 'Configuration' })).toBeVisible();
 
@@ -180,7 +168,7 @@ test('Edit Self Registration', async ({ page }) => {
     }
 
     //Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: harborUser, exact: true }).click();
     await page.getByRole('menuitem', { name: 'Log Out' }).dblclick();
 });
 
@@ -195,9 +183,7 @@ test('Delete Multi User', async ({ page }) => {
     const users = [user1, user2, user3];
 
     // Login with admin credentials
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page);
 
     // Navigate to Users
     const usersLink = page.getByRole('link', { name: 'Users' });
@@ -210,8 +196,11 @@ test('Delete Multi User', async ({ page }) => {
     await expect(filterInput).toBeVisible();
 
     for (const user of users) {
-        await page.getByRole('textbox', { name: 'Filter users' }).fill(user);
-        await page.getByRole('row', { name: 'Select Select ' +user }).locator('label').click();
+        await filterInput.fill(user);
+        await filterInput.press('Enter');
+        const row = page.getByRole('row').filter({ hasText: user });
+        await expect(row).toBeVisible();
+        await row.locator('label').first().click();
     }
 
     // Delete Selected Users
@@ -224,7 +213,7 @@ test('Delete Multi User', async ({ page }) => {
     await expect(page.getByText('Deleted successfully')).toBeVisible();
 
     // Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: harborUser, exact: true }).click();
 
     const logoutMenuItem = page.getByRole('menuitem', { name: 'Log Out' });
     await expect(logoutMenuItem).toBeVisible(); // Wait for logout to be visible
@@ -236,11 +225,7 @@ test('Admin Add New Users', async ({ page }) => {
     await checkSelfRegistration(page);
 
     //Login with Admin Credentials
-    await page.getByRole('textbox', { name: 'Username' }).click();
-    await page.getByRole('textbox', { name: 'Username' }).fill('admin');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await login(page);
 
     // Assert Self registration is Enabled
     await page.getByRole('link', { name: 'Configuration' }).click();
@@ -261,9 +246,9 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
     await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
     await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
-    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Comments' }).click();
     await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
 
@@ -294,9 +279,9 @@ test('Admin Add New Users', async ({ page }) => {
     await page.getByRole('textbox', { name: 'First and last name*' }).click();
     await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
     await page.getByRole('textbox', { name: 'Password*', exact: true }).click();
-    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Confirm Password*' }).click();
-    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill('Harbor12345');
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill(harborPassword);
     await page.getByRole('textbox', { name: 'Comments' }).click();
     await page.getByRole('textbox', { name: 'Comments' }).fill('harbortest');
 
@@ -314,7 +299,7 @@ test('Admin Add New Users', async ({ page }) => {
     await expect(page.locator('global-message')).toContainText('Configuration has been successfully saved.');
 
     // Logout
-    await page.getByRole('button', { name: 'admin', exact: true }).click();
+    await page.getByRole('button', { name: harborUser, exact: true }).click();
 
     const logoutMenuItem = page.getByRole('menuitem', { name: 'Log Out' });
     await expect(logoutMenuItem).toBeVisible(); // Wait for logout to be visible
