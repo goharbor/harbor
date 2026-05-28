@@ -23,7 +23,34 @@ function log(message: string): void {
     console.log(`[trivy] ${new Date().toISOString()} ${message}`);
 }
 
-test('shows scanned artifact vulnerabilities in Security Hub', async ({
+const pendingRobotTrivyCases = [
+    'Test Case - Trivy Is Default Scanner And It Is Immutable',
+    'Test Case - Disable Scan Schedule',
+    'Test Case - Manual Scan All',
+    'Test Case - Scan A Tag In The Repo',
+    'Test Case - Scan As An Unprivileged User',
+    'Test Case - Scan Image With Empty Vul',
+    'Test Case - Scan Image On Push',
+    'Test Case - View Scan Results',
+    'Test Case - Project Level Image Serverity Policy',
+    'Test Case - Verfiy System Level CVE Allowlist',
+    'Test Case - Verfiy Project Level CVE Allowlist',
+    'Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System',
+    'Test Case - Stop Scan And Stop Scan All',
+    'Test Case - Verify SBOM Manual Generation',
+    'Test Case - Generate Image SBOM On Push',
+    'Test Case - External Scanner CRUD',
+    'Test Case - Set External Scanner As Default And Scan',
+    'Test Case - Enable And Deactivate Scanner',
+];
+
+for (const testCase of pendingRobotTrivyCases) {
+    test.skip(testCase, async () => {
+        // Kept as individual cases so reports match the Robot Trivy suite shape.
+    });
+}
+
+test('Test Case - Security Hub', async ({
     page,
     request,
 }) => {
