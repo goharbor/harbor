@@ -1,5 +1,6 @@
 import {
     expect,
+    request as playwrightRequest,
     test,
     type APIRequestContext,
     type Locator,
@@ -18,43 +19,514 @@ const ip = process.env.IP || '';
 const user = process.env.HARBOR_ADMIN || 'admin';
 const pwd =
     process.env.HARBOR_PASSWORD || 'Harbor12345';
+const scannerEndpoint = process.env.SCANNER_ENDPOINT || '';
+const stepTimeout = 30 * 1000;
+const scanResultTimeout = stepTimeout;
 
 function log(message: string): void {
     console.log(`[trivy] ${new Date().toISOString()} ${message}`);
 }
 
-const pendingRobotTrivyCases = [
-    'Test Case - Trivy Is Default Scanner And It Is Immutable',
-    'Test Case - Disable Scan Schedule',
-    'Test Case - Manual Scan All',
-    'Test Case - Scan A Tag In The Repo',
-    'Test Case - Scan As An Unprivileged User',
-    'Test Case - Scan Image With Empty Vul',
-    'Test Case - Scan Image On Push',
-    'Test Case - View Scan Results',
-    'Test Case - Project Level Image Serverity Policy',
-    'Test Case - Verfiy System Level CVE Allowlist',
-    'Test Case - Verfiy Project Level CVE Allowlist',
-    'Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System',
-    'Test Case - Stop Scan And Stop Scan All',
-    'Test Case - Verify SBOM Manual Generation',
-    'Test Case - Generate Image SBOM On Push',
-    'Test Case - External Scanner CRUD',
-    'Test Case - Set External Scanner As Default And Scan',
-    'Test Case - Enable And Deactivate Scanner',
-];
-
-for (const testCase of pendingRobotTrivyCases) {
-    test.skip(testCase, async () => {
-        // Kept as individual cases so reports match the Robot Trivy suite shape.
-    });
+async function step<T>(
+    name: string,
+    action: () => Promise<T>,
+    timeout = stepTimeout
+): Promise<T> {
+    return test.step(name, async () => {
+        log(`START ${name}`);
+        try {
+            const result = await action();
+            log(`DONE ${name}`);
+            return result;
+        } catch (error) {
+            log(`FAIL ${name}: ${(error as Error).message}`);
+            throw error;
+        }
+    }, { timeout });
 }
+
+async function retryStep<T>(
+    name: string,
+    action: () => Promise<T>,
+    attempts = 3
+): Promise<T> {
+    let lastError: unknown;
+    const deadline = Date.now() + stepTimeout;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+            break;
+        }
+        try {
+            log(`RETRY ${name}: attempt ${attempt}/${attempts}`);
+            return await step(`${name} attempt ${attempt}`, action, remaining);
+        } catch (error) {
+            lastError = error;
+            if (attempt < attempts) {
+                const delay = Math.min(attempt * 1000, Math.max(0, deadline - Date.now()));
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+    throw lastError || new Error(`${name} did not complete within ${stepTimeout / 1000}s`);
+}
+
+test('Test Case - Get Harbor Version', async ({ request }) => {
+    const systemInfo = await getSystemInfoFromAPI(request, user, pwd);
+    expect(systemInfo.harbor_version).toBeTruthy();
+    log(`Harbor version: ${systemInfo.harbor_version}`);
+});
+
+test('Test Case - Trivy Is Default Scanner And It Is Immutable', async ({ page }) => {
+    await login(page);
+    await openScannersPage(page);
+    const trivyRow = page.getByRole('row').filter({ hasText: 'Trivy' });
+    await expect(trivyRow.filter({ hasText: 'Default' })).toBeVisible();
+
+    await trivyRow.locator('label.clr-control-label').click();
+    await openActionMenu(page);
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'DELETE', exact: true }).click();
+    await expect(page.getByText(/default scanner can not be deleted|immutable/i)).toBeVisible();
+});
+
+test('Test Case - Disable Scan Schedule', async ({ page }) => {
+    await login(page);
+    await openVulnerabilityPage(page);
+
+    await page.getByRole('button', { name: 'EDIT' }).click();
+    await page.getByRole('combobox').selectOption('None');
+    await page.getByRole('button', { name: 'SAVE' }).click();
+
+    await logout(page);
+    await login(page);
+    await openVulnerabilityPage(page);
+    await expect(page.getByText('None', { exact: true })).toBeVisible();
+});
+
+test('Test Case - Manual Scan All', async ({ page, request }) => {
+    const project = 'library';
+    const image = 'redis';
+    const digest = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
+
+    await pushImage(ip, user, pwd, project, image, digest);
+    await login(page);
+
+    await openVulnerabilityPage(page);
+    await page.getByRole('button', { name: 'SCAN NOW' }).click();
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await scanResultShouldDisplayInListRow(page, digest);
+    await page.getByRole('link', { name: 'sha256' }).click();
+    await viewRepoScanDetails(page, ['Critical']);
+});
+
+test('Test Case - Scan A Tag In The Repo', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'vmware/photon';
+    const tag = '1.0';
+
+    await login(page);
+    await createProject(page, project);
+    await pushImage(ip, user, pwd, project, `${image}:${tag}`);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await scanRepository(page, projectId, project, image);
+    await scanResultShouldDisplayInListRow(page, tag);
+    pullImage(ip, user, pwd, project, image, tag);
+});
+
+test('Test Case - Scan As An Unprivileged User', async ({ page, request }) => {
+    const suffix = Date.now();
+    const project = `project-${suffix}`;
+    const image = 'hello-world';
+    const unprivilegedUser = `user${suffix}`;
+    const unprivilegedPassword = 'Test1@01';
+
+    await login(page);
+    await createProject(page, project, true);
+    await pushImage(ip, user, pwd, project, image);
+    await logout(page);
+
+    await createUser(page, unprivilegedUser, unprivilegedPassword);
+    await loginAs(page, unprivilegedUser, unprivilegedPassword);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await page
+        .getByRole('gridcell', { name: 'Select Select' })
+        .locator('label')
+        .click();
+    await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
+    await expect(page.getByRole('button', { name: 'Scan vulnerability' })).toBeDisabled();
+});
+
+test('Test Case - Scan Image With Empty Vul', async ({ page, request }) => {
+    const project = 'library';
+    const image = 'hello-world';
+    const tag = 'latest';
+
+    await pushImage(ip, user, pwd, project, `${image}:${tag}`);
+    await login(page);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await scanRepository(page, projectId, project, image);
+    await page.getByRole('gridcell', { name: 'No vulnerability' }).waitFor({
+        timeout: scanResultTimeout,
+    });
+    await scanResultShouldDisplayInListRow(page, tag, true);
+});
+
+test('Test Case - Scan Image On Push', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'memcached';
+    const tag = 'latest';
+
+    await login(page);
+    await createProject(page, project, true);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await openProjectConfig(page);
+    await enableScanOnPush(page);
+
+    await pushImage(ip, user, pwd, project, image);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await scanResultShouldDisplayInListRow(page, tag);
+    await page.getByRole('link', { name: 'sha256' }).click();
+    await viewRepoScanDetails(page, ['Critical', 'High']);
+});
+
+test('Test Case - View Scan Results', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'tomcat';
+    const tag = 'latest';
+    const signinUser = `user${Date.now()}`;
+    const signinPassword = 'Test1@34';
+
+    await createUserFromAPI(request, signinUser, signinPassword);
+    await loginAs(page, signinUser, signinPassword);
+    await createProject(page, project);
+    await pushImage(ip, signinUser, signinPassword, project, image);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await scanRepository(page, projectId, project, image);
+    await scanResultShouldDisplayInListRow(page, tag);
+    await page.getByRole('link', { name: 'sha256' }).click();
+    await viewRepoScanDetails(page, ['Critical']);
+});
+
+test('Test Case - Project Level Image Serverity Policy', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'redis';
+    const digest = '0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a';
+
+    await login(page);
+    await createProject(page, project);
+    await pushImage(ip, user, pwd, project, image, digest);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await scanRepository(page, projectId, project, image);
+    await scanResultShouldDisplayInListRow(page, digest);
+    await openProject(page, projectId);
+    await setPreventVulnerabilityPolicy(page, 3);
+    cannotPullImage(ip, user, pwd, project, image, digest, 'allowlist');
+});
+
+test('Test Case - Verfiy System Level CVE Allowlist', async ({ page, request }) => {
+    test.setTimeout(90 * 1000);
+    const project = `project-${Date.now()}`;
+    const image = 'goharbor/harbor-portal';
+    const digest = '55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d';
+    const signinUser = `user${Date.now()}`;
+    const signinPassword = 'Test1@34';
+
+    await createUserFromAPI(request, signinUser, signinPassword);
+    await resetSystemCveAllowlistFromAPI();
+    await loginAs(page, signinUser, signinPassword);
+    await createProject(page, project);
+    await pushImage(ip, signinUser, signinPassword, project, image, digest);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await setPreventVulnerabilityPolicy(page, 2);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    const cveAllowlist = await getCveAllowlistDataFromAPI(request, user, pwd, project, image, digest);
+
+    await logout(page, signinUser);
+    await login(page);
+    await openConfigurationSecurity(page);
+    await addSystemCveAllowlist(page, cveAllowlist.partial);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await addSystemCveAllowlist(page, cveAllowlist.last);
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openConfigurationSecurity(page);
+    await setCveAllowlistExpires(page, true);
+    await expect(page.getByText(/system CVE allowlist has expired/i)).toBeVisible();
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await setCveAllowlistExpires(page, false);
+    await expect(page.getByText(/system CVE allowlist has expired/i)).not.toBeVisible();
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openConfigurationSecurity(page);
+    await deleteSystemCveAllowlistItem(page, cveAllowlist.last);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+});
+
+test('Test Case - Verfiy Project Level CVE Allowlist', async ({ page, request }) => {
+    test.setTimeout(90 * 1000);
+    const project = `project-${Date.now()}`;
+    const image = 'goharbor/harbor-portal';
+    const digest = '55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d';
+    const signinUser = `user${Date.now()}`;
+    const signinPassword = 'Test1@34';
+
+    await createUserFromAPI(request, signinUser, signinPassword);
+    await loginAs(page, signinUser, signinPassword);
+    await createProject(page, project);
+    await pushImage(ip, signinUser, signinPassword, project, image, digest);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await setPreventVulnerabilityPolicy(page, 2);
+    await useProjectLevelCveAllowlist(page);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    const cveAllowlist = await getCveAllowlistDataFromAPI(request, user, pwd, project, image, digest);
+    await openProject(page, projectId);
+    await addProjectCveAllowlist(page, cveAllowlist.partial);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await addProjectCveAllowlist(page, cveAllowlist.last);
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openProjectConfig(page);
+    await setCveAllowlistExpires(page, true);
+    await expect(page.getByText(/project CVE allowlist has expired/i)).toBeVisible();
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await setCveAllowlistExpires(page, false);
+    await expect(page.getByText(/project CVE allowlist has expired/i)).not.toBeVisible();
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openProjectConfig(page);
+    await deleteProjectCveAllowlistItem(page, cveAllowlist.last);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+});
+
+test('Test Case - Verfiy Project Level CVE Allowlist By Quick Way of Add System', async ({ page, request }) => {
+    test.setTimeout(90 * 1000);
+    const project = `project-${Date.now()}`;
+    const image = 'goharbor/harbor-portal';
+    const digest = '55d776fc7f431cdd008c3d8fc3e090c81c1368ed9ed85335f4664df71f864f0d';
+    const signinUser = `user${Date.now()}`;
+    const signinPassword = 'Test1@34';
+
+    await createUserFromAPI(request, signinUser, signinPassword);
+    await resetSystemCveAllowlistFromAPI();
+    await loginAs(page, signinUser, signinPassword);
+    await createProject(page, project);
+    await pushImage(ip, signinUser, signinPassword, project, image, digest);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await setPreventVulnerabilityPolicy(page, 2);
+    await scanRepository(page, projectId, project, image);
+    const cveAllowlist = await getCveAllowlistDataFromAPI(request, user, pwd, project, image, digest);
+    await logout(page, signinUser);
+    await login(page);
+    await openConfigurationSecurity(page);
+    await addSystemCveAllowlist(page, cveAllowlist.all);
+    await logout(page);
+    await loginAs(page, signinUser, signinPassword);
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openProject(page, projectId);
+    await useProjectLevelCveAllowlist(page);
+    await scanRepository(page, projectId, project, image);
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await addSystemCvesToProjectAllowlist(page);
+    await scanRepository(page, projectId, project, image);
+    pullImage(ip, signinUser, signinPassword, project, image, digest);
+    await openProjectConfig(page);
+    await setCveAllowlistExpires(page, true);
+    await expect(page.getByText(/project CVE allowlist has expired/i)).toBeVisible();
+    cannotPullImage(ip, signinUser, signinPassword, project, image, digest, 'policy');
+    await setCveAllowlistExpires(page, false);
+    await expect(page.getByText(/project CVE allowlist has expired/i)).not.toBeVisible();
+});
+
+test('Test Case - Stop Scan And Stop Scan All', async ({ page, request }) => {
+    test.setTimeout(90 * 1000);
+    const project = `project-${Date.now()}`;
+    const image = 'goharbor/harbor-e2e-engine';
+    const tag = 'test-ui';
+
+    await login(page);
+    await createProject(page, project);
+    pushImageWithTag(ip, user, pwd, project, image, tag, tag);
+
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await page.getByRole('row').filter({ hasText: tag }).locator('label.clr-control-label').click();
+    await page.getByRole('button', { name: 'Scan vulnerability' }).click();
+    await openActionMenu(page);
+    await stopScanIfRunning(page);
+
+    await openVulnerabilityPage(page);
+    await page.getByRole('button', { name: 'SCAN NOW' }).click();
+    await stopScanAllIfRunning(page);
+});
+
+test('Test Case - Verify SBOM Manual Generation', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'alpine';
+    const tag = '3.10';
+
+    await login(page);
+    await createProject(page, project);
+    await pushImage(ip, user, pwd, project, `${image}:${tag}`);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await generateRepoSbom(page, tag);
+    await checkoutAndReviewSbomDetails(page, tag);
+});
+
+test('Test Case - Generate Image SBOM On Push', async ({ page, request }) => {
+    const project = `project-${Date.now()}`;
+    const image = 'memcached';
+    const tag = 'latest';
+
+    await login(page);
+    await createProject(page, project);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProject(page, projectId);
+    await openProjectConfig(page);
+    await enableSbomOnPush(page);
+    await pushImage(ip, user, pwd, project, image);
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await checkoutAndReviewSbomDetails(page, tag);
+});
+
+test('Test Case - External Scanner CRUD', async ({ page }) => {
+    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    const scanner = `scanner-${Date.now()}`;
+
+    await login(page);
+    await openScannersPage(page);
+    await addScanner(page, scanner, scannerEndpoint, 'Basic', 'For testing', {
+        skipCertVerification: true,
+        internalRegistryAddress: true,
+        username: 'scanner_name',
+        password: 'scanner_password',
+    });
+    await updateScanner(page, scanner, `${scanner}-edit1`, `${scannerEndpoint}1`, 'Bearer', 'For testing-edit1', {
+        skipCertVerification: true,
+        internalRegistryAddress: true,
+        token: 'scanner_token',
+    });
+    await updateScanner(page, `${scanner}-edit1`, `${scanner}-edit2`, `${scannerEndpoint}2`, 'APIKey', 'For testing-edit2', {
+        skipCertVerification: true,
+        internalRegistryAddress: true,
+        apiKey: 'scanner_api_key',
+    });
+    await updateScanner(page, `${scanner}-edit2`, scanner, scannerEndpoint, 'None', 'For testing');
+    await filterScannerByName(page, scanner);
+    await filterScannerByEndpoint(page, scannerEndpoint);
+    await expect(page.getByRole('row').filter({ hasText: scanner }).filter({ hasText: scannerEndpoint })).toBeVisible();
+    await deleteScanner(page, scanner);
+});
+
+test('Test Case - Set External Scanner As Default And Scan', async ({ page, request }) => {
+    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    const project = `project-${Date.now()}`;
+    const scanner = `scanner-${Date.now()}`;
+    const image = 'hello-world';
+    const tag = 'latest';
+
+    await login(page);
+    await createProject(page, project);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openProjectScanner(page, projectId);
+    await expect(page.locator('#scanner-name')).toHaveText('Trivy');
+    await openScannersPage(page);
+    await expect(page.getByRole('row').filter({ hasText: 'Trivy' }).filter({ hasText: 'Default' })).toBeVisible();
+    await addScanner(page, scanner, scannerEndpoint, 'None', 'For testing');
+    await setScannerAsDefault(page, scanner);
+    await openProjectScanner(page, projectId);
+    await expect(page.locator('#scanner-name')).toHaveText(scanner);
+    await pushImage(ip, user, pwd, project, image);
+    await scanRepository(page, projectId, project, image);
+    await expect(page.locator('hbr-result-tip-histogram')).toContainText('10');
+    await openScannersPage(page);
+    await setScannerAsDefault(page, 'Trivy');
+    await openProjectScanner(page, projectId);
+    await expect(page.locator('#scanner-name')).toHaveText('Trivy');
+    await scanRepository(page, projectId, project, image);
+    await expect(page.locator('hbr-result-tip-histogram')).toContainText(/No vulnerability/i);
+    await openProjectScanner(page, projectId);
+    await selectProjectScanner(page, scanner, 2);
+    await scanRepository(page, projectId, project, image);
+    await expect(page.locator('hbr-result-tip-histogram')).toContainText('10');
+    await openProjectScanner(page, projectId);
+    await selectProjectScanner(page, 'Trivy', 2);
+    await scanRepository(page, projectId, project, image);
+    await expect(page.locator('hbr-result-tip-histogram')).toContainText(/No vulnerability/i);
+    await openScannersPage(page);
+    await deleteScanner(page, scanner);
+    await openProjectScanner(page, projectId);
+    await page.locator('#edit-scanner').click();
+    await expect(page.getByRole('row')).toHaveCount(1);
+});
+
+test('Test Case - Enable And Deactivate Scanner', async ({ page, request }) => {
+    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    const project = `project-${Date.now()}`;
+    const scanner = `scanner-${Date.now()}`;
+    const image = 'hello-world';
+    const tag = 'latest';
+
+    await login(page);
+    await createProject(page, project);
+    await pushImage(ip, user, pwd, project, image);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    await openScannersPage(page);
+    await addScanner(page, scanner, scannerEndpoint, 'None', 'For testing');
+    await openProjectScanner(page, projectId);
+    await selectProjectScanner(page, scanner);
+    await scanRepository(page, projectId, project, image);
+    await openScannersPage(page);
+    await enableOrDeactivateScanner(page, scanner, 'DEACTIVATE');
+    await openProjectScanner(page, projectId);
+    await expect(page.getByText('Deactivated')).toBeVisible();
+    await openProject(page, projectId);
+    await page.getByRole('link', { name: `${project}/${image}` }).click();
+    await page.getByRole('row').filter({ hasText: tag }).locator('label.clr-control-label').click();
+    await expect(page.getByRole('button', { name: 'Scan vulnerability' })).toBeDisabled();
+    await openScannersPage(page);
+    await enableOrDeactivateScanner(page, scanner, 'ENABLE');
+    await openProjectScanner(page, projectId);
+    await expect(page.getByText('Deactivated')).not.toBeVisible();
+    await scanRepository(page, projectId, project, image);
+    await openScannersPage(page);
+    await deleteScanner(page, scanner);
+    await openProjectScanner(page, projectId);
+    await expect(page.locator('#scanner-name')).toHaveText('Trivy');
+});
 
 test('Test Case - Security Hub', async ({
     page,
     request,
 }) => {
-    test.setTimeout(5 * 60 * 1000);
+    test.setTimeout(180 * 1000);
     expect(ip, 'IP must be set to the Harbor registry host').toBeTruthy();
 
     const tag = 'v2.2.0';
@@ -159,10 +631,8 @@ test('Test Case - Security Hub', async ({
     await assertSeverityFilter(page, 'Medium', summary.medium_cnt);
     await assertSeverityFilter(page, 'Low', summary.low_cnt);
 
-    await searchBySeverity(page, 'Unknown');
-    await expectNoVulnerabilities(page);
-    await searchBySeverity(page, 'None');
-    await expectNoVulnerabilities(page);
+    await assertSeverityFilter(page, 'Unknown', summary.unknown_cnt);
+    await assertSeverityFilter(page, 'None', 0);
 
     await searchByAllFilters(page, {
         project,
@@ -225,6 +695,10 @@ type Project = {
     project_id: number;
 };
 
+type SystemInfo = {
+    harbor_version: string;
+};
+
 type VulnerabilityItem = {
     repository_name: string;
     digest: string;
@@ -247,7 +721,20 @@ type MultipleFilterSearchData = {
     severity: string;
 };
 
-const scanResultTimeout = 30 * 1000;
+type ScannerOptions = {
+    skipCertVerification?: boolean;
+    internalRegistryAddress?: boolean;
+    username?: string;
+    password?: string;
+    token?: string;
+    apiKey?: string;
+};
+
+type CveAllowlistData = {
+    partial: string;
+    last: string;
+    all: string;
+};
 
 function vulnerabilitySummary(page: Page): Locator {
     return page.locator('app-vulnerability-summary');
@@ -286,28 +773,298 @@ function getCompleteVulnerability(
 }
 
 async function login(page: Page): Promise<void> {
-    await page.goto('/');
-    await page.getByRole('textbox', { name: 'Username' }).fill(user);
-    await page.getByRole('textbox', { name: 'Password' }).fill(pwd);
-    await page.getByRole('button', { name: 'LOG IN' }).click();
+    await loginAs(page, user, pwd);
 }
 
-async function logout(page: Page): Promise<void> {
-    await page.goto('/');
-    const userMenu = page.getByRole('button', { name: user, exact: true });
-    await expect(userMenu).toBeVisible();
-    await userMenu.click();
-    await page.getByRole('menuitem', { name: 'Log Out' }).click();
+async function loginAs(page: Page, username: string, password: string): Promise<void> {
+    await step(`Sign in as ${username}`, async () => {
+        await page.goto('/');
+        await page.getByRole('textbox', { name: 'Username' }).fill(username);
+        await page.getByRole('textbox', { name: 'Password', exact: true }).fill(password);
+        await page.getByRole('button', { name: 'LOG IN' }).click();
+    });
 }
 
-async function createProject(page: Page, project: string): Promise<void> {
-    await page.getByRole('button', { name: 'New Project' }).click();
-    await page.locator('#create_project_name').fill(project);
-    await page.getByRole('button', { name: 'OK' }).click();
+async function logout(page: Page, username = user): Promise<void> {
+    await step(`Log out of Harbor as ${username}`, async () => {
+        await page.goto('/');
+        const userMenu = page.getByRole('button', { name: username, exact: true });
+        await expect(userMenu).toBeVisible();
+        await userMenu.click();
+        await page.getByRole('menuitem', { name: 'Log Out' }).click();
+    });
+}
+
+async function createProject(page: Page, project: string, isPublic = false): Promise<void> {
+    await step(`Create project ${project}`, async () => {
+        const result = await page.evaluate(
+            async ({ projectName, publicProject }) => {
+                const csrfToken = localStorage.getItem('__csrf') || '';
+                const response = await fetch('/api/v2.0/projects', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Harbor-CSRF-Token': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        project_name: projectName,
+                        metadata: { public: publicProject ? 'true' : 'false' },
+                    }),
+                });
+
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: await response.text(),
+                };
+            },
+            { projectName: project, publicProject: isPublic }
+        );
+
+        if (!result.ok && result.status !== 409) {
+            throw new Error(
+                `Failed to create project ${project}: ${result.status} ${result.statusText} ${result.body}`
+            );
+        }
+        await page.goto('/harbor/projects');
+        await expect(page.getByRole('heading', { name: 'Projects' }).first()).toBeVisible();
+    });
+}
+
+async function createUser(page: Page, username: string, password: string): Promise<void> {
+    await page.goto('/');
+    await page.getByRole('link', { name: 'Sign up for an account' }).click();
+    await page.locator('#username').fill(username);
+    await page.locator('#email').fill(`${username}@example.com`);
+    await page.getByRole('textbox', { name: 'First and last name*' }).fill(username);
+    await page.getByRole('textbox', { name: 'Password*', exact: true }).fill(password);
+    await page.getByRole('textbox', { name: 'Confirm Password*' }).fill(password);
+    await page.getByRole('button', { name: 'SIGN UP' }).click();
+    await expect(page.getByRole('textbox', { name: 'Username' })).toBeVisible();
+}
+
+async function openVulnerabilityPage(page: Page): Promise<void> {
+    await step('Open vulnerability page', async () => {
+        await page.goto('/harbor/interrogation-services/vulnerability');
+        await expect(page.getByRole('button', { name: 'SCAN NOW' })).toBeVisible();
+    });
+}
+
+async function openScannersPage(page: Page): Promise<void> {
+    await step('Open scanners page', async () => {
+        await page.goto('/harbor/interrogation-services/scanners');
+        await expect(page.getByRole('button', { name: /NEW SCANNER/i })).toBeVisible();
+    });
+}
+
+async function openProjectConfig(page: Page): Promise<void> {
+    await step('Open project configuration', async () => {
+        const projectId = page.url().match(/\/projects\/(\d+)/)?.[1];
+        if (projectId) {
+            await page.goto(`/harbor/projects/${projectId}/configs`);
+        } else {
+            await page.getByRole('tab', { name: 'Configuration' }).click();
+        }
+        await expect(page.locator('hbr-project-policy-config')).toBeVisible();
+    });
+}
+
+async function openProjectScanner(page: Page, projectId: number): Promise<void> {
+    await step(`Open project scanner projectId=${projectId}`, async () => {
+        await page.goto(`/harbor/projects/${projectId}/scanner`);
+        await expect(page.locator('scanner')).toBeVisible();
+    });
 }
 
 async function openProject(page: Page, projectId: number): Promise<void> {
-    await page.goto(`/harbor/projects/${projectId}/repositories`);
+    await step(`Open project repositories projectId=${projectId}`, async () => {
+        await page.goto(`/harbor/projects/${projectId}/repositories`);
+    });
+}
+
+async function enableScanOnPush(page: Page): Promise<void> {
+    const checkbox = page.locator('#scan-image-on-push-wrapper input');
+    if (!(await checkbox.isChecked())) {
+        await page.locator('#scan-image-on-push-wrapper label.clr-control-label').click();
+    }
+    await expect(checkbox).toBeChecked();
+    await saveProjectConfig(page);
+}
+
+async function enableSbomOnPush(page: Page): Promise<void> {
+    const checkbox = page.locator('#generate-sbom-on-push-wrapper input');
+    if (!(await checkbox.isChecked())) {
+        await page.locator('#generate-sbom-on-push-wrapper label.clr-control-label').click();
+    }
+    await expect(checkbox).toBeChecked();
+    await saveProjectConfig(page);
+}
+
+async function setPreventVulnerabilityPolicy(
+    page: Page,
+    levelIndex: number
+): Promise<void> {
+    await openProjectConfig(page);
+    const checkbox = page.getByRole('checkbox', {
+        name: 'Prevent vulnerable images from running.',
+    });
+    if (!(await checkbox.isChecked())) {
+        await checkbox.check({ force: true });
+    }
+    await expect(checkbox).toBeChecked();
+    await page
+        .getByRole('combobox', {
+            name: /Prevent images with vulnerability severity/i,
+        })
+        .selectOption({ index: levelIndex });
+    await saveProjectConfig(page);
+}
+
+async function saveProjectConfig(page: Page): Promise<void> {
+    const saveButton = page.locator('hbr-project-policy-config').getByRole('button', { name: 'SAVE' });
+    const projectId = page.url().match(/\/projects\/(\d+)/)?.[1];
+    await expect(saveButton).toBeEnabled();
+    if (!projectId) {
+        await saveButton.click();
+        return;
+    }
+
+    await Promise.all([
+        page.waitForResponse(response =>
+            response.url().includes(`/api/v2.0/projects/${projectId}`) &&
+            response.request().method() === 'PUT' &&
+            response.ok()
+        ),
+        saveButton.click(),
+    ]);
+}
+
+async function openConfigurationSecurity(page: Page): Promise<void> {
+    await page.goto('/harbor/configs/security');
+    await expect(page.getByText('Deployment security')).toBeVisible();
+}
+
+async function addSystemCveAllowlist(page: Page, cves: string): Promise<void> {
+    await openConfigurationSecurity(page);
+    await page.locator('#show-add-modal-button').click();
+    await page.locator('#allowlist-textarea').fill(cves);
+    await page.locator('#add-to-system').click();
+    await saveSecurityConfig(page);
+}
+
+async function addProjectCveAllowlist(page: Page, cves: string): Promise<void> {
+    await openProjectConfig(page);
+    await useProjectLevelCveAllowlist(page);
+    await page.locator('#show-add-modal').click();
+    await page.locator('#allowlist-textarea').fill(cves);
+    await page.locator('#add-to-allowlist').click();
+    await saveProjectConfig(page);
+}
+
+async function useProjectLevelCveAllowlist(page: Page): Promise<void> {
+    await openProjectConfig(page);
+    const projectAllowlist = page.getByRole('radio', { name: 'Project allowlist' });
+    if (!(await projectAllowlist.isChecked())) {
+        await projectAllowlist.check({ force: true });
+        await saveProjectConfig(page);
+    }
+    await expect(projectAllowlist).toBeChecked();
+}
+
+async function addSystemCvesToProjectAllowlist(page: Page): Promise<void> {
+    await openProjectConfig(page);
+    await page.locator('#add-system').click();
+    await saveProjectConfig(page);
+}
+
+async function deleteSystemCveAllowlistItem(
+    page: Page,
+    cve: string
+): Promise<void> {
+    const allowlist = page.locator('.allowlist-window').first();
+    await allowlist.locator('li', { hasText: cve }).locator('a.float-lg-right').click({ force: true });
+    await saveSecurityConfig(page);
+}
+
+async function deleteProjectCveAllowlistItem(page: Page, cve: string): Promise<void> {
+    await openProjectConfig(page);
+    await page
+        .locator('hbr-project-policy-config .allowlist-window')
+        .last()
+        .locator('li', { hasText: cve })
+        .locator('a.float-lg-right')
+        .click({ force: true });
+    await saveProjectConfig(page);
+}
+
+async function saveSecurityConfig(page: Page): Promise<void> {
+    const saveButton = page.locator('#security_save');
+    if (await saveButton.isDisabled()) {
+        return;
+    }
+    await expect(saveButton).toBeEnabled();
+    await Promise.all([
+        page.waitForResponse(response =>
+            response.url().includes('/api/v2.0/system/CVEAllowlist') &&
+            response.request().method() === 'PUT' &&
+            response.ok()
+        ),
+        saveButton.click(),
+    ]);
+}
+
+async function setCveAllowlistExpires(
+    page: Page,
+    expired: boolean
+): Promise<void> {
+    const date = new Date();
+    date.setDate(date.getDate() + (expired ? -1 : 1));
+    const value = formatDateInputValue(date);
+    const dateInput = page.getByRole('textbox', { name: /Never expires|Expires at/i }).last();
+    const neverExpires = page.locator('#neverExpires').last();
+
+    if (await neverExpires.isChecked()) {
+        await neverExpires.uncheck({ force: true });
+    }
+    await dateInput.evaluate((element, nextValue) => {
+        const input = element as HTMLInputElement;
+        input.removeAttribute('readonly');
+        input.value = nextValue;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }, value);
+
+    if (await page.locator('#security_save').isVisible()) {
+        await saveSecurityConfig(page);
+    } else {
+        await saveProjectConfig(page);
+    }
+}
+
+function formatDateInputValue(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}/${date.getFullYear()}`;
+}
+
+async function generateRepoSbom(page: Page, tag: string): Promise<void> {
+    const row = page.getByRole('row').filter({ hasText: tag });
+    await row.locator('label.clr-control-label').click();
+    await page.locator('#generate-sbom-btn').click();
+    await expect(page.getByRole('link', { name: 'SBOM details' })).toBeVisible({
+        timeout: scanResultTimeout,
+    });
+}
+
+async function checkoutAndReviewSbomDetails(page: Page, tag: string): Promise<void> {
+    await page.getByRole('row').filter({ hasText: tag }).getByRole('link', { name: 'SBOM details' }).click();
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#sbom-btn').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.json$/);
+    await expect(page.getByRole('row').filter({ hasText: /Package|Version|License/i }).first()).toBeVisible();
 }
 
 async function scanRepository(
@@ -317,24 +1074,63 @@ async function scanRepository(
     repository: string
 ): Promise<void> {
     await openProject(page, projectId);
-    await page.getByRole('link', { name: `${project}/${repository}` }).click();
+    await retryStep(`Open repository ${project}/${repository}`, async () => {
+        await page.getByRole('link', { name: `${project}/${repository}` }).click();
+        await expect(page.getByRole('heading', { name: repository })).toBeVisible();
+    });
     await scanCurrentArtifact(page);
 }
 
 async function scanCurrentArtifact(page: Page): Promise<void> {
-    await page
-        .getByRole('gridcell', { name: 'Select Select' })
-        .locator('label')
-        .click();
-    await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
+    await step('Select artifact and trigger vulnerability scan', async () => {
+        await page
+            .getByRole('gridcell', { name: 'Select Select' })
+            .locator('label')
+            .click();
+        await page.getByRole('checkbox', { name: 'Select', exact: true }).check();
 
-    const scanButton = page.getByRole('button', { name: 'Scan vulnerability' });
-    await expect(scanButton).toBeEnabled();
-    await scanButton.click();
-    log('waiting for vulnerability scan result');
-    await page
-        .getByRole('gridcell', { name: /Total/ })
-        .waitFor({ timeout: scanResultTimeout });
+        const scanButton = page.getByRole('button', { name: 'Scan vulnerability' });
+        await expect(scanButton).toBeEnabled();
+        await scanButton.click();
+    });
+    await retryStep('Wait for vulnerability scan result', async () => {
+        await page
+            .getByRole('gridcell', { name: /Total|No vulnerability/ })
+            .waitFor({ timeout: scanResultTimeout });
+    }, 6);
+}
+
+async function openActionMenu(page: Page): Promise<void> {
+    await step('Open action menu', async () => {
+        const actionMenu = page
+            .locator('clr-dropdown, clr-dg-action-overflow')
+            .filter({ hasText: /action/i })
+            .first();
+        await actionMenu.click();
+    });
+}
+
+async function stopScanIfRunning(page: Page): Promise<void> {
+    const stopScan = page.getByRole('menuitem', { name: /Stop Scan/i });
+    if (await stopScan.isEnabled()) {
+        await stopScan.click();
+        await expect(page.getByText(/Stopped/i).first()).toBeVisible({ timeout: scanResultTimeout });
+        return;
+    }
+
+    await page.keyboard.press('Escape').catch(() => undefined);
+    await expect(page.getByRole('gridcell', { name: /Total|No vulnerability/ })).toBeVisible({ timeout: scanResultTimeout });
+}
+
+async function stopScanAllIfRunning(page: Page): Promise<void> {
+    const stopScan = page.getByRole('button', { name: /STOP SCAN/i });
+    if (await stopScan.isEnabled()) {
+        await stopScan.click();
+        await expect(page.getByRole('button', { name: 'SCAN NOW' })).toBeVisible({ timeout: scanResultTimeout });
+        return;
+    }
+
+    await expect(page.getByRole('button', { name: 'SCAN NOW' })).toBeVisible();
 }
 
 async function deleteRepository(
@@ -344,7 +1140,7 @@ async function deleteRepository(
     repository: string
 ): Promise<void> {
     await openProject(page, projectId);
-    await page.locator('.refresh-btn > clr-icon').click();
+    await page.locator('.refresh-btn > clr-icon').click({ force: true });
 
     const row = page.getByRole('row', {
         name: repositoryRowName(project, repository),
@@ -475,11 +1271,18 @@ async function searchBySeverity(page: Page, severity: string): Promise<void> {
 async function assertSeverityFilter(
     page: Page,
     severity: string,
-    _count: number
+    count: number
 ): Promise<void> {
     await searchBySeverity(page, severity);
-    await expect(page.locator('clr-dg-footer')).toContainText(/CVEs/);
-    await expectGridCellVisible(page, severity);
+    const expectedFooter = count > 1000 ? '1000+ CVEs' : `${count} CVEs`;
+    await expect(page.locator('clr-dg-footer')).toContainText(expectedFooter);
+
+    if (count === 0) {
+        await expectNoVulnerabilities(page);
+        return;
+    }
+
+    await expectGridCellVisible(page, severity === 'Unknown' ? 'n/a' : severity);
 }
 
 async function searchByAllFilters(
@@ -556,9 +1359,11 @@ async function expectGridCellVisible(page: Page, name: string): Promise<void> {
 }
 
 async function expectNoVulnerabilities(page: Page): Promise<void> {
-    await expect(page.locator('clr-dg-placeholder')).toContainText(
-        'We could not find any vulnerability'
-    );
+    await expect(page.locator('clr-dg-row')).toHaveCount(0);
+}
+
+function sleepSync(ms: number): void {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 function authorizationHeader(user: string, password: string): string {
@@ -650,6 +1455,309 @@ async function getVulnerabilitiesFromAPI(
     return response.json();
 }
 
+async function getCveAllowlistDataFromAPI(
+    request: APIRequestContext,
+    user: string,
+    password: string,
+    project: string,
+    repository: string,
+    reference: string
+): Promise<CveAllowlistData> {
+    const blockingSeverities = new Set(['Critical', 'High', 'Medium']);
+    let cves = new Set<string>();
+    let blockingCves = new Set<string>();
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        cves = new Set<string>();
+        blockingCves = new Set<string>();
+        const response = await request.get(
+            `/api/v2.0/projects/${encodeURIComponent(project)}/repositories/${encodeRepositoryName(repository)}/artifacts/${reference}/additions/vulnerabilities`,
+            {
+                headers: {
+                    Authorization: authorizationHeader(user, password),
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok()) {
+            throw new Error(
+                `Failed to fetch CVE allowlist data: ${response.status()} ${response.statusText()}`
+            );
+        }
+
+        const reports: Record<string, { vulnerabilities?: Array<{ id: string; severity: string }> }> = await response.json();
+        for (const report of Object.values(reports)) {
+            for (const vulnerability of report.vulnerabilities || []) {
+                cves.add(vulnerability.id);
+                if (blockingSeverities.has(vulnerability.severity)) {
+                    blockingCves.add(vulnerability.id);
+                }
+            }
+        }
+
+        if (cves.size >= 2 && blockingCves.size > 0) {
+            break;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    const allCves = Array.from(cves);
+    const blockingCveList = Array.from(blockingCves);
+    if (allCves.length < 2 || blockingCveList.length < 2) {
+        throw new Error(
+            `Expected at least two CVEs and one blocking CVE, got ${allCves.length} CVEs and ${blockingCves.size} blocking CVEs`
+        );
+    }
+    const lastBlockingCve = blockingCveList[blockingCveList.length - 1];
+
+    return {
+        partial: blockingCveList.slice(0, -1).join('\n'),
+        last: lastBlockingCve,
+        all: blockingCveList.join('\n'),
+    };
+}
+
+async function resetSystemCveAllowlistFromAPI(): Promise<void> {
+    const baseURL = process.env.BASE_URL;
+    if (!baseURL) {
+        throw new Error('BASE_URL is required to reset the system CVE allowlist');
+    }
+    const api = await playwrightRequest.newContext({
+        baseURL,
+        extraHTTPHeaders: {
+            Authorization: authorizationHeader(user, pwd),
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const response = await api.put('/api/v2.0/system/CVEAllowlist', {
+        data: {
+            items: [],
+            expires_at: null,
+        },
+    });
+
+    try {
+        if (!response.ok()) {
+            throw new Error(
+                `Failed to reset system CVE allowlist: ${response.status()} ${response.statusText()}`
+            );
+        }
+    } finally {
+        await api.dispose();
+    }
+}
+
+function encodeRepositoryName(repository: string): string {
+    return encodeURIComponent(repository).replace(/%2F/g, '%252F');
+}
+
+async function createUserFromAPI(
+    request: APIRequestContext,
+    username: string,
+    password: string
+): Promise<void> {
+    await step(`Create Harbor user ${username}`, async () => {
+        const response = await request.post('/api/v2.0/users', {
+            headers: {
+                Authorization: authorizationHeader(user, pwd),
+                'Content-Type': 'application/json',
+            },
+            data: {
+                username,
+                email: `${username}@example.com`,
+                realname: username,
+                password,
+                comment: 'Playwright Trivy test user',
+            },
+        });
+
+        if (!response.ok() && response.status() !== 409) {
+            throw new Error(
+                `Failed to create user ${username}: ${response.status()} ${response.statusText()}`
+            );
+        }
+    });
+}
+
+async function getSystemInfoFromAPI(
+    request: APIRequestContext,
+    user: string,
+    password: string
+): Promise<SystemInfo> {
+    const response = await request.get('/api/v2.0/systeminfo', {
+        headers: {
+            Authorization: authorizationHeader(user, password),
+            Accept: 'application/json',
+        },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Failed to fetch system info: ${response.status()} ${response.statusText()}`
+        );
+    }
+
+    return response.json();
+}
+
+async function addScanner(
+    page: Page,
+    name: string,
+    endpoint: string,
+    auth: string,
+    description?: string,
+    options: ScannerOptions = {}
+): Promise<void> {
+    await page.getByRole('button', { name: /NEW SCANNER/i }).click();
+    await fillScannerForm(page, name, endpoint, auth, description, options);
+    await page.locator('#button-test').click();
+    await expect(page.getByText('Test passed')).toBeVisible({ timeout: scanResultTimeout });
+    await page.locator('#button-add').click();
+    await expect(scannerRow(page, name).filter({ hasText: endpoint })).toBeVisible();
+}
+
+async function updateScanner(
+    page: Page,
+    originalName: string,
+    name: string,
+    endpoint: string,
+    auth: string,
+    description?: string,
+    options: ScannerOptions = {}
+): Promise<void> {
+    await selectScannerRow(page, originalName);
+    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.getByRole('menuitem', { name: 'EDIT' }).click();
+    await fillScannerForm(page, name, endpoint, auth, description, options);
+    await page.locator('#button-save').click();
+    await expect(scannerRow(page, name).filter({ hasText: endpoint }).filter({ hasText: auth })).toBeVisible();
+}
+
+async function fillScannerForm(
+    page: Page,
+    name: string,
+    endpoint: string,
+    auth: string,
+    description?: string,
+    options: ScannerOptions = {}
+): Promise<void> {
+    await page.locator('#scanner-name').fill(name);
+    if (description !== undefined) {
+        await page.locator('#description').fill(description);
+    }
+    await page.locator('#scanner-endpoint').fill(endpoint);
+    await page.locator('#scanner-authorization').selectOption(auth);
+
+    if (auth === 'Basic') {
+        await page.locator('#scanner-username').fill(options.username || '');
+        await page.locator('#scanner-password').fill(options.password || '');
+    }
+    if (auth === 'Bearer') {
+        await page.locator('#scanner-token').fill(options.token || '');
+    }
+    if (auth === 'APIKey') {
+        await page.locator('#scanner-apiKey').fill(options.apiKey || '');
+    }
+    if (options.skipCertVerification) {
+        await page.locator('#scanner-skipCertVerify').check({ force: true });
+    }
+    if (options.internalRegistryAddress) {
+        await page.locator('#scanner-use-inner').check({ force: true });
+    }
+}
+
+async function filterScannerByName(page: Page, name: string): Promise<void> {
+    await expect(scannerRow(page, name)).toBeVisible();
+}
+
+async function filterScannerByEndpoint(page: Page, endpoint: string): Promise<void> {
+    await expect(page.getByRole('row').filter({ hasText: endpoint })).toBeVisible();
+}
+
+async function deleteScanner(page: Page, name: string): Promise<void> {
+    await selectScannerRow(page, name);
+    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'DELETE', exact: true }).click();
+    await page.reload();
+    await expect(scannerRow(page, name)).not.toBeVisible();
+}
+
+async function setScannerAsDefault(page: Page, name: string): Promise<void> {
+    await selectScannerRow(page, name);
+    await page.locator('#set-default').click();
+    await expect(scannerRow(page, name).filter({ hasText: 'Default' })).toBeVisible();
+}
+
+async function enableOrDeactivateScanner(
+    page: Page,
+    name: string,
+    action: 'ENABLE' | 'DEACTIVATE'
+): Promise<void> {
+    await selectScannerRow(page, name);
+    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.getByRole('menuitem', { name: action }).click();
+    const expectedState = action === 'ENABLE' ? 'Enabled' : 'Deactivated';
+    await expect(scannerRow(page, name).filter({ hasText: expectedState })).toBeVisible();
+}
+
+async function selectProjectScanner(
+    page: Page,
+    name: string,
+    scannerCount?: number
+): Promise<void> {
+    await page.locator('#edit-scanner').click();
+    if (scannerCount !== undefined) {
+        await expect(page.locator('clr-dg-row')).toHaveCount(scannerCount);
+    }
+    await page.getByRole('row').filter({ hasText: name }).locator('label.clr-control-label').click();
+    await page.locator('#save-scanner').click();
+    await expect(page.locator('#scanner-name')).toHaveText(name);
+}
+
+async function selectScannerRow(page: Page, name: string): Promise<void> {
+    const row = scannerRow(page, name);
+    await expect(row).toBeVisible();
+    await row.locator('label.clr-control-label').click();
+}
+
+function scannerRow(page: Page, name: string): Locator {
+    return page.getByRole('row').filter({ hasText: name });
+}
+
+function cannotPullImage(
+    ip: string,
+    user: string,
+    pwd: string,
+    project: string,
+    image: string,
+    tag: string,
+    expectedMessage?: string
+): void {
+    dockerLogin(ip, user, pwd);
+    try {
+        let failure = '';
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            try {
+                runDockerCommand(['pull', `${ip}/${project}/${image}:${tag}`]);
+            } catch (error) {
+                failure = String((error as Error).message);
+                break;
+            }
+            sleepSync(500);
+        }
+        expect(failure).toBeTruthy();
+        if (expectedMessage) {
+            expect(failure).toContain(expectedMessage);
+        }
+    } finally {
+        runDockerCommand(['logout', ip]);
+    }
+}
+
 function runDockerCommand(
     args: string[],
     options: Partial<ExecFileSyncOptionsWithStringEncoding> = {}
@@ -718,9 +1826,11 @@ function pushImageWithTag(
     project: string,
     image: string,
     tag: string,
-    tag1: string = 'latest'
+    tag1: string = 'latest',
+    localRegistry: string = LOCAL_REGISTRY,
+    localNamespace: string = LOCAL_REGISTRY_NAMESPACE
 ): void {
-    const sourceImage = `${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:${tag1}`;
+    const sourceImage = `${localRegistry}/${localNamespace}/${image}:${tag1}`;
     const targetImage = `${ip}/${project}/${image}:${tag}`;
 
     dockerLogin(ip, user, pwd);
@@ -732,4 +1842,98 @@ function pushImageWithTag(
     } finally {
         runDockerCommand(['logout', ip]);
     }
+}
+
+function pullImage(
+    ip: string,
+    user: string,
+    pwd: string,
+    project: string,
+    image: string,
+    tag: string
+): void {
+    dockerLogin(ip, user, pwd);
+    try {
+        let lastError: unknown;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            try {
+                runDockerCommand(['pull', `${ip}/${project}/${image}:${tag}`]);
+                return;
+            } catch (error) {
+                lastError = error;
+                sleepSync(500);
+            }
+        }
+        throw lastError;
+    } finally {
+        runDockerCommand(['logout', ip]);
+    }
+}
+
+async function pushImage(
+    ip: string,
+    user: string,
+    pwd: string,
+    project: string,
+    image: string,
+    digest?: string,
+    needPullFirst = true,
+    isRobot = false,
+    localRegistry: string = LOCAL_REGISTRY,
+    localNamespace: string = LOCAL_REGISTRY_NAMESPACE
+): Promise<void> {
+    const imageInUse = digest ? `${image}@sha256:${digest}` : image;
+    const imageInUseWithTag = digest ? `${image}:${digest}` : image;
+    const sourceImage = needPullFirst
+        ? `${localRegistry}/${localNamespace}/${imageInUse}`
+        : imageInUse;
+    const targetImage = `${ip}/${project}/${imageInUseWithTag}`;
+    const username = isRobot ? `robot$${project}+${user}` : user;
+
+    dockerLogin(ip, username, pwd);
+    try {
+        if (needPullFirst) {
+            runDockerCommand(['pull', sourceImage]);
+        }
+        runDockerCommand(['tag', sourceImage, targetImage]);
+        runDockerCommand(['push', targetImage]);
+    } finally {
+        runDockerCommand(['logout', ip]);
+    }
+}
+
+async function scanResultShouldDisplayInListRow(
+    page: Page,
+    tagOrDigest: string,
+    hasNoVulnerability = false
+): Promise<void> {
+    const row = page.getByRole('row').filter({ hasText: tagOrDigest });
+    const vulnerabilityCell = hasNoVulnerability
+        ? row.getByRole('gridcell', { name: 'No vulnerability' })
+        : row.getByRole('gridcell', { name: /Total.*Fixable/ });
+
+    await expect(vulnerabilityCell).toBeVisible({ timeout: scanResultTimeout });
+}
+
+async function viewRepoScanDetails(page: Page, vulnerabilityLevels: string[]): Promise<void> {
+    await step(`Review vulnerability details: ${vulnerabilityLevels.join(', ')}`, async () => {
+        const vulnerabilityTable = page.locator('hbr-artifact-vulnerabilities');
+        await expect(vulnerabilityTable).toBeVisible({ timeout: 10000 });
+
+        const pageSize = page.getByRole('combobox', { name: 'Page size' }).last();
+        if (await pageSize.isVisible()) {
+            await pageSize.selectOption('100');
+        }
+
+        for (const vulnerabilityLevel of vulnerabilityLevels) {
+            const row = vulnerabilityTable
+                .getByRole('row')
+                .filter({ hasText: vulnerabilityLevel })
+                .first();
+
+            await expect(row).toBeVisible({ timeout: scanResultTimeout });
+        }
+        await page.getByRole('tab', { name: /Build History/ }).click();
+        await expect(page.getByText(/Build History/i)).toBeVisible();
+    });
 }
