@@ -1,4 +1,6 @@
 src/portal/node_modules/
+src/portal/playwright-report/
+src/portal/test-results/
 doc/
 docs/
 .git
