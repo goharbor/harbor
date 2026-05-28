@@ -21,6 +21,17 @@
 #
 # down:			shutdown Harbor instance
 #
+# playwright-test:	run all Playwright tests in a container against BASE_URL
+#
+# playwright-test-report:
+#			run all Playwright tests and serve the HTML report
+#
+# playwright-image-build:
+#			build the Playwright test runner image
+#
+# playwright-image-push:
+#			push the Playwright test runner image
+#
 # package_online:
 #				prepare online install package
 #			for example: make package_online -e DEVFLAG=false\
@@ -164,8 +175,19 @@ DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERPULL=$(DOCKERCMD) pull
 DOCKERIMAGES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
+DOCKERPUSH=$(DOCKERCMD) push
 DOCKERCOMPOSECMD=$(shell which docker-compose 2>/dev/null || echo "docker compose")
 DOCKERTAG=$(DOCKERCMD) tag
+PLAYWRIGHT_IMAGE ?= registry.goharbor.io/harbor-ci/goharbor/harbor-e2e-engine:latest-playwright-ui
+BASE_URL ?= http://harbor.128.140.12.238.nip.io
+HARBOR_ADMIN ?= admin
+HARBOR_PASSWORD ?= Harbor12345
+PLAYWRIGHT_DOCKERFILE ?= $(PORTAL_PATH)/e2e/Dockerfile
+PLAYWRIGHT_DOCKER_NETWORK ?= host
+PLAYWRIGHT_DOCKER_SOCKET ?= auto
+PLAYWRIGHT_CI ?= true
+PLAYWRIGHT_REPORT_PORT ?= 9323
+PLAYWRIGHT_REPORT_CONTAINER ?= harbor-playwright-report
 
 # go parameters
 GOCMD=$(shell which go)
@@ -583,6 +605,54 @@ down:
 	@echo "Done."
 
 restart: down prepare start
+
+playwright-image-build:
+	@$(DOCKERBUILD) --target bundled -f $(PLAYWRIGHT_DOCKERFILE) -t $(PLAYWRIGHT_IMAGE) $(BUILDPATH)
+
+playwright-image-push:
+	@$(DOCKERPUSH) $(PLAYWRIGHT_IMAGE)
+
+playwright-test:
+	@mkdir -p $(PORTAL_PATH)/test-results $(PORTAL_PATH)/playwright-report
+	@set -e; \
+		docker_socket_opt=""; \
+		if [ "$(PLAYWRIGHT_DOCKER_SOCKET)" = "true" ] || { [ "$(PLAYWRIGHT_DOCKER_SOCKET)" = "auto" ] && [ -S /var/run/docker.sock ] && [ -r /var/run/docker.sock ]; }; then \
+			docker_socket_opt="-v /var/run/docker.sock:/var/run/docker.sock"; \
+		fi; \
+		if ! $(DOCKERCMD) image inspect $(PLAYWRIGHT_IMAGE) >/dev/null 2>&1; then \
+			$(DOCKERPULL) $(PLAYWRIGHT_IMAGE) || { \
+				echo "Failed to pull $(PLAYWRIGHT_IMAGE). Run 'make playwright-image-build' to build it locally, or log in before retrying."; \
+				exit 1; \
+			}; \
+		fi; \
+		$(DOCKERCMD) run --rm --network $(PLAYWRIGHT_DOCKER_NETWORK) \
+			$$docker_socket_opt \
+			-v $(PORTAL_PATH)/e2e:/app/e2e:ro \
+			-v $(PORTAL_PATH)/playwright.config.ts:/app/playwright.config.ts:ro \
+			-v $(PORTAL_PATH)/test-results:/app/test-results \
+			-v $(PORTAL_PATH)/playwright-report:/app/playwright-report \
+			-e BASE_URL=$(BASE_URL) \
+			-e HARBOR_ADMIN=$(HARBOR_ADMIN) \
+			-e HARBOR_PASSWORD=$(HARBOR_PASSWORD) \
+			-e CI=$(PLAYWRIGHT_CI) \
+			-w /app \
+			$(PLAYWRIGHT_IMAGE) npx playwright test
+
+playwright-test-report:
+	@set -e; \
+		test_status=0; \
+		make playwright-test || test_status=$$?; \
+		$(DOCKERCMD) rm -f $(PLAYWRIGHT_REPORT_CONTAINER) >/dev/null 2>&1 || true; \
+		cleanup() { $(DOCKERCMD) rm -f $(PLAYWRIGHT_REPORT_CONTAINER) >/dev/null 2>&1 || true; }; \
+		trap cleanup INT TERM EXIT; \
+		echo "Serving Playwright report at http://localhost:$(PLAYWRIGHT_REPORT_PORT). Press Ctrl+C to stop."; \
+		$(DOCKERCMD) run -d --name $(PLAYWRIGHT_REPORT_CONTAINER) \
+			-p $(PLAYWRIGHT_REPORT_PORT):$(PLAYWRIGHT_REPORT_PORT) \
+			-v $(PORTAL_PATH)/playwright-report:/app/playwright-report:ro \
+			-w /app \
+			$(PLAYWRIGHT_IMAGE) npx playwright show-report playwright-report --host 0.0.0.0 --port $(PLAYWRIGHT_REPORT_PORT) >/dev/null; \
+		$(DOCKERCMD) wait $(PLAYWRIGHT_REPORT_CONTAINER) >/dev/null || true; \
+		exit $$test_status
 
 swagger_client:
 	@echo "Generate swagger client"
