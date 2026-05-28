@@ -21,6 +21,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
@@ -28,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
+	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
@@ -63,6 +65,7 @@ func NewController() Controller {
 	return &controller{
 		tagMgr:       tag.Mgr,
 		artMgr:       pkg.ArtifactMgr,
+		repoMgr:      pkg.RepositoryMgr,
 		immutableMtr: rule.NewRuleMatcher(),
 	}
 }
@@ -70,6 +73,7 @@ func NewController() Controller {
 type controller struct {
 	tagMgr       tag.Manager
 	artMgr       artifact.Manager
+	repoMgr      repository.Manager
 	immutableMtr match.ImmutableTagMatcher
 }
 
@@ -103,7 +107,11 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		// update it to point to the provided artifact
 		tag.ArtifactID = artifactID
 		tag.PushTime = time.Now()
-		return tag.ID, c.Update(ctx, tag, "ArtifactID", "PushTime")
+		if err := c.Update(ctx, tag, "ArtifactID", "PushTime"); err != nil {
+			return 0, err
+		}
+		c.touchRepo(ctx, repositoryID)
+		return tag.ID, nil
 	}
 
 	// the tag doesn't exist under the repository, create it
@@ -118,11 +126,23 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.PushTime = time.Now()
 		tagID, err = c.Create(ctx, tag)
 		return err
-	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil && !errors.IsConflictErr(err) {
+	})(orm.SetTransactionOpNameToContext(ctx, "tx-tag-ensure")); err != nil {
+		if errors.IsConflictErr(err) {
+			return tagID, nil
+		}
 		return 0, err
 	}
 
 	return tagID, nil
+}
+
+// touchRepo bumps update_time on the parent repository so the "last modified"
+// timestamp reflects tag push/delete events. Errors are logged only; the tag
+// operation has already succeeded.
+func (c *controller) touchRepo(ctx context.Context, repositoryID int64) {
+	if err := c.repoMgr.Touch(ctx, repositoryID); err != nil {
+		log.G(ctx).Warningf("failed to touch repository %d update_time: %v", repositoryID, err)
+	}
 }
 
 // Count ...
@@ -164,7 +184,12 @@ func (c *controller) Create(ctx context.Context, tag *Tag) (id int64, err error)
 	if !isValidTag(tag.Name) {
 		return 0, errors.BadRequestError(errors.Errorf("invalid tag name: %s", tag.Name))
 	}
-	return c.tagMgr.Create(ctx, &(tag.Tag))
+	id, err = c.tagMgr.Create(ctx, &(tag.Tag))
+	if err != nil {
+		return 0, err
+	}
+	c.touchRepo(ctx, tag.RepositoryID)
+	return id, nil
 }
 
 func isValidTag(name string) bool {
@@ -191,7 +216,11 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 		return errors.New(nil).WithCode(errors.PreconditionCode).
 			WithMessagef("the tag %s configured as immutable, cannot be deleted", tag.Name)
 	}
-	return c.tagMgr.Delete(ctx, id)
+	if err := c.tagMgr.Delete(ctx, id); err != nil {
+		return err
+	}
+	c.touchRepo(ctx, tag.RepositoryID)
+	return nil
 }
 
 // DeleteTags ...
