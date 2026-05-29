@@ -388,8 +388,9 @@ Enable Skip Audit Log Database
 
 Set Up Retain Image Last Pull Time
     [Arguments]  ${action}
-    Run Keyword If  '${action}'=='enable'  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Be Selected  ${retain_image_last_pull_time_checkbox}
-    ...  ELSE  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Not Be Selected  ${retain_image_last_pull_time_checkbox}
+    ${is_checked}=    Execute JavaScript    return document.getElementById('scannerSkipUpdatePullTime').checked;
+    Run Keyword If  '${action}'=='enable' and ${is_checked} == ${False}  Execute JavaScript    document.getElementById('scannerSkipUpdatePullTime').click();
+    Run Keyword If  '${action}'=='disable' and ${is_checked} == ${True}  Execute JavaScript    document.getElementById('scannerSkipUpdatePullTime').click();
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
 
 Set Banner Message
