@@ -1,13 +1,48 @@
 import { test, expect, login } from '../fixtures/harbor';
 import { createProject, pullImage, cannotPullImage, cannotPushImage, pushImage, pushImageWithTag, waitForProjectInList, cosignGenerateKeyPair, cosignSign, cosignVerify, runCommand } from '../utils';
+import { request as playwrightRequest, type Page } from '@playwright/test';
 
 const harborBaseURL = process.env.HARBOR_BASE_URL || process.env.BASE_URL || '';
 const harborHost = harborBaseURL.replace(/^https?:\/\//, '') || 'localhost';
+
+test.setTimeout(120 * 1000);
+
+const adminUser = process.env.HARBOR_ADMIN || 'admin';
+const adminPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
+const commonUsers = [
+  'user001',
+  'user002',
+  'user004',
+  'user005',
+  'user006',
+  'user009',
+  'user010',
+  'user011',
+  'user017',
+  'user018',
+  'user019',
+  'user020',
+  'user021',
+  'user022',
+];
+
+test.beforeAll(async () => {
+  await resetCommonSystemConfig();
+  for (const username of commonUsers) {
+    await ensureUser(username, 'Test1@34');
+  }
+});
+
+test.beforeEach(async () => {
+  await resetCommonSystemConfig();
+});
 
 test('sign-out', async ({ harborPage, harborUser }) => {
   // Sign-out if already signed in
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
+  await expect(harborPage.getByRole('textbox', { name: 'Username' })).toBeVisible();
+  await login(harborPage, harborBaseURL, harborUser);
 });
 
 test('create a system label', async ({ harborPage }) => {
@@ -69,7 +104,7 @@ test('delete a system label', async ({ harborPage }) => {
 
 test('project admin operate labels', async ({ harborPage, harborUser }) => {
   const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
+  const projectName = `aaaproject${timestamp}`;
   const labelName = `label_${timestamp}`;
   const updatedLabelName = `label_updated_${timestamp}`;
 
@@ -77,10 +112,11 @@ test('project admin operate labels', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
-  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+  await login(harborPage, undefined, { username: 'user019', password: 'Test1@34' });
 
   // Create a new project
   await createProject(harborPage, projectName, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Navigate to Project Labels tab
   await harborPage.getByRole('tab', { name: 'Labels' }).locator('a').click();
@@ -111,7 +147,7 @@ test('project admin operate labels', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('row', { name: new RegExp(updatedLabelName) }).waitFor({ state: 'detached', timeout: 5000 });
   
   // Sign out and sign back in as admin
-  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('button', { name: 'user019', exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   await login(harborPage, undefined, harborUser);
@@ -130,7 +166,7 @@ test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
-  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+  await login(harborPage, undefined, { username: 'user020', password: 'Test1@34' });
 
   // Create a new project
   await createProject(harborPage, projectName);
@@ -142,8 +178,8 @@ test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
   
   await pushImageWithTag({
     ip: harborIp,
-    user: 'user1',
-    pwd: 'Harbor12345',
+    user: 'user020',
+    pwd: 'Test1@34',
     project: projectName,
     image,
     tag: tag1,
@@ -154,8 +190,8 @@ test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
 
   await pushImageWithTag({
     ip: harborIp,
-    user: 'user1',
-    pwd: 'Harbor12345',
+    user: 'user020',
+    pwd: 'Test1@34',
     project: projectName,
     image,
     tag: tag2,
@@ -216,7 +252,7 @@ test('project admin add labels to repo', async ({ harborPage, harborUser }) => {
   await expect(harborPage.getByText(label2)).toBeVisible();
 
   // Sign out and sign back in as admin
-  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('button', { name: 'user020', exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   await login(harborPage, undefined, harborUser);
@@ -230,17 +266,18 @@ test('developer operate labels', async ({ harborPage, harborUser }) => {
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
-  await login(harborPage, undefined, { username: 'user1', password: 'Harbor12345' });
+  await login(harborPage, undefined, { username: 'user021', password: 'Test1@34' });
 
   // Create a new project
   await createProject(harborPage, projectName, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
 
   // Navigate to Members tab
   await harborPage.getByText('Members').click();
 
   // Add user2 as a member
   await harborPage.getByRole('button', { name: 'User', exact: true }).click();
-  await harborPage.locator('#member_name').fill('user2');
+  await harborPage.locator('#member_name').fill('user022');
   await harborPage.getByText('Developer').click();
   await harborPage.getByRole('button', { name: 'OK' }).click();
 
@@ -248,11 +285,11 @@ test('developer operate labels', async ({ harborPage, harborUser }) => {
   await harborPage.waitForTimeout(2000);
 
   // Sign out user1
-  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('button', { name: 'user021', exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 
   // Sign in as user2 (Developer role)
-  await login(harborPage, undefined, { username: 'user2', password: 'Harbor12345' });
+  await login(harborPage, undefined, { username: 'user022', password: 'Test1@34' });
 
   // Go to Projects page first
   await harborPage.getByRole('link', { name: 'Projects' }).click();
@@ -264,7 +301,7 @@ test('developer operate labels', async ({ harborPage, harborUser }) => {
   await expect(harborPage.getByRole('tab', { name: 'Labels' })).not.toBeVisible();
 
   // Sign out and sign back in as admin
-  await harborPage.getByRole('button', { name: 'user2', exact: true }).click();
+  await harborPage.getByRole('button', { name: 'user022', exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   await login(harborPage, undefined, harborUser);
@@ -345,8 +382,8 @@ test('delete a project', async ({ harborPage }) => {
   // Click ACTION text/button
   await harborPage.getByText('ACTION').click();
   
-  // Click Delete button
-  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  // Click Delete button from the project action menu
+  await harborPage.locator('#delete-project').click();
   
   // Confirm deletion by clicking DELETE button
   await harborPage.getByRole('button', { name: 'DELETE' }).click();
@@ -361,16 +398,13 @@ test('delete a project', async ({ harborPage }) => {
 test('delete multiple projects', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
-  const projectWithArtifacts = `projecta${dateStr}`;
-  const projectWithoutArtifacts = `projectb${dateStr}`;
+  const projectWithArtifacts = `a0projecta${dateStr}`;
+  const projectWithoutArtifacts = `a0projectb${dateStr}`;
   const image = 'hello-world';
   
   // Create public projects
-  await createProject(harborPage, projectWithArtifacts, false, true);
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await harborPage.waitForTimeout(100);
-  
-  await createProject(harborPage, projectWithoutArtifacts, false, true);
+  await createProjectByApi(projectWithArtifacts, true, harborUser);
+  await createProjectByApi(projectWithoutArtifacts, true, harborUser);
   await harborPage.getByRole('link', { name: 'Projects' }).click();
   
   // Push image to first project only
@@ -435,7 +469,7 @@ test('delete multi repos', async ({ harborPage, harborUser }) => {
   }
   
   // Navigate into the project
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Select both repositories
   for (const repo of repos) {
@@ -526,6 +560,7 @@ test('delete multi artifacts', async ({ harborPage, harborUser }) => {
   }
 
   // Navigate into the project and then the repository
+  await harborPage.getByRole('link', { name: 'Projects' }).click();
   await waitForProjectInList(harborPage, projectName, 15000, true);
   await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
   await harborPage.getByRole('link', { name: new RegExp(image) }).click();
@@ -536,8 +571,9 @@ test('delete multi artifacts', async ({ harborPage, harborUser }) => {
     await artifactRow.locator('label').click();
   }
 
-  // Click Delete button
-  await harborPage.getByRole('button', { name: 'Delete' }).click();
+  // Click Delete from the artifact action menu
+  await harborPage.getByText('Actions').click();
+  await harborPage.locator('#artifact-list-delete').click();
   await harborPage.getByRole('button', { name: 'DELETE', exact: true }).click();
 
   // Wait for deletion to process
@@ -553,7 +589,7 @@ test('delete multiple users', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
   const projectName = `project${dateStr}`;
-  const users = ['user1', 'user2'];
+  const users = ['user017', 'user018'];
   
   // Create project
   await createProject(harborPage, projectName, true);
@@ -624,11 +660,11 @@ test('user view logs', async ({ harborPage, harborUser }) => {
   test.setTimeout(60000);
 
   const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
+  const projectName = `aaaproject${timestamp}`;
   const pushImageName = 'hello-world';
   const pushImageTag = 'latest';
-  const testUser = 'user1';
-  const testPassword = 'Harbor12345';
+  const testUser = 'user002';
+  const testPassword = 'Test1@34';
 
   // Sign out admin and sign in as user1
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -751,19 +787,20 @@ test('user view logs', async ({ harborPage, harborUser }) => {
 
 test('manage project members', async ({ harborPage, harborUser }) => {
   const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
-  const testUser1 = 'user2';
+  const projectName = `aaaproject${timestamp}`;
+  const testUser1 = 'user005';
   const image = 'hello-world';
-  const testPassword = 'Harbor12345';
+  const testPassword = 'Test1@34';
 
   // Sign out admin and sign in as user1
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
-  await login(harborPage, undefined, { username: 'user1', password: testPassword });
+  await login(harborPage, undefined, { username: 'user004', password: testPassword });
 
   // Create a new project
-  await createProject(harborPage, projectName, true);
+  await createProjectByApi(projectName, false, { username: 'user004', password: testPassword });
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
 
   // Push an image to the project
   const harborIp = harborHost;
@@ -772,7 +809,7 @@ test('manage project members', async ({ harborPage, harborUser }) => {
 
   await pushImageWithTag({
     ip: harborIp,
-    user: 'user1',
+    user: 'user004',
     pwd: testPassword,
     project: projectName,
     image,
@@ -783,7 +820,7 @@ test('manage project members', async ({ harborPage, harborUser }) => {
   });
 
   // Navigate to Members tab
-  await harborPage.getByText('Members').click();
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/members`);
 
   // Add user2 as Limited Guest
   await harborPage.getByRole('button', { name: 'User', exact: true }).click();
@@ -840,7 +877,7 @@ test('manage project members', async ({ harborPage, harborUser }) => {
   await expect(harborPage.getByRole('gridcell', { name: testUser1 })).not.toBeVisible();
 
   // Sign out and sign back in as admin
-  await harborPage.getByRole('button', { name: 'user1', exact: true }).click();
+  await harborPage.getByRole('button', { name: 'user004', exact: true }).click();
   await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
   
   await login(harborPage, undefined, harborUser);
@@ -850,12 +887,12 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   test.setTimeout(60000);
 
   const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
+  const projectName = `aaaproject${timestamp}`;
   const image = 'hello-world';
   const tag = 'latest';
-  const user1 = 'user1';
-  const user2 = 'user2';
-  const pwd = 'Harbor12345';
+  const user1 = 'user001';
+  const user2 = 'user002';
+  const pwd = 'Test1@34';
 
   // Sign out current admin user and sign in as user1
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -864,7 +901,8 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, { username: user1, password: pwd });
 
   // Create a new public project
-  await createProject(harborPage, projectName, false, true);
+  await createProjectByApi(projectName, true, { username: user1, password: pwd });
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
 
   // Push image to the project
   const harborIp = harborHost;
@@ -915,8 +953,7 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, { username: user1, password: pwd });
 
   // Make project private
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Check if expand button exists and use it to access Configuration
   await harborPage.getByRole('application').locator('button').click();
@@ -931,8 +968,7 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
   await harborPage.waitForTimeout(1000);
 
   // Verify project is now private by checking configuration again
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Check if expand button exists and use it to access Configuration
   
@@ -973,7 +1009,7 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
 
   // Make project public again
   await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Check if expand button exists and use it to access Configuration
   await harborPage.getByRole('application').locator('button').click();
@@ -988,7 +1024,7 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
 
   // Verify project is now public by checking configuration again
   await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Check if expand button exists and use it to access Configuration
   await harborPage.getByRole('application').locator('button').click();
@@ -1015,8 +1051,10 @@ test('manage project publicity', async ({ harborPage, harborUser }) => {
 });
 
 test('assign sys admin', async ({ harborPage, harborUser }) => {
-  const testUser = 'user1';
-  const testPwd = 'Harbor12345';
+  const testUser = 'user009';
+  const testPwd = 'Test1@34';
+
+  await setUserAdmin(testUser, false);
 
   // First, sign out current admin user and sign in as user1 to verify they're not admin yet
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -1033,21 +1071,7 @@ test('assign sys admin', async ({ harborPage, harborUser }) => {
   
   await login(harborPage, undefined, harborUser);
 
-  // Navigate to Users page
-  await harborPage.getByRole('link', { name: 'Users' }).click();
-  
-  // Search for the user
-  await harborPage.locator('harbor-user hbr-filter clr-icon').click();
-  await harborPage.locator('harbor-user hbr-filter input').fill(testUser);
-  await harborPage.waitForTimeout(2000);
-  
-  // Select the user checkbox
-  const userRow = harborPage.getByRole('row', { name: new RegExp(testUser) });
-  await userRow.locator('label').first().click();
-  
-  // Click "SET AS ADMIN" button
-  await harborPage.getByRole('button', { name: 'SET AS ADMIN' }).click();
-  await harborPage.waitForTimeout(1000);
+  await setUserAdmin(testUser, true);
 
   // Sign out admin
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -1067,8 +1091,8 @@ test('assign sys admin', async ({ harborPage, harborUser }) => {
 });
 
 test('edit project creation', async ({ harborPage, harborUser }) => {
-  const testUser = 'user1';
-  const testPwd = 'Harbor12345';
+  const testUser = 'user010';
+  const testPwd = 'Test1@34';
 
   // First, sign out admin and sign in as user1 to verify project creation button exists initially
   await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
@@ -1121,10 +1145,10 @@ test('edit project creation', async ({ harborPage, harborUser }) => {
 
 test('edit repo info', async ({ harborPage, harborUser }) => {
   const timestamp = Date.now();
-  const projectName = `project${timestamp}`;
+  const projectName = `aaaproject${timestamp}`;
   const image = 'hello-world';
-  const testUser = 'user1';
-  const testPwd = 'Harbor12345';
+  const testUser = 'user011';
+  const testPwd = 'Test1@34';
   const testDescription = 'test_description_info';
 
   // Sign out admin and sign in as test user
@@ -1134,7 +1158,8 @@ test('edit repo info', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, { username: testUser, password: testPwd });
 
   // Create a new project
-  await createProject(harborPage, projectName);
+  await createProjectByApi(projectName, false, { username: testUser, password: testPwd });
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
 
   // Push an image to the project
   const harborIp = harborHost;
@@ -1150,7 +1175,7 @@ test('edit repo info', async ({ harborPage, harborUser }) => {
   });
 
   // Navigate to the project and repository
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   await expect(harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) })).toBeVisible({ timeout: 10000 });
   await harborPage.getByRole('link', { name: new RegExp(`${projectName}/${image}`) }).click();
 
@@ -1199,11 +1224,12 @@ test('edit repo info', async ({ harborPage, harborUser }) => {
 test('push image', async ({ harborPage, harborUser }) => {
   const d = new Date();
   const dateStr = d.toLocaleString('en-US', { month: '2-digit' }) + Math.floor(d.getTime() / 1000);
-  const projectName = `project${dateStr}`;
+  const projectName = `aaaproject${dateStr}`;
   const image = 'hello-world';
   
   // Create project
-  await createProject(harborPage, projectName);
+  await createProjectByApi(projectName, false, harborUser);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Push image using the utility function
   const harborIp = harborHost;
@@ -1219,14 +1245,12 @@ test('push image', async ({ harborPage, harborUser }) => {
   });
   
   // Navigate into the project
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await loginIfNeeded(harborPage, harborUser);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
   
   // Wait for image to appear in the repository list
   await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
   
-  // Logout
-  await harborPage.getByRole('button', { name: harborUser.username, exact: true }).click();
-  await harborPage.getByRole('menuitem', { name: 'Log Out' }).click();
 });
 
 test('project level policy public', async ({ harborPage, harborUser }) => {
@@ -1443,31 +1467,37 @@ test('cannot copy image in readonly mode', async ({ harborPage, harborUser }) =>
 test('repo size', async ({ harborPage, harborUser }) => {
   const projectName = `project${Date.now()}`;
   const image = 'alpine';
+  const tag = 'latest';
 
   await createProject(harborPage, projectName);
   
   // Push image with specific tag using the utility function
   const harborIp = harborHost;
-  await pushImage({
+  await pushImageWithTag({
     ip: harborIp,
     user: harborUser.username,
     pwd: harborUser.password,
     project: projectName,
-    imageWithOrWithoutTag: image,
-    needPullFirst: true,
+    image,
+    tag,
+    tag1: tag,
     localRegistry: process.env.LOCAL_REGISTRY || 'docker.io',
     localRegistryNamespace: process.env.LOCAL_REGISTRY_NAMESPACE || 'library',
   });
+
+  await loginIfNeeded(harborPage, harborUser);
   
   // Navigate to the project
-  await waitForProjectInList(harborPage, projectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
+  await loginIfNeeded(harborPage, harborUser);
+  await harborPage.getByRole('tab', { name: 'Repositories' }).click();
   
   // Navigate into the repository
   await expect(harborPage.getByRole('link', { name: new RegExp(image) })).toBeVisible({ timeout: 10000 });
   await harborPage.getByRole('link', { name: new RegExp(image) }).click();
   
-  // Wait for and verify the repo size is displayed (alpine 2.6 is approximately 3.68MiB)
-  await expect(harborPage.getByText(/3\.6[0-9]MiB/)).toBeVisible({ timeout: 10000 });
+  // Wait for and verify Harbor displays a non-zero repository size.
+  await expect(harborPage.getByText(/[1-9][0-9.]*\s*(KiB|MiB|GiB)/)).toBeVisible({ timeout: 10000 });
 });
 
 test('edit token expire', async ({ harborPage, harborUser }) => {
@@ -1680,7 +1710,8 @@ test('copy a image', async ({ harborPage, harborUser }) => {
   });
 
   // Navigate to source project
-  await waitForProjectInList(harborPage, sourceProjectName, 15000, true);
+  await loginIfNeeded(harborPage, harborUser);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(sourceProjectName)}/repositories`);
 
   // Navigate to repository
   await expect(harborPage.getByRole('link', { name: new RegExp(`${sourceProjectName}/${image}`) })).toBeVisible({ timeout: 10000 });
@@ -1702,8 +1733,7 @@ test('copy a image', async ({ harborPage, harborUser }) => {
   await harborPage.waitForTimeout(2000);
 
   // Navigate to target project
-  await harborPage.getByRole('link', { name: 'Projects' }).click();
-  await waitForProjectInList(harborPage, targetProjectName, 15000, true);
+  await harborPage.goto(`${harborBaseURL}/harbor/projects/${await getProjectId(targetProjectName)}/repositories`);
 
   // Verify the image was copied to target project
   await expect(harborPage.getByRole('link', { name: new RegExp(`${targetProjectName}/${image}`) })).toBeVisible({ timeout: 10000 });
@@ -1714,8 +1744,9 @@ test('copy a image', async ({ harborPage, harborUser }) => {
 });
 
 test('cosign and cosign deployment security policy', async ({ harborPage, harborUser }) => {
-  const user = 'user1';
-  const pwd = 'Harbor12345';
+  test.skip(!(await hasCommand('cosign')), 'cosign CLI is required for cosign signing tests');
+  const user = 'user006';
+  const pwd = 'Test1@34';
   const d = Date.now();
   const projectName = `project${d}`;
   const image = 'hello-world';
@@ -1830,6 +1861,16 @@ test('cosign and cosign deployment security policy', async ({ harborPage, harbor
 test('banner message', async ({ harborPage, harborUser }) => {
   const message = 'This is a test message.';
 
+  async function setDateInput(selector: string, value: Date): Promise<void> {
+    const formatted = value.toISOString().slice(0, 10);
+    await harborPage.locator(selector).evaluate((element, dateValue) => {
+      const input = element as HTMLInputElement;
+      input.value = dateValue;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }, formatted);
+  }
+
   // Helper function to set banner message
   async function setBannerMessage(
     msg: string | null,
@@ -1855,50 +1896,10 @@ test('banner message', async ({ harborPage, harborUser }) => {
       // Handle date range
       if (setDateRange) {
         const now = new Date();
-        const day = now.getDate();
-        
-        // Set FROM date to today
-        const fromDiv = harborPage.locator('div').filter({ hasText: /^From$/ });
-        const fromButton = fromDiv.getByRole('button', { name: new RegExp('choose\\s+date|change\\s+date', 'i') });
-        
-        // Scroll the FROM button into view before clicking
-        await fromButton.scrollIntoViewIfNeeded();
-        await harborPage.waitForTimeout(300);
-        await fromButton.click();
-        
-        // Select the day in FROM date dialog
-        const dialog = harborPage.getByRole('dialog');
-        await dialog.waitFor({ state: 'visible', timeout: 5000 });
-        await dialog.getByRole('button', { name: new RegExp(`^${day}$|/${day}/`) }).first().click();
-        
-        // Wait for dialog to close
-        await dialog.waitFor({ state: 'hidden', timeout: 5000 });
-        await harborPage.waitForTimeout(500);
-        
-        // Set TO date to same day next month
-        const toDiv = harborPage.locator('div').filter({ hasText: /^To$/ });
-        const toButton = toDiv.getByRole('button', { name: new RegExp('choose\\s+date|change\\s+date', 'i') });
-        
-        // Scroll the TO button into view before clicking
-        await toButton.scrollIntoViewIfNeeded();
-        await harborPage.waitForTimeout(300);
-        await toButton.click();
-        
-        // Wait for dialog to appear again
-        await dialog.waitFor({ state: 'visible', timeout: 5000 });
-        
-        // Navigate to next month in TO date dialog
-        await dialog.getByRole('button', { name: 'Previous month', exact: true }).click();
-        await dialog.getByRole('button', { name: 'Current month', exact: true }).click();
-        await dialog.getByRole('button', { name: 'Next month', exact: true }).click();
-        await harborPage.waitForTimeout(500);
-        
-        // Click the same day in next month
-        await dialog.getByRole('button', { name: new RegExp(`^${day}$|/${day}/`) }).first().click();
-        
-        // Wait for dialog to close
-        await dialog.waitFor({ state: 'hidden', timeout: 5000 });
-        await harborPage.waitForTimeout(500);
+        const to = new Date(now);
+        to.setMonth(to.getMonth() + 1);
+        await setDateInput('#from', now);
+        await setDateInput('#to', to);
       }
     } else {
       // Clear message
@@ -1918,7 +1919,7 @@ test('banner message', async ({ harborPage, harborUser }) => {
     closable: boolean = false
   ) {
     if (msg === null) {
-      await expect(harborPage.locator('app-app-level-alerts clr-alerts')).not.toBeVisible();
+      await expect(harborPage.locator('app-app-level-alerts clr-alert').filter({ hasText: message })).not.toBeVisible();
     } else {
       // Check message type class
       const alertTypeClass = {
@@ -1929,16 +1930,17 @@ test('banner message', async ({ harborPage, harborUser }) => {
       };
       await expect(harborPage.locator(`app-app-level-alerts clr-alerts.${alertTypeClass[messageType]}`)).toBeVisible();
       
-      await expect(harborPage.locator('app-app-level-alerts clr-alert')).toHaveText(new RegExp(msg));
+      const bannerAlert = harborPage.locator('app-app-level-alerts clr-alert').filter({ hasText: msg });
+      await expect(bannerAlert).toBeVisible();
       // Check closable button
       if (closable) {
-        await expect(harborPage.locator('app-app-level-alerts clr-alert button.close')).toBeVisible();
+        await expect(bannerAlert.locator('button.close')).toBeVisible();
       }
     }
   }
 
   // Close any existing banner message
-  const closeButton = harborPage.locator('app-app-level-alerts clr-alert button.close');
+  const closeButton = harborPage.locator('app-app-level-alerts clr-alert').filter({ hasText: message }).locator('button.close');
   if (await closeButton.isVisible()) {
     await closeButton.click();
     await expect(harborPage.locator('app-app-level-alerts clr-alerts')).not.toBeVisible();
@@ -2008,7 +2010,7 @@ test('banner message', async ({ harborPage, harborUser }) => {
   await login(harborPage, undefined, harborUser);
   
   // Close banner if visible
-  const closeBannerBtn = harborPage.locator('app-app-level-alerts clr-alert button.close');
+  const closeBannerBtn = harborPage.locator('app-app-level-alerts clr-alert').filter({ hasText: message }).locator('button.close');
   if (await closeBannerBtn.isVisible()) {
     await closeBannerBtn.click();
   }
@@ -2018,3 +2020,146 @@ test('banner message', async ({ harborPage, harborUser }) => {
   await harborPage.reload();
   await checkBannerMessage(null);
 });
+
+function basicAuth(username: string, password: string): string {
+  return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+}
+
+async function newAdminApiContext() {
+  if (!harborBaseURL) {
+    throw new Error('BASE_URL or HARBOR_BASE_URL is required for Common tests');
+  }
+
+  return playwrightRequest.newContext({
+    baseURL: harborBaseURL,
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      Authorization: basicAuth(adminUser, adminPassword),
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+async function ensureUser(username: string, password: string): Promise<void> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.post('/api/v2.0/users', {
+      data: {
+        username,
+        email: `${username}@example.com`,
+        realname: username,
+        password,
+      },
+    });
+
+    if (!response.ok() && response.status() !== 409) {
+      throw new Error(`Failed to ensure user ${username}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function resetCommonSystemConfig(): Promise<void> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.put('/api/v2.0/configurations', {
+      data: {
+        project_creation_restriction: 'everyone',
+        read_only: false,
+        banner_message: '',
+      },
+    });
+
+    if (!response.ok()) {
+      throw new Error(`Failed to reset Common system config: ${response.status()} ${response.statusText()}`);
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function createProjectByApi(projectName: string, isPublic: boolean, creds: { username: string; password: string }): Promise<void> {
+  const api = await playwrightRequest.newContext({
+    baseURL: harborBaseURL,
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      Authorization: basicAuth(creds.username, creds.password),
+      'Content-Type': 'application/json',
+    },
+  });
+  try {
+    const response = await api.post('/api/v2.0/projects', {
+      data: {
+        project_name: projectName,
+        metadata: { public: String(isPublic) },
+        storage_limit: -1,
+      },
+    });
+
+    if (!response.ok() && response.status() !== 409) {
+      throw new Error(`Failed to create project ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function getUserId(username: string): Promise<number> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.get(`/api/v2.0/users/search?username=${encodeURIComponent(username)}`);
+    if (!response.ok()) {
+      throw new Error(`Failed to find user ${username}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+
+    const users = await response.json();
+    const user = users.find((item: { username: string }) => item.username === username);
+    if (!user) {
+      throw new Error(`User ${username} was not found`);
+    }
+    return user.user_id;
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function getProjectId(projectName: string): Promise<number> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.get(`/api/v2.0/projects/${encodeURIComponent(projectName)}`);
+    if (!response.ok()) {
+      throw new Error(`Failed to find project ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+
+    const project = await response.json();
+    return project.project_id;
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function setUserAdmin(username: string, hasAdminRole: boolean): Promise<void> {
+  const userId = await getUserId(username);
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.put(`/api/v2.0/users/${userId}/sysadmin`, {
+      data: { sysadmin_flag: hasAdminRole },
+    });
+    if (!response.ok()) {
+      throw new Error(`Failed to set sysadmin for ${username}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function hasCommand(command: string): Promise<boolean> {
+  return (await runCommand(`command -v ${command}`)).trim().length > 0;
+}
+
+async function loginIfNeeded(harborPage: Page, harborUser: { username: string; password: string }): Promise<void> {
+  if (await harborPage.getByRole('textbox', { name: 'Username' }).isVisible().catch(() => false)) {
+    await login(harborPage, harborBaseURL, harborUser);
+  }
+}

@@ -24,6 +24,10 @@ export async function logout(page: Page, username: string) {
 }
 
 export async function logoutIfPossible(page: Page, username: string) {
+    if (await page.getByRole('textbox', { name: 'Username' }).isVisible().catch(() => false)) {
+        return;
+    }
+
     try {
         await page.getByRole('button', { name: username, exact: true }).waitFor({ state: 'visible', timeout: 2000 });
     } catch {

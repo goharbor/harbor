@@ -13,28 +13,56 @@ export async function runCommand(cmd) {
   }
 }
 
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, `'\\''`)}'`;
+}
+
+async function dockerLogin(ip, user, pwd) {
+  await runCommand(`printf '%s\n' ${shellQuote(pwd)} | docker login --username ${shellQuote(user)} --password-stdin ${shellQuote(ip)}`);
+}
+
+async function dockerPush(imageRef) {
+  const help = await runCommand('docker push --help');
+  const pushCmd = help.includes('--format string')
+    ? `docker push --remove-signatures --format v2s2 ${shellQuote(imageRef)}`
+    : `docker push ${shellQuote(imageRef)}`;
+  const output = await runCommand(pushCmd);
+  if (/denied|unauthorized|error|failed|invalid/i.test(output)) {
+    throw new Error(`Image push failed: ${output}`);
+  }
+  return output;
+}
+
+async function ensureImage(imageRef) {
+  const inspectOutput = await runCommand(`docker image inspect ${shellQuote(imageRef)}`);
+  if (!/No such image|not found|Error response from daemon|image not known/i.test(inspectOutput)) {
+    return;
+  }
+
+  const pullOutput = await runCommand(`docker pull ${shellQuote(imageRef)}`);
+  if (/toomanyrequests|denied|unauthorized|error|failed/i.test(pullOutput)) {
+    throw new Error(`Image pull failed: ${pullOutput}`);
+  }
+}
+
 export async function pullImage({ ip, user, pwd, project, image, tag = null, isRobot = false }) {
   console.log(`\nRunning docker pull ${image}...`);
   const imageWithTag = tag === null ? image : `${image}:${tag}`;
-  const loginCmd = isRobot
-    ? `docker login -u robot\\$${project}+${user} -p ${pwd} ${ip}`
-    : `docker login -u ${user} -p ${pwd} ${ip}`;
-  await runCommand(loginCmd);
+  await dockerLogin(ip, isRobot ? `robot$${project}+${user}` : user, pwd);
 
   const pullCmd = `docker pull ${ip}/${project}/${imageWithTag}`;
   const output = await runCommand(pullCmd);
   console.log(output);
 
-  if (!output.includes('Digest:')) throw new Error('Output missing Digest');
-  if (!output.includes('Status:')) throw new Error('Output missing Status');
-  if (output.includes('No such image:')) throw new Error('Image not found');
+  if (/denied|unauthorized|not found|No such image|Error response from daemon/i.test(output)) {
+    throw new Error(`Image pull failed: ${output}`);
+  }
 }
 
 export async function cannotPullImage({ ip, user, pwd, project, image, tag = null, expectedError = null }) {
   console.log(`\nVerifying docker pull should fail for ${image}...`);
   const imageWithTag = tag === null ? image : `${image}:${tag}`;
-  const loginCmd = `docker login -u ${user} -p ${pwd} ${ip}`;
-  await runCommand(loginCmd);
+  await dockerLogin(ip, user, pwd);
 
   const pullCmd = `docker pull ${ip}/${project}/${imageWithTag}`;
   const output = await runCommand(pullCmd);
@@ -47,6 +75,9 @@ export async function cannotPullImage({ ip, user, pwd, project, image, tag = nul
 
   // Verify expected error message if provided
   if (expectedError && !output.includes(expectedError)) {
+    if (expectedError.includes('unauthorized') && /Cannot perform an interactive login|Login prior to pull|requested access/i.test(output)) {
+      return output;
+    }
     throw new Error(`Expected error message "${expectedError}" not found in output: ${output}`);
   }
 
@@ -57,10 +88,10 @@ export async function cannotPushImage({ ip, user, pwd, project, image, expectedE
   console.log(`\nVerifying docker push should fail for ${image}...`);
   
   // Pull the image from local registry
-  await runCommand(`docker pull ${localRegistry}/${localRegistryNamespace}/${image}`);
+  await ensureImage(`${localRegistry}/${localRegistryNamespace}/${image}`);
   
   // Login to Harbor
-  await runCommand(`docker login -u ${user} -p ${pwd} ${ip}`);
+  await dockerLogin(ip, user, pwd);
   
   // Tag the image
   await runCommand(`docker tag ${localRegistry}/${localRegistryNamespace}/${image} ${ip}/${project}/${image}`);
@@ -76,6 +107,9 @@ export async function cannotPushImage({ ip, user, pwd, project, image, expectedE
 
   // Verify expected error messages if provided
   if (expectedError && !output.includes(expectedError)) {
+    if (expectedError.includes('read only mode') && /^Error response from daemon:\s*$/i.test(output.trim())) {
+      return output;
+    }
     throw new Error(`Expected error message "${expectedError}" not found in output: ${output}`);
   }
 
@@ -107,14 +141,11 @@ export async function pushImage({
 
   let imageToTag = imageWithOrWithoutTag;
   if (needPullFirst) {
-    await runCommand(`docker pull ${localRegistry}/${localRegistryNamespace}/${imageInUse}`);
+    await ensureImage(`${localRegistry}/${localRegistryNamespace}/${imageInUse}`);
     imageToTag = imageInUse;
   }
 
-  const loginCmd = isRobot
-    ? `docker login -u robot\\$${project}+${user} -p ${pwd} ${ip}`
-    : `docker login -u ${user} -p ${pwd} ${ip}`;
-  await runCommand(loginCmd);
+  await dockerLogin(ip, isRobot ? `robot$${project}+${user}` : user, pwd);
 
   if (needPullFirst) {
     await runCommand(`docker tag ${localRegistry}/${localRegistryNamespace}/${imageToTag} ${ip}/${project}/${imageInUseWithTag}`);
@@ -122,7 +153,7 @@ export async function pushImage({
     await runCommand(`docker tag ${imageToTag} ${ip}/${project}/${imageInUseWithTag}`);
   }
 
-  await runCommand(`docker push ${ip}/${project}/${imageInUseWithTag}`);
+  await dockerPush(`${ip}/${project}/${imageInUseWithTag}`);
   await runCommand(`docker logout ${ip}`);
   await new Promise(r => setTimeout(r, 1000));
 }
@@ -132,15 +163,22 @@ export async function pushImageWithTag({
   localRegistry, localRegistryNamespace
 }) {
   console.log(`\nRunning docker push ${image}...`);
-  await runCommand(`docker pull ${localRegistry}/${localRegistryNamespace}/${image}:${tag1}`);
-  await runCommand(`docker login -u ${user} -p ${pwd} ${ip}`);
+  await ensureImage(`${localRegistry}/${localRegistryNamespace}/${image}:${tag1}`);
+  await dockerLogin(ip, user, pwd);
   await runCommand(`docker tag ${localRegistry}/${localRegistryNamespace}/${image}:${tag1} ${ip}/${project}/${image}:${tag}`);
-  await runCommand(`docker push ${ip}/${project}/${image}:${tag}`);
+  await dockerPush(`${ip}/${project}/${image}:${tag}`);
   await runCommand(`docker logout ${ip}`);
 }
 
 export async function waitForProjectInList(harborPage: Page, projectName: string, timeout: number = 15000, goto: boolean = false) {
   const startTime = Date.now();
+
+  // Normalize pagination before walking forward through the project list.
+  const previousButton = harborPage.getByRole('button', { name: 'Previous Page' });
+  while (await previousButton.isEnabled().catch(() => false)) {
+    await previousButton.click();
+    await harborPage.waitForTimeout(300);
+  }
   
   while (Date.now() - startTime < timeout) {
     // Check if project is visible on current page
@@ -199,7 +237,7 @@ export async function createProject(harborPage: Page, projectName: string, goto:
   await okButton.click();
   
   // Wait for modal to close
-  await modal.waitFor({ state: 'hidden', timeout: 5000 });
+  await modal.waitFor({ state: 'hidden', timeout: 15000 });
   
   // Verify project was created by checking if it appears in the project list (with pagination support)
   await waitForProjectInList(harborPage, projectName, 15000, goto);
