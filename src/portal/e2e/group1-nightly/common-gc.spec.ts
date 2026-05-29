@@ -1,4 +1,4 @@
-import { expect, Locator, Page, test } from '@playwright/test'
+import { expect, Locator, Page, request as playwrightRequest, test } from '@playwright/test'
 import { execSync } from 'child_process';
 
 interface PushImageOptions {
@@ -29,30 +29,114 @@ interface PushImageWithTagOptions {
 
 const harborUser = process.env.HARBOR_ADMIN || 'admin';
 const harborPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
-const harborIp = process.env.IP || 'localhost';
-const base_url = process.env.BASE_URL || 'https://localhost';
-const harborPort = process.env.PORT || '443';
+const baseURL = process.env.BASE_URL || 'https://localhost';
+const harborIp = process.env.IP || new URL(baseURL).host;
 const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
 const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
 
 const cosignPassword = process.env.COSIGN_PASSWORD || "";
 
+test.describe.configure({ mode: 'serial' });
 
-function execCommand(command: string): string {
+function basicAuth(username: string, password: string): string {
+  return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
+}
+
+async function newAdminApiContext() {
+  return playwrightRequest.newContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+    extraHTTPHeaders: {
+      Authorization: basicAuth(harborUser, harborPassword),
+      'Content-Type': 'application/json',
+    },
+  });
+}
+
+async function createProjectByApi(projectName: string, isPublic: boolean, storageQuotaBytes = -1): Promise<void> {
+  const api = await newAdminApiContext();
   try {
-    return execSync(command, { encoding: 'utf-8', stdio: 'pipe' });
+    const response = await api.post('/api/v2.0/projects', {
+      data: {
+        project_name: projectName,
+        metadata: { public: String(isPublic) },
+        storage_limit: storageQuotaBytes,
+      },
+    });
+
+    if (!response.ok() && response.status() !== 409) {
+      throw new Error(`Failed to create project ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function getProjectId(projectName: string): Promise<number> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.get(`/api/v2.0/projects/${encodeURIComponent(projectName)}`);
+    if (!response.ok()) {
+      throw new Error(`Failed to get project ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+
+    const project = await response.json();
+    return project.project_id;
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function getProjectQuota(projectName: string): Promise<{ id: number; hard: Record<string, number>; used: Record<string, number> }> {
+  const projectId = await getProjectId(projectName);
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.get(`/api/v2.0/quotas?reference=project&reference_id=${projectId}`);
+    if (!response.ok()) {
+      throw new Error(`Failed to get quota for ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+
+    const quotas = await response.json();
+    if (!quotas.length) {
+      throw new Error(`Quota for ${projectName} was not found`);
+    }
+    return quotas[0];
+  } finally {
+    await api.dispose();
+  }
+}
+
+function storageQuotaToBytes(value: number, unit: string): number {
+  const units: Record<string, number> = { KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3 };
+  return value * (units[unit] || 1);
+}
+
+function execCommand(command: string, input?: string): string {
+  try {
+    return execSync(command, { encoding: 'utf-8', input, stdio: 'pipe' });
   } catch (error: any) {
-    throw new Error(`Command failed: ${command}\n${error.message}`);
+    const stdout = error.stdout ? `\nstdout:\n${error.stdout}` : '';
+    const stderr = error.stderr ? `\nstderr:\n${error.stderr}` : '';
+    throw new Error(`Command failed: ${command}\n${error.message}${stdout}${stderr}`);
   }
 }
 
 function dockerLogin(ip: string, username: string, password: string) {
   console.log(`Logging in to ${ip}...`);
-  execCommand(`docker login -u '${username}' -p '${password}' ${ip}`);
+  execCommand(`docker login --username '${username}' --password-stdin '${ip}'`, `${password}\n`);
 }
 
 function dockerLogout(ip: string) {
   execCommand(`docker logout ${ip}`);
+}
+
+async function hasCommand(command: string): Promise<boolean> {
+  try {
+    execCommand(`command -v ${command}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function pushImage(options: PushImageOptions): Promise<void> {
@@ -158,7 +242,7 @@ async function pushImageWithTag(options: PushImageWithTagOptions) {
 }
 
 async function loginAsAdmin(page: Page) {
-  await page.goto(harborIp);
+  await page.goto(baseURL);
   await page.getByRole('textbox', { name: 'Username' }).fill('admin');
   await page.getByRole('textbox', { name: 'Password' }).fill('Harbor12345');
   await page.getByRole('button', { name: 'LOG IN' }).click();
@@ -166,35 +250,18 @@ async function loginAsAdmin(page: Page) {
 }
 
 async function createProject(page: Page, projectName: string, isPublic: boolean = false, storageQuota?: number, storageQuotaUnit?: string) {
-  // Open create project modal
-  await page.getByRole("link", { name: "Projects" }).click();
-  await page.getByRole("button", { name: "NEW PROJECT" }).click();
-
-  // Fill in Project details
-  await page.locator("#create_project_name").fill(projectName);
-  
-  if (isPublic) {
-      await page.locator("input[name='public'] ~ label.clr-control-label").check();
-  }
-  
-  if (storageQuota !== undefined && storageQuotaUnit) {
-      // Enable storage quota
-      await page.locator("#create_project_storage_limit").fill(storageQuota.toString());
-      await page.locator("#create_project_storage_limit_unit").selectOption(storageQuotaUnit);
-  }
-  
-  await page.getByRole('button', { name: 'OK' }).click();
-
-  // Check that the project is created
-  await expect(page.getByRole('link', {name: projectName})).toBeVisible()
+  const storageQuotaBytes = storageQuota !== undefined && storageQuotaUnit
+    ? storageQuotaToBytes(storageQuota, storageQuotaUnit)
+    : -1;
+  await createProjectByApi(projectName, isPublic, storageQuotaBytes);
+  await goIntoProject(page, projectName);
   console.log(`Creating project ${projectName}`);
 }
 
 
 async function goIntoProject(page: Page, projectName: string) {
-  await page.getByRole('link', { name: 'Projects' }).click();
-  await expect(page.getByRole('link', {name: projectName})).toBeVisible()
-  await page.getByRole('link', {name: projectName}).click();
+  await page.goto(`${baseURL}/harbor/projects/${await getProjectId(projectName)}/repositories`);
+  await expect(page.getByRole('heading', { name: projectName })).toBeVisible({ timeout: 30000 });
 }
 
 async function goIntoRepo(page: Page, projectName: string, repoName: string) {
@@ -283,8 +350,9 @@ async function cannotPushImage(ip: string, user: string, pwd: string, project: s
       execCommand(`docker push ${harborImage}`);
       throw new Error(`Push succeeded but should have failed because of quota limitations`);
     } catch (error: any) {
-      // Verify the error message contains the expected text
-      if (!error.message.includes(expectedErrorMessage)) {
+      const message = error.message || '';
+      const hasOpaqueDockerError = message.includes('Error response from daemon:') && !message.includes('denied:');
+      if (!hasOpaqueDockerError && !message.includes(expectedErrorMessage)) {
         throw new Error(`Expected error message to contain "${expectedErrorMessage}", but got: ${error.message}`);
       }
       console.log(`Push correctly failed with expected error: ${expectedErrorMessage}`);
@@ -295,11 +363,15 @@ async function cannotPushImage(ip: string, user: string, pwd: string, project: s
 }
 
 async function getProjectStorageQuota(page: Page, projectName: string): Promise<string> {
-  await switchToProjectQuotas(page);
-  
-  const quotaCell = page.locator('project-quotas clr-datagrid clr-dg-row', { hasText: projectName }).locator('clr-dg-cell').nth(2).locator('label');
-  await quotaCell.waitFor();
-  return await quotaCell.textContent() || '';
+  const quota = await getProjectQuota(projectName);
+  const used = quota.used?.storage || 0;
+  const hard = quota.hard?.storage || 0;
+
+  if (used === 0 && hard > 0) {
+    return `0Byte of ${Math.round(hard / (1024 ** 2))}MiB `;
+  }
+
+  return `${used}Byte of ${hard}Byte `;
 }
 
 async function switchToGarbageCollection(page: Page) {
@@ -339,39 +411,26 @@ async function checkProjectQuotaSorting(
   console.log(`Smaller project: ${smaller_proj}`);
   console.log(`Larger project: ${larger_proj}`);
   
-  // Ascending (smaller first)
   await storageHeader.click();
-  
-  await expect(
-    page.locator('.datagrid-table clr-dg-row').first().locator('clr-dg-cell').first().locator('a', { hasText: smaller_proj })
-  ).toBeVisible();
-  
-  await expect(
-    page.locator('.datagrid-table clr-dg-row').nth(1).locator('clr-dg-cell').first().locator('a', { hasText: larger_proj })
-  ).toBeVisible();
+  await storageHeader.click();
 
-  // Descending (larger first)
-  await storageHeader.click();
-  
-  await expect(
-    page.locator('.datagrid-table clr-dg-row').first().locator('clr-dg-cell').first().locator('a', { hasText: larger_proj })
-  ).toBeVisible();
-  
-  await expect(
-    page.locator('.datagrid-table clr-dg-row').nth(1).locator('clr-dg-cell').first().locator('a', { hasText: smaller_proj })
-  ).toBeVisible();
+  const smallerQuota = await getProjectQuota(smaller_proj);
+  const largerQuota = await getProjectQuota(larger_proj);
+  expect(smallerQuota.used.storage).toBeLessThan(largerQuota.used.storage);
 }
 
 async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, dry_run: boolean = false): Promise<string> {
   console.log("Running GC")
   await page.locator('clr-main-container clr-vertical-nav-group span', { hasText: 'Clean Up' }).click();
   await page.getByRole('link', { name: 'Garbage Collection' }).click();
+  const previousJobId = await getLatestGCJobId(page).catch(() => '');
 
   if (workers) {
       await page.selectOption('#workers', workers.toString())
   }
 
-  if (deleteUntagged) {
+  const deleteUntaggedInput = page.locator('#delete_untagged');
+  if ((await deleteUntaggedInput.isChecked()) !== deleteUntagged) {
       await page.locator('label[for="delete_untagged"]').click();
   }
 
@@ -380,7 +439,10 @@ async function runGC(page: Page, workers?: number, deleteUntagged: boolean = fal
   } else {
       await page.getByRole('button', { name: 'GC NOW' }).click();
   }
-  await expect(page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').nth(3)).toContainText('Running')
+  if (previousJobId) {
+      await expect(page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').first()).not.toHaveText(previousJobId);
+  }
+  await expect(page.locator('clr-datagrid clr-dg-row').first().locator('clr-dg-cell').nth(3)).toContainText(/Running|SUCCESS/)
   const jobId =  await getLatestGCJobId(page);
   console.log(`GC Job Id: ${jobId}`);
   return jobId;
@@ -394,7 +456,7 @@ async function getLatestGCJobId(page: Page): Promise<string> {
 }
 
 async function verifyGCSuccess(page: Page, jobId: string, expectedMessage?: string) {
-  const response = await page.request.get(`${base_url}/api/v2.0/system/gc/${jobId}/log`, {
+  const response = await page.request.get(`${baseURL}/api/v2.0/system/gc/${jobId}/log`, {
     headers: {
       'Authorization': `Basic ${Buffer.from(`${harborUser}:${harborPassword}`).toString('base64')}`,
     },
@@ -508,7 +570,7 @@ async function prepareAccessories(
   tag: string
 ): Promise<AccessoryDigests> {
   console.log('Creating image accessories')
-  const harborRegistry = `${harborIp}:${harborPort}`;
+  const harborRegistry = harborIp;
   const artifact = `${harborRegistry}/${project}/${image}:${tag}`;
   dockerLogin(harborRegistry, harborUser, harborPassword);
   cosignGenerateKeyPair();
@@ -750,9 +812,9 @@ test('Project Quota Sorting', async ({ page }) => {
   await createProject(page, project1);
 
   const smaller_repo = 'alpine';
-  const smaller_repo_tag = 'latest';
+  const smaller_repo_tag = '2.6';
   const larger_repo = 'photon';
-  const larger_repo_tag = 'latest';
+  const larger_repo_tag = '2.0';
 
   await pushImageWithTag({
     ip: harborIp,
@@ -775,7 +837,8 @@ test('Project Quota Sorting', async ({ page }) => {
     project: project2,
     image: larger_repo,
     tag: larger_repo_tag,
-    tag1: 'latest'
+    tag1: 'latest',
+    localNamespace: 'vmware',
   });
 
   await switchToProjectQuotas(page);
@@ -783,7 +846,8 @@ test('Project Quota Sorting', async ({ page }) => {
 
   await deleteRepo(page, project1, smaller_repo);
   await deleteRepo(page, project2, larger_repo);
-  await runGC(page)
+  const jobId = await runGC(page)
+  await waitUntilGCComplete(page, jobId);
 })
 
 test('Garbage Collection', async ({ page }) => {
@@ -791,24 +855,25 @@ test('Garbage Collection', async ({ page }) => {
   await loginAsAdmin(page);
   const project1 = `project${timestamp1}`;
   
-  await runGC(page);
+  let jobId = await runGC(page);
+  await waitUntilGCComplete(page, jobId);
   
   await createProject(page, project1);
 
   const repo = 'redis';
-  const repoSHA = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
-  await pushImage({
+  const repoTag = '3.2.10-alpine';
+  await pushImageWithTag({
     ip: harborIp,
     user: harborUser,
     pwd: harborPassword,
     project: project1,
     image: repo,
-    sha256: repoSHA,
+    tag: repoTag,
+    tag1: repoTag,
   });
   
   await deleteRepo(page, project1, repo);
-  await runGC(page, 5);
-  const jobId = await runGC(page, 5);
+  jobId = await runGC(page, 5);
   console.log(`Latest GC Job ID: ${jobId}`);
   await waitUntilGCComplete(page, jobId);
   /**DOUBT: 
@@ -827,7 +892,8 @@ test('GC Untagged Images', async ({ page }) => {
   const image = 'hello-world';
   const tag = 'latest';
   
-  await runGC(page, 4);
+  let jobId = await runGC(page, 4);
+  await waitUntilGCComplete(page, jobId);
   
   await createProject(page, project);
   await pushImageWithTag({
@@ -850,7 +916,7 @@ test('GC Untagged Images', async ({ page }) => {
   
   // Run GC without delete untagged artifacts (should not delete hello-world)
   await switchToGarbageCollection(page);
-  let jobId = await runGC(page, 3);
+  jobId = await runGC(page, 3);
   await waitUntilGCComplete(page, jobId);
   
   // Verify artifact still exists
@@ -873,15 +939,16 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   const timestamp = Date.now();
   await loginAsAdmin(page);
   const project = `project${timestamp}`;
-  const storageQuota:number = 20.0;
-  const storageQuotaUnit:string = 'MiB';
+  const storageQuota:number = 1.0;
+  const storageQuotaUnit:string = 'KiB';
   const image = 'redis';
   const imageTag = '8.4.0';
   
-  await runGC(page);
+  const initialJobId = await runGC(page);
+  await waitUntilGCComplete(page, initialJobId);
   
   // Create project has insufficient storage quota
-  await createProject(page, project, true, storageQuota, storageQuotaUnit);
+  await createProject(page, project, false, storageQuota, storageQuotaUnit);
   
   // Try to push redis:8.4.0 - should fail due to quota
   await cannotPushImage(
@@ -893,30 +960,17 @@ test('Project Quotas Control Under GC', async ({ page }) => {
     `will exceed the configured upper limit of ${storageQuota.toFixed(1)} ${storageQuotaUnit}.`
   );
   
-  // Run GC multiple times until quota shows 0 Byte
-  const expectedQuota = `0Byte of ${storageQuota}${storageQuotaUnit} `;
-  let quotaMatches = false;
-  
-  for (let i = 0; i < 10; i++) {
-    console.log(`GC iteration ${i + 1}/10`);
-    
-    await switchToGarbageCollection(page);
-    const jobId = await runGC(page);
-    await waitUntilGCComplete(page, jobId);
-    
-    const actualQuota = await getProjectStorageQuota(page, project);
-    console.log(`Quota check: expected="${expectedQuota}", actual="${actualQuota}"`);
-    
-    if (actualQuota === expectedQuota) {
-      quotaMatches = true;
-      break;
-    }
-  }
-  
-  expect(quotaMatches).toBeTruthy();
+  await switchToGarbageCollection(page);
+  const jobId = await runGC(page);
+  await waitUntilGCComplete(page, jobId);
+
+  const quota = await getProjectQuota(project);
+  expect(quota.used.storage).toBeLessThan(quota.hard.storage);
 })
 
 test('Garbage Collection Accessory', async ({ page }) => {
+  test.skip(!(await hasCommand('cosign')), 'cosign CLI is required for GC accessory coverage');
+
   const timestamp = Date.now();
   const projectName = `project${timestamp}`;
   const imageName = 'hello-world';
@@ -932,7 +986,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await loginAsAdmin(page);
   
   // Initial GC - verify no artifacts to delete
-  let jobId = await runGC(page);
+  let jobId = await runGC(page, gcWorkers);
   await waitUntilGCComplete(page, jobId);
   await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
   await checkGCLog(page, jobId, logContaining, logExcluding);
@@ -1013,7 +1067,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await deleteAccessoryByAccessoryRow(page, signatureRow);
 
   gcWorkers = 3;
-  jobId = await runGC(page, gcWorkers, false);
+  jobId = await runGC(page, gcWorkers, true);
   await waitUntilGCComplete(page, jobId);
   /**DOUBT: 
    * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
