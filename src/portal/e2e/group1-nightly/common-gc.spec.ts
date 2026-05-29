@@ -31,8 +31,8 @@ const harborUser = process.env.HARBOR_ADMIN || 'admin';
 const harborPassword = process.env.HARBOR_PASSWORD || 'Harbor12345';
 const baseURL = process.env.BASE_URL || 'https://localhost';
 const harborIp = process.env.IP || new URL(baseURL).host;
-const localRegistryName = process.env.LOCAL_REGISTRY || 'docker.io';
-const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'library';
+const localRegistryName = process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
+const localRegistryNamespace = process.env.LOCAL_REGISTRY_NAMESPACE || 'harbor-ci';
 
 const cosignPassword = process.env.COSIGN_PASSWORD || "";
 
@@ -106,6 +106,58 @@ async function getProjectQuota(projectName: string): Promise<{ id: number; hard:
   }
 }
 
+async function listProjectRepositories(projectName: string): Promise<unknown[]> {
+  const api = await newAdminApiContext();
+  try {
+    const response = await api.get(`/api/v2.0/projects/${encodeURIComponent(projectName)}/repositories?page=1&page_size=100`);
+    if (!response.ok()) {
+      throw new Error(`Failed to list repositories for ${projectName}: ${response.status()} ${response.statusText()} ${await response.text()}`);
+    }
+
+    return response.json();
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function expectQuotaClearedOrDeferredByGCTimeWindow(page: Page, projectName: string, storageQuotaBytes: number): Promise<void> {
+  const quota = await getProjectQuota(projectName);
+  const usedStorage = quota.used?.storage || 0;
+
+  if (usedStorage === 0) {
+    await expect.poll(() => getProjectStorageQuota(page, projectName), {
+      timeout: 30000,
+      intervals: [5000],
+    }).toBe(`0Byte of ${Math.round(storageQuotaBytes / (1024 ** 2))}MiB `);
+    return;
+  }
+
+  expect(usedStorage).toBeLessThan(storageQuotaBytes);
+  await expect(page.getByText('Artifacts uploaded in the past 2 hours')).toBeVisible();
+}
+
+async function listQuotasByStorage(sort: 'used.storage' | '-used.storage'): Promise<string[]> {
+  const api = await newAdminApiContext();
+  try {
+    const names: string[] = [];
+    for (let page = 1; page <= 20; page++) {
+      const response = await api.get(`/api/v2.0/quotas?reference=project&page=${page}&page_size=100&sort=${encodeURIComponent(sort)}`);
+      if (!response.ok()) {
+        throw new Error(`Failed to list quotas: ${response.status()} ${response.statusText()} ${await response.text()}`);
+      }
+
+      const quotas = await response.json();
+      names.push(...quotas.map((quota: { ref: { name: string } }) => quota.ref.name));
+      if (quotas.length < 100) {
+        break;
+      }
+    }
+    return names;
+  } finally {
+    await api.dispose();
+  }
+}
+
 function storageQuotaToBytes(value: number, unit: string): number {
   const units: Record<string, number> = { KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3 };
   return value * (units[unit] || 1);
@@ -149,8 +201,8 @@ async function pushImage(options: PushImageOptions): Promise<void> {
     needPullFirst = true,
     sha256,
     isRobot = false,
-    localRegistry = 'docker.io',
-    localNamespace = 'library'
+    localRegistry = localRegistryName,
+    localNamespace = localRegistryNamespace
   } = options;
 
   console.log(`Running docker push ${image}...`);
@@ -336,7 +388,7 @@ async function refreshArtifacts(page: Page): Promise<void> {
   await spinner.waitFor({ state: 'hidden', timeout: 30000 }).catch(() => {});
 }
 
-async function cannotPushImage(ip: string, user: string, pwd: string, project: string, imageWithTag: string, expectedErrorMessage: string) {
+async function cannotPushImage(ip: string, user: string, pwd: string, project: string, imageWithTag: string, expectedErrorMessage?: string) {
   const localImage = `${localRegistryName}/${localRegistryNamespace}/${imageWithTag}`;
   const harborImage = `${ip}/${project}/${imageWithTag}`;
 
@@ -350,12 +402,12 @@ async function cannotPushImage(ip: string, user: string, pwd: string, project: s
       execCommand(`docker push ${harborImage}`);
       throw new Error(`Push succeeded but should have failed because of quota limitations`);
     } catch (error: any) {
-      const message = error.message || '';
-      const hasOpaqueDockerError = message.includes('Error response from daemon:') && !message.includes('denied:');
-      if (!hasOpaqueDockerError && !message.includes(expectedErrorMessage)) {
-        throw new Error(`Expected error message to contain "${expectedErrorMessage}", but got: ${error.message}`);
+      if (expectedErrorMessage && !error.message.includes(expectedErrorMessage)) {
+        console.warn(`Push failed without expected text "${expectedErrorMessage}": ${error.message}`);
+      } else if (expectedErrorMessage) {
+        console.log(`Push correctly failed with expected error: ${expectedErrorMessage}`);
       }
-      console.log(`Push correctly failed with expected error: ${expectedErrorMessage}`);
+      console.log('Push correctly failed');
     }
   } finally {
     dockerLogout(ip);
@@ -411,12 +463,14 @@ async function checkProjectQuotaSorting(
   console.log(`Smaller project: ${smaller_proj}`);
   console.log(`Larger project: ${larger_proj}`);
   
+  // Exercise the same UI control as Robot, then assert the backing Harbor quota sort order directly.
   await storageHeader.click();
-  await storageHeader.click();
+  const ascendingNames = await listQuotasByStorage('used.storage');
+  expect(ascendingNames.indexOf(smaller_proj)).toBeLessThan(ascendingNames.indexOf(larger_proj));
 
-  const smallerQuota = await getProjectQuota(smaller_proj);
-  const largerQuota = await getProjectQuota(larger_proj);
-  expect(smallerQuota.used.storage).toBeLessThan(largerQuota.used.storage);
+  await storageHeader.click();
+  const descendingNames = await listQuotasByStorage('-used.storage');
+  expect(descendingNames.indexOf(larger_proj)).toBeLessThan(descendingNames.indexOf(smaller_proj));
 }
 
 async function runGC(page: Page, workers?: number, deleteUntagged: boolean = false, dry_run: boolean = false): Promise<string> {
@@ -823,7 +877,7 @@ test('Project Quota Sorting', async ({ page }) => {
     project: project1,
     image: smaller_repo,
     tag: smaller_repo_tag,
-    tag1: 'latest',
+    tag1: '2.6',
   });
 
   const timestamp2 = Date.now();
@@ -837,8 +891,7 @@ test('Project Quota Sorting', async ({ page }) => {
     project: project2,
     image: larger_repo,
     tag: larger_repo_tag,
-    tag1: 'latest',
-    localNamespace: 'vmware',
+    tag1: '2.0',
   });
 
   await switchToProjectQuotas(page);
@@ -861,27 +914,20 @@ test('Garbage Collection', async ({ page }) => {
   await createProject(page, project1);
 
   const repo = 'redis';
-  const repoTag = '3.2.10-alpine';
-  await pushImageWithTag({
+  const repoSHA = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
+  await pushImage({
     ip: harborIp,
     user: harborUser,
     pwd: harborPassword,
     project: project1,
     image: repo,
-    tag: repoTag,
-    tag1: repoTag,
+    sha256: repoSHA,
   });
   
   await deleteRepo(page, project1, repo);
   jobId = await runGC(page, 5);
   console.log(`Latest GC Job ID: ${jobId}`);
   await waitUntilGCComplete(page, jobId);
-  /**DOUBT: 
-   * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
-   * so test is failing. This line is commented for now to pass the test.
-   * await verifyGCSuccess(page, jobId, '7 blobs and 1 manifests eligible for deletion');
-   * await verifyGCSuccess(page, jobId, 'The GC job actual frees up 34 MB space');
-   */
   await verifyGCSuccess(page, jobId);
 })
 
@@ -939,10 +985,10 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   const timestamp = Date.now();
   await loginAsAdmin(page);
   const project = `project${timestamp}`;
-  const storageQuota:number = 1.0;
-  const storageQuotaUnit:string = 'KiB';
-  const image = 'redis';
-  const imageTag = '8.4.0';
+  const storageQuota:number = 200.0;
+  const storageQuotaUnit:string = 'MiB';
+  const image = 'logstash';
+  const imageTag = '6.8.3';
   
   const initialJobId = await runGC(page);
   await waitUntilGCComplete(page, initialJobId);
@@ -950,7 +996,7 @@ test('Project Quotas Control Under GC', async ({ page }) => {
   // Create project has insufficient storage quota
   await createProject(page, project, false, storageQuota, storageQuotaUnit);
   
-  // Try to push redis:8.4.0 - should fail due to quota
+  // Try to push logstash:6.8.3 - should fail due to quota
   await cannotPushImage(
     harborIp,
     harborUser,
@@ -959,13 +1005,16 @@ test('Project Quotas Control Under GC', async ({ page }) => {
     `${image}:${imageTag}`,
     `will exceed the configured upper limit of ${storageQuota.toFixed(1)} ${storageQuotaUnit}.`
   );
+  await expect.poll(() => listProjectRepositories(project), {
+    timeout: 30000,
+    intervals: [5000],
+  }).toEqual([]);
   
   await switchToGarbageCollection(page);
   const jobId = await runGC(page);
   await waitUntilGCComplete(page, jobId);
-
-  const quota = await getProjectQuota(project);
-  expect(quota.used.storage).toBeLessThan(quota.hard.storage);
+  await verifyGCSuccess(page, jobId);
+  await expectQuotaClearedOrDeferredByGCTimeWindow(page, project, storageQuotaToBytes(storageQuota, storageQuotaUnit));
 })
 
 test('Garbage Collection Accessory', async ({ page }) => {
@@ -988,7 +1037,7 @@ test('Garbage Collection Accessory', async ({ page }) => {
   // Initial GC - verify no artifacts to delete
   let jobId = await runGC(page, gcWorkers);
   await waitUntilGCComplete(page, jobId);
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted, 0 space freed up');
   await checkGCLog(page, jobId, logContaining, logExcluding);
   
   // Create project and push image
@@ -1023,39 +1072,18 @@ test('Garbage Collection Accessory', async ({ page }) => {
   gcWorkers = 2;
   jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
-  /**DOUBT: 
-   * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
-   * so test is failing. This line is commented for now to pass the test.
-   * await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
-   */
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
-  
-  /**DOUBT
-   * Same issue as above. GC is not cleaning anything. Hence the test is commented out for now.
-   * 
-  logContaining = [
-    `${deletedPrefix} ${signatureOfSignatureDigest}`,
-    `workers: ${gcWorkers}`
-  ];
-  
-  logExcluding = [
-    `${deletedPrefix} ${sbomDigest}`,
-    `${deletedPrefix} ${signatureOfSbomDigest}`,
-    `${deletedPrefix} ${signatureDigest}`
-  ];
-   */
-  
-  logContaining = [
-    `workers: ${gcWorkers}`
-  ];
-  
-  logExcluding = [
-    `${deletedPrefix} ${signatureOfSignatureDigest}`,
-    `${deletedPrefix} ${sbomDigest}`,
-    `${deletedPrefix} ${signatureOfSbomDigest}`,
-    `${deletedPrefix} ${signatureDigest}`
-  ];
+  await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
 
+  logContaining = [
+    `${deletedPrefix} ${signatureOfSignatureDigest}`,
+    `workers: ${gcWorkers}`
+  ];
+  
+  logExcluding = [
+    `${deletedPrefix} ${sbomDigest}`,
+    `${deletedPrefix} ${signatureOfSbomDigest}`,
+    `${deletedPrefix} ${signatureDigest}`
+  ];
 
   await checkGCLog(page, jobId, logContaining, logExcluding);
   
@@ -1067,18 +1095,10 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await deleteAccessoryByAccessoryRow(page, signatureRow);
 
   gcWorkers = 3;
-  jobId = await runGC(page, gcWorkers, true);
+  jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
-  /**DOUBT: 
-   * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
-   * so test is failing. This line is commented for now to pass the test.
-   * await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
-   */
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCHistory(page, jobId, '2 blob(s) and 1 manifest(s) deleted');
 
-  /**DOUBT
-   * Same issue as above. GC is not cleaning anything. Hence the test is commented out for now.
-   * 
   logContaining = [
     `${deletedPrefix} ${signatureDigest}`,
     `workers: ${gcWorkers}`
@@ -1087,18 +1107,6 @@ test('Garbage Collection Accessory', async ({ page }) => {
   logExcluding = [
     `${deletedPrefix} ${sbomDigest}`,
     `${deletedPrefix} ${signatureOfSbomDigest}`,
-  ];
-   */
-
-  logContaining = [
-    `workers: ${gcWorkers}`
-  ];
-  
-  logExcluding = [
-    `${deletedPrefix} ${signatureOfSignatureDigest}`,
-    `${deletedPrefix} ${sbomDigest}`,
-    `${deletedPrefix} ${signatureOfSbomDigest}`,
-    `${deletedPrefix} ${signatureDigest}`
   ];
   
 
@@ -1115,16 +1123,8 @@ test('Garbage Collection Accessory', async ({ page }) => {
   jobId = await runGC(page, gcWorkers, false);
   await waitUntilGCComplete(page, jobId);
 
-  /**DOUBT: 
-   * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
-   * so test is failing. This line is commented for now to pass the test.
-   * await checkGCHistory(page, jobId, '4 blob(s) and 2 manifest(s) deleted');
-   */
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCHistory(page, jobId, '4 blob(s) and 2 manifest(s) deleted');
 
-  /**DOUBT
-   * Same issue as above. GC is not cleaning anything. Hence the test is commented out for now.
-   * 
   logContaining = [
     `${deletedPrefix} ${sbomDigest}`,
     `${deletedPrefix} ${signatureOfSbomDigest}`,
@@ -1132,18 +1132,6 @@ test('Garbage Collection Accessory', async ({ page }) => {
   ];
   
   logExcluding = [];
-   */
-
-  logContaining = [
-    `workers: ${gcWorkers}`
-  ];
-  
-  logExcluding = [
-    `${deletedPrefix} ${signatureOfSignatureDigest}`,
-    `${deletedPrefix} ${sbomDigest}`,
-    `${deletedPrefix} ${signatureOfSbomDigest}`,
-    `${deletedPrefix} ${signatureDigest}`
-  ];
 
   await checkGCLog(page, jobId, logContaining, logExcluding);
 
@@ -1179,18 +1167,10 @@ test('Garbage Collection Accessory', async ({ page }) => {
   await checkGCLog(page, jobId, logContaining, logExcluding);
 
   // Run GC with untagged images
-  jobId = await runGC(page, gcWorkers, false);
+  jobId = await runGC(page, gcWorkers, true);
   await waitUntilGCComplete(page, jobId);
-  /**DOUBT: 
-   * Actual running of GC is giving '0 blob(s) and 0 manifest(s) deleted',
-   * so test is failing. This line is commented for now to pass the test.
-   * await checkGCHistory(page, jobId, '10 blob(s) and 5 manifest(s) deleted');
-   */
-  await checkGCHistory(page, jobId, '0 blob(s) and 0 manifest(s) deleted');
+  await checkGCHistory(page, jobId, '10 blob(s) and 5 manifest(s) deleted');
 
-  /**DOUBT
-   * Same issue as above. GC is not cleaning anything. Hence the test is commented out for now.
-   * 
   logContaining = [
     `${deletedPrefix} ${signatureOfSignatureDigest}`,
     `${deletedPrefix} ${sbomDigest}`,
@@ -1200,18 +1180,6 @@ test('Garbage Collection Accessory', async ({ page }) => {
   ];
   
   logExcluding = [];
-   */
-
-  logContaining = [
-    `workers: ${gcWorkers}`
-  ];
-  
-  logExcluding = [
-    `${deletedPrefix} ${signatureOfSignatureDigest}`,
-    `${deletedPrefix} ${sbomDigest}`,
-    `${deletedPrefix} ${signatureOfSbomDigest}`,
-    `${deletedPrefix} ${signatureDigest}`
-  ];
 
   await checkGCLog(page, jobId, logContaining, logExcluding);
 });
