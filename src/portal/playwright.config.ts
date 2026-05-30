@@ -8,6 +8,9 @@ import { defineConfig, devices } from '@playwright/test';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Use system CA certificates for HTTPS requests
+process.env.NODE_OPTIONS = '--use-system-ca';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -29,6 +32,12 @@ export default defineConfig({
           ]
         : 'html',
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+    /* Timeout for each test (30 minuites) */
+    timeout: 1800000,
+    expect: {
+        // Timeout for expect assertions(1 minuite)
+        timeout: 60000
+    },
     use: {
         headless: true,
         video: 'retain-on-failure', // record video of the test
