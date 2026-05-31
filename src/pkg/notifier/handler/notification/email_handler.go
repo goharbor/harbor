@@ -74,10 +74,8 @@ func (e *EmailHandler) process(ctx context.Context, event *model.HookEvent) erro
 			JobKind: job.KindGeneric,
 		},
 	}
-	// Create an emailJob to send email
 	j.Name = job.EmailJobVendorType
 
-	// Convert payload to email format
 	subject, body, err := e.convert(event.Payload)
 	if err != nil {
 		return fmt.Errorf("convert payload to email failed: %v", err)
@@ -86,8 +84,19 @@ func (e *EmailHandler) process(ctx context.Context, event *model.HookEvent) erro
 	j.Parameters = map[string]any{
 		"subject": subject,
 		"body":    body,
-		"to":      event.Target.Address, // Assume address is the recipient email
+		"to":      event.Target.Address,
+		"address": event.Target.Address,
+		"from":    event.Target.Address,
 	}
+
+	if event.Target.AuthHeader != "" {
+		j.Parameters["auth_header"] = event.Target.AuthHeader
+	}
+
+	if event.Target.SkipCertVerify {
+		j.Parameters["insecure_skip_verify"] = true
+	}
+
 	return notification.HookManager.StartHook(ctx, event, j)
 }
 
