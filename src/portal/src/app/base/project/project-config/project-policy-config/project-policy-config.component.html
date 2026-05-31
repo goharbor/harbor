@@ -24,7 +24,7 @@
                 <input
                     type="checkbox"
                     clrCheckbox
-                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [disabled]="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.ProxyCacheEnabled"
                     name="project-proxy-cache-enabled" />
             </clr-checkbox-wrapper>
@@ -44,7 +44,7 @@
                     class="width-164 ml-1"
                     id="registry"
                     name="registry"
-                    disabled="!allowUpdateProxyCacheConfiguration"
+                    [disabled]="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.RegistryId">
                     <option class="display-none" value=""></option>
                     <option *ngFor="let r of registries" [value]="r.id">
@@ -64,7 +64,7 @@
                         id="bandwidth"
                         [(ngModel)]="projectPolicy.ProxySpeedKb"
                         name="bandwidth"
-                        disabled="!allowUpdateProxyCacheConfiguration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off"
                         (ngModelChange)="validateBandwidth()" />
@@ -76,7 +76,7 @@
                         <select
                             id="bandwidth_unit"
                             name="bandwidth_unit"
-                            disabled="!allowUpdateProxyCacheConfiguration"
+                            [disabled]="!allowUpdateProxyCacheConfiguration"
                             [(ngModel)]="speedUnit">
                             <option
                                 *ngFor="let unit of speedUnits"
@@ -104,7 +104,7 @@
                         id="max_upstream_conn"
                         [(ngModel)]="projectPolicy.MaxUpstreamConn"
                         name="max_upstream_conn"
-                        disabled="!allowUpdateProxyCacheConfiguration"
+                        [disabled]="!allowUpdateProxyCacheConfiguration"
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off" />
                     <clr-icon

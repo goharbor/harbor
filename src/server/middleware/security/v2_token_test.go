@@ -101,3 +101,39 @@ func TestTokenIssuedAfterProjectCreation(t *testing.T) {
 		})
 	}
 }
+
+func TestTokenIssuedAfterProjectCreation_NilIAT(t *testing.T) {
+	logger := log.DefaultLogger()
+	origCtl := project_ctl.Ctl
+	defer func() { project_ctl.Ctl = origCtl }()
+	project_ctl.Ctl = &projecttesting.Controller{}
+
+	ctx := lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{ProjectName: "myproject"})
+	claims := &v2TokenClaims{} // no iat
+
+	assert.False(t, tokenIssuedAfterProjectCreation(ctx, logger, claims))
+}
+
+func TestTokenIssuedAfterProjectCreation_BlobMountSource(t *testing.T) {
+	logger := log.DefaultLogger()
+	created := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	iat := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC) // after dest creation
+
+	// Destination created before iat (ok); source recreated after iat (must reject).
+	dest := &proModels.Project{Name: "dest", CreationTime: created}
+	src := &proModels.Project{Name: "src", CreationTime: iat.Add(24 * time.Hour)}
+
+	origCtl := project_ctl.Ctl
+	defer func() { project_ctl.Ctl = origCtl }()
+	mockCtl := &projecttesting.Controller{}
+	project_ctl.Ctl = mockCtl
+	mockCtl.On("GetByName", mock.Anything, "dest").Return(dest, nil)
+	mockCtl.On("GetByName", mock.Anything, "src").Return(src, nil)
+
+	ctx := lib.WithArtifactInfo(context.Background(), lib.ArtifactInfo{
+		ProjectName:          "dest",
+		BlobMountProjectName: "src",
+	})
+
+	assert.False(t, tokenIssuedAfterProjectCreation(ctx, logger, makeClaimsWithIAT(iat)))
+}
