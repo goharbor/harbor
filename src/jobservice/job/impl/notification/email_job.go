@@ -15,7 +15,6 @@
 package notification
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -24,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/email"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -65,31 +63,16 @@ func (ej *EmailJob) Validate(params job.Parameters) error {
 		return errors.New("missing parameter of email job")
 	}
 
-	subject, ok := params["subject"]
-	if !ok {
-		return errors.Errorf("missing job parameter 'subject'")
-	}
-	_, ok = subject.(string)
-	if !ok {
-		return errors.Errorf("malformed job parameter 'subject', expecting string but got %s", reflect.TypeOf(subject).String())
-	}
-
-	body, ok := params["body"]
-	if !ok {
-		return errors.Errorf("missing job parameter 'body'")
-	}
-	_, ok = body.(string)
-	if !ok {
-		return errors.Errorf("malformed job parameter 'body', expecting string but got %s", reflect.TypeOf(body).String())
-	}
-
-	to, ok := params["to"]
-	if !ok {
-		return errors.Errorf("missing job parameter 'to'")
-	}
-	_, ok = to.(string)
-	if !ok {
-		return errors.Errorf("malformed job parameter 'to', expecting string but got %s", reflect.TypeOf(to).String())
+	requiredParams := []string{"subject", "body", "to", "address", "from"}
+	for _, param := range requiredParams {
+		value, ok := params[param]
+		if !ok {
+			return errors.Errorf("missing job parameter '%s'", param)
+		}
+		_, ok = value.(string)
+		if !ok {
+			return errors.Errorf("malformed job parameter '%s', expecting string but got %s", param, reflect.TypeOf(value).String())
+		}
 	}
 	return nil
 }
@@ -102,7 +85,7 @@ func (ej *EmailJob) Run(ctx job.Context, params job.Parameters) error {
 
 	ej.logger.Info("start to run email job")
 
-	err := ej.execute(ctx, params)
+	err := ej.execute(params)
 	if err != nil {
 		ej.logger.Errorf("exit email job, error: %s", err)
 	} else {
@@ -118,40 +101,59 @@ func (ej *EmailJob) init(ctx job.Context, _ map[string]any) error {
 }
 
 // execute email job
-func (ej *EmailJob) execute(ctx job.Context, params map[string]any) error {
+func (ej *EmailJob) execute(params map[string]any) error {
 	subject := params["subject"].(string)
 	body := params["body"].(string)
 	toStr := params["to"].(string)
+	address := params["address"].(string)
+	from := params["from"].(string)
+
+	username, _ := params["username"].(string)
+	password, _ := params["password"].(string)
+	identity, _ := params["identity"].(string)
+
+	useSSL := true
+	if ssl, ok := params["use_ssl"].(bool); ok {
+		useSSL = ssl
+	}
+
+	insecure := false
+	if insecureSkip, ok := params["insecure_skip_verify"].(bool); ok {
+		insecure = insecureSkip
+	}
+
+	timeout := 60
+	if tm, ok := params["timeout"].(int); ok {
+		timeout = tm
+	}
+
+	port := 465
+	if p, ok := params["port"].(int); ok {
+		port = p
+	}
 
 	to := strings.Split(toStr, ",")
 	for i := range to {
 		to[i] = strings.TrimSpace(to[i])
 	}
 
-	// Get email configuration from Harbor config
-	cfg, err := config.Email(ctx.SystemContext())
-	if err != nil {
-		return errors.Wrap(err, "failed to get email config")
+	if address == "" {
+		return errors.New("email address not configured")
 	}
 
-	if cfg.Host == "" {
-		return errors.New("email host not configured")
+	if port != 0 && !strings.Contains(address, ":") {
+		address = address + ":" + strconv.Itoa(port)
 	}
 
-	addr := cfg.Host
-	if cfg.Port != 0 {
-		addr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-	}
-
-	err = email.Send(
-		addr,
-		cfg.Identity,
-		cfg.Username,
-		cfg.Password,
-		int(cfg.Timeout),
-		cfg.SSL,
-		cfg.Insecure,
-		cfg.From,
+	err := email.Send(
+		address,
+		identity,
+		username,
+		password,
+		timeout,
+		useSSL,
+		insecure,
+		from,
 		to,
 		subject,
 		body,

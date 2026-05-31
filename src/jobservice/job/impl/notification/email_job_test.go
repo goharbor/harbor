@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
-	mockjobservice "github.com/goharbor/harbor/src/testing/jobservice"
 )
 
 func TestEmailJobMaxFails(t *testing.T) {
@@ -39,23 +38,21 @@ func TestEmailJobValidate(t *testing.T) {
 		"subject": "Test Subject",
 		"body":    "Test Body",
 		"to":      "user@example.com",
+		"address": "smtp.example.com",
+		"from":    "harbor@example.com",
 	}
 	assert.Nil(t, rep.Validate(jp))
 }
 
 func TestEmailJobRun(t *testing.T) {
-	ctx := &mockjobservice.MockJobContext{}
-	logger := &mockjobservice.MockJobLogger{}
-
-	ctx.On("GetLogger").Return(logger)
-
 	rep := &EmailJob{}
 
 	params := map[string]any{
 		"subject": "Test Subject",
 		"body":    "Test Body",
 		"to":      "user@example.com",
+		"address": "smtp.example.com",
+		"from":    "harbor@example.com",
 	}
-	// Since email config may not be set, it may fail, but validate should pass
-	assert.NotNil(t, rep.Validate(params))
+	assert.Nil(t, rep.Validate(params))
 }
