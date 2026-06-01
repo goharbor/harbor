@@ -37,17 +37,39 @@ ${harbor_helm_filename}  harbor-helm-1.7.3.tar.gz
 ${harbor_helm_version}  1.7.3
 ${harbor_helm_package}  harbor-1.7.3.tgz
 
-${artifact_list_accessory_btn}  (//clr-dg-row//button)[1]
-${artifact_cosign_accessory}  //clr-dg-row//clr-dg-row[.//div[text()=' signature.cosign ']]
-${artifact_sbom_accessory}  //clr-dg-row//clr-dg-row[.//div[text()=' subject.accessory ']]
-${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
-${artifact_list_sbom_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
+# ${artifact_list_accessory_btn}  (//clr-dg-row//button)[1]
+# ${artifact_cosign_accessory}  //clr-dg-row//clr-dg-row[.//div[text()=' signature.cosign ']]
+# ${artifact_sbom_accessory}  //clr-dg-row//clr-dg-row[.//div[text()=' subject.accessory ']]
+# ${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
+# ${artifact_list_sbom_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
 ${artifact_sbom_cosign_accessory_action_btn}    xpath=//sub-accessories//clr-dg-row[contains(., 'signature.cosign')]//button[contains(@class, 'datagrid-action-toggle')]
 ${artifact_cosign_cosign_accessory_action_btn}    xpath=//sub-accessories//clr-dg-row[contains(., 'signature.cosign')]//button[contains(@class, 'datagrid-action-toggle')]
-${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[contains(., 'subject.accessory')]//button[contains(@class, 'datagrid-action-toggle')]
-${artifact_cosign_accessory_action_btn}    xpath=//clr-dg-row[contains(., 'signature.cosign') and not(ancestor::sub-accessories)]//button[contains(@class, 'datagrid-action-toggle')]
-${copy_digest_btn}  //button[text()=' Copy Digest ']
-${delete_accessory_btn}  //button[text()=' Delete ']
-${copy_btn}  //button[text()=' COPY ']
-${artifact_digest}  //textarea
+# ${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[contains(., 'subject.accessory')]//button[contains(@class, 'datagrid-action-toggle')]
+# ${artifact_cosign_accessory_action_btn}    xpath=//clr-dg-row[contains(., 'signature.cosign') and not(ancestor::sub-accessories)]//button[contains(@class, 'datagrid-action-toggle')]
+# ${copy_digest_btn}  //button[text()=' Copy Digest ']
+# ${delete_accessory_btn}  //button[text()=' Delete ']
+# ${copy_btn}  //button[text()=' COPY ']
+# ${artifact_digest}  //textarea
 
+# Level 1: Expand/collapse caret button for the main 'latest' image row
+${artifact_list_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
+
+# Level 2 (Sub-grid): Row locators for SBOM and independent Cosign signatures
+${artifact_sbom_accessory}      xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]
+${artifact_cosign_accessory}    xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]
+
+# Level 3 (Nested Sub-grid): Expand caret button nested inside the Level 2 SBOM/Signature row
+${artifact_list_sbom_accessory_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
+${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
+
+# Action Triggers: Ellipsis/Action toggle buttons for SBOM and Signature rows in Level 2
+${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
+${artifact_cosign_accessory_action_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
+
+# Contextual Locators: Captures the digest span of the currently active/selected row (removes legacy //textarea dependency)
+${artifact_digest}  xpath=//clr-dg-row[contains(@class, 'active') or contains(@class, 'selected')]//span[contains(@class, 'digest')]
+
+# Standard UI Button Triggers
+${copy_digest_btn}       //button[text()=' Copy Digest ']
+${delete_accessory_btn}  //button[text()=' Delete ']
+${copy_btn}              //button[text()=' COPY ']

@@ -235,12 +235,18 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
+    # Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
+    # Sleep  1
+    Retry Element Click  xpath=//hbr-create-edit-label//button[contains(@class, 'select-toggle')]
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
+    Retry Element Click  xpath=//hbr-create-edit-label//clr-subnav-menu//button[1] or //hbr-create-edit-label//*[contains(@class, 'dropdown-item')][1]
     Sleep  1
+    # Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
+    # Sleep  1
     Input Text  xpath=//*[@id='description']  global
-    Retry Element Click  xpath=//div/form/section/label[4]/button[2]
+    # Retry Element Click  xpath=//div/form/section/label[4]/button[2]
+    # Wait Until Page Contains  ${labelname}
+    Retry Element Click  xpath=//hbr-create-edit-label//button[text()=' OK ']
     Wait Until Page Contains  ${labelname}
 
 Update A Label
@@ -323,10 +329,10 @@ Distribution Not Exist
     Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Filter Distribution List
-    [Arguments]  ${name}  ${endpoint}  ${exsit}=${true}
+    [Arguments]  ${name}  ${endpoint}  ${exist}=${true}
     Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${name}
-    Run Keyword If  ${exsit}==${true}    Distribution Exist  ${name}  ${endpoint}
+    Run Keyword If  ${exist}==${true}    Distribution Exist  ${name}  ${endpoint}
     ...  ELSE  Distribution Not Exist  ${name}  ${endpoint}
 
 Select Provider
@@ -352,14 +358,22 @@ Create An New Distribution
 
 Delete A Distribution
     [Arguments]    ${name}  ${endpoint}  ${deletable}=${true}
-    ${is_exsit}    evaluate    not ${deletable}
+    ${is_exist}    evaluate    not ${deletable}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
+    # 1. Select the row checkbox
     Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    Sleep  1.5
+    Wait Until Element Is Visible    xpath=//clr-dropdown/*[@id='member-action']    timeout=10s
+    # 2. Click the global "ACTIONS" dropdown menu above the datagrid
+    Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown/*[@id='member-action']  Wait Until Element Is Visible And Enabled  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]
+    # Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown/button[contains(., 'ACTIONS')]  Wait Until Element Is Visible And Enabled  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]
+    Sleep  1
+    # 3. Click the "DELETE" option inside the active actions menu overlay
+    Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    # Confirm the deletion modal
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
+    Filter Distribution List  ${name}  ${endpoint}  exist=${is_exist}
 
 Edit A Distribution
     [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}

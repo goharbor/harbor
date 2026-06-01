@@ -16,7 +16,8 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${project_p2p_preheat_tag_xpath}  //clr-main-container//project-detail/clr-tabs//a[contains(.,'P2P Preheat')]
+# ${project_p2p_preheat_tag_xpath}  //clr-main-container//project-detail/clr-tabs//a[contains(.,'P2P Preheat')]
+${project_p2p_preheat_tag_xpath}  //*[self::button or self::a][contains(., 'P2P Preheat')]
 ${p2p_preheat_new_policy_btn_id}  //*[@id='new-policy']
 ${p2p_preheat_provider_select_id}  //*[@id='provider']
 ${p2p_preheat_name_input_id}  //*[@id='name']

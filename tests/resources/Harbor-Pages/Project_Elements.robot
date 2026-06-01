@@ -24,8 +24,8 @@ ${projects_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Project
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//a[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//a[contains(.,'Members')]
-${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
-${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Policy')]
+${project_config_tabsheet}  xpath=//*[self::button or self::a][contains(., 'Configuration')]
+${project_tag_strategy_xpath}  //*[self::button or self::a][contains(., 'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
 ${project_action_xpath}  //projects//span[contains(.,'ACTION')]
 

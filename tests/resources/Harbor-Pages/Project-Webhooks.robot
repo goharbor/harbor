@@ -6,7 +6,7 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Switch To Project Webhooks
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Webhooks')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Webhook')]
 
 Create A New Webhook
     [Arguments]  ${webhook_name}  ${webhook_endpoint_url}  ${payload_format}=Default  ${event_type}=@{EMPTY}

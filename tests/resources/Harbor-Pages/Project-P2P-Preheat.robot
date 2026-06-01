@@ -66,8 +66,11 @@ Edit A P2P Preheat Policy
     Switch To P2P Preheat
     Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
-    Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
+    Sleep  1
+    # Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    Retry Double Keywords When Error  Execute Javascript  document.getElementById('edit-policy').click()  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    # Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}    
     Run Keyword If  '${trigger_type}' != '${null}'  Select P2P Preheat Policy Trigger  ${trigger_type}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_edit_save_btn_id}
     P2P Preheat Policy Exist  ${name}  repo=${repo}

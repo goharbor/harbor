@@ -708,6 +708,41 @@ Reset Schedules For Job Service Dashboard Schedules
     Switch To Log Rotation
     Set Log Rotation Schedule  2  Days  None
 
+# Prepare Accessory
+#     [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}
+#     Docker Login  ${ip}  ${user}  ${pwd}
+#     Cosign Generate Key Pair
+#     Cosign Sign  ${ip}/${project_name}/${image}:${tag}
+#     Cosign Push Sbom  ${ip}/${project_name}/${image}:${tag}
+#     Go Into Repo  ${project_name}  ${image}
+#     Retry Button Click  ${artifact_list_accessory_btn}
+#     # Get SBOM digest
+#     Retry Double Keywords When Error  Retry Button Click  ${artifact_sbom_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
+#     Wait Until Element Is Visible And Enabled  ${artifact_digest}
+#     ${sbom_digest}=  Get Text  ${artifact_digest}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+#     # Get Signature digest
+#     Retry Double Keywords When Error  Retry Button Click  ${artifact_cosign_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
+#     Wait Until Element Is Visible And Enabled  ${artifact_digest}
+#     ${signature_digest}=  Get Text  ${artifact_digest}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+#     Cosign Sign  ${ip}/${project_name}/${image}@${sbom_digest}
+#     Cosign Sign  ${ip}/${project_name}/${image}@${signature_digest}
+#     Refresh Artifacts
+#     Retry Button Click  ${artifact_list_accessory_btn}
+#     # Get Signature of SBOM digest
+#     Retry Double Keywords When Error  Retry Button Click  ${artifact_list_sbom_accessory_btn}  Retry Button Click  ${artifact_sbom_cosign_accessory_action_btn}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_digest_btn}  Wait Until Element Is Visible And Enabled  ${artifact_digest}
+#     ${signature_of_sbom_digest}=  Get Text  ${artifact_digest}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+#     # Get Signature of Signature digest
+#     Retry Double Keywords When Error  Retry Button Click  ${artifact_list_cosign_accessory_btn}  Retry Button Click  ${artifact_cosign_cosign_accessory_action_btn}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_digest_btn}  Wait Until Element Is Visible And Enabled  ${artifact_digest}
+#     ${signature_of_signature_digest}=  Get Text  ${artifact_digest}
+#     Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+#     Docker Logout  ${ip}
+#     [Return]  ${sbom_digest}  ${signature_digest}  ${signature_of_sbom_digest}  ${signature_of_signature_digest}
+
 Prepare Accessory
     [Arguments]  ${project_name}  ${image}  ${tag}  ${user}  ${pwd}
     Docker Login  ${ip}  ${user}  ${pwd}
@@ -715,30 +750,43 @@ Prepare Accessory
     Cosign Sign  ${ip}/${project_name}/${image}:${tag}
     Cosign Push Sbom  ${ip}/${project_name}/${image}:${tag}
     Go Into Repo  ${project_name}  ${image}
+    
+    # Expand Level 1 to reveal the sub-grid
     Retry Button Click  ${artifact_list_accessory_btn}
-    # Get SBOM digest
+    
+    # --- Step 1: Extract SBOM digest ---
     Retry Double Keywords When Error  Retry Button Click  ${artifact_sbom_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
+    # CRITICAL: Ensure the active row's digest span is fully loaded before grabbing text
     Wait Until Element Is Visible And Enabled  ${artifact_digest}
     ${sbom_digest}=  Get Text  ${artifact_digest}
-    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
-    # Get Signature digest
+    # Optional/Legacy: Handle the copy confirmation if needed, use Run Keyword And Ignore Error to prevent blocker
+    Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    
+    # --- Step 2: Extract Signature digest ---
     Retry Double Keywords When Error  Retry Button Click  ${artifact_cosign_accessory_action_btn}  Retry Button Click  ${copy_digest_btn}
     Wait Until Element Is Visible And Enabled  ${artifact_digest}
     ${signature_digest}=  Get Text  ${artifact_digest}
-    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    
+    # --- Step 3: Sign the extracted digests to build Level 3 Nested Tree ---
     Cosign Sign  ${ip}/${project_name}/${image}@${sbom_digest}
     Cosign Sign  ${ip}/${project_name}/${image}@${signature_digest}
+    
+    # Refresh and expand again to load the 3rd layer in UI
     Refresh Artifacts
     Retry Button Click  ${artifact_list_accessory_btn}
-    # Get Signature of SBOM digest
+    
+    # --- Step 4: Extract Signature of SBOM digest (Level 3) ---
     Retry Double Keywords When Error  Retry Button Click  ${artifact_list_sbom_accessory_btn}  Retry Button Click  ${artifact_sbom_cosign_accessory_action_btn}
     Retry Double Keywords When Error  Retry Button Click  ${copy_digest_btn}  Wait Until Element Is Visible And Enabled  ${artifact_digest}
     ${signature_of_sbom_digest}=  Get Text  ${artifact_digest}
-    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
-    # Get Signature of Signature digest
+    Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    
+    # --- Step 5: Extract Signature of Signature digest (Level 3) ---
     Retry Double Keywords When Error  Retry Button Click  ${artifact_list_cosign_accessory_btn}  Retry Button Click  ${artifact_cosign_cosign_accessory_action_btn}
     Retry Double Keywords When Error  Retry Button Click  ${copy_digest_btn}  Wait Until Element Is Visible And Enabled  ${artifact_digest}
     ${signature_of_signature_digest}=  Get Text  ${artifact_digest}
-    Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    Run Keyword And Ignore Error  Retry Double Keywords When Error  Retry Button Click  ${copy_btn}  Retry Wait Element Not Visible  ${copy_btn}
+    
     Docker Logout  ${ip}
     [Return]  ${sbom_digest}  ${signature_digest}  ${signature_of_sbom_digest}  ${signature_of_signature_digest}

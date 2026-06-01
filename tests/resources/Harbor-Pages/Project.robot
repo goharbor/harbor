@@ -295,7 +295,7 @@ Switch To Project Repo
     Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
 
 Switch To Project Scanner
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Scanner')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Scanner')]
 
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
