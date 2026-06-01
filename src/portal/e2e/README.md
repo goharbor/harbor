@@ -33,7 +33,7 @@ BASE_URL=https://<harbor-host> IP=<harbor-host> npx playwright test
 Run one spec while iterating:
 
 ```bash
-npx playwright test e2e/trivy.spec.ts
+npx playwright test e2e/group1-nightly/trivy.spec.ts
 ```
 
 ## Test Patterns

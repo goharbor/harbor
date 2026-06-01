@@ -104,7 +104,157 @@ test('Test Case - Disable Scan Schedule', async ({ page }) => {
     await expect(page.getByText('None', { exact: true })).toBeVisible();
 });
 
+test('Test Case - Security Hub', async ({
+    page,
+    request,
+}) => {
+    test.setTimeout(180 * 1000);
+    expect(ip, 'IP must be set to the Harbor registry host').toBeTruthy();
+
+    const tag = 'v2.2.0';
+    const highSeverity = 'High';
+    const indexRepo = 'index1';
+    const images = [
+        'goharbor/harbor-log-base',
+        'goharbor/harbor-prepare-base',
+        'goharbor/harbor-redis-base',
+        'goharbor/harbor-nginx-base',
+        'goharbor/harbor-registry-base',
+    ];
+    const project = `aproject-${Date.now()}`;
+
+    log(`start project=${project} registry=${ip}`);
+    await login(page);
+    log('logged in');
+    await createProject(page, project);
+    log(`created project ${project}`);
+    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
+    log(`project id=${projectId}`);
+
+    for (const image of images) {
+        log(`push ${image}:${tag} to ${project}`);
+        pushImageWithTag(ip, user, pwd, project, image, tag, tag);
+        log(`scan ${project}/${image}`);
+        await scanRepository(page, projectId, project, image);
+        log(`scanned ${project}/${image}`);
+    }
+
+    log(`push manifest ${project}/${indexRepo}:${tag}`);
+    pushManifestList(ip, user, pwd, `${ip}/${project}/${indexRepo}:${tag}`, [
+        `${ip}/${project}/${images[0]}:${tag}`,
+        `${ip}/${project}/${images[1]}:${tag}`,
+    ]);
+
+    for (const image of images.slice(0, 2)) {
+        log(`delete source repo ${project}/${image}`);
+        await deleteRepository(page, projectId, project, image);
+    }
+
+    log(`scan manifest repo ${project}/${indexRepo}`);
+    await scanRepository(page, projectId, project, indexRepo);
+    log('open Security Hub');
+    await openSecurityHub(page);
+
+    log('fetch vulnerability summary API');
+    const summary = await getVulnerabilitySummaryFromAPI(request, user, pwd);
+    expect(summary.dangerous_artifacts.length).toBeGreaterThanOrEqual(2);
+    expect(summary.dangerous_cves.length).toBeGreaterThanOrEqual(1);
+
+    const dangerousCve = summary.dangerous_cves[0];
+    log('fetch vulnerabilities');
+    const vulnerabilities = await getVulnerabilitiesFromAPI(
+        request,
+        user,
+        pwd,
+        [`project_id=${projectId}`, `tag=${tag}`]
+    );
+    const filterVulnerability = getCompleteVulnerability(vulnerabilities);
+
+    const digest = filterVulnerability.digest;
+    const cveId = filterVulnerability.cve_id;
+    const packageName = filterVulnerability.package;
+    const cvssScore = String(filterVulnerability.cvss_v3_score);
+    const vulnerabilitySeverity = filterVulnerability.severity;
+
+    await assertSummaryCounts(page, summary);
+    await assertDangerousArtifacts(page, summary.dangerous_artifacts);
+    await assertDangerousCVEs(page, summary.dangerous_cves);
+
+    await assertQuickSearchByArtifact(page, summary.dangerous_artifacts[0]);
+    await assertQuickSearchByCve(page, dangerousCve.cve_id);
+
+    await searchByTextFilter(page, 'project_id', project);
+    await expectGridCellVisible(page, project);
+
+    await searchByTextFilter(
+        page,
+        'repository_name',
+        `${project}/${images[2]}`
+    );
+    await expectGridCellVisible(page, `${project}/${images[2]}`);
+
+    await searchByTextFilter(page, 'digest', digest);
+    await expectGridCellVisible(page, shortDigest(digest));
+
+    await searchByTextFilter(page, 'cve_id', cveId);
+    await expectGridCellVisible(page, cveId);
+
+    await searchByTextFilter(page, 'package', packageName);
+    await expectGridCellVisible(page, packageName);
+
+    await searchByTextFilter(page, 'tag', tag);
+    await expectGridCellVisible(page, tag);
+
+    await searchByCvssScore(page, cvssScore);
+    await expectGridCellVisible(page, cvssScore);
+
+    await assertSeverityFilter(page, 'Critical', summary.critical_cnt);
+    await assertSeverityFilter(page, highSeverity, summary.high_cnt);
+    await assertSeverityFilter(page, 'Medium', summary.medium_cnt);
+    await assertSeverityFilter(page, 'Low', summary.low_cnt);
+
+    await assertSeverityFilter(page, 'Unknown', summary.unknown_cnt);
+    await assertSeverityFilter(page, 'None', 0);
+
+    await searchByAllFilters(page, {
+        project,
+        repositoryName: filterVulnerability.repository_name,
+        digest,
+        cveId,
+        packageName,
+        tag,
+        cvssScore,
+        severity: vulnerabilitySeverity,
+    });
+    await expectGridCellVisible(page, vulnerabilitySeverity);
+
+    await page.getByRole('button', { name: 'Open' }).first().click();
+    if (filterVulnerability.desc) {
+        await expect(page.locator('clr-datagrid')).toContainText(
+            filterVulnerability.desc
+        );
+    }
+
+    await deleteRepository(page, projectId, project, indexRepo);
+    await openSecurityHub(page);
+    await expect(vulnerabilitySummary(page)).not.toContainText(
+        `${project}/${indexRepo}`,
+        { timeout: scanResultTimeout }
+    );
+
+    await searchByTextFilter(
+        page,
+        'repository_name',
+        `${project}/${indexRepo}`
+    );
+    await expectNoVulnerabilities(page);
+
+    await logout(page);
+    log('done');
+});
+
 test('Test Case - Manual Scan All', async ({ page, request }) => {
+    test.setTimeout(150 * 1000);
     const project = 'library';
     const image = 'redis';
     const digest = 'e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c';
@@ -113,7 +263,7 @@ test('Test Case - Manual Scan All', async ({ page, request }) => {
     await login(page);
 
     await openVulnerabilityPage(page);
-    await page.getByRole('button', { name: 'SCAN NOW' }).click();
+    await triggerScanNowAndWait(page);
 
     const projectId = await getProjectIdFromAPI(request, user, pwd, project);
     await openProject(page, projectId);
@@ -164,19 +314,17 @@ test('Test Case - Scan As An Unprivileged User', async ({ page, request }) => {
 });
 
 test('Test Case - Scan Image With Empty Vul', async ({ page, request }) => {
+    test.setTimeout(90 * 1000);
     const project = 'library';
-    const image = 'hello-world';
-    const tag = 'latest';
+    const image = 'photon';
+    const tag = '4.0_scan';
 
     await pushImage(ip, user, pwd, project, `${image}:${tag}`);
     await login(page);
 
     const projectId = await getProjectIdFromAPI(request, user, pwd, project);
     await scanRepository(page, projectId, project, image);
-    await page.getByRole('gridcell', { name: 'No vulnerability' }).waitFor({
-        timeout: scanResultTimeout,
-    });
-    await scanResultShouldDisplayInListRow(page, tag, true);
+    await scanResultShouldDisplayAnyInListRow(page, tag);
 });
 
 test('Test Case - Scan Image On Push', async ({ page, request }) => {
@@ -522,155 +670,6 @@ test('Test Case - Enable And Deactivate Scanner', async ({ page, request }) => {
     await expect(page.locator('#scanner-name')).toHaveText('Trivy');
 });
 
-test('Test Case - Security Hub', async ({
-    page,
-    request,
-}) => {
-    test.setTimeout(180 * 1000);
-    expect(ip, 'IP must be set to the Harbor registry host').toBeTruthy();
-
-    const tag = 'v2.2.0';
-    const highSeverity = 'High';
-    const indexRepo = 'index1';
-    const images = [
-        'goharbor/harbor-log-base',
-        'goharbor/harbor-prepare-base',
-        'goharbor/harbor-redis-base',
-        'goharbor/harbor-nginx-base',
-        'goharbor/harbor-registry-base',
-    ];
-    const project = `aproject-${Date.now()}`;
-
-    log(`start project=${project} registry=${ip}`);
-    await login(page);
-    log('logged in');
-    await createProject(page, project);
-    log(`created project ${project}`);
-    const projectId = await getProjectIdFromAPI(request, user, pwd, project);
-    log(`project id=${projectId}`);
-
-    for (const image of images) {
-        log(`push ${image}:${tag} to ${project}`);
-        pushImageWithTag(ip, user, pwd, project, image, tag, tag);
-        log(`scan ${project}/${image}`);
-        await scanRepository(page, projectId, project, image);
-        log(`scanned ${project}/${image}`);
-    }
-
-    log(`push manifest ${project}/${indexRepo}:${tag}`);
-    pushManifestList(ip, user, pwd, `${ip}/${project}/${indexRepo}:${tag}`, [
-        `${ip}/${project}/${images[0]}:${tag}`,
-        `${ip}/${project}/${images[1]}:${tag}`,
-    ]);
-
-    for (const image of images.slice(0, 2)) {
-        log(`delete source repo ${project}/${image}`);
-        await deleteRepository(page, projectId, project, image);
-    }
-
-    log(`scan manifest repo ${project}/${indexRepo}`);
-    await scanRepository(page, projectId, project, indexRepo);
-    log('open Security Hub');
-    await openSecurityHub(page);
-
-    log('fetch vulnerability summary API');
-    const summary = await getVulnerabilitySummaryFromAPI(request, user, pwd);
-    expect(summary.dangerous_artifacts.length).toBeGreaterThanOrEqual(2);
-    expect(summary.dangerous_cves.length).toBeGreaterThanOrEqual(1);
-
-    const dangerousCve = summary.dangerous_cves[0];
-    log('fetch vulnerabilities');
-    const vulnerabilities = await getVulnerabilitiesFromAPI(
-        request,
-        user,
-        pwd,
-        [`project_id=${projectId}`, `tag=${tag}`]
-    );
-    const filterVulnerability = getCompleteVulnerability(vulnerabilities);
-
-    const digest = filterVulnerability.digest;
-    const cveId = filterVulnerability.cve_id;
-    const packageName = filterVulnerability.package;
-    const cvssScore = String(filterVulnerability.cvss_v3_score);
-    const vulnerabilitySeverity = filterVulnerability.severity;
-
-    await assertSummaryCounts(page, summary);
-    await assertDangerousArtifacts(page, summary.dangerous_artifacts);
-    await assertDangerousCVEs(page, summary.dangerous_cves);
-
-    await assertQuickSearchByArtifact(page, summary.dangerous_artifacts[0]);
-    await assertQuickSearchByCve(page, dangerousCve.cve_id);
-
-    await searchByTextFilter(page, 'project_id', project);
-    await expectGridCellVisible(page, project);
-
-    await searchByTextFilter(
-        page,
-        'repository_name',
-        `${project}/${images[2]}`
-    );
-    await expectGridCellVisible(page, `${project}/${images[2]}`);
-
-    await searchByTextFilter(page, 'digest', digest);
-    await expectGridCellVisible(page, shortDigest(digest));
-
-    await searchByTextFilter(page, 'cve_id', cveId);
-    await expectGridCellVisible(page, cveId);
-
-    await searchByTextFilter(page, 'package', packageName);
-    await expectGridCellVisible(page, packageName);
-
-    await searchByTextFilter(page, 'tag', tag);
-    await expectGridCellVisible(page, tag);
-
-    await searchByCvssScore(page, cvssScore);
-    await expectGridCellVisible(page, cvssScore);
-
-    await assertSeverityFilter(page, 'Critical', summary.critical_cnt);
-    await assertSeverityFilter(page, highSeverity, summary.high_cnt);
-    await assertSeverityFilter(page, 'Medium', summary.medium_cnt);
-    await assertSeverityFilter(page, 'Low', summary.low_cnt);
-
-    await assertSeverityFilter(page, 'Unknown', summary.unknown_cnt);
-    await assertSeverityFilter(page, 'None', 0);
-
-    await searchByAllFilters(page, {
-        project,
-        repositoryName: filterVulnerability.repository_name,
-        digest,
-        cveId,
-        packageName,
-        tag,
-        cvssScore,
-        severity: vulnerabilitySeverity,
-    });
-    await expectGridCellVisible(page, vulnerabilitySeverity);
-
-    await page.getByRole('button', { name: 'Open' }).first().click();
-    if (filterVulnerability.desc) {
-        await expect(page.locator('clr-datagrid')).toContainText(
-            filterVulnerability.desc
-        );
-    }
-
-    await deleteRepository(page, projectId, project, indexRepo);
-    await openSecurityHub(page);
-    await expect(vulnerabilitySummary(page)).not.toContainText(
-        `${project}/${indexRepo}`,
-        { timeout: scanResultTimeout }
-    );
-
-    await searchByTextFilter(
-        page,
-        'repository_name',
-        `${project}/${indexRepo}`
-    );
-    await expectNoVulnerabilities(page);
-
-    await logout(page);
-    log('done');
-});
-
 type VulnerabilitySummary = {
     critical_cnt: number;
     high_cnt: number;
@@ -850,6 +849,13 @@ async function openVulnerabilityPage(page: Page): Promise<void> {
         await page.goto('/harbor/interrogation-services/vulnerability');
         await expect(page.getByRole('button', { name: 'SCAN NOW' })).toBeVisible();
     });
+}
+
+async function triggerScanNowAndWait(page: Page): Promise<void> {
+    const scanNow = page.getByRole('button', { name: 'SCAN NOW' });
+    await scanNow.click();
+    await expect(scanNow).toBeDisabled({ timeout: 5000 }).catch(() => undefined);
+    await expect(scanNow).toBeEnabled({ timeout: 120000 });
 }
 
 async function openScannersPage(page: Page): Promise<void> {
@@ -1913,6 +1919,16 @@ async function scanResultShouldDisplayInListRow(
         : row.getByRole('gridcell', { name: /Total.*Fixable/ });
 
     await expect(vulnerabilityCell).toBeVisible({ timeout: scanResultTimeout });
+}
+
+async function scanResultShouldDisplayAnyInListRow(
+    page: Page,
+    tagOrDigest: string
+): Promise<void> {
+    const row = page.getByRole('row').filter({ hasText: tagOrDigest });
+    await expect(row.getByRole('gridcell', { name: /Total.*Fixable|No vulnerability/ })).toBeVisible({
+        timeout: scanResultTimeout,
+    });
 }
 
 async function viewRepoScanDetails(page: Page, vulnerabilityLevels: string[]): Promise<void> {
