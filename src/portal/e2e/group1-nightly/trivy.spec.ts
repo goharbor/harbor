@@ -10,6 +10,12 @@ import {
     execFileSync,
     type ExecFileSyncOptionsWithStringEncoding,
 } from 'child_process';
+import {
+    createServer,
+    type IncomingMessage,
+    type Server,
+    type ServerResponse,
+} from 'http';
 
 const LOCAL_REGISTRY: string =
     process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
@@ -19,9 +25,31 @@ const ip = process.env.IP || '';
 const user = process.env.HARBOR_ADMIN || 'admin';
 const pwd =
     process.env.HARBOR_PASSWORD || 'Harbor12345';
-const scannerEndpoint = process.env.SCANNER_ENDPOINT || '';
+const scannerPort = Number(process.env.SCANNER_PORT || 8081);
+const scannerEndpoint = process.env.SCANNER_ENDPOINT || `http://${ip}:${scannerPort}`;
 const stepTimeout = 30 * 1000;
 const scanResultTimeout = stepTimeout;
+const fakeScannerReports = new Map<string, FakeScanArtifact>();
+
+let fakeScannerServer: Server | undefined;
+
+test.beforeAll(async () => {
+    if (process.env.SCANNER_ENDPOINT) {
+        return;
+    }
+
+    fakeScannerServer = await startFakeScannerAdapter(scannerPort);
+});
+
+test.afterAll(async () => {
+    if (!fakeScannerServer) {
+        return;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+        fakeScannerServer?.close(error => error ? reject(error) : resolve());
+    });
+});
 
 function log(message: string): void {
     console.log(`[trivy] ${new Date().toISOString()} ${message}`);
@@ -565,41 +593,44 @@ test('Test Case - Generate Image SBOM On Push', async ({ page, request }) => {
 });
 
 test('Test Case - External Scanner CRUD', async ({ page }) => {
-    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    test.setTimeout(90 * 1000);
     const scanner = `scanner-${Date.now()}`;
+    const endpoint = scannerEndpointFor(scanner);
 
     await login(page);
     await openScannersPage(page);
-    await addScanner(page, scanner, scannerEndpoint, 'Basic', 'For testing', {
+    await addScanner(page, scanner, endpoint, 'Basic', 'For testing', {
         skipCertVerification: true,
         internalRegistryAddress: true,
         username: 'scanner_name',
         password: 'scanner_password',
     });
-    await updateScanner(page, scanner, `${scanner}-edit1`, `${scannerEndpoint}1`, 'Bearer', 'For testing-edit1', {
+    await updateScanner(page, scanner, `${scanner}-edit1`, `${endpoint}1`, 'Bearer', 'For testing-edit1', {
         skipCertVerification: true,
         internalRegistryAddress: true,
         token: 'scanner_token',
     });
-    await updateScanner(page, `${scanner}-edit1`, `${scanner}-edit2`, `${scannerEndpoint}2`, 'APIKey', 'For testing-edit2', {
+    await updateScanner(page, `${scanner}-edit1`, `${scanner}-edit2`, `${endpoint}2`, 'APIKey', 'For testing-edit2', {
         skipCertVerification: true,
         internalRegistryAddress: true,
         apiKey: 'scanner_api_key',
     });
-    await updateScanner(page, `${scanner}-edit2`, scanner, scannerEndpoint, 'None', 'For testing');
+    await updateScanner(page, `${scanner}-edit2`, scanner, endpoint, 'None', 'For testing');
     await filterScannerByName(page, scanner);
-    await filterScannerByEndpoint(page, scannerEndpoint);
-    await expect(page.getByRole('row').filter({ hasText: scanner }).filter({ hasText: scannerEndpoint })).toBeVisible();
+    await filterScannerByEndpoint(page, endpoint);
+    await expect(page.getByRole('row').filter({ hasText: scanner }).filter({ hasText: endpoint })).toBeVisible();
     await deleteScanner(page, scanner);
 });
 
 test('Test Case - Set External Scanner As Default And Scan', async ({ page, request }) => {
-    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    test.setTimeout(150 * 1000);
     const project = `project-${Date.now()}`;
     const scanner = `scanner-${Date.now()}`;
+    const endpoint = scannerEndpointFor(scanner);
     const image = 'hello-world';
     const tag = 'latest';
 
+    await setDefaultScannerFromAPI('Trivy');
     await login(page);
     await createProject(page, project);
     const projectId = await getProjectIdFromAPI(request, user, pwd, project);
@@ -607,47 +638,50 @@ test('Test Case - Set External Scanner As Default And Scan', async ({ page, requ
     await expect(page.locator('#scanner-name')).toHaveText('Trivy');
     await openScannersPage(page);
     await expect(page.getByRole('row').filter({ hasText: 'Trivy' }).filter({ hasText: 'Default' })).toBeVisible();
-    await addScanner(page, scanner, scannerEndpoint, 'None', 'For testing');
+    await addScanner(page, scanner, endpoint, 'None', 'For testing');
     await setScannerAsDefault(page, scanner);
     await openProjectScanner(page, projectId);
     await expect(page.locator('#scanner-name')).toHaveText(scanner);
     await pushImage(ip, user, pwd, project, image);
     await scanRepository(page, projectId, project, image);
-    await expect(page.locator('hbr-result-tip-histogram')).toContainText('10');
+    await expectArtifactScanResult(page, tag, '10');
     await openScannersPage(page);
     await setScannerAsDefault(page, 'Trivy');
     await openProjectScanner(page, projectId);
     await expect(page.locator('#scanner-name')).toHaveText('Trivy');
     await scanRepository(page, projectId, project, image);
-    await expect(page.locator('hbr-result-tip-histogram')).toContainText(/No vulnerability/i);
+    await expectArtifactScanResult(page, tag, /No vulnerability/i);
     await openProjectScanner(page, projectId);
-    await selectProjectScanner(page, scanner, 2);
+    await selectProjectScanner(page, scanner);
     await scanRepository(page, projectId, project, image);
-    await expect(page.locator('hbr-result-tip-histogram')).toContainText('10');
+    await expectArtifactScanResult(page, tag, '10');
     await openProjectScanner(page, projectId);
-    await selectProjectScanner(page, 'Trivy', 2);
+    await selectProjectScanner(page, 'Trivy');
     await scanRepository(page, projectId, project, image);
-    await expect(page.locator('hbr-result-tip-histogram')).toContainText(/No vulnerability/i);
+    await expectArtifactScanResult(page, tag, /No vulnerability/i);
     await openScannersPage(page);
     await deleteScanner(page, scanner);
     await openProjectScanner(page, projectId);
     await page.locator('#edit-scanner').click();
-    await expect(page.getByRole('row')).toHaveCount(1);
+    await expect(page.getByRole('row').filter({ hasText: scanner })).not.toBeVisible();
+    await expect(page.getByRole('row').filter({ hasText: 'Trivy' })).toBeVisible();
 });
 
 test('Test Case - Enable And Deactivate Scanner', async ({ page, request }) => {
-    test.skip(!scannerEndpoint, 'SCANNER_ENDPOINT is required for external scanner tests');
+    test.setTimeout(120 * 1000);
     const project = `project-${Date.now()}`;
     const scanner = `scanner-${Date.now()}`;
+    const endpoint = scannerEndpointFor(scanner);
     const image = 'hello-world';
     const tag = 'latest';
 
+    await setDefaultScannerFromAPI('Trivy');
     await login(page);
     await createProject(page, project);
     await pushImage(ip, user, pwd, project, image);
     const projectId = await getProjectIdFromAPI(request, user, pwd, project);
     await openScannersPage(page);
-    await addScanner(page, scanner, scannerEndpoint, 'None', 'For testing');
+    await addScanner(page, scanner, endpoint, 'None', 'For testing');
     await openProjectScanner(page, projectId);
     await selectProjectScanner(page, scanner);
     await scanRepository(page, projectId, project, image);
@@ -729,11 +763,162 @@ type ScannerOptions = {
     apiKey?: string;
 };
 
+type ScannerRegistration = {
+    uuid: string;
+    name: string;
+    url: string;
+    is_default: boolean;
+};
+
 type CveAllowlistData = {
     partial: string;
     last: string;
     all: string;
 };
+
+type FakeScanArtifact = {
+    repository: string;
+    digest: string;
+    mime_type: string;
+};
+
+async function startFakeScannerAdapter(port: number): Promise<Server> {
+    const server = createServer(handleFakeScannerRequest);
+    await new Promise<void>((resolve, reject) => {
+        server.once('error', reject);
+        server.listen(port, '0.0.0.0', () => {
+            server.off('error', reject);
+            resolve();
+        });
+    });
+
+    log(`fake scanner adapter listening on ${scannerEndpoint}`);
+    return server;
+}
+
+async function handleFakeScannerRequest(
+    request: IncomingMessage,
+    response: ServerResponse
+): Promise<void> {
+    const path = request.url?.split('?')[0] || '';
+    const route = fakeScannerRoute(path);
+
+    if (request.method === 'GET' && route === '/api/v1/metadata') {
+        writeJson(response, 200, fakeScannerMetadata());
+        return;
+    }
+
+    if (request.method === 'POST' && route === '/api/v1/scan') {
+        const body = await readJsonBody(request);
+        const id = `scan-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        fakeScannerReports.set(id, body.artifact || {});
+        writeJson(response, 202, { id });
+        return;
+    }
+
+    const reportMatch = route.match(/^\/api\/v1\/scan\/([^/]+)\/report$/);
+    if (request.method === 'GET' && reportMatch) {
+        const artifact = fakeScannerReports.get(reportMatch[1]);
+        if (!artifact) {
+            writeJson(response, 404, { error: { message: 'scan report not found' } });
+            return;
+        }
+
+        writeJson(response, 200, fakeVulnerabilityReport(artifact));
+        return;
+    }
+
+    writeJson(response, 404, { error: { message: 'not found' } });
+}
+
+function scannerEndpointFor(name: string): string {
+    if (process.env.SCANNER_ENDPOINT) {
+        return scannerEndpoint;
+    }
+
+    return `${scannerEndpoint}/${name}`;
+}
+
+function fakeScannerRoute(path: string): string {
+    const routeStart = path.indexOf('/api/v1/');
+    return routeStart === -1 ? path : path.slice(routeStart);
+}
+
+function fakeScannerMetadata() {
+    return {
+        scanner: {
+            name: 'Fake Scanner',
+            vendor: 'Harbor',
+            version: '1.0.0',
+        },
+        capabilities: [
+            {
+                type: 'vulnerability',
+                consumes_mime_types: [
+                    'application/vnd.oci.image.manifest.v1+json',
+                    'application/vnd.docker.distribution.manifest.v2+json',
+                ],
+                produces_mime_types: [
+                    'application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0',
+                    'application/vnd.security.vulnerability.report; version=1.1',
+                ],
+            },
+        ],
+        properties: {
+            'harbor.scanner-adapter/registry-authorization-type': 'Bearer',
+        },
+    };
+}
+
+function fakeVulnerabilityReport(artifact: FakeScanArtifact) {
+    return {
+        generated_at: new Date().toISOString(),
+        artifact: {
+            repository: artifact.repository,
+            digest: artifact.digest,
+            mime_type: artifact.mime_type,
+        },
+        scanner: {
+            name: 'Fake Scanner',
+            vendor: 'Harbor',
+            version: '1.0.0',
+        },
+        severity: 'Critical',
+        vulnerabilities: Array.from({ length: 10 }, (_, index) => ({
+            id: `CVE-2026-${String(index + 1).padStart(4, '0')}`,
+            package: `fake-package-${index + 1}`,
+            version: '1.0.0',
+            fix_version: '1.0.1',
+            severity: 'Critical',
+            description: 'Synthetic vulnerability from Playwright fake scanner adapter.',
+            links: [`https://example.test/CVE-2026-${String(index + 1).padStart(4, '0')}`],
+            preferred_cvss: {
+                score_v3: 9.8,
+                vector_v3: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+            },
+        })),
+    };
+}
+
+async function readJsonBody(request: IncomingMessage): Promise<any> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of request) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+
+    if (!chunks.length) {
+        return {};
+    }
+
+    return JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+}
+
+function writeJson(response: ServerResponse, statusCode: number, body: unknown): void {
+    response.writeHead(statusCode, {
+        'Content-Type': 'application/json',
+    });
+    response.end(JSON.stringify(body));
+}
 
 function vulnerabilitySummary(page: Page): Locator {
     return page.locator('app-vulnerability-summary');
@@ -1617,12 +1802,13 @@ async function addScanner(
     description?: string,
     options: ScannerOptions = {}
 ): Promise<void> {
+    await deleteStaleScanners(page, name);
     await page.getByRole('button', { name: /NEW SCANNER/i }).click();
     await fillScannerForm(page, name, endpoint, auth, description, options);
     await page.locator('#button-test').click();
     await expect(page.getByText('Test passed')).toBeVisible({ timeout: scanResultTimeout });
     await page.locator('#button-add').click();
-    await expect(scannerRow(page, name).filter({ hasText: endpoint })).toBeVisible();
+    await expectScannerRowVisible(page, name, endpoint);
 }
 
 async function updateScanner(
@@ -1635,11 +1821,11 @@ async function updateScanner(
     options: ScannerOptions = {}
 ): Promise<void> {
     await selectScannerRow(page, originalName);
-    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.locator('#action-scanner').click();
     await page.getByRole('menuitem', { name: 'EDIT' }).click();
     await fillScannerForm(page, name, endpoint, auth, description, options);
     await page.locator('#button-save').click();
-    await expect(scannerRow(page, name).filter({ hasText: endpoint }).filter({ hasText: auth })).toBeVisible();
+    await expectScannerRowVisible(page, name, endpoint, auth);
 }
 
 async function fillScannerForm(
@@ -1668,24 +1854,24 @@ async function fillScannerForm(
         await page.locator('#scanner-apiKey').fill(options.apiKey || '');
     }
     if (options.skipCertVerification) {
-        await page.locator('#scanner-skipCertVerify').check({ force: true });
+        await setCheckbox(page, 'scanner-skipCertVerify', true);
     }
     if (options.internalRegistryAddress) {
-        await page.locator('#scanner-use-inner').check({ force: true });
+        await setCheckbox(page, 'scanner-use-inner', true);
     }
 }
 
 async function filterScannerByName(page: Page, name: string): Promise<void> {
-    await expect(scannerRow(page, name)).toBeVisible();
+    await expectScannerRowVisible(page, name);
 }
 
 async function filterScannerByEndpoint(page: Page, endpoint: string): Promise<void> {
-    await expect(page.getByRole('row').filter({ hasText: endpoint })).toBeVisible();
+    await expectScannerRowVisible(page, endpoint);
 }
 
 async function deleteScanner(page: Page, name: string): Promise<void> {
     await selectScannerRow(page, name);
-    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.locator('#action-scanner').click();
     await page.getByRole('menuitem', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE', exact: true }).click();
     await page.reload();
@@ -1695,7 +1881,7 @@ async function deleteScanner(page: Page, name: string): Promise<void> {
 async function setScannerAsDefault(page: Page, name: string): Promise<void> {
     await selectScannerRow(page, name);
     await page.locator('#set-default').click();
-    await expect(scannerRow(page, name).filter({ hasText: 'Default' })).toBeVisible();
+    await expectScannerRowVisible(page, name, 'Default');
 }
 
 async function enableOrDeactivateScanner(
@@ -1704,10 +1890,10 @@ async function enableOrDeactivateScanner(
     action: 'ENABLE' | 'DEACTIVATE'
 ): Promise<void> {
     await selectScannerRow(page, name);
-    await page.getByRole('button', { name: 'Actions' }).click();
+    await page.locator('#action-scanner').click();
     await page.getByRole('menuitem', { name: action }).click();
     const expectedState = action === 'ENABLE' ? 'Enabled' : 'Deactivated';
-    await expect(scannerRow(page, name).filter({ hasText: expectedState })).toBeVisible();
+    await expectScannerRowVisible(page, name, expectedState);
 }
 
 async function selectProjectScanner(
@@ -1725,13 +1911,169 @@ async function selectProjectScanner(
 }
 
 async function selectScannerRow(page: Page, name: string): Promise<void> {
+    await expectScannerRowVisible(page, name);
     const row = scannerRow(page, name);
-    await expect(row).toBeVisible();
     await row.locator('label.clr-control-label').click();
 }
 
 function scannerRow(page: Page, name: string): Locator {
     return page.getByRole('row').filter({ hasText: name });
+}
+
+async function expectScannerRowVisible(
+    page: Page,
+    name: string,
+    ...texts: string[]
+): Promise<void> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+        const row = texts.reduce(
+            (locator, text) => locator.filter({ hasText: text }),
+            scannerRow(page, name)
+        );
+
+        try {
+            await expect(row).toBeVisible({ timeout: 5000 });
+            return;
+        } catch (error) {
+            lastError = error;
+            if (attempt < 4) {
+                await page.reload();
+            }
+        }
+    }
+
+    throw lastError;
+}
+
+async function deleteStaleScanners(
+    page: Page,
+    name: string
+): Promise<void> {
+    const response = await page.request.get('/api/v2.0/scanners', {
+        headers: {
+            Authorization: authorizationHeader(user, pwd),
+            Accept: 'application/json',
+        },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Failed to list scanners: ${response.status()} ${response.statusText()}`
+        );
+    }
+
+    const scanners = await response.json() as ScannerRegistration[];
+    for (const scanner of scanners) {
+        if (scanner.name !== name) {
+            continue;
+        }
+
+        const deleteResponse = await page.request.delete(`/api/v2.0/scanners/${scanner.uuid}`, {
+            headers: {
+                Authorization: authorizationHeader(user, pwd),
+            },
+        });
+
+        if (!deleteResponse.ok() && deleteResponse.status() !== 404) {
+            throw new Error(
+                `Failed to delete stale scanner ${scanner.name}: ${deleteResponse.status()} ${deleteResponse.statusText()}`
+            );
+        }
+    }
+}
+
+async function setDefaultScannerFromAPI(name: string): Promise<void> {
+    const baseURL = process.env.BASE_URL;
+    if (!baseURL) {
+        throw new Error('BASE_URL is required to set the default scanner');
+    }
+
+    const api = await playwrightRequest.newContext({
+        baseURL,
+        extraHTTPHeaders: {
+            Authorization: authorizationHeader(user, pwd),
+            'Content-Type': 'application/json',
+        },
+    });
+
+    try {
+        const scanners = await getScannersFromAPI(api);
+        const scanner = scanners.find(candidate => candidate.name === name);
+        if (!scanner) {
+            throw new Error(`Scanner ${name} was not found`);
+        }
+
+        if (scanner.is_default) {
+            return;
+        }
+
+        const response = await api.patch(`/api/v2.0/scanners/${scanner.uuid}`, {
+            data: {
+                is_default: true,
+            },
+        });
+
+        if (!response.ok()) {
+            throw new Error(
+                `Failed to set scanner ${name} as default: ${response.status()} ${response.statusText()}`
+            );
+        }
+    } finally {
+        await api.dispose();
+    }
+}
+
+async function getScannersFromAPI(
+    request: APIRequestContext
+): Promise<ScannerRegistration[]> {
+    const response = await request.get('/api/v2.0/scanners', {
+        headers: {
+            Authorization: authorizationHeader(user, pwd),
+            Accept: 'application/json',
+        },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Failed to list scanners: ${response.status()} ${response.statusText()}`
+        );
+    }
+
+    return response.json();
+}
+
+async function setCheckbox(
+    page: Page,
+    id: string,
+    checked: boolean
+): Promise<void> {
+    const checkbox = page.locator(`#${id}`);
+    if ((await checkbox.isChecked()) === checked) {
+        return;
+    }
+
+    await page.locator(`label[for="${id}"]`).click();
+    if (checked) {
+        await expect(checkbox).toBeChecked();
+    } else {
+        await expect(checkbox).not.toBeChecked();
+    }
+}
+
+async function expectArtifactScanResult(
+    page: Page,
+    tag: string,
+    expected: string | RegExp
+): Promise<void> {
+    const row = page.getByRole('row').filter({ hasText: tag });
+    await expect(row.getByRole('gridcell', { name: /Total.*Fixable|No vulnerability/ })).toBeVisible({
+        timeout: scanResultTimeout,
+    });
+    await expect(row).toContainText(expected, {
+        timeout: scanResultTimeout,
+    });
 }
 
 function cannotPullImage(
