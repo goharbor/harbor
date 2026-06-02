@@ -1,5 +1,7 @@
 FROM goharbor/photon:5.0
 
+RUN tdnf update -y && tdnf clean all
+
 RUN tdnf install -y nginx shadow >> /dev/null \
     && tdnf clean all \
     && ln -sf /dev/stdout /var/log/nginx/access.log \

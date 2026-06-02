@@ -1,5 +1,7 @@
 FROM goharbor/photon:5.0
 
+RUN tdnf update -y && tdnf clean all
+
 RUN tdnf install -y nginx shadow >> /dev/null \
     && tdnf clean all \
     && groupmod -g 10000 nginx && usermod -g 10000 -u 10000 -d /home/nginx -s /bin/bash nginx \
