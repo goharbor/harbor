@@ -235,18 +235,13 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}
     Sleep  1
-    # Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
-    # Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//button[contains(@class, 'select-toggle')]
+    Retry Element Click  xpath=//button[contains(@class, 'btnColor') and contains(@class, 'dropdown-toggle')]
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//clr-subnav-menu//button[1] or //hbr-create-edit-label//*[contains(@class, 'dropdown-item')][1]
+    Retry Element Click  xpath=//clr-dropdown//*[contains(@class, 'dropdown-item') or @type='button' or contains(@class,'color')][1]
     Sleep  1
-    # Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
-    # Sleep  1
     Input Text  xpath=//*[@id='description']  global
-    # Retry Element Click  xpath=//div/form/section/label[4]/button[2]
-    # Wait Until Page Contains  ${labelname}
-    Retry Element Click  xpath=//hbr-create-edit-label//button[text()=' OK ']
+    Sleep  1
+    Retry Element Click  xpath=//button[normalize-space(.)='OK']    
     Wait Until Page Contains  ${labelname}
 
 Update A Label
@@ -257,7 +252,7 @@ Update A Label
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}1
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//form/section//button[2]
+    Retry Element Click  xpath=//button[normalize-space(.)='OK']
     Wait Until Page Contains  ${labelname}1
 
 Delete A Label
@@ -266,8 +261,8 @@ Delete A Label
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
-    Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
+    Retry Element Click  xpath=//clr-modal//button[contains(@class, 'btn-danger') or normalize-space(.)='DELETE' or normalize-space(.)='Delete']
+    Wait Until Page Does Not Contain Element  xpath=//clr-dg-row[contains(.,'${labelname}')]    timeout=10s
 
 Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}

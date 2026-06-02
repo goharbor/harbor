@@ -51,25 +51,47 @@ ${artifact_cosign_cosign_accessory_action_btn}    xpath=//sub-accessories//clr-d
 # ${copy_btn}  //button[text()=' COPY ']
 # ${artifact_digest}  //textarea
 
-# Level 1: Expand/collapse caret button for the main 'latest' image row
-${artifact_list_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
+# # Level 1: Expand/collapse caret button for the main 'latest' image row
+# ${artifact_list_accessory_btn}  xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
 
-# Level 2 (Sub-grid): Row locators for SBOM and independent Cosign signatures
-${artifact_sbom_accessory}      xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]
-${artifact_cosign_accessory}    xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]
+# # Level 2 (Sub-grid): Row locators for SBOM and independent Cosign signatures
+# ${artifact_sbom_accessory}      xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]
+# ${artifact_cosign_accessory}    xpath=//clr-dg-row//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]
 
-# Level 3 (Nested Sub-grid): Expand caret button nested inside the Level 2 SBOM/Signature row
-${artifact_list_sbom_accessory_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
-${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
+# # Level 3 (Nested Sub-grid): Expand caret button nested inside the Level 2 SBOM/Signature row
+# ${artifact_list_sbom_accessory_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
+# ${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//button[contains(@class, 'datagrid-expandable-caret-button')]
 
-# Action Triggers: Ellipsis/Action toggle buttons for SBOM and Signature rows in Level 2
-${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
-${artifact_cosign_accessory_action_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
+# # Action Triggers: Ellipsis/Action toggle buttons for SBOM and Signature rows in Level 2
+# ${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
+# ${artifact_cosign_accessory_action_btn}  xpath=//clr-dg-row[.//clr-dg-cell[contains(., 'signature.cosign')]]//clr-icon[@shape='ellipsis-vertical' or contains(@class, 'datagrid-action-toggle')]
 
-# Contextual Locators: Captures the digest span of the currently active/selected row (removes legacy //textarea dependency)
-${artifact_digest}  xpath=//clr-dg-row[contains(@class, 'active') or contains(@class, 'selected')]//span[contains(@class, 'digest')]
+# # Contextual Locators: Captures the digest span of the currently active/selected row (removes legacy //textarea dependency)
+# ${artifact_digest}  xpath=//clr-dg-row[contains(@class, 'active') or contains(@class, 'selected')]//span[contains(@class, 'digest')]
 
 # Standard UI Button Triggers
 ${copy_digest_btn}       //button[text()=' Copy Digest ']
 ${delete_accessory_btn}  //button[text()=' Delete ']
 ${copy_btn}              //button[text()=' COPY ']
+
+# Level 1: Main row expander icon
+${artifact_list_accessory_btn}          xpath=//clr-dg-row[contains(., 'latest')]//button[contains(@class, 'datagrid-expandable-caret-button')]
+
+# Level 2 & 3 Expanders: Explicitly targeting row contents directly to prevent parent-child bleed
+${artifact_list_sbom_accessory_btn}    xpath=//clr-dg-cell[contains(., 'subject.accessory')]/preceding-sibling::button or //clr-dg-row[.//clr-dg-cell[contains(., 'subject.accessory')]]/div[contains(@class,'clr-dg-cell')]/button
+${artifact_list_cosign_accessory_btn}  xpath=//clr-dg-cell[contains(., 'signature.cosign')]/preceding-sibling::button
+
+# Level 2 Action Triggers: Ellipsis button for SBOM and independent Cosign signature
+# 🚨 FIX: We isolate the exact row by targeting the specific cell's adjacent or ancestor trigger structure, avoiding generic //clr-icon.
+# ${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-row[div/clr-dg-cell[contains(., 'subject.accessory')]]//button[contains(@class, 'datagrid-action-toggle') or .//clr-icon[@shape='ellipsis-vertical']]
+# ${artifact_cosign_accessory_action_btn}  xpath=//clr-dg-row[div/clr-dg-cell[contains(., 'signature.cosign') and not(ancestor::sub-accessories)]]//button[contains(@class, 'datagrid-action-toggle') or .//clr-icon[@shape='ellipsis-vertical']]
+
+# Level 3 Action Triggers: Target action toggles nested inside sub-accessories container exclusively
+${artifact_sbom_cosign_accessory_action_btn}    xpath=//sub-accessories//clr-dg-row[contains(., 'signature.cosign')]//button[contains(@class, 'datagrid-action-toggle') or .//clr-icon[@shape='ellipsis-vertical']]
+${artifact_cosign_cosign_accessory_action_btn}  xpath=//sub-accessories//clr-dg-row[contains(., 'signature.cosign')]//button[contains(@class, 'datagrid-action-toggle') or .//clr-icon[@shape='ellipsis-vertical']]
+
+# Contextual Digest Picker
+${artifact_digest}                      xpath=//clr-dg-row[contains(@class, 'active') or contains(@class, 'selected') or @aria-selected='true']//span[contains(@class, 'digest') or contains(., 'sha256')]
+
+${artifact_sbom_accessory_action_btn}    xpath=//clr-dg-cell[contains(., 'subject.accessory')]/..//button[contains(@class, 'toggle') or .//clr-icon]
+${artifact_cosign_accessory_action_btn}  xpath=//clr-dg-cell[contains(., 'signature.cosign') and not(ancestor::sub-accessories)]/..//button[contains(@class, 'toggle') or .//clr-icon]

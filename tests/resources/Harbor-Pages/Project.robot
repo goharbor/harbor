@@ -289,10 +289,10 @@ Edit Repo Info
     Retry Wait Until Page Contains  test_description_info
 
 Switch To Project Label
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Labels')]
 
 Switch To Project Repo
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Repositories')]
 
 Switch To Project Scanner
     Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Scanner')]
@@ -300,10 +300,13 @@ Switch To Project Scanner
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
-    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
-    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
-    Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
+    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span | //clr-dg-action-bar//button[contains(@class,'dropdown-toggle')]
+    Retry Element Click  xpath=//clr-dropdown-menu//button[contains(.,'Add Labels')] | //button[contains(.,'Add Labels')]
+    Sleep  2
+    ${js_xpath}=    Set Variable    //button[contains(@class,'dropdown-item') and contains(.,'${labelName}')] | //button[contains(.,'${labelName}')]
+    Execute Javascript    var xpath = "${js_xpath}"; var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null); if(result.singleNodeValue) { result.singleNodeValue.click(); }
+    Sleep  2
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${tagName}')]//*[contains(.,'${labelName}')]
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}

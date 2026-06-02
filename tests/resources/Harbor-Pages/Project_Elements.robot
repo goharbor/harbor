@@ -22,8 +22,8 @@ ${project_public_xpath}  //input[@name='public']/..//label[contains(@class,'clr-
 ${project_save_css}  html body.no-scrolling harbor-app harbor-shell clr-main-container.main-container div.content-container div.content-area.content-area-override project div.row div.col-lg-12.col-md-12.col-sm-12.col-xs-12 div.row.flex-items-xs-between div.option-left create-project clr-modal div.modal div.modal-dialog div.modal-content div.modal-footer button.btn.btn-primary
 ${projects_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Projects')]
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
-${project_log_xpath}  //project-detail//a[contains(.,'Logs')]
-${project_member_xpath}  //project-detail//a[contains(.,'Members')]
+${project_log_xpath}  //*[self::button or self::a][contains(., 'Logs')]
+${project_member_xpath}  //*[self::button or self::a][contains(., 'Members')]
 ${project_config_tabsheet}  xpath=//*[self::button or self::a][contains(., 'Configuration')]
 ${project_tag_strategy_xpath}  //*[self::button or self::a][contains(., 'Policy')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
@@ -46,8 +46,6 @@ ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
 ${repo_search_icon}  xpath=//hbr-filter//clr-icon
 ${repo_search_input}  xpath=//hbr-filter//input
 ${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
-#${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
-#${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//div[contains(@class,'clr-checkbox-wrapper')]
 ${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
 ${tag_table_column_vulnerabilities}  xpath=//clr-dg-column//span[contains(.,'Vulnerabilities')]

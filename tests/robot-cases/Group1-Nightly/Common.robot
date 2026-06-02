@@ -1000,12 +1000,13 @@ Test Case - Export CVE
     ${cve_ids}=  Create List  CVE-2019-18224  CVE-2021-3997  CVE-2022-25315
     ${nginx_sha256}=  Set Variable  sha256:d43aa3719937f9df0502f8258f3034a21b720b5b9bbf01bbfdbd09871aac8930
     ${redis_sha256}=  Set Variable  sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c
-    ${expected_cve_data}=  Create List  project${d}/nginx,${nginx_sha256},${cve_ids}[1],libudev1,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}",Trivy
-    ...                                 project${d}/nginx,${nginx_sha256},${cve_ids}[1],libsystemd0,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}",Trivy
-    ...                                 project${d}/redis,${redis_sha256},${cve_ids}[0],libidn2-0,2.0.5-1,2.0.5-1+deb10u1,Critical,CWE-787,"{""CVSS"": {""nvd"": {""V2Score"": 7.5, ""V3Score"": 9.8, ""V2Vector"": ""AV:N/AC:L/Au:N/C:P/I:P/A:P"", ""V3Vector"": ""CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H""}, ""redhat"": {""V3Score"": 5.6, ""V3Vector"": ""CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L""}}}",Trivy
-    ...                                 project${d}/redis,${redis_sha256},${cve_ids}[1],libudev1,241-7~deb10u2,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}",Trivy
-    ...                                 project${d}/nginx,${nginx_sha256},${cve_ids}[2],libexpat1,2.2.0-2+deb9u1,2.2.0-2+deb9u5,Critical,CWE-190,"{""CVSS"": {""nvd"": {""V2Score"": 7.5, ""V3Score"": 9.8, ""V2Vector"": ""AV:N/AC:L/Au:N/C:P/I:P/A:P"", ""V3Vector"": ""CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H""}, ""redhat"": {""V3Score"": 9.8, ""V3Vector"": ""CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H""}}}",Trivy
-    ...                                 project${d}/redis,${redis_sha256},${cve_ids}[1],libsystemd0,241-7~deb10u2,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}",Trivy
+    ${expected_cve_data}=  Create List
+    ...    project${d}/nginx,${nginx_sha256},${cve_ids}[1],libudev1,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}"
+    ...    project${d}/nginx,${nginx_sha256},${cve_ids}[1],libsystemd0,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}}"
+    ...    project${d}/nginx,${nginx_sha256},${cve_ids}[1],libsystemd0,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}},Trivy"
+    ...    project${d}/nginx,${nginx_sha256},${cve_ids}[1],libudev1,232-25+deb9u4,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}},Trivy"
+    ...    project${d}/redis,${redis_sha256},${cve_ids}[1],libsystemd0,241-7~deb10u2,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}},Trivy"
+    ...    project${d}/redis,${redis_sha256},${cve_ids}[1],libudev1,241-7~deb10u2,,Medium,,"{""CVSS"": {""redhat"": {""V3Score"": 5.5, ""V3Vector"": ""CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H""}}},Trivy"
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Labels
     Create New Labels  ${labels}[0]
