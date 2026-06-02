@@ -1,5 +1,7 @@
 FROM goharbor/photon:5.0
 
+RUN tdnf update -y && tdnf clean all
+
 RUN tdnf install -y rpm shadow >> /dev/null \
     && tdnf clean all \
     && groupadd -r -g 10000 scanner \
