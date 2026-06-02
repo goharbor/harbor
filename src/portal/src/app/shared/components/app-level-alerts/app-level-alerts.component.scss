@@ -18,4 +18,16 @@
 .banner-message {
   min-width: 0;
   word-break: break-word;
+
+  /* stylelint-disable selector-type-no-unknown */
+  ::ng-deep markdown * {
+    color: inherit !important;
+    margin: 0;
+    display: inline;
+
+    &[href] {
+      text-decoration: underline;
+    }
+  }
+  /* stylelint-enable selector-type-no-unknown */
 }
