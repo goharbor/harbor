@@ -202,7 +202,7 @@ _build_registryctl:
 	@echo "Done."
 
 _build_valkey:
-	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY))
+	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY),--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256))
 	@echo "building valkey container for photon..."
 	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_VALKEY)/$(DOCKERFILENAME_VALKEY) -t $(DOCKERIMAGENAME_VALKEY):$(VERSIONTAG) .
 	@echo "Done."
@@ -236,7 +236,7 @@ define _build_base
 		else \
 			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
 		fi ;\
-		$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
+			$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) $(3) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
