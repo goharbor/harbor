@@ -241,13 +241,13 @@ test('Test Case - Security Hub', async ({
     await searchByCvssScore(page, cvssScore);
     await expectGridCellVisible(page, cvssScore);
 
-    await assertSeverityFilter(page, 'Critical', summary.critical_cnt);
-    await assertSeverityFilter(page, highSeverity, summary.high_cnt);
-    await assertSeverityFilter(page, 'Medium', summary.medium_cnt);
-    await assertSeverityFilter(page, 'Low', summary.low_cnt);
+    await assertSeverityFilter(page, request, 'Critical');
+    await assertSeverityFilter(page, request, highSeverity);
+    await assertSeverityFilter(page, request, 'Medium');
+    await assertSeverityFilter(page, request, 'Low');
 
-    await assertSeverityFilter(page, 'Unknown', summary.unknown_cnt);
-    await assertSeverityFilter(page, 'None', 0);
+    await assertSeverityFilter(page, request, 'Unknown');
+    await assertSeverityFilter(page, request, 'None');
 
     await searchByAllFilters(page, {
         project,
@@ -1466,11 +1466,17 @@ async function searchBySeverity(page: Page, severity: string): Promise<void> {
 
 async function assertSeverityFilter(
     page: Page,
-    severity: string,
-    count: number
+    request: APIRequestContext,
+    severity: string
 ): Promise<void> {
     await searchBySeverity(page, severity);
-    const expectedFooter = count > 1000 ? '1000+ CVEs' : `${count} CVEs`;
+    const count = await getVulnerabilityCountFromAPI(
+        request,
+        user,
+        pwd,
+        [`severity=${severity}`]
+    );
+    const expectedFooter = count === -1 ? '1000+ CVEs' : `${count} CVEs`;
     await expect(page.locator('clr-dg-footer')).toContainText(expectedFooter);
 
     if (count === 0) {
@@ -1649,6 +1655,40 @@ async function getVulnerabilitiesFromAPI(
     }
 
     return response.json();
+}
+
+async function getVulnerabilityCountFromAPI(
+    request: APIRequestContext,
+    user: string,
+    password: string,
+    queryConditions: string[]
+): Promise<number> {
+    const response = await request.get('/api/v2.0/security/vul', {
+        params: {
+            tune_count: 'true',
+            with_tag: 'true',
+            page: '1',
+            page_size: '1',
+            q: queryConditions.join(','),
+        },
+        headers: {
+            Authorization: authorizationHeader(user, password),
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok()) {
+        throw new Error(
+            `Failed to count vulnerabilities: ${response.status()} ${response.statusText()}`
+        );
+    }
+
+    const total = Number(response.headers()['x-total-count']);
+    if (!Number.isInteger(total)) {
+        throw new Error('Missing vulnerability count response header');
+    }
+
+    return total;
 }
 
 async function getCveAllowlistDataFromAPI(
