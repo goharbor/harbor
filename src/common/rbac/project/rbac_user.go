@@ -16,7 +16,6 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/controller/role"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
@@ -47,7 +46,6 @@ func (pru *rbacUser) GetPolicies() []*types.Policy {
 // GetRoles returns roles of the visitor
 
 func (pru *rbacUser) GetRoles() []types.RBACRole {
-	log.Debug("Get user roles for a Project !!")
 	roles := []types.RBACRole{}
 	for _, role := range pru.projectRoles {
 		roles = append(roles, &projectRBACRole{projectID: pru.project.ProjectID, role: role})

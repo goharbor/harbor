@@ -16,7 +16,6 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/controller/role"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -27,7 +26,6 @@ type projectRBACRole struct {
 }
 
 func (role *projectRBACRole) GetRoleName() string {
-	log.Debug("*** get roleName", role.role.Name)
 
 	return role.role.Name
 }
@@ -35,7 +33,6 @@ func (role *projectRBACRole) GetRoleName() string {
 // GetPolicies returns policies for the visitor role
 func (role *projectRBACRole) GetPolicies() []*types.Policy {
 
-	log.Debug("*** get policies for project:%n, role:%n", role.projectID, role.role.Name)
 	policies := []*types.Policy{}
 	namespace := NewNamespace(role.projectID)
 

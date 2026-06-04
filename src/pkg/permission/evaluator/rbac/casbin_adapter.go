@@ -21,7 +21,6 @@ import (
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -33,11 +32,9 @@ func policyLinesOfRole(rbacRole types.RBACRole) []string {
 	lines := []string{}
 
 	roleName := rbacRole.GetRoleName()
-	log.Debug("*** Casbin queried role name and got " + roleName)
 
 	// returns empty policy lines if role name is empty
 	if roleName == "" {
-		log.Debug("*** did not found policies for the role ")
 		return lines
 	}
 

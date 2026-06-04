@@ -15,6 +15,7 @@
 package project
 
 import (
+	"time"
 	"context"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
@@ -156,14 +157,18 @@ func (c *controller) Exists(ctx context.Context, projectIDOrName any) (bool, err
 }
 
 func (c *controller) Get(ctx context.Context, projectIDOrName any, options ...Option) (*models.Project, error) {
+	t0 := time.Now()
 	p, err := c.projectMgr.Get(ctx, projectIDOrName)
+	tDB := time.Since(t0)
 	if err != nil {
 		return nil, err
 	}
 
+	t1 := time.Now()
 	if err := c.assembleProjects(ctx, models.Projects{p}, options...); err != nil {
 		return nil, err
 	}
+	log.Infof("[TIMING:project_ctrl] db=%v assemble=%v id=%v", tDB, time.Since(t1), projectIDOrName)
 
 	return p, nil
 }

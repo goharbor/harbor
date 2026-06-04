@@ -81,7 +81,6 @@ func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Opti
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("*** query table " + getFullName(t.Elem()))
 
 	qs := ormer.QueryTable(model)
 	if query == nil {

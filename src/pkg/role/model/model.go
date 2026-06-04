@@ -16,25 +16,15 @@ package model
 
 import (
 	"encoding/json"
-	"reflect"
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/lib/errors"
-
-	"github.com/goharbor/harbor/src/lib/log"
 )
 
 func init() {
-	t := reflect.TypeOf(&Role{})
-
-	log.Debug("*** register role ORM model: " + t.PkgPath() + "." + t.Name())
-	orm.Debug = true
-
 	orm.RegisterModel(&Role{})
-	log.Debug("*** role model has been registered")
-
 }
 
 // Role holds the details of a role.
@@ -54,7 +44,6 @@ type Role struct {
 
 // TableName ...
 func (r *Role) TableName() string {
-	log.Debug("*** table name queried")
 	return "role"
 }
 

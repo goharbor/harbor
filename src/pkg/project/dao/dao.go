@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -191,9 +192,11 @@ func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupI
 	}
 
 	var values orm.ParamsList
+	t0 := time.Now()
 	if _, err := qs.SetCond(cond).ValuesFlat(&values, "role"); err != nil {
 		return nil, err
 	}
+	log.Infof("[TIMING:list_roles_sql] sql=%v project=%d user=%d", time.Since(t0), projectID, userID)
 
 	var roles []int
 	for _, value := range values {

@@ -17,7 +17,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -47,6 +46,10 @@ type roleAPI struct {
 }
 
 func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRoleParams) middleware.Responder {
+	if err := rAPI.checkSysAdmin(ctx); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
 	if err := validateRoleName(params.Role.Name); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -68,7 +71,6 @@ func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRole
 		},
 	}
 
-	log.Debug(fmt.Sprintf("*** security concept is : %T ", sc))
 	switch s := sc.(type) {
 	case *local.SecurityContext:
 		if s.User() == nil {
@@ -102,7 +104,7 @@ func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRole
 }
 
 func (rAPI *roleAPI) DeleteRole(ctx context.Context, params operation.DeleteRoleParams) middleware.Responder {
-	if err := rAPI.RequireAuthenticated(ctx); err != nil {
+	if err := rAPI.checkSysAdmin(ctx); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -147,7 +149,6 @@ func (rAPI *roleAPI) ListRole(ctx context.Context, params operation.ListRolePara
 
 	var results []*models.Role
 	for _, r := range roles {
-		log.Debug("*** Role Handler get permissions by role returned : " + r.Name + " - " + strconv.Itoa((len(r.Permissions))))
 		results = append(results, model.NewRole(r).ToSwagger())
 	}
 
@@ -172,9 +173,25 @@ func (rAPI *roleAPI) GetRoleByID(ctx context.Context, params operation.GetRoleBy
 	return operation.NewGetRoleByIDOK().WithPayload(model.NewRole(r).ToSwagger())
 }
 
+// checkSysAdmin returns UnauthorizedError for unauthenticated callers and
+// ForbiddenError for callers who are not sysadmins.
+func (rAPI *roleAPI) checkSysAdmin(ctx context.Context) error {
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if !sc.IsAuthenticated() {
+		return errors.UnauthorizedError(nil)
+	}
+	if !sc.IsSysAdmin() {
+		return errors.ForbiddenError(nil).WithMessage("only sysadmins can manage roles")
+	}
+	return nil
+}
+
 func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRoleParams) middleware.Responder {
 	var err error
-	if err := rAPI.RequireAuthenticated(ctx); err != nil {
+	if err := rAPI.checkSysAdmin(ctx); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 	r, err := rAPI.roleCtl.Get(ctx, params.RoleID, &role.Option{
@@ -212,7 +229,6 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 	provider := rbac.GetPermissionProvider()
 	// to validate the access scope
 	for _, perm := range permissions {
-		log.Debug("Role request permission level: " + perm.Kind)
 		if perm.Kind == role.LEVELROLE {
 
 			polices := provider.GetPermissions(rbac.ScopeRole)
@@ -254,13 +270,6 @@ func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRo
 
 // validateName validates the role name, especially '+' cannot be a valid character
 func validateRoleName(name string) error {
-	/* TODO MGS validate if we can allow all names for the roles
-	roleNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
-	legal := regexp.MustCompile(roleNameReg).MatchString(name)
-	if !legal {
-		return errors.BadRequestError(nil).WithMessage("role name is not in lower case or contains illegal characters")
-	}
-	*/
 	return nil
 }
 

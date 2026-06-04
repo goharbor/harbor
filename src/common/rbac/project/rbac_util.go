@@ -15,10 +15,8 @@
 package project
 
 import (
-	"strconv"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -359,7 +357,6 @@ func GetPoliciesOfProject(projectID int64) []*types.Policy {
 			Effect:   policy.Effect,
 		})
 	}
-	log.Debug("*** get policies for project %d - %d", int(projectID), len(policies))
 	return policies
 }
 
@@ -369,19 +366,16 @@ func computeSubPoliciesForProject() []*types.Policy {
 
 	mp := map[string]bool{}
 
-	log.Debug("*** computeSubPoliciesForProject")
 	for _, policies := range rolePoliciesMap {
 
 		for _, policy := range policies {
 
 			if !mp[policy.String()] {
-				log.Debug("*** computeSubPoliciesForProject " + policy.String())
 				results = append(results, policy)
 				mp[policy.String()] = true
 			}
 		}
 	}
 
-	log.Debug("*** total number of policies ??? " + strconv.Itoa(len(results)))
 	return results
 }

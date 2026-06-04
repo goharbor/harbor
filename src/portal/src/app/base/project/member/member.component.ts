@@ -406,7 +406,8 @@ export class MemberComponent implements OnInit, OnDestroy {
         if (role) {
             return this.getRoleDisplayName(role);
         }
-        return member.role_name;
+        // roles not loaded yet or custom role; fall back to static map then raw name
+        return this.roleInfo[member.role_id] ?? member.role_name;
     }
 
     get builtinRoles(): Role[] {

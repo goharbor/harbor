@@ -18,11 +18,13 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strconv"
+	"sync"
 
 	"github.com/goharbor/harbor/src/controller/event/metadata"
+	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
@@ -63,9 +65,11 @@ type Controller interface {
 
 // controller ...
 type controller struct {
-	roleMgr role.Manager
-	proMgr  project.Manager
-	rbacMgr rbac.Manager
+	roleMgr  role.Manager
+	proMgr   project.Manager
+	rbacMgr  rbac.Manager
+	localMap sync.Map  // L1: process-local pointer cache, zero-alloc reads
+	warmOnce sync.Once
 }
 
 // NewController ...
@@ -77,13 +81,71 @@ func NewController() Controller {
 	}
 }
 
+// roleCache returns the shared Redis-backed cache (same instance used by the quota
+// controller). Falls back to nil if the cache has not been initialized yet.
+func (d *controller) roleCache() cache.Cache {
+	return cache.Default()
+}
+
+func roleCacheKey(id int64) string {
+	return fmt.Sprintf("role:%d", id)
+}
+
+// warmCache loads all roles with their permissions into L1 (sync.Map) and L2 (Redis).
+// Fires once in background on first Get(); also called after every write.
+func (d *controller) warmCache(ctx context.Context) {
+	roles, err := d.roleMgr.List(ctx, &q.Query{PageSize: -1})
+	if err != nil {
+		log.Warningf("failed to warm role permission cache: %v", err)
+		return
+	}
+	for _, r := range roles {
+		populated, err := d.populate(ctx, r, &Option{WithPermission: true})
+		if err != nil || populated == nil {
+			continue
+		}
+		d.localMap.Store(r.ID, populated)                              // L1
+		if c := d.roleCache(); c != nil {
+			_ = c.Save(ctx, roleCacheKey(r.ID), populated)            // L2
+		}
+	}
+	log.Debugf("role permission cache warmed with %d roles", len(roles))
+}
+
+// invalidateRole removes a role from both cache layers so the next Get() re-fetches
+// from DB and repopulates. Called after Create/Update/Delete.
+func (d *controller) invalidateRole(ctx context.Context, id int64) {
+	d.localMap.Delete(id)
+	if c := d.roleCache(); c != nil {
+		_ = c.Delete(ctx, roleCacheKey(id))
+	}
+}
+
 // Get ...
 func (d *controller) Get(ctx context.Context, id int64, option *Option) (*Role, error) {
-	role, err := d.roleMgr.Get(ctx, id)
+	if option != nil && option.WithPermission {
+		// Trigger background warm on first call — does not block.
+		d.warmOnce.Do(func() { go d.warmCache(orm.Context()) })
+
+		// L1: process-local pointer — O(1), zero alloc, zero serialization.
+		if v, ok := d.localMap.Load(id); ok {
+			return v.(*Role), nil
+		}
+
+		// L2: Redis — shared across nodes, handles multi-node invalidation.
+		if c := d.roleCache(); c != nil {
+			var cached Role
+			if err := c.Fetch(ctx, roleCacheKey(id), &cached); err == nil {
+				d.localMap.Store(id, &cached) // promote to L1
+				return &cached, nil
+			}
+		}
+	}
+	r, err := d.roleMgr.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return d.populate(ctx, role, option)
+	return d.populate(ctx, r, option)
 }
 
 // Count ...
@@ -116,6 +178,7 @@ func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
 		Ctx:  ctx,
 		Role: rCreate,
 	})
+	d.invalidateRole(ctx, roleID)
 	return roleID, nil
 }
 
@@ -143,6 +206,7 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 		deleteMetadata.Operator = option[0].Operator
 	}
 	notification.AddEvent(ctx, deleteMetadata)
+	d.invalidateRole(ctx, id)
 	return nil
 }
 
@@ -179,6 +243,7 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 		Ctx:  ctx,
 		Role: existing,
 	})
+	d.invalidateRole(ctx, r.ID)
 	return nil
 }
 
@@ -191,7 +256,6 @@ func (d *controller) List(ctx context.Context, query *q.Query, option *Option) (
 	var roles []*Role
 	for _, r := range role {
 		rb, err := d.populate(ctx, r, option)
-		log.Debug("*** role has been populated with " + r.Name + " - " + strconv.Itoa(len(rb.Permissions)))
 		if err != nil {
 			return nil, err
 		}
@@ -260,7 +324,6 @@ func (d *controller) populatePermissions(ctx context.Context, r *Role) error {
 		return nil
 	}
 	rolePermissions, err := d.rbacMgr.GetPermissionsByRole(ctx, ROLETYPE, r.ID)
-	log.Debug("*** get permissions by role returned : " + r.Name + " - " + strconv.Itoa((len(rolePermissions))))
 
 	if err != nil {
 		log.Errorf("failed to get permissions of role %d: %v", r.ID, err)

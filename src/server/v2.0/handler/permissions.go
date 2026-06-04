@@ -43,6 +43,11 @@ func newPermissionsAPIAPI() *permissionsAPI {
 	}
 }
 
+// GetPermissions returns the available permission catalog.
+// Accessible to all authenticated users — the catalog is read-only metadata
+// (action names such as repository:pull) used by project-level UI components
+// (robot accounts, webhooks, role management). System-level permissions are
+// only included in the response for system admins.
 func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPermissionsParams) middleware.Responder {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
@@ -52,12 +57,12 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		return p.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
 
-	var isSystemAdmin bool
-	var isProjectAdmin bool
+	isSystemAdmin := secCtx.IsSysAdmin()
 
-	if secCtx.IsSysAdmin() {
-		isSystemAdmin = true
-	} else {
+	// Project-admin check is only needed to decide whether to include project-admin
+	// scoped permissions; it does not gate access to this endpoint.
+	var isProjectAdmin bool
+	if !isSystemAdmin {
 		if sc, ok := secCtx.(*local.SecurityContext); ok {
 			user := sc.User()
 			var err error
@@ -67,24 +72,15 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 			}
 		}
 	}
-
-	if !isSystemAdmin && !isProjectAdmin {
-		//  TODO Think about which permission shall be used for this - also : is it realy necessary to limit the display of the permissions ?
-		// do nothing
-
-		//	return p.SendError(ctx, errors.ForbiddenError(errors.New("only admins(system and project) can access permissions")))
-
-	}
+	_ = isProjectAdmin // reserved for future scope filtering
 
 	provider := rbac.GetPermissionProvider()
 	sysPermissions := make([]*types.Policy, 0)
 	proPermissions := provider.GetPermissions(rbac.ScopeProject)
 	if isSystemAdmin {
-		// project admin cannot see the system level permissions
 		sysPermissions = provider.GetPermissions(rbac.ScopeSystem)
 	}
 	rolePermissions := provider.GetPermissions(rbac.ScopeRole)
-
 
 	return permissions.NewGetPermissionsOK().WithPayload(p.convertPermissions(sysPermissions, proPermissions, rolePermissions))
 }
@@ -123,7 +119,6 @@ func (p *permissionsAPI) convertPermissions(system, project, role []*types.Polic
 		}
 		res.Role = rolePermission
 	}
-
 
 	return res
 }

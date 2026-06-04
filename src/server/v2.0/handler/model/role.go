@@ -35,7 +35,6 @@ func (r *Role) ToSwagger() *models.Role {
 		if err := lib.JSONCopy(temp, p); err != nil {
 			log.Warningf("failed to do JSONCopy on RolePermission, error: %v", err)
 		}
-		log.Debug("*** toSwagger -- appending permission")
 		perms = append(perms, temp)
 	}
 

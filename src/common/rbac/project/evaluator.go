@@ -16,6 +16,7 @@ package project
 
 import (
 	"context"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
@@ -35,26 +36,28 @@ type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 func NewBuilderForUser(user *models.User, ctl project.Controller, ctl_r role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
-			// anonymous access
-			return &rbacUser{
-				project:  p,
-				username: "anonymous",
-			}
+			return &rbacUser{project: p, username: "anonymous"}
 		}
 
+		t0 := time.Now()
 		roles_ids, err := ctl.ListRoles(ctx, p.ProjectID, user)
+		tListRoles := time.Since(t0)
 		if err != nil {
 			log.Errorf("failed to list roles: %v", err)
 			return nil
 		}
 
 		var roles []*role.Role
-
+		var tRoleGet time.Duration
 		for _, role_id := range roles_ids {
+			t1 := time.Now()
 			var r *role.Role
 			r, err = ctl_r.Get(ctx, int64(role_id), &role.Option{WithPermission: true})
+			tRoleGet += time.Since(t1)
 			roles = append(roles, r)
 		}
+		log.Infof("[TIMING:builder] list_roles=%v role_get=%v roles=%d project_id=%d user=%s",
+			tListRoles, tRoleGet, len(roles_ids), p.ProjectID, user.Username)
 
 		return &rbacUser{
 			project:      p,
@@ -83,7 +86,9 @@ func NewBuilderForPolicies(username string, policies []*types.Policy,
 // NewEvaluator create evaluator for the project by builders
 func NewEvaluator(ctl project.Controller, builders ...RBACUserBuilder) evaluator.Evaluator {
 	return namespace.New(NamespaceKind, func(ctx context.Context, ns types.Namespace) evaluator.Evaluator {
+		t0 := time.Now()
 		p, err := ctl.Get(ctx, ns.Identity().(int64), project.Metadata(true))
+		tProjectGet := time.Since(t0)
 		if err != nil {
 			if err != nil {
 				log.Warningf("Failed to get info of project %d for permission evaluator, error: %v", ns.Identity(), err)
@@ -92,11 +97,13 @@ func NewEvaluator(ctl project.Controller, builders ...RBACUserBuilder) evaluator
 		}
 
 		var rbacUsers []types.RBACUser
+		t1 := time.Now()
 		for _, builder := range builders {
 			if rbacUser := builder(ctx, p); rbacUser != nil {
 				rbacUsers = append(rbacUsers, rbacUser)
 			}
 		}
+		log.Infof("[TIMING:evaluator] project_get=%v builder=%v project_id=%d", tProjectGet, time.Since(t1), p.ProjectID)
 
 		switch len(rbacUsers) {
 		case 0:
