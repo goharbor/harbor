@@ -12,8 +12,8 @@ This directory contains Playwright tests for the Harbor portal. The current suit
 
 | Variable                   | Required | Description                                                         |
 | -------------------------- | -------- | ------------------------------------------------------------------- |
-| `BASE_URL`                 | Yes      | Harbor UI URL, for example `https://192.168.1.100`                  |
-| `IP`                       | Yes      | Harbor registry host/IP used by Docker commands                     |
+| `HARBOR_URL`               | Yes      | Harbor UI URL, for example `https://harbor.example.com`             |
+| `HARBOR_IP`                | No       | Harbor registry host used by Docker commands. Defaults to the host parsed from `HARBOR_URL` |
 | `HARBOR_ADMIN`             | No       | Admin username, defaults to `admin`                                 |
 | `HARBOR_PASSWORD`          | No       | Admin password, defaults to `Harbor12345`                           |
 | `LOCAL_REGISTRY`           | No       | Source registry for test images, defaults to `registry.goharbor.io` |
@@ -27,7 +27,7 @@ For self-signed local Harbor certificates, set `NODE_EXTRA_CA_CERTS` to the Harb
 cd src/portal
 npm ci
 npx playwright install chromium
-BASE_URL=https://<harbor-host> IP=<harbor-host> npx playwright test
+HARBOR_URL=https://<harbor-host> npx playwright test
 ```
 
 Run one spec while iterating:

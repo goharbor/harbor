@@ -21,7 +21,7 @@
 #
 # down:			shutdown Harbor instance
 #
-# playwright-test:	run all Playwright tests in a container against BASE_URL
+# playwright-test:	run all Playwright tests in a container against HARBOR_URL
 #
 # playwright-test-report:
 #			run all Playwright tests and serve the HTML report
@@ -179,8 +179,8 @@ DOCKERPUSH=$(DOCKERCMD) push
 DOCKERCOMPOSECMD=$(shell which docker-compose 2>/dev/null || echo "docker compose")
 DOCKERTAG=$(DOCKERCMD) tag
 PLAYWRIGHT_IMAGE ?= registry.goharbor.io/harbor-ci/goharbor/harbor-e2e-engine:latest-playwright-ui
-BASE_URL ?= http://harbor.128.140.12.238.nip.io
-IP ?= $(shell printf '%s' '$(BASE_URL)' | sed -E 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##; s#/.*##')
+HARBOR_URL ?=
+HARBOR_IP ?= $(shell printf '%s' '$(HARBOR_URL)' | sed -E 's#^[a-zA-Z][a-zA-Z0-9+.-]*://##; s#/.*##')
 HARBOR_ADMIN ?= admin
 HARBOR_PASSWORD ?= Harbor12345
 PLAYWRIGHT_DOCKERFILE ?= $(PORTAL_PATH)/e2e/Dockerfile
@@ -191,7 +191,7 @@ PLAYWRIGHT_DOCKER_HOST ?= unix:///var/run/docker.sock
 PLAYWRIGHT_CI ?= $(CI)
 PLAYWRIGHT_ARGS ?=
 PLAYWRIGHT_DEBUG ?=
-PLAYWRIGHT_REPORTER ?= list
+PLAYWRIGHT_REPORTER ?=
 SCANNER_PORT ?= 8081
 PLAYWRIGHT_SCANNER_ENDPOINT ?= $(SCANNER_ENDPOINT)
 PLAYWRIGHT_SCANNER_PORT ?= $(SCANNER_PORT)
@@ -622,6 +622,7 @@ playwright-image-push:
 	@$(DOCKERPUSH) $(PLAYWRIGHT_IMAGE)
 
 playwright-test:
+	@if [ -z "$(HARBOR_URL)" ]; then echo "HARBOR_URL is required. Example: make playwright-test HARBOR_URL=https://harbor.example.com"; exit 1; fi
 	@mkdir -p $(PORTAL_PATH)/test-results $(PORTAL_PATH)/playwright-report
 	@set -e; \
 		docker_socket_opt=""; \
@@ -652,8 +653,8 @@ playwright-test:
 			-v $(PORTAL_PATH)/playwright.config.ts:/app/playwright.config.ts:ro \
 			-v $(PORTAL_PATH)/test-results:/app/test-results \
 			-v $(PORTAL_PATH)/playwright-report:/app/playwright-report \
-			-e BASE_URL=$(BASE_URL) \
-			-e IP=$(IP) \
+			-e HARBOR_URL=$(HARBOR_URL) \
+			-e HARBOR_IP=$(HARBOR_IP) \
 			-e HARBOR_ADMIN=$(HARBOR_ADMIN) \
 			-e HARBOR_PASSWORD=$(HARBOR_PASSWORD) \
 			-e DOCKER_HOST=$(PLAYWRIGHT_DOCKER_HOST) \
@@ -668,7 +669,8 @@ playwright-test:
 playwright-test-report:
 	@set -e; \
 		test_status=0; \
-		make playwright-test || test_status=$$?; \
+		rm -rf $(PORTAL_PATH)/playwright-report; \
+		$(MAKE) playwright-test || test_status=$$?; \
 		$(DOCKERCMD) rm -f $(PLAYWRIGHT_REPORT_CONTAINER) >/dev/null 2>&1 || true; \
 		cleanup() { $(DOCKERCMD) rm -f $(PLAYWRIGHT_REPORT_CONTAINER) >/dev/null 2>&1 || true; }; \
 		trap cleanup INT TERM EXIT; \

@@ -1,4 +1,8 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
+
+const reporter = process.env.PLAYWRIGHT_REPORTER?.trim();
+const htmlReporter: ReporterDescription[] = [['html', { open: 'never' }]];
+const defaultReporters: ReporterDescription[] = [['list'], ...htmlReporter];
 
 export default defineConfig({
     testDir: './e2e',
@@ -7,20 +11,24 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
-    reporter: process.env.CI
+    reporter: reporter
+        ? reporter === 'html'
+            ? htmlReporter
+            : reporter
+        : process.env.CI
         ? [
               ['list'],
               ['github'],
               ['html', { open: 'never' }],
               ['json', { outputFile: 'test-results/results.json' }],
           ]
-        : 'list',
+        : defaultReporters,
     outputDir: 'test-results',
     expect: {
         timeout: 10 * 1000,
     },
     use: {
-        baseURL: process.env.BASE_URL,
+        baseURL: process.env.HARBOR_URL,
         headless: true,
         ignoreHTTPSErrors: true,
         actionTimeout: 30 * 1000,

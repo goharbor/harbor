@@ -21,7 +21,8 @@ const LOCAL_REGISTRY: string =
     process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
 const LOCAL_REGISTRY_NAMESPACE: string =
     process.env.LOCAL_REGISTRY_NAMESPACE || 'harbor-ci';
-const ip = process.env.IP || '';
+const harborUrl = process.env.HARBOR_URL || '';
+const ip = process.env.HARBOR_IP || registryHostFromUrl(harborUrl);
 const user = process.env.HARBOR_ADMIN || 'admin';
 const pwd =
     process.env.HARBOR_PASSWORD || 'Harbor12345';
@@ -53,6 +54,10 @@ test.afterAll(async () => {
 
 function log(message: string): void {
     console.log(`[trivy] ${new Date().toISOString()} ${message}`);
+}
+
+function registryHostFromUrl(url: string): string {
+    return url.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, '').replace(/\/.*$/, '');
 }
 
 async function step<T>(
@@ -137,7 +142,7 @@ test('Test Case - Security Hub', async ({
     request,
 }) => {
     test.setTimeout(180 * 1000);
-    expect(ip, 'IP must be set to the Harbor registry host').toBeTruthy();
+    expect(harborUrl, 'HARBOR_URL must be set to the Harbor UI URL').toBeTruthy();
 
     const tag = 'v2.2.0';
     const highSeverity = 'High';
@@ -1711,9 +1716,9 @@ async function getCveAllowlistDataFromAPI(
 }
 
 async function resetSystemCveAllowlistFromAPI(): Promise<void> {
-    const baseURL = process.env.BASE_URL;
+    const baseURL = process.env.HARBOR_URL;
     if (!baseURL) {
-        throw new Error('BASE_URL is required to reset the system CVE allowlist');
+        throw new Error('HARBOR_URL is required to reset the system CVE allowlist');
     }
     const api = await playwrightRequest.newContext({
         baseURL,
@@ -1985,9 +1990,9 @@ async function deleteStaleScanners(
 }
 
 async function setDefaultScannerFromAPI(name: string): Promise<void> {
-    const baseURL = process.env.BASE_URL;
+    const baseURL = process.env.HARBOR_URL;
     if (!baseURL) {
-        throw new Error('BASE_URL is required to set the default scanner');
+        throw new Error('HARBOR_URL is required to set the default scanner');
     }
 
     const api = await playwrightRequest.newContext({
