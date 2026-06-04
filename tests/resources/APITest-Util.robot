@@ -3,7 +3,8 @@ ${JFROG_USER}  ${EMPTY}
 ${JFROG_PWD}  ${EMPTY}
 ${JFROG_URL}  ${EMPTY}
 ${JFROG_NAMESPACE}  ${EMPTY}
-${OPENAPI_GENERATOR_CLI_URL_DEFAULT}  https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
+${OPENAPI_GENERATOR_CLI_URL}  https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/4.3.1/openapi-generator-cli-4.3.1.jar
+${PIP_INDEX_URL}  https://pypi.org/simple
 
 *** Keywords ***
 Make Swagger Client
@@ -11,8 +12,7 @@ Make Swagger Client
     LogAll  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  pip install -U pip setuptools
     LogAll  ${output}
-    ${openapi_url}=  Get Environment Variable  OPENAPI_GENERATOR_CLI_URL  ${OPENAPI_GENERATOR_CLI_URL_DEFAULT}
-    ${rc}  ${output}=  Run And Return Rc And Output  OPENAPI_GENERATOR_CLI_URL=${openapi_url} make swagger_client
+    ${rc}  ${output}=  Run And Return Rc And Output  OPENAPI_GENERATOR_CLI_URL=${OPENAPI_GENERATOR_CLI_URL} PIP_INDEX_URL=${PIP_INDEX_URL} make swagger_client
     LogAll  ${output}
     [Return]  ${rc}
 
