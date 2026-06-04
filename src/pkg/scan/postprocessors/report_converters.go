@@ -180,7 +180,11 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 		recordIDs = append(recordIDs, recordID)
 	}
 
-	if err := c.dao.InsertForReport(ctx, reportUUID, recordIDs...); err != nil {
+	// Reconcile the report's vulnerability associations with a set-diff instead of a bulk insert so a
+	// re-scan of an unchanged artifact (the common ScanAll case) writes nothing. Combined with the
+	// stable report UUID kept by MakePlaceHolder, this stops report_vulnerability_record from growing
+	// on every scan. See #23310.
+	if err := c.dao.SyncForReport(ctx, reportUUID, recordIDs...); err != nil {
 		fields := log.Fields{
 			"error":  err,
 			"report": reportUUID,

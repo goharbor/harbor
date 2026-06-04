@@ -134,6 +134,37 @@ func (t *taskDAOTestSuite) TestListScanTasksByReportUUID() {
 	t.Equal(taskID, tasks[0].ID)
 }
 
+// TestListScanTasksByReportUUIDOrdersByLatest verifies that when a report UUID is referenced by more
+// than one task (which happens once a report row is reused across re-scans, see #23310), the latest
+// task is returned first so callers that take tasks[0] observe the current scan rather than a stale one.
+func (t *taskDAOTestSuite) TestListScanTasksByReportUUIDOrdersByLatest() {
+	reportUUID := `2b8f3a1c-1111-2222-3333-444455556666`
+	first, err := t.taskDAO.Create(t.ctx, &Task{
+		ExecutionID: t.executionID,
+		Status:      "Success",
+		StatusCode:  1,
+		ExtraAttrs:  fmt.Sprintf(`{"report_uuids": ["%s"]}`, reportUUID),
+	})
+	t.Require().Nil(err)
+	defer t.taskDAO.Delete(t.ctx, first)
+
+	second, err := t.taskDAO.Create(t.ctx, &Task{
+		ExecutionID: t.executionID,
+		Status:      "Running",
+		StatusCode:  1,
+		ExtraAttrs:  fmt.Sprintf(`{"report_uuids": ["%s"]}`, reportUUID),
+	})
+	t.Require().Nil(err)
+	defer t.taskDAO.Delete(t.ctx, second)
+
+	tasks, err := t.taskDAO.ListScanTasksByReportUUID(t.ctx, reportUUID)
+	t.Require().Nil(err)
+	t.Require().Len(tasks, 2)
+	// Latest (largest id) first.
+	t.Equal(second, tasks[0].ID)
+	t.Equal(first, tasks[1].ID)
+}
+
 func (t *taskDAOTestSuite) TestGet() {
 	// not exist
 	_, err := t.taskDAO.Get(t.ctx, 10000)
