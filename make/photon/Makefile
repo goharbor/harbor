@@ -236,7 +236,7 @@ define _build_base
 		else \
 			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
 		fi ;\
-			$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) $(3) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
+			$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) --build-arg TARGETARCH=$(TARGETARCH) $(3) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
