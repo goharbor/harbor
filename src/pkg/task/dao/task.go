@@ -115,11 +115,11 @@ func (t *taskDAO) ListScanTasksByReportUUID(ctx context.Context, uuid string) ([
 
 	var tasks []*Task
 	param := fmt.Sprintf(`"%s"`, uuid)
-	// Order by id DESC so the latest task comes first. A report UUID can be referenced by more than
-	// one task once a report row is reused across re-scans (see #23310), and callers take tasks[0] as
-	// the current task; without an explicit order Postgres may return an older task and surface a
-	// stale status.
-	sql := `SELECT * FROM task WHERE extra_attrs::jsonb -> 'report_uuids' @> ? ORDER BY id DESC`
+	// A report UUID can be referenced by more than one task once a report row is reused across
+	// re-scans (see #23310). Every caller resolves the current task as tasks[0], so order by id DESC
+	// and return only the latest row: the ORDER BY avoids surfacing a stale older task, and the
+	// LIMIT 1 keeps the result set from growing with each re-scan.
+	sql := `SELECT * FROM task WHERE extra_attrs::jsonb -> 'report_uuids' @> ? ORDER BY id DESC LIMIT 1`
 	_, err = ormer.Raw(sql, param).QueryRows(&tasks)
 	if err != nil {
 		return nil, err

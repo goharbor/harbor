@@ -135,8 +135,9 @@ func (t *taskDAOTestSuite) TestListScanTasksByReportUUID() {
 }
 
 // TestListScanTasksByReportUUIDOrdersByLatest verifies that when a report UUID is referenced by more
-// than one task (which happens once a report row is reused across re-scans, see #23310), the latest
-// task is returned first so callers that take tasks[0] observe the current scan rather than a stale one.
+// than one task (which happens once a report row is reused across re-scans, see #23310), only the
+// latest task is returned (ORDER BY id DESC LIMIT 1) so callers that take tasks[0] observe the
+// current scan rather than a stale one and the result set does not grow with each re-scan.
 func (t *taskDAOTestSuite) TestListScanTasksByReportUUIDOrdersByLatest() {
 	reportUUID := `2b8f3a1c-1111-2222-3333-444455556666`
 	first, err := t.taskDAO.Create(t.ctx, &Task{
@@ -159,10 +160,9 @@ func (t *taskDAOTestSuite) TestListScanTasksByReportUUIDOrdersByLatest() {
 
 	tasks, err := t.taskDAO.ListScanTasksByReportUUID(t.ctx, reportUUID)
 	t.Require().Nil(err)
-	t.Require().Len(tasks, 2)
-	// Latest (largest id) first.
+	// LIMIT 1 returns only the latest task (largest id); every caller consumes tasks[0].
+	t.Require().Len(tasks, 1)
 	t.Equal(second, tasks[0].ID)
-	t.Equal(first, tasks[1].ID)
 }
 
 func (t *taskDAOTestSuite) TestGet() {
