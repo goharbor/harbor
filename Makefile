@@ -133,10 +133,14 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.69.3
 TRIVYADAPTERVERSION=v0.35.1
+# VALKEYVERSION and VALKEYSHA256 are only used for the arm64 source build.
+# On amd64 the Photon tdnf package version is used directly.
+VALKEYVERSION=9.0.3
+VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
 NODEBUILDIMAGE=node:16.18.0
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.2
+REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
@@ -432,6 +436,7 @@ build:
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) -e NODEBUILDIMAGE=$(NODEBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG)  -e DISTRIBUTION_SRC=$(DISTRIBUTION_SRC)\
 	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
+	 -e VALKEYVERSION=$(VALKEYVERSION) -e VALKEYSHA256=$(VALKEYSHA256) \
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e DOCKERNETWORK=$(DOCKERNETWORK) \
 	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
@@ -457,7 +462,11 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		valkey_args="" ; \
+		if [ "$$name" = "valkey" ]; then \
+			valkey_args="--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256)" ; \
+		fi ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base $$valkey_args -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
