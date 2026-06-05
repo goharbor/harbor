@@ -135,8 +135,8 @@ type hooksKey struct{}
 // calls inherit the same sink, so callbacks registered from any nesting level
 // are batched and fired together when the whole tx finally commits.
 type txHooks struct {
-	mu           sync.Mutex
-	afterCommit  []func()
+	mu          sync.Mutex
+	afterCommit []func()
 }
 
 func (h *txHooks) add(fn func()) {
