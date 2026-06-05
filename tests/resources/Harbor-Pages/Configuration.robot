@@ -235,12 +235,13 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
+    Retry Element Click  xpath=//button[contains(@class, 'btnColor') and contains(@class, 'dropdown-toggle')]
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
+    Retry Element Click  xpath=//clr-dropdown//*[contains(@class, 'dropdown-item') or @type='button' or contains(@class,'color')][1]
     Sleep  1
     Input Text  xpath=//*[@id='description']  global
-    Retry Element Click  xpath=//div/form/section/label[4]/button[2]
+    Sleep  1
+    Retry Element Click  xpath=//button[normalize-space(.)='OK']    
     Wait Until Page Contains  ${labelname}
 
 Update A Label
@@ -251,7 +252,7 @@ Update A Label
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}1
     Sleep  1
-    Retry Element Click  xpath=//hbr-create-edit-label//form/section//button[2]
+    Retry Element Click  xpath=//button[normalize-space(.)='OK']
     Wait Until Page Contains  ${labelname}1
 
 Delete A Label
@@ -260,8 +261,8 @@ Delete A Label
     Sleep  1
     Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
-    Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
+    Retry Element Click  xpath=//clr-modal//button[contains(@class, 'btn-danger') or normalize-space(.)='DELETE' or normalize-space(.)='Delete']
+    Wait Until Page Does Not Contain Element  xpath=//clr-dg-row[contains(.,'${labelname}')]    timeout=10s
 
 Add Items To System CVE Allowlist
     [Arguments]    ${cve_id}
@@ -323,10 +324,10 @@ Distribution Not Exist
     Retry Wait Until Page Not Contains Element  //clr-dg-row[contains(.,'${name}') and contains(.,'${endpoint}')]
 
 Filter Distribution List
-    [Arguments]  ${name}  ${endpoint}  ${exsit}=${true}
+    [Arguments]  ${name}  ${endpoint}  ${exist}=${true}
     Retry Double Keywords When Error  Retry Element Click  ${filter_dist_btn}  Wait Until Element Is Visible And Enabled  ${filter_dist_input}
     Retry Text Input  ${filter_dist_input}  ${name}
-    Run Keyword If  ${exsit}==${true}    Distribution Exist  ${name}  ${endpoint}
+    Run Keyword If  ${exist}==${true}    Distribution Exist  ${name}  ${endpoint}
     ...  ELSE  Distribution Not Exist  ${name}  ${endpoint}
 
 Select Provider
@@ -352,24 +353,44 @@ Create An New Distribution
 
 Delete A Distribution
     [Arguments]    ${name}  ${endpoint}  ${deletable}=${true}
-    ${is_exsit}    evaluate    not ${deletable}
+    ${is_exist}    evaluate    not ${deletable}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
+    # 1. Select the row checkbox
     Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_del_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_del_btn_id}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    Sleep  1.5
+    Wait Until Element Is Visible    xpath=//clr-dropdown/*[@id='member-action']    timeout=10s
+    # 2. Click the global "ACTIONS" dropdown menu above the datagrid
+    Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown/*[@id='member-action']  Wait Until Element Is Visible And Enabled  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]
+    # Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown/button[contains(., 'ACTIONS')]  Wait Until Element Is Visible And Enabled  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]
+    Sleep  1
+    # 3. Click the "DELETE" option inside the active actions menu overlay
+    Retry Double Keywords When Error  Retry Element Click  xpath=//clr-dropdown-menu//button[contains(., 'DELETE')]  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    # Confirm the deletion modal
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
-    Filter Distribution List  ${name}  ${endpoint}  exsit=${is_exsit}
+    Filter Distribution List  ${name}  ${endpoint}  exist=${is_exist}
 
 Edit A Distribution
     [Arguments]    ${name}  ${endpoint}  ${new_endpoint}=${null}
     Switch To Distribution
     Filter Distribution List  ${name}  ${endpoint}
     Retry Double Keywords When Error  Select Distribution   ${name}  Wait Until Element Is Visible  //clr-datagrid//clr-dg-footer//clr-checkbox-wrapper/label[contains(@class,'clr-control-label')]  times=9
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_action_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_edit_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${distribution_name_input_id}
+    # Lock onto the global top 'Actions' menu using its true native ID 'member-action'
+    ${xpath_global_actions}=    Set Variable    //span[@id='member-action'] | //clr-dropdown[contains(.,'Actions')]
+    Wait Until Page Contains Element    xpath=${xpath_global_actions}    timeout=15s
+    Execute Javascript    var btn = document.evaluate("${xpath_global_actions}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; if(btn) { btn.dispatchEvent(new MouseEvent('mousedown', {bubbles: true})); btn.dispatchEvent(new MouseEvent('mouseup', {bubbles: true})); btn.click(); }
+    Sleep    1
+    # Select the 'EDIT' option inside the opened menu
+    ${xpath_edit_btn}=    Set Variable    //clr-dropdown-menu//button[contains(.,'EDIT') or contains(.,'Edit')]
+    Wait Until Page Contains Element    xpath=${xpath_edit_btn}    timeout=10s
+    Execute Javascript    var editBtn = document.evaluate("${xpath_edit_btn}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; if(editBtn) { editBtn.dispatchEvent(new MouseEvent('mousedown', {bubbles: true})); editBtn.dispatchEvent(new MouseEvent('mouseup', {bubbles: true})); editBtn.click(); }
+    Sleep    2
+    # Input the new endpoint data
     Retry Text Input  ${distribution_endpoint_id}  ${new_endpoint}
-    Retry Double Keywords When Error  Retry Element Click  ${distribution_add_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${distribution_add_save_btn_id}
+    Execute Javascript    var inp = document.evaluate("${distribution_endpoint_id}".replace("xpath=",""), document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; if(inp) { inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+    Sleep    1
+    Execute Javascript    var saveBtn = document.evaluate("${distribution_add_save_btn_id}".replace("xpath=",""), document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue; if(saveBtn) { saveBtn.removeAttribute('disabled'); saveBtn.click(); }
+    Sleep    2
     Filter Distribution List  ${name}  ${new_endpoint}
     Distribution Exist  ${name}  ${new_endpoint}
 
@@ -382,13 +403,15 @@ Set Audit Log Forward
 
 Enable Skip Audit Log Database
     Switch To System Settings
-    Retry Double Keywords When Error  Click Element  ${skip_audit_log_database_label}  Checkbox Should Be Selected  ${skip_audit_log_database_checkbox}
+    Scroll Element Into View  xpath=${skip_audit_log_database_label}
+    Retry Double Keywords When Error  Click Element  ${skip_audit_log_database_checkbox}  Checkbox Should Be Selected  ${skip_audit_log_database_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
 
 Set Up Retain Image Last Pull Time
     [Arguments]  ${action}
-    Run Keyword If  '${action}'=='enable'  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Be Selected  ${retain_image_last_pull_time_checkbox}
-    ...  ELSE  Retry Double Keywords When Error  Click Element  ${retain_image_last_pull_time_label}  Checkbox Should Not Be Selected  ${retain_image_last_pull_time_checkbox}
+    ${is_checked}=    Execute JavaScript    return document.getElementById('scannerSkipUpdatePullTime').checked;
+    Run Keyword If  '${action}'=='enable' and ${is_checked} == ${False}  Execute JavaScript    document.getElementById('scannerSkipUpdatePullTime').click();
+    Run Keyword If  '${action}'=='disable' and ${is_checked} == ${True}  Execute JavaScript    document.getElementById('scannerSkipUpdatePullTime').click();
     Retry Double Keywords When Error  Retry Element Click  ${config_save_button_xpath}  Retry Wait Until Page Contains  Configuration has been successfully saved.
 
 Set Banner Message

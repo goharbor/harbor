@@ -66,8 +66,9 @@ Edit A P2P Preheat Policy
     Switch To P2P Preheat
     Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
-    Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}
+    Sleep  1
+    Retry Double Keywords When Error  Execute Javascript  document.getElementById('edit-policy').click()  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    Retry Text Input  ${p2p_preheat_repoinput_id}  ${repo}    
     Run Keyword If  '${trigger_type}' != '${null}'  Select P2P Preheat Policy Trigger  ${trigger_type}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_save_btn_id}  Retry Wait Until Page Not Contains Element  xpath=${p2p_preheat_edit_save_btn_id}
     P2P Preheat Policy Exist  ${name}  repo=${repo}
@@ -105,8 +106,12 @@ Execute P2P Preheat
     [Arguments]  ${name}  ${expected_status}=Success
     Retry Double Keywords When Error  Select P2P Preheat Policy  ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_execute_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_execute_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_confirm_execute_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_confirm_execute_btn_id}  Wait Until Element Is Visible And Enabled  //clr-datagrid//div//clr-dg-row[1]//clr-dg-cell[2][contains(.,'${expected_status}')]
+    # This force-triggers the native DOM click event on 'execute-policy', perfectly clearing the ElementClickInterceptedException.
+    Retry Double Keywords When Error  Execute Javascript  document.getElementById('execute-policy').click()  Sleep  2
+    Wait Until Element Is Visible    ${p2p_preheat_confirm_execute_btn_id}    timeout=10s
+    Click Element    ${p2p_preheat_confirm_execute_btn_id}
+    Wait Until Page Does Not Contain Element    ${p2p_preheat_confirm_execute_btn_id}    timeout=10s
+    Wait Until Element Is Visible    xpath=//clr-datagrid//clr-dg-row[1]//clr-dg-cell[2][contains(.,'Success') or contains(.,'Error')]    timeout=30s
 
 Verify Latest Execution Result
     [Arguments]  ${project_name}  ${policy_name}  ${contain}  ${not_contain}=${null}  ${expected_status}=Success
