@@ -174,6 +174,21 @@ func (m *Manager) AddPullCount(ctx context.Context, id int64, count uint64) erro
 	return nil
 }
 
+func (m *Manager) Touch(ctx context.Context, id int64) error {
+	repo, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err = m.delegator.Touch(ctx, id); err != nil {
+		return err
+	}
+	// Defer cache invalidation until after the enclosing transaction commits,
+	// so Redis round-trips never hold the Postgres row locks open. When there
+	// is no enclosing transaction, AfterCommit runs the hook synchronously.
+	m.scheduleCleanUp(ctx, repo)
+	return nil
+}
+
 // scheduleCleanUp registers the cache invalidation for repo to run after the
 // enclosing transaction commits. The closure captures a value copy of the
 // fields it needs so the hook is independent of the request context and any

@@ -152,7 +152,7 @@ var (
 		{Name: common.WithTrivy, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_TRIVY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "30", ItemType: &IntType{}, Editable: true, Description: `The robot account token duration in days`},
-		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &StringType{}, Editable: true, Description: `The robot account name prefix`},
+		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &NonEmptyStringType{}, Editable: true, Description: `The robot account name prefix`},
 		{Name: common.RobotScannerNamePrefix, Scope: SystemScope, Group: BasicGroup, EnvKey: "ROBOT_SCANNER_NAME_PREFIX", DefaultValue: "scanner", ItemType: &StringType{}, Editable: true, Description: `The scanner robot account name prefix`},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable notification`},
 
