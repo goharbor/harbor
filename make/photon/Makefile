@@ -124,7 +124,7 @@ _build_prepare:
 	@echo "Done."
 
 _build_db:
-	@$(call _build_base,$(DB),$(DOCKERFILEPATH_DB))
+	@$(call _build_base,$(DB),$(DOCKERFILEPATH_DB),--build-arg PG18_VERSION=$(PG18VERSION) --build-arg PG18_SHA256=$(PG18SHA256) --target $(TARGETARCH)-base)
 	@echo "building db container for photon..."
 	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
@@ -202,7 +202,7 @@ _build_registryctl:
 	@echo "Done."
 
 _build_valkey:
-	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY),--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256))
+	@$(call _build_base,$(VALKEY),$(DOCKERFILEPATH_VALKEY),--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256) --target $(TARGETARCH)-base)
 	@echo "building valkey container for photon..."
 	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_VALKEY)/$(DOCKERFILENAME_VALKEY) -t $(DOCKERIMAGENAME_VALKEY):$(VERSIONTAG) .
 	@echo "Done."

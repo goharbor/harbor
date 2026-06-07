@@ -1,4 +1,13 @@
-FROM goharbor/photon:5.0
+# TARGETARCH is auto-populated by BuildKit via --platform; default ensures
+# graceful fallback to amd64 if built without explicit platform flag.
+ARG TARGETARCH=amd64
+# PG18_VERSION and PG18_SHA256 are only used by the arm64 source-build path.
+# On amd64 the Photon tdnf package is installed directly.
+ARG PG18_VERSION
+ARG PG18_SHA256
+
+# ---- amd64: use tdnf packages (unchanged from original) ----
+FROM goharbor/photon:5.0 AS amd64-base
 
 ENV PGDATA /var/lib/postgresql/data
 
@@ -18,3 +27,48 @@ RUN tdnf install -y gzip postgresql18-server findutils bc >> /dev/null \
     && tdnf clean all
 
 RUN tdnf install -y util-linux
+
+# ---- arm64: build PostgreSQL 18 from source (Photon has no postgresql18-server for aarch64) ----
+FROM goharbor/photon:5.0 AS arm64-builder
+ARG PG18_VERSION
+ARG PG18_SHA256
+RUN tdnf install -y gcc make binutils glibc-devel linux-api-headers \
+    readline-devel zlib-devel openssl-devel icu-devel \
+    coreutils diffutils gawk bison flex perl \
+    bzip2 tar ca-certificates curl >> /dev/null \
+    && tdnf clean all
+WORKDIR /tmp
+RUN curl -fsSL -o postgresql.tar.bz2 \
+    "https://ftp.postgresql.org/pub/source/v${PG18_VERSION}/postgresql-${PG18_VERSION}.tar.bz2" \
+    && echo "${PG18_SHA256}  postgresql.tar.bz2" | sha256sum -c - \
+    && tar -xjf postgresql.tar.bz2 \
+    && cd "postgresql-${PG18_VERSION}" \
+    && ./configure --prefix=/usr --datadir=/usr/pgsql/18/share/postgresql \
+       --with-openssl --with-icu --with-system-tzdata=/usr/share/zoneinfo \
+    && make -j"$(nproc)" world-bin \
+    && make DESTDIR=/tmp/pg18-install install-world-bin
+RUN strip /tmp/pg18-install/usr/bin/* 2>/dev/null || true \
+    && strip /tmp/pg18-install/usr/lib/*.so* 2>/dev/null || true \
+    && strip /tmp/pg18-install/usr/lib/postgresql/*.so 2>/dev/null || true
+
+FROM goharbor/photon:5.0 AS arm64-base
+ENV PGDATA=/var/lib/postgresql/data
+RUN tdnf install -y shadow gzip findutils bc util-linux \
+    readline zlib openssl icu >> /dev/null \
+    && groupadd -r postgres --gid=999 \
+    && useradd -m -r -g postgres --uid=999 postgres \
+    && tdnf clean all
+RUN tdnf install -y postgresql15-server >> /dev/null
+COPY --from=arm64-builder /tmp/pg18-install/usr/bin/ /usr/bin/
+COPY --from=arm64-builder /tmp/pg18-install/usr/lib/ /usr/lib/
+COPY --from=arm64-builder /tmp/pg18-install/usr/pgsql/ /usr/pgsql/
+RUN mkdir -p /docker-entrypoint-initdb.d \
+    && mkdir -p /run/postgresql \
+    && chown -R postgres:postgres /run/postgresql \
+    && chmod 2777 /run/postgresql \
+    && mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" \
+    && sed -i "s|#listen_addresses = 'localhost'.*|listen_addresses = '*'|g" /usr/pgsql/18/share/postgresql/postgresql.conf.sample \
+    && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/18/share/postgresql/postgresql.conf.sample
+
+# ---- Select final image based on target architecture ----
+FROM ${TARGETARCH}-base
