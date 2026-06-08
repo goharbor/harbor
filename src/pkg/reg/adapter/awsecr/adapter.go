@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecrapi "github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -162,9 +163,14 @@ func getAdapterInfo() *model.AdapterPattern {
 		"us-gov-east-1",
 		"us-gov-west-1",
 	} {
+		// AWS China regions (aws-cn partition) use amazonaws.com.cn.
+		domain := "amazonaws.com"
+		if strings.HasPrefix(e, "cn-") {
+			domain = "amazonaws.com.cn"
+		}
 		endpoints = append(endpoints, &model.Endpoint{
 			Key:   e,
-			Value: fmt.Sprintf("https://api.ecr.%s.amazonaws.com", e),
+			Value: fmt.Sprintf("https://api.ecr.%s.%s", e, domain),
 		})
 	}
 	info := &model.AdapterPattern{
