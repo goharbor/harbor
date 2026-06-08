@@ -16,6 +16,7 @@ package registry
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -109,10 +110,26 @@ func NewClient(url, username, password string, insecure bool, interceptors ...in
 	return NewClientWithAuthorizer(url, authorizer, insecure, "", interceptors...)
 }
 
-// NewClientWithCACert creates a registry client with custom CA certificate
-func NewClientWithCACert(url, username, password string, insecure bool, caCert string, interceptors ...interceptor.Interceptor) Client {
+// NewClientWithTLSConfig creates a registry client with a fully configured TLS transport.
+// clientCerts are optional mTLS client certificates; pass nil for standard TLS without client auth.
+func NewClientWithTLSConfig(url, username, password string, insecure bool, caCert string, clientCerts []tls.Certificate, interceptors ...interceptor.Interceptor) Client {
 	authorizer := auth.NewAuthorizer(username, password, insecure, caCert)
-	return NewClientWithAuthorizer(url, authorizer, insecure, caCert, interceptors...)
+	transportOpts := []commonhttp.TransportOption{
+		commonhttp.WithInsecure(insecure),
+		commonhttp.WithCACert(caCert),
+	}
+	if len(clientCerts) > 0 {
+		transportOpts = append(transportOpts, commonhttp.WithClientCertificates(clientCerts...))
+	}
+	return &client{
+		url:          url,
+		authorizer:   authorizer,
+		interceptors: interceptors,
+		client: &http.Client{
+			Transport: commonhttp.GetHTTPTransport(transportOpts...),
+			Timeout:   registryHTTPClientTimeout,
+		},
+	}
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
