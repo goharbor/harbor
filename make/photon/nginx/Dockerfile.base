@@ -1,4 +1,4 @@
-FROM photon:5.0
+FROM goharbor/photon:5.0
 
 RUN tdnf install -y nginx nginx-mod-headers-more shadow >> /dev/null \
     && tdnf clean all \
