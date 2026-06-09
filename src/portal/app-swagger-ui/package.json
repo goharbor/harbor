@@ -17,7 +17,7 @@
     "html-webpack-plugin": "^5.6.0",
     "webpack": "^5.107.2",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.2"
+    "webpack-dev-server": "^5.2.4"
   },
   "overrides": {
     "react": "^18.3.1",
