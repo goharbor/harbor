@@ -370,11 +370,21 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 		return a.SendError(ctx, err)
 	}
 
-	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
-	if err != nil {
-		return a.SendError(ctx, err)
+	repoName := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	// Use the referrer approach: query by digest and repository instead of internal artifact ID.
+	// This aligns with the OCI referrers API and enables proxy cache support.
+	if _, err := digest.Parse(params.Reference); err == nil {
+		query.Keywords["SubjectArtifactDigest"] = params.Reference
+		query.Keywords["SubjectArtifactRepo"] = repoName
+	} else {
+		// For tag references, resolve to the artifact digest first
+		art, err := a.artCtl.GetByReference(ctx, repoName, params.Reference, nil)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		query.Keywords["SubjectArtifactDigest"] = art.Digest
+		query.Keywords["SubjectArtifactRepo"] = repoName
 	}
-	query.Keywords["SubjectArtifactID"] = artifact.ID
 
 	// list accessories according to the query
 	total, err := a.accMgr.Count(ctx, query)
