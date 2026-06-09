@@ -17,7 +17,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { of } from 'rxjs';
 import {
-    TranslateFakeLoader,
+    TranslateNoOpLoader,
     TranslateLoader,
     TranslateModule,
 } from '@ngx-translate/core';
@@ -156,7 +156,7 @@ describe('ArtifactSbomComponent', () => {
                 TranslateModule.forRoot({
                     loader: {
                         provide: TranslateLoader,
-                        useClass: TranslateFakeLoader,
+                        useClass: TranslateNoOpLoader,
                     },
                 }),
             ],

@@ -2,7 +2,8 @@
     <div class="card">
         <div class="card-block">
             <h4 class="head">{{ 'STATISTICS.PRO_ITEM' | translate }}</h4>
-            <div class="clr-row" *ngIf="isValidSession">
+            @if (isValidSession) {
+            <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_PRIVATE' | translate }}
                 </div>
@@ -10,6 +11,7 @@
                     {{ originalCopy?.private_project_count }}
                 </div>
             </div>
+            }
             <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_PUB' | translate }}
@@ -18,7 +20,8 @@
                     {{ originalCopy?.public_project_count }}
                 </div>
             </div>
-            <div class="clr-row" *ngIf="isValidSession">
+            @if (isValidSession) {
+            <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_TOTAL' | translate }}
                 </div>
@@ -26,12 +29,14 @@
                     {{ originalCopy?.total_project_count }}
                 </div>
             </div>
+            }
         </div>
     </div>
     <div class="card">
         <div class="card-block">
             <h4 class="head">{{ 'STATISTICS.REPO_ITEM' | translate }}</h4>
-            <div class="clr-row" *ngIf="isValidSession">
+            @if (isValidSession) {
+            <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_PRIVATE' | translate }}
                 </div>
@@ -39,6 +44,7 @@
                     {{ originalCopy?.private_repo_count }}
                 </div>
             </div>
+            }
             <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_PUB' | translate }}
@@ -47,7 +53,8 @@
                     {{ originalCopy?.public_repo_count }}
                 </div>
             </div>
-            <div class="clr-row" *ngIf="isValidSession">
+            @if (isValidSession) {
+            <div class="clr-row">
                 <div class="clr-col">
                     {{ 'STATISTICS.INDEX_TOTAL' | translate }}
                 </div>
@@ -55,9 +62,11 @@
                     {{ originalCopy?.total_repo_count }}
                 </div>
             </div>
+            }
         </div>
     </div>
-    <div class="card" *ngIf="isValidSession">
+    @if (isValidSession) {
+    <div class="card">
         <div class="card-block container">
             <h4 class="head">{{ 'QUOTA.QUOTA_USED' | translate }}</h4>
             <div class="storage-used font-weight-700">
@@ -70,4 +79,5 @@
             </div>
         </div>
     </div>
+    }
 </div>

@@ -30,6 +30,7 @@ const MAX = 2100000000;
     selector: 'add-rule',
     templateUrl: './add-rule.component.html',
     styleUrls: ['./add-rule.component.scss'],
+    standalone: false,
 })
 export class AddRuleComponent {
     addRuleOpened: boolean = false;

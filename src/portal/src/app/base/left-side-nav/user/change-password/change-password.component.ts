@@ -22,6 +22,7 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
     selector: 'change-password',
     templateUrl: 'change-password.component.html',
     styleUrls: ['./change-password.component.scss', '../../../../common.scss'],
+    standalone: false,
 })
 export class ChangePasswordComponent {
     showNewPwd: boolean = false;

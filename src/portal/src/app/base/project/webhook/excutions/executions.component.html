@@ -37,9 +37,8 @@
         <clr-dg-placeholder>{{
             'P2P_PROVIDER.JOB_PLACEHOLDER' | translate
         }}</clr-dg-placeholder>
-        <clr-dg-row
-            *ngFor="let execution of executions"
-            [clrDgItem]="execution">
+        @for (execution of executions; track execution) {
+        <clr-dg-row [clrDgItem]="execution">
             <clr-dg-cell>
                 <a href="javascript:void(0)" (click)="goToLink(execution.id)">{{
                     execution.id
@@ -51,11 +50,12 @@
             <clr-dg-cell
                 >{{ execution.status }}
                 <clr-tooltip>
+                    @if (execution.status_message) {
                     <clr-icon
-                        *ngIf="execution.status_message"
                         clrTooltipTrigger
                         shape="info-circle"
                         size="20"></clr-icon>
+                    }
                     <clr-tooltip-content
                         [clrPosition]="'left'"
                         clrSize="md"
@@ -65,25 +65,28 @@
                 </clr-tooltip></clr-dg-cell
             >
             <clr-dg-cell>
-                <span
-                    class="label-flex"
-                    *ngIf="execution?.extra_attrs?.event_type">
+                @if (execution?.extra_attrs?.event_type) {
+                <span class="label-flex">
                     {{ eventTypeToText(execution?.extra_attrs?.event_type) }}
                 </span>
+                }
             </clr-dg-cell>
             <clr-dg-cell class="flex">
                 <clr-signpost>
                     <a class="btn btn-link link-normal" clrSignpostTrigger>
-                        <span *ngIf="useJsonFormat(execution?.vendor_type)">
+                        @if (useJsonFormat(execution?.vendor_type)) {
+                        <span>
                             {{
                                 toString(
                                     toJson(execution?.extra_attrs?.payload)
                                 )
                             }}
                         </span>
-                        <span *ngIf="!useJsonFormat(execution?.vendor_type)">
+                        } @if (!useJsonFormat(execution?.vendor_type)) {
+                        <span>
                             {{ execution?.extra_attrs?.payload }}
                         </span>
+                        }
                     </a>
                     <clr-signpost-content
                         class="pre"
@@ -94,15 +97,15 @@
                             [defaultValue]="
                                 toString(execution?.extra_attrs?.payload)
                             "></hbr-copy-input>
-                        <pre *ngIf="!useJsonFormat(execution?.vendor_type)">{{
-                            execution?.extra_attrs?.payload
-                        }}</pre>
+                        @if (!useJsonFormat(execution?.vendor_type)) {
+                        <pre>{{ execution?.extra_attrs?.payload }}</pre>
+                        } @if (useJsonFormat(execution?.vendor_type)) {
                         <pre
                             [innerHTML]="
                                 toJson(execution?.extra_attrs?.payload) | json
                             "
-                            class="abc"
-                            *ngIf="useJsonFormat(execution?.vendor_type)"></pre>
+                            class="abc"></pre>
+                        }
                     </clr-signpost-content>
                 </clr-signpost>
             </clr-dg-cell>
@@ -113,6 +116,7 @@
                 execution.end_time | harborDatetime : 'short'
             }}</clr-dg-cell>
         </clr-dg-row>
+        }
         <clr-dg-footer>
             <clr-dg-pagination
                 #pagination
@@ -122,11 +126,13 @@
                 <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
-                <span *ngIf="total"
+                @if (total) {
+                <span
                     >{{ pagination.firstItem + 1 }} -
                     {{ pagination.lastItem + 1 }}
                     {{ 'REPLICATION.OF' | translate }}</span
                 >
+                }
                 {{ total }} {{ 'REPLICATION.ITEMS' | translate }}
             </clr-dg-pagination>
         </clr-dg-footer>
