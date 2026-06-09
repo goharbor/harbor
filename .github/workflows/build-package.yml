@@ -149,7 +149,7 @@ jobs:
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
       - name: Save repo list
         run: |
-          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | grep -v '^goharbor/spectral$' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | grep -v '^goharbor/spectral$' | grep -v '^goharbor/swagger$' | grep -v '^goharbor/mockery$' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
       - name: Upload repo list
         uses: actions/upload-artifact@v4
         with:
