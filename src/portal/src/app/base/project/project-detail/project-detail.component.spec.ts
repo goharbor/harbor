@@ -22,7 +22,7 @@ import {
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { SessionService } from '../../../shared/services/session.service';
@@ -32,6 +32,10 @@ import {
     UserPermissionService,
 } from '../../../shared/services';
 import { ErrorHandler } from '../../../shared/units/error-handler';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ProjectDetailComponent', () => {
     let component: ProjectDetailComponent;
@@ -81,6 +85,7 @@ describe('ProjectDetailComponent', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            declarations: [ProjectDetailComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -88,9 +93,7 @@ describe('ProjectDetailComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [ProjectDetailComponent],
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: mockSessionService },
@@ -105,6 +108,8 @@ describe('ProjectDetailComponent', () => {
                     provide: ActivatedRoute,
                     useValue: mockActivatedRoute,
                 },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });

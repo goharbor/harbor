@@ -97,6 +97,7 @@ const FALSE: string = 'false';
     selector: 'artifact-list-tab',
     templateUrl: './artifact-list-tab.component.html',
     styleUrls: ['./artifact-list-tab.component.scss'],
+    standalone: false,
 })
 export class ArtifactListTabComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

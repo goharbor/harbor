@@ -11,15 +11,19 @@ COPY ./api/v2.0/swagger.yaml /build_dir/swagger.yaml
 COPY src/portal /build_dir
 
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
-RUN npm install --unsafe-perm
+ENV NODE_OPTIONS=--max_old_space_size=4096
+
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --unsafe-perm --ignore-scripts --no-optional --no-audit --no-fund --loglevel=error
+RUN npm run postinstall
 RUN npm run generate-build-timestamp
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --configuration production
-RUN npm install js-yaml@4.1.0 \
-    && node -e "const yaml = require('js-yaml'); const fs = require('fs'); const swagger = yaml.load(fs.readFileSync('swagger.yaml', 'utf8')); fs.writeFileSync('swagger.json', JSON.stringify(swagger));"
+RUN node -e "const yaml = require('js-yaml'); const fs = require('fs'); const swagger = yaml.load(fs.readFileSync('swagger.yaml', 'utf8')); fs.writeFileSync('swagger.json', JSON.stringify(swagger));"
 
 COPY ./LICENSE /build_dir/dist
 
-RUN cd app-swagger-ui && npm install --unsafe-perm
+RUN --mount=type=cache,target=/root/.npm \
+    cd app-swagger-ui && npm ci --unsafe-perm --no-optional --no-audit --no-fund --loglevel=error
 RUN cd app-swagger-ui && npm run build
 
 FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}
