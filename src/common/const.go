@@ -143,6 +143,8 @@ const (
 	RobotPrefix = "robot$"
 	// System admin defined the robot name prefix.
 	RobotNamePrefix = "robot_name_prefix"
+	// System admin defined the role name prefix.
+	RoleNamePrefix = "role_name_prefix"
 	// Scanner robot name prefix
 	RobotScannerNamePrefix = "robot_scanner_name_prefix"
 	// Use this prefix to index user who tries to login with web hook token.

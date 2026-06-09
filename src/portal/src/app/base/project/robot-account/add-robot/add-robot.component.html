@@ -248,7 +248,7 @@
                 <robot-permissions-panel
                     [mode]="PermissionSelectPanelModes.NORMAL"
                     [(permissionsModel)]="robot.permissions[0].access"
-                    [candidatePermissions]="robotMetadata?.project">
+                    [candidatePermissions]="filteredCandidatePermissions">
                 </robot-permissions-panel>
             </section>
         </form>
