@@ -1,0 +1,58 @@
+name: "buildcheck-23324 (secret-free)"
+
+# Temporary validation workflow for the #23324 base-image fix.
+# It needs NO secrets: it only BUILDS the multi-arch base and db base images
+# and asserts the postgres layout. It never logs in or pushes anywhere.
+# This file is NOT part of the upstream fix; it lives only on the test branch.
+
+on:
+  push:
+    branches:
+      - release-test-23324
+  workflow_dispatch:
+
+jobs:
+  # Validates the exact command BUILD_BASE_IMAGE runs in build-package.yml:
+  # build goharbor/photon:5.0 for both platforms at once (no push).
+  multiarch-base-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: buildx build goharbor/photon:5.0 for amd64+arm64 (no push)
+        run: |
+          set -euxo pipefail
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
+
+  # Validates package resolution + pg15/pg18 layout on each real architecture
+  # (native runners, no emulation): build the photon base, then the db base,
+  # then assert the upgrade (pg15) and runtime (pg18) binaries are present.
+  db-base-per-arch:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build photon base + db base and assert pg layout (${{ matrix.arch }})
+        env:
+          DOCKER_BUILDKIT: "1"
+        run: |
+          set -euxo pipefail
+          docker build --platform linux/${{ matrix.arch }} \
+            -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
+          docker build --platform linux/${{ matrix.arch }} \
+            -f make/photon/db/Dockerfile.base -t harbor-db-base:check .
+          docker run --rm --platform linux/${{ matrix.arch }} \
+            --entrypoint sh harbor-db-base:check -c '
+              set -e
+              echo "arch: $(uname -m)"
+              test -x /usr/pgsql/15/bin/pg_ctl    && echo "pg15 upgrade binaries: OK"
+              /usr/bin/postgres --version | grep -q "PostgreSQL 18" && echo "runtime postgres 18: OK"
+              test -x /usr/bin/pg_upgrade         && echo "pg_upgrade: OK"
+              test -f /usr/pgsql/18/share/postgresql/postgresql.conf.sample && echo "conf.sample: OK"
+              grep -q "^listen_addresses = .\*." /usr/pgsql/18/share/postgresql/postgresql.conf.sample && echo "listen_addresses: OK"
+            '
