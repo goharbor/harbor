@@ -2,23 +2,29 @@
     [(clrModalOpen)]="opened"
     [clrModalStaticBackdrop]="true"
     [clrModalClosable]="false">
-    <h3 class="modal-title" *ngIf="mode === 'create' && isLdapMode">
+    @if (mode === 'create' && isLdapMode) {
+    <h3 class="modal-title">
         {{ 'GROUP.IMPORT_LDAP_GROUP' | translate }}
     </h3>
-    <h3 class="modal-title" *ngIf="mode === 'create' && isHttpAuthMode">
+    } @if (mode === 'create' && isHttpAuthMode) {
+    <h3 class="modal-title">
         {{ 'GROUP.IMPORT_HTTP_GROUP' | translate }}
     </h3>
-    <h3 class="modal-title" *ngIf="mode === 'create' && isOidcMode">
+    } @if (mode === 'create' && isOidcMode) {
+    <h3 class="modal-title">
         {{ 'GROUP.IMPORT_OIDC_GROUP' | translate }}
     </h3>
-    <h3 class="modal-title" *ngIf="mode !== 'create'">
+    } @if (mode !== 'create') {
+    <h3 class="modal-title">
         {{ 'GROUP.EDIT' | translate }}
     </h3>
+    }
 
     <div class="modal-body">
         <form class="clr-form clr-form-horizontal" #groupForm="ngForm">
             <section>
-                <clr-input-container *ngIf="isLdapMode">
+                @if (isLdapMode) {
+                <clr-input-container>
                     <label for="ldap_group_dn" class="required">{{
                         'GROUP.GROUP_DN' | translate
                     }}</label>
@@ -35,7 +41,8 @@
                         dnTooltip | translate
                     }}</clr-control-error>
                 </clr-input-container>
-                <div class="clr-form-control" *ngIf="isLdapMode">
+                } @if (isLdapMode) {
+                <div class="clr-form-control">
                     <label class="clr-control-label" for="type">{{
                         'GROUP.TYPE' | translate
                     }}</label>
@@ -43,6 +50,7 @@
                         'GROUP.LDAP_TYPE' | translate
                     }}</label>
                 </div>
+                }
                 <clr-input-container>
                     <label for="group_name" class="required">{{
                         'GROUP.NAME' | translate
