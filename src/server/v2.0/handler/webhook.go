@@ -32,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notification/custompayload"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -429,6 +430,9 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		// set payload format to Default is not specified when the type is http
 		if len(target.PayloadFormat) == 0 && target.Type == "http" {
 			policy.Targets[i].PayloadFormat = "Default"
+		}
+		if err := custompayload.Validate(target.CustomPayload); err != nil {
+			return false, errors.New(err).WithMessagef("invalid custom_payload template: %v", err).WithCode(errors.BadRequestCode)
 		}
 	}
 	return true, nil

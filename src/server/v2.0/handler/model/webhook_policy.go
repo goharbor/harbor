@@ -52,6 +52,7 @@ func (n *WebhookPolicy) ToTargets() []*models.WebhookTargetObject {
 			AuthHeader:     t.AuthHeader,
 			SkipCertVerify: t.SkipCertVerify,
 			PayloadFormat:  models.PayloadFormatType(t.PayloadFormat),
+			CustomPayload:  t.CustomPayload,
 		})
 	}
 	return results

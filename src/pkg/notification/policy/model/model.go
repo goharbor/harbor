@@ -96,4 +96,5 @@ type EventTarget struct {
 	AuthHeader     string `json:"auth_header,omitempty"`
 	SkipCertVerify bool   `json:"skip_cert_verify"`
 	PayloadFormat  string `json:"payload_format,omitempty"`
+	CustomPayload  string `json:"custom_payload,omitempty"`
 }

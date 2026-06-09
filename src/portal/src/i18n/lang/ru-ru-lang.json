@@ -595,7 +595,8 @@
         "NAME_REQUIRED": "Имя обязательно",
         "NOTIFY_TYPE": "Тип уведомления",
         "EVENT_TYPE": "Тип события",
-        "EVENT_TYPE_REQUIRED": "Требуется хотя бы один тип события"
+        "EVENT_TYPE_REQUIRED": "Требуется хотя бы один тип события",
+        "CUSTOM_PAYLOAD": "Пользовательская нагрузка"
     },
     "GROUP": {
         "GROUP": "Группа",

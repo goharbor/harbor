@@ -8894,6 +8894,9 @@ definitions:
       payload_format:
         $ref: '#/definitions/PayloadFormatType'
         description: The payload format of webhook, by default is Default for http type.
+      custom_payload:
+        type: string
+        description: Optional Go template to transform the webhook payload before sending, fields are accessible from the payload via dot-notation (e.g. {{.type}}, {{.operator}}).
   WebhookPolicy:
     type: object
     description: The webhook policy object

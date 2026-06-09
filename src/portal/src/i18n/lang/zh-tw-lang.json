@@ -437,6 +437,7 @@
         "EVENT_TYPE": "事件類型",
         "EVENT_TYPE_REQUIRED": "至少需要一種事件類型。",
         "PAYLOAD_FORMAT": "Payload 格式",
+        "CUSTOM_PAYLOAD": "自訂 Payload",
         "CLOUD_EVENT": "CloudEvents",
         "PAYLOAD_DATA": "Payload 資料",
         "SLACK_RATE_LIMIT": "請注意 Slack 的速率限制"
