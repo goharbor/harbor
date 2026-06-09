@@ -462,11 +462,12 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
+		base_args="--build-arg TARGETARCH=$(ARCH)" ; \
 		valkey_args="" ; \
 		if [ "$$name" = "valkey" ]; then \
 			valkey_args="--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256)" ; \
 		fi ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base $$valkey_args -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base $$base_args $$valkey_args -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
