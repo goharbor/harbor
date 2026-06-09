@@ -5,8 +5,10 @@
         </h4>
         <clr-datagrid
             (clrDgRefresh)="getScanners($event)"
+            clrDgSelectionType="single"
             [clrDgLoading]="onGoing"
-            [(clrDgSingleSelected)]="selectedRow">
+            [clrDgSelected]="selectedRow ? [selectedRow] : []"
+            (clrDgSelectedChange)="selectedRow = $event?.[0]">
             <clr-dg-action-bar>
                 <div class="clr-row">
                     <div class="clr-col-7">
@@ -31,14 +33,15 @@
                             {{ 'SCANNER.SET_AS_DEFAULT' | translate }}
                         </button>
                         <clr-dropdown
-                            [clrCloseMenuOnItemClick]="false"
+                            [clrCloseMenuOnItemClick]="true"
                             class="btn btn-link"
                             clrDropdownTrigger>
                             <span id="action-scanner"
                                 >{{ 'MEMBER.ACTION' | translate
                                 }}<clr-icon
                                     class="clr-icon"
-                                    shape="caret down"></clr-icon
+                                    shape="caret"
+                                    direction="down"></clr-icon
                             ></span>
                             <clr-dropdown-menu *clrIfOpen>
                                 <button
@@ -63,10 +66,9 @@
                                             !selectedRow.is_default
                                         )
                                     ">
-                                    <span
-                                        *ngIf="
-                                            selectedRow && selectedRow.disabled
-                                        ">
+                                    @if ( selectedRow && selectedRow.disabled )
+                                    {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -75,13 +77,9 @@
                                             'WEBHOOK.ENABLED_BUTTON' | translate
                                         }}</span>
                                     </span>
-                                    <span
-                                        *ngIf="
-                                            !(
-                                                selectedRow &&
-                                                selectedRow.disabled
-                                            )
-                                        ">
+                                    } @if ( !( selectedRow &&
+                                    selectedRow.disabled ) ) {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -91,6 +89,7 @@
                                                 | translate
                                         }}</span>
                                     </span>
+                                    }
                                 </button>
                                 <div class="dropdown-divider"></div>
                                 <button
@@ -149,35 +148,33 @@
             <clr-dg-placeholder>
                 {{ 'SCANNER.NO_SCANNER' | translate }}
             </clr-dg-placeholder>
-            <clr-dg-row *ngFor="let scanner of scanners" [clrDgItem]="scanner">
+            @for (scanner of scanners; track scanner) {
+            <clr-dg-row [clrDgItem]="scanner">
                 <clr-dg-cell class="position-relative">
                     <span>{{ scanner.name }}</span>
-                    <span
-                        *ngIf="scanner.is_default"
-                        class="label label-info ml-1"
-                        >{{ 'SCANNER.DEFAULT' | translate }}</span
-                    >
+                    @if (scanner.is_default) {
+                    <span class="label label-info ml-1">{{
+                        'SCANNER.DEFAULT' | translate
+                    }}</span>
+                    }
                 </clr-dg-cell>
                 <clr-dg-cell>{{ scanner.url }}</clr-dg-cell>
                 <clr-dg-cell class="position-relative">
-                    <span
-                        *ngIf="scanner.loadingMetadata; else elseBlockLoading"
-                        class="spinner spinner-inline ml-2"></span>
-                    <ng-template #elseBlockLoading>
-                        <span
-                            *ngIf="scanner.metadata; else elseBlock"
-                            class="label label-success"
-                            >{{ 'SCANNER.HEALTHY' | translate }}</span
-                        >
-                        <ng-template #elseBlock>
-                            <span class="label label-danger">{{
-                                'SCANNER.UNHEALTHY' | translate
-                            }}</span>
-                        </ng-template>
-                    </ng-template>
+                    @if (scanner.loadingMetadata) {
+                    <span class="spinner spinner-inline ml-2"></span>
+                    } @else { @if (scanner.metadata) {
+                    <span class="label label-success">{{
+                        'SCANNER.HEALTHY' | translate
+                    }}</span>
+                    } @else {
+                    <span class="label label-danger">{{
+                        'SCANNER.UNHEALTHY' | translate
+                    }}</span>
+                    } }
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div *ngIf="!scanner.disabled" class="icon-wrap">
+                    @if (!scanner.disabled) {
+                    <div class="icon-wrap">
                         <clr-icon
                             shape="check-circle"
                             size="20"
@@ -186,7 +183,8 @@
                             'WEBHOOK.ENABLED' | translate
                         }}</span>
                     </div>
-                    <div *ngIf="scanner.disabled" class="icon-wrap">
+                    } @if (scanner.disabled) {
+                    <div class="icon-wrap">
                         <clr-icon
                             shape="exclamation-triangle"
                             size="20"
@@ -195,6 +193,7 @@
                             'WEBHOOK.DISABLED' | translate
                         }}</span>
                     </div>
+                    }
                 </clr-dg-cell>
                 <clr-dg-cell>{{
                     scanner.auth ? scanner.auth : 'None'
@@ -217,6 +216,7 @@
                     [uid]="scanner.uuid"
                     ngProjectAs="clr-dg-row-detail"></scanner-metadata>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
@@ -229,11 +229,13 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="total"
+                    @if (total) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'DESTINATION.OF' | translate }}</span
                     >
+                    }
                     {{ total }} {{ 'DESTINATION.ITEMS' | translate }}
                 </clr-dg-pagination>
             </clr-dg-footer>

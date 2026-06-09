@@ -16,10 +16,13 @@
         </clr-tooltip>
     </h4>
     <clr-datagrid
+        clrDgSelectionType="single"
         (clrDgRefresh)="getPolicies($event)"
-        (clrDgSingleSelectedChange)="refreshJobs($event)"
         [clrDgLoading]="loading"
-        [(clrDgSingleSelected)]="selectedRow">
+        [clrDgSelected]="selectedRow ? [selectedRow] : []"
+        (clrDgSelectedChange)="
+            selectedRow = $event?.[0]; refreshJobs($event?.[0])
+        ">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
@@ -34,14 +37,15 @@
                         {{ 'P2P_PROVIDER.NEW_POLICY' | translate }}
                     </button>
                     <clr-dropdown
-                        [clrCloseMenuOnItemClick]="false"
+                        [clrCloseMenuOnItemClick]="true"
                         class="btn btn-link"
                         clrDropdownTrigger>
                         <span id="action-policy"
                             >{{ 'MEMBER.ACTION' | translate }}
                             <clr-icon
                                 class="clr-icon"
-                                shape="caret down"></clr-icon
+                                shape="caret"
+                                direction="down"></clr-icon
                         ></span>
                         <clr-dropdown-menu *clrIfOpen>
                             <button
@@ -94,10 +98,9 @@
                                     !selectedRow || !hasUpdatePermission
                                 ">
                                 <span id="toggle-policy">
-                                    <span
-                                        *ngIf="
-                                            selectedRow && !selectedRow.enabled
-                                        ">
+                                    @if ( selectedRow && !selectedRow.enabled )
+                                    {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -106,13 +109,9 @@
                                             'WEBHOOK.ENABLED_BUTTON' | translate
                                         }}</span>
                                     </span>
-                                    <span
-                                        *ngIf="
-                                            !(
-                                                selectedRow &&
-                                                !selectedRow.enabled
-                                            )
-                                        ">
+                                    } @if ( !( selectedRow &&
+                                    !selectedRow.enabled ) ) {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -122,6 +121,7 @@
                                                 | translate
                                         }}</span>
                                     </span>
+                                    }
                                 </span>
                             </button>
                             <div class="dropdown-divider"></div>
@@ -175,10 +175,12 @@
         <clr-dg-placeholder>
             {{ 'P2P_PROVIDER.NO_POLICY' | translate }}
         </clr-dg-placeholder>
-        <clr-dg-row *ngFor="let p of policyList" [clrDgItem]="p">
+        @for (p of policyList; track p) {
+        <clr-dg-row [clrDgItem]="p">
             <clr-dg-cell>{{ p.name }}</clr-dg-cell>
             <clr-dg-cell>
-                <div *ngIf="p.enabled" class="icon-wrap">
+                @if (p.enabled) {
+                <div class="icon-wrap">
                     <clr-icon
                         shape="check-circle"
                         size="20"
@@ -187,7 +189,8 @@
                         'WEBHOOK.ENABLED' | translate
                     }}</span>
                 </div>
-                <div *ngIf="!p.enabled" class="icon-wrap">
+                } @if (!p.enabled) {
+                <div class="icon-wrap">
                     <clr-icon
                         shape="exclamation-triangle"
                         size="20"
@@ -196,11 +199,13 @@
                         'WEBHOOK.DISABLED' | translate
                     }}</span>
                 </div>
+                }
             </clr-dg-cell>
             <clr-dg-cell>{{ p.provider_name }}</clr-dg-cell>
             <clr-dg-cell>
                 <div>
-                    <span *ngIf="getValue(p.filters, 'repository')">
+                    @if (getValue(p.filters, 'repository')) {
+                    <span>
                         <span class="filter-title">{{
                             'P2P_PROVIDER.REPOS' | translate
                         }}</span>
@@ -208,9 +213,8 @@
                             >: {{ getValue(p.filters, 'repository') }}</span
                         >
                     </span>
-                    <span
-                        *ngIf="getValue(p.filters, 'tag')"
-                        class="margin-left-10px">
+                    } @if (getValue(p.filters, 'tag')) {
+                    <span class="margin-left-10px">
                         <span class="filter-title">{{
                             'P2P_PROVIDER.TAGS' | translate
                         }}</span>
@@ -218,9 +222,8 @@
                             >: {{ getValue(p.filters, 'tag') }}</span
                         >
                     </span>
-                    <span
-                        *ngIf="getValue(p.filters, 'label')"
-                        class="margin-left-10px">
+                    } @if (getValue(p.filters, 'label')) {
+                    <span class="margin-left-10px">
                         <span class="filter-title">{{
                             'P2P_PROVIDER.LABELS' | translate
                         }}</span>
@@ -228,17 +231,16 @@
                             >: {{ getValue(p.filters, 'label') }}</span
                         >
                     </span>
+                    }
                 </div>
-                <div
-                    class="margin-top-5px"
-                    *ngIf="getValue(p.filters, 'signature')">
+                @if (getValue(p.filters, 'signature')) {
+                <div class="margin-top-5px">
                     <span class="filter-title">{{
                         'P2P_PROVIDER.ONLY_SIGNED' | translate
                     }}</span>
                 </div>
-                <div
-                    class="margin-top-5px"
-                    *ngIf="getValue(p.filters, 'vulnerability')">
+                } @if (getValue(p.filters, 'vulnerability')) {
+                <div class="margin-top-5px">
                     <span
                         >{{ 'P2P_PROVIDER.START_TEXT' | translate }}&nbsp;</span
                     >
@@ -247,15 +249,18 @@
                     }}</span>
                     <span>&nbsp;{{ 'P2P_PROVIDER.EDN_TEXT' | translate }}</span>
                 </div>
+                }
             </clr-dg-cell>
             <clr-dg-cell class="no-wrapper">
                 {{ getTriggerTypeI18n(p.trigger) | translate }}
-                <clr-signpost *ngIf="isScheduled(p.trigger)">
+                @if (isScheduled(p.trigger)) {
+                <clr-signpost>
                     <clr-signpost-content *clrIfOpen>
                         {{ getScheduledCron(p.trigger) }}
                     </clr-signpost-content>
                 </clr-signpost>
-                <clr-signpost *ngIf="isEventBased(p.trigger)">
+                } @if (isEventBased(p.trigger)) {
+                <clr-signpost>
                     <clr-signpost-content *clrIfOpen>
                         <div>
                             {{
@@ -283,12 +288,14 @@
                         </div>
                     </clr-signpost-content>
                 </clr-signpost>
+                }
             </clr-dg-cell>
             <clr-dg-cell>{{
                 p.creation_time | harborDatetime : 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{ p.description }}</clr-dg-cell>
         </clr-dg-row>
+        }
         <clr-dg-footer>
             <clr-dg-pagination
                 #pagination
@@ -298,20 +305,25 @@
                 <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
-                <span *ngIf="totalPolicy"
+                @if (totalPolicy) {
+                <span
                     >{{ pagination.firstItem + 1 }} -
                     {{ pagination.lastItem + 1 }}
                     {{ 'DESTINATION.OF' | translate }}</span
                 >
+                }
                 {{ totalPolicy }} {{ 'DESTINATION.ITEMS' | translate }}
             </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>
-<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" *ngIf="selectedRow">
+@if (selectedRow) {
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <h4 class="mt-2">{{ 'P2P_PROVIDER.EXECUTIONS' | translate }}</h4>
     <clr-datagrid
-        [(clrDgSingleSelected)]="selectedExecutionRow"
+        clrDgSelectionType="single"
+        [clrDgSelected]="selectedExecutionRow ? [selectedExecutionRow] : []"
+        (clrDgSelectedChange)="selectedExecutionRow = $event?.[0]"
         [clrDgLoading]="jobsLoading"
         (clrDgRefresh)="clrLoadJobs(null, true, $event)">
         <clr-dg-action-bar>
@@ -362,7 +374,7 @@
                         <clr-icon
                             shape="refresh"
                             (click)="refreshJobs()"
-                            [hidden]="loading"></clr-icon>
+                            [hidden]="jobsLoading"></clr-icon>
                     </span>
                 </div>
             </div>
@@ -383,9 +395,8 @@
         <clr-dg-placeholder>{{
             'P2P_PROVIDER.JOB_PLACEHOLDER' | translate
         }}</clr-dg-placeholder>
-        <clr-dg-row
-            *ngFor="let execution of executionList"
-            [clrDgItem]="execution">
+        @for (execution of executionList; track execution) {
+        <clr-dg-row [clrDgItem]="execution">
             <clr-dg-cell>
                 <a href="javascript:void(0)" (click)="goToLink(execution.id)">{{
                     execution.id
@@ -394,11 +405,12 @@
             <clr-dg-cell>
                 {{ execution.status }}
                 <clr-tooltip>
+                    @if (execution.status_message) {
                     <clr-icon
-                        *ngIf="execution.status_message"
                         clrTooltipTrigger
                         shape="info-circle"
                         size="20"></clr-icon>
+                    }
                     <clr-tooltip-content
                         [clrPosition]="'left'"
                         clrSize="md"
@@ -419,6 +431,7 @@
             }}</clr-dg-cell>
             <clr-dg-cell>{{ execution.vendor_type }}</clr-dg-cell>
         </clr-dg-row>
+        }
         <clr-dg-footer>
             <clr-dg-pagination
                 #pagination
@@ -428,16 +441,19 @@
                 <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
-                <span *ngIf="totalExecutionCount"
+                @if (totalExecutionCount) {
+                <span
                     >{{ pagination.firstItem + 1 }} -
                     {{ pagination.lastItem + 1 }}
                     {{ 'REPLICATION.OF' | translate }}</span
                 >
+                }
                 {{ totalExecutionCount }} {{ 'REPLICATION.ITEMS' | translate }}
             </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>
+}
 <add-p2p-policy
     (hasInit)="addModalInit()"
     [providers]="providers"

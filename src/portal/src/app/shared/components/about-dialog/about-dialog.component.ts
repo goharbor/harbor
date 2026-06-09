@@ -19,6 +19,7 @@ import { SkinableConfig } from '../../../services/skinable-config.service';
     selector: 'about-dialog',
     templateUrl: 'about-dialog.component.html',
     styleUrls: ['about-dialog.component.scss'],
+    standalone: false,
 })
 export class AboutDialogComponent implements OnInit {
     opened: boolean = false;

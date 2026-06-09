@@ -22,8 +22,12 @@ import {
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SessionService } from '../../services/session.service';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('NewUserFormComponent', () => {
     let component: NewUserFormComponent;
@@ -34,6 +38,7 @@ describe('NewUserFormComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            declarations: [NewUserFormComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -41,12 +46,12 @@ describe('NewUserFormComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [NewUserFormComponent],
             providers: [
                 { provide: SessionService, useValue: mockSessionService },
                 TranslateService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });
