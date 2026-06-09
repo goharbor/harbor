@@ -151,7 +151,7 @@ func preCheck(ctx context.Context, withProjectMetadata bool) (art lib.ArtifactIn
 func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
-			if errors.IsNotFoundErr(err) {
+			if errors.IsNotFoundErr(err) || errors.IsProjectPolicyViolationError(err) {
 				httpLib.SendError(w, err)
 				return
 			}
@@ -271,7 +271,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		err = proxyManifestGet(ctx, w, proxyCtl, p, art, remote)
 	}
 	if err != nil {
-		if errors.IsNotFoundErr(err) || errors.IsRateLimitError(err) {
+		if errors.IsNotFoundErr(err) || errors.IsRateLimitError(err) || errors.IsProjectPolicyViolationError(err) {
 			return err
 		}
 		log.Warningf("Proxy to remote failed, fallback to local repo, error: %v", err)
@@ -280,7 +280,10 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, _ *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	if p.VulPrevented() {
+		return ctl.GetManifestWithVulnerabilityPrevention(ctx, art, remote, p.Severity())
+	}
 	man, err := ctl.ProxyManifest(ctx, art, remote)
 	if err != nil {
 		return err
