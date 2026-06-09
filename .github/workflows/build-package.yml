@@ -8,7 +8,57 @@ on:
       - main
       - release-*
 jobs:
+  BUILD_BASE_IMAGE:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      build_base: ${{ steps.decide.outputs.build_base || 'false' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jitterbit/get-changed-files@v1
+        id: changed-files
+        continue-on-error: true
+        with:
+          format: space-delimited
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # Rebuild the base image when a Dockerfile.base/VERSION/.buildbaselog
+      # changes, or always on main. If the changed-files lookup is unavailable
+      # (e.g. the first push to a new branch, where it cannot compute a diff),
+      # fall back to rebuilding the base rather than silently skipping it. When
+      # this step is skipped its output is empty, so the job output falls back
+      # to 'false'.
+      - name: Decide whether to (re)build the base image
+        id: decide
+        if: |
+            steps.changed-files.outcome != 'success' ||
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'VERSION') ||
+            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+            github.ref == 'refs/heads/main'
+        run: echo "build_base=true" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        if: steps.decide.outputs.build_base == 'true'
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        if: steps.decide.outputs.build_base == 'true'
+        uses: docker/setup-buildx-action@v3
+      # Build goharbor/photon:5.0 once as a proper multi-arch (amd64+arm64)
+      # manifest list and push it. Previously each per-arch BUILD_PACKAGE job
+      # rebuilt and pushed this same tag, so whichever finished last overwrote
+      # the other and the published tag ended up single-arch
+      # (goharbor/harbor#23324).
+      - name: Build and push goharbor/photon:5.0 multi-arch manifest
+        if: steps.decide.outputs.build_base == 'true'
+        run: |
+          set -x
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
+          docker logout
+
   BUILD_PACKAGE:
+    needs: [BUILD_BASE_IMAGE]
     strategy:
       fail-fast: false
       matrix:
@@ -16,6 +66,7 @@ jobs:
     env:
         BUILD_PACKAGE: true
         ARCH: ${{ matrix.arch }}
+        BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - name: Configure AWS credentials
@@ -35,26 +86,13 @@ jobs:
           docker_version: 20.10
           docker_channel: stable
       - uses: actions/checkout@v6
-      - uses: jitterbit/get-changed-files@v1
-        id: changed-files
-        with:
-          format: space-delimited
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
-      - name: Build Base Image
-        if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
-        run: |
-          set -x
-          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker build -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
-          docker push goharbor/photon:5.0
-          echo "BUILD_BASE=true" >> $GITHUB_ENV
+      # The goharbor/photon:5.0 base image is built and pushed once as a
+      # multi-arch manifest by the BUILD_BASE_IMAGE job; BUILD_BASE below is set
+      # from that job's output and tells `make` whether to (re)build the
+      # per-component harbor-*-base images on top of it.
       - name: Build Package
         run: |
           set -x
@@ -125,7 +163,11 @@ jobs:
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
       - name: Save repo list
         run: |
-          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          # Exclude the harbor-*-base images and the goharbor/photon base image:
+          # they are not tagged with the per-arch "<tag>-<arch>" suffix that
+          # CREATE_MANIFEST consumes (photon is published as a multi-arch
+          # manifest by the BUILD_BASE_IMAGE job and stays at tag 5.0).
+          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
       - name: Upload repo list
         uses: actions/upload-artifact@v4
         with:

@@ -1,26 +1,19 @@
 FROM goharbor/photon:5.0
 
-ARG TARGETARCH
-
 ENV PGDATA /var/lib/postgresql/data
 
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
+# postgresql15-server provides the old binaries at /usr/pgsql/15/bin that
+# docker-entrypoint.sh uses to pg_upgrade an existing PG15 data dir to PG18.
+# postgresql18-server is the runtime version, installed last so /usr/bin points
+# at PG18. Both packages resolve for amd64 and arm64 from the photon-updates
+# repo configured in goharbor/photon:5.0 (see make/photon/common/Dockerfile),
+# so no architecture-specific repo handling is required here.
 RUN tdnf install -y postgresql15-server >> /dev/null
-RUN if [ "${TARGETARCH:-amd64}" = "arm64" ]; then \
-        cp /etc/yum.repos.d/photon-snapshot.repo /etc/yum.repos.d/photon-snapshot.repo.bak \
-        && sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
-        && tdnf clean all \
-        && tdnf makecache \
-        && tdnf install -y gzip postgresql18-server findutils bc >> /dev/null \
-        && mv /etc/yum.repos.d/photon-snapshot.repo.bak /etc/yum.repos.d/photon-snapshot.repo \
-        && tdnf clean all \
-        && tdnf makecache; \
-    else \
-        tdnf install -y gzip postgresql18-server findutils bc >> /dev/null; \
-    fi \
+RUN tdnf install -y gzip postgresql18-server findutils bc >> /dev/null \
     && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
     && chown -R postgres:postgres /run/postgresql \
