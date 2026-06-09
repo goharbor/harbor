@@ -124,6 +124,7 @@ type UserInfo struct {
 	Issuer              string   `json:"iss"`
 	Subject             string   `json:"sub"`
 	Username            string   `json:"name"`
+	Realname            string   `json:"realname"`
 	Email               string   `json:"email"`
 	Groups              []string `json:"groups"`
 	AdminGroupMember    bool     `json:"admin_group_member"`
@@ -331,6 +332,15 @@ func mergeUserInfo(remote, local *UserInfo) *UserInfo {
 	} else {
 		res.Username = local.Username
 	}
+
+	// merging real name claim from local and remote
+	// priority remote > local
+	if remote.Realname != "" {
+		res.Realname = remote.Realname
+	} else {
+		res.Realname = local.Realname
+	}
+
 	if remote.hasGroupClaim {
 		res.Groups = remote.Groups
 		res.AdminGroupMember = remote.AdminGroupMember
@@ -376,12 +386,12 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 	if err := c.Claims(res); err != nil {
 		return nil, err
 	}
-	if setting.UserClaim != "" {
-		allClaims := make(map[string]any)
-		if err := c.Claims(&allClaims); err != nil {
-			return nil, err
-		}
+	allClaims := make(map[string]any)
+	if err := c.Claims(&allClaims); err != nil {
+		return nil, err
+	}
 
+	if setting.UserClaim != "" {
 		if username, ok := allClaims[setting.UserClaim].(string); ok {
 			// res.Username and autoOnboardUsername both need to be set to create a fallback when mergeUserInfo has not been successfully called.
 			// This can for example occur when remote fails and only a local token is available for onboarding.
@@ -391,6 +401,25 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 			log.Warningf("OIDC. Failed to recover Username from claim. Claim '%s' is invalid or not a string", setting.UserClaim)
 		}
 	}
+
+	if setting.RealNameClaim != "" {
+		if realname, ok := allClaims[setting.RealNameClaim].(string); ok {
+			// Extracting real name from RealNameClaim
+			res.Realname = realname
+		} else {
+			log.Warningf("OIDC. Failed to recover Realname from claim. Claim '%s' is invalid or not a string", setting.RealNameClaim)
+		}
+	}
+
+	if res.Realname == "" {
+		if name, ok := allClaims["name"].(string); ok && name != "" {
+			res.Realname = name
+		} else if res.Username != "" {
+			// Use the Username we successfully extracted earlier
+			res.Realname = res.Username
+		}
+	}
+
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
 	if len(setting.AdminGroup) > 0 {
 		if slices.Contains(res.Groups, setting.AdminGroup) {
