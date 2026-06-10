@@ -37,7 +37,7 @@ import (
 //
 // Run with environment variables:
 //
-//	ACR_URL=https://min01rg72arc.azurecr.io ACR_USER=admin ACR_PASS=xxx \
+//	ACR_URL=https://yourregistry.azurecr.io ACR_USER=admin ACR_PASS=xxx \
 //	  go test -v -run TestChunkedUploadToACR ./pkg/reg/adapter/azurecr/...
 func TestChunkedUploadToACR(t *testing.T) {
 	acrURL := os.Getenv("ACR_URL")
