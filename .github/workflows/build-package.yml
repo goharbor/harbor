@@ -76,13 +76,8 @@ jobs:
         BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.1.1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Set up Go
+<<<<<<< HEAD
+      - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
           go-version: 1.26.3
@@ -113,24 +108,17 @@ jobs:
           set -x
           env
           df -h
-          harbor_target_bucket=""
           target_branch="$(echo ${GITHUB_REF#refs/heads/})"
           harbor_offline_build_bundle=""
           harbor_online_build_bundle=""
-          harbor_logs_bucket="harbor-ci-logs"
-          harbor_builds_bucket="harbor-builds"
-          harbor_releases_bucket="harbor-releases"
-          harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
           # the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
           target_release_version=$(cat ./VERSION)
           Harbor_Package_Version=$target_release_version-'build.'$GITHUB_RUN_NUMBER
 
           if [[ $target_branch == "develop" ]]; then
             Harbor_Assets_Version=$Harbor_Package_Version
-            harbor_target_bucket=$harbor_builds_bucket
           else
             Harbor_Assets_Version=$target_release_version
-            harbor_target_bucket=$harbor_releases_bucket/$target_branch
           fi
 
           if [[ $target_branch == "release-"* ]]; then
@@ -172,24 +160,6 @@ jobs:
           harbor_online_build_bundle="harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
 
           source tests/ci/build_util.sh
-          cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest-${ARCH}.tgz"
-          cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest-${ARCH}.tgz"
-          uploader "${harbor_offline_build_bundle}"                    $harbor_target_bucket
-          uploader "${harbor_online_build_bundle}"                     $harbor_target_bucket
-          uploader "harbor-offline-installer-latest-${ARCH}.tgz"      $harbor_target_bucket
-          uploader "harbor-online-installer-latest-${ARCH}.tgz"       $harbor_target_bucket
-          # Backwards compatibility: keep the unsuffixed legacy "latest" name
-          # pointing to amd64 (what it historically was) so existing downstream
-          # consumers that expect harbor-*-installer-latest.tgz don't break.
-          if [ "${ARCH}" = "amd64" ]; then
-            cp "${harbor_offline_build_bundle}"  "harbor-offline-installer-latest.tgz"
-            cp "${harbor_online_build_bundle}"   "harbor-online-installer-latest.tgz"
-            uploader "harbor-offline-installer-latest.tgz"             $harbor_target_bucket
-            uploader "harbor-online-installer-latest.tgz"              $harbor_target_bucket
-          fi
-          echo "BUILD_BUNDLE=${harbor_offline_build_bundle}" >> $GITHUB_ENV
-          echo "harbor_target_bucket=$harbor_target_bucket" >> $GITHUB_ENV
-
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
           publishImageGhcr $target_branch $Harbor_Assets_Version "${{ github.repository_owner }}" "${{ secrets.GITHUB_TOKEN }}" ${ARCH}
       - name: Save repo list
