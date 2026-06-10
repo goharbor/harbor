@@ -18,7 +18,10 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -36,6 +39,31 @@ import (
 	role "github.com/goharbor/harbor/src/pkg/role"
 	"github.com/goharbor/harbor/src/pkg/role/model"
 )
+
+const (
+	// roleVersionCacheKey is the Redis key holding a global "version token" that
+	// changes on every in-app role write. Nodes poll it (throttled) to detect
+	// changes made on other nodes and invalidate their L1 cache accordingly.
+	roleVersionCacheKey = "role:version"
+	// roleCacheL1TTL / roleCacheL2TTL bound how long a stale entry can survive an
+	// out-of-band change (e.g. a direct SQL UPDATE to role_permission that bypasses
+	// the controller and therefore does not bump the version token).
+	roleCacheL1TTL = 30 * time.Minute
+	roleCacheL2TTL = 30 * time.Minute
+	// roleVersionCheckInterval throttles how often a node re-reads the version
+	// token from Redis, bounding cross-node propagation of in-app changes while
+	// keeping the hot Get() path at L1's zero-network-hop cost.
+	roleVersionCheckInterval = time.Second
+)
+
+// roleEntry is the L1 (process-local) cache value. It carries the local
+// generation it was cached under (invalidated when the global version token
+// changes) and an absolute expiry (the out-of-band TTL backstop).
+type roleEntry struct {
+	role      *Role
+	gen       int64
+	expiresAt time.Time
+}
 
 var (
 	// Ctl is a global variable for the default role account controller implementation
@@ -68,8 +96,13 @@ type controller struct {
 	roleMgr  role.Manager
 	proMgr   project.Manager
 	rbacMgr  rbac.Manager
-	localMap sync.Map  // L1: process-local pointer cache, zero-alloc reads
+	localMap sync.Map // L1: id -> *roleEntry, zero-alloc reads
 	warmOnce sync.Once
+
+	// Throttle state for the cross-node version check (lock-free).
+	versionCheckedAt atomic.Int64           // unixnano of the last version fetch
+	lastVersion      atomic.Pointer[string] // last-seen global version token
+	localGen         atomic.Int64           // bumped whenever the token changes
 }
 
 // NewController ...
@@ -91,56 +124,138 @@ func roleCacheKey(id int64) string {
 	return fmt.Sprintf("role:%d", id)
 }
 
-// warmCache loads all roles with their permissions into L1 (sync.Map) and L2 (Redis).
-// Fires once in background on first Get(); also called after every write.
+// currentGen returns this node's local cache generation, refreshing it from the
+// global version token at most once per roleVersionCheckInterval. A change in the
+// token (written by an in-app role write on any node) bumps the local generation,
+// which invalidates every L1 entry cached under the previous generation. The
+// throttle keeps the hot Get() path at L1's zero-network-hop cost.
+func (d *controller) currentGen(ctx context.Context) int64 {
+	now := time.Now().UnixNano()
+	last := d.versionCheckedAt.Load()
+	if now-last > int64(roleVersionCheckInterval) && d.versionCheckedAt.CompareAndSwap(last, now) {
+		if c := d.roleCache(); c != nil {
+			var token string
+			if err := c.Fetch(ctx, roleVersionCacheKey, &token); err == nil {
+				if p := d.lastVersion.Load(); p == nil || *p != token {
+					d.localGen.Add(1)
+					d.lastVersion.Store(&token)
+				}
+			}
+		}
+	}
+	return d.localGen.Load()
+}
+
+// bumpVersion writes a fresh global version token so other nodes invalidate their
+// L1 caches on their next throttled check, and advances this node's own generation
+// immediately (so the writer does not wait out its own throttle window).
+func (d *controller) bumpVersion(ctx context.Context) {
+	token := strconv.FormatInt(time.Now().UnixNano(), 10)
+	if c := d.roleCache(); c != nil {
+		_ = c.Save(ctx, roleVersionCacheKey, token) // no TTL: the version key persists
+	}
+	d.lastVersion.Store(&token)
+	d.localGen.Add(1)
+}
+
+// storeL1 caches a role in the process-local L1, stamped with the generation it
+// was cached under and an absolute expiry (the out-of-band TTL backstop).
+func (d *controller) storeL1(id int64, r *Role, gen int64) {
+	d.localMap.Store(id, &roleEntry{role: r, gen: gen, expiresAt: time.Now().Add(roleCacheL1TTL)})
+}
+
+// warmCache loads all roles with their permissions into L1 and L2.
+// Fires once in background on first Get().
 func (d *controller) warmCache(ctx context.Context) {
 	roles, err := d.roleMgr.List(ctx, &q.Query{PageSize: -1})
 	if err != nil {
 		log.Warningf("failed to warm role permission cache: %v", err)
 		return
 	}
+	gen := d.currentGen(ctx)
 	for _, r := range roles {
 		populated, err := d.populate(ctx, r, &Option{WithPermission: true})
 		if err != nil || populated == nil {
 			continue
 		}
-		d.localMap.Store(r.ID, populated)                              // L1
 		if c := d.roleCache(); c != nil {
-			_ = c.Save(ctx, roleCacheKey(r.ID), populated)            // L2
+			_ = c.Save(ctx, roleCacheKey(r.ID), populated, roleCacheL2TTL) // L2
 		}
+		d.storeL1(r.ID, populated, gen) // L1
 	}
 	log.Debugf("role permission cache warmed with %d roles", len(roles))
 }
 
-// invalidateRole removes a role from both cache layers so the next Get() re-fetches
-// from DB and repopulates. Called after Create/Update/Delete.
+// invalidateRole is called after an in-app Create/Update/Delete (which have
+// already committed to the DB). Order matters:
+//  1. bump the global version token so other nodes drop their L1 entries on their
+//     next throttled check (<= roleVersionCheckInterval);
+//  2. delete the changed role's L2 key so the next reader re-reads the DB for the
+//     role whose data actually changed (other roles' L2 entries survive and
+//     re-promote cheaply once their L1 is gen-invalidated);
+//  3. drop this node's local L1 entry.
+//
+// Residual race (bounded, documented): a reader that read the DB *before* this
+// write commits can repopulate the role's L2 key *after* step 2, re-caching stale
+// data. That window is bounded by the L2 TTL (roleCacheL2TTL) and cleared by the
+// next write. Closing it fully would require versioned L2 payloads or pub/sub.
 func (d *controller) invalidateRole(ctx context.Context, id int64) {
-	d.localMap.Delete(id)
+	d.bumpVersion(ctx)
 	if c := d.roleCache(); c != nil {
 		_ = c.Delete(ctx, roleCacheKey(id))
 	}
+	d.localMap.Delete(id)
 }
 
-// Get ...
+// Get returns a role (optionally with permissions). When permissions are
+// requested it is served from a two-level cache. Read order: refresh the
+// cross-node version (throttled) -> L1 -> L2 -> DB.
 func (d *controller) Get(ctx context.Context, id int64, option *Option) (*Role, error) {
 	if option != nil && option.WithPermission {
 		// Trigger background warm on first call — does not block.
 		d.warmOnce.Do(func() { go d.warmCache(orm.Context()) })
 
-		// L1: process-local pointer — O(1), zero alloc, zero serialization.
+		// Refresh the cross-node version first so L1 validity is judged against
+		// the latest token (throttled to one Redis read per interval at most).
+		gen := d.currentGen(ctx)
+
+		// L1: process-local — valid only if cached under the current generation
+		// and not past its TTL.
 		if v, ok := d.localMap.Load(id); ok {
-			return v.(*Role), nil
+			e := v.(*roleEntry)
+			if e.gen == gen && time.Now().Before(e.expiresAt) {
+				return e.role, nil
+			}
 		}
 
-		// L2: Redis — shared across nodes, handles multi-node invalidation.
+		// L2: Redis (honours its own TTL — expired keys are already gone).
 		if c := d.roleCache(); c != nil {
 			var cached Role
 			if err := c.Fetch(ctx, roleCacheKey(id), &cached); err == nil {
-				d.localMap.Store(id, &cached) // promote to L1
+				d.storeL1(id, &cached, gen) // promote to L1
 				return &cached, nil
 			}
 		}
+
+		// DB: source of truth. Populate both layers.
+		r, err := d.roleMgr.Get(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		populated, err := d.populate(ctx, r, option)
+		if err != nil {
+			return nil, err
+		}
+		if populated != nil {
+			if c := d.roleCache(); c != nil {
+				_ = c.Save(ctx, roleCacheKey(id), populated, roleCacheL2TTL)
+			}
+			d.storeL1(id, populated, gen)
+		}
+		return populated, nil
 	}
+
+	// Without permissions there is nothing cacheable — read straight through.
 	r, err := d.roleMgr.Get(ctx, id)
 	if err != nil {
 		return nil, err
