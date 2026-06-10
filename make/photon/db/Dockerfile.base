@@ -6,7 +6,19 @@ RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
-RUN tdnf install -y postgresql15-server >> /dev/null
+RUN if [ "${TARGETARCH:-amd64}" = "amd64" ]; then \
+        cp /etc/yum.repos.d/photon-snapshot.repo /etc/yum.repos.d/photon-snapshot.repo.bak \
+        && sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
+        && tdnf clean all \
+        && tdnf makecache \
+        && tdnf install -y postgresql15-server >> /dev/null \
+        && mv /etc/yum.repos.d/photon-snapshot.repo.bak /etc/yum.repos.d/photon-snapshot.repo \
+        && tdnf clean all \
+        && tdnf makecache; \
+    else \
+        tdnf install -y postgresql15-server >> /dev/null; \
+    fi
+
 RUN tdnf install -y gzip postgresql18-server findutils bc >> /dev/null \
     && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
