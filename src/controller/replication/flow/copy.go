@@ -92,12 +92,7 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	// Use chunked upload if either the policy enables it or the destination adapter supports it.
-	// This ensures adapters like Azure ACR that require chunked uploads work out of the box
-	// without requiring the user to manually enable the policy setting.
-	copyByChunk := c.policy.CopyByChunk || info.SupportedCopyByChunk
-
-	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed, copyByChunk)
+	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed, c.policy.CopyByChunk)
 }
 
 func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
