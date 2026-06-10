@@ -8,7 +8,47 @@ on:
       - main
       - release-*
 jobs:
+  BUILD_BASE_IMAGE:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      build_base: ${{ steps.decide.outputs.build_base || 'false' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jitterbit/get-changed-files@v1
+        id: changed-files
+        continue-on-error: true
+        with:
+          format: space-delimited
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Decide whether to (re)build the base image
+        id: decide
+        if: |
+            steps.changed-files.outcome != 'success' ||
+            contains(steps.changed-files.outputs.modified, 'common/Dockerfile') ||
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'VERSION') ||
+            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+            github.ref == 'refs/heads/main'
+        run: echo "build_base=true" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        if: steps.decide.outputs.build_base == 'true'
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        if: steps.decide.outputs.build_base == 'true'
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push goharbor/photon:5.0 multi-arch manifest
+        if: steps.decide.outputs.build_base == 'true'
+        run: |
+          set -x
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
+          docker logout
+
   BUILD_PACKAGE:
+    needs: [BUILD_BASE_IMAGE]
     strategy:
       fail-fast: false
       matrix:
@@ -16,6 +56,7 @@ jobs:
     env:
         BUILD_PACKAGE: true
         ARCH: ${{ matrix.arch }}
+        BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - name: Configure AWS credentials
@@ -35,26 +76,9 @@ jobs:
           docker_version: 20.10
           docker_channel: stable
       - uses: actions/checkout@v6
-      - uses: jitterbit/get-changed-files@v1
-        id: changed-files
-        with:
-          format: space-delimited
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
-      - name: Build Base Image
-        if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
-        run: |
-          set -x
-          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker build -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
-          docker push goharbor/photon:5.0
-          echo "BUILD_BASE=true" >> $GITHUB_ENV
       - name: Build Package
         run: |
           set -x
@@ -125,7 +149,7 @@ jobs:
           publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
       - name: Save repo list
         run: |
-          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | grep -v '^goharbor/spectral$' | grep -v '^goharbor/swagger$' | grep -v '^goharbor/mockery$' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
       - name: Upload repo list
         uses: actions/upload-artifact@v4
         with:

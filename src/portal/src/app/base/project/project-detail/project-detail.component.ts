@@ -54,6 +54,7 @@ import { RouteConfigId } from '../../../route-reuse-strategy/harbor-route-reuse-
     selector: 'project-detail',
     templateUrl: 'project-detail.component.html',
     styleUrls: ['project-detail.component.scss'],
+    standalone: false,
 })
 export class ProjectDetailComponent
     implements OnInit, AfterViewInit, OnDestroy

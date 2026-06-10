@@ -35,6 +35,7 @@ import {
     selector: 'artifact-info',
     templateUrl: './artifact-info.component.html',
     styleUrls: ['./artifact-info.component.scss'],
+    standalone: false,
 })
 export class ArtifactInfoComponent implements OnInit {
     projectName: string;
