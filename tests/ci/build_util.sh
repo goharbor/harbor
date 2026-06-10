@@ -28,9 +28,9 @@ function uploader {
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
-    # for main, will use 'dev' as the tag name
+    # for develop, will use 'dev' as the tag name
     # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
-    if [[ $1 == "main" ]]; then
+    if [[ $1 == "develop" ]]; then
       image_tag=dev
     fi
     if [[ $1 == "release-"* ]]; then
@@ -50,4 +50,34 @@ function publishImage {
     docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}"| grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:${image_tag}${arch_suffix};docker push \1:${image_tag}${arch_suffix}|p" | bash
     echo "Images are published successfully"
     docker images
+}
+
+function publishImageGhcr {
+    local branch="$1"
+    local version="$2"
+    local ghcr_user="$3"
+    local ghcr_token="$4"
+    local arch="${5:-}"
+
+    if [[ $branch == "develop" ]]; then
+      image_tag=dev
+    elif [[ $branch == "release-"* ]]; then
+      image_tag="${version}-dev"
+    fi
+
+    local arch_suffix=""
+    if [ -n "$arch" ]; then
+      arch_suffix="-$arch"
+    fi
+
+    echo "Publishing images to ghcr.io/${ghcr_user}..."
+    set +x
+    printf '%s\n' "$ghcr_token" | docker login ghcr.io --username "$ghcr_user" --password-stdin
+    set -x
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}" \
+      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" \
+      | sed -n "s|\(goharbor/\([-._a-z0-9]*\)\)\s*\(.*${version}\).*|docker tag \1:${version} ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix};docker push ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix}|p" \
+      | bash
+    docker logout ghcr.io
+    echo "Images published to ghcr.io/${ghcr_user} successfully"
 }
