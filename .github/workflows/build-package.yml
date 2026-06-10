@@ -42,18 +42,25 @@ jobs:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
         if: |
-            (contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
             contains(steps.changed-files.outputs.modified, 'VERSION') ||
             contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/develop') &&
-            secrets.DOCKER_HUB_USERNAME != ''
+            github.ref == 'refs/heads/develop'
+        continue-on-error: true
         run: |
           set -x
-          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          docker build -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
-          docker push goharbor/photon:5.0
-          echo "BUILD_BASE=true" >> $GITHUB_ENV
+          if [ -n "$DOCKER_HUB_USERNAME" ]; then
+            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+            docker build -f make/photon/common/Dockerfile -t goharbor/photon:5.0 .
+            docker push goharbor/photon:5.0
+            echo "BUILD_BASE=true" >> $GITHUB_ENV
+          fi
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       - name: Build Package
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
           set -x
           env
@@ -96,7 +103,7 @@ jobs:
 
           source tests/ci/build_util.sh
           if [ -n "$DOCKER_HUB_USERNAME" ]; then
-            publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+            publishImage $target_branch $Harbor_Assets_Version "$DOCKER_HUB_USERNAME" "$DOCKER_HUB_PASSWORD" ${ARCH} || true
           fi
           publishImageGhcr $target_branch $Harbor_Assets_Version "${{ github.repository_owner }}" "${{ secrets.GITHUB_TOKEN }}" ${ARCH}
       - name: Save repo list
