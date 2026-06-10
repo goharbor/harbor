@@ -75,7 +75,7 @@ function publishImageGhcr {
     printf '%s\n' "$ghcr_token" | docker login ghcr.io --username "$ghcr_user" --password-stdin
     set -x
     docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}" \
-      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" \
+      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" \
       | sed -n "s|\(goharbor/\([-._a-z0-9]*\)\)\s*\(.*${version}\).*|docker tag \1:${version} ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix};docker push ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix}|p" \
       | bash
     docker logout ghcr.io
