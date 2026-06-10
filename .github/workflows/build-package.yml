@@ -93,10 +93,11 @@ jobs:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
         if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            (contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
             contains(steps.changed-files.outputs.modified, 'VERSION') ||
             contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/develop'
+            github.ref == 'refs/heads/develop') &&
+            secrets.DOCKER_HUB_USERNAME != ''
         run: |
           set -x
           echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
@@ -160,7 +161,9 @@ jobs:
           harbor_online_build_bundle="harbor-online-installer-${Harbor_Package_Version}-${ARCH}.tgz"
 
           source tests/ci/build_util.sh
-          publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+          if [ -n "$DOCKER_HUB_USERNAME" ]; then
+            publishImage $target_branch $Harbor_Assets_Version "${{ secrets.DOCKER_HUB_USERNAME }}" "${{ secrets.DOCKER_HUB_PASSWORD }}" ${ARCH}
+          fi
           publishImageGhcr $target_branch $Harbor_Assets_Version "${{ github.repository_owner }}" "${{ secrets.GITHUB_TOKEN }}" ${ARCH}
       - name: Save repo list
         run: |
