@@ -17,8 +17,10 @@ package role
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -55,6 +57,12 @@ const (
 	// keeping the hot Get() path at L1's zero-network-hop cost.
 	roleVersionCheckInterval = time.Second
 )
+
+// roleCacheDisabled, when set via ROLE_CACHE_DISABLED=true, makes Get() bypass the
+// L1/L2 permission cache entirely and read the role (and its permissions) straight
+// from the DB on every call — i.e. one role + role_permission query per Can().
+// Used as the no-cache baseline in performance comparisons; off in production.
+var roleCacheDisabled = strings.EqualFold(os.Getenv("ROLE_CACHE_DISABLED"), "true")
 
 // roleEntry is the L1 (process-local) cache value. It carries the local
 // generation it was cached under (invalidated when the global version token
@@ -211,7 +219,7 @@ func (d *controller) invalidateRole(ctx context.Context, id int64) {
 // requested it is served from a two-level cache. Read order: refresh the
 // cross-node version (throttled) -> L1 -> L2 -> DB.
 func (d *controller) Get(ctx context.Context, id int64, option *Option) (*Role, error) {
-	if option != nil && option.WithPermission {
+	if option != nil && option.WithPermission && !roleCacheDisabled {
 		// Trigger background warm on first call — does not block.
 		d.warmOnce.Do(func() { go d.warmCache(orm.Context()) })
 
