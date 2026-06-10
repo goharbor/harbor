@@ -62,6 +62,7 @@ import { Role } from '../../../../../ng-swagger-gen/models/role';
 @Component({
     templateUrl: 'member.component.html',
     styleUrls: ['./member.component.scss'],
+    standalone: false,
 })
 export class MemberComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

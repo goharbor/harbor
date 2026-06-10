@@ -348,7 +348,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v6
         with:
-          node-version: '18'
+          node-version: '22'
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor

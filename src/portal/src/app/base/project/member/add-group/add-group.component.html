@@ -42,23 +42,20 @@
                                 searchedGroups.length ? 'block' : 'none'
                             ">
                             <ul>
-                                <li
-                                    *ngFor="let group of searchedGroups"
-                                    (click)="selectGroup(group.group_name)">
+                                @for (group of searchedGroups; track group) {
+                                <li (click)="selectGroup(group.group_name)">
                                     {{ group.group_name }}
                                 </li>
+                                }
                             </ul>
                         </div>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            (groupName.invalid &&
-                                (groupName.touched || groupName.dirty)) ||
-                            !isGroupNameValid
-                        "
-                        class="tooltip-content">
+                    @if ( (groupName.invalid && (groupName.touched ||
+                    groupName.dirty)) || !isGroupNameValid ) {
+                    <clr-control-error class="tooltip-content">
                         {{ groupTooltip | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <div class="clr-form-control">
@@ -69,34 +66,33 @@
 
                 <div class="clr-control-container">
                     <div class="role-radio-list">
-                        <div *ngFor="let r of roles; let i = index">
-                            <clr-radio-wrapper>
-                                <input
-                                    clrRadio
-                                    type="radio"
-                                    name="member_role"
-                                    id="add-group-role-{{ r.id }}"
-                                    [value]="r.id"
-                                    [(ngModel)]="roleId"
-                                    [disabled]="!isRoleAssignable(r)" />
-                                <label for="add-group-role-{{ r.id }}"
-                                    [class.text-muted]="!isRoleAssignable(r)">
-                                    <strong *ngIf="r.is_builtin">{{
-                                        getRoleDisplayName(r) | translate
-                                    }}</strong>
-                                    <span *ngIf="!r.is_builtin">{{
-                                        r.name
-                                    }}</span>
-                                    <span
-                                        *ngIf="r.is_builtin"
-                                        class="label label-blue role-builtin-badge"
-                                        >{{
-                                            'MEMBER.BUILT_IN' | translate
-                                        }}</span
-                                    >
-                                </label>
-                            </clr-radio-wrapper>
-                        </div>
+                        @for (r of roles; track r.id) {
+                        <clr-radio-wrapper>
+                            <input
+                                clrRadio
+                                type="radio"
+                                name="member_role"
+                                id="add-group-role-{{ r.id }}"
+                                [value]="r.id"
+                                [(ngModel)]="roleId"
+                                [disabled]="!isRoleAssignable(r)" />
+                            <label for="add-group-role-{{ r.id }}"
+                                [class.text-muted]="!isRoleAssignable(r)">
+                                @if (r.is_builtin) {
+                                <strong>{{ getRoleDisplayName(r) | translate }}</strong>
+                                }
+                                @if (!r.is_builtin) {
+                                <span>{{ r.name }}</span>
+                                }
+                                @if (r.is_builtin) {
+                                <span
+                                    class="label label-blue role-builtin-badge"
+                                    >{{ 'MEMBER.BUILT_IN' | translate }}</span
+                                >
+                                }
+                            </label>
+                        </clr-radio-wrapper>
+                        }
                     </div>
                 </div>
 

@@ -9,99 +9,92 @@
         </div>
         <div class="confirmation-content">{{ dialogContent }}</div>
     </div>
-    <div class="modal-footer" [ngSwitch]="buttons">
-        <ng-template [ngSwitchCase]="0">
-            <button type="button" class="btn btn-outline" (click)="cancel()">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button type="button" class="btn btn-primary" (click)="confirm()">
-                {{ 'BUTTON.CONFIRM' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="1">
-            <button type="button" class="btn btn-outline" (click)="cancel()">
-                {{ 'BUTTON.NO' | translate }}
-            </button>
-            <button type="button" class="btn btn-primary" (click)="confirm()">
-                {{ 'BUTTON.YES' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="2">
-            <button
-                type="button"
-                class="btn btn-outline"
-                (click)="cancel()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                type="button"
-                class="btn btn-danger"
-                (click)="confirm()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.DELETE' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="3">
-            <button type="button" class="btn btn-primary" (click)="cancel()">
-                {{ 'BUTTON.CLOSE' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="4">
-            <button type="button" class="btn btn-outline" (click)="cancel()">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                type="button"
-                id="dialog-action-enable"
-                class="btn btn-primary"
-                (click)="confirm()">
-                {{ 'BUTTON.ENABLE' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="5">
-            <button type="button" class="btn btn-outline" (click)="cancel()">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                type="button"
-                id="dialog-action-disable"
-                class="btn btn-danger"
-                (click)="confirm()">
-                {{ 'BUTTON.DISABLE' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="6">
-            <button
-                type="button"
-                class="btn btn-outline"
-                (click)="cancel()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                type="button"
-                class="btn btn-primary"
-                (click)="confirm()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.REPLICATE' | translate }}
-            </button>
-        </ng-template>
-        <ng-template [ngSwitchCase]="7">
-            <button
-                type="button"
-                class="btn btn-outline"
-                (click)="cancel()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.CANCEL' | translate }}
-            </button>
-            <button
-                type="button"
-                class="btn btn-primary"
-                (click)="confirm()"
-                [hidden]="isDelete">
-                {{ 'BUTTON.STOP' | translate }}
-            </button>
-        </ng-template>
+    <div class="modal-footer">
+        @switch (buttons) { @case (0) {
+        <button type="button" class="btn btn-outline" (click)="cancel()">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirm()">
+            {{ 'BUTTON.CONFIRM' | translate }}
+        </button>
+        } @case (1) {
+        <button type="button" class="btn btn-outline" (click)="cancel()">
+            {{ 'BUTTON.NO' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirm()">
+            {{ 'BUTTON.YES' | translate }}
+        </button>
+        } @case (2) {
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="cancel()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-danger"
+            (click)="confirm()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.DELETE' | translate }}
+        </button>
+        } @case (3) {
+        <button type="button" class="btn btn-primary" (click)="cancel()">
+            {{ 'BUTTON.CLOSE' | translate }}
+        </button>
+        } @case (4) {
+        <button type="button" class="btn btn-outline" (click)="cancel()">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            id="dialog-action-enable"
+            class="btn btn-primary"
+            (click)="confirm()">
+            {{ 'BUTTON.ENABLE' | translate }}
+        </button>
+        } @case (5) {
+        <button type="button" class="btn btn-outline" (click)="cancel()">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            id="dialog-action-disable"
+            class="btn btn-danger"
+            (click)="confirm()">
+            {{ 'BUTTON.DISABLE' | translate }}
+        </button>
+        } @case (6) {
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="cancel()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirm()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.REPLICATE' | translate }}
+        </button>
+        } @case (7) {
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="cancel()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirm()"
+            [hidden]="isDelete">
+            {{ 'BUTTON.STOP' | translate }}
+        </button>
+        } }
     </div>
 </clr-modal>

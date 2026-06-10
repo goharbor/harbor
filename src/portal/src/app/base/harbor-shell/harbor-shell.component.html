@@ -3,6 +3,7 @@
     <navigator
         (showAccountSettingsModal)="openModal($event)"
         (showDialogModalAction)="openModal($event)"></navigator>
+    <global-message class="global-msg"></global-message>
     <div class="content-container">
         <div
             #scrollDiv
@@ -11,14 +12,12 @@
             [class.content-area-override]="!shouldOverrideContent"
             [class.start-content-padding]="shouldOverrideContent"
             (scroll)="publishScrollEvent()">
-            <global-message class="global-msg"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
             <router-outlet></router-outlet>
         </div>
-        <clr-vertical-nav
-            [clrVerticalNavCollapsible]="true"
-            *ngIf="isUserExisting">
+        @if (isUserExisting) {
+        <clr-vertical-nav [clrVerticalNavCollapsible]="true">
             <div>
                 <a
                     clrVerticalNavLink
@@ -36,9 +35,8 @@
                     <clr-icon shape="list" clrVerticalNavIcon></clr-icon>
                     {{ 'SIDE_NAV.LOGS' | translate }}
                 </a>
-                <clr-vertical-nav-group
-                    *ngIf="isSystemAdmin"
-                    routerLinkActive="active">
+                @if (isSystemAdmin) {
+                <clr-vertical-nav-group routerLinkActive="active">
                     <clr-icon
                         shape="administrator"
                         clrVerticalNavIcon></clr-icon>
@@ -69,12 +67,12 @@
                             routerLink="/harbor/robot-accounts"
                             routerLinkActive="active">
                             <clr-icon
-                                shape="robot-head"
+                                shape="assign-user"
                                 clrVerticalNavIcon></clr-icon>
                             {{ 'SYSTEM_ROBOT.ROBOT_ACCOUNT_NAV' | translate }}
                         </a>
+                        @if (!isDBAuth()) {
                         <a
-                            *ngIf="!isDBAuth()"
                             clrVerticalNavLink
                             routerLink="/harbor/groups"
                             routerLinkActive="active">
@@ -83,6 +81,7 @@
                                 clrVerticalNavIcon></clr-icon>
                             {{ 'SIDE_NAV.SYSTEM_MGMT.GROUP' | translate }}
                         </a>
+                        }
                         <a
                             clrVerticalNavLink
                             routerLink="/harbor/registries"
@@ -138,9 +137,9 @@
                                     | translate
                             }}
                         </a>
+                        @if (hasAdminRole) {
                         <a
                             clrVerticalNavLink
-                            *ngIf="hasAdminRole"
                             routerLink="/harbor/clearing-job"
                             routerLinkActive="active">
                             <clr-icon
@@ -148,9 +147,9 @@
                                 clrVerticalNavIcon></clr-icon>
                             {{ 'CLEARANCES.CLEARANCES' | translate }}
                         </a>
+                        } @if (hasAdminRole) {
                         <a
                             clrVerticalNavLink
-                            *ngIf="hasAdminRole"
                             routerLink="/harbor/job-service-dashboard"
                             routerLinkActive="active">
                             <clr-icon
@@ -161,6 +160,7 @@
                                     | translate
                             }}
                         </a>
+                        }
                         <a
                             clrVerticalNavLink
                             routerLinkActive="active"
@@ -170,30 +170,31 @@
                         </a>
                     </clr-vertical-nav-group-children>
                 </clr-vertical-nav-group>
+                }
             </div>
             <div class="mb-1">
-                <ng-container *ngFor="let theme of themeArray; let i = index">
-                    <ng-container *ngIf="theme.showStyle === styleMode">
-                        <a
-                            class="pointer"
-                            clrVerticalNavLink
-                            (click)="themeChanged(theme)">
-                            <clr-icon
-                                clrVerticalNavIcon
-                                size="20"
-                                *ngIf="styleMode === 'DARK'"
-                                shape="sun"
-                                class="is-solid"></clr-icon>
-                            <clr-icon
-                                clrVerticalNavIcon
-                                size="20"
-                                *ngIf="styleMode === 'LIGHT'"
-                                shape="moon"
-                                class="is-solid"></clr-icon>
-                            {{ theme.text | translate }}
-                        </a>
-                    </ng-container>
-                </ng-container>
+                @for (theme of themeArray; track theme; let i = $index) { @if
+                (theme.showStyle === styleMode) {
+                <a
+                    class="pointer"
+                    clrVerticalNavLink
+                    (click)="themeChanged(theme)">
+                    @if (styleMode === 'DARK') {
+                    <clr-icon
+                        clrVerticalNavIcon
+                        size="20"
+                        shape="sun"
+                        class="is-solid"></clr-icon>
+                    } @if (styleMode === 'LIGHT') {
+                    <clr-icon
+                        clrVerticalNavIcon
+                        size="20"
+                        shape="moon"
+                        class="is-solid"></clr-icon>
+                    }
+                    {{ theme.text | translate }}
+                </a>
+                } }
                 <a
                     rel="noopener noreferrer"
                     clrVerticalNavLink
@@ -207,7 +208,9 @@
                 </a>
             </div>
         </clr-vertical-nav>
-        <hbr-operation-model *ngIf="isUserExisting"></hbr-operation-model>
+        } @if (isUserExisting) {
+        <hbr-operation-model></hbr-operation-model>
+        }
     </div>
 </clr-main-container>
 <account-settings-modal></account-settings-modal>

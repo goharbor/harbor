@@ -41,23 +41,20 @@
                                 searchedUserLists.length ? 'block' : 'none'
                             ">
                             <ul>
-                                <li
-                                    *ngFor="let user of searchedUserLists"
-                                    (click)="selectedName(user.username)">
+                                @for (user of searchedUserLists; track user) {
+                                <li (click)="selectedName(user.username)">
                                     {{ user.username }}
                                 </li>
+                                }
                             </ul>
                         </div>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            (memberName.invalid &&
-                                (memberName.touched || memberName.dirty)) ||
-                            !isMemberNameValid
-                        "
-                        class="tooltip-content">
+                    @if ( (memberName.invalid && (memberName.touched ||
+                    memberName.dirty)) || !isMemberNameValid ) {
+                    <clr-control-error class="tooltip-content">
                         {{ memberTooltip | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <div class="clr-form-control">

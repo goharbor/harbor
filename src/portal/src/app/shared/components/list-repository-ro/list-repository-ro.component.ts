@@ -23,6 +23,7 @@ import { getRepoLink } from '../../../base/left-side-nav/interrogation-services/
     selector: 'list-repository-ro',
     templateUrl: 'list-repository-ro.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
 })
 export class ListRepositoryROComponent {
     @Input() repositories: Repository[];

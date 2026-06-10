@@ -40,6 +40,7 @@ import { Role } from '../../../../../../ng-swagger-gen/models/role';
     selector: 'add-member',
     templateUrl: 'add-member.component.html',
     styleUrls: ['add-member.component.scss'],
+    standalone: false,
 })
 export class AddMemberComponent implements OnInit, OnDestroy {
     member: UserEntity = {};

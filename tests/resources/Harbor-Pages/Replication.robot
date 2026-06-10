@@ -209,7 +209,8 @@ Switch To Replication Manage Page
 
 Click Edit Button
     Retry Element Click    ${replication_rule_action}
-    Retry Element Click    ${replication_rule_action_bar_edit}
+    ${edit_btn}=    Get Webelement    ${replication_rule_action_bar_edit}
+    Execute Javascript    arguments[0].click();    ARGUMENTS    ${edit_btn}
 
 Click Delete Button
     Retry Element Click    ${replication_rule_action}

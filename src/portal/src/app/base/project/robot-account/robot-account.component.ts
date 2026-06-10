@@ -71,6 +71,7 @@ import { Permission } from '../../../../../ng-swagger-gen/models/permission';
     selector: 'app-robot-account',
     templateUrl: './robot-account.component.html',
     styleUrls: ['./robot-account.component.scss'],
+    standalone: false,
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

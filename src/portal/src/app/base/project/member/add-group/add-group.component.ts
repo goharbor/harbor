@@ -41,6 +41,7 @@ import { Role } from '../../../../../../ng-swagger-gen/models/role';
     selector: 'add-group',
     templateUrl: './add-group.component.html',
     styleUrls: ['./add-group.component.scss'],
+    standalone: false,
 })
 export class AddGroupComponent implements OnInit, OnDestroy {
     //projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
