@@ -31,7 +31,7 @@ Sign In Harbor
     Retry Wait Element  ${login_btn}
     Retry Button Click  ${login_btn}
     Log To Console  ${user}
-    Retry Wait Element  xpath=//span[contains(., '${user}')]
+    Retry Wait Element  xpath=//*[contains(., '${user}')]
 
 Capture Screenshot And Source
     Capture Page Screenshot
