@@ -52,6 +52,7 @@ import { PermissionSelectPanelModes } from '../../../../shared/components/role-p
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
 
 @Component({
+    standalone: false,
     selector: 'add-role',
     templateUrl: './add-role.component.html',
     styleUrls: ['./add-role.component.scss'],
