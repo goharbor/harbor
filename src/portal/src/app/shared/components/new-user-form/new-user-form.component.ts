@@ -31,6 +31,7 @@ import { SessionService } from '../../services/session.service';
     selector: 'new-user-form',
     templateUrl: 'new-user-form.component.html',
     styleUrls: ['./new-user-form.component.scss', '../../../common.scss'],
+    standalone: false,
 })
 export class NewUserFormComponent implements AfterViewChecked, OnInit {
     showNewPwd: boolean = false;

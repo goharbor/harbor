@@ -34,6 +34,7 @@ export const RESOURCE_TYPES_I18N_MAP = {
 export const JOB_STATUS = {
     PENDING: 'Pending',
     RUNNING: 'Running',
+    FINISHED: 'Finished',
 };
 
 export const YES: string = 'TAG_RETENTION.YES';

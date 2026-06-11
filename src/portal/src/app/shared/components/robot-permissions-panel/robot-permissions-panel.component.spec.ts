@@ -61,20 +61,19 @@ describe('RobotPermissionsPanelComponent', () => {
 // mock a TestHostComponent for RobotPermissionsPanelComponent
 @Component({
     template: `
-        <ng-container *ngIf="mode === PermissionSelectPanelModes.MODAL">
-            <robot-permissions-panel [mode]="mode">
-                <div>modal</div>
-            </robot-permissions-panel>
-        </ng-container>
-        <ng-container *ngIf="mode === PermissionSelectPanelModes.DROPDOWN">
-            <robot-permissions-panel [mode]="mode">
-                <div>dropDown</div>
-            </robot-permissions-panel>
-        </ng-container>
-        <ng-container *ngIf="mode === PermissionSelectPanelModes.NORMAL">
-            <robot-permissions-panel [mode]="mode"> </robot-permissions-panel>
-        </ng-container>
+        @if (mode === PermissionSelectPanelModes.MODAL) {
+        <robot-permissions-panel [mode]="mode">
+            <div>modal</div>
+        </robot-permissions-panel>
+        } @if (mode === PermissionSelectPanelModes.DROPDOWN) {
+        <robot-permissions-panel [mode]="mode">
+            <div>dropDown</div>
+        </robot-permissions-panel>
+        } @if (mode === PermissionSelectPanelModes.NORMAL) {
+        <robot-permissions-panel [mode]="mode"> </robot-permissions-panel>
+        }
     `,
+    standalone: false,
 })
 class TestHostComponent {
     @ViewChild(RobotPermissionsPanelComponent)

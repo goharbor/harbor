@@ -55,6 +55,7 @@ import { Registry } from '../../../../../ng-swagger-gen/models/registry';
     selector: 'hbr-endpoint',
     templateUrl: './endpoint.component.html',
     styleUrls: ['./endpoint.component.scss'],
+    standalone: false,
 })
 export class EndpointComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
