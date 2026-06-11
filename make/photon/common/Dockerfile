@@ -1,4 +1,4 @@
-FROM photon:5.0
+FROM photon:5.0-20260214
 
 RUN tdnf install photon-repos -y \
     && sed -i 's/enabled\s*=.*/enabled=0/g' /etc/yum.repos.d/*.repo \
