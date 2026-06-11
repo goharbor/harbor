@@ -25,6 +25,7 @@ import { Project } from '../project';
     selector: 'app-project-config',
     templateUrl: './project-config.component.html',
     styleUrls: ['./project-config.component.scss'],
+    standalone: false,
 })
 export class ProjectConfigComponent implements OnInit {
     projectId: number;

@@ -8,10 +8,11 @@ FROM ${build_image} AS build
 
 ARG harbor_version
 ARG git_commit
+ARG TARGETARCH=amd64
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux
-ENV GOARCH=amd64
+ENV GOARCH=${TARGETARCH}
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter

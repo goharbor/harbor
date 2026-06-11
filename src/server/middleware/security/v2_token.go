@@ -79,22 +79,40 @@ func (vt *v2Token) Generate(req *http.Request) security.Context {
 }
 
 // tokenIssuedAfterProjectCreation prevents tokens from a deleted project
-// granting access to a new project recreated with the same name.
+// granting access to a new project recreated with the same name. It validates
+// every project the request is authorized against, including the source
+// project of a cross-repository blob mount.
 func tokenIssuedAfterProjectCreation(ctx context.Context, logger *log.Logger, claims *v2TokenClaims) bool {
-	info := lib.GetArtifactInfo(ctx)
-	if info.ProjectName == "" {
-		return true
-	}
-	p, err := project_ctl.Ctl.GetByName(ctx, info.ProjectName)
-	if err != nil {
-		logger.Warningf("failed to get project %q for token validation: %v", info.ProjectName, err)
+	// Fail closed: a token without an iat claim cannot be validated against the
+	// project creation time, and claims.IssuedAt is a pointer that would panic
+	// on dereference below.
+	if claims.IssuedAt == nil {
+		logger.Warningf("bearer token missing iat claim, rejecting")
 		return false
 	}
 	iat := claims.IssuedAt.Time
-	if iat.Add(common.JwtLeeway).Before(p.CreationTime) {
-		logger.Warningf("bearer token issued at %v is before project %q creation time %v, rejecting",
-			iat, info.ProjectName, p.CreationTime)
-		return false
+
+	info := lib.GetArtifactInfo(ctx)
+	// A blob mount (POST .../blobs/uploads/?from=<repo>) also requires pull
+	// access to the source project, so its creation time must be checked too.
+	names := []string{info.ProjectName}
+	if info.BlobMountProjectName != "" && info.BlobMountProjectName != info.ProjectName {
+		names = append(names, info.BlobMountProjectName)
+	}
+	for _, projectName := range names {
+		if projectName == "" {
+			continue
+		}
+		p, err := project_ctl.Ctl.GetByName(ctx, projectName)
+		if err != nil {
+			logger.Warningf("failed to get project %q for token validation: %v", projectName, err)
+			return false
+		}
+		if iat.Add(common.JwtLeeway).Before(p.CreationTime) {
+			logger.Warningf("bearer token issued at %v is before project %q creation time %v, rejecting",
+				iat, projectName, p.CreationTime)
+			return false
+		}
 	}
 	return true
 }

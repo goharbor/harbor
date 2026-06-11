@@ -37,6 +37,7 @@ import { Scanner } from '../../left-side-nav/interrogation-services/scanner/scan
     selector: 'scanner',
     templateUrl: './scanner.component.html',
     styleUrls: ['./scanner.component.scss'],
+    standalone: false,
 })
 export class ScannerComponent implements OnInit {
     loading: boolean = false;

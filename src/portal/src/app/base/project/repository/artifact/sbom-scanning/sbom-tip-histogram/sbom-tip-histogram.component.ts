@@ -35,6 +35,7 @@ const SUCCESS_PCT: number = 100;
     selector: 'hbr-sbom-tip-histogram',
     templateUrl: './sbom-tip-histogram.component.html',
     styleUrls: ['./sbom-tip-histogram.component.scss'],
+    standalone: false,
 })
 export class SbomTipHistogramComponent {
     @Input() scanner: Scanner;

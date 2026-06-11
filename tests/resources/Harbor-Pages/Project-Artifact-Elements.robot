@@ -38,15 +38,14 @@ ${harbor_helm_version}  1.7.3
 ${harbor_helm_package}  harbor-1.7.3.tgz
 
 ${artifact_list_accessory_btn}  (//clr-dg-row//button)[1]
-${artifact_cosign_accessory}  //clr-dg-row//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div[text()=' signature.cosign ']]
-${artifact_sbom_accessory}  //clr-dg-row//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div[text()=' subject.accessory ']]
-${artifact_cosign_accessory_action_btn}  (//clr-dg-row//clr-dg-row[.//div[text()=' signature.cosign ']]//button)[1]
 ${artifact_sbom_accessory_action_btn}  (//clr-dg-row//clr-dg-row[.//div[text()=' subject.accessory ']]//button)[1]
-${artifact_cosign_cosign_accessory_action_btn}  ${artifact_cosign_accessory}//clr-dg-row//button
-${artifact_sbom_cosign_accessory_action_btn}  ${artifact_sbom_accessory}//clr-dg-row//button
-${artifact_list_cosign_accessory_btn}  (${artifact_cosign_accessory}//button)[2]
-${artifact_list_sbom_accessory_btn}  (${artifact_sbom_accessory}//button)[2]
 ${copy_digest_btn}  //button[text()=' Copy Digest ']
-${delete_accessory_btn}  //button[text()=' Delete ']
-${copy_btn}  //button[text()=' COPY ']
 ${artifact_digest}  //textarea
+${copy_btn}  //button[text()=' COPY ']
+${artifact_cosign_accessory_action_btn}  (//clr-dg-row//clr-dg-row[.//div[text()=' signature.cosign ']]//button)[1]
+${artifact_list_sbom_accessory_btn}  //*[normalize-space(.)='subject.accessory']//ancestor::*[contains(@class,'datagrid-row-master')][1]//button[contains(@class,'expandable-caret') or contains(@class,'caret')]
+${artifact_list_cosign_accessory_btn}  //*[normalize-space(.)='signature.cosign']//ancestor::*[contains(@class,'datagrid-row-master')][1]//button[contains(@class,'expandable-caret') or contains(@class,'caret')]
+${artifact_sbom_cosign_accessory_action_btn}  //*[normalize-space(.)='subject.accessory']//ancestor::*[contains(@class,'clr-expandable-animation') or contains(@class,'datagrid-row')][1]//sub-accessories//button[contains(@class,'datagrid-action-toggle') or contains(@class,'toggle')]
+${artifact_cosign_cosign_accessory_action_btn}  //*[normalize-space(.)='signature.cosign']//ancestor::*[contains(@class,'clr-expandable-animation') or contains(@class,'datagrid-row')][1]//sub-accessories//button[contains(@class,'datagrid-action-toggle') or contains(@class,'toggle')]
+${delete_accessory_btn}  //button[text()=' Delete ']
+

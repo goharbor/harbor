@@ -55,6 +55,7 @@ import { DOWN, SHOW_ELLIPSIS_WIDTH, UP } from './project-detail.const';
     selector: 'project-detail',
     templateUrl: 'project-detail.component.html',
     styleUrls: ['project-detail.component.scss'],
+    standalone: false,
 })
 export class ProjectDetailComponent
     implements OnInit, AfterViewInit, OnDestroy

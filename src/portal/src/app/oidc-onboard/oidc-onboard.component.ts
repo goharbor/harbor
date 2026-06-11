@@ -22,6 +22,7 @@ import { errorHandler } from '../shared/units/shared.utils';
     selector: 'app-oidc-onboard',
     templateUrl: './oidc-onboard.component.html',
     styleUrls: ['./oidc-onboard.component.scss'],
+    standalone: false,
 })
 export class OidcOnboardComponent implements OnInit {
     url: string;
