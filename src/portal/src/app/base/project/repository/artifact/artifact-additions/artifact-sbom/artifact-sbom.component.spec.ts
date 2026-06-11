@@ -43,8 +43,9 @@ describe('ArtifactSbomComponent', () => {
             downloadLocation: 'NONE',
             checksums: [
                 {
-                    algorithm: 'SHA1',
-                    checksumValue: '132992eab020986b3b5d886a77212889680467a0',
+                    algorithm: 'SHA256',
+                    checksumValue:
+                        '132992eab020986b3b5d88a2c212889680467a0888eb055dfae1a415ff6cdd22',
                 },
             ],
             sourceInfo: 'built package from: alpine-baselayout 3.2.0-r18',
@@ -73,8 +74,9 @@ describe('ArtifactSbomComponent', () => {
             downloadLocation: 'NONE',
             checksums: [
                 {
-                    algorithm: 'SHA1',
-                    checksumValue: '903176b2d2a8ddefd1ba6940f19ad17c2c1d4aff',
+                    algorithm: 'SHA256',
+                    checksumValue:
+                        '903176b2d2a8ddefd1ba6940f19ad17c2c1d4aff904c6439bf6eedf58abde4e2',
                 },
             ],
             sourceInfo: 'built package from: alpine-keys 2.4-r1',

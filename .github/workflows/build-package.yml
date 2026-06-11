@@ -150,14 +150,19 @@ jobs:
       - name: Save repo list
         run: |
           docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | grep -v '^goharbor/spectral$' | grep -v '^goharbor/swagger$' | grep -v '^goharbor/mockery$' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
+          # base images are pushed arch-suffixed by the _build_base make macro
+          # and combined into multi-arch manifests by CREATE_MANIFEST
+          docker images --format '{{.Repository}}' | grep '^goharbor/.*-base$' | sort -u > "$GITHUB_WORKSPACE/_base_repos_${ARCH}.txt"
       - name: Upload repo list
         uses: actions/upload-artifact@v4
         with:
           name: repos-${{ matrix.arch }}
-          path: ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
+          path: |
+            ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
+            ${{ github.workspace }}/_base_repos_${{ matrix.arch }}.txt
 
   CREATE_MANIFEST:
-    needs: [BUILD_PACKAGE]
+    needs: [BUILD_BASE_IMAGE, BUILD_PACKAGE]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -181,6 +186,13 @@ jobs:
           else
             echo "image_tag=${version}" >> $GITHUB_OUTPUT
           fi
+          # base images use BASEIMAGETAG (see Harbor_Build_Base_Tag in BUILD_PACKAGE):
+          # "dev" on main, the release version on release-* branches
+          if [[ $target_branch == "release-"* ]]; then
+            echo "base_tag=${version}" >> $GITHUB_OUTPUT
+          else
+            echo "base_tag=dev" >> $GITHUB_OUTPUT
+          fi
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Create multi-arch manifests
@@ -194,4 +206,17 @@ jobs:
               "${repo}:${image_tag}-amd64" \
               "${repo}:${image_tag}-arm64"
           done
+          # The harbor-*-base images are only (re)built and pushed (arch-suffixed)
+          # when BUILD_BASE_IMAGE decided to rebuild the base; otherwise the
+          # suffixed tags from this run don't exist and there is nothing to combine.
+          if [ "${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}" = "true" ]; then
+            base_tag="${{ steps.tag.outputs.base_tag }}"
+            cat _base_repos_*.txt | sort -u | while IFS= read -r repo; do
+              [ -z "$repo" ] && continue
+              echo "Creating manifest ${repo}:${base_tag}"
+              docker buildx imagetools create -t "${repo}:${base_tag}" \
+                "${repo}:${base_tag}-amd64" \
+                "${repo}:${base_tag}-arm64"
+            done
+          fi
           docker logout
