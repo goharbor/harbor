@@ -66,7 +66,7 @@ func TestChunkedUploadToACR(t *testing.T) {
 
 	// Generate a 25MB random blob (larger than the ~20MB monolithic limit)
 	blobSize := int64(25 * 1024 * 1024)
-	blobData := make([]byte, blobSize)
+	blobData := make([]byte, int(blobSize))
 	_, err := rand.Read(blobData)
 	require.NoError(t, err, "failed to generate random blob")
 
