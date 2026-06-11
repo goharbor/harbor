@@ -114,22 +114,24 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	}
 	if !token.Valid() {
 		log.Debug("Refreshing token")
-		token, err = refreshToken(ctx, token)
+		newToken, err := refreshToken(ctx, token)
 		if err != nil {
-			return nil, fmt.Errorf("failed to refresh token, username: %s, error: %v", username, err)
+			log.Warnf("failed to refresh token, username: %s, error: %v - continuing with stale token", username, err)
+		} else {
+			token = newToken
+			tb, err := json.Marshal(token)
+			if err != nil {
+				return nil, fmt.Errorf("failed to encode the refreshed token, error: %v", err)
+			}
+			encToken, _ := utils.ReversibleEncrypt(string(tb), key)
+			oidcUser.Token = encToken
+			// only updates the token column of the record
+			err = dm.metaDao.Update(ctx, oidcUser, "token")
+			if err != nil {
+				log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
+			}
+			log.Debug("Token refreshed and persisted")
 		}
-		tb, err := json.Marshal(token)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode the refreshed token, error: %v", err)
-		}
-		encToken, _ := utils.ReversibleEncrypt(string(tb), key)
-		oidcUser.Token = encToken
-		// only updates the token column of the record
-		err = dm.metaDao.Update(ctx, oidcUser, "token")
-		if err != nil {
-			log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
-		}
-		log.Debug("Token refreshed and persisted")
 	}
 	info, err := UserInfoFromToken(ctx, token)
 	if err != nil {
