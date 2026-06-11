@@ -400,7 +400,23 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     confirmGenerate(): void {
-        this.resetCliSecret(null);
+        const generatedSecret = this.generateRandomSecret();
+        this.resetCliSecret(generatedSecret);
+    }
+
+    private generateRandomSecret(): string {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 16; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        // Ensure requirements: 8-128 chars, at least 1 uppercase, 1 lowercase, 1 digit
+        // Replace some random positions with required characters
+        const resultArray = result.split('');
+        resultArray[0] = 'A'; // uppercase
+        resultArray[1] = 'a'; // lowercase
+        resultArray[2] = '1'; // digit
+        return resultArray.join('');
     }
 
     resetCliSecret(secret) {

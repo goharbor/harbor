@@ -100,6 +100,7 @@ func (m *metaManager) GetByUserID(ctx context.Context, uid int) (*models.OIDCUse
 }
 
 func (m *metaManager) SetCliSecretByUserID(ctx context.Context, uid int, secret string) error {
+	log.Debugf("SetCliSecretByUserID called for user %d, secret len=%d", uid, len(secret))
 	ou, err := m.GetByUserID(ctx, uid)
 	if err != nil {
 		return err
@@ -112,6 +113,7 @@ func (m *metaManager) SetCliSecretByUserID(ctx context.Context, uid int, secret 
 	if err != nil {
 		return err
 	}
+	log.Debugf("SetCliSecretByUserID encrypting secret for user %d, plaintext len=%d, encrypted len=%d", uid, len(secret), len(s))
 	return m.dao.Update(ctx, &models.OIDCUser{ID: ou.ID, Secret: s}, "secret")
 }
 

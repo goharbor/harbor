@@ -100,6 +100,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt secret from DB: %v", err)
 	}
+	log.Debugf("Secret verification - provided len=%d, stored plaintext len=%d, match=%v", len(secret), len(plainSecret), secret == plainSecret)
 	if secret != plainSecret {
 		return nil, verifyError(fmt.Errorf("secret mismatch, username: %s", username))
 	}
