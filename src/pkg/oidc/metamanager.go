@@ -91,9 +91,11 @@ func (m *metaManager) GetByUserID(ctx context.Context, uid int) (*models.OIDCUse
 	}
 	p, err := utils.ReversibleDecrypt(res.Secret, key)
 	if err != nil {
-		return nil, err
+		logger.Warnf("failed to decrypt OIDC secret for user %d: %v - using empty plaintext", uid, err)
+		res.PlainSecret = ""
+	} else {
+		res.PlainSecret = p
 	}
-	res.PlainSecret = p
 	return res, nil
 }
 
