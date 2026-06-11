@@ -19,12 +19,9 @@
                             <span #names class="names"
                                 >{{ getProjectNames() | translate }}
                             </span>
-                            <span
-                                *ngIf="
-                                    isOverflow() && !!selectedProjects?.length
-                                "
-                                >({{ selectedProjects?.length }})</span
-                            >
+                            @if ( isOverflow() && !!selectedProjects?.length ) {
+                            <span>({{ selectedProjects?.length }})</span>
+                            }
                         </div>
                     </div>
                 </div>
@@ -104,26 +101,21 @@
                                         <div
                                             class="dropdown-toggle labels"
                                             clrDropdownTrigger>
-                                            <ng-container
-                                                *ngFor="
-                                                    let l of selectedLabels;
-                                                    let i = index
-                                                ">
-                                                <hbr-label-piece
-                                                    *ngIf="i <= 0"
-                                                    [hasIcon]="false"
-                                                    [label]="l"
-                                                    [labelWidth]="
-                                                        84
-                                                    "></hbr-label-piece>
-                                            </ng-container>
+                                            @for ( l of selectedLabels; track l;
+                                            let i = $index) { @if (i <= 0) {
+                                            <hbr-label-piece
+                                                [hasIcon]="false"
+                                                [label]="l"
+                                                [labelWidth]="
+                                                    84
+                                                "></hbr-label-piece>
+                                            } } @if ( selectedLabels.length > 1
+                                            ) {
                                             <span
                                                 class="ellipsis color-white-dark"
-                                                *ngIf="
-                                                    selectedLabels.length > 1
-                                                "
                                                 >···</span
                                             >
+                                            }
                                         </div>
                                     </div>
                                     <clr-dropdown-menu
@@ -131,49 +123,46 @@
                                         class="right-align"
                                         clrPosition="bottom-left"
                                         *clrIfOpen>
+                                        @if (loadingAllLabels) {
                                         <clr-spinner
                                             class="spinner"
-                                            *ngIf="loadingAllLabels"
                                             [clrMedium]="true"></clr-spinner>
-                                        <ng-container *ngIf="!loadingAllLabels">
-                                            <button
-                                                type="button"
-                                                class="dropdown-item flex"
-                                                *ngFor="let label of allLabels"
-                                                (click)="
-                                                    selectOrUnselect(label)
-                                                ">
-                                                <clr-icon
-                                                    shape="check"
-                                                    [style.visibility]="
-                                                        isSelected(label)
-                                                            ? 'visible'
-                                                            : 'hidden'
-                                                    "></clr-icon>
-                                                <hbr-label-piece
-                                                    [label]="label"
-                                                    [labelWidth]="
-                                                        130
-                                                    "></hbr-label-piece>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="dropdown-item space-between no-labels"
-                                                *ngIf="!allLabels?.length">
-                                                <span class="alert-label">{{
-                                                    'REPLICATION.NO_LABEL_INFO'
-                                                        | translate
-                                                }}</span>
-                                                <span
-                                                    class="alert-label go-link"
-                                                    routerLink="/harbor/labels"
-                                                    >{{
-                                                        'CONFIG.LABEL'
-                                                            | translate
-                                                    }}</span
-                                                >
-                                            </button>
-                                        </ng-container>
+                                        } @if (!loadingAllLabels) { @for (label
+                                        of allLabels; track label) {
+                                        <button
+                                            type="button"
+                                            class="dropdown-item flex"
+                                            (click)="selectOrUnselect(label)">
+                                            <clr-icon
+                                                shape="check"
+                                                [style.visibility]="
+                                                    isSelected(label)
+                                                        ? 'visible'
+                                                        : 'hidden'
+                                                "></clr-icon>
+                                            <hbr-label-piece
+                                                [label]="label"
+                                                [labelWidth]="
+                                                    130
+                                                "></hbr-label-piece>
+                                        </button>
+                                        } @if (!allLabels?.length) {
+                                        <button
+                                            type="button"
+                                            class="dropdown-item space-between no-labels">
+                                            <span class="alert-label">{{
+                                                'REPLICATION.NO_LABEL_INFO'
+                                                    | translate
+                                            }}</span>
+                                            <span
+                                                class="alert-label go-link"
+                                                routerLink="/harbor/labels"
+                                                >{{
+                                                    'CONFIG.LABEL' | translate
+                                                }}</span
+                                            >
+                                        </button>
+                                        } }
                                     </clr-dropdown-menu>
                                 </clr-dropdown>
                             </div>

@@ -46,6 +46,7 @@ import { PayloadFormatType } from '../../../../../../ng-swagger-gen/models/paylo
     selector: 'add-webhook-form',
     templateUrl: './add-webhook-form.component.html',
     styleUrls: ['./add-webhook-form.component.scss'],
+    standalone: false,
 })
 export class AddWebhookFormComponent implements OnInit, OnDestroy {
     closable: boolean = true;

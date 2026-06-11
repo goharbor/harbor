@@ -8,6 +8,7 @@
 <div class="row tag-row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-datagrid
+            clrDgSelectionType="multi"
             #datagrid
             [clrDgLoading]="loading"
             (clrDgRefresh)="clrDgRefresh($event)"
@@ -52,13 +53,14 @@
                         <span>{{ 'SBOM.GENERATE' | translate }}</span>
                     </button>
 
-                    <clr-dropdown class="btn btn-link" *ngIf="!depth">
+                    @if (!depth) {
+                    <clr-dropdown class="btn btn-link">
                         <span
                             clrDropdownTrigger
                             id="artifact-list-action"
                             class="btn pl-0">
                             {{ 'BUTTON.ACTIONS' | translate }}
-                            <clr-icon shape="caret down"></clr-icon>
+                            <clr-icon shape="caret" direction="down"></clr-icon>
                         </span>
                         <clr-dropdown-menu
                             class="action-dropdown"
@@ -161,10 +163,10 @@
                                 clrDropdownItem>
                                 {{ 'REPOSITORY.RETAG' | translate }}
                             </div>
+                            @if (hasDeleteImagePermission) {
                             <div
                                 class="action-dropdown-item"
                                 clrDropdownItem
-                                *ngIf="hasDeleteImagePermission"
                                 (click)="deleteArtifact()"
                                 id="artifact-list-delete"
                                 [clrDisabled]="
@@ -174,8 +176,10 @@
                                 ">
                                 {{ 'REPOSITORY.DELETE' | translate }}
                             </div>
+                            }
                         </clr-dropdown-menu>
                     </clr-dropdown>
+                    }
                 </div>
                 <div class="right-pos">
                     <app-artifact-filter
@@ -194,11 +198,13 @@
                     {{ 'REPOSITORY.ARTIFACTS_COUNT' | translate }}
                 </ng-template>
             </clr-dg-column>
-            <clr-dg-column *ngIf="depth">
+            @if (depth) {
+            <clr-dg-column>
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[1] }">
                     {{ 'REPOSITORY.PLATFORM' | translate }}
                 </ng-template>
             </clr-dg-column>
+            }
             <clr-dg-column>
                 <ng-template [clrDgHideableColumn]="{ hidden: hiddenArray[2] }">
                     {{ 'REPOSITORY.TAGS' | translate }}
@@ -248,21 +254,21 @@
             <clr-dg-placeholder>{{
                 'ARTIFACT.PLACEHOLDER' | translate
             }}</clr-dg-placeholder>
-            <clr-dg-row
-                *ngFor="let artifact of artifactList; let i = index"
-                [clrDgItem]="artifact">
+            @for (artifact of artifactList; track artifact; let i = $index) {
+            <clr-dg-row [clrDgItem]="artifact">
                 <clr-dg-cell>
                     <div class="cell white-normal">
-                        <div
-                            class="artifact-icon clr-display-inline-block"
-                            *ngIf="artifact.icon">
+                        @if (artifact.icon) {
+                        <div class="artifact-icon clr-display-inline-block">
+                            @if (getIcon(artifact.icon)) {
                             <img
-                                *ngIf="getIcon(artifact.icon)"
                                 class="artifact-icon"
                                 [title]="artifact.type"
                                 [src]="getIcon(artifact.icon)"
                                 (error)="showDefaultIcon($event)" />
+                            }
                         </div>
+                        }
                         <a
                             href="javascript:void(0)"
                             class="digest margin-left-5"
@@ -270,12 +276,9 @@
                             title="{{ artifact.digest }}">
                             {{ artifact.digest | slice : 0 : 15 }}</a
                         >
-                        <clr-tooltip
-                            class="fix-width"
-                            *ngIf="
-                                artifact?.references &&
-                                artifact?.references?.length
-                            ">
+                        @if ( artifact?.references &&
+                        artifact?.references?.length ) {
+                        <clr-tooltip class="fix-width">
                             <div clrTooltipTrigger class="level-border">
                                 <div class="inner truncated">
                                     <a
@@ -295,6 +298,7 @@
                                 {{ 'REPOSITORY.ARTIFACT_TOOTIP' | translate }}
                             </clr-tooltip-content>
                         </clr-tooltip>
+                        }
                         <app-pull-command
                             [registryUrl]="registryUrl"
                             [projectName]="projectName"
@@ -303,7 +307,8 @@
                             class="fix-width"></app-pull-command>
                     </div>
                 </clr-dg-cell>
-                <clr-dg-cell *ngIf="depth">
+                @if (depth) {
+                <clr-dg-cell>
                     <div class="cell">
                         {{ artifact.platform?.os }}
                         /{{ artifact.platform?.architecture
@@ -314,8 +319,10 @@
                         }}
                     </div>
                 </clr-dg-cell>
+                }
                 <clr-dg-cell class="center">
-                    <div *ngIf="artifact.tags" class="truncated width-p-100">
+                    @if (artifact.tags) {
+                    <div class="truncated width-p-100">
                         <clr-tooltip class="width-p-100">
                             <div clrTooltipTrigger class="center">
                                 <div class="center width-p-100">
@@ -324,18 +331,14 @@
                                         class="truncated width-p-75"
                                         >{{ tagsString(artifact?.tags) }}</span
                                     >
-                                    <span
-                                        *ngIf="
-                                            artifact?.tags?.length > 1 &&
-                                            isEllipsisActive(tagsSpan)
-                                        "
-                                        >({{ artifact?.tagNumber }} )</span
-                                    >
+                                    @if ( artifact?.tags?.length > 1 &&
+                                    isEllipsisActive(tagsSpan) ) {
+                                    <span>({{ artifact?.tagNumber }} )</span>
+                                    }
                                 </div>
                             </div>
                             <clr-tooltip-content
                                 [clrPosition]="'top-right'"
-                                class="lg"
                                 [clrSize]="'lg'"
                                 *clrIfOpen>
                                 <table
@@ -367,9 +370,8 @@
                                     </thead>
                                     <tbody class="tag-tbody">
                                         <!--display less than 9 tags(too many tags will make UI stuck)-->
-                                        <tr
-                                            class="tag-tr"
-                                            *ngFor="let tag of artifact.tags">
+                                        @for (tag of artifact.tags; track tag) {
+                                        <tr class="tag-tr">
                                             <td class="left tag-body-color">
                                                 {{ tag.name }}
                                             </td>
@@ -391,29 +393,32 @@
                                                 }}
                                             </td>
                                         </tr>
-                                        <tr *ngIf="artifact?.tagNumber > 8">
+                                        } @if (artifact?.tagNumber > 8) {
+                                        <tr>
                                             ...
                                         </tr>
+                                        }
                                     </tbody>
                                 </table>
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </div>
+                    }
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <span
-                        *ngIf="artifact.signed === 'checking'"
-                        class="spinner spinner-inline ml-2"></span>
+                    @if (artifact.signed === 'checking') {
+                    <span class="spinner spinner-inline ml-2"></span>
+                    } @if (artifact.signed === 'true') {
                     <clr-icon
                         shape="check-circle"
-                        *ngIf="artifact.signed === 'true'"
                         size="20"
                         class="signed"></clr-icon>
+                    } @if (artifact.signed === 'false') {
                     <clr-icon
                         shape="times-circle"
-                        *ngIf="artifact.signed === 'false'"
                         size="16"
                         class="color-red"></clr-icon>
+                    }
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
@@ -426,13 +431,14 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <span *ngIf="!hasVul(artifact)">
+                        @if (!hasVul(artifact)) {
+                        <span>
                             {{ 'ARTIFACT.SCAN_UNSUPPORTED' | translate }}
                         </span>
+                        } @if (hasVul(artifact)) {
                         <hbr-vulnerability-bar
                             (submitStopFinish)="submitStopFinish($event)"
                             (scanFinished)="scanFinished($event)"
-                            *ngIf="hasVul(artifact)"
                             [inputScanner]="
                                 handleScanOverview(artifact.scan_overview)
                                     ?.scanner
@@ -445,28 +451,23 @@
                                 handleScanOverview(artifact.scan_overview)
                             ">
                         </hbr-vulnerability-bar>
+                        }
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <span
-                            *ngIf="artifact?.accessoryLoading"
-                            class="spinner spinner-inline ml-2"></span>
-                        <span
-                            *ngIf="
-                                !hasSbom(artifact) &&
-                                !artifact?.accessoryLoading
-                            ">
+                        @if (artifact?.accessoryLoading) {
+                        <span class="spinner spinner-inline ml-2"></span>
+                        } @if ( !hasSbom(artifact) &&
+                        !artifact?.accessoryLoading ) {
+                        <span>
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
+                        } @if ( hasSbom(artifact) && !artifact?.accessoryLoading
+                        && !hasChild(artifact) ) {
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
-                            *ngIf="
-                                hasSbom(artifact) &&
-                                !artifact?.accessoryLoading &&
-                                !hasChild(artifact)
-                            "
                             [inputScanner]="
                                 handleSbomOverview(artifact.sbom_overview)
                                     ?.scanner
@@ -480,10 +481,12 @@
                             [sbomDigest]="artifact?.sbomDigest"
                             [sbomOverview]="artifact?.sbom_overview">
                         </hbr-sbom-bar>
+                        }
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div class="cell" *ngIf="artifact.annotationsArray?.length">
+                    @if (artifact.annotationsArray?.length) {
+                    <div class="cell">
                         <div class="bar-state">
                             <span class="label not-scan">{{
                                 artifact.annotationsArray[0]
@@ -503,30 +506,32 @@
                                         [clrPosition]="'left-top'"
                                         *clrIfOpen>
                                         <div>
-                                            <div
-                                                *ngFor="
-                                                    let attr of artifact.annotationsArray
-                                                "
-                                                class="bar-state">
+                                            @for ( attr of
+                                            artifact.annotationsArray ; track
+                                            attr) {
+                                            <div class="bar-state">
                                                 <span class="label not-scan">{{
                                                     attr
                                                 }}</span>
                                             </div>
+                                            }
                                         </div>
                                     </clr-signpost-content>
                                 </clr-signpost>
                             </div>
                         </div>
                     </div>
+                    }
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
+                        @if (artifact.labels?.length) {
                         <hbr-label-piece
-                            *ngIf="artifact.labels?.length"
                             [label]="artifact.labels[0]"
                             [labelWidth]="90"
                             [withTooltip]="true">
                         </hbr-label-piece>
+                        }
                         <div
                             class="signpost-item"
                             [hidden]="artifact.labels?.length <= 1">
@@ -539,17 +544,16 @@
                                     *clrIfOpen>
                                     <div
                                         class="clr-signpost-content-label-list">
-                                        <div
-                                            *ngFor="
-                                                let label of artifact.labels
-                                            "
-                                            class="margin-5px">
+                                        @for ( label of artifact.labels ; track
+                                        label) {
+                                        <div class="margin-5px">
                                             <hbr-label-piece
                                                 [labelWidth]="130"
                                                 [label]="label"
                                                 [withTooltip]="true">
                                             </hbr-label-piece>
                                         </div>
+                                        }
                                     </div>
                                 </clr-signpost-content>
                             </clr-signpost>
@@ -571,9 +575,8 @@
                         }}
                     </div>
                 </clr-dg-cell>
-                <ng-container
-                    ngProjectAs="clr-dg-row-detail"
-                    *ngIf="artifact?.accessories?.length">
+                <ng-container ngProjectAs="clr-dg-row-detail">
+                    @if (artifact?.accessories?.length) {
                     <sub-accessories
                         [projectName]="projectName"
                         [repositoryName]="repoName"
@@ -581,8 +584,10 @@
                         [total]="artifact?.accessoryNumber"
                         [accessories]="artifact?.accessories"
                         *clrIfExpanded></sub-accessories>
+                    }
                 </ng-container>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
@@ -595,11 +600,13 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="totalCount"
+                    @if (totalCount) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'REPOSITORY.OF' | translate }}</span
                     >
+                    }
                     {{ totalCount }}
                     {{ 'REPOSITORY.ITEMS' | translate }}&nbsp;&nbsp;&nbsp;&nbsp;
                 </clr-dg-pagination>

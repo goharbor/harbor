@@ -11,16 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { NgModule } from '@angular/core';
+import { NgModule, provideCheckNoChangesConfig } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule, TranslateStore } from '@ngx-translate/core';
+import {
+    TranslateLoader,
+    TranslateModule,
+    TranslateNoOpLoader,
+    TranslateStore,
+} from '@ngx-translate/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DateValidatorDirective } from './directives/date-validator.directive';
 import { PortValidatorDirective } from './directives/port.directive';
 import { MaxLengthExtValidatorDirective } from './directives/max-length-ext.directive';
 import { ErrorHandler } from './units/error-handler';
-import { ClarityIconsApi } from '@clr/icons/clr-icons-api';
-import { ClarityModule } from '@clr/angular';
+import { ClarityIcons, ClarityModule, ClrIconModule } from '@clr/angular';
 import { MarkdownModule } from 'ngx-markdown';
 import { CommonModule } from '@angular/common';
 import { ClipboardModule } from './components/third-party/ngx-clipboard';
@@ -69,7 +73,7 @@ import {
 } from './services/endpoint.service';
 import { ImageNameInputComponent } from './components/image-name-input/image-name-input.component';
 import { MessageHandlerService } from './services/message-handler.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from './pipes/harbor-datetime.pipe';
@@ -93,6 +97,10 @@ import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 import { RobotPermissionsPanelComponent } from './components/robot-permissions-panel/robot-permissions-panel.component';
 import { PreferenceSettingsComponent } from '../base/preference-settings/preference-settings.component';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 // register necessary components
 echarts.use([
@@ -108,14 +116,11 @@ echarts.use([
     LegendComponent,
 ]);
 
-// ClarityIcons is publicly accessible from the browser's window object.
-declare const ClarityIcons: ClarityIconsApi;
-
-// Add custom icons to ClarityIcons
-// Add robot head icon
-ClarityIcons.add({
-    'robot-head': `
-<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+// Register custom icons not included in the standard Clarity icon sets
+ClarityIcons.addIcons(
+    [
+        'robot-head',
+        `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
 <defs><style>.cls-1{fill:none;}</style></defs><g id="Layer_2" data-name="Layer 2">
 <circle cx="12.62" cy="18.6" r="1.5"/><circle cx="23.5" cy="18.5" r="1.5"/>
 <path d="M22,28H14a1,1,0,0,1,0-2h8a1,1,0,0,1,0,2Z"/>
@@ -128,10 +133,10 @@ ClarityIcons.add({
 21.18,0,0,0,4,21.42,21,21,0,0,0,7.71,33.58a1,1,0,0,0,.81.42h19a1,1,0,0,0,
 .81-.42A21,21,0,0,0,32,21.42,21.18,21.18,0,0,0,29.1,10.49Z"/>
 <rect class="cls-1" width="36" height="36"/></g></svg>`,
-    sbom: `
-<?xml version='1.0' encoding='utf-8'?>
-<!-- Generator: imaengine 6.0   -->
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="0,0,512,512" style="enable-background:new 0 0 512 512;" version="1.1">
+    ],
+    [
+        'sbom',
+        `<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="0,0,512,512" style="enable-background:new 0 0 512 512;" version="1.1">
 <defs/>
 <g id="layer0">
 <g transform="matrix(1 0 0 1 0 0)">
@@ -140,12 +145,12 @@ ClarityIcons.add({
 <path d="M394.667,423.797L394.667,458.666C394.667,464.557 399.443,469.333 405.334,469.333C411.225,469.333 416,464.558 416,458.667L416,423.563C426.103,417.57 429.435,404.522 423.443,394.419C419.605,387.948 412.633,383.986 405.11,384C393.369,383.979 383.834,393.479 383.813,405.22C383.798,412.922 387.951,420.028 394.667,423.797L394.667,423.797Z" fill="#175975"/>
 </g>
 <text font-size="100" font-family="'MesloLGLDZForPowerline-Bold'" fill="#175975" transform="matrix(1.24404 0 0 1.04972 34.5897 178.002)">
-<tspan x="0" y="112" textLength="240.82">
-<![CDATA[SBOM]]></tspan>
+<tspan x="0" y="112" textLength="240.82">SBOM</tspan>
 </text>
 </g>
 </svg>`,
-});
+    ]
+);
 
 @NgModule({
     imports: [
@@ -256,17 +261,19 @@ export class SharedModule {}
 
 // this module is only for testing, you should only import this module in *.spec.ts files
 @NgModule({
-    imports: [
-        BrowserAnimationsModule,
-        SharedModule,
-        HttpClientTestingModule,
-        RouterTestingModule,
-    ],
     exports: [
         BrowserAnimationsModule,
         SharedModule,
-        HttpClientTestingModule,
         RouterTestingModule,
+        TranslateModule,
+    ],
+    imports: [
+        BrowserAnimationsModule,
+        SharedModule,
+        RouterTestingModule,
+        TranslateModule.forRoot({
+            loader: { provide: TranslateLoader, useClass: TranslateNoOpLoader },
+        }),
     ],
     providers: [
         TranslateStore,
@@ -276,6 +283,14 @@ export class SharedModule {}
             provide: UserPermissionService,
             useClass: UserPermissionDefaultService,
         },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+        // Disable Angular 21's strict ExpressionChangedAfterItHasBeenCheckedError
+        // dev-mode check in tests. The transient flips originate from
+        // Clarity 18's modal/datagrid internals during the CD cycles that run
+        // when a fixture is torn down; they do not represent real bugs and
+        // would otherwise cause Karma to disconnect via uncaught afterAll errors.
+        provideCheckNoChangesConfig({ exhaustive: false }),
     ],
 })
 export class SharedTestingModule {}

@@ -28,6 +28,7 @@ import ListAuditLogExtsParams = AuditlogService.ListAuditLogExtsParams;
     selector: 'hbr-audit-log',
     templateUrl: './audit-log.component.html',
     styleUrls: ['./audit-log.component.scss'],
+    standalone: false,
 })
 export class AuditLogComponent {
     recentLogs: AuditLogExt[] = [];
