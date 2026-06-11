@@ -117,7 +117,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 		log.Debug("Refreshing token")
 		newToken, err := refreshToken(ctx, token)
 		if err != nil {
-			log.Warningf("failed to refresh token, username: %s, error: %v - continuing with stale token", username, err)
+			log.Warnf("failed to refresh token, username: %s, error: %v - continuing with stale token", username, err)
 		} else {
 			token = newToken
 			tb, err := json.Marshal(token)
