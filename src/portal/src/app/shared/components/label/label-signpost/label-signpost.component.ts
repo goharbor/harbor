@@ -20,6 +20,7 @@ import { Label } from '../../../services';
     selector: 'hbr-resource-label-signpost',
     templateUrl: './label-signpost.component.html',
     styleUrls: ['./label-signpost.component.scss'],
+    standalone: false,
 })
 export class LabelSignPostComponent {
     @Input() labels: Label[] = [];

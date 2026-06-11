@@ -68,6 +68,7 @@ import { JobType } from '../../../job-service-dashboard/job-service-dashboard.in
     selector: 'hbr-list-replication-rule',
     templateUrl: './list-replication-rule.component.html',
     styleUrls: ['./list-replication-rule.component.scss'],
+    standalone: false,
 })
 export class ListReplicationRuleComponent implements OnInit, OnDestroy {
     @Input() selectedId: number | string;

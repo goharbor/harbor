@@ -3,18 +3,23 @@
     [(clrWizardOpen)]="addRobotOpened"
     (clrWizardOnCancel)="cancel()">
     <clr-wizard-title>
-        <h3 *ngIf="!isEditMode" class="modal-title">
+        @if (!isEditMode) {
+        <h3 class="modal-title">
             {{ 'SYSTEM_ROBOT.CREATE_ROBOT' | translate }}
         </h3>
-        <h3 *ngIf="isEditMode" class="modal-title">
+        } @if (isEditMode) {
+        <h3 class="modal-title">
             {{ 'SYSTEM_ROBOT.EDIT_ROBOT' | translate }}
         </h3>
-        <p *ngIf="!isEditMode" class="mt-0">
+        } @if (!isEditMode) {
+        <p class="mt-0">
             {{ 'SYSTEM_ROBOT.CREATE_ROBOT_SUMMARY' | translate }}
         </p>
-        <p *ngIf="isEditMode" class="mt-0">
+        } @if (isEditMode) {
+        <p class="mt-0">
             {{ 'SYSTEM_ROBOT.EDIT_ROBOT_SUMMARY' | translate }}
-        </p></clr-wizard-title
+        </p>
+        }</clr-wizard-title
     >
     <clr-wizard-button [type]="'cancel'">{{
         'BUTTON.CANCEL' | translate
@@ -35,12 +40,14 @@
         <ng-template clrPageTitle>{{
             'ROBOT_ACCOUNT.BASIC_INFO' | translate
         }}</ng-template>
-        <form #robotForm="ngForm" class="clr-form clr-form-horizontal">
+        <form clrForm #robotForm="ngForm" class="clr-form clr-form-horizontal">
+            @if (addRobotOpened) {
             <section class="form-block">
                 <div class="clr-form-control">
                     <label for="name" class="clr-control-label required"
                         >{{ 'P2P_PROVIDER.NAME' | translate }}
-                        <clr-tooltip *ngIf="!isEditMode">
+                        @if (!isEditMode) {
+                        <clr-tooltip>
                             <clr-icon
                                 clrTooltipTrigger
                                 shape="info-circle"
@@ -55,6 +62,7 @@
                                 }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>
+                        }
                     </label>
                     <div
                         class="clr-control-container"
@@ -84,32 +92,22 @@
                                 class="spinner spinner-inline"
                                 [hidden]="!checkNameOnGoing"></span>
                         </div>
-                        <clr-control-error
-                            *ngIf="
-                                ((name.dirty || name.touched) &&
-                                    name.invalid) ||
-                                isNameExisting
-                            ">
-                            <span
-                                *ngIf="
-                                    !(
-                                        (name.dirty || name.touched) &&
-                                        name.invalid
-                                    ) && isNameExisting
-                                "
-                                >{{
-                                    'ROBOT_ACCOUNT.ACCOUNT_EXISTING' | translate
-                                }}</span
-                            >
-                            <span
-                                *ngIf="
-                                    (name.dirty || name.touched) && name.invalid
-                                "
-                                >{{
-                                    'SYSTEM_ROBOT.NAME_TOOLTIP' | translate
-                                }}</span
-                            >
+                        @if ( ((name.dirty || name.touched) && name.invalid) ||
+                        isNameExisting ) {
+                        <clr-control-error>
+                            @if ( !( (name.dirty || name.touched) &&
+                            name.invalid ) && isNameExisting ) {
+                            <span>{{
+                                'ROBOT_ACCOUNT.ACCOUNT_EXISTING' | translate
+                            }}</span>
+                            } @if ( (name.dirty || name.touched) && name.invalid
+                            ) {
+                            <span>{{
+                                'SYSTEM_ROBOT.NAME_TOOLTIP' | translate
+                            }}</span>
+                            }
                         </clr-control-error>
+                        }
                     </div>
                 </div>
                 <clr-textarea-container class="mt-2">
@@ -120,6 +118,7 @@
                         type="text"
                         id="description"
                         name="description"
+                        [ngModelOptions]="{ standalone: true }"
                         [(ngModel)]="systemRobot.description"></textarea>
                 </clr-textarea-container>
                 <div class="clr-form-control mt-2">
@@ -156,13 +155,15 @@
                                     [(ngModel)]="expirationType"
                                     id="expiration-type"
                                     class="clr-select">
-                                    <option *ngIf="!isEditMode" value="default">
+                                    @if (!isEditMode) {
+                                    <option value="default">
                                         {{ systemExpirationDays }}
                                         {{
                                             'SYSTEM_ROBOT.EXPIRATION_DEFAULT'
                                                 | translate
                                         }}
                                     </option>
+                                    }
                                     <option value="days">
                                         {{
                                             'SYSTEM_ROBOT.EXPIRATION_DAYS'
@@ -197,40 +198,31 @@
                                 <span
                                     class="spinner spinner-inline"
                                     [hidden]="!loadingSystemConfig"></span>
-                                <clr-control-error
-                                    *ngIf="
-                                        ((expiration.dirty ||
-                                            expiration.touched) &&
-                                            expiration.invalid) ||
-                                        isExpirationInvalid()
-                                    ">
+                                @if ( ((expiration.dirty || expiration.touched)
+                                && expiration.invalid) || isExpirationInvalid()
+                                ) {
+                                <clr-control-error>
                                     {{
                                         'SYSTEM_ROBOT.EXPIRATION_REQUIRED'
                                             | translate
                                     }}
                                 </clr-control-error>
+                                }
                             </div>
                         </div>
-                        <clr-control-helper
-                            *ngIf="
-                                (isEditMode &&
-                                    systemRobot?.duration > 0 &&
-                                    !(
-                                        (expiration.dirty ||
-                                            expiration.touched) &&
-                                        expiration.invalid
-                                    )) ||
-                                isExpirationInvalid()
-                            ">
+                        @if ( (isEditMode && systemRobot?.duration > 0 && !(
+                        (expiration.dirty || expiration.touched) &&
+                        expiration.invalid )) || isExpirationInvalid() ) {
+                        <clr-control-helper>
                             <span
                                 [ngClass]="{
                                     showWarning: shouldShowWarning()
                                 }">
+                                @if (shouldShowWarning()) {
                                 <clr-icon
-                                    *ngIf="shouldShowWarning()"
                                     class="alert-icon"
-                                    shape="exclamation-triangle"></clr-icon
-                                ><span>{{
+                                    shape="exclamation-triangle"></clr-icon>
+                                }<span>{{
                                     'SYSTEM_ROBOT.EXPIRES_AT' | translate
                                 }}</span
                                 >:
@@ -240,9 +232,11 @@
                                 }}</span>
                             </span>
                         </clr-control-helper>
+                        }
                     </div>
                 </div>
             </section>
+            }
         </form>
     </clr-wizard-page>
     <clr-wizard-page class="pb-0">
@@ -271,6 +265,7 @@
         }}</ng-template>
         <inline-alert></inline-alert>
         <form class="clr-form clr-form-horizontal pb-0 pt-0">
+            @if (addRobotOpened) {
             <section class="form-block">
                 <div class="clr-form-control mt-1">
                     <label class="clr-control-label">{{
@@ -305,16 +300,16 @@
                         </clr-checkbox-wrapper>
                     </div>
                 </div>
-                <div class="clr-form-control mt-0" *ngIf="coverAll">
+                @if (coverAll) {
+                <div class="clr-form-control mt-0">
                     <robot-permissions-panel
                         [mode]="PermissionSelectPanelModes.NORMAL"
                         [(permissionsModel)]="permissionForCoverAll.access"
                         [candidatePermissions]="robotMetadata?.project">
                     </robot-permissions-panel>
                 </div>
-                <div
-                    class="clr-form-control mt-1"
-                    *ngIf="showPage3 && !coverAll">
+                } @if (showPage3 && !coverAll) {
+                <div class="clr-form-control mt-1">
                     <app-list-all-projects
                         [initDataForEdit]="
                             isEditMode ? systemRobot.permissions : null
@@ -322,7 +317,9 @@
                         [robotMetadata]="robotMetadata"
                         class="all-projects"></app-list-all-projects>
                 </div>
+                }
             </section>
+            }
         </form>
     </clr-wizard-page>
 </clr-wizard>

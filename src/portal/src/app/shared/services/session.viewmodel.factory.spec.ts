@@ -19,7 +19,7 @@ describe('SessionViewmodelFactory', () => {
     beforeEach(() => TestBed.configureTestingModule({}));
 
     it('should be created', () => {
-        const service: SessionViewmodelFactory = TestBed.get(
+        const service: SessionViewmodelFactory = TestBed.inject(
             SessionViewmodelFactory
         );
         expect(service).toBeTruthy();

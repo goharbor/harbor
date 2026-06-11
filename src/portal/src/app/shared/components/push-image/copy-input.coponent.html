@@ -1,5 +1,7 @@
 <div>
-    <div class="command-title" *ngIf="!iconMode">{{ headerTitle }}</div>
+    @if (!iconMode) {
+    <div class="command-title">{{ headerTitle }}</div>
+    }
     <div>
         <span [class.hide]="iconMode">
             <input

@@ -23,6 +23,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
     selector: 'sign-up',
     templateUrl: 'sign-up.component.html',
     styleUrls: ['../../common.scss'],
+    standalone: false,
 })
 export class SignUpComponent {
     opened: boolean = false;
