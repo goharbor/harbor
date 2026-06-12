@@ -17,7 +17,6 @@ package security
 import (
 	"net/http"
 	"net/http/httptest"
-	"time"
 
 	"github.com/beego/beego/v2/server/web"
 
@@ -46,8 +45,5 @@ func (s *session) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	log.Debugf("a session security context generated for request %s %s", req.Method, req.URL.Path)
-	t0 := time.Now()
-	ctx := local.NewSecurityContext(&user)
-	log.Infof("[TIMING:security_ctx] create=%v user=%s", time.Since(t0), user.Username)
-	return ctx
+	return local.NewSecurityContext(&user)
 }

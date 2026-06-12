@@ -17,13 +17,11 @@ package local
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/role"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/admin"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -90,7 +88,6 @@ func (s *SecurityContext) IsSolutionUser() bool {
 
 // Can returns whether the user can do action on resource
 func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource types.Resource) bool {
-	t0 := time.Now()
 	s.once.Do(func() {
 		var evaluators evaluator.Evaluators
 		if s.IsSysAdmin() {
@@ -102,7 +99,5 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 		s.evaluator = evaluators
 	})
 
-	result := s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
-	log.Infof("[TIMING:Can] action=%s resource=%s total=%v", action, resource, time.Since(t0))
-	return result
+	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
 }

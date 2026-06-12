@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -483,7 +482,6 @@ func (d *controller) populatePermissions(ctx context.Context, r *Role) error {
 	for scope, accesses := range accessMap {
 		p := &Permission{}
 		p.Scope = scope
-		//TODO MGS this will not show a lot of permissions, as the role permissions are not defined
 		p.Kind = LEVELROLE
 		p.Namespace = "*"
 		p.Access = accesses
@@ -492,113 +490,3 @@ func (d *controller) populatePermissions(ctx context.Context, r *Role) error {
 	r.Permissions = permissions
 	return nil
 }
-
-// convertScope converts the db scope into role model
-// /system    =>  Kind: system  Namespace: /
-// /project/* =>  Kind: project Namespace: *
-// /project/1 =>  Kind: project Namespace: library
-/*
-func (d *controller) convertScope(ctx context.Context, scope string) (kind, namespace string, err error) {
-	if scope == "" {
-		return
-	}
-	if scope == SCOPEALLPROJECT {
-		kind = LEVELPROJECT
-		namespace = "*"
-	} else {
-		kind = LEVELPROJECT
-		ns, ok := rbac_project.NamespaceParse(types.Resource(scope))
-		if !ok {
-			log.Debugf("got no namespace from the resource %s", scope)
-			return "", "", errors.Errorf("got no namespace from the resource %s", scope)
-		}
-		pro, err := d.proMgr.Get(ctx, ns.Identity())
-		if err != nil {
-			return "", "", err
-		}
-		namespace = pro.Name
-	}
-	return
-}
-
-// toScope ...
-func (d *controller) toScope(ctx context.Context, p *Permission) (string, error) {
-	switch p.Kind {
-	case LEVELSYSTEM:
-		if p.Namespace != "/" {
-			return "", errors.New(nil).WithMessage("unknown namespace").WithCode(errors.BadRequestCode)
-		}
-		return SCOPESYSTEM, nil
-	case LEVELPROJECT:
-		if p.Namespace == "*" {
-			return SCOPEALLPROJECT, nil
-		}
-		pro, err := d.proMgr.Get(ctx, p.Namespace)
-		if err != nil {
-			return "", err
-		}
-		return fmt.Sprintf("/project/%d", pro.ProjectID), nil
-	}
-	return "", errors.New(nil).WithMessage("unknown role kind").WithCode(errors.BadRequestCode)
-}
-*/
-/*
-// set the project info if it's a project level role
-
-	func SetProject(ctx context.Context, r *Role) error {
-		if r == nil {
-			return nil
-		}
-		if r.Level == LEVELPROJECT {
-			pro, err := project.New().Get(ctx, r.Permissions[0].Namespace)
-			if err != nil {
-				return err
-			}
-			r.ProjectName = pro.Name
-			r.ProjectID = pro.ProjectID
-		}
-		return nil
-	}
-
-	func CreateSec(salt ...string) (string, string, string, error) {
-		var secret, pwd string
-		options := []retry.Option{
-			retry.InitialInterval(time.Millisecond * 500),
-			retry.MaxInterval(time.Second * 10),
-			retry.Timeout(time.Minute),
-			retry.Callback(func(err error, sleep time.Duration) {
-				log.Debugf("failed to generate secret for role, retry after %s : %v", sleep, err)
-			}),
-		}
-
-		if err := retry.Retry(func() error {
-			pwd = utils.GenerateRandomString()
-			if !IsValidSec(pwd) {
-				return errors.New(nil).WithMessage("invalid secret format")
-			}
-			return nil
-		}, options...); err != nil {
-			return "", "", "", errors.Wrap(err, "failed to generate an valid random secret for role in one minute, please try again")
-		}
-
-		var saltTmp string
-		if len(salt) != 0 {
-			saltTmp = salt[0]
-		} else {
-			saltTmp = utils.GenerateRandomString()
-		}
-		secret = utils.Encrypt(pwd, saltTmp, utils.SHA256)
-		return secret, pwd, saltTmp, nil
-	}
-*/
-var (
-	hasLower  = regexp.MustCompile(`[a-z]`)
-	hasUpper  = regexp.MustCompile(`[A-Z]`)
-	hasNumber = regexp.MustCompile(`\d`)
-)
-
-/*
-func IsValidSec(secret string) bool {
-	return len(secret) >= 8 && len(secret) <= 128 && hasLower.MatchString(secret) && hasUpper.MatchString(secret) && hasNumber.MatchString(secret)
-}
-*/
