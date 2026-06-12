@@ -28,10 +28,10 @@ function uploader {
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
-    # for main, will use 'dev' as the tag name
+    # for main, will use 'dev-legacy' as the tag name (decoupled from the dev tag built on the new main branch)
     # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
     if [[ $1 == "main" ]]; then
-      image_tag=dev
+      image_tag=dev-legacy
     fi
     if [[ $1 == "release-"* ]]; then
       image_tag=$2-dev

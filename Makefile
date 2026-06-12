@@ -100,11 +100,12 @@ GEN_TLS=
 
 # version prepare
 # for docker image tag
-VERSIONTAG=dev
+VERSIONTAG=dev-legacy
 # for base docker image tag
 BUILD_BASE=true
 PUSHBASEIMAGE=false
-BASEIMAGETAG=dev
+# use dev-legacy to decouple the 2.15 base images from the dev tag built on the main branch
+BASEIMAGETAG=dev-legacy
 # for skip build prepare and log container while BUILD_INSTALLER=false
 BUILD_INSTALLER=true
 BUILDBASETARGET=trivy-adapter core db jobservice nginx portal valkey registry registryctl exporter
@@ -117,7 +118,7 @@ BASEIMAGENAMESPACE=goharbor
 PULL_BASE_FROM_DOCKERHUB=true
 
 # for harbor package name
-PKGVERSIONTAG=dev
+PKGVERSIONTAG=dev-legacy
 
 PREPARE_VERSION_NAME=versions
 
@@ -308,18 +309,22 @@ endef
 # lint swagger doc
 SPECTRAL_IMAGENAME=$(IMAGENAMESPACE)/spectral
 SPECTRAL_VERSION=v6.14.2
-SPECTRAL_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/spectral/Dockerfile --build-arg NODE=${NODEBUILDIMAGE} --build-arg SPECTRAL_VERSION=${SPECTRAL_VERSION} -t ${SPECTRAL_IMAGENAME}:$(SPECTRAL_VERSION) .
-SPECTRAL=$(RUNCONTAINER) $(SPECTRAL_IMAGENAME):$(SPECTRAL_VERSION)
+# use a -legacy suffixed image tag to decouple the helper image from the one built on the main branch
+SPECTRAL_IMAGETAG=$(SPECTRAL_VERSION)-legacy
+SPECTRAL_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/spectral/Dockerfile --build-arg NODE=${NODEBUILDIMAGE} --build-arg SPECTRAL_VERSION=${SPECTRAL_VERSION} -t ${SPECTRAL_IMAGENAME}:$(SPECTRAL_IMAGETAG) .
+SPECTRAL=$(RUNCONTAINER) $(SPECTRAL_IMAGENAME):$(SPECTRAL_IMAGETAG)
 
 lint_apis:
-	$(call prepare_docker_image,${SPECTRAL_IMAGENAME},${SPECTRAL_VERSION},${SPECTRAL_IMAGE_BUILD_CMD})
+	$(call prepare_docker_image,${SPECTRAL_IMAGENAME},${SPECTRAL_IMAGETAG},${SPECTRAL_IMAGE_BUILD_CMD})
 	$(SPECTRAL) lint ./api/v2.0/swagger.yaml
 
 SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
 SWAGGER_VERSION=v0.33.1
-SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
+# use a -legacy suffixed image tag to decouple the helper image from the one built on the main branch
+SWAGGER_IMAGETAG=$(SWAGGER_VERSION)-legacy
+SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_IMAGETAG}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
-SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) .
+SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_IMAGETAG) .
 
 # $1 the path of swagger spec
 # $2 the path of base directory for generating the files
@@ -332,17 +337,19 @@ define swagger_generate_server
 endef
 
 gen_apis:
-	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_VERSION},${SWAGGER_IMAGE_BUILD_CMD})
+	$(call prepare_docker_image,${SWAGGER_IMAGENAME},${SWAGGER_IMAGETAG},${SWAGGER_IMAGE_BUILD_CMD})
 	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
 
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
 MOCKERY_VERSION=v2.53.3
-MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_VERSION}
-MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_VERSION) .
+# use a -legacy suffixed image tag to decouple the helper image from the one built on the main branch
+MOCKERY_IMAGETAG=$(MOCKERY_VERSION)-legacy
+MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_IMAGETAG}
+MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_IMAGETAG) .
 
 gen_mocks:
-	$(call prepare_docker_image,${MOCKERY_IMAGENAME},${MOCKERY_VERSION},${MOCKERY_IMAGE_BUILD_CMD})
+	$(call prepare_docker_image,${MOCKERY_IMAGENAME},${MOCKERY_IMAGETAG},${MOCKERY_IMAGE_BUILD_CMD})
 	${MOCKERY} mockery
 
 mocks_check: gen_mocks

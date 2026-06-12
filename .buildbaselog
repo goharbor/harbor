@@ -5,6 +5,9 @@
 
 %changelog
 
+*   Jun 12 2026
+-   Rebuild base images with the dev-legacy tag to decouple from the dev tag built on the main branch
+
 *   Add date here... Add signature here...
 -   Add your reason here...
 

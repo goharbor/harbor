@@ -78,7 +78,7 @@ jobs:
           if [[ $target_branch == "release-"* ]]; then
             Harbor_Build_Base_Tag=$target_release_version
           else
-            Harbor_Build_Base_Tag=dev
+            Harbor_Build_Base_Tag=dev-legacy
           fi
 
           build_base_params=" BUILD_BASE=false"
