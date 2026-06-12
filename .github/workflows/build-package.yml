@@ -241,34 +241,37 @@ jobs:
             echo "base_tag=dev" >> $GITHUB_OUTPUT
           fi
       - name: Login to Docker Hub
-        if: secrets.DOCKER_HUB_USERNAME != ''
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-      - name: Create multi-arch manifests
-        if: secrets.DOCKER_HUB_USERNAME != ''
         run: |
-          set -euo pipefail
-          image_tag="${{ steps.tag.outputs.image_tag }}"
-          cat _repos_*.txt | sort -u | while IFS= read -r repo; do
-            [ -z "$repo" ] && continue
-            echo "Creating manifest ${repo}:${image_tag}"
-            docker buildx imagetools create -t "${repo}:${image_tag}" \
-              "${repo}:${image_tag}-amd64" \
-              "${repo}:${image_tag}-arm64"
-          done
-          # The harbor-*-base images are only (re)built and pushed (arch-suffixed)
-          # when BUILD_BASE_IMAGE decided to rebuild the base; otherwise the
-          # suffixed tags from this run don't exist and there is nothing to combine.
-          if [ "${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}" = "true" ]; then
-            base_tag="${{ steps.tag.outputs.base_tag }}"
-            cat _base_repos_*.txt | sort -u | while IFS= read -r repo; do
-              [ -z "$repo" ] && continue
-              echo "Creating manifest ${repo}:${base_tag}"
-              docker buildx imagetools create -t "${repo}:${base_tag}" \
-                "${repo}:${base_tag}-amd64" \
-                "${repo}:${base_tag}-arm64"
-            done
+          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
           fi
-          docker logout
+      - name: Create multi-arch manifests
+        run: |
+          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            set -euo pipefail
+            image_tag="${{ steps.tag.outputs.image_tag }}"
+            cat _repos_*.txt | sort -u | while IFS= read -r repo; do
+              [ -z "$repo" ] && continue
+              echo "Creating manifest ${repo}:${image_tag}"
+              docker buildx imagetools create -t "${repo}:${image_tag}" \
+                "${repo}:${image_tag}-amd64" \
+                "${repo}:${image_tag}-arm64"
+            done
+            # The harbor-*-base images are only (re)built and pushed (arch-suffixed)
+            # when BUILD_BASE_IMAGE decided to rebuild the base; otherwise the
+            # suffixed tags from this run don't exist and there is nothing to combine.
+            if [ "${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}" = "true" ]; then
+              base_tag="${{ steps.tag.outputs.base_tag }}"
+              cat _base_repos_*.txt | sort -u | while IFS= read -r repo; do
+                [ -z "$repo" ] && continue
+                echo "Creating manifest ${repo}:${base_tag}"
+                docker buildx imagetools create -t "${repo}:${base_tag}" \
+                  "${repo}:${base_tag}-amd64" \
+                  "${repo}:${base_tag}-arm64"
+              done
+            fi
+            docker logout
+          fi
       - name: Login to ghcr.io
         run: printf '%s\n' "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
       - name: Create ghcr.io multi-arch manifests
