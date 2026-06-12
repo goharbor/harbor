@@ -7,6 +7,7 @@ on:
     branches:
       - develop
       - release-*
+  workflow_dispatch:
 
 # Serialize runs per branch so concurrent pushes don't race when pushing the
 # shared mutable tags (dev / latest) and the multi-arch manifests. Queue rather
@@ -76,7 +77,6 @@ jobs:
         BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
-<<<<<<< HEAD
       - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
