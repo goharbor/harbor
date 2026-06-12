@@ -88,14 +88,20 @@ jobs:
           docker_version: 20.10
           docker_channel: stable
       - uses: actions/checkout@v6
+      - uses: jitterbit/get-changed-files@v1
+        id: changed-files
+        continue-on-error: true
+        with:
+          format: space-delimited
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v6
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
         if: |
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
+            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, 'Dockerfile.base')) ||
+            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, 'VERSION')) ||
+            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, '.buildbaselog')) ||
             github.ref == 'refs/heads/develop'
         continue-on-error: true
         run: |
