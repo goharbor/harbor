@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
@@ -155,17 +156,149 @@ func (d *dao) GetByName(ctx context.Context, name string) (*models.Project, erro
 	return project, nil
 }
 
+// customSortFields defines the non-column fields that require special SQL handling for sorting.
+var customSortFields = map[string]bool{
+	"repo_count": true,
+	"owner_name": true,
+}
+
+// projectSortableColumns maps valid sort keys to their SQL column expressions on the project table.
+var projectSortableColumns = map[string]string{
+	"project_id":    "p.project_id",
+	"ProjectID":     "p.project_id",
+	"owner_id":      "p.owner_id",
+	"OwnerID":       "p.owner_id",
+	"name":          "p.name",
+	"Name":          "p.name",
+	"creation_time": "p.creation_time",
+	"CreationTime":  "p.creation_time",
+	"update_time":   "p.update_time",
+	"UpdateTime":    "p.update_time",
+	"deleted":       "p.deleted",
+	"Deleted":       "p.deleted",
+	"registry_id":   "p.registry_id",
+	"RegistryID":    "p.registry_id",
+}
+
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.Project, error) {
 	query = q.MustClone(query)
 	query.Keywords["deleted"] = false
 
-	qs, err := orm.QuerySetter(ctx, &models.Project{}, query)
+	// Check if any requested sorts need custom SQL handling.
+	var customSorts []*q.Sort
+	var standardSorts []*q.Sort
+	for _, s := range query.Sorts {
+		if customSortFields[s.Key] {
+			customSorts = append(customSorts, s)
+		} else {
+			standardSorts = append(standardSorts, s)
+		}
+	}
+
+	// If no custom sorts, use the standard ORM path.
+	if len(customSorts) == 0 {
+		qs, err := orm.QuerySetter(ctx, &models.Project{}, query)
+		if err != nil {
+			return nil, err
+		}
+		projects := []*models.Project{}
+		if _, err := qs.All(&projects); err != nil {
+			return nil, err
+		}
+		return projects, nil
+	}
+
+	return d.listWithCustomSort(ctx, query, customSorts, standardSorts)
+}
+
+// listWithCustomSort handles listing projects when sorting by non-column fields like repo_count or owner_name.
+// It uses the ORM to get filtered project IDs, then fetches and sorts via raw SQL.
+func (d *dao) listWithCustomSort(ctx context.Context, query *q.Query, customSorts, standardSorts []*q.Sort) ([]*models.Project, error) {
+	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	projects := []*models.Project{}
-	if _, err := qs.All(&projects); err != nil {
+	// Phase 1: Get filtered project IDs using the ORM (no pagination, no custom sorts).
+	idQuery := q.MustClone(query)
+	idQuery.Sorts = nil
+	idQuery.PageSize = 0
+	idQuery.PageNumber = 0
+
+	qs, err := orm.QuerySetter(ctx, &models.Project{}, idQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	var ids orm.ParamsList
+	if _, err := qs.ValuesFlat(&ids, "project_id"); err != nil {
+		return nil, err
+	}
+
+	if len(ids) == 0 {
+		return []*models.Project{}, nil
+	}
+
+	// Phase 2: Build raw SQL with JOINs for custom sort fields.
+	sql := `SELECT p.project_id, p.owner_id, p.name, p.creation_time, p.update_time, p.deleted, p.registry_id FROM project p`
+	var params []any
+
+	needsOwnerJoin := false
+	needsRepoCountJoin := false
+	for _, s := range customSorts {
+		switch s.Key {
+		case "owner_name":
+			needsOwnerJoin = true
+		case "repo_count":
+			needsRepoCountJoin = true
+		}
+	}
+
+	if needsOwnerJoin {
+		sql += ` LEFT JOIN harbor_user hu ON p.owner_id = hu.user_id`
+	}
+	if needsRepoCountJoin {
+		sql += ` LEFT JOIN (SELECT project_id, COUNT(*) as repo_count FROM repository GROUP BY project_id) rc ON p.project_id = rc.project_id`
+	}
+
+	sql += fmt.Sprintf(` WHERE p.project_id IN (%s)`, orm.ParamPlaceholderForIn(len(ids)))
+	for _, id := range ids {
+		params = append(params, id)
+	}
+
+	// Build ORDER BY: custom sorts first, then standard sorts.
+	var orderClauses []string
+	for _, s := range customSorts {
+		dir := "ASC"
+		if s.DESC {
+			dir = "DESC"
+		}
+		switch s.Key {
+		case "owner_name":
+			orderClauses = append(orderClauses, fmt.Sprintf("hu.username %s", dir))
+		case "repo_count":
+			orderClauses = append(orderClauses, fmt.Sprintf("COALESCE(rc.repo_count, 0) %s", dir))
+		}
+	}
+	for _, s := range standardSorts {
+		col, ok := projectSortableColumns[s.Key]
+		if !ok {
+			continue
+		}
+		dir := "ASC"
+		if s.DESC {
+			dir = "DESC"
+		}
+		orderClauses = append(orderClauses, fmt.Sprintf("%s %s", col, dir))
+	}
+	if len(orderClauses) > 0 {
+		sql += " ORDER BY " + strings.Join(orderClauses, ", ")
+	}
+
+	sql, params = orm.PaginationOnRawSQL(query, sql, params)
+
+	var projects []*models.Project
+	if _, err := o.Raw(sql, params...).QueryRows(&projects); err != nil {
 		return nil, err
 	}
 
