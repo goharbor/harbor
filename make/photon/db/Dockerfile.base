@@ -3,13 +3,10 @@
 # (only used by pg_upgrade) in its own stage and copy it into the pg18 image.
 FROM goharbor/photon:5.0 AS pg15
 
-RUN cp -a /etc/yum.repos.d /etc/yum.repos.d.bak \
-    && sed -i 's/^enabled\s*=.*/enabled=1/' /etc/yum.repos.d/*.repo \
-    && sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
+RUN sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
     && tdnf clean all \
     && tdnf makecache \
-    && tdnf install -y postgresql15-server \
-    && tdnf clean all
+    && tdnf install -y postgresql15-server
 
 FROM goharbor/photon:5.0
 
