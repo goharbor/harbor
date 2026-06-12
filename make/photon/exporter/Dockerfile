@@ -1,7 +1,7 @@
 ARG build_image
 ARG harbor_base_image_version
 ARG harbor_base_namespace
-ARG harbor_version=dev
+ARG harbor_version=dev-legacy
 ARG git_commit=unknown
 
 FROM ${build_image} AS build

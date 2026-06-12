@@ -10,7 +10,7 @@ docker_compose_yml_path = '/compose_location/docker-compose.yml'
 # render docker-compose
 def prepare_docker_compose(configs, with_trivy):
     versions = parse_versions()
-    VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
+    VERSION_TAG = versions.get('VERSION_TAG') or 'dev-legacy'
 
     rendering_variables = {
         'version': VERSION_TAG,
