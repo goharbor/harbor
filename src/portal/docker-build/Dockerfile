@@ -1,4 +1,4 @@
-FROM node:22.22.3 as builder
+FROM registry.goharbor.io/dockerhub/library/node:22.22.3 as builder
 
 WORKDIR /build_dir
 
@@ -16,7 +16,7 @@ RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json
 RUN cd app-swagger-ui && npm install --unsafe-perm
 RUN cd app-swagger-ui && npm run build
 
-FROM nginx:1.17
+FROM registry.goharbor.io/dockerhub/library/nginx:1.17
 
 
 

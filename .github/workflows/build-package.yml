@@ -47,7 +47,7 @@ jobs:
           # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
           # has shipped broken releases that fail arm64 emulation with
           # 'exec /bin/sh: no such file or directory' during container init.
-          image: tonistiigi/binfmt:qemu-v9.2.2
+          image: registry.goharbor.io/dockerhub/tonistiigi/binfmt:qemu-v9.2.2
           platforms: linux/amd64,linux/arm64
       - name: Set up Docker Buildx
         if: steps.decide.outputs.build_base == 'true'
@@ -132,6 +132,10 @@ jobs:
             # Use the locally built per-arch base, not the remote ":<tag>" manifest,
             # which is only updated later in CREATE_MANIFEST and may be stale.
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=false PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+          fi
+
+          if [ "$BUILD_BASE" != "true" ]; then
+            build_base_params="$build_base_params BASEIMAGENAMESPACE=registry.goharbor.io/dockerhub/goharbor"
           fi
 
           sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}

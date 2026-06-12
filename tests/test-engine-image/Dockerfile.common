@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as tool_builder
+FROM registry.goharbor.io/dockerhub/library/ubuntu:20.04 as tool_builder
 ENV TZ=Asia/Shanghai \
     DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
