@@ -37,7 +37,7 @@ func TestFetchOrSaveConcurrency(t *testing.T) {
 	}
 
 	c.On("Fetch", mock.Anything, key, mock.Anything).Return(ErrNotFound)
-	c.On("Save", mock.Anything, key, "test-value", mock.Anything).Return(nil).Once()
+	c.On("Save", mock.Anything, key, "test-value").Return(nil).Once()
 
 	var wg sync.WaitGroup
 	for range 10 {

@@ -142,6 +142,22 @@ func (suite *FetchOrSaveTestSuite) TestSaveCalledEvenWhenContextCanceled() {
 	c.AssertNumberOfCalls(suite.T(), "Save", 1)
 }
 
+// The shared singleflight result is copied to each caller through the codec,
+// so a builder result the codec cannot encode must surface as an error.
+func (suite *FetchOrSaveTestSuite) TestBuildResultNotEncodable() {
+	c := &mockCache{}
+
+	mock.OnAnything(c, "Fetch").Return(ErrNotFound)
+	mock.OnAnything(c, "Save").Return(nil)
+
+	var ch chan struct{}
+	err := FetchOrSave(suite.ctx, c, "key-not-encodable", &ch, func() (any, error) {
+		return make(chan struct{}), nil
+	})
+
+	suite.Error(err)
+}
+
 // On a concurrent cold miss, builder runs exactly once (singleflight dedup)
 // and every concurrent caller receives the built value in its own pointer.
 func (suite *FetchOrSaveTestSuite) TestConcurrentCallersShareResult() {
