@@ -22,4 +22,6 @@ const (
 	SlackTopic = "slack"
 	// EmailTopic is topic for sending email payload
 	EmailTopic = "email"
+	// TelegramTopic is topic for sending telegram payload
+	TelegramTopic = "telegram"
 )
