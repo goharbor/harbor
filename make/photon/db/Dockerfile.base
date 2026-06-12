@@ -1,4 +1,4 @@
-FROM goharbor/photon:5.0
+FROM goharbor/photon:5.0-legacy
 
 ENV PGDATA /var/lib/postgresql/data
 
