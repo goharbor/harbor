@@ -81,11 +81,11 @@ export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
 export NPM_REGISTRY=$NPM_REGISTRY
-# release branch must have their own base image with branch name, master and others will use the dev as base.
+# release branch must have their own base image with branch name, master and others will use the dev-legacy as base (decoupled from the dev tag built on the main branch).
 if [[ $DRONE_BRANCH == "release-"* ]]; then
   Harbor_Build_Base_Tag=$target_release_version
 else
-  Harbor_Build_Base_Tag=dev
+  Harbor_Build_Base_Tag=dev-legacy
 fi
 export Harbor_Build_Base_Tag=$Harbor_Build_Base_Tag
 
@@ -114,10 +114,10 @@ function package_installer {
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
-    # for master, will use 'dev' as the tag name
+    # for master, will use 'dev-legacy' as the tag name (decoupled from the dev tag built on the new main branch)
     # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
     if [[ $DRONE_BRANCH == "master" ]]; then
-      image_tag=dev
+      image_tag=dev-legacy
     fi
     if [[ $DRONE_BRANCH == "release-"* ]]; then
       image_tag=$Harbor_Assets_Version-dev

@@ -29,8 +29,8 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
-docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
+sudo make build -e BUILDTARGET="_build_db _build_registry _build_valkey _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
+docker run --rm -v /:/hostfs:z goharbor/prepare:dev-legacy gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
 sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
@@ -40,7 +40,7 @@ sudo ./tests/testprepare.sh
 cd tests && sudo ./ldapprepare.sh && cd ..
 env
 docker images
-sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
+sudo sed -i 's/__version__/dev-legacy/g' ./make/docker-compose.test.yml
 cat ./make/docker-compose.test.yml
 sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
 sudo mkdir -p /storage && sudo chown 10000:10000 -R /storage

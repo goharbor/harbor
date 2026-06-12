@@ -8,6 +8,9 @@
 *   Add date here... Add signature here...
 -   Add your reason here...
 
+*   Jun 12 2026 <yan-yw.wang@broadcom.com>
+-   Rebuild base images with the dev-legacy tag to decouple from the dev tag built on the main branch
+
 *   May 18 2026 <aaron.an@broadcom.com>
 -   Refresh base image
 

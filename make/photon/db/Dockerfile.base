@@ -1,20 +1,37 @@
-FROM goharbor/photon:5.0
+# pg15 and pg18 can't share one libxml2: pg15 needs libxml2.so.2, pg18 needs
+# libxml2.so.16, and no single libxml2 package provides both. So build pg15
+# (only used by pg_upgrade) in its own stage and copy it into the pg18 image.
+FROM goharbor/photon:5.0-legacy AS pg15
 
-ENV PGDATA /var/lib/postgresql/data
+RUN sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
+    && tdnf clean all \
+    && tdnf makecache \
+    && tdnf install -y postgresql15-server
+
+FROM goharbor/photon:5.0-legacy
+
+ENV PGDATA=/var/lib/postgresql/data
 
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
-RUN tdnf install -y postgresql14-server >> /dev/null
-RUN tdnf install -y gzip postgresql15-server findutils bc >> /dev/null \
+# Install pg18 (target version) + helpers. The base enables only the pinned
+# photon-snapshot repo, so temporarily enable all repos + un-pin the snapshot to
+# resolve deps, then restore the repo config.
+RUN tdnf install -y gzip findutils bc postgresql18-server >> /dev/null \
     && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
     && chown -R postgres:postgres /run/postgresql \
     && chmod 2777 /run/postgresql \
     && mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" \
-    && sed -i "s|#listen_addresses = 'localhost'.*|listen_addresses = '*'|g" /usr/pgsql/15/share/postgresql/postgresql.conf.sample \
-    && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/15/share/postgresql/postgresql.conf.sample \
+    && sed -i "s|#listen_addresses = 'localhost'.*|listen_addresses = '*'|g" /usr/pgsql/18/share/postgresql/postgresql.conf.sample \
+    && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/18/share/postgresql/postgresql.conf.sample \
     && tdnf clean all
+
+# Copy pg15 (for pg_upgrade) and its libxml2.so.2 from the pg15 stage. The .so.2
+# and .so.16 files have different names, so both libxml2 versions coexist here.
+COPY --from=pg15 /usr/pgsql/15 /usr/pgsql/15
+COPY --from=pg15 /usr/lib/libxml2.so.2* /usr/lib/
 
 RUN tdnf install -y util-linux
