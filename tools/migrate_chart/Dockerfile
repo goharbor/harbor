@@ -1,4 +1,4 @@
-FROM python:3.8.5-slim
+FROM registry.goharbor.io/dockerhub/library/python:3.8.5-slim
 
 ENV HELM_EXPERIMENTAL_OCI=1
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt

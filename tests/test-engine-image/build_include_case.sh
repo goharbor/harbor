@@ -23,7 +23,7 @@ cp -r ../../api ./$CASE_DIRECTORY/
 cp ../../Makefile ./$CASE_DIRECTORY/
 
 cat > "$DOCKER_FILE" <<EOF
-FROM goharbor/harbor-e2e-engine:$E2E_BASE_TAG
+FROM registry.goharbor.io/dockerhub/goharbor/harbor-e2e-engine:$E2E_BASE_TAG
 COPY $CASE_DIRECTORY /drone
 EOF
 

@@ -1,4 +1,4 @@
-FROM goharbor/photon:5.0
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0
 
 RUN tdnf install -y shadow >> /dev/null \
     && tdnf clean all \

@@ -2,7 +2,7 @@
 # libxml2.so.16, and no single libxml2 package provides both. So build pg15
 # (only used by pg_upgrade) in its own stage and copy it into the pg18 image.
 # arm64 enables all repos + un-pins the snapshot to resolve deps; amd64 installs directly.
-FROM goharbor/photon:5.0 AS pg15
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0 AS pg15
 ARG TARGETARCH
 RUN if [ "${TARGETARCH:-amd64}" = "amd64" ]; then \
         cp -a /etc/yum.repos.d /etc/yum.repos.d.bak \
@@ -16,7 +16,7 @@ RUN if [ "${TARGETARCH:-amd64}" = "amd64" ]; then \
         tdnf install -y postgresql15-server; \
     fi
 
-FROM goharbor/photon:5.0
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0
 
 ARG TARGETARCH
 
