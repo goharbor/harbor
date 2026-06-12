@@ -111,9 +111,13 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		}
 		key := upstreamRegistryConnectionKey(art)
 		log.Debugf("handle blob, upstream registry connection limit key: %s", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
+		allowed, err := connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection())
+		if err != nil {
+			// Redis unavailable or script error → do NOT return 429
+			log.Errorf("connection limiter error (blob), skipping rate limit: %v", err)
+			return errors.NewErr(errors.ErrorCodeInternalError, err) // HTTP 500
+		} else if !allowed {
 			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
 			return tooManyRequestsError
 		}
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
@@ -255,9 +259,12 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		}
 		key := upstreamRegistryConnectionKey(art)
 		log.Debugf("handle manifest key %v", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
+		allowed, err := connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection())
+		if err != nil {
+			// Redis error → fail open
+			log.Errorf("connection limiter error (manifest), skipping rate limit: %v", err)
+		} else if !allowed {
 			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
 			return tooManyRequestsError
 		}
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
