@@ -630,6 +630,7 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete project member
+      description: Remove the specified project member from the project.
       operationId: deleteProjectMember
       tags:
         - member
@@ -652,6 +653,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/metadatas/':
@@ -1805,6 +1808,10 @@ paths:
               $ref: '#/definitions/AuditLogEventType'
         '401':
           $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/logs:
     get:
       summary: Get recent logs of the projects (deprecated)
@@ -2511,6 +2518,7 @@ paths:
   '/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}':
     put:
       summary: Update the immutable tag rule or enable or disable the rule
+      description: Update or toggle the specified immutable tag rule within the project. Returns 404 if the project or rule is not found.
       tags:
         - immutable
       operationId: UpdateImmuRule
@@ -2533,10 +2541,13 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     delete:
       summary: Delete the immutable tag rule.
+      description: Delete the specified immutable tag rule from the project. Returns 404 if the project or rule is not found.
       tags:
         - immutable
       operationId: DeleteImmuRule
@@ -2554,6 +2565,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/policies':
@@ -4192,6 +4205,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /system/gc:
     get:
       summary: Get gc results.
@@ -4860,6 +4875,7 @@ paths:
   /schedules:
     get:
       operationId: listSchedules
+      summary: List schedules
       description: List schedules
       tags:
         - schedule
@@ -4882,17 +4898,18 @@ paths:
             Link:
               description: Link to previous page and next page
               type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   /schedules/{job_type}/paused:
     get:
       operationId: getSchedulePaused
+      summary: Get scheduler paused status
       description: Get scheduler paused status
       tags:
         - schedule
@@ -4908,12 +4925,10 @@ paths:
           description: Get scheduler status successfully.
           schema:
             $ref: '#/definitions/SchedulerStatus'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   /ping:
@@ -4946,6 +4961,10 @@ paths:
           description: Get Retention Metadatas successfully.
           schema:
             $ref: '#/definitions/RetentionMetadata'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
 
   /retentions:
     post:
@@ -5521,6 +5540,7 @@ paths:
   /users:
     get:
       summary: List users
+      description: List users registered in Harbor. Requires system admin privileges.
       tags:
         - user
       operationId: listUsers
@@ -5580,6 +5600,7 @@ paths:
   /users/current:
     get:
       summary: Get current user info.
+      description: Get the profile of the currently authenticated user. Returns 412 if the caller is authenticated via a non-local context such as a robot account.
       tags:
         - user
       operationId: getCurrentUserInfo
@@ -5592,6 +5613,8 @@ paths:
             $ref: '#/definitions/UserResp'
         '401':
           $ref: '#/responses/401'
+        '412':
+          $ref: '#/responses/412'
         '500':
           $ref: '#/responses/500'
   /users/search:
@@ -5632,6 +5655,7 @@ paths:
   '/users/{user_id}':
     get:
       summary: Get a user's profile.
+      description: Get profile information for the specified user. System admins can access any user; regular users can only access their own profile.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: user_id
@@ -5657,6 +5681,7 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update user's profile.
+      description: Update profile fields (email, realname, comment) of a user. Regular users can only update their own profile.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: user_id
@@ -5677,12 +5702,12 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     delete:
@@ -5714,6 +5739,7 @@ paths:
   /users/{user_id}/sysadmin:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
+      description: Promote or demote a registered user to/from Harbor system administrator. Requires system admin privileges.
       tags:
        - user
       operationId: setUserSysAdmin
@@ -5740,7 +5766,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/500'
   '/users/{user_id}/password':
     put:
       summary: Change the password on a user that already exists.
@@ -5776,6 +5802,7 @@ paths:
   /users/current/permissions:
     get:
       summary: Get current user permissions.
+      description: Get the RBAC permission list for the currently authenticated user, optionally filtered by scope.
       tags:
         - user
       operationId: getCurrentUserPermissions
@@ -5801,9 +5828,7 @@ paths:
             items:
               $ref: '#/definitions/Permission'
         '401':
-          description: User need to log in first.
-        '500':
-          description: Internal errors.
+          $ref: '#/responses/401'
   '/users/{user_id}/cli_secret':
     put:
       summary: Set CLI secret for a user.

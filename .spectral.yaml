@@ -32,3 +32,15 @@ rules:
     then:
       field: parameters
       function: requireRequestId
+
+  operation-description:
+    description: Every operation must have a description field.
+    severity: error
+
+  operation-summary-required:
+    description: Every operation must have a summary field.
+    given: $.paths[*][*]
+    severity: error
+    then:
+      field: summary
+      function: truthy
