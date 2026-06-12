@@ -1,4 +1,4 @@
-FROM goharbor/photon:5.0
+FROM goharbor/photon:5.0-legacy
 
 RUN tdnf install -y tzdata shadow >> /dev/null \
     && tdnf clean all \
