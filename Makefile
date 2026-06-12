@@ -137,7 +137,7 @@ TRIVYADAPTERVERSION=v0.37.1-rc.1
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
 VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
-NODEBUILDIMAGE=node:22.22.3
+NODEBUILDIMAGE=registry.goharbor.io/dockerhub/library/node:22.22.3
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
@@ -179,7 +179,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.3
+GOBUILDIMAGE=registry.goharbor.io/dockerhub/library/golang:1.26.3
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build

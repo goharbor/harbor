@@ -8,7 +8,7 @@ sudo aws --version
 harbor_logs_bucket="harbor-ci-logs"
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-E2E_IMAGE="goharbor/harbor-e2e-engine:latest-api"
+E2E_IMAGE="registry.goharbor.io/dockerhub/goharbor/harbor-e2e-engine:latest-api"
 
 # GS util
 function uploader {

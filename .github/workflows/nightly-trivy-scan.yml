@@ -26,7 +26,7 @@ jobs:
         # tag 0.35.0, get the commit hash from https://github.com/aquasecurity/trivy-action.git
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
         with:
-          image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.tags }}'
+          image-ref: 'registry.goharbor.io/dockerhub/goharbor/${{ matrix.images }}:${{ matrix.tags }}'
           severity: 'CRITICAL,HIGH'
           format: 'template'
           template: '@/contrib/sarif.tpl'

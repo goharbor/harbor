@@ -1,5 +1,5 @@
 #ubuntm based image
-FROM ubuntu:20.04
+FROM registry.goharbor.io/dockerhub/library/ubuntu:20.04
 ENV TZ=Asia/Shanghai \
     DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
