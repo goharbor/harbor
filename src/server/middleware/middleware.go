@@ -16,6 +16,7 @@ package middleware
 
 import (
 	"net/http"
+	"slices"
 
 	"github.com/goharbor/harbor/src/lib"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
@@ -29,8 +30,8 @@ type Middleware func(http.Handler) http.Handler
 // Chain make middlewares together
 func Chain(middlewares ...Middleware) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
-		for i := len(middlewares) - 1; i >= 0; i-- {
-			h = middlewares[i](h)
+		for _, middleware := range slices.Backward(middlewares) {
+			h = middleware(h)
 		}
 
 		return h
