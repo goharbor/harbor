@@ -26,6 +26,7 @@ func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
 		model.WebhookTopic: {&notification.HTTPHandler{}},
 		model.SlackTopic:   {&notification.SlackHandler{}},
+		model.MatrixTopic:  {&notification.MatrixHandler{}},
 	}
 
 	for t, handlers := range handlersMap {
