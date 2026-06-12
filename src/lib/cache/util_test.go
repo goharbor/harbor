@@ -15,29 +15,43 @@
 package cache
 
 import (
+	"context"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestKeyMutex(t *testing.T) {
-	km := keyMutex{m: &sync.Map{}}
-	key := "key"
+func TestFetchOrSaveConcurrency(t *testing.T) {
+	c := newMockCache(t)
+	key := "test-key"
+	var callCount int32
+
+	builder := func() (any, error) {
+		atomic.AddInt32(&callCount, 1)
+		time.Sleep(100 * time.Millisecond)
+		return "test-value", nil
+	}
+
+	c.On("Fetch", mock.Anything, key, mock.Anything).Return(ErrNotFound)
+	c.On("Save", mock.Anything, key, "test-value").Return(nil).Once()
 
 	var wg sync.WaitGroup
-	for range 100 {
+	for range 10 {
 		wg.Add(1)
-
 		go func() {
 			defer wg.Done()
-			km.Lock(key)
-			km.Unlock(key)
+			var value string
+			err := FetchOrSave(context.Background(), c, key, &value, builder)
+			assert.NoError(t, err)
+			assert.Equal(t, "test-value", value)
 		}()
 	}
 	wg.Wait()
 
-	assert.Panics(t, func() {
-		km.Unlock(key)
-	})
+	assert.Equal(t, int32(1), callCount, "builder should be called only once")
+	c.AssertNumberOfCalls(t, "Save", 1)
 }

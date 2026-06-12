@@ -18,18 +18,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
-var (
-	fetchOrSaveMu = keyMutex{m: &sync.Map{}}
-)
-
 // FetchOrSave retrieves the value for the key if present in the cache.
-// Otherwise, it saves the value from the builder and retrieves the value for the key again.
+// Otherwise, it builds the value with the builder, saves it to the cache and
+// populates value with the built result. Concurrent calls for the same key
+// share a single builder execution and its result.
 func FetchOrSave(ctx context.Context, c Cache, key string, value any, builder func() (any, error), expiration ...time.Duration) error {
 	err := c.Fetch(ctx, key, value)
 	// value found from the cache
@@ -41,38 +38,34 @@ func FetchOrSave(ctx context.Context, c Cache, key string, value any, builder fu
 		return err
 	}
 
-	// lock the key in cache and try to build the value for the key
-	lockKey := fmt.Sprintf("%p:%s", c, key)
-	fetchOrSaveMu.Lock(lockKey)
+	// Use singleflight to deduplicate concurrent builds for the same key: only the
+	// first caller runs builder(), all concurrent callers share its result.
+	groupKey := fmt.Sprintf("%p:%s", c, key)
 
-	defer fetchOrSaveMu.Unlock(lockKey)
+	result, err, _ := fetchOrSaveGroup.Do(groupKey, func() (any, error) {
+		val, err := builder()
+		if err != nil {
+			return nil, err
+		}
 
-	// fetch again to avoid building the value multi-times
-	err = c.Fetch(ctx, key, value)
-	if err == nil {
-		return nil
-	}
-	// internal error
-	if !errors.Is(err, ErrNotFound) {
-		return err
-	}
+		// Save with a non-cancelable context so a canceled request context (e.g. the
+		// HTTP client disconnected) does not prevent the cache from being populated.
+		saveCtx := context.WithoutCancel(ctx)
+		if err := c.Save(saveCtx, key, val, expiration...); err != nil {
+			log.Warningf("failed to save value to cache, error: %v", err)
+		}
 
-	val, err := builder()
+		return val, nil
+	})
 	if err != nil {
 		return err
 	}
 
-	if err := c.Save(ctx, key, val, expiration...); err != nil {
-		log.Warningf("failed to save value to cache, error: %v", err)
-
-		// save the val to cache failed, copy it to the value using the default codec
-		data, err := codec.Encode(val)
-		if err != nil {
-			return err
-		}
-
-		return codec.Decode(data, value)
+	// Copy the shared result into the caller's value via the codec, so every caller
+	// (the leader and all waiters) gets its own populated value.
+	data, err := codec.Encode(result)
+	if err != nil {
+		return err
 	}
-
-	return c.Fetch(ctx, key, value) // after the building, fetch value again
+	return codec.Decode(data, value)
 }

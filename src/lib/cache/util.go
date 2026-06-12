@@ -15,31 +15,7 @@
 package cache
 
 import (
-	"sync"
+	"golang.org/x/sync/singleflight"
 )
 
-type keyMutex struct {
-	m *sync.Map
-}
-
-func (km keyMutex) Lock(key any) {
-	m := sync.Mutex{}
-	act, _ := km.m.LoadOrStore(key, &m)
-
-	mm := act.(*sync.Mutex)
-	mm.Lock()
-	if mm != &m {
-		mm.Unlock()
-		km.Lock(key)
-	}
-}
-
-func (km keyMutex) Unlock(key any) {
-	act, exist := km.m.Load(key)
-	if !exist {
-		panic("unlock of unlocked mutex")
-	}
-	m := act.(*sync.Mutex)
-	km.m.Delete(key)
-	m.Unlock()
-}
+var fetchOrSaveGroup singleflight.Group

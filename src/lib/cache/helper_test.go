@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -119,6 +120,76 @@ func (suite *FetchOrSaveTestSuite) TestSaveCalledOnlyOneTime() {
 	wg.Wait()
 
 	c.AssertNumberOfCalls(suite.T(), "Save", 1)
+}
+
+// Save must be called even if the HTTP request context is already canceled,
+// because helper.go uses context.WithoutCancel before calling Save.
+func (suite *FetchOrSaveTestSuite) TestSaveCalledEvenWhenContextCanceled() {
+	c := &mockCache{}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // simulate a canceled HTTP request context
+
+	mock.OnAnything(c, "Fetch").Return(ErrNotFound)
+	mock.OnAnything(c, "Save").Return(nil)
+
+	var str string
+	err := FetchOrSave(ctx, c, "key-canceled", &str, func() (any, error) {
+		return "str", nil
+	})
+
+	suite.Nil(err)
+	suite.Equal("str", str)
+	c.AssertNumberOfCalls(suite.T(), "Save", 1)
+}
+
+// The shared singleflight result is copied to each caller through the codec,
+// so a builder result the codec cannot encode must surface as an error.
+func (suite *FetchOrSaveTestSuite) TestBuildResultNotEncodable() {
+	c := &mockCache{}
+
+	mock.OnAnything(c, "Fetch").Return(ErrNotFound)
+	mock.OnAnything(c, "Save").Return(nil)
+
+	var ch chan struct{}
+	err := FetchOrSave(suite.ctx, c, "key-not-encodable", &ch, func() (any, error) {
+		return make(chan struct{}), nil
+	})
+
+	suite.Error(err)
+}
+
+// On a concurrent cold miss, builder runs exactly once (singleflight dedup)
+// and every concurrent caller receives the built value in its own pointer.
+func (suite *FetchOrSaveTestSuite) TestConcurrentCallersShareResult() {
+	c := &mockCache{}
+	var builderCalls atomic.Int32
+
+	mock.OnAnything(c, "Fetch").Return(ErrNotFound)
+	mock.OnAnything(c, "Save").Return(nil)
+
+	const n = 100
+	var wg sync.WaitGroup
+	results := make([]string, n)
+
+	for i := range n {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			var str string
+			FetchOrSave(suite.ctx, c, "key", &str, func() (any, error) {
+				builderCalls.Add(1)
+				time.Sleep(10 * time.Millisecond) // widen the singleflight window
+				return "built", nil
+			})
+			results[idx] = str
+		}(i)
+	}
+	wg.Wait()
+
+	suite.Equal(int32(1), builderCalls.Load(), "builder must run exactly once for concurrent callers")
+	for _, r := range results {
+		suite.Equal("built", r, "every caller must receive the built value")
+	}
 }
 
 func TestFetchOrSaveTestSuite(t *testing.T) {
