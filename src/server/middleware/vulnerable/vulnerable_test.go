@@ -102,6 +102,7 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 		Name:      "library",
 		Metadata: map[string]string{
 			proModels.ProMetaPreventVul: "true",
+			proModels.ProMetaPreventUnscanned: "false",
 			proModels.ProMetaSeverity:   vuln.High.String(),
 		},
 	}
@@ -266,7 +267,7 @@ func (suite *MiddlewareTestSuite) TestArtifactNotScanned() {
 	rr := httptest.NewRecorder()
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+	suite.Equal(rr.Code, http.StatusOK)
 }
 
 func (suite *MiddlewareTestSuite) TestArtifactScanFailed() {
@@ -280,7 +281,61 @@ func (suite *MiddlewareTestSuite) TestArtifactScanFailed() {
 	rr := httptest.NewRecorder()
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
+}
+
+func (suite *MiddlewareTestSuite) TestArtifactNotScannedPreventedByUnscannedPolicy() {
+	suite.project.Metadata[proModels.ProMetaPreventUnscanned] = "true"
+
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+}
+
+func (suite *MiddlewareTestSuite) TestArtifactScanFailedPreventedByUnscannedPolicy() {
+	suite.project.Metadata[proModels.ProMetaPreventUnscanned] = "true"
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{ScanStatus: "Error"}, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+}
+
+func (suite *MiddlewareTestSuite) TestAllowWhenPreventUnscannedOnlyAndScanSucceeded() {
+	suite.project.Metadata[proModels.ProMetaPreventVul] = "false"
+	suite.project.Metadata[proModels.ProMetaPreventUnscanned] = "true"
+
+	critical := vuln.Critical
+
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{
+		ScanStatus:           "Success",
+		Severity:             &critical,
+		VulnerabilitiesCount: 2,
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
 }
 
 func (suite *MiddlewareTestSuite) TestGetVulnerableFailed() {

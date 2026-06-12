@@ -273,6 +273,7 @@
         "PUBLIC_POLICY": "Hacer público un registro de proyecto hará que todos los repositorios sean accesibles para todos.",
         "SECURITY": "Seguridad Despliegues",
         "CONTENT_TRUST_POLCIY": "Solo permita la implementación de imágenes verificadas.",
+        "PREVENT_UNSCANNED_TOGGLE": "Evitar que se ejecuten imágenes sin escanear.",
         "PREVENT_VULNERABLE_TOGGLE": "Evitar que se ejecuten imágenes vulnerables.",
         "PREVENT_VULNERABLE_1": "Impedir imágenes con la gravedad de la vulnerabilidad de",
         "PREVENT_VULNERABLE_2": "y más arriba de ser desplegado.",

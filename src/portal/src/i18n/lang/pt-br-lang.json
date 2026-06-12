@@ -272,6 +272,7 @@
         "PUBLIC_POLICY": "Tornar o repositório do projeto público tornará todos os artefatos acessíveis sem autenticação.",
         "SECURITY": "Segurança de implantação",
         "CONTENT_TRUST_POLCIY": "Permitir implantação apenas de imagens verificadas.",
+        "PREVENT_UNSCANNED_TOGGLE": "Prevenir execução de imagens sem análise.",
         "PREVENT_VULNERABLE_TOGGLE": "Prevenir execução de imagens vulneráveis.",
         "PREVENT_VULNERABLE_1": "Prevenir imagens com vulnerabilidades de severidade",
         "PREVENT_VULNERABLE_2": "e acima de serem utilizadas.",
