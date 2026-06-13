@@ -80,11 +80,11 @@ function publishImageGhcr {
     echo "=== Docker images matching goharbor ==="
     docker images --format "table {{.Repository}}\t{{.Tag}}" | grep goharbor | head -20
     echo "=== Filtered with version $version ==="
-    docker images --format "table {{.Repository}}\t{{.Tag}}" | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" | grep "$version" || echo "NO MATCHES FOUND for version $version"
+    docker images --format "table {{.Repository}}\t{{.Tag}}" | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "^goharbor/photon" | grep -v "^goharbor/prepare" | grep "$version" || echo "NO MATCHES FOUND for version $version"
 
     # Count images that will be pushed
     image_count=$(docker images --format "table {{.Repository}}\t{{.Tag}}" \
-      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" \
+      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "^goharbor/photon" | grep -v "^goharbor/prepare" \
       | grep "$version" | wc -l)
 
     if [ "$image_count" -eq 0 ]; then
@@ -97,7 +97,7 @@ function publishImageGhcr {
     echo "✅ Found $image_count images to push to ghcr.io/${ghcr_user}"
 
     docker images --format "table {{.Repository}}\t{{.Tag}}" \
-      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" \
+      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "^goharbor/photon" | grep -v "^goharbor/prepare" \
       | grep "$version" \
       | sed -n "s|\(goharbor/\([-._a-z0-9]*\)\)\s*\(.*${version}\).*|docker tag \1:${version} ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix};docker push ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix}|p" \
       | bash
