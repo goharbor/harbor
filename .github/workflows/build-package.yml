@@ -289,6 +289,6 @@ jobs:
             echo "Creating manifest ${repo}:${image_tag}"
             docker buildx imagetools create -t "${repo}:${image_tag}" \
               "${repo}:${image_tag}-amd64" \
-              "${repo}:${image_tag}-arm64" || true
+              "${repo}:${image_tag}-arm64"
           done
           docker logout ghcr.io
