@@ -385,9 +385,14 @@
                     <span class="alert-text">
                         {{ 'PROFILE.PAT_SECRET_COPY_WARNING' | translate }}
                     </span>
-                    <clr-copy-button [clrCopyFeedback]="'BUTTON.COPIED'" [clrModel]="createdPATSecret"></clr-copy-button>
                 </clr-alert-item>
             </clr-alert>
+            <div class="clr-form-control" style="margin-top:12px;">
+                <div class="clr-input-wrapper" style="display:flex;align-items:center;gap:8px;">
+                    <input type="text" class="clr-input" readonly [value]="createdPATSecret" style="flex:1;font-family:monospace;" />
+                    <clr-copy-button [clrCopyFeedback]="'BUTTON.COPIED'" [clrModel]="createdPATSecret"></clr-copy-button>
+                </div>
+            </div>
         </div>
         <form #createPATForm="ngForm" class="clr-form clr-form-horizontal" *ngIf="!createdPATSecret">
             <clr-input-container>
