@@ -390,7 +390,7 @@
             <div class="clr-form-control" style="margin-top:12px;">
                 <div class="clr-input-wrapper" style="display:flex;align-items:center;gap:8px;">
                     <input type="text" class="clr-input" readonly [value]="createdPATSecret" style="flex:1;font-family:monospace;" />
-                    <clr-copy-button [clrCopyFeedback]="'BUTTON.COPIED'" [clrModel]="createdPATSecret"></clr-copy-button>
+                    <button class="btn btn-sm btn-outline" type="button" (click)="copyPATSecret()">{{ 'BUTTON.COPY' | translate }}</button>
                 </div>
             </div>
         </div>

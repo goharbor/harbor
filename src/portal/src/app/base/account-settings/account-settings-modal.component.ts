@@ -516,6 +516,12 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         });
     }
 
+    copyPATSecret() {
+        if (this.createdPATSecret) {
+            navigator.clipboard.writeText(this.createdPATSecret);
+        }
+    }
+
     createPAT() {
         if (!this.newPATForm.name || !this.account) {
             return;
