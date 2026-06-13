@@ -69,6 +69,14 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     showInputSecret: boolean = false;
     showConfirmSecret: boolean = false;
 
+    // PAT Management
+    pats: any[] = [];
+    selectedPATs: any[] = [];
+    patLoading: boolean = false;
+    showCreatePATModal: boolean = false;
+    newPATForm = { name: '', expiresInDays: 0, description: '' };
+    createdPATSecret: string = '';
+
     constructor(
         private session: SessionService,
         private msgHandler: MessageHandlerService,
@@ -469,5 +477,133 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     openSecretDetail() {
         this.showSecretDetail = true;
         this.resetSecretInlineAlert.close();
+    }
+
+    // PAT Management Methods
+    openCreatePATModal() {
+        this.showCreatePATModal = true;
+        this.newPATForm = { name: '', expiresInDays: 0, description: '' };
+        this.createdPATSecret = '';
+    }
+
+    closeCreatePATModal() {
+        this.showCreatePATModal = false;
+    }
+
+    loadPATs() {
+        if (!this.account) {
+            return;
+        }
+        this.patLoading = true;
+        this.userService.listPersonalAccessTokens({ userId: this.account.user_id }).subscribe({
+            next: (res: any) => {
+                this.pats = res || [];
+                this.pats.forEach(pat => {
+                    pat.expired = pat.expires_at > 0 && pat.expires_at <= Date.now() / 1000;
+                });
+                this.patLoading = false;
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+                this.patLoading = false;
+            }
+        });
+    }
+
+    createPAT() {
+        if (!this.newPATForm.name || !this.account) {
+            return;
+        }
+        this.userService.createPersonalAccessToken({
+            userId: this.account.user_id,
+            request: {
+                name: this.newPATForm.name,
+                description: this.newPATForm.description,
+                expires_in_days: this.newPATForm.expiresInDays
+            }
+        }).subscribe({
+            next: (res: any) => {
+                this.createdPATSecret = res.secret;
+                this.msgHandler.showSuccess('PROFILE.PAT_CREATED');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
+    }
+
+    refreshPATSecret(patId: number) {
+        if (!this.account) {
+            return;
+        }
+        this.userService.refreshPersonalAccessTokenSecret({
+            userId: this.account.user_id,
+            tokenId: patId,
+            request: {}
+        }).subscribe({
+            next: (res: any) => {
+                this.createdPATSecret = res.secret;
+                this.msgHandler.showSuccess('PROFILE.PAT_REFRESHED');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
+    }
+
+    togglePATDisabled(pat: any) {
+        if (!this.account) {
+            return;
+        }
+        this.userService.updatePersonalAccessToken({
+            userId: this.account.user_id,
+            tokenId: pat.id,
+            request: {
+                disabled: !pat.disabled
+            }
+        }).subscribe({
+            next: () => {
+                this.msgHandler.showSuccess('PROFILE.PAT_UPDATED');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
+    }
+
+    deletePAT(patId: number) {
+        if (!this.account) {
+            return;
+        }
+        this.msgHandler.openConfirmationDialog({
+            title: 'PROFILE.DELETE_PAT_TITLE',
+            message: 'PROFILE.DELETE_PAT_CONFIRM',
+            buttons: ConfirmationButtons.CONFIRM_CANCEL,
+            state: ConfirmationTargets.USER_PAT
+        });
+    }
+
+    confirmDelete(target: string) {
+        if (target === ConfirmationTargets.USER_PAT && this.account) {
+            const patId = this.selectedPATs[0]?.id;
+            if (patId) {
+                this.userService.deletePersonalAccessToken({
+                    userId: this.account.user_id,
+                    tokenId: patId
+                }).subscribe({
+                    next: () => {
+                        this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
+                        this.loadPATs();
+                        this.selectedPATs = [];
+                    },
+                    error: (err: any) => {
+                        this.msgHandler.handleError(err);
+                    }
+                });
+            }
+        }
     }
 }

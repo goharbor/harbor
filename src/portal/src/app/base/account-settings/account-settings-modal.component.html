@@ -4,6 +4,10 @@
     [clrModalClosable]="false">
     <h3 class="modal-title">{{ 'PROFILE.TITLE' | translate }}</h3>
     <div class="modal-body body-format">
+        <clr-tabs>
+            <clr-tab>
+                <button clrTabLink>{{ 'PROFILE.SETTINGS' | translate }}</button>
+                <clr-tab-content>
         <inline-alert
             #accountSettingInlineAlert
             (confirmEvt)="confirmYes($event)"
@@ -211,6 +215,93 @@
             </div>
             }
         </form>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab>
+                <button clrTabLink>{{ 'PROFILE.PAT' | translate }}</button>
+                <clr-tab-content>
+                    <div class="pat-management">
+                        <div class="pat-toolbar">
+                            <button
+                                class="btn btn-primary"
+                                (click)="openCreatePATModal()"
+                                id="create-pat-btn">
+                                {{ 'PROFILE.CREATE_PAT' | translate }}
+                            </button>
+                        </div>
+                        <clr-datagrid [(clrDgSelected)]="selectedPATs" [clrDgLoading]="patLoading">
+                            <clr-dg-column>
+                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                    {{ 'PROFILE.PAT_NAME' | translate }}
+                                </ng-container>
+                            </clr-dg-column>
+                            <clr-dg-column>
+                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                    {{ 'PROFILE.PAT_CREATED' | translate }}
+                                </ng-container>
+                            </clr-dg-column>
+                            <clr-dg-column>
+                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                    {{ 'PROFILE.PAT_EXPIRES' | translate }}
+                                </ng-container>
+                            </clr-dg-column>
+                            <clr-dg-column>
+                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                    {{ 'PROFILE.PAT_STATUS' | translate }}
+                                </ng-container>
+                            </clr-dg-column>
+                            <clr-dg-row *ngFor="let pat of pats" [clrDgItem]="pat">
+                                <clr-dg-cell>{{ pat.name }}</clr-dg-cell>
+                                <clr-dg-cell>{{ pat.creation_time | date: 'short' }}</clr-dg-cell>
+                                <clr-dg-cell>
+                                    @if (pat.expires_at === -1) {
+                                        {{ 'PROFILE.PAT_NEVER' | translate }}
+                                    } @else {
+                                        {{ pat.expires_at | date: 'short' }}
+                                    }
+                                </clr-dg-cell>
+                                <clr-dg-cell>
+                                    @if (pat.disabled) {
+                                        <clr-label class="label label-danger">{{ 'PROFILE.PAT_DISABLED' | translate }}</clr-label>
+                                    } @else if (pat.expired) {
+                                        <clr-label class="label label-warning">{{ 'PROFILE.PAT_EXPIRED' | translate }}</clr-label>
+                                    } @else {
+                                        <clr-label class="label label-success">{{ 'PROFILE.PAT_ACTIVE' | translate }}</clr-label>
+                                    }
+                                </clr-dg-cell>
+                                <clr-dg-action-overflow [clrPosition]="'left'">
+                                    <button
+                                        clrDropdownItem
+                                        (click)="refreshPATSecret(pat.id)"
+                                        id="refresh-pat-{{ pat.id }}">
+                                        {{ 'PROFILE.PAT_REFRESH' | translate }}
+                                    </button>
+                                    <button
+                                        clrDropdownItem
+                                        (click)="togglePATDisabled(pat)"
+                                        id="toggle-pat-{{ pat.id }}">
+                                        @if (pat.disabled) {
+                                            {{ 'PROFILE.PAT_ENABLE' | translate }}
+                                        } @else {
+                                            {{ 'PROFILE.PAT_DISABLE' | translate }}
+                                        }
+                                    </button>
+                                    <button
+                                        clrDropdownItem
+                                        (click)="deletePAT(pat.id)"
+                                        id="delete-pat-{{ pat.id }}">
+                                        {{ 'BUTTON.DELETE' | translate }}
+                                    </button>
+                                </clr-dg-action-overflow>
+                            </clr-dg-row>
+                            <clr-dg-placeholder>
+                                {{ 'PROFILE.PAT_EMPTY' | translate }}
+                            </clr-dg-placeholder>
+                        </clr-datagrid>
+                    </div>
+                </clr-tab-content>
+            </clr-tab>
+        </clr-tabs>
     </div>
     <div class="modal-footer">
         <span
