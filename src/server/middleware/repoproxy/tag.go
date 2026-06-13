@@ -41,6 +41,22 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 			return
 		}
 
+		// Handle dockerhub request without library prefix.
+		// Docker Hub official images live under the implicit "library/" namespace,
+		// which the docker client expands transparently. The registry tags/list
+		// API does not, so a request for a single-segment repository returns an
+		// empty tag list. Redirect it to the library/-prefixed path, mirroring the
+		// manifest and blob middlewares.
+		isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+		if err != nil {
+			libhttp.SendError(w, err)
+			return
+		}
+		if isDefault {
+			http.Redirect(w, r, defaultTagsListURL(p.Name, name, r.URL.RawQuery), http.StatusMovedPermanently)
+			return
+		}
+
 		if !canProxy(ctx, p) {
 			next.ServeHTTP(w, r)
 			return
