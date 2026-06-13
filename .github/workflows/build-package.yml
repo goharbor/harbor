@@ -284,11 +284,36 @@ jobs:
         run: |
           set -euo pipefail
           image_tag="${{ steps.tag.outputs.image_tag }}"
+          failed_count=0
+
           cat _ghcr_repos_*.txt | sort -u | while IFS= read -r repo; do
             [ -z "$repo" ] && continue
             echo "Creating manifest ${repo}:${image_tag}"
-            docker buildx imagetools create -t "${repo}:${image_tag}" \
-              "${repo}:${image_tag}-amd64" \
-              "${repo}:${image_tag}-arm64"
+
+            # Verify both architecture images exist before creating manifest
+            amd64_exists=false
+            arm64_exists=false
+
+            if docker manifest inspect "${repo}:${image_tag}-amd64" > /dev/null 2>&1; then
+              amd64_exists=true
+            else
+              echo "⚠️  WARNING: amd64 image not found: ${repo}:${image_tag}-amd64"
+            fi
+
+            if docker manifest inspect "${repo}:${image_tag}-arm64" > /dev/null 2>&1; then
+              arm64_exists=true
+            else
+              echo "⚠️  WARNING: arm64 image not found: ${repo}:${image_tag}-arm64"
+            fi
+
+            # Create manifest if both images exist
+            if [ "$amd64_exists" = true ] && [ "$arm64_exists" = true ]; then
+              docker buildx imagetools create -t "${repo}:${image_tag}" \
+                "${repo}:${image_tag}-amd64" \
+                "${repo}:${image_tag}-arm64" || echo "⚠️  Failed to create manifest for ${repo}:${image_tag}"
+            else
+              echo "⚠️  Skipping manifest creation for $repo (missing architecture images)"
+            fi
           done
+
           docker logout ghcr.io

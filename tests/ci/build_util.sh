@@ -81,11 +81,34 @@ function publishImageGhcr {
     docker images --format "table {{.Repository}}\t{{.Tag}}" | grep goharbor | head -20
     echo "=== Filtered with version $version ==="
     docker images --format "table {{.Repository}}\t{{.Tag}}" | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" | grep "$version" || echo "NO MATCHES FOUND for version $version"
+
+    # Count images that will be pushed
+    image_count=$(docker images --format "table {{.Repository}}\t{{.Tag}}" \
+      | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" \
+      | grep "$version" | wc -l)
+
+    if [ "$image_count" -eq 0 ]; then
+      echo "⚠️  WARNING: No images found matching version '$version' for push to ghcr.io"
+      echo "This may cause manifest creation to fail later"
+      docker logout ghcr.io
+      return 1
+    fi
+
+    echo "✅ Found $image_count images to push to ghcr.io/${ghcr_user}"
+
     docker images --format "table {{.Repository}}\t{{.Tag}}" \
       | grep goharbor | grep -v "\-base" | grep -v "harbor-db" | grep -v "valkey" | grep -v "photon" | grep -v "^goharbor/prepare" \
       | grep "$version" \
       | sed -n "s|\(goharbor/\([-._a-z0-9]*\)\)\s*\(.*${version}\).*|docker tag \1:${version} ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix};docker push ghcr.io/${ghcr_user}/\2:${image_tag}${arch_suffix}|p" \
       | bash
+
+    # Verify at least some images were pushed
+    if [ $? -ne 0 ]; then
+      echo "⚠️  ERROR: Failed to push images to ghcr.io"
+      docker logout ghcr.io
+      return 1
+    fi
+
     docker logout ghcr.io
-    echo "Images published to ghcr.io/${ghcr_user} successfully"
+    echo "✅ Images published to ghcr.io/${ghcr_user} successfully"
 }
