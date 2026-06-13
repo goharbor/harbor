@@ -445,3 +445,75 @@
 <confirmation-dialog
     #confirmationDialog
     (confirmAction)="confirmGenerate()"></confirmation-dialog>
+
+<!-- Create PAT Modal -->
+<clr-modal
+    [(clrModalOpen)]="showCreatePATModal"
+    [clrModalSize]="'lg'"
+    [clrModalStaticBackdrop]="staticBackdrop"
+    [clrModalClosable]="false">
+    <h3 class="modal-title">{{ 'PROFILE.CREATE_PAT' | translate }}</h3>
+    <div class="modal-body">
+        <form #createPATForm="ngForm" class="clr-form clr-form-horizontal">
+            @if (createdPATSecret) {
+            <clr-alert clrAlertType="warning" [clrCloseButtonAriaLabel]="'close'">
+                <clr-alert-item>
+                    <span class="alert-text">
+                        {{ 'PROFILE.PAT_SECRET_COPY_WARNING' | translate }}
+                    </span>
+                    <clr-copy-button [clrCopyFeedback]="'BUTTON.COPIED'" [clrModel]="createdPATSecret"></clr-copy-button>
+                </clr-alert-item>
+            </clr-alert>
+            } @else {
+            <clr-input-container>
+                <label for="pat-name" class="required">{{ 'PROFILE.PAT_NAME' | translate }}</label>
+                <input
+                    clrInput
+                    type="text"
+                    id="pat-name"
+                    name="pat_name"
+                    [(ngModel)]="newPATForm.name"
+                    required
+                    maxlength="255" />
+            </clr-input-container>
+
+            <clr-textarea-container>
+                <label for="pat-description">{{ 'PROFILE.PAT_DESCRIPTION' | translate }}</label>
+                <textarea
+                    clrTextarea
+                    id="pat-description"
+                    name="pat_description"
+                    [(ngModel)]="newPATForm.description"
+                    maxlength="1024"></textarea>
+            </clr-textarea-container>
+
+            <clr-input-container>
+                <label for="pat-expires">{{ 'PROFILE.PAT_EXPIRES_IN_DAYS' | translate }}</label>
+                <input
+                    clrInput
+                    type="number"
+                    id="pat-expires"
+                    name="pat_expires"
+                    [(ngModel)]="newPATForm.expiresInDays"
+                    min="0"
+                    placeholder="0 for never expire" />
+                <clr-control-helper>{{ 'PROFILE.PAT_EXPIRES_HELP' | translate }}</clr-control-helper>
+            </clr-input-container>
+            }
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="closeCreatePATModal()">
+            {{ createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL' | translate }}
+        </button>
+        @if (!createdPATSecret) {
+        <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!newPATForm.name || !createPATForm.valid"
+            (click)="createPAT()">
+            {{ 'BUTTON.CREATE' | translate }}
+        </button>
+        }
+    </div>
+</clr-modal>

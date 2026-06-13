@@ -292,6 +292,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             account_settings_full_name: true,
         };
         this.showGenerateCli = false;
+
+        // Load PATs
+        this.loadPATs();
+
         this.opened = true;
     }
 
