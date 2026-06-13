@@ -25,10 +25,12 @@ import {
     CommonRoutes,
     ConfirmationButtons,
     ConfirmationTargets,
+    ConfirmationState,
 } from '../../shared/entities/shared.const';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../global-confirmation-dialog/confirmation-state-message';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { AppConfigService } from '../../services/app-config.service';
 
@@ -593,21 +595,33 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.confirmationDialogComponent.open(deletePatMessage);
     }
 
-    confirmDelete(target: string, data: any) {
-        if (target === ConfirmationTargets.USER_PAT && this.account && data) {
-            this.userService.DeletePersonalAccessToken({
-                userId: this.account.user_id,
-                tokenId: data
-            }).subscribe({
-                next: () => {
-                    this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
-                    this.loadPATs();
-                    this.selectedPATs = [];
-                },
-                error: (err: any) => {
-                    this.msgHandler.handleError(err);
-                }
-            });
+    confirmAction(message: ConfirmationAcknowledgement) {
+        if (!message || message.state !== ConfirmationState.CONFIRMED) {
+            return;
         }
+        if (message.source === ConfirmationTargets.USER_PAT) {
+            this.confirmDeletePAT(message.data);
+        } else {
+            this.confirmGenerate();
+        }
+    }
+
+    confirmDeletePAT(patId: number) {
+        if (!this.account || !patId) {
+            return;
+        }
+        this.userService.DeletePersonalAccessToken({
+            userId: this.account.user_id,
+            tokenId: patId
+        }).subscribe({
+            next: () => {
+                this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
+                this.loadPATs();
+                this.selectedPATs = [];
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
     }
 }
