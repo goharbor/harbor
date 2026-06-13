@@ -540,7 +540,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 this.loadPATs();
             },
             error: (err: any) => {
-                this.msgHandler.handleError(err);
+                if (err && err.status === 409) {
+                    this.msgHandler.showError('PROFILE.PAT_NAME_CONFLICT', null);
+                } else {
+                    this.msgHandler.handleError(err);
+                }
             }
         });
     }

@@ -144,6 +144,7 @@
         "PAT_EMPTY": "No personal access tokens",
         "PAT_SECRET_COPY_WARNING": "Copy your token now. You will not be able to see it again after you leave this page.",
         "PAT_CREATE_SUCCESS": "Token created successfully",
+            "PAT_NAME_CONFLICT": "A token with that name already exists. Please choose a different name.",
         "PAT_REFRESHED": "Token secret refreshed successfully",
         "PAT_UPDATED": "Token updated successfully",
         "PAT_DELETED": "Token deleted successfully",
