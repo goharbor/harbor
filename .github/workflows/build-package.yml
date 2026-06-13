@@ -284,20 +284,11 @@ jobs:
         run: |
           set -euo pipefail
           image_tag="${{ steps.tag.outputs.image_tag }}"
-          echo "Image tag: $image_tag"
-          echo "=== ghcr repos ==="
-          cat _ghcr_repos_*.txt | sort -u
-          echo "=================="
           cat _ghcr_repos_*.txt | sort -u | while IFS= read -r repo; do
             [ -z "$repo" ] && continue
             echo "Creating manifest ${repo}:${image_tag}"
-            # Check if images exist
-            echo "Checking ${repo}:${image_tag}-amd64"
-            docker manifest inspect "${repo}:${image_tag}-amd64" || echo "amd64 not found"
-            echo "Checking ${repo}:${image_tag}-arm64"
-            docker manifest inspect "${repo}:${image_tag}-arm64" || echo "arm64 not found"
             docker buildx imagetools create -t "${repo}:${image_tag}" \
               "${repo}:${image_tag}-amd64" \
-              "${repo}:${image_tag}-arm64"
+              "${repo}:${image_tag}-arm64" || true
           done
           docker logout ghcr.io
