@@ -434,7 +434,7 @@
             *ngIf="!createdPATSecret"
             type="button"
             class="btn btn-primary"
-            [disabled]="!newPATForm.name"
+            [disabled]="!newPATForm?.name"
             (click)="createPAT()">
             {{ 'BUTTON.CREATE' | translate }}
         </button>
