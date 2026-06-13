@@ -454,8 +454,7 @@
     [clrModalClosable]="false">
     <h3 class="modal-title">{{ 'PROFILE.CREATE_PAT' | translate }}</h3>
     <div class="modal-body">
-        <form #createPATForm="ngForm" class="clr-form clr-form-horizontal">
-            @if (createdPATSecret) {
+        <div *ngIf="createdPATSecret">
             <clr-alert clrAlertType="warning" [clrCloseButtonAriaLabel]="'close'">
                 <clr-alert-item>
                     <span class="alert-text">
@@ -464,7 +463,8 @@
                     <clr-copy-button [clrCopyFeedback]="'BUTTON.COPIED'" [clrModel]="createdPATSecret"></clr-copy-button>
                 </clr-alert-item>
             </clr-alert>
-            } @else {
+        </div>
+        <form #createPATForm="ngForm" class="clr-form clr-form-horizontal" *ngIf="!createdPATSecret">
             <clr-input-container>
                 <label for="pat-name" class="required">{{ 'PROFILE.PAT_NAME' | translate }}</label>
                 <input
@@ -499,21 +499,19 @@
                     placeholder="0 for never expire" />
                 <clr-control-helper>{{ 'PROFILE.PAT_EXPIRES_HELP' | translate }}</clr-control-helper>
             </clr-input-container>
-            }
         </form>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="closeCreatePATModal()">
             {{ (createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL') | translate }}
         </button>
-        @if (!createdPATSecret) {
         <button
+            *ngIf="!createdPATSecret"
             type="button"
             class="btn btn-primary"
             [disabled]="!newPATForm.name || !createPATForm.valid"
             (click)="createPAT()">
             {{ 'BUTTON.CREATE' | translate }}
         </button>
-        }
     </div>
 </clr-modal>
