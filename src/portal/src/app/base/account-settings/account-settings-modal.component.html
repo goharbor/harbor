@@ -504,7 +504,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="closeCreatePATModal()">
-            {{ createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL' | translate }}
+            {{ (createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL') | translate }}
         </button>
         @if (!createdPATSecret) {
         <button

@@ -499,7 +499,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             return;
         }
         this.patLoading = true;
-        this.userService.listPersonalAccessTokens({ userId: this.account.user_id }).subscribe({
+        this.userService.ListPersonalAccessTokens({ userId: this.account.user_id }).subscribe({
             next: (res: any) => {
                 this.pats = res || [];
                 this.pats.forEach(pat => {
@@ -518,7 +518,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.newPATForm.name || !this.account) {
             return;
         }
-        this.userService.createPersonalAccessToken({
+        this.userService.CreatePersonalAccessToken({
             userId: this.account.user_id,
             request: {
                 name: this.newPATForm.name,
@@ -541,7 +541,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.account) {
             return;
         }
-        this.userService.refreshPersonalAccessTokenSecret({
+        this.userService.RefreshPersonalAccessTokenSecret({
             userId: this.account.user_id,
             tokenId: patId,
             request: {}
@@ -561,7 +561,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.account) {
             return;
         }
-        this.userService.updatePersonalAccessToken({
+        this.userService.UpdatePersonalAccessToken({
             userId: this.account.user_id,
             tokenId: pat.id,
             request: {
@@ -582,32 +582,32 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.account) {
             return;
         }
-        this.msgHandler.openConfirmationDialog({
-            title: 'PROFILE.DELETE_PAT_TITLE',
-            message: 'PROFILE.DELETE_PAT_CONFIRM',
-            buttons: ConfirmationButtons.CONFIRM_CANCEL,
-            state: ConfirmationTargets.USER_PAT
-        });
+        const deletePatMessage: ConfirmationMessage = new ConfirmationMessage(
+            'PROFILE.DELETE_PAT_TITLE',
+            'PROFILE.DELETE_PAT_CONFIRM',
+            'BUTTON.DELETE',
+            'BUTTON.CANCEL',
+            ConfirmationTargets.USER_PAT
+        );
+        deletePatMessage.data = patId;
+        this.confirmationDialogComponent.open(deletePatMessage);
     }
 
-    confirmDelete(target: string) {
-        if (target === ConfirmationTargets.USER_PAT && this.account) {
-            const patId = this.selectedPATs[0]?.id;
-            if (patId) {
-                this.userService.deletePersonalAccessToken({
-                    userId: this.account.user_id,
-                    tokenId: patId
-                }).subscribe({
-                    next: () => {
-                        this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
-                        this.loadPATs();
-                        this.selectedPATs = [];
-                    },
-                    error: (err: any) => {
-                        this.msgHandler.handleError(err);
-                    }
-                });
-            }
+    confirmDelete(target: string, data: any) {
+        if (target === ConfirmationTargets.USER_PAT && this.account && data) {
+            this.userService.DeletePersonalAccessToken({
+                userId: this.account.user_id,
+                tokenId: data
+            }).subscribe({
+                next: () => {
+                    this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
+                    this.loadPATs();
+                    this.selectedPATs = [];
+                },
+                error: (err: any) => {
+                    this.msgHandler.handleError(err);
+                }
+            });
         }
     }
 }
