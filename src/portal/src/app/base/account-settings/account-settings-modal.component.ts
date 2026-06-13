@@ -25,10 +25,12 @@ import {
     CommonRoutes,
     ConfirmationButtons,
     ConfirmationTargets,
+    ConfirmationState,
 } from '../../shared/entities/shared.const';
 import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog';
 import { InlineAlertComponent } from '../../shared/components/inline-alert/inline-alert.component';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../global-confirmation-dialog/confirmation-state-message';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { AppConfigService } from '../../services/app-config.service';
 
@@ -36,7 +38,6 @@ import { AppConfigService } from '../../services/app-config.service';
     selector: 'account-settings-modal',
     templateUrl: 'account-settings-modal.component.html',
     styleUrls: ['./account-settings-modal.component.scss', '../../common.scss'],
-    standalone: false,
 })
 export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     opened = false;
@@ -68,6 +69,14 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     @ViewChild('copyInput') copyInput: CopyInputComponent;
     showInputSecret: boolean = false;
     showConfirmSecret: boolean = false;
+
+    // PAT Management
+    pats: any[] = [];
+    selectedPATs: any[] = [];
+    patLoading: boolean = false;
+    showCreatePATModal: boolean = false;
+    newPATForm = { name: '', expiresInDays: 0, description: '' };
+    createdPATSecret: string = '';
 
     constructor(
         private session: SessionService,
@@ -284,6 +293,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             account_settings_full_name: true,
         };
         this.showGenerateCli = false;
+
+        // Load PATs
+        this.loadPATs();
+
         this.opened = true;
     }
 
@@ -400,7 +413,23 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     confirmGenerate(): void {
-        this.resetCliSecret(null);
+        const generatedSecret = this.generateRandomSecret();
+        this.resetCliSecret(generatedSecret);
+    }
+
+    private generateRandomSecret(): string {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 16; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        // Ensure requirements: 8-128 chars, at least 1 uppercase, 1 lowercase, 1 digit
+        // Replace some random positions with required characters
+        const resultArray = result.split('');
+        resultArray[0] = 'A'; // uppercase
+        resultArray[1] = 'a'; // lowercase
+        resultArray[2] = '1'; // digit
+        return resultArray.join('');
     }
 
     resetCliSecret(secret) {
@@ -453,5 +482,155 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     openSecretDetail() {
         this.showSecretDetail = true;
         this.resetSecretInlineAlert.close();
+    }
+
+    // PAT Management Methods
+    openCreatePATModal() {
+        this.showCreatePATModal = true;
+        this.newPATForm = { name: '', expiresInDays: 0, description: '' };
+        this.createdPATSecret = '';
+    }
+
+    closeCreatePATModal() {
+        this.showCreatePATModal = false;
+    }
+
+    loadPATs() {
+        if (!this.account) {
+            return;
+        }
+        this.patLoading = true;
+        this.userService.ListPersonalAccessTokens({ userId: this.account.user_id }).subscribe({
+            next: (res: any) => {
+                this.pats = res || [];
+                this.pats.forEach(pat => {
+                    pat.expired = pat.expires_at > 0 && pat.expires_at <= Date.now() / 1000;
+                });
+                this.patLoading = false;
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+                this.patLoading = false;
+            }
+        });
+    }
+
+    copyPATSecret() {
+        if (this.createdPATSecret) {
+            navigator.clipboard.writeText(this.createdPATSecret);
+        }
+    }
+
+    createPAT() {
+        if (!this.newPATForm.name || !this.account) {
+            return;
+        }
+        this.userService.CreatePersonalAccessToken({
+            userId: this.account.user_id,
+            request: {
+                name: this.newPATForm.name,
+                description: this.newPATForm.description,
+                expires_in_days: this.newPATForm.expiresInDays
+            }
+        }).subscribe({
+            next: (res: any) => {
+                this.createdPATSecret = res.secret;
+                this.msgHandler.showSuccess('PROFILE.PAT_CREATE_SUCCESS');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                if (err && err.status === 409) {
+                    this.msgHandler.showError('PROFILE.PAT_NAME_CONFLICT', null);
+                } else {
+                    this.msgHandler.handleError(err);
+                }
+            }
+        });
+    }
+
+    refreshPATSecret(patId: number) {
+        if (!this.account) {
+            return;
+        }
+        this.userService.RefreshPersonalAccessTokenSecret({
+            userId: this.account.user_id,
+            tokenId: patId,
+            request: {}
+        }).subscribe({
+            next: (res: any) => {
+                this.createdPATSecret = res.secret;
+                this.msgHandler.showSuccess('PROFILE.PAT_REFRESHED');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
+    }
+
+    togglePATDisabled(pat: any) {
+        if (!this.account) {
+            return;
+        }
+        this.userService.UpdatePersonalAccessToken({
+            userId: this.account.user_id,
+            tokenId: pat.id,
+            request: {
+                disabled: !pat.disabled
+            }
+        }).subscribe({
+            next: () => {
+                this.msgHandler.showSuccess('PROFILE.PAT_UPDATED');
+                this.loadPATs();
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
+    }
+
+    deletePAT(patId: number) {
+        if (!this.account) {
+            return;
+        }
+        const deletePatMessage: ConfirmationMessage = new ConfirmationMessage(
+            'PROFILE.DELETE_PAT_TITLE',
+            'PROFILE.DELETE_PAT_CONFIRM',
+            'BUTTON.DELETE',
+            'BUTTON.CANCEL',
+            ConfirmationTargets.USER_PAT
+        );
+        deletePatMessage.data = patId;
+        this.confirmationDialogComponent.open(deletePatMessage);
+    }
+
+    confirmAction(message: ConfirmationAcknowledgement) {
+        if (!message || message.state !== ConfirmationState.CONFIRMED) {
+            return;
+        }
+        if (message.source === ConfirmationTargets.USER_PAT) {
+            this.confirmDeletePAT(message.data);
+        } else {
+            this.confirmGenerate();
+        }
+    }
+
+    confirmDeletePAT(patId: number) {
+        if (!this.account || !patId) {
+            return;
+        }
+        this.userService.DeletePersonalAccessToken({
+            userId: this.account.user_id,
+            tokenId: patId
+        }).subscribe({
+            next: () => {
+                this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
+                this.loadPATs();
+                this.selectedPATs = [];
+            },
+            error: (err: any) => {
+                this.msgHandler.handleError(err);
+            }
+        });
     }
 }
