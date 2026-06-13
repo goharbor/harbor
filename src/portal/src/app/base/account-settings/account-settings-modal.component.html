@@ -254,20 +254,13 @@
                                 <clr-dg-cell>{{ pat.name }}</clr-dg-cell>
                                 <clr-dg-cell>{{ pat.creation_time | date: 'short' }}</clr-dg-cell>
                                 <clr-dg-cell>
-                                    @if (pat.expires_at === -1) {
-                                        {{ 'PROFILE.PAT_NEVER' | translate }}
-                                    } @else {
-                                        {{ pat.expires_at | date: 'short' }}
-                                    }
+                                    <span *ngIf="pat.expires_at === -1">{{ 'PROFILE.PAT_NEVER' | translate }}</span>
+                                    <span *ngIf="pat.expires_at !== -1">{{ pat.expires_at | date: 'short' }}</span>
                                 </clr-dg-cell>
                                 <clr-dg-cell>
-                                    @if (pat.disabled) {
-                                        <clr-label class="label label-danger">{{ 'PROFILE.PAT_DISABLED' | translate }}</clr-label>
-                                    } @else if (pat.expired) {
-                                        <clr-label class="label label-warning">{{ 'PROFILE.PAT_EXPIRED' | translate }}</clr-label>
-                                    } @else {
-                                        <clr-label class="label label-success">{{ 'PROFILE.PAT_ACTIVE' | translate }}</clr-label>
-                                    }
+                                    <clr-label *ngIf="pat.disabled" class="label label-danger">{{ 'PROFILE.PAT_DISABLED' | translate }}</clr-label>
+                                    <clr-label *ngIf="!pat.disabled && pat.expired" class="label label-warning">{{ 'PROFILE.PAT_EXPIRED' | translate }}</clr-label>
+                                    <clr-label *ngIf="!pat.disabled && !pat.expired" class="label label-success">{{ 'PROFILE.PAT_ACTIVE' | translate }}</clr-label>
                                 </clr-dg-cell>
                                 <clr-dg-action-overflow [clrPosition]="'left'">
                                     <button
@@ -280,11 +273,8 @@
                                         clrDropdownItem
                                         (click)="togglePATDisabled(pat)"
                                         id="toggle-pat-{{ pat.id }}">
-                                        @if (pat.disabled) {
-                                            {{ 'PROFILE.PAT_ENABLE' | translate }}
-                                        } @else {
-                                            {{ 'PROFILE.PAT_DISABLE' | translate }}
-                                        }
+                                        <span *ngIf="pat.disabled">{{ 'PROFILE.PAT_ENABLE' | translate }}</span>
+                                        <span *ngIf="!pat.disabled">{{ 'PROFILE.PAT_DISABLE' | translate }}</span>
                                     </button>
                                     <button
                                         clrDropdownItem
