@@ -231,8 +231,14 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// flush the origin response from the docker registry to the underlying response writer
-	if _, err := buffer.Flush(); err != nil {
-		log.Errorf("failed to flush: %v", err)
-	}
+	// NOTE: Do not flush the response here. The outer blob.PutManifestMiddleware (AfterResponse)
+	// middleware owns the response buffer flush via its deferred Flush() call. If we flush here
+	// before the blob middleware's AfterResponse hook runs and that hook fails, we cannot
+	// recover: ResponseBuffer.Reset() will fail with "response flushed", the error will be
+	// silently ignored (`_ = res.Reset()`), and the client will receive HTTP 201 despite the
+	// actual failure. By letting the outer middleware control the flush, we ensure:
+	// - If the blob hook succeeds, the deferred Flush() sends the 201 to the client.
+	// - If the blob hook fails, Reset() succeeds (buffer not yet flushed), the error is written,
+	//   and the client receives the correct error response.
+	// See: https://github.com/goharbor/harbor/issues/23199
 }
