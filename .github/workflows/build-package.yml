@@ -8,6 +8,12 @@ on:
       - develop
       - release-*
   workflow_dispatch:
+    inputs:
+      force_build_base:
+        description: 'Force rebuild of base images'
+        required: false
+        default: 'false'
+        type: boolean
 
 # Serialize runs per branch so concurrent pushes don't race when pushing the
 # shared mutable tags (dev / latest) and the multi-arch manifests. Queue rather
@@ -34,12 +40,14 @@ jobs:
       - name: Decide whether to (re)build the base image
         id: decide
         if: |
+            github.event.inputs.force_build_base == 'true' ||
             steps.changed-files.outcome != 'success' ||
             contains(steps.changed-files.outputs.modified, 'common/Dockerfile') ||
             contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
             contains(steps.changed-files.outputs.modified, 'VERSION') ||
             contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
+            github.ref == 'refs/heads/main' ||
+            github.ref == 'refs/heads/develop'
         run: echo "build_base=true" >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         if: steps.decide.outputs.build_base == 'true'
