@@ -92,8 +92,8 @@ def get_storage_provider_info(provider_name, provider_config):
     for config in provider_config_copy.items():
         if config[1] is None:
             value = ''
-        elif config[1] == True:
-            value = 'true'
+        elif isinstance(config[1], bool):
+            value = str(config[1]).lower()
         else:
             value = config[1]
         storage_provider_conf_list.append('{}: {}'.format(config[0], value))

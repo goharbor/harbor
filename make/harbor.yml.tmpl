@@ -77,6 +77,12 @@ data_volume: /data
 #   # and https://distribution.github.io/distribution/storage-drivers/
 #   filesystem:
 #     maxthreads: 100
+#   s3:
+#     region: us-east-1
+#     bucket: my-bucket
+#     # Optional, set to true to force path-style for S3, set to false to use virtual-hosted style.
+#     # For Alibaba Cloud OSS S3 compatibility, it must be set to false.
+#     # forcepathstyle: false
 #   # set disable to true when you want to disable registry redirect
 #   redirect:
 #     disable: false
