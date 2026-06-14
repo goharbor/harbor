@@ -81,6 +81,7 @@ Test Case - Harbor Endpoint Delete
     Close Browser
 
 Test Case - Replication Rule Edit
+    [tags]  replication_rule_edit
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${endpoint1}=    Set Variable    e1${d}
@@ -176,6 +177,7 @@ Test Case - Replication Of Push Images from Self To Harbor
     Close Browser
 
 Test Case - Replication Exclusion Mode And Set Bandwidth
+    [tags]  replication_exclusion_set_bandwidth
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     # login source

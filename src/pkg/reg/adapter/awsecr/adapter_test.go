@@ -393,6 +393,24 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestGetAdapterInfo_ChinaRegionEndpoints(t *testing.T) {
+	info := getAdapterInfo()
+	endpoints := info.EndpointPattern.Endpoints
+	endpointMap := make(map[string]string, len(endpoints))
+	for _, ep := range endpoints {
+		endpointMap[ep.Key] = ep.Value
+	}
+
+	// China regions must use amazonaws.com.cn
+	assert.Equal(t, "https://api.ecr.cn-north-1.amazonaws.com.cn", endpointMap["cn-north-1"])
+	assert.Equal(t, "https://api.ecr.cn-northwest-1.amazonaws.com.cn", endpointMap["cn-northwest-1"])
+
+	// Standard regions must use amazonaws.com
+	assert.Equal(t, "https://api.ecr.us-east-1.amazonaws.com", endpointMap["us-east-1"])
+	assert.Equal(t, "https://api.ecr.ap-southeast-1.amazonaws.com", endpointMap["ap-southeast-1"])
+	assert.Equal(t, "https://api.ecr.eu-west-1.amazonaws.com", endpointMap["eu-west-1"])
+}
+
 var urlForBenchmark = []string{
 	"https://1234.dkr.ecr.test-region.amazonaws.com/v2/",
 	"https://api.ecr.test-region.amazonaws.com",

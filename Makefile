@@ -137,7 +137,7 @@ TRIVYADAPTERVERSION=v0.35.1
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
 VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
-NODEBUILDIMAGE=node:16.18.0
+NODEBUILDIMAGE=node:22.22.3
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
@@ -462,11 +462,12 @@ build_base_docker:
 	@for name in $(BUILDBASETARGET); do \
 		echo $$name ; \
 		sleep 30 ; \
+		base_args="--build-arg TARGETARCH=$(ARCH)" ; \
 		valkey_args="" ; \
 		if [ "$$name" = "valkey" ]; then \
 			valkey_args="--build-arg VALKEY_VERSION=$(VALKEYVERSION) --build-arg VALKEY_SHA256=$(VALKEYSHA256)" ; \
 		fi ; \
-		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base $$valkey_args -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
+		$(DOCKERBUILD) --pull --no-cache -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base $$base_args $$valkey_args -t $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) --label base-build-date=$(date +"%Y%m%d") . ; \
 		if [ "$(PUSHBASEIMAGE)" != "false" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) || exit 1; \
 		fi ; \
