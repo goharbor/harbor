@@ -125,6 +125,7 @@
         "GENERATE_ERROR": "Cli secret setting is failed",
         "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
         "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded",
+        "SETTINGS": "Settings",
         "PAT": "Personal Access Tokens",
         "CREATE_PAT": "Create Token",
         "PAT_NAME": "Token Name",
