@@ -140,7 +140,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 ### Setup Development Environment
 
 #### Go
-Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbor backend service development environment, please [set one up](https://golang.org/doc/install).
+Harbor backend is written in [Go](https://golang.org/). If you don't have a Harbor backend service development environment, please [set one up](https://golang.org/doc/install).
 
 | Harbor | Requires Go |
 |--------|-------------|
@@ -351,7 +351,7 @@ git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
-The commit message should follow the convention on [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/). Be sure to include any related GitHub issue references in the commit message. See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown) for referencing issues and commits.
+The commit message should follow the convention on [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/). Be sure to include any related GitHub issue references in the commit message. See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown) for referencing issues and commits.
 
 To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
@@ -431,4 +431,4 @@ Documents are written with Markdown. See [Writing on GitHub](https://help.github
 [cncf-slack]: https://slack.cncf.io
 [users-dl]: https://lists.cncf.io/g/harbor-users
 [dev-dl]: https://lists.cncf.io/g/harbor-dev
-[twitter]: http://twitter.com/project_harbor
+[twitter]: https://twitter.com/project_harbor
