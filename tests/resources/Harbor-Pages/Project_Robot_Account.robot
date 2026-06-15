@@ -29,12 +29,13 @@ Create A Project Robot Account
         Retry Element Click  //span[text()='Select all']
     ELSE
         FOR  ${item}  IN  @{resources}
-            ${elements}=  Get WebElements  //table//tr[./td[text()='${item}']]//label
+            ${elements}=  Get WebElements  //table//tr[./td[text()='${item}']]//clr-checkbox-wrapper//label
             ${elements_count}=  Get Length  ${elements}
             Set To Dictionary  ${permission_count}  ${item}=${elements_count}
             ${total}=  Evaluate  ${total} + ${elements_count}
             FOR  ${element}  IN  @{elements}
-                Retry Element Click  ${element}
+                Execute JavaScript    arguments[0].click();    ARGUMENTS    ${element}
+                Sleep    1s
             END
         END
     END

@@ -37,7 +37,7 @@ ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${cve_allowlist_expires_btn}  //clr-date-container[.//div[@class='clr-input-group' and not(@hidden)]]//button
 ${cve_allowlist_expires_yesterday}  //td[.//button[@class='day-btn is-today']]/preceding::td[1]
 ${cve_allowlist_expires_tomorrow}  //td[.//button[@class='day-btn is-today']]/following::td[1]
-${cfg_auth_automatic_onboarding_checkbox}  //clr-checkbox-wrapper//label[contains(@class,'clr-control-label') and contains(@for,'oidcAutoOnboard')]
+${cfg_auth_automatic_onboarding_checkbox}  (//input[@id='oidcAutoOnboard'])[1]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 
 ${cfg_auth_ldap_group_admin_dn}  //*[@id='ldapGroupAdminDN']
@@ -56,9 +56,11 @@ ${distribution_auth_oauth_mode_ratio_id}  //*[@id='token_mode']
 ${distribution_enable_checkbox_id}  //*[@id='enabled']
 ${distribution_insecure_checkbox_id}  //*[@id='insecure']
 ${distribution_add_save_btn_id}  //*[@id='instance-ok']
-${distribution_action_btn_id}  //*[@id='member-action']
-${distribution_del_btn_id}  //*[@id='distribution-delete']
-${distribution_edit_btn_id}  //*[@id='distribution-edit']
+# ${distribution_action_btn_id}  xpath=//button[.//span[@id='member-action'] or @id='member-action']
+${distribution_action_btn_id}  xpath=//clr-dg-row//button[contains(@class, 'datagrid-action-toggle')]
+# ${distribution_del_btn_id}  xpath=//button[.//span[@id='distribution-delete']]
+${distribution_del_btn_id}  xpath=//button[contains(., 'Delete')]
+${distribution_edit_btn_id}  xpath=//button[.//span[@id='distribution-edit']]
 ${filter_dist_btn}  //hbr-filter//clr-icon[contains(@class,'search-btn')]
 ${filter_dist_input}  //hbr-filter//input
 
