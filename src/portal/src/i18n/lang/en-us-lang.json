@@ -42,7 +42,8 @@
         "ADD": "ADD",
         "RUN": "RUN",
         "ENABLE": "ENABLE",
-        "DISABLE": "DEACTIVATE"
+        "DISABLE": "DEACTIVATE",
+        "CREATE": "CREATE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",

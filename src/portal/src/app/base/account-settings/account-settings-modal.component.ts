@@ -560,6 +560,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         }).subscribe({
             next: (res: any) => {
                 this.createdPATSecret = res.secret;
+                this.showCreatePATModal = true;
                 this.msgHandler.showSuccess('PROFILE.PAT_REFRESHED');
                 this.loadPATs();
             },

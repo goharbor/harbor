@@ -190,7 +190,7 @@
                                 <clr-dg-cell>{{ pat.creation_time | date: 'short' }}</clr-dg-cell>
                                 <clr-dg-cell>
                                     <span *ngIf="pat.expires_at === -1">{{ 'PROFILE.PAT_NEVER' | translate }}</span>
-                                    <span *ngIf="pat.expires_at !== -1">{{ pat.expires_at | date: 'short' }}</span>
+                                    <span *ngIf="pat.expires_at !== -1">{{ pat.expires_at * 1000 | date: 'short' }}</span>
                                 </clr-dg-cell>
                                 <clr-dg-cell>
                                     <clr-label *ngIf="pat.disabled" class="label label-danger">{{ 'PROFILE.PAT_DISABLED' | translate }}</clr-label>

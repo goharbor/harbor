@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
@@ -64,7 +65,7 @@ func (u *usersAPI) CreatePersonalAccessToken(ctx context.Context, params operati
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, false); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	patModel := &patmodel.PersonalAccessToken{
@@ -92,7 +93,7 @@ func (u *usersAPI) DeletePersonalAccessToken(ctx context.Context, params operati
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, false); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	if err := u.patCtl.Delete(ctx, params.TokenID); err != nil {
@@ -106,7 +107,7 @@ func (u *usersAPI) GetPersonalAccessToken(ctx context.Context, params operation.
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, false); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	pat, err := u.patCtl.Get(ctx, params.TokenID)
@@ -130,7 +131,7 @@ func (u *usersAPI) ListPersonalAccessTokens(ctx context.Context, params operatio
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, true); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	query := &q.Query{
@@ -150,15 +151,19 @@ func (u *usersAPI) ListPersonalAccessTokens(ctx context.Context, params operatio
 		}
 		payload = make([]*models.PersonalAccessToken, len(pats))
 		for i, pat := range pats {
+			expired := pat.ExpiresAt > 0 && pat.ExpiresAt <= time.Now().Unix()
 			payload[i] = &models.PersonalAccessToken{
-				ID:          pat.ID,
-				Name:        pat.Name,
-				Description: pat.Description,
-				UserID:      int64(pat.UserID),
-				ExpiresAt:   pat.ExpiresAt,
-				Disabled:    pat.Disabled,
-				IsLegacy:    pat.IsLegacy,
-				LastUsedAt:  pat.LastUsedAt,
+				ID:           pat.ID,
+				Name:         pat.Name,
+				Description:  pat.Description,
+				UserID:       int64(pat.UserID),
+				ExpiresAt:    pat.ExpiresAt,
+				Disabled:     pat.Disabled,
+				IsLegacy:     pat.IsLegacy,
+				LastUsedAt:   pat.LastUsedAt,
+				CreationTime: strfmt.DateTime(pat.CreationTime),
+				UpdateTime:   strfmt.DateTime(pat.UpdateTime),
+				Expired:      expired,
 			}
 		}
 	}
@@ -172,7 +177,7 @@ func (u *usersAPI) RefreshPersonalAccessTokenSecret(ctx context.Context, params 
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, false); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	secret, err := u.patCtl.RefreshSecret(ctx, params.TokenID, params.Request.Secret)
@@ -190,7 +195,7 @@ func (u *usersAPI) UpdatePersonalAccessToken(ctx context.Context, params operati
 		return u.SendError(ctx, err)
 	}
 	userID := int(params.UserID)
-	if err := u.requireForPAT(ctx, userID, false); err != nil {
+	if err := u.requireForPAT(ctx, userID); err != nil {
 		return u.SendError(ctx, err)
 	}
 	pat, err := u.patCtl.Get(ctx, params.TokenID)
@@ -212,10 +217,10 @@ func (u *usersAPI) UpdatePersonalAccessToken(ctx context.Context, params operati
 	return operation.NewUpdatePersonalAccessTokenOK()
 }
 
-func (u *usersAPI) requireForPAT(ctx context.Context, userID int, listOrGetSelf bool) error {
+func (u *usersAPI) requireForPAT(ctx context.Context, userID int) error {
 	sctx, _ := security.FromContext(ctx)
 	if localSCtx, ok := sctx.(*local.SecurityContext); ok {
-		if listOrGetSelf && localSCtx.User().UserID == userID {
+		if localSCtx.User().UserID == userID {
 			return nil
 		}
 	}
