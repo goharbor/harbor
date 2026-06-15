@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/oidc"
 )
 
 func TestGetSessionType(t *testing.T) {
@@ -44,4 +47,19 @@ func TestGetSessionType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOIDCCLIKey(t *testing.T) {
+	assert.Equal(t, "oidc_cli_state:state-123", oidcCLIKey("state-123"))
+}
+
+func TestUnmarshalOIDCToken(t *testing.T) {
+	raw, err := json.Marshal(&oidc.Token{
+		RawIDToken: "raw-id-token",
+	})
+	assert.NoError(t, err)
+
+	token, err := unmarshalOIDCToken(raw)
+	assert.NoError(t, err)
+	assert.Equal(t, "raw-id-token", token.RawIDToken)
 }
