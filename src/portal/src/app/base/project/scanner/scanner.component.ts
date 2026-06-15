@@ -33,6 +33,7 @@ import { Project } from '../../../../../ng-swagger-gen/models/project';
     selector: 'scanner',
     templateUrl: './scanner.component.html',
     styleUrls: ['./scanner.component.scss'],
+    standalone: false,
 })
 export class ScannerComponent implements OnInit {
     loading: boolean = false;

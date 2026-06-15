@@ -3,10 +3,10 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
+                    @if (canDownloadCert) {
                     <a
                         rel="noopener noreferrer"
                         #certDownloadLink
-                        *ngIf="canDownloadCert"
                         [href]="downloadLink"
                         target="_blank"
                         class="btn btn-link btn-font download-link">
@@ -17,14 +17,13 @@
                                 | uppercase
                         }}
                     </a>
+                    } @if ( hasCreateRepositoryPermission &&
+                    !isProxyCacheProject ) {
                     <hbr-push-image-button
                         class="push-image-button"
-                        *ngIf="
-                            hasCreateRepositoryPermission &&
-                            !isProxyCacheProject
-                        "
                         [registryUrl]="registryUrl"
                         [projectName]="projectName"></hbr-push-image-button>
+                    }
                     <hbr-filter
                         [withDivider]="true"
                         filterPlaceholder="{{
@@ -63,10 +62,10 @@
         </div>
     </div>
     <div class="row">
-        <div
-            *ngIf="!isCardView"
-            class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        @if (!isCardView) {
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid
+                clrDgSelectionType="multi"
                 (clrDgRefresh)="clrLoad($event)"
                 [clrDgLoading]="loading"
                 [(clrDgSelected)]="selectedRow">
@@ -99,12 +98,15 @@
                 <clr-dg-placeholder>{{
                     'REPOSITORY.PLACEHOLDER' | translate
                 }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let r of repositories" [clrDgItem]="r">
+                @for (r of repositories; track r) {
+                <clr-dg-row [clrDgItem]="r">
                     <clr-dg-cell>
                         <a href="javascript:void(0)" [routerLink]="getLink(r)">
-                            <span *ngIf="withAdmiral" class="list-img"
-                                ><img [src]="getImgLink(r)" /></span
-                            >{{ r.name }}</a
+                            @if (withAdmiral) {
+                            <span class="list-img"
+                                ><img [src]="getImgLink(r)"
+                            /></span>
+                            }{{ r.name }}</a
                         ></clr-dg-cell
                     >
                     <!-- to do -->
@@ -114,6 +116,7 @@
                         r.update_time | harborDatetime : 'short'
                     }}</clr-dg-cell>
                 </clr-dg-row>
+                }
                 <clr-dg-footer>
                     <clr-dg-pagination
                         #pagination
@@ -126,20 +129,23 @@
                                 'PAGINATION.PAGE_SIZE' | translate
                             }}</clr-dg-page-size
                         >
-                        <span *ngIf="totalCount"
+                        @if (totalCount) {
+                        <span
                             >{{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}
                             {{ 'REPOSITORY.OF' | translate }}</span
                         >
+                        }
                         {{ totalCount }} {{ 'REPOSITORY.ITEMS' | translate }}
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
         </div>
+        }
     </div>
 
+    @if (isCardView) {
     <hbr-gridview
-        *ngIf="isCardView"
         #gridView
         class="position-relative"
         [items]="repositories"
@@ -158,7 +164,9 @@
                             'card-media-block': true,
                             wrap: !withAdmiral
                         }">
-                        <img *ngIf="withAdmiral" [src]="getImgLink(item)" />
+                        @if (withAdmiral) {
+                        <img [src]="getImgLink(item)" />
+                        }
                         <div class="card-media-description">
                             <span
                                 class="card-media-title"
@@ -196,7 +204,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <clr-dropdown [clrCloseMenuOnItemClick]="false">
+                    <clr-dropdown [clrCloseMenuOnItemClick]="true">
                         <button
                             type="button"
                             class="btn btn-link"
@@ -207,11 +215,11 @@
                             [disabled]="!hasDeleteRepositoryPermission"
                             clrDropdownTrigger>
                             {{ 'REPOSITORY.ACTION' | translate }}
-                            <clr-icon shape="caret down"></clr-icon>
+                            <clr-icon shape="caret" direction="down"></clr-icon>
                         </button>
                         <clr-dropdown-menu clrPosition="top-left" *clrIfOpen>
+                            @if (withAdmiral) {
                             <button
-                                *ngIf="withAdmiral"
                                 type="button"
                                 class="btn btn-link"
                                 clrDropdownItem
@@ -223,6 +231,7 @@
                                 [disabled]="!hasProjectAdminRole">
                                 {{ 'REPOSITORY.ADDITIONAL_INFO' | translate }}
                             </button>
+                            }
                             <button
                                 type="button"
                                 class="btn btn-link"
@@ -241,9 +250,11 @@
             </a>
         </ng-template>
     </hbr-gridview>
-    <div *ngIf="isFirstLoadingGridView && isCardView" class="first-loading">
+    } @if (isFirstLoadingGridView && isCardView) {
+    <div class="first-loading">
         <div class="spinner"></div>
     </div>
+    }
 
     <confirmation-dialog
         #confirmationDialog

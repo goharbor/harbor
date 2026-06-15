@@ -98,6 +98,8 @@ func TestEncrypt(t *testing.T) {
 		alg     string
 		want    string
 	}{
+		// SHA1 is kept as a golden case to guard the legacy PBKDF2-HMAC-SHA1
+		// verification path that Encrypt still supports for old credentials.
 		"sha1 test":   {content: "content", salt: "salt", alg: SHA1, want: "dc79e76c88415c97eb089d9cc80b4ab0"},
 		"sha256 test": {content: "content", salt: "salt", alg: SHA256, want: "83d3d6f3e7cacb040423adf7ced63d21"},
 	}

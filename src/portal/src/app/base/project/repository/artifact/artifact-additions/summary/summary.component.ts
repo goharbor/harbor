@@ -22,6 +22,7 @@ import { Artifact } from 'ng-swagger-gen/models/artifact';
     selector: 'hbr-artifact-summary',
     templateUrl: './summary.component.html',
     styleUrls: ['./summary.component.scss'],
+    standalone: false,
 })
 export class SummaryComponent implements OnInit {
     @Input() summaryLink: AdditionLink;

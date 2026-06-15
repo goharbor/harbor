@@ -60,6 +60,6 @@ Refresh Artifacts
     Retry Element Click  ${artifact_list_refresh_btn}
 
 Delete Accessory By Aeecssory XPath
-    [Arguments]  ${aeecssory_action_xpath}
-    Retry Double Keywords When Error  Retry Button Click  ${aeecssory_action_xpath}  Retry Button Click  ${delete_accessory_btn}
+    [Arguments]  ${Accessory_action_xpath}
+    Retry Double Keywords When Error  Retry Button Click  ${Accessory_action_xpath}  Retry Button Click  ${delete_accessory_btn}
     Retry Button Click  //button[text()=' DELETE ']
