@@ -110,7 +110,7 @@ DOCKERIMAGENAME_EXPORTER=$(IMAGENAMESPACE)/harbor-$(EXPORTER)
 _build_prepare:
 	@$(call _build_base,$(PREPARE),$(DOCKERFILEPATH_PREPARE))
 	@echo "building prepare container for photon..."
-	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
+	@$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) --build-arg pip_index_url=$(PIP_INDEX_URL) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_db:
@@ -226,7 +226,7 @@ define _build_base
 		else \
 			echo "No docker credentials provided, please be aware of privileges to access docker hub!" ; \
 		fi ;\
-		$(DOCKERBUILD) -f $(2)/Dockerfile.base -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
+		$(DOCKERBUILD) -f $(2)/Dockerfile.base --build-arg pip_index_url=$(PIP_INDEX_URL) -t $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) --label base-build-date=$(TIMESTAMP) . ;\
 		if [ "$(PUSHBASEIMAGE)" = "true" ] ; then \
 			$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(BASEIMAGENAMESPACE)/harbor-$(1)-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) docker.io $(PULL_BASE_FROM_DOCKERHUB) || exit 1; \
 		fi ; \
