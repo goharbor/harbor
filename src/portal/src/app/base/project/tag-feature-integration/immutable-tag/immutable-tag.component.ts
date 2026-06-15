@@ -30,6 +30,7 @@ import { ProjectService } from '../../../../../../ng-swagger-gen/services/projec
     selector: 'app-immutable-tag',
     templateUrl: './immutable-tag.component.html',
     styleUrls: ['./immutable-tag.component.scss'],
+    standalone: false,
 })
 export class ImmutableTagComponent implements OnInit {
     projectId: number;

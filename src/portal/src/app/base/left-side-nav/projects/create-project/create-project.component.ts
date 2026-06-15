@@ -59,6 +59,7 @@ const PAGE_SIZE: number = 100;
     selector: 'create-project',
     templateUrl: 'create-project.component.html',
     styleUrls: ['create-project.scss'],
+    standalone: false,
 })
 export class CreateProjectComponent
     implements OnInit, AfterViewInit, OnChanges, OnDestroy

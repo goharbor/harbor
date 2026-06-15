@@ -16,7 +16,8 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="isSystemAdmin" clrInline>
+        @if (isSystemAdmin) {
+        <clr-checkbox-container clrInline>
             <label class="label-color-input">
                 {{ 'PROJECT.PROXY_CACHE' | translate }}
             </label>
@@ -32,9 +33,8 @@
                 {{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <div
-            *ngIf="isSystemAdmin && projectPolicy.ProxyCacheEnabled"
-            class="clr-form-control mt-0">
+        } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
+        <div class="clr-form-control mt-0">
             <label class="clr-control-label"></label>
             <div class="clr-select-wrapper row-inline">
                 <label class="clr-control-label">
@@ -47,9 +47,9 @@
                     disabled="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.RegistryId">
                     <option class="display-none" value=""></option>
-                    <option *ngFor="let r of registries" [value]="r.id">
-                        {{ r.name }}-{{ r.url }}
-                    </option>
+                    @for (r of registries; track r) {
+                    <option [value]="r.id">{{ r.name }}-{{ r.url }}</option>
+                    }
                 </select>
             </div>
             <div class="row-inline ml-2" clrInline>
@@ -68,28 +68,29 @@
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off"
                         (ngModelChange)="validateBandwidth()" />
+                    @if (bandwidthError) {
                     <clr-icon
-                        *ngIf="bandwidthError"
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
+                    }
                     <div class="clr-select-wrapper mr-10 margin-left-05">
                         <select
                             id="bandwidth_unit"
                             name="bandwidth_unit"
                             disabled="!allowUpdateProxyCacheConfiguration"
                             [(ngModel)]="speedUnit">
-                            <option
-                                *ngFor="let unit of speedUnits"
-                                [value]="unit.UNIT">
+                            @for (unit of speedUnits; track unit) {
+                            <option [value]="unit.UNIT">
                                 {{ unit.UNIT }}
                             </option>
+                            }
                         </select>
                     </div>
-                    <clr-control-error
-                        *ngIf="bandwidthError"
-                        class="tooltip-content">
+                    @if (bandwidthError) {
+                    <clr-control-error class="tooltip-content">
                         {{ 'PROJECT.SPEED_LIMIT_TIP' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <div class="row-inline ml-2" clrInline>
@@ -107,23 +108,23 @@
                         disabled="!allowUpdateProxyCacheConfiguration"
                         class="clr-input width-164 mr-10 clr-input-underline"
                         autocomplete="off" />
+                    @if (maxUpstreamConnError) {
                     <clr-icon
-                        *ngIf="maxUpstreamConnError"
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
-                    <clr-control-error
-                        *ngIf="maxUpstreamConnError"
-                        class="tooltip-content">
+                    } @if (maxUpstreamConnError) {
+                    <clr-control-error class="tooltip-content">
                         {{
                             'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP'
                                 | translate
                         }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
         </div>
-        <clr-checkbox-container
-            *ngIf="isSystemAdmin && projectPolicy.ProxyCacheEnabled">
+        } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
+        <clr-checkbox-container>
             <label class="clr-control-label"></label>
             <clr-checkbox-wrapper id="proxy-cache-local-on-not-found">
                 <input
@@ -143,8 +144,8 @@
                 }}
             </clr-control-helper>
         </clr-checkbox-container>
-
-        <clr-checkbox-container *ngIf="!isProxyCacheProject" clrInline>
+        } @if (!isProxyCacheProject) {
+        <clr-checkbox-container clrInline>
             <label
                 ><span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label
             >
@@ -176,13 +177,14 @@
                 {{ 'PROJECT_CONFIG.CONTENT_TRUST_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        }
         <clr-checkbox-container
             id="prevent-vulenrability-image"
             class="margin-top-05">
             <label
-                ><span *ngIf="!!isProxyCacheProject">{{
-                    'PROJECT_CONFIG.SECURITY' | translate
-                }}</span></label
+                >@if (!!isProxyCacheProject) {
+                <span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span>
+                }</label
             >
             <clr-checkbox-wrapper>
                 <input
@@ -214,11 +216,11 @@
                                         projectPolicy.PreventVulImgSeverity
                                     "
                                     [disabled]="!projectPolicy.PreventVulImg">
-                                    <option
-                                        *ngFor="let s of severityOptions"
-                                        [ngValue]="s.severity">
+                                    @for (s of severityOptions; track s) {
+                                    <option [ngValue]="s.severity">
                                         {{ s.severityLevel | translate }}
                                     </option>
+                                    }
                                 </select>
                             </div>
                             <div>
@@ -266,8 +268,8 @@
                 {{ 'PROJECT_CONFIG.AUTOSBOM_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        @if (systemInfo) {
         <div
-            *ngIf="systemInfo"
             class="clr-form-control"
             [class.clr-form-control-disabled]="!hasChangeConfigRole">
             <label class="clr-control-label">{{
@@ -290,18 +292,19 @@
                             'CVE_ALLOWLIST.MERGE_INTO' | translate
                         }}</span>
                     </div>
-                    <div *ngIf="hasExpired">
-                        <span
-                            *ngIf="isUseSystemAllowlist()"
-                            class="label label-warning"
-                            >{{ 'CVE_ALLOWLIST.WARNING_SYS' | translate }}</span
-                        >
-                        <span
-                            *ngIf="!isUseSystemAllowlist()"
-                            class="label label-warning"
-                            >{{ 'CVE_ALLOWLIST.WARNING_PRO' | translate }}</span
-                        >
+                    @if (hasExpired) {
+                    <div>
+                        @if (isUseSystemAllowlist()) {
+                        <span class="label label-warning">{{
+                            'CVE_ALLOWLIST.WARNING_SYS' | translate
+                        }}</span>
+                        } @if (!isUseSystemAllowlist()) {
+                        <span class="label label-warning">{{
+                            'CVE_ALLOWLIST.WARNING_PRO' | translate
+                        }}</span>
+                        }
                     </div>
+                    }
                 </div>
                 <clr-radio-container clrInline>
                     <clr-radio-wrapper>
@@ -361,9 +364,8 @@
                                 {{ 'CVE_ALLOWLIST.ADD_SYSTEM' | translate }}
                             </button>
                         </div>
-                        <div
-                            class="add-modal add-modal-dark"
-                            *ngIf="showAddModal && !isUseSystemAllowlist()">
+                        @if (showAddModal && !isUseSystemAllowlist()) {
+                        <div class="add-modal add-modal-dark">
                             <clr-icon
                                 (click)="showAddModal = false"
                                 class="float-lg-right margin-top-4"
@@ -395,35 +397,32 @@
                                 </button>
                             </div>
                         </div>
-                        <ul
-                            class="allowlist-window"
-                            *ngIf="isUseSystemAllowlist()">
-                            <li
-                                *ngIf="systemAllowlist?.items?.length < 1"
-                                class="none">
+                        } @if (isUseSystemAllowlist()) {
+                        <ul class="allowlist-window">
+                            @if (systemAllowlist?.items?.length < 1) {
+                            <li class="none">
                                 {{ 'CVE_ALLOWLIST.NONE' | translate }}
                             </li>
-                            <li *ngFor="let item of systemAllowlist?.items">
+                            } @for (item of systemAllowlist?.items; track item)
+                            {
+                            <li>
                                 <a
                                     href="javascript:void(0)"
                                     (click)="goToDetail(item.cve_id)"
                                     >{{ item.cve_id }}</a
                                 >
                             </li>
+                            }
                         </ul>
-                        <ul
-                            class="allowlist-window"
-                            *ngIf="!isUseSystemAllowlist()">
-                            <li
-                                class="none"
-                                *ngIf="projectAllowlist?.items?.length < 1">
+                        } @if (!isUseSystemAllowlist()) {
+                        <ul class="allowlist-window">
+                            @if (projectAllowlist?.items?.length < 1) {
+                            <li class="none">
                                 {{ 'CVE_ALLOWLIST.NONE' | translate }}
                             </li>
-                            <li
-                                *ngFor="
-                                    let item of projectAllowlist?.items;
-                                    let i = index
-                                ">
+                            } @for ( item of projectAllowlist?.items; track
+                            item; let i = $index) {
+                            <li>
                                 <a
                                     href="javascript:void(0)"
                                     (click)="goToDetail(item.cve_id)"
@@ -436,7 +435,9 @@
                                     <clr-icon shape="times-circle"></clr-icon>
                                 </a>
                             </li>
+                            }
                         </ul>
+                        }
                     </div>
                     <div class="clr-col padding-top-16 pl-2">
                         <div class="clr-row expire-data">
@@ -452,9 +453,9 @@
                                     readonly
                                     type="date"
                                     [(clrDate)]="systemExpiresDate" />
+                                @if (!isUseSystemAllowlist()) {
                                 <input
                                     [disabled]="!hasChangeConfigRole"
-                                    *ngIf="!isUseSystemAllowlist()"
                                     #dateInput
                                     placeholder="{{
                                         'CVE_ALLOWLIST.NEVER_EXPIRES'
@@ -464,10 +465,10 @@
                                     type="date"
                                     [(clrDate)]="expiresDate"
                                     newFormLayout="true" />
+                                } @if (isUseSystemAllowlist()) {
                                 <input
                                     clrInput
                                     [disabled]="!hasChangeConfigRole"
-                                    *ngIf="isUseSystemAllowlist()"
                                     placeholder="{{
                                         'CVE_ALLOWLIST.NEVER_EXPIRES'
                                             | translate
@@ -475,6 +476,7 @@
                                     readonly
                                     type="text"
                                     value="{{ systemExpiresDateString }}" />
+                                }
                             </div>
                         </div>
                         <div class="clr-row">
@@ -503,6 +505,7 @@
                 </div>
             </div>
         </div>
+        }
         <button
             type="button"
             class="btn btn-primary"

@@ -29,6 +29,7 @@ import {
             multi: true,
         },
     ],
+    standalone: false,
 })
 export class DateValidatorDirective implements Validator, OnChanges {
     @Input() dateValidator: string;
