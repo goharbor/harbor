@@ -8,6 +8,11 @@ set -e
 #     chown 10000:10000 -R /var/lib/registry
 # fi
 
+# Quote REGISTRY_HTTP_SECRET to avoid yaml parsing error in distribution config parser
+if [ -n "$REGISTRY_HTTP_SECRET" ]; then
+    export REGISTRY_HTTP_SECRET="'"$(echo "$REGISTRY_HTTP_SECRET" | sed "s/'/''/g")"'"
+fi
+
 /home/harbor/install_cert.sh
 
 exec /home/harbor/harbor_registryctl -c /etc/registryctl/config.yml
