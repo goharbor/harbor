@@ -126,3 +126,68 @@ class User(base.Base, object):
             return
         base._assert_status_code(expect_status_code, status_code)
         return return_data
+
+    def create_personal_access_token(self, user_id, name, description=None, expires_in_days=None, expect_status_code=201, **kwargs):
+        pat_req = v2_swagger_client.PersonalAccessTokenRequest(
+            name=name,
+            description=description,
+            expires_in_days=expires_in_days if expires_in_days is not None else 0
+        )
+        try:
+            data, status_code, header = self._get_client(**kwargs).create_personal_access_token_with_http_info(user_id, pat_req)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return data, base._get_id_from_header(header)
+
+    def list_personal_access_tokens(self, user_id, page=None, page_size=None, expect_status_code=200, **kwargs):
+        params = {}
+        if page is not None:
+            params["page"] = page
+        if page_size is not None:
+            params["page_size"] = page_size
+        try:
+            data, status_code, headers = self._get_client(**kwargs).list_personal_access_tokens_with_http_info(user_id, **params)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return data
+
+    def get_personal_access_token(self, user_id, token_id, expect_status_code=200, expect_response_body=None, **kwargs):
+        try:
+            data, status_code, _ = self._get_client(**kwargs).get_personal_access_token_with_http_info(user_id, token_id)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+        base._assert_status_code(expect_status_code, status_code)
+        return data
+
+    def update_personal_access_token(self, user_id, token_id, disabled=None, expect_status_code=200, **kwargs):
+        pat_update = v2_swagger_client.PersonalAccessToken(disabled=disabled)
+        try:
+            _, status_code, _ = self._get_client(**kwargs).update_personal_access_token_with_http_info(user_id, token_id, pat_update)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+
+    def delete_personal_access_token(self, user_id, token_id, expect_status_code=200, **kwargs):
+        try:
+            _, status_code, _ = self._get_client(**kwargs).delete_personal_access_token_with_http_info(user_id, token_id)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+
+    def refresh_personal_access_token_secret(self, user_id, token_id, expect_status_code=200, **kwargs):
+        try:
+            data, status_code, _ = self._get_client(**kwargs).refresh_personal_access_token_secret_with_http_info(user_id, token_id, {})
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, status_code)
+            return data
