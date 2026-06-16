@@ -8,148 +8,167 @@
             <clr-tab>
                 <button clrTabLink>{{ 'PROFILE.SETTINGS' | translate }}</button>
                 <clr-tab-content>
-        <inline-alert
-            #accountSettingInlineAlert
-            (confirmEvt)="confirmYes($event)"
-            (closeEvt)="confirmNo($event)"></inline-alert>
-        <form
-            #accountSettingsFrom="ngForm"
-            class="clr-form clr-form-horizontal">
-            <div class="clr-form-control">
-                <label
-                    for="account_settings_username"
-                    aria-haspopup="true"
-                    class="clr-control-label"
-                    >{{ 'PROFILE.USER_NAME' | translate }}</label
-                >
-                <div class="clr-control-container display-flex">
-                    <input
-                        class="clr-input"
-                        type="text"
-                        name="account_settings_username"
-                        [(ngModel)]="account.username"
-                        disabled
-                        id="account_settings_username"
-                        size="30" />
-                    @if (canRename) {
-                    <div class="rename-tool">
-                        <button
-                            id="rename-btn"
-                            [disabled]="RenameOnGoing"
-                            (click)="onRename()"
-                            class="btn btn-outline">
-                            {{ 'PROFILE.ADMIN_RENAME_BUTTON' | translate }}
-                        </button>
-                        <clr-tooltip>
-                            <clr-icon
-                                clrTooltipTrigger
-                                shape="info-circle"
-                                size="24"></clr-icon>
-                            <clr-tooltip-content
-                                clrPosition="bottom-left"
-                                clrSize="md"
-                                *clrIfOpen>
-                                <span>
-                                    {{
-                                        'PROFILE.ADMIN_RENAME_TIP' | translate
-                                    }}</span
-                                >
-                            </clr-tooltip-content>
-                        </clr-tooltip>
-                    </div>
-                    }
-                </div>
-            </div>
-            <div class="clr-form-control">
-                <label
-                    for="account_settings_email"
-                    class="required clr-control-label"
-                    >{{ 'PROFILE.EMAIL' | translate }}</label
-                >
-                <div
-                    class="clr-control-container"
-                    [class.clr-error]="
-                        !getValidationState('account_settings_email')
-                    ">
-                    <div class="clr-input-wrapper">
-                        <input
-                            name="account_settings_email"
-                            type="text"
-                            #eamilInput="ngModel"
-                            class="clr-input"
-                            [(ngModel)]="account.email"
-                            required
-                            email
-                            id="account_settings_email"
-                            size="30"
-                            (input)="
-                                handleValidation(
-                                    'account_settings_email',
-                                    false
-                                )
-                            "
-                            (blur)="
-                                handleValidation('account_settings_email', true)
-                            " />
-                        <clr-icon
-                            class="clr-validate-icon"
-                            shape="exclamation-circle"></clr-icon>
-                        <span
-                            class="spinner spinner-inline"
-                            [hidden]="!checkProgress"></span>
-                    </div>
-                    @if (!getValidationState('account_settings_email')) {
-                    <clr-control-error>
-                        {{ emailTooltip | translate }}
-                    </clr-control-error>
-                    }
-                </div>
-            </div>
-            <clr-input-container>
-                <label [class.required]="!account.oidc_user_meta">{{
-                    'PROFILE.FULL_NAME' | translate
-                }}</label>
-                <input
-                    clrInput
-                    type="text"
-                    name="account_settings_full_name"
-                    #fullNameInput="ngModel"
-                    [(ngModel)]="account.realname"
-                    [required]="!account.oidc_user_meta"
-                    maxLengthExt="30"
-                    id="account_settings_full_name"
-                    size="30"
-                    (input)="
-                        handleValidation('account_settings_full_name', false)
-                    "
-                    (blur)="
-                        handleValidation('account_settings_full_name', true)
-                    " />
-                @if (!getValidationState('account_settings_full_name')) {
-                <clr-control-error>
-                    {{ 'TOOLTIP.FULL_NAME' | translate }}
-                </clr-control-error>
-                }
-            </clr-input-container>
-            <clr-input-container>
-                <label>{{ 'PROFILE.COMMENT' | translate }}</label>
-                <input
-                    clrInput
-                    type="text"
-                    #commentInput="ngModel"
-                    maxlength="30"
-                    size="30"
-                    name="account_settings_comments"
-                    [(ngModel)]="account.comment"
-                    id="account_settings_comments" />
-                @if ( commentInput.invalid && (commentInput.dirty ||
-                commentInput.touched) ) {
-                <clr-control-error>
-                    {{ 'TOOLTIP.COMMENT' | translate }}
-                </clr-control-error>
-                }
-            </clr-input-container>
-        </form>
+                    <inline-alert
+                        #accountSettingInlineAlert
+                        (confirmEvt)="confirmYes($event)"
+                        (closeEvt)="confirmNo($event)"></inline-alert>
+                    <form
+                        #accountSettingsFrom="ngForm"
+                        class="clr-form clr-form-horizontal">
+                        <div class="clr-form-control">
+                            <label
+                                for="account_settings_username"
+                                aria-haspopup="true"
+                                class="clr-control-label"
+                                >{{ 'PROFILE.USER_NAME' | translate }}</label
+                            >
+                            <div class="clr-control-container display-flex">
+                                <input
+                                    class="clr-input"
+                                    type="text"
+                                    name="account_settings_username"
+                                    [(ngModel)]="account.username"
+                                    disabled
+                                    id="account_settings_username"
+                                    size="30" />
+                                @if (canRename) {
+                                <div class="rename-tool">
+                                    <button
+                                        id="rename-btn"
+                                        [disabled]="RenameOnGoing"
+                                        (click)="onRename()"
+                                        class="btn btn-outline">
+                                        {{
+                                            'PROFILE.ADMIN_RENAME_BUTTON'
+                                                | translate
+                                        }}
+                                    </button>
+                                    <clr-tooltip>
+                                        <clr-icon
+                                            clrTooltipTrigger
+                                            shape="info-circle"
+                                            size="24"></clr-icon>
+                                        <clr-tooltip-content
+                                            clrPosition="bottom-left"
+                                            clrSize="md"
+                                            *clrIfOpen>
+                                            <span>
+                                                {{
+                                                    'PROFILE.ADMIN_RENAME_TIP'
+                                                        | translate
+                                                }}</span
+                                            >
+                                        </clr-tooltip-content>
+                                    </clr-tooltip>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="clr-form-control">
+                            <label
+                                for="account_settings_email"
+                                class="required clr-control-label"
+                                >{{ 'PROFILE.EMAIL' | translate }}</label
+                            >
+                            <div
+                                class="clr-control-container"
+                                [class.clr-error]="
+                                    !getValidationState(
+                                        'account_settings_email'
+                                    )
+                                ">
+                                <div class="clr-input-wrapper">
+                                    <input
+                                        name="account_settings_email"
+                                        type="text"
+                                        #eamilInput="ngModel"
+                                        class="clr-input"
+                                        [(ngModel)]="account.email"
+                                        required
+                                        email
+                                        id="account_settings_email"
+                                        size="30"
+                                        (input)="
+                                            handleValidation(
+                                                'account_settings_email',
+                                                false
+                                            )
+                                        "
+                                        (blur)="
+                                            handleValidation(
+                                                'account_settings_email',
+                                                true
+                                            )
+                                        " />
+                                    <clr-icon
+                                        class="clr-validate-icon"
+                                        shape="exclamation-circle"></clr-icon>
+                                    <span
+                                        class="spinner spinner-inline"
+                                        [hidden]="!checkProgress"></span>
+                                </div>
+                                @if
+                                (!getValidationState('account_settings_email'))
+                                {
+                                <clr-control-error>
+                                    {{ emailTooltip | translate }}
+                                </clr-control-error>
+                                }
+                            </div>
+                        </div>
+                        <clr-input-container>
+                            <label [class.required]="!account.oidc_user_meta">{{
+                                'PROFILE.FULL_NAME' | translate
+                            }}</label>
+                            <input
+                                clrInput
+                                type="text"
+                                name="account_settings_full_name"
+                                #fullNameInput="ngModel"
+                                [(ngModel)]="account.realname"
+                                [required]="!account.oidc_user_meta"
+                                maxLengthExt="30"
+                                id="account_settings_full_name"
+                                size="30"
+                                (input)="
+                                    handleValidation(
+                                        'account_settings_full_name',
+                                        false
+                                    )
+                                "
+                                (blur)="
+                                    handleValidation(
+                                        'account_settings_full_name',
+                                        true
+                                    )
+                                " />
+                            @if
+                            (!getValidationState('account_settings_full_name'))
+                            {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.FULL_NAME' | translate }}
+                            </clr-control-error>
+                            }
+                        </clr-input-container>
+                        <clr-input-container>
+                            <label>{{ 'PROFILE.COMMENT' | translate }}</label>
+                            <input
+                                clrInput
+                                type="text"
+                                #commentInput="ngModel"
+                                maxlength="30"
+                                size="30"
+                                name="account_settings_comments"
+                                [(ngModel)]="account.comment"
+                                id="account_settings_comments" />
+                            @if ( commentInput.invalid && (commentInput.dirty ||
+                            commentInput.touched) ) {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.COMMENT' | translate }}
+                            </clr-control-error>
+                            }
+                        </clr-input-container>
+                    </form>
                 </clr-tab-content>
             </clr-tab>
             <clr-tab>
@@ -164,38 +183,70 @@
                                 {{ 'PROFILE.CREATE_PAT' | translate }}
                             </button>
                         </div>
-                        <clr-datagrid [(clrDgSelected)]="selectedPATs" [clrDgLoading]="patLoading">
+                        <clr-datagrid
+                            [(clrDgSelected)]="selectedPATs"
+                            [clrDgLoading]="patLoading">
                             <clr-dg-column>
-                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                <ng-container
+                                    *clrDgHideableColumn="{ hidden: false }">
                                     {{ 'PROFILE.PAT_NAME' | translate }}
                                 </ng-container>
                             </clr-dg-column>
                             <clr-dg-column>
-                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                <ng-container
+                                    *clrDgHideableColumn="{ hidden: false }">
                                     {{ 'PROFILE.PAT_CREATED' | translate }}
                                 </ng-container>
                             </clr-dg-column>
                             <clr-dg-column>
-                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                <ng-container
+                                    *clrDgHideableColumn="{ hidden: false }">
                                     {{ 'PROFILE.PAT_EXPIRES' | translate }}
                                 </ng-container>
                             </clr-dg-column>
                             <clr-dg-column>
-                                <ng-container *clrDgHideableColumn="{hidden: false}">
+                                <ng-container
+                                    *clrDgHideableColumn="{ hidden: false }">
                                     {{ 'PROFILE.PAT_STATUS' | translate }}
                                 </ng-container>
                             </clr-dg-column>
-                            <clr-dg-row *ngFor="let pat of pats" [clrDgItem]="pat">
+                            <clr-dg-row
+                                *ngFor="let pat of pats"
+                                [clrDgItem]="pat">
                                 <clr-dg-cell>{{ pat.name }}</clr-dg-cell>
-                                <clr-dg-cell>{{ pat.creation_time | date: 'short' }}</clr-dg-cell>
+                                <clr-dg-cell>{{
+                                    pat.creation_time | date : 'short'
+                                }}</clr-dg-cell>
                                 <clr-dg-cell>
-                                    <span *ngIf="pat.expires_at === -1">{{ 'PROFILE.PAT_NEVER' | translate }}</span>
-                                    <span *ngIf="pat.expires_at !== -1">{{ pat.expires_at * 1000 | date: 'short' }}</span>
+                                    <span *ngIf="pat.expires_at === -1">{{
+                                        'PROFILE.PAT_NEVER' | translate
+                                    }}</span>
+                                    <span *ngIf="pat.expires_at !== -1">{{
+                                        pat.expires_at * 1000 | date : 'short'
+                                    }}</span>
                                 </clr-dg-cell>
                                 <clr-dg-cell>
-                                    <clr-label *ngIf="pat.disabled" class="label label-danger">{{ 'PROFILE.PAT_DISABLED' | translate }}</clr-label>
-                                    <clr-label *ngIf="!pat.disabled && pat.expired" class="label label-warning">{{ 'PROFILE.PAT_EXPIRED' | translate }}</clr-label>
-                                    <clr-label *ngIf="!pat.disabled && !pat.expired" class="label label-success">{{ 'PROFILE.PAT_ACTIVE' | translate }}</clr-label>
+                                    <clr-label
+                                        *ngIf="pat.disabled"
+                                        class="label label-danger"
+                                        >{{
+                                            'PROFILE.PAT_DISABLED' | translate
+                                        }}</clr-label
+                                    >
+                                    <clr-label
+                                        *ngIf="!pat.disabled && pat.expired"
+                                        class="label label-warning"
+                                        >{{
+                                            'PROFILE.PAT_EXPIRED' | translate
+                                        }}</clr-label
+                                    >
+                                    <clr-label
+                                        *ngIf="!pat.disabled && !pat.expired"
+                                        class="label label-success"
+                                        >{{
+                                            'PROFILE.PAT_ACTIVE' | translate
+                                        }}</clr-label
+                                    >
                                 </clr-dg-cell>
                                 <clr-dg-action-overflow [clrPosition]="'left'">
                                     <button
@@ -208,8 +259,12 @@
                                         clrDropdownItem
                                         (click)="togglePATDisabled(pat)"
                                         id="toggle-pat-{{ pat.id }}">
-                                        <span *ngIf="pat.disabled">{{ 'PROFILE.PAT_ENABLE' | translate }}</span>
-                                        <span *ngIf="!pat.disabled">{{ 'PROFILE.PAT_DISABLE' | translate }}</span>
+                                        <span *ngIf="pat.disabled">{{
+                                            'PROFILE.PAT_ENABLE' | translate
+                                        }}</span>
+                                        <span *ngIf="!pat.disabled">{{
+                                            'PROFILE.PAT_DISABLE' | translate
+                                        }}</span>
                                     </button>
                                     <button
                                         clrDropdownItem
@@ -380,23 +435,42 @@
     <h3 class="modal-title">{{ 'PROFILE.CREATE_PAT' | translate }}</h3>
     <div class="modal-body">
         <div *ngIf="createdPATSecret">
-            <clr-alert clrAlertType="warning" [clrCloseButtonAriaLabel]="'close'">
+            <clr-alert
+                clrAlertType="warning"
+                [clrCloseButtonAriaLabel]="'close'">
                 <clr-alert-item>
                     <span class="alert-text">
                         {{ 'PROFILE.PAT_SECRET_COPY_WARNING' | translate }}
                     </span>
                 </clr-alert-item>
             </clr-alert>
-            <div class="clr-form-control" style="margin-top:12px;">
-                <div class="clr-input-wrapper" style="display:flex;align-items:center;gap:8px;">
-                    <input type="text" class="clr-input" readonly [value]="createdPATSecret" style="flex:1;font-family:monospace;" />
-                    <button class="btn btn-sm btn-outline" type="button" (click)="copyPATSecret()">{{ 'BUTTON.COPY' | translate }}</button>
+            <div class="clr-form-control" style="margin-top: 12px">
+                <div
+                    class="clr-input-wrapper"
+                    style="display: flex; align-items: center; gap: 8px">
+                    <input
+                        type="text"
+                        class="clr-input"
+                        readonly
+                        [value]="createdPATSecret"
+                        style="flex: 1; font-family: monospace" />
+                    <button
+                        class="btn btn-sm btn-outline"
+                        type="button"
+                        (click)="copyPATSecret()">
+                        {{ 'BUTTON.COPY' | translate }}
+                    </button>
                 </div>
             </div>
         </div>
-        <form #createPATForm="ngForm" class="clr-form clr-form-horizontal" *ngIf="!createdPATSecret">
+        <form
+            #createPATForm="ngForm"
+            class="clr-form clr-form-horizontal"
+            *ngIf="!createdPATSecret">
             <clr-input-container>
-                <label for="pat-name" class="required">{{ 'PROFILE.PAT_NAME' | translate }}</label>
+                <label for="pat-name" class="required">{{
+                    'PROFILE.PAT_NAME' | translate
+                }}</label>
                 <input
                     clrInput
                     type="text"
@@ -408,7 +482,9 @@
             </clr-input-container>
 
             <clr-textarea-container>
-                <label for="pat-description">{{ 'PROFILE.PAT_DESCRIPTION' | translate }}</label>
+                <label for="pat-description">{{
+                    'PROFILE.PAT_DESCRIPTION' | translate
+                }}</label>
                 <textarea
                     clrTextarea
                     id="pat-description"
@@ -418,7 +494,9 @@
             </clr-textarea-container>
 
             <clr-number-input-container>
-                <label for="pat-expires">{{ 'PROFILE.PAT_EXPIRES_IN_DAYS' | translate }}</label>
+                <label for="pat-expires">{{
+                    'PROFILE.PAT_EXPIRES_IN_DAYS' | translate
+                }}</label>
                 <input
                     clrNumberInput
                     type="number"
@@ -427,13 +505,21 @@
                     [(ngModel)]="newPATForm.expiresInDays"
                     min="0"
                     placeholder="0 for never expire" />
-                <clr-control-helper>{{ 'PROFILE.PAT_EXPIRES_HELP' | translate }}</clr-control-helper>
+                <clr-control-helper>{{
+                    'PROFILE.PAT_EXPIRES_HELP' | translate
+                }}</clr-control-helper>
             </clr-number-input-container>
         </form>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="closeCreatePATModal()">
-            {{ (createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL') | translate }}
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="closeCreatePATModal()">
+            {{
+                (createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL')
+                    | translate
+            }}
         </button>
         <button
             *ngIf="!createdPATSecret"

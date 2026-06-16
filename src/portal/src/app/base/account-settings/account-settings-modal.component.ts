@@ -419,7 +419,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     private generateRandomSecret(): string {
-        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const chars =
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let result = '';
         for (let i = 0; i < 16; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -501,19 +502,23 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             return;
         }
         this.patLoading = true;
-        this.userService.ListPersonalAccessTokens({ userId: this.account.user_id }).subscribe({
-            next: (res: any) => {
-                this.pats = res || [];
-                this.pats.forEach(pat => {
-                    pat.expired = pat.expires_at > 0 && pat.expires_at <= Date.now() / 1000;
-                });
-                this.patLoading = false;
-            },
-            error: (err: any) => {
-                this.msgHandler.handleError(err);
-                this.patLoading = false;
-            }
-        });
+        this.userService
+            .ListPersonalAccessTokens({ userId: this.account.user_id })
+            .subscribe({
+                next: (res: any) => {
+                    this.pats = res || [];
+                    this.pats.forEach(pat => {
+                        pat.expired =
+                            pat.expires_at > 0 &&
+                            pat.expires_at <= Date.now() / 1000;
+                    });
+                    this.patLoading = false;
+                },
+                error: (err: any) => {
+                    this.msgHandler.handleError(err);
+                    this.patLoading = false;
+                },
+            });
     }
 
     copyPATSecret() {
@@ -526,69 +531,78 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.newPATForm.name || !this.account) {
             return;
         }
-        this.userService.CreatePersonalAccessToken({
-            userId: this.account.user_id,
-            request: {
-                name: this.newPATForm.name,
-                description: this.newPATForm.description,
-                expires_in_days: this.newPATForm.expiresInDays
-            }
-        }).subscribe({
-            next: (res: any) => {
-                this.createdPATSecret = res.secret;
-                this.msgHandler.showSuccess('PROFILE.PAT_CREATE_SUCCESS');
-                this.loadPATs();
-            },
-            error: (err: any) => {
-                if (err && err.status === 409) {
-                    this.msgHandler.showError('PROFILE.PAT_NAME_CONFLICT', null);
-                } else {
-                    this.msgHandler.handleError(err);
-                }
-            }
-        });
+        this.userService
+            .CreatePersonalAccessToken({
+                userId: this.account.user_id,
+                request: {
+                    name: this.newPATForm.name,
+                    description: this.newPATForm.description,
+                    expires_in_days: this.newPATForm.expiresInDays,
+                },
+            })
+            .subscribe({
+                next: (res: any) => {
+                    this.createdPATSecret = res.secret;
+                    this.msgHandler.showSuccess('PROFILE.PAT_CREATE_SUCCESS');
+                    this.loadPATs();
+                },
+                error: (err: any) => {
+                    if (err && err.status === 409) {
+                        this.msgHandler.showError(
+                            'PROFILE.PAT_NAME_CONFLICT',
+                            null
+                        );
+                    } else {
+                        this.msgHandler.handleError(err);
+                    }
+                },
+            });
     }
 
     refreshPATSecret(patId: number) {
         if (!this.account) {
             return;
         }
-        this.userService.RefreshPersonalAccessTokenSecret({
-            userId: this.account.user_id,
-            tokenId: patId,
-            request: {}
-        }).subscribe({
-            next: (res: any) => {
-                this.createdPATSecret = res.secret;
-                this.showCreatePATModal = true;
-                this.msgHandler.showSuccess('PROFILE.PAT_REFRESHED');
-                this.loadPATs();
-            },
-            error: (err: any) => {
-                this.msgHandler.handleError(err);
-            }
-        });
+        this.userService
+            .RefreshPersonalAccessTokenSecret({
+                userId: this.account.user_id,
+                tokenId: patId,
+                request: {},
+            })
+            .subscribe({
+                next: (res: any) => {
+                    this.createdPATSecret = res.secret;
+                    this.showCreatePATModal = true;
+                    this.msgHandler.showSuccess('PROFILE.PAT_REFRESHED');
+                    this.loadPATs();
+                },
+                error: (err: any) => {
+                    this.msgHandler.handleError(err);
+                },
+            });
     }
 
     togglePATDisabled(pat: any) {
         if (!this.account) {
             return;
         }
-        this.userService.UpdatePersonalAccessToken({
-            userId: this.account.user_id,
-            tokenId: pat.id,
-            request: {
-                disabled: !pat.disabled
-            }
-        }).subscribe({
-            next: () => {
-                this.msgHandler.showSuccess('PROFILE.PAT_UPDATED');
-                this.loadPATs();
-            },
-            error: (err: any) => {
-                this.msgHandler.handleError(err);
-            }
-        });
+        this.userService
+            .UpdatePersonalAccessToken({
+                userId: this.account.user_id,
+                tokenId: pat.id,
+                request: {
+                    disabled: !pat.disabled,
+                },
+            })
+            .subscribe({
+                next: () => {
+                    this.msgHandler.showSuccess('PROFILE.PAT_UPDATED');
+                    this.loadPATs();
+                },
+                error: (err: any) => {
+                    this.msgHandler.handleError(err);
+                },
+            });
     }
 
     deletePAT(patId: number) {
@@ -621,18 +635,20 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (!this.account || !patId) {
             return;
         }
-        this.userService.DeletePersonalAccessToken({
-            userId: this.account.user_id,
-            tokenId: patId
-        }).subscribe({
-            next: () => {
-                this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
-                this.loadPATs();
-                this.selectedPATs = [];
-            },
-            error: (err: any) => {
-                this.msgHandler.handleError(err);
-            }
-        });
+        this.userService
+            .DeletePersonalAccessToken({
+                userId: this.account.user_id,
+                tokenId: patId,
+            })
+            .subscribe({
+                next: () => {
+                    this.msgHandler.showSuccess('PROFILE.PAT_DELETED');
+                    this.loadPATs();
+                    this.selectedPATs = [];
+                },
+                error: (err: any) => {
+                    this.msgHandler.handleError(err);
+                },
+            });
     }
 }
