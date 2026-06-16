@@ -184,8 +184,8 @@
                             </button>
                         </div>
                         <clr-datagrid
-                            [(clrDgSelected)]="selectedPATs"
-                            [clrDgLoading]="patLoading">
+                            *ngIf="!patLoading"
+                            [(clrDgSelected)]="selectedPATs">
                             <clr-dg-column>
                                 <ng-container
                                     *clrDgHideableColumn="{ hidden: false }">
