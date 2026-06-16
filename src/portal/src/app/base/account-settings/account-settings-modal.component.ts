@@ -515,8 +515,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     this.patLoading = false;
                 },
                 error: (err: any) => {
-                    this.msgHandler.handleError(err);
+                    console.error('Error loading PATs:', err);
+                    this.pats = [];
                     this.patLoading = false;
+                    this.msgHandler.handleError(err);
                 },
             });
     }
@@ -547,7 +549,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     this.loadPATs();
                 },
                 error: (err: any) => {
-                    if (err && err.status === 409) {
+                    const status = err?.status || err?.error?.status;
+                    if (status === 409) {
                         this.msgHandler.showError(
                             'PROFILE.PAT_NAME_CONFLICT',
                             null
