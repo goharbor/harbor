@@ -13,9 +13,7 @@ COPY src/portal /build_dir
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
 ENV NODE_OPTIONS=--max_old_space_size=4096
 
-RUN rm -rf /root/.npm && \
-    --mount=type=cache,target=/root/.npm \
-    npm ci --unsafe-perm --ignore-scripts --no-optional --no-audit --no-fund --loglevel=error
+RUN rm -rf /root/.npm && npm ci --unsafe-perm --ignore-scripts --no-optional --no-audit --no-fund --loglevel=error
 RUN npm run postinstall
 RUN npm run generate-build-timestamp
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --configuration production
@@ -23,9 +21,7 @@ RUN node -e "const yaml = require('js-yaml'); const fs = require('fs'); const sw
 
 COPY ./LICENSE /build_dir/dist
 
-RUN rm -rf /root/.npm && \
-    --mount=type=cache,target=/root/.npm \
-    cd app-swagger-ui && npm ci --unsafe-perm --no-optional --no-audit --no-fund --loglevel=error
+RUN rm -rf /root/.npm && cd app-swagger-ui && npm ci --unsafe-perm --no-optional --no-audit --no-fund --loglevel=error
 RUN cd app-swagger-ui && npm run build
 
 FROM ${harbor_base_namespace}/harbor-portal-base:${harbor_base_image_version}
@@ -41,4 +37,3 @@ STOPSIGNAL SIGQUIT
 HEALTHCHECK CMD curl --fail -s http://localhost:8080 || curl -k --fail -s https://localhost:8443 || exit 1
 USER nginx
 CMD ["nginx", "-g", "daemon off;"]
-
