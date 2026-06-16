@@ -522,7 +522,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .ListPersonalAccessTokens({ userId: this.account.user_id })
             .subscribe({
                 next: (res: any) => {
-                    this.pats = res || [];
+                    this.pats = Array.isArray(res) ? res : [];
                     this.pats.forEach(pat => {
                         pat.expired =
                             pat.expires_at > 0 &&
