@@ -115,7 +115,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                         this.error = null;
                     }
                     this.formValueChanged = true;
-                    if (this.account.username === this.originAdminName) {
+                    if (this.account.username === this.originAdminName && this.inlineAlert) {
                         this.inlineAlert.close();
                     }
                 });
