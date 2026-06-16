@@ -253,7 +253,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     if (this.msgHandler.isAppLevel(error)) {
                         this.opened = false;
                         this.msgHandler.handleError(error);
-                    } else {
+                    } else if (this.inlineAlert) {
                         this.inlineAlert.showInlineError(error);
                     }
                 }
@@ -283,7 +283,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.formValueChanged = false;
 
         // Confirm inline alert is closed
-        this.inlineAlert.close();
+        if (this.inlineAlert) {
+            this.inlineAlert.close();
+        }
 
         // Clear check history
         this.mailAlreadyChecked = {};
@@ -309,7 +311,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 if (this.RenameOnGoing) {
                     this.RenameOnGoing = false;
                     this.opened = false;
-                } else {
+                } else if (this.inlineAlert) {
                     // Need user confirmation
                     this.inlineAlert.showInlineConfirmation({
                         message: 'ALERT.FORM_CHANGE_CONFIRMATION',
@@ -334,9 +336,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
         if (this.RenameOnGoing && !this.renameConfirmation) {
             this.renameConfirmation = true;
-            this.inlineAlert.showInlineWarning({
-                message: 'PROFILE.RENAME_CONFIRM_INFO',
-            });
+            if (this.inlineAlert) {
+                this.inlineAlert.showInlineWarning({
+                    message: 'PROFILE.RENAME_CONFIRM_INFO',
+                });
+            }
             return;
         }
 
@@ -361,7 +365,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                     if (this.msgHandler.isAppLevel(error)) {
                         this.opened = false;
                         this.msgHandler.handleError(error);
-                    } else {
+                    } else if (this.inlineAlert) {
                         this.inlineAlert.showInlineError(error);
                     }
                 }
@@ -385,16 +389,22 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (this.renameConfirmation) {
             this.renameConfirmation = false;
         }
-        this.inlineAlert.close();
+        if (this.inlineAlert) {
+            this.inlineAlert.close();
+        }
         this.opened = false;
     }
 
     onSuccess(event) {
-        this.inlineAlert.showInlineSuccess({ message: 'PROFILE.COPY_SUCCESS' });
+        if (this.inlineAlert) {
+            this.inlineAlert.showInlineSuccess({ message: 'PROFILE.COPY_SUCCESS' });
+        }
     }
 
     onError(event) {
-        this.inlineAlert.showInlineError({ message: 'PROFILE.COPY_ERROR' });
+        if (this.inlineAlert) {
+            this.inlineAlert.showInlineError({ message: 'PROFILE.COPY_ERROR' });
+        }
     }
 
     generateCli(userId): void {
@@ -455,14 +465,18 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                         });
                     }
                     this.closeReset();
-                    this.inlineAlert.showInlineSuccess({
-                        message: 'PROFILE.GENERATE_SUCCESS',
-                    });
+                    if (this.inlineAlert) {
+                        this.inlineAlert.showInlineSuccess({
+                            message: 'PROFILE.GENERATE_SUCCESS',
+                        });
+                    }
                 },
                 error: err => {
-                    this.resetSecretInlineAlert.showInlineError({
-                        message: 'PROFILE.GENERATE_ERROR',
-                    });
+                    if (this.resetSecretInlineAlert) {
+                        this.resetSecretInlineAlert.showInlineError({
+                            message: 'PROFILE.GENERATE_ERROR',
+                        });
+                    }
                 },
             });
     }
@@ -483,7 +497,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     openSecretDetail() {
         this.showSecretDetail = true;
-        this.resetSecretInlineAlert.close();
+        if (this.resetSecretInlineAlert) {
+            this.resetSecretInlineAlert.close();
+        }
     }
 
     // PAT Management Methods
