@@ -417,10 +417,10 @@
                     maxlength="1024"></textarea>
             </clr-textarea-container>
 
-            <clr-input-container>
+            <clr-number-input-container>
                 <label for="pat-expires">{{ 'PROFILE.PAT_EXPIRES_IN_DAYS' | translate }}</label>
                 <input
-                    clrInput
+                    clrNumberInput
                     type="number"
                     id="pat-expires"
                     name="pat_expires"
@@ -428,7 +428,7 @@
                     min="0"
                     placeholder="0 for never expire" />
                 <clr-control-helper>{{ 'PROFILE.PAT_EXPIRES_HELP' | translate }}</clr-control-helper>
-            </clr-input-container>
+            </clr-number-input-container>
         </form>
     </div>
     <div class="modal-footer">
