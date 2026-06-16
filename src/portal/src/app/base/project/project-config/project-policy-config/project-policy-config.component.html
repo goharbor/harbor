@@ -16,7 +16,7 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        @if (isSystemAdmin) {
+        @if (hasChangeConfigRole) {
         <clr-checkbox-container clrInline>
             <label class="label-color-input">
                 {{ 'PROJECT.PROXY_CACHE' | translate }}
@@ -25,7 +25,7 @@
                 <input
                     type="checkbox"
                     clrCheckbox
-                    [disabled]="!allowUpdateProxyCacheConfiguration"
+                    disabled
                     [(ngModel)]="projectPolicy.ProxyCacheEnabled"
                     name="project-proxy-cache-enabled" />
             </clr-checkbox-wrapper>
@@ -33,8 +33,8 @@
                 {{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
-        <div class="clr-form-control mt-0">
+        } @if (hasChangeConfigRole && projectPolicy.ProxyCacheEnabled) {
+        <div class="clr-form-control mt-0 mb-2">
             <label class="clr-control-label"></label>
             <div class="clr-select-wrapper row-inline">
                 <label class="clr-control-label">
