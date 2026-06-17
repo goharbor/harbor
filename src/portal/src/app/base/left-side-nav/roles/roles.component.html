@@ -72,6 +72,7 @@
             </clr-dropdown>
         </clr-dg-action-bar>
         <clr-datagrid
+            clrDgSelectionType="multi"
             (clrDgRefresh)="clrLoad($event)"
             [clrDgLoading]="loading"
             [(clrDgSelected)]="selectedRows">
@@ -99,7 +100,8 @@
             <clr-dg-placeholder>{{
                 'SYSTEM_ROBOT.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
-            <clr-dg-row *ngFor="let r of roles" [clrDgItem]="r">
+            @for (r of roles; track r) {
+            <clr-dg-row [clrDgItem]="r">
                 <clr-dg-cell>{{ getRoleName(r) }}</clr-dg-cell>
                 <clr-dg-cell>
                     <clr-icon *ngIf="r.is_builtin" shape="check-circle" size="16" style="color: var(--clr-color-success-700)"></clr-icon>
@@ -134,6 +136,7 @@
                 </clr-dg-cell>
 
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
