@@ -23,6 +23,7 @@ import { ActivatedRoute } from '@angular/router';
     selector: 'app-tag-feature-integration',
     templateUrl: './tag-feature-integration.component.html',
     styleUrls: ['./tag-feature-integration.component.scss'],
+    standalone: false,
 })
 export class TagFeatureIntegrationComponent implements OnInit {
     projectId: number;

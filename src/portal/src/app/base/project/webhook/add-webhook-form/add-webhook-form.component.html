@@ -37,33 +37,18 @@
                             class="spinner spinner-inline"
                             [hidden]="!checkNameOnGoing"></span>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            (name.errors &&
-                                name.errors.required &&
-                                (name.dirty || name.touched)) ||
-                            isNameExisting
-                        "
-                        class="tooltip-content">
-                        <span
-                            *ngIf="
-                                !(
-                                    name.errors &&
-                                    name.errors.required &&
-                                    (name.dirty || name.touched)
-                                ) && isNameExisting
-                            "
-                            >{{ 'SCANNER.NAME_EXISTS' | translate }}</span
-                        >
-                        <span
-                            *ngIf="
-                                name.errors &&
-                                name.errors.required &&
-                                (name.dirty || name.touched)
-                            "
-                            >{{ 'WEBHOOK.NAME_REQUIRED' | translate }}</span
-                        >
+                    @if ( (name.errors && name.errors.required && (name.dirty ||
+                    name.touched)) || isNameExisting ) {
+                    <clr-control-error class="tooltip-content">
+                        @if ( !( name.errors && name.errors.required &&
+                        (name.dirty || name.touched) ) && isNameExisting ) {
+                        <span>{{ 'SCANNER.NAME_EXISTS' | translate }}</span>
+                        } @if ( name.errors && name.errors.required &&
+                        (name.dirty || name.touched) ) {
+                        <span>{{ 'WEBHOOK.NAME_REQUIRED' | translate }}</span>
+                        }
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <!-- description -->
@@ -95,11 +80,11 @@
                             id="notify_type"
                             [(ngModel)]="webhook.targets[0].type"
                             [disabled]="checking">
-                            <option
-                                *ngFor="let type of metadata?.notify_type"
-                                value="{{ type }}">
+                            @for (type of metadata?.notify_type; track type) {
+                            <option value="{{ type }}">
                                 {{ type }}
                             </option>
+                            }
                         </select>
                     </div>
                     <clr-tooltip [hidden]="webhook.targets[0].type !== 'slack'">
@@ -118,7 +103,8 @@
             </div>
 
             <!-- payload format -->
-            <clr-select-container *ngIf="webhook.targets[0].type === 'http'">
+            @if (webhook.targets[0].type === 'http') {
+            <clr-select-container>
                 <label>{{ 'WEBHOOK.PAYLOAD_FORMAT' | translate }}</label>
                 <select
                     class="width-238"
@@ -127,13 +113,14 @@
                     id="payload-format"
                     [(ngModel)]="webhook.targets[0].payload_format"
                     [disabled]="checking">
-                    <option
-                        *ngFor="let item of getPayLoadFormats()"
-                        value="{{ item }}">
+                    @for (item of getPayLoadFormats(); track item) {
+                    <option value="{{ item }}">
                         {{ getI18nKey(item) | translate }}
                     </option>
+                    }
                 </select>
             </clr-select-container>
+            }
 
             <div class="clr-form-control">
                 <label class="clr-control-label required">{{
@@ -142,9 +129,8 @@
                 <div
                     class="clr-control-container clr-control-inline"
                     [class.clr-error]="!hasEventType()">
-                    <div
-                        class="clr-checkbox-wrapper width-8rem"
-                        *ngFor="let item of metadata?.event_type">
+                    @for (item of metadata?.event_type; track item) {
+                    <div class="clr-checkbox-wrapper width-8rem">
                         <input
                             type="checkbox"
                             id="{{ item }}"
@@ -157,7 +143,8 @@
                             eventTypeToText(item)
                         }}</label>
                     </div>
-                    <div class="clr-subtext-wrapper" *ngIf="!hasEventType()">
+                    } @if (!hasEventType()) {
+                    <div class="clr-subtext-wrapper">
                         <clr-icon
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
@@ -165,6 +152,7 @@
                             'WEBHOOK.EVENT_TYPE_REQUIRED' | translate
                         }}</span>
                     </div>
+                    }
                 </div>
             </div>
 
@@ -203,21 +191,17 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            enpointURL.errors &&
-                            enpointURL.errors.required &&
-                            (enpointURL.dirty || enpointURL.touched)
-                        "
-                        class="tooltip-content">
+                    @if ( enpointURL.errors && enpointURL.errors.required &&
+                    (enpointURL.dirty || enpointURL.touched) ) {
+                    <clr-control-error class="tooltip-content">
                         {{ 'WEBHOOK.URL_IS_REQUIRED' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <!-- auth_header -->
-            <div
-                class="clr-form-control"
-                *ngIf="webhook?.targets[0]?.type === 'http'">
+            @if (webhook?.targets[0]?.type === 'http') {
+            <div class="clr-form-control">
                 <label for="auth_header" class="clr-control-label">{{
                     'WEBHOOK.AUTH_HEADER' | translate
                 }}</label>
@@ -235,6 +219,7 @@
                     </div>
                 </div>
             </div>
+            }
 
             <!-- verify remote cert -->
             <div class="clr-form-control">
@@ -268,7 +253,8 @@
             </div>
         </section>
     </form>
-    <div class="mt-1 bottom-btn" *ngIf="!isModify">
+    @if (!isModify) {
+    <div class="mt-1 bottom-btn">
         <button
             type="button"
             class="btn btn-outline"
@@ -285,7 +271,8 @@
             {{ 'BUTTON.ADD' | translate }}
         </button>
     </div>
-    <div class="mt-1 bottom-btn" *ngIf="isModify">
+    } @if (isModify) {
+    <div class="mt-1 bottom-btn">
         <button
             type="button"
             class="btn btn-outline"
@@ -304,4 +291,5 @@
             {{ 'BUTTON.SAVE' | translate }}
         </button>
     </div>
+    }
 </div>

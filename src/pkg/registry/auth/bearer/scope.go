@@ -37,6 +37,7 @@ var (
 	manifest   = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/manifests/(" + reference.TagRegexp.String() + "|" + reference.DigestRegexp.String() + ")")
 	blob       = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
 	blobUpload = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/blobs/uploads")
+	referrers  = regexp.MustCompile("/v2/(" + reference.NameRegexp.String() + ")/referrers/(" + reference.DigestRegexp.String() + ")")
 )
 
 type scope struct {
@@ -74,6 +75,9 @@ func parseScopes(req *http.Request) []*scope {
 		}
 	} else if subs := tag.FindStringSubmatch(path); len(subs) >= 2 {
 		// tag
+		repository = subs[1]
+	} else if subs := referrers.FindStringSubmatch(path); len(subs) >= 2 {
+		// referrers
 		repository = subs[1]
 	}
 	if len(repository) > 0 {

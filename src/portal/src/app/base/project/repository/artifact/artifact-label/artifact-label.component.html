@@ -1,40 +1,48 @@
-<div class="artifact-label" *ngIf="type === 'CNAI'">
-    <div class="label" *ngIf="artifactExtraAttrs.config.architecture">
+@if (type === 'CNAI') {
+<div class="artifact-label">
+    @if (artifactExtraAttrs.config.architecture) {
+    <div class="label">
+        @if (artifactExtraAttrs.config.architecture === 'transformer') {
         <img
-            *ngIf="artifactExtraAttrs.config.architecture === 'transformer'"
             [src]="'images/artifact-label-transformer.svg'"
             class="artifact-icon" />
-
+        }
         <span class="capitalize-first-letter">{{
             artifactExtraAttrs.config.architecture
         }}</span>
     </div>
-    <div class="label" *ngIf="artifactExtraAttrs.config.format">
+    } @if (artifactExtraAttrs.config.format) {
+    <div class="label">
+        @if ( artifactExtraAttrs.config.format === 'tensorflow' ||
+        artifactExtraAttrs.config.format === 'safetensors' ) {
         <img
-            *ngIf="
-                artifactExtraAttrs.config.format === 'tensorflow' ||
-                artifactExtraAttrs.config.format === 'safetensors'
-            "
             [src]="
                 artifactExtraAttrs.config.format === 'tensorflow'
                     ? 'images/artifact-label-tensorflow.svg'
                     : 'images/artifact-label-safetensor.svg'
             "
             class="artifact-icon" />
+        }
         <span class="capitalize-first-letter">{{
             artifactExtraAttrs.config.format
         }}</span>
     </div>
-    <div class="label" *ngIf="artifactExtraAttrs.descriptor.name">
+    } @if (artifactExtraAttrs.descriptor.name) {
+    <div class="label">
         <span>{{ artifactExtraAttrs.descriptor.name }}</span>
     </div>
-    <div class="label" *ngIf="artifactExtraAttrs.config.precision">
+    } @if (artifactExtraAttrs.config.precision) {
+    <div class="label">
         <span>{{ artifactExtraAttrs.config.precision }}</span>
     </div>
-    <div class="label" *ngIf="artifactExtraAttrs.config.puantization">
+    } @if (artifactExtraAttrs.config.puantization) {
+    <div class="label">
         <span>{{ artifactExtraAttrs.config.puantization }}</span>
     </div>
-    <div class="label" *ngIf="artifactExtraAttrs.descriptor.family">
+    } @if (artifactExtraAttrs.descriptor.family) {
+    <div class="label">
         <span>{{ artifactExtraAttrs.descriptor.family }}</span>
     </div>
+    }
 </div>
+}
