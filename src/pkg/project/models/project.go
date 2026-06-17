@@ -252,7 +252,7 @@ func (p *Project) FilterByMember(_ context.Context, qs orm.QuerySeter, _ string,
 }
 
 // FilterByNames returns orm.QuerySeter with name filter
-func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
+func (p *Project) FilterByNames(ctx context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	query, ok := value.(*NamesQuery)
 	if !ok {
 		return qs
@@ -262,17 +262,24 @@ func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, 
 		return qs
 	}
 
-	var names []string
-	for _, v := range query.Names {
-		names = append(names, `'`+v+`'`)
+	args := make([]any, len(query.Names))
+	for i, name := range query.Names {
+		args[i] = name
 	}
-	subQuery := fmt.Sprintf("SELECT project_id FROM project where name IN (%s)", strings.Join(names, ","))
+
+	sql := fmt.Sprintf("SELECT project_id FROM project WHERE name IN (%s)", orm.ParamPlaceholderForIn(len(query.Names)))
 
 	if query.WithPublic {
-		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
+		sql = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", sql)
 	}
 
-	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
+	inClause, err := orm.CreateInClause(ctx, sql, args...)
+	if err != nil {
+		log.Errorf("failed to create IN clause for project names: %v", err)
+		return qs.FilterRaw("project_id", "IN (-1)")
+	}
+
+	return qs.FilterRaw("project_id", inClause)
 }
 
 func isTrue(i any) bool {
