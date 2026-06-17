@@ -64,10 +64,14 @@ jobs:
         if: steps.decide.outputs.build_base == 'true'
         run: |
           set -x
-          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+          fi
           docker buildx build --platform linux/amd64,linux/arm64 \
             -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
-          docker logout
+          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
+            docker logout
+          fi
 
   BUILD_PACKAGE:
     needs: [BUILD_BASE_IMAGE]
