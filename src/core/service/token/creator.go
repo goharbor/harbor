@@ -200,10 +200,13 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
 
+	log.Errorf("=== TOKEN CREATOR: checking security context ===")
 	ctx, ok := security.FromContext(r.Context())
 	if !ok {
+		log.Errorf("=== TOKEN CREATOR: no security context found ===")
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
+	log.Errorf("=== TOKEN CREATOR: security context found, IsAuthenticated=%v, Username=%s ===", ctx.IsAuthenticated(), ctx.GetUsername())
 
 	// for docker login
 	if !ctx.IsAuthenticated() {
