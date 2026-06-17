@@ -297,7 +297,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         };
         this.showGenerateCli = false;
 
-        // Open modal — clrDgRefresh event will load PATs automatically
+        // Load PATs when modal opens
+        this.loadPATs();
+
+        // Open modal
         this.opened = true;
     }
 
@@ -513,7 +516,6 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     closeCreatePATModal() {
         this.showCreatePATModal = false;
-        this.loadPATs();
     }
 
     loadPATs() {
