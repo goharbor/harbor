@@ -49,3 +49,5 @@ ${artifact_sbom_cosign_accessory_action_btn}  //*[normalize-space(.)='subject.ac
 ${artifact_cosign_cosign_accessory_action_btn}  //*[normalize-space(.)='signature.cosign']//ancestor::*[contains(@class,'clr-expandable-animation') or contains(@class,'datagrid-row')][1]//sub-accessories//button[contains(@class,'datagrid-action-toggle') or contains(@class,'toggle')]
 ${delete_accessory_btn}  //button[text()=' Delete ']
 
+${artifact_sbom_cosign_sub_accessory}  //*[normalize-space(.)='subject.accessory']//ancestor::*[contains(@class,'clr-expandable-animation') or contains(@class,'datagrid-row')][1]//sub-accessories//clr-dg-row[.//div[text()=' signature.cosign ']]
+${artifact_sbom_notation_sub_accessory}  //*[normalize-space(.)='subject.accessory']//ancestor::*[contains(@class,'clr-expandable-animation') or contains(@class,'datagrid-row')][1]//sub-accessories//clr-dg-row[.//div[text()=' signature.notation ']]
