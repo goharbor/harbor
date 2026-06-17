@@ -55,10 +55,10 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 			log.Warningf("failed to get auth mode: %v", err)
 		}
 		for _, generator := range generators {
-		log.Debugf("=== Checking generator: %T ===", generator)
+		log.Warningf("=== Checking generator: %T ===", generator)
 		if ctx := generator.Generate(r); ctx != nil {
 			r = r.WithContext(security.NewContext(r.Context(), ctx))
-			log.Debugf("=== Security context set by: %T ===", generator)
+			log.Warningf("=== Security context set by: %T ===", generator)
 			break
 		}
 	}

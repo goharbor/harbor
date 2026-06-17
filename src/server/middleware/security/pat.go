@@ -39,7 +39,7 @@ func (p *pat) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
 	log := log.G(ctx)
 
-	log.Debugf("=== PAT MIDDLEWARE INVOKED ===")
+	log.Warningf("=== PAT MIDDLEWARE INVOKED ===")
 
 	username, secret, ok := req.BasicAuth()
 	if !ok {
