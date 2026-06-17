@@ -1,0 +1,1398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.0.1 (Python 3.9.5 on linux)" generated="20260617 12:39:25.822" rpa="false" schemaversion="3">
+<suite id="s1" name="PAT" source="/drone/tests/robot-cases/Group1-Nightly/PAT.robot">
+<kw name="Log To Console" library="BuiltIn" type="SETUP">
+<arg>\n=== PAT Tests with Clarity 18.2.0 - NG0201 Fix Verification ===\nUsing Harbor at ${HARBOR_URL}\nNote: Tests use API for reliability; UI browser test confirms Clarity 18.2.0 loads without NG0201 errors</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260617 12:39:27.304" endtime="20260617 12:39:27.304"/>
+</kw>
+<test id="s1-t1" name="Test Case - Admin Create PAT With Expiry" line="32">
+<kw name="Init Chrome Driver" library="SeleniumUtil">
+<kw name="Create Directory" library="OperatingSystem">
+<arg>${download_directory}</arg>
+<doc>Creates the specified directory.</doc>
+<msg timestamp="20260617 12:39:27.305" level="INFO" html="true">Directory '&lt;a href="file:///drone/download"&gt;/drone/download&lt;/a&gt;' already exists.</msg>
+<status status="PASS" starttime="20260617 12:39:27.305" endtime="20260617 12:39:27.305"/>
+</kw>
+<kw name="Run" library="OperatingSystem">
+<arg>pkill chromedriver</arg>
+<doc>Runs the given command in the system and returns the output.</doc>
+<msg timestamp="20260617 12:39:27.309" level="INFO">Running command 'pkill chromedriver 2&gt;&amp;1'.</msg>
+<status status="PASS" starttime="20260617 12:39:27.305" endtime="20260617 12:39:27.311"/>
+</kw>
+<kw name="Run" library="OperatingSystem">
+<arg>pkill chrome</arg>
+<doc>Runs the given command in the system and returns the output.</doc>
+<msg timestamp="20260617 12:39:27.314" level="INFO">Running command 'pkill chrome 2&gt;&amp;1'.</msg>
+<status status="PASS" starttime="20260617 12:39:27.312" endtime="20260617 12:39:27.316"/>
+</kw>
+<kw name="Evaluate" library="BuiltIn">
+<var>${options}</var>
+<arg>sys.modules['selenium.webdriver'].ChromeOptions()</arg>
+<arg>sys</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:27.317" level="INFO">${options} = &lt;selenium.webdriver.chrome.options.Options object at 0x70fae625edf0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:27.317" endtime="20260617 12:39:27.318"/>
+</kw>
+<kw name="Evaluate" library="BuiltIn">
+<var>${capabilities}</var>
+<arg>sys.modules['selenium.webdriver'].DesiredCapabilities.CHROME</arg>
+<arg>sys</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:27.319" level="INFO">${capabilities} = {'browserName': 'chrome'}</msg>
+<status status="PASS" starttime="20260617 12:39:27.318" endtime="20260617 12:39:27.319"/>
+</kw>
+<kw name="Create Dictionary" library="BuiltIn">
+<var>${prefs}</var>
+<arg>download.default_directory=${download_directory}</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20260617 12:39:27.320" level="INFO">${prefs} = {'download.default_directory': '/drone/download'}</msg>
+<status status="PASS" starttime="20260617 12:39:27.319" endtime="20260617 12:39:27.320"/>
+</kw>
+<kw name="Set To Dictionary" library="Collections">
+<arg>${capabilities}</arg>
+<arg>acceptInsecureCerts</arg>
+<arg>${True}</arg>
+<doc>Adds the given ``key_value_pairs`` and ``items`` to the ``dictionary``.</doc>
+<status status="PASS" starttime="20260617 12:39:27.320" endtime="20260617 12:39:27.320"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_experimental_option</arg>
+<arg>prefs</arg>
+<arg>${prefs}</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.320" endtime="20260617 12:39:27.320"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--headless</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.321" endtime="20260617 12:39:27.321"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--disable-gpu</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.321" endtime="20260617 12:39:27.321"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--start-maximized</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.321" endtime="20260617 12:39:27.321"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--no-sandbox</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.321" endtime="20260617 12:39:27.321"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--window-size\=1600,900</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.321" endtime="20260617 12:39:27.321"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--ignore-certificate-errors</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:27.322"/>
+</kw>
+<kw name="Call Method" library="BuiltIn">
+<arg>${options}</arg>
+<arg>add_argument</arg>
+<arg>--allow-insecure-localhost</arg>
+<doc>Calls the named method of the given object with the provided arguments.</doc>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:27.322"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${options.binary_location}</var>
+<arg>/usr/bin/google-chrome</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:27.322" level="INFO">${options.binary_location} = /usr/bin/google-chrome</msg>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:27.322"/>
+</kw>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>6</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Trying Create Webdriver ${n} times ...</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:27.322"/>
+</kw>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>Create Webdriver</arg>
+<arg>Chrome</arg>
+<arg>Chrome_headless</arg>
+<arg>options=${options}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Create Webdriver" library="SeleniumLibrary">
+<arg>Chrome</arg>
+<arg>Chrome_headless</arg>
+<arg>options=${options}</arg>
+<doc>Creates an instance of Selenium WebDriver.</doc>
+<msg timestamp="20260617 12:39:27.324" level="INFO">Creating an instance of the Chrome WebDriver.</msg>
+<status status="PASS" starttime="20260617 12:39:27.323" endtime="20260617 12:39:30.142"/>
+</kw>
+<msg timestamp="20260617 12:39:30.142" level="INFO">${out} = ('PASS', 1)</msg>
+<status status="PASS" starttime="20260617 12:39:27.323" endtime="20260617 12:39:30.142"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Return value is ${out[0]}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260617 12:39:30.143" endtime="20260617 12:39:30.146"/>
+</kw>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:30.150" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:30.147" endtime="20260617 12:39:30.150"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:30.150" endtime="20260617 12:39:30.150"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:30.150"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:27.322" endtime="20260617 12:39:30.150"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:30.150" endtime="20260617 12:39:30.151"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:30.152" endtime="20260617 12:39:30.153"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260617 12:39:35.154" level="INFO">Slept 5 seconds</msg>
+<status status="PASS" starttime="20260617 12:39:30.153" endtime="20260617 12:39:35.154"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:27.305" endtime="20260617 12:39:35.154"/>
+</kw>
+<kw name="Sign In Harbor" library="HomePage">
+<arg>${HARBOR_URL}</arg>
+<arg>${HARBOR_ADMIN}</arg>
+<arg>${HARBOR_PASSWORD}</arg>
+<kw name="Go To" library="SeleniumLibrary">
+<arg>${url}</arg>
+<doc>Navigates the current browser window to the provided ``url``.</doc>
+<msg timestamp="20260617 12:39:35.155" level="INFO">Opening url 'https://172.16.2.200'</msg>
+<status status="PASS" starttime="20260617 12:39:35.155" endtime="20260617 12:39:35.409"/>
+</kw>
+<kw name="Retry Wait Element" library="Util">
+<arg>${harbor_span_title}</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:35.410" level="INFO">@{param} = [ //span[contains(., 'Harbor')] ]</msg>
+<status status="PASS" starttime="20260617 12:39:35.410" endtime="20260617 12:39:35.410"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Wait Until Element Is Visible And Enabled</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:35.419" endtime="20260617 12:39:36.012"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.012" endtime="20260617 12:39:36.082"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.418" endtime="20260617 12:39:36.082"/>
+</kw>
+<msg timestamp="20260617 12:39:36.082" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:35.411" endtime="20260617 12:39:36.082"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.087" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.083" endtime="20260617 12:39:36.087"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.083" endtime="20260617 12:39:36.087"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.087" endtime="20260617 12:39:36.087"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.411" endtime="20260617 12:39:36.087"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:35.411" endtime="20260617 12:39:36.087"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.088" endtime="20260617 12:39:36.089"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.089" endtime="20260617 12:39:36.091"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.411" endtime="20260617 12:39:36.092"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.410" endtime="20260617 12:39:36.093"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.409" endtime="20260617 12:39:36.093"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>${is_oidc}==${true}</arg>
+<arg>Retry Element Click</arg>
+<arg>${login_with_db_btn}</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.093" endtime="20260617 12:39:36.093"/>
+</kw>
+<kw name="Retry Wait Element" library="Util">
+<arg>${login_name}</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:36.094" level="INFO">@{param} = [ //*[@id='login_username'] ]</msg>
+<status status="PASS" starttime="20260617 12:39:36.093" endtime="20260617 12:39:36.094"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Wait Until Element Is Visible And Enabled</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:36.100" endtime="20260617 12:39:36.114"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.115" endtime="20260617 12:39:36.126"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.100" endtime="20260617 12:39:36.126"/>
+</kw>
+<msg timestamp="20260617 12:39:36.126" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:36.094" endtime="20260617 12:39:36.126"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.130" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.127" endtime="20260617 12:39:36.130"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.126" endtime="20260617 12:39:36.130"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.130" endtime="20260617 12:39:36.130"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.094" endtime="20260617 12:39:36.130"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:36.094" endtime="20260617 12:39:36.131"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.131" endtime="20260617 12:39:36.132"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.132" endtime="20260617 12:39:36.134"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.094" endtime="20260617 12:39:36.135"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.094" endtime="20260617 12:39:36.135"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.093" endtime="20260617 12:39:36.135"/>
+</kw>
+<kw name="Retry Wait Element" library="Util">
+<arg>${login_pwd}</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:36.136" level="INFO">@{param} = [ //*[@id='login_password'] ]</msg>
+<status status="PASS" starttime="20260617 12:39:36.135" endtime="20260617 12:39:36.136"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Wait Until Element Is Visible And Enabled</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:36.141" endtime="20260617 12:39:36.151"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.152" endtime="20260617 12:39:36.160"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.141" endtime="20260617 12:39:36.160"/>
+</kw>
+<msg timestamp="20260617 12:39:36.160" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:36.136" endtime="20260617 12:39:36.160"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.164" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.161" endtime="20260617 12:39:36.164"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.161" endtime="20260617 12:39:36.164"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.164" endtime="20260617 12:39:36.164"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.136" endtime="20260617 12:39:36.164"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:36.136" endtime="20260617 12:39:36.165"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.165" endtime="20260617 12:39:36.166"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.166" endtime="20260617 12:39:36.168"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.136" endtime="20260617 12:39:36.169"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.136" endtime="20260617 12:39:36.169"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.135" endtime="20260617 12:39:36.169"/>
+</kw>
+<kw name="Input Text" library="SeleniumLibrary">
+<arg>${login_name}</arg>
+<arg>${user}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20260617 12:39:36.170" level="INFO">Typing text 'admin' into text field '//*[@id='login_username']'.</msg>
+<status status="PASS" starttime="20260617 12:39:36.169" endtime="20260617 12:39:36.219"/>
+</kw>
+<kw name="Input Text" library="SeleniumLibrary">
+<arg>${login_pwd}</arg>
+<arg>${pw}</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<msg timestamp="20260617 12:39:36.220" level="INFO">Typing text 'Harbor12345' into text field '//*[@id='login_password']'.</msg>
+<status status="PASS" starttime="20260617 12:39:36.219" endtime="20260617 12:39:36.269"/>
+</kw>
+<kw name="Retry Wait Element" library="Util">
+<arg>${login_btn}</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:36.270" level="INFO">@{param} = [ //*[@id='log_in'] ]</msg>
+<status status="PASS" starttime="20260617 12:39:36.270" endtime="20260617 12:39:36.270"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Wait Until Element Is Visible And Enabled</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:36.278" endtime="20260617 12:39:36.291"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.292" endtime="20260617 12:39:36.304"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.278" endtime="20260617 12:39:36.305"/>
+</kw>
+<msg timestamp="20260617 12:39:36.305" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:36.271" endtime="20260617 12:39:36.305"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.309" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.306" endtime="20260617 12:39:36.310"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.305" endtime="20260617 12:39:36.310"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.310" endtime="20260617 12:39:36.310"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.271" endtime="20260617 12:39:36.310"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:36.271" endtime="20260617 12:39:36.310"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.310" endtime="20260617 12:39:36.312"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.312" endtime="20260617 12:39:36.313"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.271" endtime="20260617 12:39:36.315"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.270" endtime="20260617 12:39:36.315"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.269" endtime="20260617 12:39:36.315"/>
+</kw>
+<kw name="Retry Button Click" library="Util">
+<arg>${login_btn}</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:36.316" level="INFO">@{param} = [ //*[@id='log_in'] ]</msg>
+<status status="PASS" starttime="20260617 12:39:36.316" endtime="20260617 12:39:36.316"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Button Click</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Button Click" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>${element_xpath}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:36.326" endtime="20260617 12:39:36.336"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.336" endtime="20260617 12:39:36.351"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.326" endtime="20260617 12:39:36.351"/>
+</kw>
+<kw name="Click Button" library="SeleniumLibrary">
+<arg>${element_xpath}</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<msg timestamp="20260617 12:39:36.352" level="INFO">Clicking button '//*[@id='log_in']'.</msg>
+<status status="PASS" starttime="20260617 12:39:36.351" endtime="20260617 12:39:36.388"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.325" endtime="20260617 12:39:36.388"/>
+</kw>
+<msg timestamp="20260617 12:39:36.388" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:36.317" endtime="20260617 12:39:36.388"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.392" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.389" endtime="20260617 12:39:36.392"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.388" endtime="20260617 12:39:36.392"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.393" endtime="20260617 12:39:36.393"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.317" endtime="20260617 12:39:36.393"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:36.317" endtime="20260617 12:39:36.393"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.393" endtime="20260617 12:39:36.394"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.394" endtime="20260617 12:39:36.396"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.316" endtime="20260617 12:39:36.397"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.316" endtime="20260617 12:39:36.398"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.315" endtime="20260617 12:39:36.398"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>${user}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260617 12:39:36.398" endtime="20260617 12:39:36.398"/>
+</kw>
+<kw name="Retry Wait Element" library="Util">
+<arg>xpath=//*[contains(., '${user}')]</arg>
+<kw name="Create List" library="BuiltIn">
+<var>@{param}</var>
+<arg>${element_xpath}</arg>
+<doc>Returns a list containing given items.</doc>
+<msg timestamp="20260617 12:39:36.398" level="INFO">@{param} = [ xpath=//*[contains(., 'admin')] ]</msg>
+<status status="PASS" starttime="20260617 12:39:36.398" endtime="20260617 12:39:36.398"/>
+</kw>
+<kw name="Retry Action Keyword" library="Util">
+<arg>Wait Until Element Is Visible And Enabled</arg>
+<arg>@{param}</arg>
+<kw name="Retry Keyword N Times When Error" library="Util">
+<arg>4</arg>
+<arg>${keyword}</arg>
+<arg>@{param}</arg>
+<for flavor="IN RANGE">
+<var>${n}</var>
+<value>1</value>
+<value>${times}</value>
+<iter>
+<var name="${n}">1</var>
+<kw name="Run Keyword And Ignore Error" library="BuiltIn">
+<var>${out}</var>
+<arg>${keyword}</arg>
+<arg>@{elements}</arg>
+<doc>Runs the given keyword with the given arguments and ignores possible error.</doc>
+<kw name="Wait Until Element Is Visible And Enabled" library="Util">
+<arg>@{elements}</arg>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20260617 12:39:36.407" endtime="20260617 12:39:36.661"/>
+</kw>
+<kw name="Wait Until Element Is Enabled" library="SeleniumLibrary">
+<arg>${element}</arg>
+<arg>timeout=${timeout}</arg>
+<doc>Waits until the element ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20260617 12:39:36.662" endtime="20260617 12:39:36.672"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.406" endtime="20260617 12:39:36.673"/>
+</kw>
+<msg timestamp="20260617 12:39:36.673" level="INFO">${out} = ('PASS', None)</msg>
+<status status="PASS" starttime="20260617 12:39:36.399" endtime="20260617 12:39:36.673"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${keyword}'=='Make Swagger Client'</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS' and '${out[1]}'=='0'</arg>
+<arg>ELSE</arg>
+<arg>Exit For Loop If</arg>
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<kw name="Exit For Loop If" library="BuiltIn">
+<arg>'${out[0]}'=='PASS'</arg>
+<doc>Stops executing the enclosing FOR loop if the ``condition`` is true.</doc>
+<msg timestamp="20260617 12:39:36.678" level="INFO">Exiting for loop altogether.</msg>
+<status status="PASS" starttime="20260617 12:39:36.674" endtime="20260617 12:39:36.678"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.673" endtime="20260617 12:39:36.678"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260617 12:39:36.678" endtime="20260617 12:39:36.678"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.399" endtime="20260617 12:39:36.678"/>
+</iter>
+<status status="PASS" starttime="20260617 12:39:36.399" endtime="20260617 12:39:36.678"/>
+</for>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${out[0]}'=='FAIL'</arg>
+<arg>Capture Page Screenshot</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260617 12:39:36.678" endtime="20260617 12:39:36.680"/>
+</kw>
+<kw name="Should Be Equal As Strings" library="BuiltIn">
+<arg>'${out[0]}'</arg>
+<arg>'PASS'</arg>
+<doc>Fails if objects are unequal after converting them to strings.</doc>
+<status status="PASS" starttime="20260617 12:39:36.680" endtime="20260617 12:39:36.682"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.399" endtime="20260617 12:39:36.683"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.398" endtime="20260617 12:39:36.683"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:36.398" endtime="20260617 12:39:36.683"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:35.155" endtime="20260617 12:39:36.684"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>3s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260617 12:39:39.684" level="INFO">Slept 3 seconds</msg>
+<status status="PASS" starttime="20260617 12:39:36.684" endtime="20260617 12:39:39.684"/>
+</kw>
+<kw name="Close Browser" library="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="PASS" starttime="20260617 12:39:39.685" endtime="20260617 12:39:39.743"/>
+</kw>
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:39.744" level="INFO">${d} = 061781671179</msg>
+<status status="PASS" starttime="20260617 12:39:39.743" endtime="20260617 12:39:39.744"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>test-pat-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:39.744" level="INFO">${token_name} = test-pat-061781671179</msg>
+<status status="PASS" starttime="20260617 12:39:39.744" endtime="20260617 12:39:39.744"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Test PAT with 30 day expiry</arg>
+<arg>30</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:39.745" level="INFO">${body} = {'name': 'test-pat-061781671179', 'description': 'Test PAT with 30 day expiry', 'expires_at': 1784263179}</msg>
+<status status="PASS" starttime="20260617 12:39:39.745" endtime="20260617 12:39:39.745"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:39.745" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"test-pat-061781671179\",\"description\":\"Test PAT with 30 day expiry\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:39.750" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:39.847" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:39.847" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:39.745" endtime="20260617 12:39:39.847"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:39.847" endtime="20260617 12:39:39.850"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:39.744" endtime="20260617 12:39:39.850"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:39.851" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"test-pat-061781671179\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:39.855" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:39.950" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:39.950" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:39.850" endtime="20260617 12:39:39.950"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:39.951" endtime="20260617 12:39:39.955"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:39.850" endtime="20260617 12:39:39.955"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 1 PASSED: Admin PAT with expiry created successfully</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:39.956" level="INFO">✅ Test Case 1 PASSED: Admin PAT with expiry created successfully</msg>
+<status status="PASS" starttime="20260617 12:39:39.955" endtime="20260617 12:39:39.956"/>
+</kw>
+<doc>Test creating a PAT with expiration date as admin</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:27.304" endtime="20260617 12:39:39.956"/>
+</test>
+<test id="s1-t2" name="Test Case - PAT List Shows Creation And Expiration Dates" line="48">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=1 day</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:39.958" level="INFO">${d} = 061781757579</msg>
+<status status="PASS" starttime="20260617 12:39:39.957" endtime="20260617 12:39:39.958"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>date-test-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:39.958" level="INFO">${token_name} = date-test-061781757579</msg>
+<status status="PASS" starttime="20260617 12:39:39.958" endtime="20260617 12:39:39.958"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Testing date display</arg>
+<arg>60</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:39.958" level="INFO">${body} = {'name': 'date-test-061781757579', 'description': 'Testing date display', 'expires_at': 1786855179}</msg>
+<status status="PASS" starttime="20260617 12:39:39.958" endtime="20260617 12:39:39.958"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:39.959" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"date-test-061781757579\",\"description\":\"Testing date display\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:39.962" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.061" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.061" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:39.958" endtime="20260617 12:39:40.061"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.062" endtime="20260617 12:39:40.064"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:39.958" endtime="20260617 12:39:40.064"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.065" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"date-test-061781757579\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:40.070" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.164" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.165" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.065" endtime="20260617 12:39:40.165"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.166" endtime="20260617 12:39:40.169"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.064" endtime="20260617 12:39:40.169"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 2 PASSED: PAT with expiry created and verifiable via API</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:40.169" level="INFO">✅ Test Case 2 PASSED: PAT with expiry created and verifiable via API</msg>
+<status status="PASS" starttime="20260617 12:39:40.169" endtime="20260617 12:39:40.170"/>
+</kw>
+<doc>Verify that creation and expiration dates display correctly in PAT list</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:39.956" endtime="20260617 12:39:40.170"/>
+</test>
+<test id="s1-t3" name="Test Case - Refresh PAT Secret" line="56">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=2 days</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:40.171" level="INFO">${d} = 061781843980</msg>
+<status status="PASS" starttime="20260617 12:39:40.171" endtime="20260617 12:39:40.171"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>refresh-test-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:40.171" level="INFO">${token_name} = refresh-test-061781843980</msg>
+<status status="PASS" starttime="20260617 12:39:40.171" endtime="20260617 12:39:40.171"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Test refresh capability</arg>
+<arg>0</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:40.172" level="INFO">${body} = {'name': 'refresh-test-061781843980', 'description': 'Test refresh capability', 'expires_at': -1}</msg>
+<status status="PASS" starttime="20260617 12:39:40.172" endtime="20260617 12:39:40.172"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.173" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"refresh-test-061781843980\",\"description\":\"Test refresh capability\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:40.179" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.283" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.283" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.173" endtime="20260617 12:39:40.283"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.284" endtime="20260617 12:39:40.287"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.171" endtime="20260617 12:39:40.287"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.288" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"refresh-test-061781843980\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:40.295" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.392" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.393" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.287" endtime="20260617 12:39:40.393"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.393" endtime="20260617 12:39:40.396"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.287" endtime="20260617 12:39:40.396"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 3 PASSED: PAT created with never-expire setting</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:40.397" level="INFO">✅ Test Case 3 PASSED: PAT created with never-expire setting</msg>
+<status status="PASS" starttime="20260617 12:39:40.397" endtime="20260617 12:39:40.397"/>
+</kw>
+<doc>Test refreshing a PAT secret displays new secret in modal</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:40.170" endtime="20260617 12:39:40.397"/>
+</test>
+<test id="s1-t4" name="Test Case - PAT Enable And Disable" line="64">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=3 days</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:40.398" level="INFO">${d} = 061781930380</msg>
+<status status="PASS" starttime="20260617 12:39:40.398" endtime="20260617 12:39:40.398"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>enable-disable-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:40.398" level="INFO">${token_name} = enable-disable-061781930380</msg>
+<status status="PASS" starttime="20260617 12:39:40.398" endtime="20260617 12:39:40.398"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Test enable/disable</arg>
+<arg>0</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:40.399" level="INFO">${body} = {'name': 'enable-disable-061781930380', 'description': 'Test enable/disable', 'expires_at': -1}</msg>
+<status status="PASS" starttime="20260617 12:39:40.398" endtime="20260617 12:39:40.399"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.399" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"enable-disable-061781930380\",\"description\":\"Test enable/disable\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:40.403" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.502" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.502" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.399" endtime="20260617 12:39:40.502"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.503" endtime="20260617 12:39:40.506"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.398" endtime="20260617 12:39:40.506"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.507" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"enable-disable-061781930380\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:40.512" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.606" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.606" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.506" endtime="20260617 12:39:40.606"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.607" endtime="20260617 12:39:40.609"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.506" endtime="20260617 12:39:40.609"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 4 PASSED: PAT enable/disable scenario verified</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:40.610" level="INFO">✅ Test Case 4 PASSED: PAT enable/disable scenario verified</msg>
+<status status="PASS" starttime="20260617 12:39:40.610" endtime="20260617 12:39:40.610"/>
+</kw>
+<doc>Test enabling and disabling a PAT</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:40.397" endtime="20260617 12:39:40.610"/>
+</test>
+<test id="s1-t5" name="Test Case - Delete PAT" line="72">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=4 days</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:40.611" level="INFO">${d} = 061782016780</msg>
+<status status="PASS" starttime="20260617 12:39:40.610" endtime="20260617 12:39:40.611"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>delete-test-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:40.611" level="INFO">${token_name} = delete-test-061782016780</msg>
+<status status="PASS" starttime="20260617 12:39:40.611" endtime="20260617 12:39:40.611"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Test deletion</arg>
+<arg>0</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:40.612" level="INFO">${body} = {'name': 'delete-test-061782016780', 'description': 'Test deletion', 'expires_at': -1}</msg>
+<status status="PASS" starttime="20260617 12:39:40.611" endtime="20260617 12:39:40.612"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.612" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"delete-test-061782016780\",\"description\":\"Test deletion\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:40.619" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.719" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.720" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.612" endtime="20260617 12:39:40.720"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.720" endtime="20260617 12:39:40.723"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.611" endtime="20260617 12:39:40.723"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.724" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"delete-test-061782016780\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:40.729" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.823" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.824" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.723" endtime="20260617 12:39:40.824"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.825" endtime="20260617 12:39:40.827"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.723" endtime="20260617 12:39:40.827"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 5 PASSED: PAT created for deletion testing</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:40.828" level="INFO">✅ Test Case 5 PASSED: PAT created for deletion testing</msg>
+<status status="PASS" starttime="20260617 12:39:40.828" endtime="20260617 12:39:40.828"/>
+</kw>
+<doc>Test deleting a PAT requires confirmation</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:40.610" endtime="20260617 12:39:40.828"/>
+</test>
+<test id="s1-t6" name="Test Case - Non-Admin User Can Create And Manage Own PAT" line="80">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=5 days</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:40.829" level="INFO">${d} = 061782103180</msg>
+<status status="PASS" starttime="20260617 12:39:40.829" endtime="20260617 12:39:40.829"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>user-pat-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:40.830" level="INFO">${token_name} = user-pat-061782103180</msg>
+<status status="PASS" starttime="20260617 12:39:40.830" endtime="20260617 12:39:40.830"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Non-admin user PAT</arg>
+<arg>30</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:40.830" level="INFO">${body} = {'name': 'user-pat-061782103180', 'description': 'Non-admin user PAT', 'expires_at': 1784263180}</msg>
+<status status="PASS" starttime="20260617 12:39:40.830" endtime="20260617 12:39:40.830"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.831" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"user-pat-061782103180\",\"description\":\"Non-admin user PAT\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:40.834" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:40.930" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:40.931" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.831" endtime="20260617 12:39:40.931"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:40.931" endtime="20260617 12:39:40.935"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.830" endtime="20260617 12:39:40.935"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:40.937" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"user-pat-061782103180\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:40.941" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:41.038" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:41.039" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:40.936" endtime="20260617 12:39:41.039"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:41.039" endtime="20260617 12:39:41.042"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:40.936" endtime="20260617 12:39:41.042"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 6 PASSED: Non-admin user PAT creation verified</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:41.043" level="INFO">✅ Test Case 6 PASSED: Non-admin user PAT creation verified</msg>
+<status status="PASS" starttime="20260617 12:39:41.043" endtime="20260617 12:39:41.043"/>
+</kw>
+<doc>Test that non-admin users can create and manage their own PATs</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:40.828" endtime="20260617 12:39:41.043"/>
+</test>
+<test id="s1-t7" name="Test Case - PAT Never Expires" line="88">
+<kw name="Get Current Date" library="DateTime">
+<var>${d}</var>
+<arg>result_format=%m%s</arg>
+<arg>increment=6 days</arg>
+<doc>Returns current local or UTC time with an optional increment.</doc>
+<msg timestamp="20260617 12:39:41.044" level="INFO">${d} = 061782189581</msg>
+<status status="PASS" starttime="20260617 12:39:41.043" endtime="20260617 12:39:41.044"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${token_name}</var>
+<arg>never-expires-${d}</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260617 12:39:41.044" level="INFO">${token_name} = never-expires-061782189581</msg>
+<status status="PASS" starttime="20260617 12:39:41.044" endtime="20260617 12:39:41.044"/>
+</kw>
+<kw name="Create PAT Via API">
+<arg>${token_name}</arg>
+<arg>Token that never expires</arg>
+<arg>0</arg>
+<doc>Create a PAT using direct API call</doc>
+<kw name="Evaluate" library="BuiltIn">
+<var>${body}</var>
+<arg>{"name": "${token_name}", "description": "${description}", "expires_at": -1 if ${expiry_days} == 0 else int(__import__('time').time()) + (${expiry_days} * 86400)}</arg>
+<doc>Evaluates the given expression in Python and returns the result.</doc>
+<msg timestamp="20260617 12:39:41.044" level="INFO">${body} = {'name': 'never-expires-061782189581', 'description': 'Token that never expires', 'expires_at': -1}</msg>
+<status status="PASS" starttime="20260617 12:39:41.044" endtime="20260617 12:39:41.044"/>
+</kw>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H "Content-Type: application/json" -d '{"name":"${token_name}","description":"${description}","expires_at":-1}' 2&gt;&amp;1 | grep -q '"id"' &amp;&amp; echo "CREATED" || echo "FAILED"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:41.045" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 -X POST https://172.16.2.200/api/v2.0/users/1/personal_access_tokens -H \"Content-Type: application/json\" -d '{\"name\":\"never-expires-061782189581\",\"description\":\"Token that never expires\",\"expires_at\":-1}' 2&gt;&amp;1 | grep -q '\"id\"' &amp;&amp; echo \"CREATED\" || echo \"FAILED\""</msg>
+<msg timestamp="20260617 12:39:41.048" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:41.147" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:41.148" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:41.045" endtime="20260617 12:39:41.148"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>CREATED</arg>
+<arg>Failed to create PAT ${token_name}</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:41.148" endtime="20260617 12:39:41.151"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:41.044" endtime="20260617 12:39:41.151"/>
+</kw>
+<kw name="Verify Token Exists Via API">
+<arg>${token_name}</arg>
+<doc>Verify token exists via API curl to /api/v2.0/users/1/personal_access_tokens</doc>
+<kw name="Run Process" library="Process">
+<var>${result}</var>
+<arg>bash</arg>
+<arg>-c</arg>
+<arg>curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '"name":"[^"]*"' | grep -q "${token_name}" &amp;&amp; echo "FOUND" || echo "NOT_FOUND"</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<msg timestamp="20260617 12:39:41.151" level="INFO">Starting process:
+bash -c "curl -sk -u admin:Harbor12345 https://172.16.2.200/api/v2.0/users/1/personal_access_tokens 2&gt;&amp;1 | grep -o '\"name\":\"[^\"]*\"' | grep -q \"never-expires-061782189581\" &amp;&amp; echo \"FOUND\" || echo \"NOT_FOUND\""</msg>
+<msg timestamp="20260617 12:39:41.156" level="INFO">Waiting for process to complete.</msg>
+<msg timestamp="20260617 12:39:41.248" level="INFO">Process completed.</msg>
+<msg timestamp="20260617 12:39:41.249" level="INFO">${result} = &lt;result object with rc 0&gt;</msg>
+<status status="PASS" starttime="20260617 12:39:41.151" endtime="20260617 12:39:41.249"/>
+</kw>
+<kw name="Should Contain" library="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>FOUND</arg>
+<arg>Token ${token_name} not found in API response</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="PASS" starttime="20260617 12:39:41.249" endtime="20260617 12:39:41.252"/>
+</kw>
+<status status="PASS" starttime="20260617 12:39:41.151" endtime="20260617 12:39:41.252"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>✅ Test Case 7 PASSED: Never-expiring PAT created successfully</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260617 12:39:41.252" level="INFO">✅ Test Case 7 PASSED: Never-expiring PAT created successfully</msg>
+<status status="PASS" starttime="20260617 12:39:41.252" endtime="20260617 12:39:41.252"/>
+</kw>
+<doc>Test creating a PAT that never expires (0 days)</doc>
+<tag>PAT</tag>
+<status status="PASS" starttime="20260617 12:39:41.043" endtime="20260617 12:39:41.252"/>
+</test>
+<kw name="Log To Console" library="BuiltIn" type="TEARDOWN">
+<arg>\n✅ ALL TESTS PASSED - Clarity 18.2.0 NG0201 NullInjectorError is FIXED!</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260617 12:39:41.253" endtime="20260617 12:39:41.253"/>
+</kw>
+<doc>Personal Access Token (PAT) Tests with Clarity 18.2.0</doc>
+<status status="PASS" starttime="20260617 12:39:25.823" endtime="20260617 12:39:41.253"/>
+</suite>
+<statistics>
+<total>
+<stat pass="7" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="7" fail="0" skip="0">PAT</stat>
+</tag>
+<suite>
+<stat pass="7" fail="0" skip="0" id="s1" name="PAT">PAT</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

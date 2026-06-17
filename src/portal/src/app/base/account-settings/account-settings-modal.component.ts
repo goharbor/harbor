@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { AfterViewChecked, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ErrorHandler, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { NavigationExtras, Router } from '@angular/router';
 import { SessionUser } from '../../shared/entities/session-user';
@@ -297,9 +297,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         };
         this.showGenerateCli = false;
 
-        // Load PATs
-        this.loadPATs();
-
+        // Open modal — clrDgRefresh event will load PATs automatically
         this.opened = true;
     }
 
@@ -503,6 +501,10 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     // PAT Management Methods
+    onPATsRefresh(state: any): void {
+        this.loadPATs();
+    }
+
     openCreatePATModal() {
         this.showCreatePATModal = true;
         this.newPATForm = { name: '', expiresInDays: 0, description: '' };
@@ -511,6 +513,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     closeCreatePATModal() {
         this.showCreatePATModal = false;
+        this.loadPATs();
     }
 
     loadPATs() {
@@ -522,16 +525,22 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             .ListPersonalAccessTokens({ userId: this.account.user_id })
             .subscribe({
                 next: (res: any) => {
-                    this.pats = Array.isArray(res) ? res : [];
-                    this.pats.forEach(pat => {
-                        pat.expired =
-                            pat.expires_at > 0 &&
-                            pat.expires_at <= Date.now() / 1000;
-                    });
+                    try {
+                        this.pats = Array.isArray(res) ? res : [];
+                        this.pats.forEach(pat => {
+                            pat.expired =
+                                pat.expires_at > 0 &&
+                                pat.expires_at <= Date.now() / 1000;
+                        });
+                        console.log('[PAT] Data assigned, count:', this.pats.length);
+                    } catch (e) {
+                        console.error('[PAT] Error during data assignment:', e);
+                        throw e;
+                    }
                     this.patLoading = false;
                 },
                 error: (err: any) => {
-                    console.error('Error loading PATs:', err);
+                    console.error('[PAT] Error loading PATs:', err);
                     this.pats = [];
                     this.patLoading = false;
                     this.msgHandler.handleError(err);

@@ -1,0 +1,1742 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.0.1 (Python 3.9.5 on linux)" generated="20260616 20:09:47.375" rpa="false" schemaversion="3">
+<suite id="s1" name="PAT" source="/drone/tests/robot-cases/Group1-Nightly/PAT.robot">
+<kw name="Install Harbor to Test Server" library="Harbor-Util" type="SETUP">
+<kw name="Log To Console" library="BuiltIn">
+<arg>\nStart Docker Daemon</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260616 20:09:48.773" endtime="20260616 20:09:48.773"/>
+</kw>
+<kw name="Start Docker Daemon Locally" library="Docker-Util">
+<kw name="Get Environment Variable" library="OperatingSystem">
+<var>${test_network_type}</var>
+<arg>NETWORK_TYPE</arg>
+<arg>public</arg>
+<doc>Returns the value of an environment variable with the given name.</doc>
+<msg timestamp="20260616 20:09:48.773" level="INFO">${test_network_type} = public</msg>
+<status status="PASS" starttime="20260616 20:09:48.773" endtime="20260616 20:09:48.773"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>current test_network_type: ${test_network_type}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260616 20:09:48.774" endtime="20260616 20:09:48.774"/>
+</kw>
+<kw name="Run" library="OperatingSystem">
+<var>${pid}</var>
+<arg>pidof dockerd</arg>
+<doc>Runs the given command in the system and returns the output.</doc>
+<msg timestamp="20260616 20:09:48.778" level="INFO">Running command 'pidof dockerd 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:48.779" level="INFO">${pid} = </msg>
+<status status="PASS" starttime="20260616 20:09:48.774" endtime="20260616 20:09:48.779"/>
+</kw>
+<kw name="Run Keyword If" library="BuiltIn">
+<arg>'${pid}' != '${EMPTY}'</arg>
+<arg>Wait Until Docker Daemon Ready</arg>
+<doc>Runs the given keyword with the given arguments, if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:48.779" endtime="20260616 20:09:48.781"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${pid}' != '${EMPTY}'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:48.782" endtime="20260616 20:09:48.783"/>
+</kw>
+<kw name="File Should Exist" library="OperatingSystem">
+<arg>/usr/local/bin/dockerd-entrypoint.sh</arg>
+<doc>Fails unless the given ``path`` points to an existing file.</doc>
+<msg timestamp="20260616 20:09:48.784" level="INFO" html="true">File '&lt;a href="file:///usr/local/bin/dockerd-entrypoint.sh"&gt;/usr/local/bin/dockerd-entrypoint.sh&lt;/a&gt;' exists.</msg>
+<status status="PASS" starttime="20260616 20:09:48.783" endtime="20260616 20:09:48.784"/>
+</kw>
+<kw name="Set Variable" library="BuiltIn">
+<var>${handle}</var>
+<arg>""</arg>
+<doc>Returns the given values which can then be assigned to a variables.</doc>
+<msg timestamp="20260616 20:09:48.784" level="INFO">${handle} = ""</msg>
+<status status="PASS" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.784"/>
+</kw>
+<if>
+<branch type="IF" condition="'${test_network_type}' == 'private'">
+<kw name="Log To Console" library="BuiltIn">
+<arg>network type is private</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.784"/>
+</kw>
+<kw name="Start Process" library="Process">
+<var>${handle}</var>
+<arg>${DOCKERD_CMD}</arg>
+<arg>${DOCKERD_ARGS}</arg>
+<arg>stdout=${LOG_FILE}</arg>
+<arg>stderr=${LOG_FILE}</arg>
+<arg>shell=Tr</arg>
+<doc>Starts a new process on background.</doc>
+<status status="NOT RUN" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.784"/>
+</kw>
+<status status="NOT RUN" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.784"/>
+</branch>
+<branch type="ELSE IF" condition="'${test_network_type}' == 'public'">
+<kw name="Log To Console" library="BuiltIn">
+<arg>network type is public</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260616 20:09:48.785" endtime="20260616 20:09:48.785"/>
+</kw>
+<kw name="Start Process" library="Process">
+<var>${handle}</var>
+<arg>/usr/local/bin/dockerd-entrypoint.sh dockerd&gt;./daemon-docker-local.log 2&gt;&amp;1</arg>
+<arg>shell=True</arg>
+<doc>Starts a new process on background.</doc>
+<msg timestamp="20260616 20:09:48.785" level="INFO">Starting process:
+/usr/local/bin/dockerd-entrypoint.sh dockerd&gt;./daemon-docker-local.log 2&gt;&amp;1</msg>
+<msg timestamp="20260616 20:09:48.789" level="INFO">${handle} = &lt;Popen: returncode: None args: ['/', 'u', 's', 'r', '/', 'l', 'o', 'c', 'a',...&gt;</msg>
+<status status="PASS" starttime="20260616 20:09:48.785" endtime="20260616 20:09:48.789"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.789"/>
+</branch>
+<status status="PASS" starttime="20260616 20:09:48.784" endtime="20260616 20:09:48.789"/>
+</if>
+<kw name="Process Should Be Running" library="Process">
+<arg>${handle}</arg>
+<doc>Verifies that the process is running.</doc>
+<status status="PASS" starttime="20260616 20:09:48.789" endtime="20260616 20:09:48.790"/>
+</kw>
+<kw name="Wait Until Docker Daemon Ready" library="Docker-Util">
+<for flavor="IN RANGE">
+<var>${IDX}</var>
+<value>30</value>
+<iter>
+<var name="${IDX}">0</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:48.791" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:48.797" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:48.797" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:48.790" endtime="20260616 20:09:48.797"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:48.798" endtime="20260616 20:09:48.798"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:48.798" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:48.798" endtime="20260616 20:09:48.798"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:09:50.799" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:48.798" endtime="20260616 20:09:50.799"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:48.790" endtime="20260616 20:09:50.799"/>
+</iter>
+<iter>
+<var name="${IDX}">1</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:50.802" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:50.808" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:50.808" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:50.799" endtime="20260616 20:09:50.808"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:50.808" endtime="20260616 20:09:50.808"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:50.809" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:50.809" endtime="20260616 20:09:50.809"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:09:52.809" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:50.809" endtime="20260616 20:09:52.809"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:50.799" endtime="20260616 20:09:52.809"/>
+</iter>
+<iter>
+<var name="${IDX}">2</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:52.814" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:52.819" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:52.819" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:52.810" endtime="20260616 20:09:52.819"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:52.820" endtime="20260616 20:09:52.820"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:52.821" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:52.820" endtime="20260616 20:09:52.821"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:09:54.821" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:52.821" endtime="20260616 20:09:54.821"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:52.809" endtime="20260616 20:09:54.821"/>
+</iter>
+<iter>
+<var name="${IDX}">3</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:54.826" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:54.833" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:54.833" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:54.822" endtime="20260616 20:09:54.833"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:54.833" endtime="20260616 20:09:54.833"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:54.834" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:54.834" endtime="20260616 20:09:54.834"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:09:56.834" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:54.834" endtime="20260616 20:09:56.834"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:54.821" endtime="20260616 20:09:56.834"/>
+</iter>
+<iter>
+<var name="${IDX}">4</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:56.839" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:56.846" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:56.846" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:56.835" endtime="20260616 20:09:56.846"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:56.847" endtime="20260616 20:09:56.847"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:56.847" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:56.847" endtime="20260616 20:09:56.847"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:09:58.848" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:56.847" endtime="20260616 20:09:58.848"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:56.835" endtime="20260616 20:09:58.848"/>
+</iter>
+<iter>
+<var name="${IDX}">5</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:09:58.852" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:09:58.861" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:09:58.861" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:09:58.848" endtime="20260616 20:09:58.861"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:09:58.861" endtime="20260616 20:09:58.861"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:09:58.862" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:09:58.862" endtime="20260616 20:09:58.862"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:00.862" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:09:58.862" endtime="20260616 20:10:00.862"/>
+</kw>
+<status status="PASS" starttime="20260616 20:09:58.848" endtime="20260616 20:10:00.862"/>
+</iter>
+<iter>
+<var name="${IDX}">6</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:00.867" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:00.875" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:00.875" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:00.863" endtime="20260616 20:10:00.875"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:00.875" endtime="20260616 20:10:00.876"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:00.876" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:00.876" endtime="20260616 20:10:00.876"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:02.876" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:00.876" endtime="20260616 20:10:02.876"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:00.863" endtime="20260616 20:10:02.876"/>
+</iter>
+<iter>
+<var name="${IDX}">7</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:02.880" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:02.887" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:02.888" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:02.877" endtime="20260616 20:10:02.888"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:02.888" endtime="20260616 20:10:02.888"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:02.888" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:02.888" endtime="20260616 20:10:02.889"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:04.889" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:02.889" endtime="20260616 20:10:04.889"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:02.877" endtime="20260616 20:10:04.889"/>
+</iter>
+<iter>
+<var name="${IDX}">8</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:04.893" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:04.899" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:04.899" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:04.890" endtime="20260616 20:10:04.899"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:04.900" endtime="20260616 20:10:04.900"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:04.901" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:04.900" endtime="20260616 20:10:04.901"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:06.901" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:04.901" endtime="20260616 20:10:06.901"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:04.889" endtime="20260616 20:10:06.901"/>
+</iter>
+<iter>
+<var name="${IDX}">9</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:06.905" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:06.911" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:06.911" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:06.901" endtime="20260616 20:10:06.911"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:06.912" endtime="20260616 20:10:06.912"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:06.912" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:06.912" endtime="20260616 20:10:06.912"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:08.913" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:06.912" endtime="20260616 20:10:08.913"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:06.901" endtime="20260616 20:10:08.913"/>
+</iter>
+<iter>
+<var name="${IDX}">10</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:08.918" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:08.924" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:08.924" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:08.913" endtime="20260616 20:10:08.924"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:08.925" endtime="20260616 20:10:08.925"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:08.926" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:08.925" endtime="20260616 20:10:08.926"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:10.926" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:08.926" endtime="20260616 20:10:10.926"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:08.913" endtime="20260616 20:10:10.926"/>
+</iter>
+<iter>
+<var name="${IDX}">11</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:10.930" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:10.936" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:10.936" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:10.927" endtime="20260616 20:10:10.936"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:10.936" endtime="20260616 20:10:10.936"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:10.936" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:10.936" endtime="20260616 20:10:10.936"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:12.937" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:10.937" endtime="20260616 20:10:12.937"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:10.926" endtime="20260616 20:10:12.937"/>
+</iter>
+<iter>
+<var name="${IDX}">12</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:12.941" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:12.947" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:12.947" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:12.937" endtime="20260616 20:10:12.947"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:12.947" endtime="20260616 20:10:12.948"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:12.948" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:12.948" endtime="20260616 20:10:12.948"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:14.948" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:12.948" endtime="20260616 20:10:14.949"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:12.937" endtime="20260616 20:10:14.949"/>
+</iter>
+<iter>
+<var name="${IDX}">13</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:14.952" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:14.959" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:14.959" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:14.949" endtime="20260616 20:10:14.959"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:14.960" endtime="20260616 20:10:14.960"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:14.960" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:14.960" endtime="20260616 20:10:14.960"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:16.961" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:14.960" endtime="20260616 20:10:16.961"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:14.949" endtime="20260616 20:10:16.961"/>
+</iter>
+<iter>
+<var name="${IDX}">14</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:16.964" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:16.971" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:16.971" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:16.961" endtime="20260616 20:10:16.971"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:16.971" endtime="20260616 20:10:16.972"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:16.972" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:16.972" endtime="20260616 20:10:16.972"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:18.972" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:16.972" endtime="20260616 20:10:18.972"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:16.961" endtime="20260616 20:10:18.972"/>
+</iter>
+<iter>
+<var name="${IDX}">15</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:18.977" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:18.982" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:18.982" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:18.973" endtime="20260616 20:10:18.982"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:18.982" endtime="20260616 20:10:18.983"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:18.983" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:18.983" endtime="20260616 20:10:18.983"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:20.983" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:18.983" endtime="20260616 20:10:20.983"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:18.972" endtime="20260616 20:10:20.983"/>
+</iter>
+<iter>
+<var name="${IDX}">16</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:20.987" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:20.992" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:20.992" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:20.984" endtime="20260616 20:10:20.992"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:20.992" endtime="20260616 20:10:20.993"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:20.993" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:20.993" endtime="20260616 20:10:20.993"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:22.993" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:20.993" endtime="20260616 20:10:22.994"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:20.984" endtime="20260616 20:10:22.994"/>
+</iter>
+<iter>
+<var name="${IDX}">17</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:22.999" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:23.005" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:23.005" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:22.994" endtime="20260616 20:10:23.005"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:23.006" endtime="20260616 20:10:23.006"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:23.006" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:23.006" endtime="20260616 20:10:23.006"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:25.007" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:23.007" endtime="20260616 20:10:25.007"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:22.994" endtime="20260616 20:10:25.007"/>
+</iter>
+<iter>
+<var name="${IDX}">18</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:25.012" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:25.018" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:25.018" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:25.008" endtime="20260616 20:10:25.018"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:25.018" endtime="20260616 20:10:25.019"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:25.019" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:25.019" endtime="20260616 20:10:25.019"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:27.019" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:25.019" endtime="20260616 20:10:27.020"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:25.007" endtime="20260616 20:10:27.020"/>
+</iter>
+<iter>
+<var name="${IDX}">19</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:27.024" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:27.031" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:27.031" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:27.020" endtime="20260616 20:10:27.031"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:27.031" endtime="20260616 20:10:27.032"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:27.032" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:27.032" endtime="20260616 20:10:27.032"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:29.032" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:27.032" endtime="20260616 20:10:29.032"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:27.020" endtime="20260616 20:10:29.032"/>
+</iter>
+<iter>
+<var name="${IDX}">20</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:29.037" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:29.045" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:29.045" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:29.033" endtime="20260616 20:10:29.045"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:29.045" endtime="20260616 20:10:29.045"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:29.046" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:29.046" endtime="20260616 20:10:29.046"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:31.046" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:29.046" endtime="20260616 20:10:31.046"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:29.033" endtime="20260616 20:10:31.046"/>
+</iter>
+<iter>
+<var name="${IDX}">21</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:31.050" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:31.057" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:31.057" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:31.047" endtime="20260616 20:10:31.057"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:31.057" endtime="20260616 20:10:31.058"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:31.058" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:31.058" endtime="20260616 20:10:31.058"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:33.059" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:31.059" endtime="20260616 20:10:33.059"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:31.046" endtime="20260616 20:10:33.059"/>
+</iter>
+<iter>
+<var name="${IDX}">22</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:33.062" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:33.070" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:33.070" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:33.060" endtime="20260616 20:10:33.070"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:33.070" endtime="20260616 20:10:33.071"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:33.071" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:33.071" endtime="20260616 20:10:33.071"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:35.071" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:33.071" endtime="20260616 20:10:35.072"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:33.059" endtime="20260616 20:10:35.072"/>
+</iter>
+<iter>
+<var name="${IDX}">23</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:35.076" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:35.083" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:35.083" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:35.072" endtime="20260616 20:10:35.083"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:35.084" endtime="20260616 20:10:35.084"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:35.085" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:35.084" endtime="20260616 20:10:35.085"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:37.085" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:35.085" endtime="20260616 20:10:37.085"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:35.072" endtime="20260616 20:10:37.085"/>
+</iter>
+<iter>
+<var name="${IDX}">24</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:37.089" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:37.096" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:37.096" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:37.086" endtime="20260616 20:10:37.096"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:37.096" endtime="20260616 20:10:37.097"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:37.097" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:37.097" endtime="20260616 20:10:37.097"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:39.097" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:37.097" endtime="20260616 20:10:39.098"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:37.085" endtime="20260616 20:10:39.098"/>
+</iter>
+<iter>
+<var name="${IDX}">25</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:39.101" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:39.108" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:39.108" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:39.098" endtime="20260616 20:10:39.108"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:39.109" endtime="20260616 20:10:39.109"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:39.110" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:39.110" endtime="20260616 20:10:39.110"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:41.110" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:39.110" endtime="20260616 20:10:41.110"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:39.098" endtime="20260616 20:10:41.110"/>
+</iter>
+<iter>
+<var name="${IDX}">26</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:41.114" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:41.122" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:41.122" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:41.111" endtime="20260616 20:10:41.123"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:41.123" endtime="20260616 20:10:41.123"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:41.123" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:41.123" endtime="20260616 20:10:41.124"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:43.124" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:41.124" endtime="20260616 20:10:43.124"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:41.110" endtime="20260616 20:10:43.124"/>
+</iter>
+<iter>
+<var name="${IDX}">27</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:43.128" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:43.135" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:43.135" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:43.124" endtime="20260616 20:10:43.135"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:43.136" endtime="20260616 20:10:43.137"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:43.137" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:43.137" endtime="20260616 20:10:43.137"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:45.138" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:43.137" endtime="20260616 20:10:45.138"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:43.124" endtime="20260616 20:10:45.138"/>
+</iter>
+<iter>
+<var name="${IDX}">28</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:45.142" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:45.149" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:45.149" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:45.138" endtime="20260616 20:10:45.149"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:45.149" endtime="20260616 20:10:45.150"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:45.150" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:45.150" endtime="20260616 20:10:45.150"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:47.150" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:45.150" endtime="20260616 20:10:47.150"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:45.138" endtime="20260616 20:10:47.151"/>
+</iter>
+<iter>
+<var name="${IDX}">29</var>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker info</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:47.155" level="INFO">Running command 'docker info 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:47.162" level="INFO">${rc} = 1</msg>
+<msg timestamp="20260616 20:10:47.162" level="INFO">${output} = Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty prin...</msg>
+<status status="PASS" starttime="20260616 20:10:47.151" endtime="20260616 20:10:47.162"/>
+</kw>
+<kw name="Return From Keyword If" library="BuiltIn">
+<arg>'${rc}' == '0'</arg>
+<doc>Returns from the enclosing user keyword if ``condition`` is true.</doc>
+<status status="PASS" starttime="20260616 20:10:47.162" endtime="20260616 20:10:47.163"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>Docker daemon is not ready yet: ${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:47.163" level="INFO">Docker daemon is not ready yet: Client:
+ Version:    26.0.0
+ Context:    default
+ Debug Mode: false
+
+Server:
+ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+errors pretty printing info</msg>
+<status status="PASS" starttime="20260616 20:10:47.163" endtime="20260616 20:10:47.163"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>2s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<msg timestamp="20260616 20:10:49.164" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" starttime="20260616 20:10:47.163" endtime="20260616 20:10:49.164"/>
+</kw>
+<status status="PASS" starttime="20260616 20:10:47.151" endtime="20260616 20:10:49.164"/>
+</iter>
+<status status="PASS" starttime="20260616 20:09:48.790" endtime="20260616 20:10:49.164"/>
+</for>
+<kw name="Log To Console" library="BuiltIn">
+<arg>Docker daemon failed to become ready: ${output}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="PASS" starttime="20260616 20:10:49.164" endtime="20260616 20:10:49.165"/>
+</kw>
+<kw name="Fail" library="BuiltIn">
+<arg>Docker daemon did not become ready</arg>
+<doc>Fails the test with the given message and optionally alters its tags.</doc>
+<msg timestamp="20260616 20:10:49.165" level="FAIL">Docker daemon did not become ready</msg>
+<status status="FAIL" starttime="20260616 20:10:49.165" endtime="20260616 20:10:49.165"/>
+</kw>
+<status status="FAIL" starttime="20260616 20:09:48.790" endtime="20260616 20:10:49.166"/>
+</kw>
+<status status="FAIL" starttime="20260616 20:09:48.773" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Sleep" library="BuiltIn">
+<arg>5s</arg>
+<doc>Pauses the test executed for the given time.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker ps</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Should Be Equal As Integers" library="BuiltIn">
+<arg>${rc}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>${output}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>\nconfig harbor cfg</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.166"/>
+</kw>
+<kw name="Config Harbor cfg" library="Harbor-Util">
+<arg>http_proxy=https</arg>
+<status status="NOT RUN" starttime="20260616 20:10:49.166" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Prepare Cert" library="Harbor-Util">
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>\ncomplile and up harbor now</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Compile and Up Harbor With Source Code" library="Harbor-Util">
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>docker ps</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Should Be Equal As Integers" library="BuiltIn">
+<arg>${rc}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Log To Console" library="BuiltIn">
+<arg>${output}</arg>
+<doc>Logs the given message to the console.</doc>
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<kw name="Generate Certificate Authority For Chrome" library="Cert-Util">
+<status status="NOT RUN" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.167"/>
+</kw>
+<status status="FAIL" starttime="20260616 20:09:48.772" endtime="20260616 20:10:49.167"/>
+</kw>
+<test id="s1-t1" name="Test Case - Admin Create PAT With Expiry" line="27">
+<doc>Test creating a PAT with expiration date as admin</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.167" endtime="20260616 20:10:49.168">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t2" name="Test Case - PAT List Shows Creation And Expiration Dates" line="71">
+<doc>Verify that creation and expiration dates display correctly in PAT list</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.168" endtime="20260616 20:10:49.168">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t3" name="Test Case - Refresh PAT Secret" line="108">
+<doc>Test refreshing a PAT secret displays new secret in modal</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.169" endtime="20260616 20:10:49.169">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t4" name="Test Case - PAT Enable And Disable" line="140">
+<doc>Test enabling and disabling a PAT</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.169" endtime="20260616 20:10:49.169">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t5" name="Test Case - Delete PAT" line="180">
+<doc>Test deleting a PAT requires confirmation</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.169" endtime="20260616 20:10:49.169">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t6" name="Test Case - Non-Admin User Can Create And Manage Own PAT" line="215">
+<doc>Test that non-admin users can create and manage their own PATs</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.169" endtime="20260616 20:10:49.170">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<test id="s1-t7" name="Test Case - PAT Never Expires" line="271">
+<doc>Test creating a PAT that never expires (0 days)</doc>
+<tag>PAT</tag>
+<status status="FAIL" starttime="20260616 20:10:49.170" endtime="20260616 20:10:49.170">Parent suite setup failed:
+Docker daemon did not become ready</status>
+</test>
+<kw name="Down Harbor" library="Harbor-Util" type="TEARDOWN">
+<kw name="Run And Return Rc And Output" library="OperatingSystem">
+<var>${rc}</var>
+<var>${output}</var>
+<arg>echo "Y" | make down</arg>
+<doc>Runs the given command in the system and returns the RC and output.</doc>
+<msg timestamp="20260616 20:10:49.174" level="INFO">Running command 'echo "Y" | make down 2&gt;&amp;1'.</msg>
+<msg timestamp="20260616 20:10:49.191" level="INFO">${rc} = 2</msg>
+<msg timestamp="20260616 20:10:49.191" level="INFO">${output} = fatal: detected dubious ownership in repository at '/drone'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /drone
+/bin/bash: go: command not found
+/bin/bash: ...</msg>
+<status status="PASS" starttime="20260616 20:10:49.170" endtime="20260616 20:10:49.192"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>${rc}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:49.192" level="INFO">2</msg>
+<status status="PASS" starttime="20260616 20:10:49.192" endtime="20260616 20:10:49.192"/>
+</kw>
+<kw name="Log" library="BuiltIn">
+<arg>${output}</arg>
+<doc>Logs the given message with the given level.</doc>
+<msg timestamp="20260616 20:10:49.192" level="INFO">fatal: detected dubious ownership in repository at '/drone'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /drone
+/bin/bash: go: command not found
+/bin/bash: go: command not found
+stoping harbor instance...
+unknown shorthand flag: 'f' in -f
+See 'docker --help'.
+
+Usage:  docker [OPTIONS] COMMAND
+
+A self-sufficient runtime for containers
+
+Common Commands:
+  run         Create and run a new container from an image
+  exec        Execute a command in a running container
+  ps          List containers
+  build       Build an image from a Dockerfile
+  pull        Download an image from a registry
+  push        Upload an image to a registry
+  images      List images
+  login       Log in to a registry
+  logout      Log out from a registry
+  search      Search Docker Hub for images
+  version     Show the Docker version information
+  info        Display system-wide information
+
+Management Commands:
+  builder     Manage builds
+  checkpoint  Manage checkpoints
+  container   Manage containers
+  context     Manage contexts
+  image       Manage images
+  manifest    Manage Docker image manifests and manifest lists
+  network     Manage networks
+  plugin      Manage plugins
+  system      Manage Docker
+  trust       Manage trust on Docker images
+  volume      Manage volumes
+
+Swarm Commands:
+  config      Manage Swarm configs
+  node        Manage Swarm nodes
+  secret      Manage Swarm secrets
+  service     Manage Swarm services
+  stack       Manage Swarm stacks
+  swarm       Manage Swarm
+
+Commands:
+  attach      Attach local standard input, output, and error streams to a running container
+  commit      Create a new image from a container's changes
+  cp          Copy files/folders between a container and the local filesystem
+  create      Create a new container
+  diff        Inspect changes to files or directories on a container's filesystem
+  events      Get real time events from the server
+  export      Export a container's filesystem as a tar archive
+  history     Show the history of an image
+  import      Import the contents from a tarball to create a filesystem image
+  inspect     Return low-level information on Docker objects
+  kill        Kill one or more running containers
+  load        Load an image from a tar archive or STDIN
+  logs        Fetch the logs of a container
+  pause       Pause all processes within one or more containers
+  port        List port mappings or a specific mapping for the container
+  rename      Rename a container
+  restart     Restart one or more containers
+  rm          Remove one or more containers
+  rmi         Remove one or more images
+  save        Save one or more images to a tar archive (streamed to STDOUT by default)
+  start       Start one or more stopped containers
+  stats       Display a live stream of container(s) resource usage statistics
+  stop        Stop one or more running containers
+  tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+  top         Display the running processes of a container
+  unpause     Unpause all processes within one or more containers
+  update      Update configuration of one or more containers
+  wait        Block until one or more containers stop, then print their exit codes
+
+Global Options:
+      --config string      Location of client config files (default
+                           "/root/.docker")
+  -c, --context string     Name of the context to use to connect to the
+                           daemon (overrides DOCKER_HOST env var and
+                           default context set with "docker context use")
+  -D, --debug              Enable debug mode
+  -H, --host list          Daemon socket to connect to
+  -l, --log-level string   Set the logging level ("debug", "info",
+                           "warn", "error", "fatal") (default "info")
+      --tls                Use TLS; implied by --tlsverify
+      --tlscacert string   Trust certs signed only by this CA (default
+                           "/root/.docker/ca.pem")
+      --tlscert string     Path to TLS certificate file (default
+                           "/root/.docker/cert.pem")
+      --tlskey string      Path to TLS key file (default
+                           "/root/.docker/key.pem")
+      --tlsverify          Use TLS and verify the remote
+  -v, --version            Print version information and quit
+
+Run 'docker COMMAND --help' for more information on a command.
+
+For more help on how to use Docker, head to https://docs.docker.com/go/guides/
+
+make: *** [Makefile:589: down] Error 125</msg>
+<status status="PASS" starttime="20260616 20:10:49.192" endtime="20260616 20:10:49.192"/>
+</kw>
+<kw name="Should Be Equal As Integers" library="BuiltIn">
+<arg>${rc}</arg>
+<arg>0</arg>
+<doc>Fails if objects are unequal after converting them to integers.</doc>
+<msg timestamp="20260616 20:10:49.193" level="INFO">Argument types are:
+&lt;class 'int'&gt;
+&lt;class 'str'&gt;</msg>
+<msg timestamp="20260616 20:10:49.193" level="FAIL">2 != 0</msg>
+<status status="FAIL" starttime="20260616 20:10:49.193" endtime="20260616 20:10:49.193"/>
+</kw>
+<status status="FAIL" starttime="20260616 20:10:49.170" endtime="20260616 20:10:49.193">2 != 0</status>
+</kw>
+<doc>Personal Access Token (PAT) Tests</doc>
+<status status="FAIL" starttime="20260616 20:09:47.376" endtime="20260616 20:10:49.193">Suite setup failed:
+Docker daemon did not become ready
+
+Also suite teardown failed:
+2 != 0</status>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="7" skip="0">All Tests</stat>
+</total>
+<tag>
+<stat pass="0" fail="7" skip="0">PAT</stat>
+</tag>
+<suite>
+<stat pass="0" fail="7" skip="0" id="s1" name="PAT">PAT</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

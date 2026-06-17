@@ -184,7 +184,8 @@
                             </button>
                         </div>
                         <clr-datagrid
-                            *ngIf="!patLoading"
+                            (clrDgRefresh)="onPATsRefresh($event)"
+                            [clrDgLoading]="patLoading"
                             [(clrDgSelected)]="selectedPATs">
                             <clr-dg-column>
                                 <ng-container
@@ -211,7 +212,7 @@
                                 </ng-container>
                             </clr-dg-column>
                             <clr-dg-row
-                                *ngFor="let pat of pats"
+                                *clrDgItems="let pat of pats"
                                 [clrDgItem]="pat">
                                 <clr-dg-cell>{{ pat.name }}</clr-dg-cell>
                                 <clr-dg-cell>{{
