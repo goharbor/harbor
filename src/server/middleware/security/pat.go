@@ -43,11 +43,11 @@ func (p *pat) Generate(req *http.Request) security.Context {
 
 	username, secret, ok := req.BasicAuth()
 	if !ok {
-		log.Debugf("PAT middleware: no basic auth found")
+		log.Errorf("PAT middleware: no basic auth found")
 		return nil
 	}
 
-	log.Errorf("=== PAT MIDDLEWARE: got username=%s, secret prefix=%s ===", username, secret[:min(10, len(secret))])
+	log.Errorf("=== PAT MIDDLEWARE: got username=%s, secret prefix=%.10s ===", username, secret)
 
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
