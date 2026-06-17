@@ -45,10 +45,12 @@ type reqChecker struct {
 
 func (rc *reqChecker) check(req *http.Request) (string, error) {
 	securityCtx, ok := security.FromContext(req.Context())
+	log.Errorf("=== V2AUTH CHECK: path=%s, securityCtx=%v, ok=%v ===", req.URL.Path, securityCtx, ok)
 	if !ok {
 		return "", fmt.Errorf("the security context got from request is nil")
 	}
 	al := accessList(req)
+	log.Errorf("=== V2AUTH CHECK: accessList length=%d ===", len(al))
 	if len(al) == 0 {
 		return "", fmt.Errorf("un-recognized request: %s %s", req.Method, req.URL.Path)
 	}
@@ -92,8 +94,30 @@ func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error)
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
-		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
+	log.Errorf("=== GET CHALLENGE: auth=%q, path=%s ===", auth, req.URL.Path)
+	if len(auth) > 0 {
+		if strings.HasPrefix(auth, "Bearer ") {
+			log.Errorf("=== GET CHALLENGE: detected Bearer token ===")
+			tokenSvc, err := tokenSvcURL(req)
+			if err != nil {
+				logger.Errorf("failed to get the endpoint for token service, error: %v", err)
+			}
+			scope := ""
+			for _, a := range accessList {
+				if len(scope) > 0 {
+					scope += " "
+				}
+				scope += a.scopeStr(req.Context())
+			}
+			challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, token.Registry)
+			if len(scope) > 0 {
+				challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
+			}
+			return challenge
+		}
+		return `Basic realm="harbor"`
+	}
+	if lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
@@ -166,6 +190,7 @@ var (
 
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
+	log.Errorf("=== V2AUTH MIDDLEWARE REGISTERED ===")
 	once.Do(func() {
 		if checker.ctl == nil { // for UT, where ctl has been set to a mock value
 			checker = reqChecker{
