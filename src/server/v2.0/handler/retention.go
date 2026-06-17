@@ -159,7 +159,11 @@ func (r *retentionAPI) GetRetention(ctx context.Context, params operation.GetRet
 }
 
 func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.CreateRetentionParams) middleware.Responder {
-	p := model.NewRetentionPolicyFromSwagger(params.Policy).Metadata
+	rp := model.NewRetentionPolicyFromSwagger(params.Policy)
+	if rp == nil {
+		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("invalid retention policy")))
+	}
+	p := rp.Metadata
 	if len(p.Rules) > 15 {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("only 15 rules are allowed at most")))
 	}
@@ -210,7 +214,11 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 }
 
 func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.UpdateRetentionParams) middleware.Responder {
-	p := model.NewRetentionPolicyFromSwagger(params.Policy).Metadata
+	rp := model.NewRetentionPolicyFromSwagger(params.Policy)
+	if rp == nil {
+		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("invalid retention policy")))
+	}
+	p := rp.Metadata
 	p.ID = params.ID
 	if len(p.Rules) > 15 {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("only 15 rules are allowed at most")))
