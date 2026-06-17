@@ -46,15 +46,15 @@ func newPatAPI() *patAPI {
 // toPatModel converts an internal PAT model to the API response format
 func toPatModel(pat *model.PersonalAccessToken) map[string]interface{} {
 	result := map[string]interface{}{
-		"id":             pat.ID,
-		"user_id":        pat.UserID,
-		"name":           pat.Name,
-		"description":    pat.Description,
-		"disabled":       pat.Disabled,
-		"is_legacy":      pat.IsLegacy,
-		"creation_time":  pat.CreationTime,
-		"update_time":    pat.UpdateTime,
-		"expires_at":     pat.ExpiresAt,
+		"id":            pat.ID,
+		"user_id":       pat.UserID,
+		"name":          pat.Name,
+		"description":   pat.Description,
+		"disabled":      pat.Disabled,
+		"is_legacy":     pat.IsLegacy,
+		"creation_time": pat.CreationTime,
+		"update_time":   pat.UpdateTime,
+		"expires_at":    pat.ExpiresAt,
 	}
 
 	// Set expired status
