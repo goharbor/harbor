@@ -41,21 +41,28 @@ func (p *pat) Generate(req *http.Request) security.Context {
 
 	username, secret, ok := req.BasicAuth()
 	if !ok {
+		log.Debugf("PAT middleware: no basic auth found")
 		return nil
 	}
 
+	log.Debugf("PAT middleware: got username=%s, secret prefix=%s", username, secret[:min(10, len(secret))])
+
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
+		log.Debugf("PAT middleware: skipping robot account")
 		return nil
 	}
 
 	// Check if this is a PAT (new tokens have the prefix, legacy tokens don't but are handled separately)
 	isNewPAT := strings.HasPrefix(secret, patPrefix)
 	if !isNewPAT {
+		log.Debugf("PAT middleware: secret doesn't have PAT prefix, skipping")
 		// For legacy PATs (migrated CLI secrets), we could handle them here
 		// For now, skip and let oidcCli or other handlers deal with it
 		return nil
 	}
+
+	log.Debugf("PAT middleware: verified PAT prefix, looking up user=%s", username)
 
 	// Lookup the user
 	u, err := user.Ctl.GetByName(ctx, username)
@@ -63,6 +70,8 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Debugf("failed to get user %s for PAT verification: %v", username, err)
 		return nil
 	}
+
+	log.Debugf("PAT middleware: found user ID=%d", u.UserID)
 
 	// Remove the prefix from the secret for comparison
 	secretWithoutPrefix := strings.TrimPrefix(secret, patPrefix)
@@ -73,6 +82,8 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Debugf("failed to list PATs for user %d: %v", u.UserID, err)
 		return nil
 	}
+
+	log.Debugf("PAT middleware: found %d PATs for user %d", len(pats), u.UserID)
 
 	now := time.Now().Unix()
 
