@@ -42,8 +42,9 @@ func (p *pat) Generate(req *http.Request) security.Context {
 	log.Errorf("=== PAT MIDDLEWARE INVOKED ===")
 
 	username, secret, ok := req.BasicAuth()
+	log.Errorf("PAT middleware: BasicAuth ok=%v, username=%s, hasSecret=%v", ok, username, secret != "")
 	if !ok {
-		log.Errorf("PAT middleware: no basic auth found")
+		log.Errorf("PAT middleware: no basic auth found - returning nil")
 		return nil
 	}
 
@@ -51,16 +52,15 @@ func (p *pat) Generate(req *http.Request) security.Context {
 
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
-		log.Debugf("PAT middleware: skipping robot account")
+		log.Errorf("PAT middleware: skipping robot account prefix=%s, returning nil", config.RobotPrefix(ctx))
 		return nil
 	}
 
 	// Check if this is a PAT (new tokens have the prefix, legacy tokens don't but are handled separately)
 	isNewPAT := strings.HasPrefix(secret, patPrefix)
+	log.Errorf("PAT middleware: secret prefix check isNewPAT=%v, prefix=%.10s, patPrefix=%.10s", isNewPAT, secret, patPrefix)
 	if !isNewPAT {
-		log.Debugf("PAT middleware: secret doesn't have PAT prefix, skipping")
-		// For legacy PATs (migrated CLI secrets), we could handle them here
-		// For now, skip and let oidcCli or other handlers deal with it
+		log.Errorf("PAT middleware: secret doesn't have PAT prefix, returning nil")
 		return nil
 	}
 
