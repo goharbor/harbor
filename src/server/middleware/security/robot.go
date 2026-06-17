@@ -44,8 +44,10 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
+	strippedName := strings.TrimPrefix(name, config.RobotPrefix(req.Context()))
+	log.Errorf("ROBOT middleware: looking up robot with name=%s (stripped from %s)", strippedName, name)
 	robots, err := robot_ctl.Ctl.List(req.Context(), q.New(q.KeyWords{
-		"name": strings.TrimPrefix(name, config.RobotPrefix(req.Context())),
+		"name": strippedName,
 	}), &robot_ctl.Option{
 		WithPermission: true,
 	})
@@ -53,13 +55,17 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to list robots: %v", err)
 		return nil
 	}
+	log.Errorf("ROBOT middleware: found %d robots for name=%s", len(robots), strippedName)
 	if len(robots) == 0 {
 		log.Errorf("ROBOT middleware: no robots found for name=%s", name)
 		return nil
 	}
 
 	robot := robots[0]
-	if utils.Encrypt(secret, robot.Salt, utils.SHA256) != robot.Secret {
+	log.Errorf("ROBOT middleware: comparing secret, input_len=%d, stored_secret_len=%d", len(secret), len(robot.Secret))
+	hashed := utils.Encrypt(secret, robot.Salt, utils.SHA256)
+	log.Errorf("ROBOT middleware: hashed input=%.20s..., stored=%.20s..., match=%v", hashed, robot.Secret, hashed == robot.Secret)
+	if hashed != robot.Secret {
 		log.Errorf("failed to authenticate robot account: %s", name)
 		return nil
 	}
