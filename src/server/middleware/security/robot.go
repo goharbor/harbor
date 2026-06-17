@@ -32,11 +32,15 @@ type robot struct{}
 
 func (r *robot) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
+	log.Errorf("=== ROBOT MIDDLEWARE INVOKED ===")
 	name, secret, ok := req.BasicAuth()
 	if !ok {
+		log.Errorf("ROBOT middleware: no basic auth")
 		return nil
 	}
+	log.Errorf("ROBOT middleware: checking username=%s", name)
 	if !strings.HasPrefix(name, config.RobotPrefix(req.Context())) {
+		log.Errorf("ROBOT middleware: username doesn't have robot$ prefix")
 		return nil
 	}
 	// The robot name can be used as the unique identifier to locate robot as it contains the project name.
@@ -50,6 +54,7 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		return nil
 	}
 	if len(robots) == 0 {
+		log.Errorf("ROBOT middleware: no robots found for name=%s", name)
 		return nil
 	}
 
