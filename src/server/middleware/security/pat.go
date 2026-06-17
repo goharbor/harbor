@@ -47,7 +47,7 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	log.Debugf("=== PAT MIDDLEWARE: got username=%s, secret prefix=%s ===", username, secret[:min(10, len(secret))])
+	log.Errorf("=== PAT MIDDLEWARE: got username=%s, secret prefix=%s ===", username, secret[:min(10, len(secret))])
 
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
@@ -64,16 +64,16 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	log.Debugf("PAT middleware: verified PAT prefix, looking up user=%s", username)
+	log.Errorf("PAT middleware: verified PAT prefix, looking up user=%s", username)
 
 	// Lookup the user
 	u, err := user.Ctl.GetByName(ctx, username)
 	if err != nil {
-		log.Debugf("failed to get user %s for PAT verification: %v", username, err)
+		log.Errorf("failed to get user %s for PAT verification: %v", username, err)
 		return nil
 	}
 
-	log.Debugf("PAT middleware: found user ID=%d", u.UserID)
+	log.Errorf("PAT middleware: found user ID=%d", u.UserID)
 
 	// Remove the prefix from the secret for comparison
 	secretWithoutPrefix := strings.TrimPrefix(secret, patPrefix)
@@ -81,11 +81,11 @@ func (p *pat) Generate(req *http.Request) security.Context {
 	// Query all non-disabled, non-legacy PATs for this user
 	pats, err := pat_ctl.Ctl.List(ctx, q.New(q.KeyWords{"user_id": u.UserID, "disabled": false, "is_legacy": false}))
 	if err != nil {
-		log.Debugf("failed to list PATs for user %d: %v", u.UserID, err)
+		log.Errorf("failed to list PATs for user %d: %v", u.UserID, err)
 		return nil
 	}
 
-	log.Debugf("PAT middleware: found %d PATs for user %d", len(pats), u.UserID)
+	log.Errorf("PAT middleware: found %d PATs for user %d", len(pats), u.UserID)
 
 	now := time.Now().Unix()
 
@@ -109,7 +109,7 @@ func (p *pat) Generate(req *http.Request) security.Context {
 			_ = pat_ctl.Ctl.Update(bgCtx, t, "last_used_at")
 		}(token)
 
-		log.Debugf("PAT authentication successful for user %s", username)
+		log.Errorf("PAT authentication successful for user %s", username)
 		return local.NewSecurityContext(u)
 	}
 
