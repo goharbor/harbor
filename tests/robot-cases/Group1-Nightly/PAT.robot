@@ -15,8 +15,8 @@
 *** Settings ***
 Documentation  Personal Access Token (PAT) Tests
 Resource  ../../resources/Util.robot
-Suite Setup  Install Harbor to Test Server
-Suite Teardown  Down Harbor
+Suite Setup  Log To Console  \nUsing existing Harbor instance at ${HARBOR_URL}
+Suite Teardown  Log To Console  \nPAT test suite completed
 Default Tags  PAT
 
 *** Variables ***
@@ -30,14 +30,19 @@ Test Case - Admin Create PAT With Expiry
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
-    # Navigate to account settings
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Account Settings')]
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
+    # Navigate to account settings - click user dropdown
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+
+    # Click Account Settings (first dropdown item)
+    Wait Until Element Is Visible  xpath=//a[@clrDropdownItem]
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
 
     # Click PAT tab
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Click Create button
     Wait Until Element Is Visible  xpath=//button[contains(text(), 'Create Token')]
@@ -75,10 +80,13 @@ Test Case - PAT List Shows Creation And Expiration Dates
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
     # Navigate to PAT section
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Create a PAT with expiry
     Click Element  xpath=//button[contains(text(), 'Create Token')]
@@ -112,10 +120,13 @@ Test Case - Refresh PAT Secret
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
     # Navigate to PAT section
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Create initial PAT
     Click Element  xpath=//button[contains(text(), 'Create Token')]
@@ -144,10 +155,13 @@ Test Case - PAT Enable And Disable
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
     # Navigate to PAT section
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Create PAT
     Click Element  xpath=//button[contains(text(), 'Create Token')]
@@ -184,10 +198,13 @@ Test Case - Delete PAT
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
     # Navigate to PAT section
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Create PAT to delete
     Click Element  xpath=//button[contains(text(), 'Create Token')]
@@ -275,10 +292,13 @@ Test Case - PAT Never Expires
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
 
     # Navigate to PAT section
-    Click Element  xpath=//*[@id='user-profile-menu']
-    Click Element  xpath=//*[contains(text(), 'Account Settings')]
-    Wait Until Element Is Visible  xpath=//*[contains(text(), 'Personal Access Tokens')]
-    Click Element  xpath=//*[contains(text(), 'Personal Access Tokens')]
+    Click Element  xpath=//button[@class='nav-text']
+    Sleep  1s
+    Click Element  xpath=(//a[@clrDropdownItem])[1]
+    Sleep  2s
+    Wait Until Element Is Visible  xpath=//button[contains(., 'Personal Access Tokens')]
+    Click Element  xpath=//button[contains(., 'Personal Access Tokens')]
+    Sleep  2s
 
     # Create PAT with 0 expiry (never expires)
     Click Element  xpath=//button[contains(text(), 'Create Token')]
