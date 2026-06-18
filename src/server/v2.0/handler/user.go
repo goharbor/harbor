@@ -208,9 +208,7 @@ func (u *usersAPI) UpdatePersonalAccessToken(ctx context.Context, params operati
 	if params.Request.Description != "" {
 		pat.Description = params.Request.Description
 	}
-	if params.Request.Disabled {
-		pat.Disabled = params.Request.Disabled
-	}
+	pat.Disabled = params.Request.Disabled
 	if err := u.patCtl.Update(ctx, pat); err != nil {
 		return u.SendError(ctx, err)
 	}
