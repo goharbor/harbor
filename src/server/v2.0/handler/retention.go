@@ -215,7 +215,7 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 
 func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.UpdateRetentionParams) middleware.Responder {
 	rp := model.NewRetentionPolicyFromSwagger(params.Policy)
-	if rp == nil {
+	if rp == nil || rp.Metadata == nil || rp.Metadata.Scope == nil || rp.Metadata.Trigger == nil {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("invalid retention policy")))
 	}
 	p := rp.Metadata
