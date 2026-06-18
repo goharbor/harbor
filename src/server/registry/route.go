@@ -40,7 +40,7 @@ func RegisterRoutes() {
 		Method(http.MethodGet).
 		Path("/").
 		Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).
-		HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
 			w.WriteHeader(http.StatusOK)
 		})
