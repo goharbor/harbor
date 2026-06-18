@@ -313,14 +313,14 @@
                                             !supportedFilterLabels?.length ) {
                                             <button
                                                 type="button"
-                                                class="dropdown-item space-between no-labels">
+                                                class="dropdown-item space-between no-labels"
+                                                (click)="goToLabels()">
                                                 <span class="alert-label">{{
                                                     'REPLICATION.NO_LABEL_INFO'
                                                         | translate
                                                 }}</span>
                                                 <span
                                                     class="alert-label go-link"
-                                                    routerLink="/harbor/labels"
                                                     >{{
                                                         'CONFIG.LABEL'
                                                             | translate
