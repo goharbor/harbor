@@ -160,6 +160,9 @@ func (r *retentionAPI) GetRetention(ctx context.Context, params operation.GetRet
 
 func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.CreateRetentionParams) middleware.Responder {
 	p := model.NewRetentionPolicyFromSwagger(params.Policy).Metadata
+	if p == nil || p.Scope == nil || p.Trigger == nil {
+		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("missing required fields in retention policy: scope, trigger")))
+	}
 	if len(p.Rules) > 15 {
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("only 15 rules are allowed at most")))
 	}
