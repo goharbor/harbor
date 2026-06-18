@@ -92,7 +92,7 @@ func (p *pat) Generate(req *http.Request) security.Context {
 
 		// Verify the secret
 		hashedSecret := utils.Encrypt(secretWithoutPrefix, token.Salt, utils.SHA256)
-		log.Debugf("PAT middleware: PAT #%d - input_hash=%.20s..., stored_hash=%.20s..., match=%v", 
+		log.Debugf("PAT middleware: PAT #%d - input_hash=%.20s..., stored_hash=%.20s..., match=%v",
 			i, hashedSecret, token.Secret, hashedSecret == token.Secret)
 		if hashedSecret != token.Secret {
 			continue
