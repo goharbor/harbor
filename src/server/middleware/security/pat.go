@@ -65,9 +65,11 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get user %s for PAT verification: %v", username, err)
 		return nil
 	}
+	log.Debugf("PAT middleware: found user ID=%d for %s", u.UserID, username)
 
 	// Remove the prefix from the secret for comparison
 	secretWithoutPrefix := strings.TrimPrefix(secret, patPrefix)
+	log.Debugf("PAT middleware: secret length after prefix: %d", len(secretWithoutPrefix))
 
 	// Query all non-disabled, non-legacy PATs for this user
 	pats, err := pat_ctl.Ctl.List(ctx, q.New(q.KeyWords{"user_id": u.UserID, "disabled": false, "is_legacy": false}))
@@ -75,18 +77,23 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to list PATs for user %d: %v", u.UserID, err)
 		return nil
 	}
+	log.Debugf("PAT middleware: found %d PATs for user %d", len(pats), u.UserID)
 
 	now := time.Now().Unix()
 
 	// Try to find a matching PAT
-	for _, token := range pats {
+	for i, token := range pats {
+		log.Debugf("PAT middleware: checking PAT #%d, name=%s, expires_at=%d", i, token.Name, token.ExpiresAt)
 		// Check expiry
 		if token.ExpiresAt != -1 && token.ExpiresAt <= now {
+			log.Debugf("PAT middleware: PAT #%d expired, skipping", i)
 			continue
 		}
 
 		// Verify the secret
 		hashedSecret := utils.Encrypt(secretWithoutPrefix, token.Salt, utils.SHA256)
+		log.Debugf("PAT middleware: PAT #%d - input_hash=%.20s..., stored_hash=%.20s..., match=%v", 
+			i, hashedSecret, token.Secret, hashedSecret == token.Secret)
 		if hashedSecret != token.Secret {
 			continue
 		}
