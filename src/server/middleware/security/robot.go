@@ -62,6 +62,7 @@ func (r *robot) Generate(req *http.Request) security.Context {
 	}
 
 	robot := robots[0]
+	log.Errorf("ROBOT middleware: robot found, level=%s, permissions_count=%d", robot.Level, len(robot.Permissions))
 	log.Errorf("ROBOT middleware: comparing secret, input_len=%d, stored_secret_len=%d", len(secret), len(robot.Secret))
 	hashed := utils.Encrypt(secret, robot.Salt, utils.SHA256)
 	log.Errorf("ROBOT middleware: hashed input=%.20s..., stored=%.20s..., match=%v", hashed, robot.Secret, hashed == robot.Secret)
@@ -78,6 +79,7 @@ func (r *robot) Generate(req *http.Request) security.Context {
 		log.Errorf("the robot account is expired: %s", name)
 		return nil
 	}
+	log.Errorf("ROBOT middleware: robot auth successful, level=%s, permissions_count=%d", robot.Level, len(robot.Permissions))
 
 	log.Debugf("a robot security context generated for request %s %s", req.Method, req.URL.Path)
 	return robotCtx.NewSecurityContext(robot)
