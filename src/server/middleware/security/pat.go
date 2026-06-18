@@ -44,6 +44,8 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
+	log.Debugf("PAT middleware: username=%s, secret_prefix=%.20s", username, secret)
+
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
 		return nil
@@ -51,8 +53,11 @@ func (p *pat) Generate(req *http.Request) security.Context {
 
 	// Check if this is a PAT (new tokens have the prefix, legacy tokens don't but are handled separately)
 	if !strings.HasPrefix(secret, patPrefix) {
+		log.Debugf("PAT middleware: secret doesn't have prefix %q, skipping", patPrefix)
 		return nil
 	}
+
+	log.Debugf("PAT middleware: found PAT with prefix, verifying...")
 
 	// Lookup the user
 	u, err := user.Ctl.GetByName(ctx, username)
