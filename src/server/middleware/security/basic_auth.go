@@ -15,13 +15,16 @@
 package security
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -63,6 +66,17 @@ func (b *basicAuth) Generate(req *http.Request) security.Context {
 	if !ok {
 		return nil
 	}
+
+	// Check if this is a robot account trying to auth in OIDC mode
+	// Robot accounts should use token auth, not basic auth
+	if strings.HasPrefix(username, config.RobotPrefix(req.Context())) {
+		authMode, err := config.AuthMode(context.Background())
+		if err == nil && (authMode == "oidc_auth" || authMode == "uaa_auth") {
+			log.WithField("client IP", GetClientIP(req)).WithField("user agent", GetUserAgent(req)).Warningf("robot account %s attempted basic auth in OIDC mode - robot accounts should use token authentication", username)
+			return nil
+		}
+	}
+
 	user, err := auth.Login(req.Context(), models.AuthModel{
 		Principal: username,
 		Password:  password,
