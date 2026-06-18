@@ -37,10 +37,13 @@ type pat struct{}
 
 func (p *pat) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
-	log := log.G(ctx)
+	log := log.G(req.Context())
+
+	log.Debugf("=== PAT MIDDLEWARE INVOKED ===")
 
 	username, secret, ok := req.BasicAuth()
 	if !ok {
+		log.Debugf("PAT middleware: no BasicAuth credentials")
 		return nil
 	}
 
