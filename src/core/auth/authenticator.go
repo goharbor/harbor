@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
@@ -139,7 +140,11 @@ func Login(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if authMode == "" || IsSuperUser(ctx, m.Principal) {
+	// Use DB auth for robot accounts - they are stored in Harbor DB regardless of auth mode
+	robotPrefix := config.RobotPrefix(ctx)
+	if strings.HasPrefix(m.Principal, robotPrefix) {
+		authMode = common.DBAuth
+	} else if authMode == "" || IsSuperUser(ctx, m.Principal) {
 		authMode = common.DBAuth
 	}
 	log.Debug("Current AUTH_MODE is ", authMode)
