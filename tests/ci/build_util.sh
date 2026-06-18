@@ -71,9 +71,6 @@ function publishImageGhcr {
     fi
 
     echo "Publishing images to ghcr.io/${ghcr_user}..."
-    echo "Version: $version"
-    echo "Image tag: $image_tag"
-    echo "Arch suffix: $arch_suffix"
     set +x
     printf '%s\n' "$ghcr_token" | docker login ghcr.io --username "$ghcr_user" --password-stdin
     set -x

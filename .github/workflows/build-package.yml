@@ -7,74 +7,8 @@ on:
     branches:
       - develop
       - release-*
-  workflow_dispatch:
-    inputs:
-      force_build_base:
-        description: 'Force rebuild of base images'
-        required: false
-        default: 'false'
-        type: boolean
-
-# Serialize runs per branch so concurrent pushes don't race when pushing the
-# shared mutable tags (dev / latest) and the multi-arch manifests. Queue rather
-# than cancel to avoid leaving a half-published set of images.
-concurrency:
-  group: build-package-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  BUILD_BASE_IMAGE:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      build_base: ${{ steps.decide.outputs.build_base || 'false' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: jitterbit/get-changed-files@v1
-        id: changed-files
-        continue-on-error: true
-        with:
-          format: space-delimited
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Decide whether to (re)build the base image
-        id: decide
-        if: |
-            github.event.inputs.force_build_base == 'true' ||
-            steps.changed-files.outcome != 'success' ||
-            contains(steps.changed-files.outputs.modified, 'common/Dockerfile') ||
-            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
-            contains(steps.changed-files.outputs.modified, 'VERSION') ||
-            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
-            github.ref == 'refs/heads/main'
-        run: echo "build_base=true" >> "$GITHUB_OUTPUT"
-      - name: Set up QEMU
-        if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-qemu-action@v3
-        with:
-          # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
-          # has shipped broken releases that fail arm64 emulation with
-          # 'exec /bin/sh: no such file or directory' during container init.
-          image: tonistiigi/binfmt:qemu-v9.2.2
-          platforms: linux/amd64,linux/arm64
-      - name: Set up Docker Buildx
-        if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-buildx-action@v3
-      - name: Build and push goharbor/photon:5.0 multi-arch manifest
-        if: steps.decide.outputs.build_base == 'true'
-        run: |
-          set -x
-          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
-            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          fi
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
-          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
-            docker logout
-          fi
-
   BUILD_PACKAGE:
-    needs: [BUILD_BASE_IMAGE]
     strategy:
       fail-fast: false
       matrix:
@@ -85,13 +19,12 @@ jobs:
     env:
         BUILD_PACKAGE: true
         ARCH: ${{ matrix.arch }}
-        BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - name: Set up Go 1.22
         uses: actions/setup-go@v5
         with:
-          go-version: 1.26.3
+          go-version: 1.23.2
         id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
@@ -101,7 +34,6 @@ jobs:
       - uses: actions/checkout@v6
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
-        continue-on-error: true
         with:
           format: space-delimited
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,9 +42,9 @@ jobs:
           path: src/github.com/goharbor/harbor
       - name: Build Base Image
         if: |
-            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, 'Dockerfile.base')) ||
-            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, 'VERSION')) ||
-            (steps.changed-files.outputs.modified != '' && contains(steps.changed-files.outputs.modified, '.buildbaselog')) ||
+            contains(steps.changed-files.outputs.modified, 'Dockerfile.base') ||
+            contains(steps.changed-files.outputs.modified, 'VERSION') ||
+            contains(steps.changed-files.outputs.modified, '.buildbaselog') ||
             github.ref == 'refs/heads/develop'
         continue-on-error: true
         run: |
@@ -157,26 +89,11 @@ jobs:
           if [ -z "$BUILD_BASE"  ] || [ "$BUILD_BASE" != "true"  ]; then
             echo "Do not need to build base images!"
           else
-            # Use the locally built per-arch base, not the remote ":<tag>" manifest,
-            # which is only updated later in CREATE_MANIFEST and may be stale.
-            build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=false PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+            build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=true PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
           fi
 
           sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
           sudo make package_online ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
-
-          # fail before publishing if any image was built on a wrong-arch
-          # base (e.g. a stale base pulled from Docker Hub), which produces an
-          # image labeled ${ARCH} but containing binaries of another arch.
-          expected_base_arch=$([ "${ARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64")
-          for img in $(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^goharbor/' | grep -- "${Harbor_Assets_Version}" | grep -v '\-base'); do
-            base_label=$(docker inspect --format '{{index .Config.Labels "name"}}' "$img")
-            if [ -n "$base_label" ] && [[ "$base_label" != *"$expected_base_arch"* ]]; then
-              echo "ERROR: $img is built on a wrong-arch base: '$base_label' (expected *$expected_base_arch*)"
-              exit 1
-            fi
-          done
-
           harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
           harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
           mv "${harbor_offline_build_bundle}" "harbor-offline-installer-${Harbor_Package_Version}-${ARCH}.tgz"
@@ -191,26 +108,12 @@ jobs:
           publishImageGhcr $target_branch $Harbor_Assets_Version "${{ github.repository_owner }}" "${{ secrets.GITHUB_TOKEN }}" ${ARCH}
       - name: Save repo list
         run: |
-          { docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | grep -v '^goharbor/photon$' | grep -v '^goharbor/spectral$' | grep -v '^goharbor/swagger$' | grep -v '^goharbor/mockery$' || true; } | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
-          # base images are pushed arch-suffixed by the _build_base make macro
-          # and combined into multi-arch manifests by CREATE_MANIFEST. Derive the
-          # list from the Dockerfile.base directories (the source of truth) so it
-          # stays correct regardless of local image cleanup behavior.
-          if [ "$BUILD_BASE" = "true" ]; then
-            for d in make/photon/*/Dockerfile.base; do
-              component=$(basename "$(dirname "$d")")
-              echo "goharbor/harbor-${component}-base"
-            done | sort -u > "$GITHUB_WORKSPACE/_base_repos_${ARCH}.txt"
-          else
-            : > "$GITHUB_WORKSPACE/_base_repos_${ARCH}.txt"
-          fi
+          docker images --format '{{.Repository}}' | grep '^goharbor/' | grep -v '\-base' | sort -u > "$GITHUB_WORKSPACE/_repos_${ARCH}.txt"
       - name: Upload repo list
         uses: actions/upload-artifact@v4
         with:
           name: repos-${{ matrix.arch }}
-          path: |
-            ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
-            ${{ github.workspace }}/_base_repos_${{ matrix.arch }}.txt
+          path: ${{ github.workspace }}/_repos_${{ matrix.arch }}.txt
       - name: Save ghcr.io repo list
         run: |
           docker images --format '{{.Repository}}' | grep "^ghcr.io/${{ github.repository_owner }}/" | sort -u > "$GITHUB_WORKSPACE/_ghcr_repos_${ARCH}.txt"
@@ -221,7 +124,7 @@ jobs:
           path: ${{ github.workspace }}/_ghcr_repos_${{ matrix.arch }}.txt
 
   CREATE_MANIFEST:
-    needs: [BUILD_BASE_IMAGE, BUILD_PACKAGE]
+    needs: [BUILD_PACKAGE]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -250,81 +153,31 @@ jobs:
           else
             echo "image_tag=${version}" >> $GITHUB_OUTPUT
           fi
-          # base images use BASEIMAGETAG (see Harbor_Build_Base_Tag in BUILD_PACKAGE):
-          # "dev" on main, the release version on release-* branches
-          if [[ $target_branch == "release-"* ]]; then
-            echo "base_tag=${version}" >> $GITHUB_OUTPUT
-          else
-            echo "base_tag=dev" >> $GITHUB_OUTPUT
-          fi
       - name: Login to Docker Hub
-        run: |
-          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
-            echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          fi
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
       - name: Create multi-arch manifests
         run: |
-          if [ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]; then
-            set -euo pipefail
-            image_tag="${{ steps.tag.outputs.image_tag }}"
-            cat _repos_*.txt | sort -u | while IFS= read -r repo; do
-              [ -z "$repo" ] && continue
-              echo "Creating manifest ${repo}:${image_tag}"
-              docker buildx imagetools create -t "${repo}:${image_tag}" \
-                "${repo}:${image_tag}-amd64" \
-                "${repo}:${image_tag}-arm64"
-            done
-            # The harbor-*-base images are only (re)built and pushed (arch-suffixed)
-            # when BUILD_BASE_IMAGE decided to rebuild the base; otherwise the
-            # suffixed tags from this run don't exist and there is nothing to combine.
-            if [ "${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}" = "true" ]; then
-              base_tag="${{ steps.tag.outputs.base_tag }}"
-              cat _base_repos_*.txt | sort -u | while IFS= read -r repo; do
-                [ -z "$repo" ] && continue
-                echo "Creating manifest ${repo}:${base_tag}"
-                docker buildx imagetools create -t "${repo}:${base_tag}" \
-                  "${repo}:${base_tag}-amd64" \
-                  "${repo}:${base_tag}-arm64"
-              done
-            fi
-            docker logout
-          fi
+          set -euo pipefail
+          image_tag="${{ steps.tag.outputs.image_tag }}"
+          cat _repos_*.txt | sort -u | while IFS= read -r repo; do
+            [ -z "$repo" ] && continue
+            echo "Creating manifest ${repo}:${image_tag}"
+            docker buildx imagetools create -t "${repo}:${image_tag}" \
+              "${repo}:${image_tag}-amd64" \
+              "${repo}:${image_tag}-arm64"
+          done
+          docker logout
       - name: Login to ghcr.io
         run: printf '%s\n' "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
       - name: Create ghcr.io multi-arch manifests
         run: |
           set -euo pipefail
           image_tag="${{ steps.tag.outputs.image_tag }}"
-          failed_count=0
-
           cat _ghcr_repos_*.txt | sort -u | while IFS= read -r repo; do
             [ -z "$repo" ] && continue
             echo "Creating manifest ${repo}:${image_tag}"
-
-            # Verify both architecture images exist before creating manifest
-            amd64_exists=false
-            arm64_exists=false
-
-            if docker manifest inspect "${repo}:${image_tag}-amd64" > /dev/null 2>&1; then
-              amd64_exists=true
-            else
-              echo "⚠️  WARNING: amd64 image not found: ${repo}:${image_tag}-amd64"
-            fi
-
-            if docker manifest inspect "${repo}:${image_tag}-arm64" > /dev/null 2>&1; then
-              arm64_exists=true
-            else
-              echo "⚠️  WARNING: arm64 image not found: ${repo}:${image_tag}-arm64"
-            fi
-
-            # Create manifest if both images exist
-            if [ "$amd64_exists" = true ] && [ "$arm64_exists" = true ]; then
-              docker buildx imagetools create -t "${repo}:${image_tag}" \
-                "${repo}:${image_tag}-amd64" \
-                "${repo}:${image_tag}-arm64" || echo "⚠️  Failed to create manifest for ${repo}:${image_tag}"
-            else
-              echo "⚠️  Skipping manifest creation for $repo (missing architecture images)"
-            fi
+            docker buildx imagetools create -t "${repo}:${image_tag}" \
+              "${repo}:${image_tag}-amd64" \
+              "${repo}:${image_tag}-arm64"
           done
-
           docker logout ghcr.io
