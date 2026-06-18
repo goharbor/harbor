@@ -59,13 +59,10 @@ func GetUserAgent(r *http.Request) string {
 
 func (b *basicAuth) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	log.Errorf("=== BASIC_AUTH MIDDLEWARE INVOKED ===")
 	username, password, ok := req.BasicAuth()
 	if !ok {
-		log.Errorf("BASIC_AUTH: no credentials")
 		return nil
 	}
-	log.Errorf("BASIC_AUTH: attempting for user=%s", username)
 	user, err := auth.Login(req.Context(), models.AuthModel{
 		Principal: username,
 		Password:  password,

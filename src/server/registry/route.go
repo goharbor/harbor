@@ -35,6 +35,15 @@ func RegisterRoutes() {
 	root := router.NewRoute().
 		Path("/v2").
 		Middleware(v2auth.Middleware())
+	// Base /v2/ endpoint - returns 200 after auth check
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/").
+		Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).
+		HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
+			w.WriteHeader(http.StatusOK)
+		})
 	// catalog
 	root.NewRoute().
 		Method(http.MethodGet).

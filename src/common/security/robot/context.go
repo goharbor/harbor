@@ -90,10 +90,11 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 		var accesses []*types.Policy
 		for _, p := range s.robot.Permissions {
 			for _, a := range p.Access {
+				policyRes := getPolicyResource(p, a)
 				accesses = append(accesses, &types.Policy{
 					Action:   a.Action,
 					Effect:   a.Effect,
-					Resource: types.Resource(getPolicyResource(p, a)),
+					Resource: types.Resource(policyRes),
 				})
 			}
 		}
@@ -120,7 +121,8 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			s.evaluator = rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForPolicies(s.GetUsername(), accesses, filterRobotPolicies))
 		}
 	})
-	return s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
+	res := s.evaluator != nil && s.evaluator.HasPermission(ctx, resource, action)
+	return res
 }
 
 func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.Policy {

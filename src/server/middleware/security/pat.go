@@ -39,32 +39,20 @@ func (p *pat) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
 	log := log.G(ctx)
 
-	log.Errorf("=== PAT MIDDLEWARE INVOKED ===")
-
 	username, secret, ok := req.BasicAuth()
-	log.Errorf("PAT middleware: BasicAuth ok=%v, username=%s, hasSecret=%v", ok, username, secret != "")
 	if !ok {
-		log.Errorf("PAT middleware: no basic auth found - returning nil")
 		return nil
 	}
 
-	log.Errorf("=== PAT MIDDLEWARE: got username=%s, secret prefix=%.10s ===", username, secret)
-
 	// Skip robot accounts - they are handled by the robot middleware
 	if strings.HasPrefix(username, config.RobotPrefix(ctx)) {
-		log.Errorf("PAT middleware: skipping robot account prefix=%s, returning nil", config.RobotPrefix(ctx))
 		return nil
 	}
 
 	// Check if this is a PAT (new tokens have the prefix, legacy tokens don't but are handled separately)
-	isNewPAT := strings.HasPrefix(secret, patPrefix)
-	log.Errorf("PAT middleware: secret prefix check isNewPAT=%v, prefix=%.10s, patPrefix=%.10s", isNewPAT, secret, patPrefix)
-	if !isNewPAT {
-		log.Errorf("PAT middleware: secret doesn't have PAT prefix, returning nil")
+	if !strings.HasPrefix(secret, patPrefix) {
 		return nil
 	}
-
-	log.Errorf("PAT middleware: verified PAT prefix, looking up user=%s", username)
 
 	// Lookup the user
 	u, err := user.Ctl.GetByName(ctx, username)
@@ -72,8 +60,6 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get user %s for PAT verification: %v", username, err)
 		return nil
 	}
-
-	log.Errorf("PAT middleware: found user ID=%d", u.UserID)
 
 	// Remove the prefix from the secret for comparison
 	secretWithoutPrefix := strings.TrimPrefix(secret, patPrefix)
@@ -84,8 +70,6 @@ func (p *pat) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to list PATs for user %d: %v", u.UserID, err)
 		return nil
 	}
-
-	log.Errorf("PAT middleware: found %d PATs for user %d", len(pats), u.UserID)
 
 	now := time.Now().Unix()
 
@@ -109,7 +93,6 @@ func (p *pat) Generate(req *http.Request) security.Context {
 			_ = pat_ctl.Ctl.Update(bgCtx, t, "last_used_at")
 		}(token)
 
-		log.Errorf("PAT authentication successful for user %s", username)
 		return local.NewSecurityContext(u)
 	}
 
