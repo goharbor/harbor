@@ -102,13 +102,11 @@ func getRegistryToken() string {
 		return tokenCache.data.token
 	}
 
-	urls := []string{
-		config.InternalCoreURL(),
-		config.LocalCoreURL(),
-	}
+	urls := []string{}
 	if extURL, err := config.ExtEndpoint(); err == nil && extURL != "" {
-		urls = append(urls, extURL)
+		urls = append(urls, strings.TrimSuffix(extURL, "/"))
 	}
+	urls = append(urls, config.InternalCoreURL())
 
 	for _, baseURL := range urls {
 		if baseURL == "" {
