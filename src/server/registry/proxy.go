@@ -16,6 +16,7 @@ package registry
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -43,17 +44,17 @@ var tokenCache = struct {
 
 func newProxy() http.Handler {
 	regURL, _ := config.RegistryURL()
-	url, err := url.Parse(regURL)
+	u, err := url.Parse(regURL)
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse the URL of registry: %v", err))
 	}
-	proxy := httputil.NewSingleHostReverseProxy(url)
+	p := httputil.NewSingleHostReverseProxy(u)
 	if commonhttp.InternalTLSEnabled() {
-		proxy.Transport = commonhttp.GetHTTPTransport()
+		p.Transport = commonhttp.GetHTTPTransport()
 	}
 
-	proxy.Director = authDirector(proxy.Director)
-	return proxy
+	p.Director = authDirector(p.Director)
+	return p
 }
 
 func authDirector(d func(*http.Request)) func(*http.Request) {
@@ -63,15 +64,12 @@ func authDirector(d func(*http.Request)) func(*http.Request) {
 			return
 		}
 
-		// Check if registry uses token-based auth (OIDC mode)
 		if usesTokenAuth() {
-			// Use Bearer token
 			tk := getRegistryToken()
 			if tk != "" {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", tk))
 			}
 		} else {
-			// Use basic auth (legacy mode)
 			u, p := config.RegistryCredential()
 			r.SetBasicAuth(u, p)
 		}
@@ -85,8 +83,6 @@ func usesTokenAuth() bool {
 		log.Warningf("failed to get auth mode: %v, defaulting to basic auth", err)
 		return false
 	}
-	// OIDC auth mode requires token-based authentication to registry
-	// Also check for UAA auth which also uses tokens
 	return authMode == "oidc_auth" || authMode == "uaa_auth"
 }
 
@@ -102,68 +98,64 @@ func getRegistryToken() string {
 	tokenCache.mu.Lock()
 	defer tokenCache.mu.Unlock()
 
-	// Double-check after acquiring write lock
 	if tokenCache.data.token != "" && time.Now().Before(tokenCache.data.expires) {
 		return tokenCache.data.token
 	}
 
-	// Generate token using the internal token service
-	// We create a request to the token service and use the existing creator
-	coreURL := config.InternalCoreURL()
-	if coreURL == "" {
-		log.Errorf("failed to get internal core URL")
-		// Fall back to external URL
-		coreURL, _ = config.ExtEndpoint()
+	urls := []string{
+		config.InternalCoreURL(),
+		config.LocalCoreURL(),
+	}
+	if extURL, err := config.ExtEndpoint(); err == nil && extURL != "" {
+		urls = append(urls, extURL)
 	}
 
-	tokenURL := fmt.Sprintf("%s/service/token?service=harbor-registry&scope=repository:*:pull,push", coreURL)
-	tokenURL = strings.TrimSuffix(tokenURL, "/")
+	for _, baseURL := range urls {
+		if baseURL == "" {
+			continue
+		}
+		tokenURL := fmt.Sprintf("%s/service/token?service=harbor-registry&scope=repository:*:pull,push", strings.TrimSuffix(baseURL, "/"))
 
-	req, err := http.NewRequest(http.MethodGet, tokenURL, nil)
-	if err != nil {
-		log.Errorf("failed to create token request: %v", err)
-		return ""
-	}
+		req, err := http.NewRequest(http.MethodGet, tokenURL, nil)
+		if err != nil {
+			log.Warningf("failed to create token request for %s: %v", baseURL, err)
+			continue
+		}
 
-	// Add basic auth from registry credentials to authenticate with token service
-	// This is the same credentials used to access Harbor UI/API
-	username, password := config.RegistryCredential()
-	if username != "" && password != "" {
-		req.SetBasicAuth(username, password)
-	}
+		username, password := config.RegistryCredential()
+		if username != "" && password != "" {
+			req.SetBasicAuth(username, password)
+		}
 
-	// Make the request to get the token
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Errorf("failed to get token from token service: %v", err)
-		return ""
-	}
-	defer resp.Body.Close()
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Warningf("failed to get token from %s: %v", baseURL, err)
+			continue
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		log.Errorf("token service returned status %d", resp.StatusCode)
-		return ""
-	}
+		if resp.StatusCode != http.StatusOK {
+			log.Warningf("token service at %s returned status %d", baseURL, resp.StatusCode)
+			continue
+		}
 
-	// Read the body
-	buf := make([]byte, 1024)
-	n, _ := resp.Body.Read(buf)
-	if n > 0 {
-		// Try to parse as JSON
-		if strings.Contains(string(buf[:n]), "token") {
-			// Simple parsing - extract token from JSON
-			tokenStart := strings.Index(string(buf[:n]), `"token":"`) + 8
-			tokenEnd := strings.Index(string(buf[:n])[tokenStart:], `"`)
-			if tokenStart > 7 && tokenEnd > 0 {
-				tokenCache.data.token = string(buf[:n])[tokenStart : tokenStart+tokenEnd]
-				tokenCache.data.expires = time.Now().Add(30 * time.Minute)
-				return tokenCache.data.token
-			}
+		var tokenResp struct {
+			Token string `json:"token"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
+			log.Warningf("failed to decode token response from %s: %v", baseURL, err)
+			continue
+		}
+
+		if tokenResp.Token != "" {
+			tokenCache.data.token = tokenResp.Token
+			tokenCache.data.expires = time.Now().Add(30 * time.Minute)
+			return tokenResp.Token
 		}
 	}
 
-	log.Errorf("failed to parse token response")
+	log.Error("failed to get token from any token service endpoint")
 	return ""
 }
 
