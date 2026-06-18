@@ -23,10 +23,8 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AppConfigService } from '../../../../services/app-config.service';
-import { ProjectRootInterface } from '../../../../shared/services';
 import {
     GroupType,
-    PROJECT_ROOTS,
 } from '../../../../shared/entities/shared.const';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { UsergroupService } from '../../../../../../ng-swagger-gen/services/usergroup.service';
@@ -35,6 +33,9 @@ import { UserGroup } from 'ng-swagger-gen/models/user-group';
 import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { Role } from '../../../../../../ng-swagger-gen/models/role';
+
 
 @Component({
     selector: 'add-group',
@@ -43,7 +44,7 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
     standalone: false,
 })
 export class AddGroupComponent implements OnInit, OnDestroy {
-    projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
+    //projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
     memberGroup: UserGroup = {
         group_name: '',
     };
@@ -59,6 +60,7 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     inlineAlert: InlineAlertComponent;
 
     @Input() projectId: number;
+    @Input() assignableRoleIds: Set<number> | null = null;
     @Output() added = new EventEmitter<boolean>();
 
     checkOnGoing: boolean = false;
@@ -72,13 +74,27 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     groupTooltip: string = 'MEMBER.GROUP_NAME_REQUIRED';
     isNameChecked: boolean = false; // this is only for LDAP mode
     constructor(
+        private roleService: RoleService,
         private memberService: MemberService,
         private appConfigService: AppConfigService,
         private messageHandlerService: MessageHandlerService,
         private userGroupService: UsergroupService
     ) {}
 
+    roles: Role[];
+    roleSub: Subscription;
+
     ngOnInit(): void {
+        this.roleSub = this.roleService.ListRole({
+                        page: 1,
+                        pageSize: 100
+                    }).subscribe(res => {
+            if (res) {
+                this.roles = res;
+            }
+        });
+
+        
         if (!this.groupCheckerSub) {
             this.groupCheckerSub = this.groupChecker
                 .pipe(
@@ -171,6 +187,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.groupSearcherSub.unsubscribe();
             this.groupSearcherSub = null;
         }
+        if (this.roleSub) {
+            this.roleSub.unsubscribe();
+            this.roleSub = null;
+        }
     }
 
     createGroupAsMember() {
@@ -217,9 +237,11 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     }
 
     openAddGroupModal(): void {
+        const firstAssignable = this.roles?.find(r => this.isRoleAssignable(r));
         this.currentForm.reset({
-            member_role: 1,
+            member_role: firstAssignable?.id ?? 1,
         });
+        this.roleId = firstAssignable?.id ?? 1;
         this.addGroupOpened = true;
         this.inlineAlert.close();
         this.memberGroup = {
@@ -241,6 +263,24 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.currentForm.valid &&
             !this.checkOnGoing
         );
+    }
+
+    isRoleAssignable(role: Role): boolean {
+        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
+    }
+
+    getRoleDisplayName(role: Role): string {
+        if (!role.is_builtin) {
+            return role.name;
+        }
+        const keys: Record<string, string> = {
+            projectAdmin: 'MEMBER.PROJECT_ADMIN',
+            maintainer: 'MEMBER.PROJECT_MAINTAINER',
+            developer: 'MEMBER.DEVELOPER',
+            guest: 'MEMBER.GUEST',
+            limitedGuest: 'MEMBER.LIMITED_GUEST',
+        };
+        return keys[role.name] ?? role.name;
     }
 
     selectGroup(groupName) {

@@ -983,3 +983,26 @@ func (a *projectAPI) GetLogExts(ctx context.Context, params operation.GetLogExts
 		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(convertToModelAuditLogExt(logs))
 }
+
+// GetEffectivePermissions returns the subset of ScopeProject permissions the calling user actually holds.
+func (a *projectAPI) GetEffectivePermissions(ctx context.Context, params operation.GetEffectivePermissionsParams) middleware.Responder {
+	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
+
+	candidates := rbac.GetPermissionProvider().GetPermissions(rbac.ScopeProject)
+
+	var effective []*models.Permission
+	for _, p := range candidates {
+		resource := mapRobotToHumanResource(p.Resource)
+		has, err := a.HasProjectPermission(ctx, projectNameOrID, p.Action, resource)
+		if err != nil {
+			continue
+		}
+		if has {
+			effective = append(effective, &models.Permission{
+				Resource: p.Resource.String(),
+				Action:   p.Action.String(),
+			})
+		}
+	}
+	return operation.NewGetEffectivePermissionsOK().WithPayload(effective)
+}
