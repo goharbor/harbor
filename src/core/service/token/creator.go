@@ -175,8 +175,11 @@ func (rep repositoryFilter) filter(ctx context.Context, ctl project.Controller,
 func resourceScopes(ctx context.Context, rc rbac.Resource) map[string]struct{} {
 	sCtx, _ := security.FromContext(ctx)
 	res := map[string]struct{}{}
+	log.Debugf("=== resourceScopes: username=%s, IsAuthenticated=%v, resource=%s", sCtx.GetUsername(), sCtx.IsAuthenticated(), rc)
 	for a, s := range actionScopeMap {
-		if sCtx.Can(ctx, a, rc) {
+		can := sCtx.Can(ctx, a, rc)
+		log.Debugf("=== resourceScopes: action=%s, scope=%s, can=%v", a, s, can)
+		if can {
 			res[s] = struct{}{}
 		}
 	}
