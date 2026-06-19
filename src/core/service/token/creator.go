@@ -81,6 +81,12 @@ type image struct {
 type basicParser struct{}
 
 func (b basicParser) parse(s string) (*image, error) {
+	if s == "*" {
+		return &image{
+			namespace: "*",
+			repo:      "*",
+		}, nil
+	}
 	return parseImg(s)
 }
 
