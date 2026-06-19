@@ -20,10 +20,8 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/ldap"
-	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	ldapModel "github.com/goharbor/harbor/src/pkg/ldap/model"
@@ -120,13 +118,6 @@ func toFailedListResp(users []ldapModel.FailedImportUser) []*models.LdapFailedIm
 func (l *ldapAPI) SearchLdapGroup(ctx context.Context, params operation.SearchLdapGroupParams) middleware.Responder {
 	if err := l.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceLdapUser); err != nil {
 		return l.SendError(ctx, err)
-	}
-	mode, err := config.AuthMode(ctx)
-	if err != nil {
-		return l.SendError(ctx, err)
-	}
-	if mode != common.LDAPAuth {
-		return l.SendError(ctx, errors.PreconditionFailedError(nil).WithMessage("LDAP is not configured"))
 	}
 	var groupName, groupDN string
 	if params.Groupname != nil && len(*params.Groupname) > 0 {

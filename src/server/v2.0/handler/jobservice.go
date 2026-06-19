@@ -203,9 +203,6 @@ func (j *jobServiceAPI) ActionGetJobLog(ctx context.Context, params jobservice.A
 	}
 	log, err := j.jobCtr.GetJobLog(ctx, params.JobID)
 	if err != nil {
-		if strings.Contains(err.Error(), "10009") || strings.Contains(err.Error(), "invalid length of log identify") {
-			return j.SendError(ctx, errors.BadRequestError(err))
-		}
 		return j.SendError(ctx, err)
 	}
 	return jobservice.NewActionGetJobLogOK().WithContentType("text/plain").WithPayload(string(log))
