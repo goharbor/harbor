@@ -573,58 +573,64 @@ func Test_filterGroup(t *testing.T) {
 }
 
 func TestIsLoginAllowed(t *testing.T) {
-    tests := []struct {
-        name    string
-        info    *UserInfo
-        setting cfgModels.OIDCSetting
-        want    bool
-    }{
-        {
-            name:    "no restriction configured — allow all",
-            info:    &UserInfo{Groups: []string{}, hasGroupClaim: true},
-            setting: cfgModels.OIDCSetting{LoginGroups: ""},
-            want:    true,
-        },
-        {
-            name:    "user in allowed group — permit",
-            info:    &UserInfo{Groups: []string{"harbor", "devs"}, hasGroupClaim: true},
-            setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
-            want:    true,
-        },
-        {
-            name:    "user not in any allowed group — deny",
-            info:    &UserInfo{Groups: []string{"devs"}, hasGroupClaim: true},
-            setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
-            want:    false,
-        },
-        {
-            name:    "user in one of multiple allowed groups — permit",
-            info:    &UserInfo{Groups: []string{"devs"}, hasGroupClaim: true},
-            setting: cfgModels.OIDCSetting{LoginGroups: "harbor,devs,ops"},
-            want:    true,
-        },
-        {
-            name:    "spaces around group names are trimmed — permit",
-            info:    &UserInfo{Groups: []string{"harbor"}, hasGroupClaim: true},
-            setting: cfgModels.OIDCSetting{LoginGroups: " harbor , devs "},
-            want:    true,
-        },
-        {
-            name:    "no group claim in token and restriction set — deny",
-            info:    &UserInfo{Groups: []string{}, hasGroupClaim: false},
-            setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
-            want:    false,
-        },
-        {
-            name:    "no group claim in token and no restriction — allow",
-            info:    &UserInfo{Groups: []string{}, hasGroupClaim: false},
-            setting: cfgModels.OIDCSetting{LoginGroups: ""},
-            want:    true,
-        },
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            assert.Equal(t, tt.want, IsLoginAllowed(tt.info, tt.setting))
-        })
-    }
+	tests := []struct {
+		name    string
+		info    *UserInfo
+		setting cfgModels.OIDCSetting
+		want    bool
+	}{
+		{
+			name:    "no restriction configured — allow all",
+			info:    &UserInfo{Groups: []string{}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: ""},
+			want:    true,
+		},
+		{
+			name:    "user in allowed group — permit",
+			info:    &UserInfo{Groups: []string{"harbor", "devs"}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
+			want:    true,
+		},
+		{
+			name:    "user not in any allowed group — deny",
+			info:    &UserInfo{Groups: []string{"devs"}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
+			want:    false,
+		},
+		{
+			name:    "user in one of multiple allowed groups — permit",
+			info:    &UserInfo{Groups: []string{"devs"}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: "harbor,devs,ops"},
+			want:    true,
+		},
+		{
+			name:    "spaces around group names are trimmed — permit",
+			info:    &UserInfo{Groups: []string{"harbor"}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: " harbor , devs "},
+			want:    true,
+		},
+		{
+			name:    "no group claim in token and restriction set — deny",
+			info:    &UserInfo{Groups: []string{}, hasGroupClaim: false},
+			setting: cfgModels.OIDCSetting{LoginGroups: "harbor"},
+			want:    false,
+		},
+		{
+			name:    "no group claim in token and no restriction — allow",
+			info:    &UserInfo{Groups: []string{}, hasGroupClaim: false},
+			setting: cfgModels.OIDCSetting{LoginGroups: ""},
+			want:    true,
+		},
+		{
+			name:    "whitespace-only restriction — treat as no restriction",
+			info:    &UserInfo{Groups: []string{}, hasGroupClaim: true},
+			setting: cfgModels.OIDCSetting{LoginGroups: "   "},
+			want:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, IsLoginAllowed(tt.info, tt.setting))
+		})
+	}
 }
