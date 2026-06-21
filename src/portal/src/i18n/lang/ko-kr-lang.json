@@ -882,6 +882,8 @@
             "GROUP_CLAIM_NAME_INFO": "OIDC 공급자에서 구성한 사용자 지정 그룹 클레임의 이름",
             "OIDC_ADMIN_GROUP": "OIDC 관리 그룹",
             "OIDC_ADMIN_GROUP_INFO": "OIDC 관리자 그룹 이름을 지정합니다. 이 그룹의 모든 OIDC 사용자는 항구 관리자 권한을 갖습니다. 원하지 않으시면 비워두세요.",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
             "OIDC_GROUP_FILTER": "OIDC 그룹 필터",
             "OIDC_GROUP_FILTER_INFO": "제공된 정규식과 일치하는 OIDC 그룹을 필터링합니다. 모든 그룹과 일치하려면 공백으로 유지하세요.",
             "OIDC_LOGOUT": "OIDC Session Logout"

@@ -1131,6 +1131,8 @@
             "GROUP_CLAIM_NAME_INFO": "Имя пользовательского утверждения группы, которое вы настроили у своего провайдера OIDC",
             "OIDC_ADMIN_GROUP": "Группа администраторов OIDC",
             "OIDC_ADMIN_GROUP_INFO": "Укажите имя группы администраторов OIDC. Все пользователи OIDC в этой группе будут иметь права администратора в Harbor. Оставьте пустым, если не хотите этого.",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
             "OIDC_GROUP_FILTER": "Фильтр групп OIDC",
             "OIDC_GROUP_FILTER_INFO": "Фильтр групп OIDC, которые соответствуют предоставленному регулярному выражению. Оставьте пустым, чтобы соответствовать всем группам."
         },
@@ -2121,6 +2123,8 @@
       "GROUP_CLAIM_NAME_INFO": "Подтвердите имя пользовательской группы, которую вы настроили у своего поставщика OIDC",
       "OIDC_ADMIN_GROUP": "Группа Администраторов OIDC",
       "OIDC_ADMIN_GROUP_INFO": "Укажите имя группы OIDC. Все пользователи OIDC в этой группе будут иметь права администратора в Harbor. Оставьте это поле пустым, если не хотите этого.",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
       "OIDC_GROUP_FILTER": "Фильтр Группы OIDC",
       "OIDC_GROUP_FILTER_INFO": "Фильтр групп OIDC, которые соответствуют регулярному выражению. Оставьте пустым, чтобы соответствовать всем группам.",
       "OIDC_LOGOUT": "Выход из сессии OIDC"

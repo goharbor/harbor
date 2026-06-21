@@ -883,6 +883,8 @@
             "GROUP_CLAIM_NAME_INFO": "在 OIDC 提供者中設定的自訂群組宣告名稱。",
             "OIDC_ADMIN_GROUP": "OIDC 管理員群組",
             "OIDC_ADMIN_GROUP_INFO": "指定 OIDC 管理員群組名稱。此群組中的所有 OIDC 使用者都會擁有 Harbor 管理員權限。若不需要，請留空。",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
             "OIDC_GROUP_FILTER": "OIDC 群組篩選器",
             "OIDC_GROUP_FILTER_INFO": "篩選符合所提供正規表示式的 OIDC 群組。留空以符合所有群組。",
             "OIDC_LOGOUT": "OIDC 工作階段登出"
