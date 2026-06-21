@@ -478,6 +478,23 @@ func filterGroup(groupNames []string, filter string) []string {
 	return result
 }
 
+// IsLoginAllowed checks whether the user is permitted to log in based on the
+// oidc_login_groups setting. Returns true when no restriction is configured.
+func IsLoginAllowed(info *UserInfo, setting cfgModels.OIDCSetting) bool {
+	if len(strings.TrimSpace(setting.LoginGroups)) == 0 {
+		return true
+	}
+	if !info.hasGroupClaim {
+		return false
+	}
+	for _, g := range strings.Split(setting.LoginGroups, ",") {
+		if slices.Contains(info.Groups, strings.TrimSpace(g)) {
+			return true
+		}
+	}
+	return false
+}
+
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
 // The third optional parm is for UT only.
 func InjectGroupsToUser(info *UserInfo, user *models.User, f ...populate) {
