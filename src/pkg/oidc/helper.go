@@ -485,6 +485,7 @@ func IsLoginAllowed(info *UserInfo, setting cfgModels.OIDCSetting) bool {
 		return true
 	}
 	if !info.hasGroupClaim {
+		log.Warning("oidc_login_groups is set but the token carried no group claim — verify oidc_groups_claim is configured")
 		return false
 	}
 	for _, g := range strings.Split(setting.LoginGroups, ",") {

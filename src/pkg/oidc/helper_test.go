@@ -61,6 +61,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestHelperCreate(t *testing.T) {
+	if os.Getenv("POSTGRESQL_HOST") == "" {
+		t.Skip("requires POSTGRESQL_HOST")
+	}
 	testP := &providerHelper{}
 	assert.Nil(t, testP.instance.Load())
 	err := testP.create(orm.Context())
@@ -70,6 +73,9 @@ func TestHelperCreate(t *testing.T) {
 }
 
 func TestHelperGet(t *testing.T) {
+	if os.Getenv("POSTGRESQL_HOST") == "" {
+		t.Skip("requires POSTGRESQL_HOST")
+	}
 	testP := &providerHelper{}
 	ctx := orm.Context()
 	p, err := testP.get(ctx)
