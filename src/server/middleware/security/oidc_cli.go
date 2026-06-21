@@ -78,6 +78,17 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 	}
 
 	oidc.InjectGroupsToUser(info, u)
+
+	oidcSettings, err := config.OIDCSetting(ctx)
+	if err != nil {
+		logger.Errorf("failed to get OIDC settings: %v", err)
+		return nil
+	}
+	if !oidc.IsLoginAllowed(info, *oidcSettings) {
+		logger.Warningf("OIDC CLI login denied for user %s: not in any authorized group", username)
+		return nil
+	}
+
 	logger.Debugf("an OIDC CLI security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(u)
 }

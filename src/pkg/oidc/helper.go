@@ -480,16 +480,19 @@ func filterGroup(groupNames []string, filter string) []string {
 
 // IsLoginAllowed checks whether the user is permitted to log in based on the
 // oidc_login_groups setting. Returns true when no restriction is configured.
+// Note: info.Groups contains the raw, unfiltered groups from the token claim;
+// oidc_group_filter is applied separately in InjectGroupsToUser and does not
+// affect this check.
 func IsLoginAllowed(info *UserInfo, setting cfgModels.OIDCSetting) bool {
 	if len(strings.TrimSpace(setting.LoginGroups)) == 0 {
 		return true
 	}
 	if !info.hasGroupClaim {
-		log.Warning("oidc_login_groups is set but the token carried no group claim — verify oidc_groups_claim is configured")
+		log.Error("oidc_login_groups is set but the token carried no group claim; all OIDC logins are blocked — verify oidc_groups_claim is configured")
 		return false
 	}
-	for _, g := range strings.Split(setting.LoginGroups, ",") {
-		if slices.Contains(info.Groups, strings.TrimSpace(g)) {
+	for _, g := range config.SplitAndTrim(setting.LoginGroups, ",") {
+		if slices.Contains(info.Groups, g) {
 			return true
 		}
 	}
