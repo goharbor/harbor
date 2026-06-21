@@ -1,6 +1,8 @@
 name: "Build Package Workflow"
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
+  PHOTON_BASE_IMAGE: registry.goharbor.io/dockerhub/library/photon:5.0-20260214
+  PHOTON_BASE_IMAGE_FALLBACK: docker.io/library/photon:5.0-20260214
 
 on:
   push:
@@ -57,7 +59,15 @@ jobs:
         run: |
           set -x
           echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+          photon_base_image="${PHOTON_BASE_IMAGE}"
+          if ! docker buildx imagetools inspect "${photon_base_image}" >/dev/null 2>&1; then
+            echo "${photon_base_image} is unavailable, falling back to ${PHOTON_BASE_IMAGE_FALLBACK}"
+            photon_base_image="${PHOTON_BASE_IMAGE_FALLBACK}"
+          fi
+
           docker buildx build --platform linux/amd64,linux/arm64 \
+            --build-arg photon_base_image="${photon_base_image}" \
             -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
           docker logout
 
