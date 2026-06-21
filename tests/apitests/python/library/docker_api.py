@@ -33,6 +33,14 @@ def _dockerhub_pull_image(image):
         image_path = "library/{}".format(image)
     return "{}/{}".format(DOCKER_HUB_PROXY, image_path), True
 
+def _dockerhub_fallback_image(image):
+    parts = image.split("/", 1)
+    if len(parts) == 2 and parts[0] in DOCKER_HUB_REGISTRIES:
+        return image
+    if _has_registry_host(image):
+        return image
+    return "docker.io/{}".format(image if "/" in image else "library/{}".format(image))
+
 def docker_info_display():
     command = ["docker", "info", "-f", "'{{.OSType}}/{{.Architecture}}'"]
     print("Docker Info: ", command)
@@ -163,9 +171,17 @@ class DockerAPI(object):
             ret = self.DCLIENT.pull(r'{}:{}'.format(pull_image, _tag))
         except Exception as err:
             print( "Docker image pull catch exception:", str(err))
-            err_message = str(err)
-            if expected_error_message is None:
+            if expected_error_message is None and is_dockerhub_pull:
+                pull_image = _dockerhub_fallback_image(image)
+                print("{} is unavailable, falling back to {}".format(DOCKER_HUB_PROXY, pull_image))
+                ret = self.DCLIENT.pull(r'{}:{}'.format(pull_image, _tag))
+                print("Docker image pull fallback return message is:", ret)
+                err_message = ret
+                self.DCLIENT.tag(r'{}:{}'.format(pull_image, _tag), image, _tag, force=True)
+            elif expected_error_message is None:
                 raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, str(err)))
+            else:
+                err_message = str(err)
         else:
             print("Docker image pull did not catch exception and return message is:", ret)
             err_message = ret
