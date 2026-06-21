@@ -183,11 +183,6 @@ func (oc *OIDCController) Callback() {
 		username := info.Username
 		// Fix blanks in username
 		username = strings.Replace(username, " ", "_", -1)
-		oidcSettings, err = config.OIDCSetting(ctx)
-		if err != nil {
-			oc.SendInternalServerError(err)
-			return
-		}
 		// If automatic onboard is enabled, skip the onboard page
 		if oidcSettings.AutoOnboard {
 			log.Debug("Doing automatic onboarding\n")
