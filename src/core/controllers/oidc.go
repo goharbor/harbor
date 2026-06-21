@@ -153,6 +153,15 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
+	oidcSettings, err := config.OIDCSetting(ctx)
+	if err != nil {
+		oc.SendInternalServerError(err)
+		return
+	}
+	if !oidc.IsLoginAllowed(info, *oidcSettings) {
+		oc.SendUnAuthorizedError(errors.New("user is not a member of any authorized OIDC group"))
+		return
+	}
 	ouDataStr, err := json.Marshal(info)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -174,7 +183,7 @@ func (oc *OIDCController) Callback() {
 		username := info.Username
 		// Fix blanks in username
 		username = strings.Replace(username, " ", "_", -1)
-		oidcSettings, err := config.OIDCSetting(ctx)
+		oidcSettings, err = config.OIDCSetting(ctx)
 		if err != nil {
 			oc.SendInternalServerError(err)
 			return
