@@ -15,6 +15,8 @@
 package notification
 
 import (
+	"context"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,6 +24,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 const (
@@ -65,11 +68,48 @@ func init() {
 		clients: map[string]*http.Client{},
 	}
 	httpHelper.clients[secure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(),
-		Timeout:   timeout,
+		Transport:     webhookTransport(false),
+		Timeout:       timeout,
+		CheckRedirect: noRedirect,
 	}
 	httpHelper.clients[insecure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
-		Timeout:   timeout,
+		Transport:     webhookTransport(true),
+		Timeout:       timeout,
+		CheckRedirect: noRedirect,
 	}
+}
+
+type contextKey string
+
+const (
+	useProxyKey contextKey = "useProxy"
+)
+
+var (
+	dialer = &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+)
+
+func webhookTransport(insecure bool) http.RoundTripper {
+	opts := []func(*http.Transport){
+		func(tr *http.Transport) {
+			tr.Proxy = http.ProxyFromEnvironment
+			tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+				if useProxy, ok := ctx.Value(useProxyKey).(bool); ok && useProxy {
+					return dialer.DialContext(ctx, network, addr)
+				}
+				return lib.PublicDialContext(ctx, network, addr)
+			}
+		},
+	}
+	if insecure {
+		opts = append(opts, commonhttp.WithInsecureSkipVerify(true))
+	}
+	return commonhttp.NewTransport(opts...)
+}
+
+func noRedirect(_ *http.Request, _ []*http.Request) error {
+	return http.ErrUseLastResponse
 }

@@ -3,7 +3,7 @@ package notification
 import (
 	"io"
 	"net/http"
-	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,35 +53,65 @@ func TestSlackJobRun(t *testing.T) {
 
 	rep := &SlackJob{}
 
-	// test slack request
-	ts := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			body, _ := io.ReadAll(r.Body)
+	originalClients := httpHelper.clients
+	t.Cleanup(func() {
+		httpHelper.clients = originalClients
+	})
+	httpHelper.clients = map[string]*http.Client{}
+	httpHelper.clients[secure] = &http.Client{
+		CheckRedirect: noRedirect,
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			body, _ := io.ReadAll(req.Body)
 
 			// test request method
-			assert.Equal(t, http.MethodPost, r.Method)
+			assert.Equal(t, http.MethodPost, req.Method)
 			// test request body
 			assert.Equal(t, string(body), `{"key": "value"}`)
-		}))
-	defer ts.Close()
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+				Request:    req,
+			}, nil
+		}),
+	}
+	httpHelper.clients[insecure] = httpHelper.clients[secure]
+
 	params := map[string]any{
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
-		"address":          ts.URL,
+		"address":          "http://1.1.1.1",
 	}
 	// test correct slack response
 	assert.Nil(t, rep.Run(ctx, params))
 
-	tsWrong := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusUnauthorized)
-		}))
-	defer tsWrong.Close()
+	httpHelper.clients[insecure] = &http.Client{
+		CheckRedirect: noRedirect,
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusUnauthorized,
+				Body:       io.NopCloser(strings.NewReader("")),
+				Header:     make(http.Header),
+				Request:    req,
+			}, nil
+		}),
+	}
 	paramsWrong := map[string]any{
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
-		"address":          tsWrong.URL,
+		"address":          "http://1.1.1.1",
 	}
 	// test incorrect slack response
 	assert.NotNil(t, rep.Run(ctx, paramsWrong))
+}
+
+func TestSlackJobRunRejectsPrivateTarget(t *testing.T) {
+	ctx := &mockjobservice.MockJobContext{}
+	rep := &SlackJob{}
+	params := map[string]any{
+		"payload": `{"key": "value"}`,
+		"address": "http://169.254.169.254/latest/meta-data",
+	}
+
+	assert.NotNil(t, rep.Run(ctx, params))
 }

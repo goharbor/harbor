@@ -92,9 +92,16 @@ func (suite *WebhookTestSuite) TestCreateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://198.51.100.1"}}})
 		suite.NoError(err)
 		suite.Equal(201, resp.StatusCode)
+	}
+
+	{
+		// private target should got 400
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://169.254.169.254/latest/meta-data"}}})
+		suite.NoError(err)
+		suite.Equal(400, resp.StatusCode)
 	}
 }
 
@@ -121,9 +128,16 @@ func (suite *WebhookTestSuite) TestUpdateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://198.51.100.1"}}})
 		suite.NoError(err)
 		suite.Equal(200, resp.StatusCode)
+	}
+
+	{
+		// private target should got 400
+		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		suite.NoError(err)
+		suite.Equal(400, resp.StatusCode)
 	}
 }
 
