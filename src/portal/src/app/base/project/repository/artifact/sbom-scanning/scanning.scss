@@ -1,9 +1,6 @@
-.bar-wrapper {
-    width: 210px;
-}
-
 hbr-sbom-bar {
-    .label,.not-scan {
+    .label,
+    .not-scan {
         width: 90%;
     }
 }
@@ -14,8 +11,7 @@ hbr-sbom-bar {
     }
 
     .label {
-        max-width: 60%;
-        min-width: 50%;
+        padding: 0 1rem;
     }
 }
 
