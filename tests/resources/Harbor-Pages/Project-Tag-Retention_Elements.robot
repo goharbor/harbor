@@ -44,6 +44,7 @@ ${project_tag_retention_modal_title_edit_xpath}  //h3[contains(.,'Edit Tag Reten
 ${project_tag_retention_latest_execution_id_xpath}  //clr-dg-row[1]//clr-dg-cell[1]
 ${project_tag_retention_schedule_cancel_btn}  //button[contains(.,'CANCEL')]
 ${project_tag_retention_schedule_cron_input}  //*[@id='targetCron']
+${expand_command_xpath}  xpath=(//button[contains(@class, 'datagrid-expandable-caret-button')])[1]
 
 ${project_tag_immutability_scope_input_xpath}  //*[@id='scope-input']
 ${project_tag_immutability_tag_input_xpath}  //*[@id='tag-input']

@@ -16,7 +16,7 @@ import { ArtifactLabelComponent } from './artifact-label.component';
 import { ClarityModule } from '@clr/angular';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
-    TranslateFakeLoader,
+    TranslateNoOpLoader,
     TranslateLoader,
     TranslateModule,
     TranslateService,
@@ -52,7 +52,7 @@ describe('ArtifactLabelComponent', () => {
                 TranslateModule.forRoot({
                     loader: {
                         provide: TranslateLoader,
-                        useClass: TranslateFakeLoader,
+                        useClass: TranslateNoOpLoader,
                     },
                 }),
             ],

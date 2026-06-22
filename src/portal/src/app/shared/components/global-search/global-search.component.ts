@@ -40,7 +40,8 @@ const SEARCH_KEY: string = 'globalSearch';
 @Component({
     selector: 'global-search',
     templateUrl: 'global-search.component.html',
-    styleUrls: ['search.component.scss'],
+    styleUrls: ['search.component.scss', 'global-search.component.scss'],
+    standalone: false,
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Keep search term as Subject
