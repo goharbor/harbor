@@ -284,6 +284,38 @@ func (suite *CacheTestSuite) TestManifestListCache_CacheContent_PayloadError() {
 	suite.mListCache.CacheContent(ctx, "", &failingManifest{payloadErr: fmt.Errorf("payload failed")}, lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}, nil, manifestlist.MediaTypeManifestList)
 }
 
+func (suite *CacheTestSuite) TestNewCacheHandlerRegistry_OCIIndexUsesManifestListCache() {
+	handlers := NewCacheHandlerRegistry(&suite.local)
+	suite.IsType(&ManifestListCache{}, handlers[v1.MediaTypeImageIndex])
+}
+
+func (suite *CacheTestSuite) TestManifestListCache_CacheContent_CachesPayloadAndContentType() {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	childDigest := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	manList := buildTestManifestList(manifestlist.ManifestDescriptor{
+		Descriptor: distribution.Descriptor{Digest: digest.Digest(childDigest), Size: 3253, MediaType: schema2.MediaTypeManifest},
+		Platform:   manifestlist.PlatformSpec{Architecture: "amd64", OS: "linux"},
+	})
+	contentType, payload, err := manList.Payload()
+	suite.Require().NoError(err)
+	parentDigest := string(digest.FromBytes(payload))
+
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Digest: childDigest}).Return(nil, nil).Once()
+
+	suite.mListCache.CacheContent(ctx, "", manList, lib.ArtifactInfo{Repository: repo, Tag: "latest"}, nil, contentType)
+
+	var cachedContentType string
+	err = suite.mListCache.cache.Fetch(ctx, manifestListContentTypeKey(repo, lib.ArtifactInfo{Repository: repo, Digest: parentDigest}), &cachedContentType)
+	suite.Require().NoError(err)
+	suite.Equal(contentType, cachedContentType)
+
+	var cachedPayload []byte
+	err = suite.mListCache.cache.Fetch(ctx, manifestListKey(repo, lib.ArtifactInfo{Repository: repo, Digest: parentDigest}), &cachedPayload)
+	suite.Require().NoError(err)
+	suite.Equal(payload, cachedPayload)
+}
+
 func (suite *CacheTestSuite) TestGetTrimmedDigest_NotFound() {
 	ctx := context.Background()
 	digest, err := suite.mListCache.getTrimmedDigest(ctx, "sha256:missing")
