@@ -77,8 +77,6 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	oidc.InjectGroupsToUser(info, u)
-
 	oidcSettings, err := config.OIDCSetting(ctx)
 	if err != nil {
 		logger.Errorf("failed to get OIDC settings: %v", err)
@@ -89,6 +87,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
+	oidc.InjectGroupsToUser(info, u)
 	logger.Debugf("an OIDC CLI security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(u)
 }
