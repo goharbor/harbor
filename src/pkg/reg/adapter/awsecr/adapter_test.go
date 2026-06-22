@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	awsecrapi "github.com/aws/aws-sdk-go-v2/service/ecr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -128,6 +128,74 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.NotNil(t, adapter)
 }
 
+func TestParseAccountRegion(t *testing.T) {
+	cases := []struct {
+		url         string
+		expectedID  string
+		expectedReg string
+		expectErr   bool
+	}{
+		{
+			url:         "https://api.ecr.us-west-1.amazonaws.com",
+			expectedID:  "",
+			expectedReg: "us-west-1",
+			expectErr:   false,
+		},
+		{
+			url:         "https://123456.dkr.ecr.us-west-2.amazonaws.com",
+			expectedID:  "123456",
+			expectedReg: "us-west-2",
+			expectErr:   false,
+		},
+		{
+			url:         "https://api.ecr-public.us-east-1.amazonaws.com",
+			expectedID:  "",
+			expectedReg: "us-east-1",
+			expectErr:   false,
+		},
+		{
+			url:         "https://123456.dkr.ecr-fips.us-gov-west-1.amazonaws.com",
+			expectedID:  "123456",
+			expectedReg: "us-gov-west-1",
+			expectErr:   false,
+		},
+		{
+			url:         "https://api.ecr.cn-north-1.amazonaws.com.cn",
+			expectedID:  "",
+			expectedReg: "cn-north-1",
+			expectErr:   false,
+		},
+		{
+			url:         "https://123456.dkr.ecr.us-isob-east-1.sc2s.sgov.gov",
+			expectedID:  "123456",
+			expectedReg: "us-isob-east-1",
+			expectErr:   false,
+		},
+		{
+			url:         "https://123456.dkr.ecr.us-iso-east-1.c2s.ic.gov",
+			expectedID:  "123456",
+			expectedReg: "us-iso-east-1",
+			expectErr:   false,
+		},
+		{
+			url:       "https://bad-url.com",
+			expectErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		id, reg, err := parseAccountRegion(c.url)
+		if c.expectErr {
+			assert.NotNil(t, err, "expected error for URL: %s", c.url)
+		} else {
+			if assert.Nil(t, err, "unexpected error for URL: %s", c.url) {
+				assert.Equal(t, c.expectedID, id, "ID mismatch for URL: %s", c.url)
+				assert.Equal(t, c.expectedReg, reg, "Region mismatch for URL: %s", c.url)
+			}
+		}
+	}
+}
+
 func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Server) {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
@@ -195,7 +263,7 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 		URL:  server.URL,
 	}
 
-	var svc *awsecrapi.ECR
+	var svc *awsecrapi.Client
 	if hasCred {
 		registry.Credential = &model.Credential{
 			AccessKey:    "xxx",
@@ -323,6 +391,24 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	time.Sleep(time.Second)
 	err = a.Modify(req)
 	require.Nil(t, err)
+}
+
+func TestGetAdapterInfo_ChinaRegionEndpoints(t *testing.T) {
+	info := getAdapterInfo()
+	endpoints := info.EndpointPattern.Endpoints
+	endpointMap := make(map[string]string, len(endpoints))
+	for _, ep := range endpoints {
+		endpointMap[ep.Key] = ep.Value
+	}
+
+	// China regions must use amazonaws.com.cn
+	assert.Equal(t, "https://api.ecr.cn-north-1.amazonaws.com.cn", endpointMap["cn-north-1"])
+	assert.Equal(t, "https://api.ecr.cn-northwest-1.amazonaws.com.cn", endpointMap["cn-northwest-1"])
+
+	// Standard regions must use amazonaws.com
+	assert.Equal(t, "https://api.ecr.us-east-1.amazonaws.com", endpointMap["us-east-1"])
+	assert.Equal(t, "https://api.ecr.ap-southeast-1.amazonaws.com", endpointMap["ap-southeast-1"])
+	assert.Equal(t, "https://api.ecr.eu-west-1.amazonaws.com", endpointMap["eu-west-1"])
 }
 
 var urlForBenchmark = []string{

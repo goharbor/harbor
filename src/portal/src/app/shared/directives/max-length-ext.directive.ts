@@ -53,6 +53,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
             multi: true,
         },
     ],
+    standalone: false,
 })
 export class MaxLengthExtValidatorDirective implements Validator, OnChanges {
     @Input() maxLengthExt: number;

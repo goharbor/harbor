@@ -105,7 +105,7 @@ describe('SignInComponent', () => {
 
     it('should show core service is not available', async () => {
         expect(component).toBeTruthy();
-        const sessionService = TestBed.get<SessionService>(SessionService);
+        const sessionService = TestBed.inject<SessionService>(SessionService);
         const spy: jasmine.Spy = spyOn(
             sessionService,
             'signIn'
@@ -129,7 +129,7 @@ describe('SignInComponent', () => {
     });
     it('should show invalid username or password', async () => {
         expect(component).toBeTruthy();
-        const sessionService = TestBed.get<SessionService>(SessionService);
+        const sessionService = TestBed.inject<SessionService>(SessionService);
         const spy: jasmine.Spy = spyOn(
             sessionService,
             'signIn'
