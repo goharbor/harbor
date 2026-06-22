@@ -185,6 +185,12 @@ clr-modal {
     margin-left: 5px;
 }
 
+:host::ng-deep clr-radio-container .clr-control-inline {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
 .override-box {
     flex-direction: row;
 
@@ -278,7 +284,7 @@ clr-modal {
 .right-align {
     min-width: 204px;
     overflow-y: auto;
-    transform: translateX(-9rem) translateY(1.25rem)!important;
+    transform: translateX(-9rem) translateY(0.25rem)!important;
 }
 
 .dropdown-item {

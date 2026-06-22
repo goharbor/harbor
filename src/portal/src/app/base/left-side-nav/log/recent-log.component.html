@@ -59,7 +59,8 @@
             <clr-dg-placeholder>{{
                 'AUDIT_LOG.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
-            <clr-dg-row *ngFor="let l of recentLogs">
+            @for (l of recentLogs; track l) {
+            <clr-dg-row>
                 <clr-dg-cell>{{ l.username }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource_type }}</clr-dg-cell>
@@ -68,6 +69,7 @@
                     l.op_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
@@ -80,12 +82,14 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="totalCount"
+                    @if (totalCount) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'AUDIT_LOG.OF' | translate }} {{ totalCount }}
                         {{ 'AUDIT_LOG.ITEMS' | translate }}</span
                     >
+                    }
                 </clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>

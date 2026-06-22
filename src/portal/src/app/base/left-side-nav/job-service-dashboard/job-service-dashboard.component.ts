@@ -17,5 +17,6 @@ import { Component } from '@angular/core';
     selector: 'job-service-dashboard',
     templateUrl: 'job-service-dashboard.component.html',
     styleUrls: ['job-service-dashboard.component.scss'],
+    standalone: false,
 })
 export class JobServiceDashboardComponent {}
