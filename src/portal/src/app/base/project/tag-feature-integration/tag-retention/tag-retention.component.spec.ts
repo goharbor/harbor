@@ -29,6 +29,7 @@ import { SharedTestingModule } from '../../../../shared/shared.module';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
 import { RetentionService } from 'ng-swagger-gen/services/retention.service';
+import { ProjectService } from 'ng-swagger-gen/services/project.service';
 
 describe('TagRetentionComponent', () => {
     const mockedRunningExecutions = [
@@ -107,6 +108,9 @@ describe('TagRetentionComponent', () => {
             },
         },
     };
+    const mockProjectService = {
+        getProject: () => of({ metadata: { retention_id: 1 } }),
+    };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -122,15 +126,17 @@ describe('TagRetentionComponent', () => {
                     useValue: mockRetentionService,
                 },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
+                { provide: ProjectService, useValue: mockProjectService },
             ],
         }).compileComponents();
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         fixture = TestBed.createComponent(TagRetentionComponent);
         component = fixture.componentInstance;
         component.loadingRule = false;
         fixture.detectChanges();
+        await fixture.whenStable();
     });
 
     it('should create', () => {

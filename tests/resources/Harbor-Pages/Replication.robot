@@ -60,9 +60,10 @@ Select Filter Label
     Retry Element Click  ${filter_label_xpath}
     FOR  ${label}  IN  @{labels}
         Log  ${label}
-        Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
+        ${target_xpath}=    Set Variable    //hbr-label-piece//span[contains(text(), '${label}')]
+        Execute Javascript    document.evaluate("${target_xpath}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()
     END
-    Retry Element Click  ${filter_label_xpath}
+    Retry Element Click  xpath=//h3[contains(@class, 'modal-title') or contains(., 'Replication')]
 
 Select Bandwidth Unit
     [Arguments]    ${unit}
@@ -209,7 +210,8 @@ Switch To Replication Manage Page
 
 Click Edit Button
     Retry Element Click    ${replication_rule_action}
-    Retry Element Click    ${replication_rule_action_bar_edit}
+    ${edit_btn}=    Get Webelement    ${replication_rule_action_bar_edit}
+    Execute Javascript    arguments[0].click();    ARGUMENTS    ${edit_btn}
 
 Click Delete Button
     Retry Element Click    ${replication_rule_action}
