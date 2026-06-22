@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	testingUser "github.com/goharbor/harbor/src/testing/controller/user"
 )
@@ -59,6 +60,36 @@ func TestOIDCCli(t *testing.T) {
 	req.SetBasicAuth(username, password)
 	ctx = oidcCli.Generate(req)
 	assert.NotNil(t, ctx)
+}
+
+func TestOIDCCliLoginGroupsBlocked(t *testing.T) {
+	config.InitWithSettings(map[string]any{
+		common.OIDCLoginGroups: "allowed-group",
+	})
+	t.Cleanup(func() {
+		config.InitWithSettings(map[string]any{common.OIDCLoginGroups: ""})
+	})
+
+	username := "blockedUser"
+	password := "oidcSecret"
+	testCtl := &testingUser.Controller{}
+	testCtl.On("GetByName", mock.Anything, username).Return(
+		&models.User{
+			Username: username,
+			Email:    fmt.Sprintf("%s@test.domain", username),
+		}, nil)
+	uctl = testCtl
+	oidc.SetHardcodeVerifierForTest(password)
+
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	req.SetBasicAuth(username, password)
+
+	// The fake verifier returns a UserInfo with no group claim, so the user
+	// should be denied when oidc_login_groups is configured.
+	ctx := (&oidcCli{}).Generate(req)
+	assert.Nil(t, ctx)
 }
 
 func TestOIDCCliValid(t *testing.T) {
