@@ -242,9 +242,12 @@ func (m *manager) GenerateCheckSum(str string) string {
 
 func injectPasswd(u *commonmodels.User, password string) {
 	salt := utils.GenerateRandomString()
-	u.Password = utils.Encrypt(password, salt, utils.SHA256)
+	// New and updated passwords use PBKDF2-HMAC-SHA256 with a high iteration
+	// count. Verification in MatchLocalPassword is version-aware, so existing
+	// users hashed with the legacy SHA1/SHA256 schemes can still authenticate.
+	u.Password = utils.Encrypt(password, salt, utils.PBKDF2SHA256)
 	u.Salt = salt
-	u.PasswordVersion = utils.SHA256
+	u.PasswordVersion = utils.PBKDF2SHA256
 }
 
 func (m *manager) SearchByName(ctx context.Context, name string, limitSize int) (commonmodels.Users, error) {

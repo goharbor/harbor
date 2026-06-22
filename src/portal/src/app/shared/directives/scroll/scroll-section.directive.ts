@@ -16,6 +16,7 @@ import { Directive, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 
 @Directive({
     selector: '[appScrollSection]',
+    standalone: false,
 })
 export class ScrollSectionDirective implements OnInit, OnDestroy {
     @Input('appScrollSection') id: string | number;

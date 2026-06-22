@@ -26,6 +26,7 @@ import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
     selector: 'app-projects-modal',
     templateUrl: './projects-modal.component.html',
     styleUrls: ['./projects-modal.component.scss'],
+    standalone: false,
 })
 export class ProjectsModalComponent {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

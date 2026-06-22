@@ -109,6 +109,7 @@ const PAGE_SIZE: number = 100;
     selector: 'hbr-project-policy-config',
     templateUrl: './project-policy-config.component.html',
     styleUrls: ['./project-policy-config.component.scss'],
+    standalone: false,
 })
 export class ProjectPolicyConfigComponent implements OnInit {
     onGoing = false;
@@ -306,6 +307,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
             )
             .subscribe(permissins => {
                 this.hasChangeConfigRole = permissins as boolean;
+                this.allowUpdateProxyCacheConfiguration =
+                    this.hasChangeConfigRole && !this.isProxyCacheProject;
             });
     }
 

@@ -64,6 +64,7 @@ const DECORATION = {
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
     styleUrls: ['./tag-retention.component.scss'],
+    standalone: false,
 })
 export class TagRetentionComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
