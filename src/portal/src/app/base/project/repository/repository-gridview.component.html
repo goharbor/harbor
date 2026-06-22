@@ -157,7 +157,7 @@
         [withAdmiral]="withAdmiral"
         (loadNextPageEvent)="loadNextPage()">
         <ng-template let-item="item">
-            <a class="card clickable" [routerLink]="getLink(item)">
+            <div class="card clickable">
                 <div class="card-header">
                     <div
                         [ngClass]="{
@@ -184,24 +184,33 @@
                                 ('REPOSITORY.NO_INFO' | translate)
                         }}
                     </div>
-                    <div class="form-group">
-                        <label>{{
-                            'REPOSITORY.ARTIFACTS_COUNT' | translate
-                        }}</label>
-                        <div>{{ item.artifact_count }}</div>
-                    </div>
-                    <div class="form-group">
-                        <label>{{ 'REPOSITORY.PULL_COUNT' | translate }}</label>
-                        <div>{{ item.pull_count }}</div>
-                    </div>
-                    <div class="form-group">
-                        <label>{{
-                            'REPOSITORY.LAST_MODIFIED' | translate
-                        }}</label>
-                        <div>
-                            {{ item.update_time | harborDatetime : 'short' }}
+                    <a
+                        class="nav-link"
+                        href="javascript:void(0)"
+                        [routerLink]="getLink(item)">
+                        <div class="form-group">
+                            <label>{{
+                                'REPOSITORY.ARTIFACTS_COUNT' | translate
+                            }}</label>
+                            <div>{{ item.artifact_count }}</div>
                         </div>
-                    </div>
+                        <div class="form-group">
+                            <label>{{
+                                'REPOSITORY.PULL_COUNT' | translate
+                            }}</label>
+                            <div>{{ item.pull_count }}</div>
+                        </div>
+                        <div class="form-group">
+                            <label>{{
+                                'REPOSITORY.LAST_MODIFIED' | translate
+                            }}</label>
+                            <div>
+                                {{
+                                    item.update_time | harborDatetime : 'short'
+                                }}
+                            </div>
+                        </div>
+                    </a>
                 </div>
                 <div class="card-footer">
                     <clr-dropdown [clrCloseMenuOnItemClick]="true">
@@ -247,7 +256,7 @@
                         </clr-dropdown-menu>
                     </clr-dropdown>
                 </div>
-            </a>
+            </div>
         </ng-template>
     </hbr-gridview>
     } @if (isFirstLoadingGridView && isCardView) {
