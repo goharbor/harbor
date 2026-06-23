@@ -19,11 +19,13 @@
                     <div class="mt-05">
                         <span>{{ 'CVE_ALLOWLIST.ADD_SYS' | translate }}</span>
                     </div>
-                    <div class="mt-05" *ngIf="hasExpired">
+                    @if (hasExpired) {
+                    <div class="mt-05">
                         <span class="label label-warning">{{
                             'CVE_ALLOWLIST.WARNING_SYS' | translate
                         }}</span>
                     </div>
+                    }
                 </div>
                 <div class="clr-row width-90per">
                     <div class="position-relative pl-05">
@@ -35,9 +37,8 @@
                                 {{ 'CVE_ALLOWLIST.ADD' | translate }}
                             </button>
                         </div>
-                        <div
-                            class="add-modal add-modal-dark"
-                            *ngIf="showAddModal">
+                        @if (showAddModal) {
+                        <div class="add-modal add-modal-dark">
                             <clr-icon
                                 (click)="showAddModal = false"
                                 class="float-lg-right margin-top-4"
@@ -69,17 +70,15 @@
                                 </button>
                             </div>
                         </div>
+                        }
                         <ul class="allowlist-window">
-                            <li
-                                *ngIf="systemAllowlist?.items?.length < 1"
-                                class="none">
+                            @if (systemAllowlist?.items?.length < 1) {
+                            <li class="none">
                                 {{ 'CVE_ALLOWLIST.NONE' | translate }}
                             </li>
-                            <li
-                                *ngFor="
-                                    let item of systemAllowlist?.items;
-                                    let i = index
-                                ">
+                            } @for ( item of systemAllowlist?.items; track item;
+                            let i = $index) {
+                            <li>
                                 <a
                                     href="javascript:void(0)"
                                     (click)="goToDetail(item.cve_id)"
@@ -92,11 +91,12 @@
                                     <clr-icon shape="times-circle"></clr-icon>
                                 </a>
                             </li>
+                            }
                         </ul>
                     </div>
                     <div class="clr-col padding-top-8 ml-1">
                         <div class="clr-row expire-data">
-                            <label class="bottom-line clr-col-2">{{
+                            <label class="bottom-line clr-col-3">{{
                                 'CVE_ALLOWLIST.EXPIRES_AT' | translate
                             }}</label>
                             <div>
@@ -113,7 +113,7 @@
                             </div>
                         </div>
                         <div class="clr-row">
-                            <label class="clr-col-2"></label>
+                            <label class="clr-col-3"></label>
                             <clr-checkbox-wrapper>
                                 <input
                                     [checked]="neverExpires"

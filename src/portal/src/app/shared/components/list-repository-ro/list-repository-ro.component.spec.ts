@@ -22,9 +22,13 @@ import {
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { SessionService } from '../../services/session.service';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ListRepositoryRoComponent', () => {
     let component: ListRepositoryROComponent;
@@ -35,6 +39,7 @@ describe('ListRepositoryRoComponent', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            declarations: [ListRepositoryROComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -42,9 +47,7 @@ describe('ListRepositoryRoComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [ListRepositoryROComponent],
             providers: [
                 TranslateService,
                 SessionService,
@@ -52,6 +55,8 @@ describe('ListRepositoryRoComponent', () => {
                     provide: SearchTriggerService,
                     useValue: mockSearchTriggerService,
                 },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });

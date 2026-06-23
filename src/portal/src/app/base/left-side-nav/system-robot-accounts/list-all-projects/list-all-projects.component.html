@@ -1,4 +1,5 @@
 <clr-datagrid
+    clrDgSelectionType="multi"
     [clrDgPreserveSelection]="true"
     [(clrDgSelected)]="selectedRow"
     [clrDgLoading]="loadingData"
@@ -11,18 +12,17 @@
             [candidatePermissions]="robotMetadata?.project">
             <button class="btn btn-secondary btn-sm m-0">
                 {{ 'SYSTEM_ROBOT.RESET_PERMISSION' | translate }}
-                <clr-icon size="12" shape="caret down"></clr-icon>
+                <clr-icon size="12" shape="caret" direction="down"></clr-icon>
             </button>
         </robot-permissions-panel>
         <button
             (click)="selectAllOrUnselectAll()"
             class="btn btn-secondary btn-sm m-0 ml-1">
-            <span *ngIf="showSelectAll">{{
-                'SYSTEM_ROBOT.SELECT_ALL_PROJECT' | translate
-            }}</span>
-            <span *ngIf="!showSelectAll">{{
-                'SYSTEM_ROBOT.UNSELECT_ALL_PROJECT' | translate
-            }}</span>
+            @if (showSelectAll) {
+            <span>{{ 'SYSTEM_ROBOT.SELECT_ALL_PROJECT' | translate }}</span>
+            } @if (!showSelectAll) {
+            <span>{{ 'SYSTEM_ROBOT.UNSELECT_ALL_PROJECT' | translate }}</span>
+            }
         </button>
     </clr-dg-action-bar>
     <clr-dg-column
@@ -54,7 +54,7 @@
                 <button class="btn btn-link btn-sm m-0 p-0">
                     {{ selectedProjectPermissionMap[p.name]?.length || 0 }}
                     {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
-                    <clr-icon shape="caret down"></clr-icon>
+                    <clr-icon shape="caret" direction="down"></clr-icon>
                 </button>
             </robot-permissions-panel>
         </clr-dg-cell>
