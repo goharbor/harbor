@@ -24,6 +24,7 @@ import (
 	"time"
 
 	beegoorm "github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	ctlevent "github.com/goharbor/harbor/src/controller/event"
@@ -57,7 +58,8 @@ func auditLogMemberEventEnabled(ctx context.Context, operation string) bool {
 	if len(operation) == 0 {
 		return false
 	}
-	return config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", operation, rbac.ResourceMember.String()))
+	ormCtx := ensureORMContext(ctx)
+	return config.AuditLogEventEnabled(ormCtx, fmt.Sprintf("%v_%v", operation, rbac.ResourceMember.String()))
 }
 
 // custom resolver for project member events, extracts project id and user/group ids
@@ -70,12 +72,11 @@ func init() {
 type resolver struct{}
 
 func (r *resolver) PreCheck(ctx context.Context, url string, method string) (bool, string) {
-	ormCtx := ensureORMContext(ctx)
 	operation := ext.MethodToOperation(method)
 	if len(operation) == 0 {
 		return false, ""
 	}
-	if !auditEventEnabledFn(ormCtx, operation) {
+	if !auditEventEnabledFn(ctx, operation) {
 		return false, ""
 	}
 	m := extractRe.FindStringSubmatch(url)
@@ -85,7 +86,7 @@ func (r *resolver) PreCheck(ctx context.Context, url string, method string) (boo
 	// for DELETE, resolve member info before the resource is deleted
 	if method == http.MethodDelete {
 		if len(m) >= 3 && len(m[2]) > 0 {
-			name, typ := lookupMemberFn(ormCtx, m[1], m[2])
+			name, typ := lookupMemberFn(ctx, m[1], m[2])
 			if len(typ) > 0 {
 				return true, typ + ":" + name
 			}
@@ -99,7 +100,6 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	if ce == nil || evt == nil {
 		return fmt.Errorf("metadata or event is nil")
 	}
-	ormCtx := ensureORMContext(ce.Ctx)
 	operation := ext.MethodToOperation(ce.RequestMethod)
 	if len(operation) == 0 {
 		return nil
@@ -125,7 +125,7 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	case "create":
 		e.IsSuccessful = ce.ResponseCode == http.StatusCreated
 		if m := extractRe.FindStringSubmatch(ce.ResponseLocation); len(m) >= 3 && len(m[2]) > 0 {
-			entityName, entityType = lookupMemberFn(ormCtx, m[1], m[2])
+			entityName, entityType = lookupMemberFn(ce.Ctx, m[1], m[2])
 		}
 	case "delete":
 		e.IsSuccessful = ce.ResponseCode == http.StatusOK
@@ -133,7 +133,7 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	case "update":
 		e.IsSuccessful = ce.ResponseCode == http.StatusOK
 		if e.IsSuccessful && len(matches) >= 3 && len(matches[2]) > 0 {
-			entityName, entityType = lookupMemberFn(ormCtx, matches[1], matches[2])
+			entityName, entityType = lookupMemberFn(ce.Ctx, matches[1], matches[2])
 		} else if len(matches) >= 3 && len(matches[2]) > 0 {
 			entityName = matches[2]
 		}
