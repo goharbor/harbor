@@ -343,10 +343,12 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 		EndTime:   exec.EndTime,
 		Status:    exec.Status,
 		Trigger:   exec.Trigger,
-		DryRun:    exec.ExtraAttrs["dry_run"].(bool),
 		Type:      exec.VendorType,
 	}
 
+	if dryRun, ok := exec.ExtraAttrs["dry_run"].(bool); ok {
+		retentionExec.DryRun = dryRun
+	}
 	if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
 		retentionExec.Operator = operator
 	}
