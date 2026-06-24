@@ -14,22 +14,24 @@
                     class="clr-control-container"
                     [class.clr-error]="!isNameValid">
                     <div class="clr-input-wrapper">
-                        <input
-                            type="text"
-                            id="create_project_name"
-                            [(ngModel)]="project.name"
-                            name="create_project_name"
-                            class="clr-input input-width"
-                            required
-                            pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
-                            #projectName
-                            autocomplete="off" />
-                        <clr-icon
-                            class="clr-validate-icon"
-                            shape="exclamation-circle"></clr-icon>
-                        <span
-                            class="spinner spinner-inline"
-                            [hidden]="!checkOnGoing"></span>
+                        <div class="clr-input-group">
+                            <input
+                                type="text"
+                                id="create_project_name"
+                                [(ngModel)]="project.name"
+                                name="create_project_name"
+                                class="clr-input input-width"
+                                required
+                                pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
+                                #projectName
+                                autocomplete="off" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                            <span
+                                class="spinner spinner-inline"
+                                [hidden]="!checkOnGoing"></span>
+                        </div>
                     </div>
                     @if (!isNameValid) {
                     <clr-control-error class="tooltip-content">
@@ -208,17 +210,20 @@
                     class="clr-control-label"></label>
                 <div class="clr-control-container">
                     <div class="clr-input-wrapper">
-                        <label class="clr-control-label endpoint required">{{
-                            'PROJECT.ENDPOINT' | translate
-                        }}</label>
-                        <input
-                            placeholder="http(s)://192.168.1.1"
-                            [value]="getEndpoint()"
-                            readonly
-                            class="clr-input"
-                            type="text"
-                            id="endpoint"
-                            autocomplete="off" />
+                        <div class="clr-input-group">
+                            <label
+                                class="clr-control-label endpoint required"
+                                >{{ 'PROJECT.ENDPOINT' | translate }}</label
+                            >
+                            <input
+                                placeholder="http(s)://192.168.1.1"
+                                [value]="getEndpoint()"
+                                readonly
+                                class="clr-input"
+                                type="text"
+                                id="endpoint"
+                                autocomplete="off" />
+                        </div>
                     </div>
                 </div>
             </div>
