@@ -193,6 +193,36 @@ func TestResolver_Resolve(t *testing.T) {
 			wantProjectID:  1,
 		},
 		{
+			name: "create unknown type member",
+			metadata: &commonevent.Metadata{
+				Username:         "admin",
+				RequestURL:       "/api/v2.0/projects/1/members",
+				RequestMethod:    http.MethodPost,
+				ResponseCode:     http.StatusCreated,
+				ResponseLocation: "/api/v2.0/projects/1/members/999",
+			},
+			wantOperation:  "create",
+			wantResource:   "999",
+			wantDesc:       "create member 999 in project myproject",
+			wantSuccessful: true,
+			wantProjectID:  1,
+		},
+		{
+			name: "create with malformed response location",
+			metadata: &commonevent.Metadata{
+				Username:         "admin",
+				RequestURL:       "/api/v2.0/projects/1/members",
+				RequestMethod:    http.MethodPost,
+				ResponseCode:     http.StatusCreated,
+				ResponseLocation: "/api/v2.0/invalid/path",
+			},
+			wantOperation:  "create",
+			wantResource:   "",
+			wantDesc:       "create member in project myproject",
+			wantSuccessful: true,
+			wantProjectID:  1,
+		},
+		{
 			name: "delete group member",
 			metadata: &commonevent.Metadata{
 				Username:      "admin",
@@ -247,6 +277,20 @@ func TestResolver_Resolve(t *testing.T) {
 			wantResource:   "999",
 			wantDesc:       "update member 999 in project myproject",
 			wantSuccessful: true,
+			wantProjectID:  1,
+		},
+		{
+			name: "update failed",
+			metadata: &commonevent.Metadata{
+				Username:      "admin",
+				RequestURL:    "/api/v2.0/projects/1/members/10",
+				RequestMethod: http.MethodPut,
+				ResponseCode:  http.StatusForbidden,
+			},
+			wantOperation:  "update",
+			wantResource:   "10",
+			wantDesc:       "update member 10 in project myproject",
+			wantSuccessful: false,
 			wantProjectID:  1,
 		},
 		{
@@ -317,6 +361,26 @@ func TestResolver_Resolve(t *testing.T) {
 				t.Errorf("OperationDescription = %q, want %q", data.OperationDescription, tt.wantDesc)
 			}
 		})
+	}
+}
+
+func TestResolver_Resolve_NilInputs(t *testing.T) {
+	r := &resolver{}
+	evt := &event.Event{}
+
+	// Test nil metadata
+	err := r.Resolve(nil, evt)
+	if err == nil {
+		t.Errorf("Resolve(nil, evt) should return error, got nil")
+	}
+
+	// Test nil event
+	metadata := &commonevent.Metadata{
+		RequestMethod: http.MethodPost,
+	}
+	err = r.Resolve(metadata, nil)
+	if err == nil {
+		t.Errorf("Resolve(metadata, nil) should return error, got nil")
 	}
 }
 
