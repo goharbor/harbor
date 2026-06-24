@@ -149,6 +149,10 @@ export class CreateEditEndpointComponent
         return this.onGoing || this.testOngoing;
     }
 
+    public get isEndpointInvalid(): boolean {
+        return !!this.targetForm?.controls?.['endpointUrl']?.errors;
+    }
+
     setInsecureValue($event: any) {
         this.target.insecure = !$event;
     }
