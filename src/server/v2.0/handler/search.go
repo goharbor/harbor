@@ -148,7 +148,7 @@ func (s *searchAPI) filterRepositories(ctx context.Context, projects []*project.
 			RepositoryName: repository.Name,
 			ProjectName:    project.Name,
 			ProjectID:      repository.ProjectID,
-			ProjectPublic:  project.IsPublic(),
+			ProjectPublic:  project.IsPublic() || project.IsAuthOnly(),
 			PullCount:      repository.PullCount,
 		}
 
