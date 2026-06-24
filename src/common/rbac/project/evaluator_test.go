@@ -46,6 +46,13 @@ var (
 			"public": "false",
 		},
 	}
+
+	authOnly = &proModels.Project{
+		ProjectID: 3,
+		Name:      "auth_only_project",
+		OwnerID:   1,
+		Metadata:  map[string]string{"public": "auth_only"},
+	}
 )
 
 func TestAnonymousAccess(t *testing.T) {
@@ -102,6 +109,56 @@ func TestProjectRoleAccess(t *testing.T) {
 		}
 		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
 		resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
+		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
+	}
+}
+
+func TestAuthOnlyAccess(t *testing.T) {
+	assert := assert.New(t)
+	resource := NewNamespace(authOnly.ProjectID).Resource(rbac.ResourceRepository)
+
+	{ // anonymous → pull denied
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(nil, ctl))
+		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull))
+	}
+	{ // authenticated non-member → pull allowed
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{}, nil)
+		user := &models.User{UserID: 2, Username: "nonmember"}
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		assert.True(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull))
+	}
+	{ // authenticated non-member → push denied
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{}, nil)
+		user := &models.User{UserID: 2, Username: "nonmember"}
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
+	}
+}
+
+func TestAuthOnlyWithProjectRole(t *testing.T) {
+	assert := assert.New(t)
+	resource := NewNamespace(authOnly.ProjectID).Resource(rbac.ResourceRepository)
+	user := &models.User{UserID: 1, Username: "username"}
+
+	{ // developer member → push allowed via role
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{common.RoleDeveloper}, nil)
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		assert.True(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
+	}
+	{ // guest member → pull allowed, push denied
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{common.RoleGuest}, nil)
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+		assert.True(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull))
 		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
 	}
 }

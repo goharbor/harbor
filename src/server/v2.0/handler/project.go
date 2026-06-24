@@ -156,10 +156,10 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.Public = strconv.FormatBool(false)
 	}
 
-	// validate metadata.public value, should only be "true" or "false"
+	// validate metadata.public value, should only be "true", "false", or "auth_only"
 	if p := req.Metadata.Public; p != "" {
-		if p != "true" && p != "false" {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true' or 'false', but got: '%s'", p))
+		if p != "true" && p != "false" && p != pkgModels.ProjectAuthOnly {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true', 'false', or 'auth_only', but got: '%s'", p))
 		}
 	}
 
@@ -467,8 +467,18 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				if public, ok := query.Keywords["public"]; !ok || lib.ToBool(public) {
 					member.WithPublic = true
 				}
+				// include auth_only projects when not filtering for strictly public-only results
+				if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
+					member.WithAuthOnly = true
+				}
 
 				query.Keywords["member"] = member
+				// FilterByPublic(false) only matches value='false' and would exclude auth_only
+				// projects. The member query already encodes the auth_only inclusion via
+				// WithAuthOnly, so drop the conflicting 'public' keyword here.
+				if member.WithAuthOnly {
+					delete(query.Keywords, "public")
+				}
 			} else if r, ok := secCtx.(*robotSec.SecurityContext); ok {
 				// for the system level robot that covers all the project, see it as the system admin.
 				var coverAll bool
@@ -486,6 +496,13 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 					}
 					if public, ok := query.Keywords["public"]; !ok || lib.ToBool(public) {
 						namesQuery.WithPublic = true
+					}
+					// include auth_only projects when not filtering for strictly public-only results
+					if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
+						namesQuery.WithAuthOnly = true
+					}
+					if namesQuery.WithAuthOnly {
+						delete(query.Keywords, "public")
 					}
 					query.Keywords["names"] = namesQuery
 				}
@@ -578,6 +595,14 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
 	}
+
+	// validate metadata.public value when provided
+	if params.Project.Metadata != nil {
+		if pub := params.Project.Metadata.Public; pub != "" && pub != "true" && pub != "false" && pub != pkgModels.ProjectAuthOnly {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.public should only be 'true', 'false', or 'auth_only', but got: '%s'", pub))
+		}
+	}
+
 	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
 		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
 	}

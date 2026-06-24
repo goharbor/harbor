@@ -33,6 +33,8 @@ const (
 	ProjectPublic = "public"
 	// ProjectPrivate means project is private
 	ProjectPrivate = "private"
+	// ProjectAuthOnly means project is accessible to any authenticated user
+	ProjectAuthOnly = "auth_only"
 )
 
 func init() {
@@ -58,8 +60,9 @@ type Project struct {
 
 // NamesQuery ...
 type NamesQuery struct {
-	Names      []string // the names of project
-	WithPublic bool     // include the public projects
+	Names        []string // the names of project
+	WithPublic   bool     // include the public projects
+	WithAuthOnly bool     // include auth_only projects (accessible to all authenticated users)
 }
 
 // GetMetadata ...
@@ -87,6 +90,15 @@ func (p *Project) IsPublic() bool {
 	}
 
 	return isTrue(public)
+}
+
+// IsAuthOnly returns true when the project allows access to any authenticated user
+func (p *Project) IsAuthOnly() bool {
+	public, exist := p.GetMetadata(ProMetaPublic)
+	if !exist {
+		return false
+	}
+	return public == ProjectAuthOnly
 }
 
 // IsProxy returns true when the project type is proxy cache
@@ -204,11 +216,14 @@ func (p *Project) ProxyCacheLocalOnNotFound() bool {
 
 // FilterByPublic returns orm.QuerySeter with public filter
 func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
-	subQuery := `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = '%s'`
+	var subQuery string
 	if isTrue(value) {
-		subQuery = fmt.Sprintf(subQuery, "true")
+		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true'`
+	} else if s, ok := value.(string); ok && s == ProjectAuthOnly {
+		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'auth_only'`
 	} else {
-		subQuery = fmt.Sprintf(subQuery, "false")
+		// false means "not public" — includes both private and auth_only projects
+		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value != 'true'`
 	}
 	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
 }
@@ -236,6 +251,10 @@ func (p *Project) FilterByMember(_ context.Context, qs orm.QuerySeter, _ string,
 
 	if query.WithPublic {
 		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
+	}
+
+	if query.WithAuthOnly {
+		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'auth_only')", subQuery)
 	}
 
 	if len(query.GroupIDs) > 0 {
@@ -270,6 +289,10 @@ func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, 
 
 	if query.WithPublic {
 		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'true')", subQuery)
+	}
+
+	if query.WithAuthOnly {
+		subQuery = fmt.Sprintf("(%s) UNION (SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'auth_only')", subQuery)
 	}
 
 	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
