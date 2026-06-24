@@ -42,7 +42,7 @@ export class Project {
     };
     constructor() {
         this.metadata = <any>{};
-        this.metadata.public = false;
+        this.metadata.public = 'false';
         this.metadata.max_upstream_conn = -1;
         this.metadata.proxy_cache_local_on_not_found = false;
         this.metadata.proxy_referrer_api = false;

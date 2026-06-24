@@ -120,4 +120,52 @@ describe('ListProjectComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    it('should display AUTH_ONLY label for auth_only projects', async () => {
+        await fixture.whenStable(); // let initial clrLoad complete
+        component.projects = [
+            {
+                project_id: 1,
+                name: 'authonly-project',
+                metadata: { public: 'auth_only' },
+            } as any,
+        ];
+        fixture.detectChanges();
+        const cells: NodeListOf<HTMLElement> =
+            fixture.nativeElement.querySelectorAll('clr-dg-cell');
+        const cellTexts = Array.from(cells).map(c => c.textContent.trim());
+        expect(cellTexts).toContain('PROJECT.AUTH_ONLY');
+    });
+
+    it('should display PUBLIC label for public projects', async () => {
+        await fixture.whenStable();
+        component.projects = [
+            {
+                project_id: 2,
+                name: 'public-project',
+                metadata: { public: 'true' },
+            } as any,
+        ];
+        fixture.detectChanges();
+        const cells: NodeListOf<HTMLElement> =
+            fixture.nativeElement.querySelectorAll('clr-dg-cell');
+        const cellTexts = Array.from(cells).map(c => c.textContent.trim());
+        expect(cellTexts).toContain('PROJECT.PUBLIC');
+    });
+
+    it('should display PRIVATE label for private projects', async () => {
+        await fixture.whenStable();
+        component.projects = [
+            {
+                project_id: 3,
+                name: 'private-project',
+                metadata: { public: 'false' },
+            } as any,
+        ];
+        fixture.detectChanges();
+        const cells: NodeListOf<HTMLElement> =
+            fixture.nativeElement.querySelectorAll('clr-dg-cell');
+        const cellTexts = Array.from(cells).map(c => c.textContent.trim());
+        expect(cellTexts).toContain('PROJECT.PRIVATE');
+    });
 });

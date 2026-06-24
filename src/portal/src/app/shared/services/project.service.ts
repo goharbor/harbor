@@ -159,7 +159,7 @@ export class ProjectDefaultService extends ProjectService {
                 {
                     registry_id: projectPolicy.RegistryId,
                     metadata: {
-                        public: projectPolicy.Public ? 'true' : 'false',
+                        public: projectPolicy.Public,
                         enable_content_trust: projectPolicy.ContentTrust
                             ? 'true'
                             : 'false',
@@ -234,7 +234,7 @@ export class ProjectDefaultService extends ProjectService {
                     project_name: name,
                     registry_id: +registryId,
                     metadata: {
-                        public: metadata.public ? 'true' : 'false',
+                        public: metadata.public,
                     },
                     storage_limit: storageLimit,
                 }),

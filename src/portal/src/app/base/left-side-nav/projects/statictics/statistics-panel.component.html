@@ -14,6 +14,14 @@
             }
             <div class="clr-row">
                 <div class="clr-col stat-label">
+                    {{ 'STATISTICS.INDEX_AUTH_ONLY' | translate }}
+                </div>
+                <div class="clr-col font-weight-700 stat-value">
+                    {{ originalCopy?.auth_only_project_count }}
+                </div>
+            </div>
+            <div class="clr-row">
+                <div class="clr-col stat-label">
                     {{ 'STATISTICS.INDEX_PUB' | translate }}
                 </div>
                 <div class="clr-col font-weight-700 stat-value">

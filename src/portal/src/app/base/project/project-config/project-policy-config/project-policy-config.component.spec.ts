@@ -14,7 +14,10 @@
 import { SystemInfoService } from '../../../../shared/services';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog';
-import { ProjectPolicyConfigComponent } from './project-policy-config.component';
+import {
+    ProjectPolicyConfigComponent,
+    ProjectPolicy,
+} from './project-policy-config.component';
 import { ProjectService } from '../../../../shared/services';
 import { SystemCVEAllowlist, SystemInfo } from '../../../../shared/services';
 import { Project } from './project';
@@ -213,6 +216,55 @@ describe('ProjectPolicyConfigComponent', () => {
         expect(
             component.projectPolicyConfigComponent.hasChangeConfigRole
         ).toBeTruthy();
+    });
+
+    it('should set projectPolicy.Public to auth_only for an auth_only project', async () => {
+        const authOnlyProject: Project | any = {
+            project_id: 3,
+            name: 'auth-only-project',
+            metadata: { public: 'auth_only' },
+            cve_allowlist: { items: [], expires_at: null },
+        };
+        spyOn(projectService, 'getProject').and.returnValue(
+            of(authOnlyProject)
+        );
+        component.projectPolicyConfigComponent.retrieve();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy.Public
+        ).toBe('auth_only');
+    });
+});
+
+describe('ProjectPolicy', () => {
+    it('should default Public to the false string', () => {
+        const policy = new ProjectPolicy();
+        expect(policy.Public).toBe('false');
+    });
+
+    it('should map auth_only metadata to auth_only string', () => {
+        const policy = new ProjectPolicy();
+        policy.initByProject({ metadata: { public: 'auth_only' } } as any);
+        expect(policy.Public).toBe('auth_only');
+    });
+
+    it('should map true metadata to true string', () => {
+        const policy = new ProjectPolicy();
+        policy.initByProject({ metadata: { public: 'true' } } as any);
+        expect(policy.Public).toBe('true');
+    });
+
+    it('should map false metadata to false string', () => {
+        const policy = new ProjectPolicy();
+        policy.initByProject({ metadata: { public: 'false' } } as any);
+        expect(policy.Public).toBe('false');
+    });
+
+    it('should treat unexpected metadata values as false', () => {
+        const policy = new ProjectPolicy();
+        policy.initByProject({ metadata: { public: 'bogus' } } as any);
+        expect(policy.Public).toBe('false');
     });
 });
 
