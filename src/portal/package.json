@@ -95,6 +95,7 @@
     "typescript": "5.9.3"
   },
   "overrides": {
-    "yargs": "17.7.2"
+    "yargs": "17.7.2",
+    "node-releases": "2.0.48"
   }
 }
