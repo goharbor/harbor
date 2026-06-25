@@ -21,7 +21,6 @@
   },
   "overrides": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "node-releases": "2.0.48"
+    "react-dom": "^18.3.1"
   }
 }
