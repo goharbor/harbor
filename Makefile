@@ -137,7 +137,15 @@ TRIVYADAPTERVERSION=v0.37.1
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
 VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
-NODEBUILDIMAGE=node:22.22.3
+DOCKER_HUB_PROXY ?= registry.goharbor.io/dockerhub
+
+define resolve_docker_image
+$(shell if command -v docker >/dev/null 2>&1 && docker manifest inspect "$(1)" >/dev/null 2>&1; then printf '%s\n' "$(1)"; else printf '%s\n' "$(2)"; fi)
+endef
+
+NODEBUILDIMAGE_PREFERRED ?= $(DOCKER_HUB_PROXY)/library/node:22.22.3
+NODEBUILDIMAGE_FALLBACK ?= docker.io/library/node:22.22.3
+NODEBUILDIMAGE ?= $(call resolve_docker_image,$(NODEBUILDIMAGE_PREFERRED),$(NODEBUILDIMAGE_FALLBACK))
 
 # version of registry for pulling the source code
 REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
@@ -179,7 +187,9 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.3
+GOBUILDIMAGE_PREFERRED ?= $(DOCKER_HUB_PROXY)/library/golang:1.26.3
+GOBUILDIMAGE_FALLBACK ?= docker.io/library/golang:1.26.3
+GOBUILDIMAGE ?= $(call resolve_docker_image,$(GOBUILDIMAGE_PREFERRED),$(GOBUILDIMAGE_FALLBACK))
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build

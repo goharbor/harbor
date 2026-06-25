@@ -1,4 +1,5 @@
-FROM photon:5.0-20260214
+ARG photon_base_image=registry.goharbor.io/dockerhub/library/photon:5.0-20260214
+FROM ${photon_base_image}
 
 RUN tdnf install photon-repos -y \
     && sed -i 's/enabled\s*=.*/enabled=0/g' /etc/yum.repos.d/*.repo \

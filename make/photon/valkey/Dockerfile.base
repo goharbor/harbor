@@ -7,14 +7,14 @@ ARG VALKEY_VERSION
 ARG VALKEY_SHA256
 
 # ---- amd64: use tdnf package (unchanged from original) ----
-FROM goharbor/photon:5.0 AS amd64-base
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0 AS amd64-base
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -g 999 valkey \
     && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey
 RUN tdnf install -y valkey && tdnf clean all
 
 # ---- arm64: build from source (Photon OS has no valkey package for aarch64) ----
-FROM goharbor/photon:5.0 AS arm64-builder
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0 AS arm64-builder
 ARG VALKEY_VERSION
 ARG VALKEY_SHA256
 RUN tdnf install -y gcc make coreutils gawk glibc-devel linux-api-headers \
@@ -30,7 +30,7 @@ RUN curl -fsSL -o valkey.tar.gz \
     && make PREFIX=/usr/local install
 RUN strip /usr/local/bin/valkey-* || true
 
-FROM goharbor/photon:5.0 AS arm64-base
+FROM registry.goharbor.io/dockerhub/goharbor/photon:5.0 AS arm64-base
 RUN tdnf install -y shadow openssl >> /dev/null \
     && groupadd -g 999 valkey \
     && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey \

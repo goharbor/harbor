@@ -8,7 +8,13 @@ sudo aws --version
 harbor_logs_bucket="harbor-ci-logs"
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-E2E_IMAGE="goharbor/harbor-e2e-engine:latest-api"
+E2E_IMAGE="${E2E_IMAGE:-registry.goharbor.io/dockerhub/goharbor/harbor-e2e-engine:latest-api}"
+E2E_IMAGE_FALLBACK="${E2E_IMAGE_FALLBACK:-docker.io/goharbor/harbor-e2e-engine:latest-api}"
+
+if ! docker manifest inspect "$E2E_IMAGE" >/dev/null 2>&1; then
+    echo "$E2E_IMAGE is unavailable, falling back to $E2E_IMAGE_FALLBACK"
+    E2E_IMAGE="$E2E_IMAGE_FALLBACK"
+fi
 
 # GS util
 function uploader {

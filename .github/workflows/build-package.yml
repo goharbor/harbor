@@ -1,6 +1,8 @@
 name: "Build Package Workflow"
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
+  PHOTON_BASE_IMAGE: registry.goharbor.io/dockerhub/library/photon:5.0-20260214
+  PHOTON_BASE_IMAGE_FALLBACK: docker.io/library/photon:5.0-20260214
 
 on:
   push:
@@ -47,7 +49,7 @@ jobs:
           # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
           # has shipped broken releases that fail arm64 emulation with
           # 'exec /bin/sh: no such file or directory' during container init.
-          image: tonistiigi/binfmt:qemu-v9.2.2
+          image: registry.goharbor.io/dockerhub/tonistiigi/binfmt:qemu-v9.2.2
           platforms: linux/amd64,linux/arm64
       - name: Set up Docker Buildx
         if: steps.decide.outputs.build_base == 'true'
@@ -57,7 +59,15 @@ jobs:
         run: |
           set -x
           echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+          photon_base_image="${PHOTON_BASE_IMAGE}"
+          if ! docker buildx imagetools inspect "${photon_base_image}" >/dev/null 2>&1; then
+            echo "${photon_base_image} is unavailable, falling back to ${PHOTON_BASE_IMAGE_FALLBACK}"
+            photon_base_image="${PHOTON_BASE_IMAGE_FALLBACK}"
+          fi
+
           docker buildx build --platform linux/amd64,linux/arm64 \
+            --build-arg photon_base_image="${photon_base_image}" \
             -f make/photon/common/Dockerfile -t goharbor/photon:5.0 --push .
           docker logout
 
@@ -132,6 +142,10 @@ jobs:
             # Use the locally built per-arch base, not the remote ":<tag>" manifest,
             # which is only updated later in CREATE_MANIFEST and may be stale.
             build_base_params=" BUILD_BASE=true PULL_BASE_FROM_DOCKERHUB=false PUSHBASEIMAGE=true REGISTRYUSER=\"${{ secrets.DOCKER_HUB_USERNAME }}\" REGISTRYPASSWORD=\"${{ secrets.DOCKER_HUB_PASSWORD }}\""
+          fi
+
+          if [ "$BUILD_BASE" != "true" ]; then
+            build_base_params="$build_base_params BASEIMAGENAMESPACE=registry.goharbor.io/dockerhub/goharbor"
           fi
 
           sudo make package_offline ARCH=${ARCH} GOBUILDTAGS="include_oss include_gcs" BASEIMAGETAG=${Harbor_Build_Base_Tag} VERSIONTAG=${Harbor_Assets_Version} PKGVERSIONTAG=${Harbor_Package_Version} TRIVYFLAG=true EXPORTERFLAG=true HTTPPROXY= ${build_base_params}
