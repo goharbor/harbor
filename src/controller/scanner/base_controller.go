@@ -312,7 +312,7 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 	if registration.URL != "" {
 		_, err := url.ParseRequestURI(registration.URL)
 		if err != nil {
-			return nil, errors.BadRequestError(err).WithMessagef("invalid scanner URL: %v", err)
+			return nil, errors.BadRequestError(err).WithMessage("invalid scanner URL")
 		}
 	}
 
@@ -330,7 +330,7 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 	if err != nil {
 		log.G(ctx).WithField("error", err).Error("failed to ping scanner")
 
-		return nil, errors.BadRequestError(err).WithMessagef("scanner controller: ping: %v", err)
+		return nil, errors.BadRequestError(err).WithMessage("scanner controller: ping failed")
 	}
 
 	if err := meta.Validate(); err != nil {
