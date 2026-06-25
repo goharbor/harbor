@@ -69,6 +69,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		Type: model.RegistryTypeAzureAcr,
 		SupportedResourceTypes: []string{
 			model.ResourceTypeImage,
+			model.ResourceTypeArtifact,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{
