@@ -258,19 +258,20 @@
         <form class="clr-form clr-form-horizontal pb-0 pt-0">
             @if (addRobotOpened) {
             <section class="form-block">
-                <div class="clr-form-control mt-1">
+                <div class="clr-form-control mt-1 cover-all-form-control">
                     <label class="clr-control-label">{{
                         'SYSTEM_ROBOT.COVER_ALL' | translate
                     }}</label>
                     <div class="clr-control-container">
-                        <clr-checkbox-wrapper>
+                        <clr-checkbox-wrapper
+                            class="cover-all-checkbox-wrapper">
                             <input
                                 clrCheckbox
                                 id="coverAll"
                                 name="coverAll"
                                 type="checkbox"
                                 [(ngModel)]="coverAll" />
-                            <label>
+                            <label for="coverAll">
                                 <clr-tooltip>
                                     <clr-icon
                                         class="opacity-07"

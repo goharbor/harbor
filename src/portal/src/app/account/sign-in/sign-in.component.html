@@ -64,23 +64,40 @@
                     </a>
                     } @if ( (!isOidcLoginMode && steps === 1) ||
                     (isOidcLoginMode && steps === 2) ) {
-                    <clr-input-container class="mt-3">
-                        <input
-                            clrInput
-                            class="username"
-                            type="text"
-                            required
-                            [(ngModel)]="signInCredential.principal"
-                            name="login_username"
-                            id="login_username"
-                            placeholder="{{
-                                'PLACEHOLDER.SIGN_IN_NAME' | translate
-                            }}"
-                            #userNameInput="ngModel" />
-                        <clr-control-error>{{
-                            'TOOLTIP.SIGN_IN_USERNAME' | translate
-                        }}</clr-control-error>
-                    </clr-input-container>
+                    <div class="clr-form-control mt-3">
+                        <div
+                            class="clr-control-container"
+                            [class.clr-error]="
+                                userNameInput.invalid &&
+                                (userNameInput.dirty || userNameInput.touched)
+                            ">
+                            <div class="clr-input-wrapper">
+                                <div class="clr-input-group">
+                                    <input
+                                        class="clr-input username"
+                                        type="text"
+                                        required
+                                        [(ngModel)]="signInCredential.principal"
+                                        name="login_username"
+                                        id="login_username"
+                                        placeholder="{{
+                                            'PLACEHOLDER.SIGN_IN_NAME'
+                                                | translate
+                                        }}"
+                                        #userNameInput="ngModel" />
+                                    <clr-icon
+                                        class="clr-validate-icon"
+                                        shape="exclamation-circle"></clr-icon>
+                                </div>
+                            </div>
+                            @if ( userNameInput.invalid && (userNameInput.dirty
+                            || userNameInput.touched) ) {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
+                            </clr-control-error>
+                            }
+                        </div>
+                    </div>
                     <div class="clr-form-control">
                         <div
                             class="clr-control-container"
