@@ -36,11 +36,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	// DB init is only required for tests that use the ORM (e.g. TestHelperCreate,
-	// TestHelperGet). Pure unit tests can run without it.
-	if os.Getenv("POSTGRESQL_HOST") != "" {
-		test.InitDatabaseFromEnv()
-	}
+	test.InitDatabaseFromEnv()
 	conf := map[string]any{
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://accounts.google.com",
