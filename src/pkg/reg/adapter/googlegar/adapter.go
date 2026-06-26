@@ -156,8 +156,8 @@ func getAdapterInfo() *model.AdapterPattern {
 				},
 				// Google Artifact Registry (use regional endpoint format)
 				{
-					Key:   "Google Artifact Registry",
-					Value: "https://[REGION]-docker.pkg.dev",
+					Key:   "us-central1-docker.pkg.dev",
+					Value: "https://us-central1-docker.pkg.dev",
 				},
 				// Allow custom endpoint
 				{
