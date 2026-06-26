@@ -61,8 +61,8 @@ func TestFilterByPublic(t *testing.T) {
 	p := &Project{}
 
 	cases := []struct {
-		name        string
-		value       any
+		name         string
+		value        any
 		wantContains string
 	}{
 		{"true bool selects public", true, "value = 'true'"},

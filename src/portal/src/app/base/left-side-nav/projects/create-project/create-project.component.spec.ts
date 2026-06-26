@@ -177,12 +177,12 @@ describe('CreateProjectComponent', () => {
 
     it('should pass auth_only string to API on submit', async () => {
         let capturedArg: any;
-        spyOn(mockProjectService, 'createProject').and.callFake(
-            ((params: any) => {
-                capturedArg = params;
-                return of(true);
-            }) as any
-        );
+        spyOn(mockProjectService, 'createProject').and.callFake(((
+            params: any
+        ) => {
+            capturedArg = params;
+            return of(true);
+        }) as any);
         component.createProjectOpened = true;
         fixture.detectChanges();
         await fixture.whenStable();
@@ -196,12 +196,12 @@ describe('CreateProjectComponent', () => {
 
     it('should pass true string to API for public projects', async () => {
         let capturedArg: any;
-        spyOn(mockProjectService, 'createProject').and.callFake(
-            ((params: any) => {
-                capturedArg = params;
-                return of(true);
-            }) as any
-        );
+        spyOn(mockProjectService, 'createProject').and.callFake(((
+            params: any
+        ) => {
+            capturedArg = params;
+            return of(true);
+        }) as any);
         component.createProjectOpened = true;
         fixture.detectChanges();
         await fixture.whenStable();

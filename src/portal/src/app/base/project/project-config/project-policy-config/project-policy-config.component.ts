@@ -80,7 +80,12 @@ export class ProjectPolicy {
 
     initByProject(pro: Project) {
         const pub = pro.metadata.public;
-        this.Public = pub === 'true' ? 'true' : pub === 'auth_only' ? 'auth_only' : 'false';
+        this.Public =
+            pub === 'true'
+                ? 'true'
+                : pub === 'auth_only'
+                ? 'auth_only'
+                : 'false';
         this.ContentTrust = pro.metadata.enable_content_trust === 'true';
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';

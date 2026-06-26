@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 )
 
-
 var (
 	public = &proModels.Project{
 		ProjectID: 1,

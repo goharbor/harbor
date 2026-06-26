@@ -22,8 +22,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/controller/project"
-	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	repositorytesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -31,9 +31,9 @@ import (
 
 func TestFilterRepositories_ProjectPublic(t *testing.T) {
 	cases := []struct {
-		name           string
-		metadata       map[string]string
-		wantPublic     bool
+		name       string
+		metadata   map[string]string
+		wantPublic bool
 	}{
 		{"public project", map[string]string{"public": "true"}, true},
 		{"private project", map[string]string{"public": "false"}, false},
