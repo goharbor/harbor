@@ -384,9 +384,9 @@ Test Case - Robot Account Do Replication
     Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag1}
     Should Be Signed By Notation  ${tag1}
-    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
-    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
-    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
+    Retry Button Click  ${artifact_list_sbom_accessory_btn}
+    Retry Wait Element Visible  ${artifact_sbom_cosign_sub_accessory}
+    Retry Wait Element Visible  ${artifact_sbom_notation_sub_accessory}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed  ${tag2}
     Retry Button Click  ${artifact_list_accessory_btn}
@@ -420,9 +420,9 @@ Test Case - Robot Account Do Replication
     Retry Button Click  ${artifact_list_accessory_btn}
     Should Be Signed By Cosign  ${tag1}
     Should Be Signed By Notation  ${tag1}
-    Retry Button Click  (//clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//button)[2]
-    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.cosign']]
-    Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${sbom_short_digest}')]]//clr-dg-row[.//img[@title='signature.notation']]
+    Retry Button Click  ${artifact_list_sbom_accessory_btn}
+    Retry Wait Element Visible  ${artifact_sbom_cosign_sub_accessory}
+    Retry Wait Element Visible  ${artifact_sbom_notation_sub_accessory}
     Image Should Be Replicated To Project  project_dest${d}  ${image2}
     Should Be Signed  ${tag2}
     Retry Button Click  ${artifact_list_accessory_btn}

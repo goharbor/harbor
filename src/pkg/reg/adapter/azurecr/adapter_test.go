@@ -37,8 +37,9 @@ func TestInfo(t *testing.T) {
 	info, err := a.Info()
 	assert.Nil(t, err)
 	assert.NotNil(t, info)
-	assert.EqualValues(t, 1, len(info.SupportedResourceTypes))
+	assert.EqualValues(t, 2, len(info.SupportedResourceTypes))
 	assert.EqualValues(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+	assert.EqualValues(t, model.ResourceTypeArtifact, info.SupportedResourceTypes[1])
 	assert.True(t, info.SupportedCopyByChunk)
 }
 
