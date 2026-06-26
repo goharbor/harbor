@@ -63,6 +63,10 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Errorf("Failed to get user info from ID token: %v", err)
 		return nil
 	}
+	if !oidc.IsLoginAllowed(info, *setting) {
+		log.Warningf("ID token login denied for user %s: not in any authorized group", u.Username)
+		return nil
+	}
 	oidc.InjectGroupsToUser(info, u)
 	log.Debugf("an ID token security context generated for request %s %s", req.Method, req.URL.Path)
 	return local.NewSecurityContext(u)
