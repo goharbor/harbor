@@ -5,3 +5,21 @@
 .width-280 {
   width: 280px;
 }
+
+clr-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+
+  &:not(:last-child) {
+    margin-bottom: 0.5rem;
+  }
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    line-height: normal !important;
+  }
+}
+
