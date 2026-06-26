@@ -46,6 +46,7 @@ func TestOIDCCli(t *testing.T) {
 	assert.Nil(t, ctx)
 
 	// pass
+	config.InitWithSettings(map[string]any{common.OIDCLoginGroups: ""})
 	username := "oidcModiferTester"
 	password := "oidcSecret"
 	testCtl := &testingUser.Controller{}
