@@ -88,6 +88,7 @@ TRIVYFLAG=false
 EXPORTERFLAG=false
 HTTPPROXY=
 BUILDREG=true
+BUILDTRIVY=true
 BUILDTRIVYADP=true
 NPM_REGISTRY ?= https://registry.npmjs.org
 PIP_INDEX_URL ?= https://pypi.org/simple
@@ -143,9 +144,14 @@ NODEBUILDIMAGE=node:22.22.3
 REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
+# source of upstream Trivy scanner code (built from this tag when BUILDTRIVY=true)
+TRIVY_SRC=https://github.com/aquasecurity/trivy.git
 
 # dependency binaries
 REGISTRYURL=
+# TRIVY_DOWNLOAD_URL is only used as a fallback when BUILDTRIVY != true. Aqua prunes/yanks old
+# release assets, so this URL 404s for aged-out versions; building from source (the default) keeps
+# build-from-source of older Harbor tags working. See make/photon/Makefile:_build_trivy_adapter.
 ifeq ($(ARCH), arm64)
    TRIVY_DOWNLOAD_URL = https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-ARM64.tar.gz
 else
@@ -435,11 +441,11 @@ build:
 	fi
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile $(BUILDTARGET) -e DEVFLAG=$(DEVFLAG) -e GOBUILDIMAGE=$(GOBUILDIMAGE) -e NODEBUILDIMAGE=$(NODEBUILDIMAGE) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e REGISTRY_SRC_TAG=$(REGISTRY_SRC_TAG)  -e DISTRIBUTION_SRC=$(DISTRIBUTION_SRC)\
-	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) \
+	 -e TRIVYVERSION=$(TRIVYVERSION) -e TRIVYADAPTERVERSION=$(TRIVYADAPTERVERSION) -e TRIVY_SRC=$(TRIVY_SRC) \
 	 -e VALKEYVERSION=$(VALKEYVERSION) -e VALKEYSHA256=$(VALKEYSHA256) \
 	 -e VERSIONTAG=$(VERSIONTAG) \
 	 -e DOCKERNETWORK=$(DOCKERNETWORK) \
-	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
+	 -e BUILDREG=$(BUILDREG) -e BUILDTRIVY=$(BUILDTRIVY) -e BUILDTRIVYADP=$(BUILDTRIVYADP) \
 	 -e BUILD_INSTALLER=$(BUILD_INSTALLER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e PIP_INDEX_URL=$(PIP_INDEX_URL) -e BASEIMAGETAG=$(BASEIMAGETAG) -e IMAGENAMESPACE=$(IMAGENAMESPACE) -e BASEIMAGENAMESPACE=$(BASEIMAGENAMESPACE) \
 	 -e REGISTRYURL=$(REGISTRYURL) \

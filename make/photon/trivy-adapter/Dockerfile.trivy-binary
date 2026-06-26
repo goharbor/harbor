@@ -1,0 +1,19 @@
+ARG golang_image
+FROM ${golang_image}
+
+ARG trivy_version
+
+ENV TRIVY_DIR=/go/src/github.com/aquasecurity/trivy
+
+WORKDIR $TRIVY_DIR
+COPY . $TRIVY_DIR
+
+# Mirror Trivy's own build (magefiles/magefile.go, Build target):
+#   CGO_ENABLED=0 GOEXPERIMENT=jsonv2
+#   go build -ldflags "-s -w -X=github.com/aquasecurity/trivy/pkg/version/app.ver=<version>"
+# trivy_version is passed already stripped of its leading "v" by trivy-builder.sh,
+# so `trivy --version` reports e.g. 0.71.1. -buildvcs=false: the version is stamped
+# via the ldflag (not VCS) and the source is a shallow clone, matching how Harbor's
+# other Go binaries are built.
+RUN export CGO_ENABLED=0 GOEXPERIMENT=jsonv2 && \
+    go build -buildvcs=false -ldflags "-s -w -X=github.com/aquasecurity/trivy/pkg/version/app.ver=${trivy_version}" -o trivy ./cmd/trivy
