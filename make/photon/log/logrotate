@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# run the logrotate with user 10000, the state file "/var/lib/logrotate/logrotate.status"
-# is specified to avoid the permission error
+# use the explicit state file "/var/lib/logrotate/logrotate.status"
+# to avoid permission issues when rotating logs
 cd /
-sudo -u \#10000 -E /usr/sbin/logrotate -s /var/lib/logrotate/logrotate.status /etc/logrotate.conf
+/usr/sbin/logrotate -s /var/lib/logrotate/logrotate.status /etc/logrotate.conf
 exit 0
