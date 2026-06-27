@@ -571,3 +571,14 @@ func Test_filterGroup(t *testing.T) {
 		})
 	}
 }
+
+func TestUserInfoFromIDToken_EmptyRawIDToken(t *testing.T) {
+	token := &Token{
+		RawIDToken: "",
+	}
+
+	info, err := UserInfoFromIDToken(orm.Context(), token)
+
+	assert.NoError(t, err)
+	assert.Nil(t, info)
+}
