@@ -100,6 +100,13 @@ func (e *Event) Publish(ctx context.Context) error {
 // The process is done in a separated goroutine
 func BuildAndPublish(ctx context.Context, metadata ...Metadata) {
 	go func() {
+		// recover in case of panic during building or publishing the event,
+		// otherwise a panic in this detached goroutine would crash the process
+		defer func() {
+			if err := recover(); err != nil {
+				log.Errorf("recovered from the panic when building and publishing event: %v", err)
+			}
+		}()
 		event := &Event{}
 		if err := event.Build(ctx, metadata...); err != nil {
 			log.Errorf("failed to build the event from metadata: %v", err)

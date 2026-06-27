@@ -73,12 +73,19 @@ func (u *userEventResolver) Resolve(ce *commonevent.Metadata, event *notifiereve
 	if ce.RequestMethod != http.MethodPut {
 		return nil
 	}
+	// the base resolver leaves event.Data nil when the request URL does not match
+	// a specific user resource (e.g. PUT on the /api/v2.0/users collection), so
+	// skip the update instead of asserting on a nil value
+	commonEvent, ok := event.Data.(*model.CommonEvent)
+	if !ok || commonEvent == nil {
+		return nil
+	}
 	// update operation description for update user password and add/remove user as system administrator
-	origin := event.Data.(*model.CommonEvent).OperationDescription
+	origin := commonEvent.OperationDescription
 	if strings.HasSuffix(ce.RequestURL, "/sysadmin") {
-		event.Data.(*model.CommonEvent).OperationDescription = origin + ", add/remove user as system administrator"
+		commonEvent.OperationDescription = origin + ", add/remove user as system administrator"
 	} else if strings.HasSuffix(ce.RequestURL, "/password") {
-		event.Data.(*model.CommonEvent).OperationDescription = origin + ", change user password"
+		commonEvent.OperationDescription = origin + ", change user password"
 	}
 	return nil
 }
