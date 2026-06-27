@@ -32,15 +32,16 @@ import (
 )
 
 var (
-	base           = fmt.Sprintf("/api/%s", api.APIVersion)
-	sysInfoAPI     = base + "/systeminfo"
-	apiVersionAPI  = "/api/version"
-	labelsAPI      = base + "/labels"
-	projectsAPI    = base + "/projects"
-	reposAPIRe     = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
-	artifactsAPIRe = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
-	tagsAPIRe      = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
-	uctl           = user.Ctl
+	base              = fmt.Sprintf("/api/%s", api.APIVersion)
+	sysInfoAPI        = base + "/systeminfo"
+	apiVersionAPI     = "/api/version"
+	labelsAPI         = base + "/labels"
+	projectsAPI       = base + "/projects"
+	reposAPIRe        = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
+	artifactsAPIRe    = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
+	tagsAPIRe         = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
+	uctl              = user.Ctl
+	oidcCliSettingFn  = config.OIDCSetting
 )
 
 type oidcCli struct{}
@@ -77,7 +78,7 @@ func (o *oidcCli) Generate(req *http.Request) security.Context {
 		return nil
 	}
 
-	oidcSettings, err := config.OIDCSetting(ctx)
+	oidcSettings, err := oidcCliSettingFn(ctx)
 	if err != nil {
 		logger.Errorf("failed to get OIDC settings: %v", err)
 		return nil
