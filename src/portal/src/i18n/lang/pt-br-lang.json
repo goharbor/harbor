@@ -429,7 +429,8 @@
         "GUEST": "Convidado",
         "LIMITED_GUEST": "Convidado Limitado",
         "DELETION_TITLE": "Confirmação para remover membros",
-        "DELETION_SUMMARY": "Tem certeza de que deseja remover: {{param}}?"
+        "DELETION_SUMMARY": "Tem certeza de que deseja remover: {{param}}?",
+        "FILTER_PLACEHOLDER": "Filtrar grupos"
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "HABILITAR",

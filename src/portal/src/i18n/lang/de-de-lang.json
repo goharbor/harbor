@@ -470,7 +470,8 @@
         "GUEST": "Gast",
         "LIMITED_GUEST": "Limitierter Gast",
         "DELETION_TITLE": "Löschen der Gruppenmitglieder bestätigen",
-        "DELETION_SUMMARY": "Sollen die Gruppenmitglieder {{param}} gelöscht werden?"
+        "DELETION_SUMMARY": "Sollen die Gruppenmitglieder {{param}} gelöscht werden?",
+        "FILTER_PLACEHOLDER": "Gruppen filtern"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nutzername",
