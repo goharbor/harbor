@@ -247,17 +247,18 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 
 func TestOIDCSetting(t *testing.T) {
 	m := map[string]any{
-		common.OIDCName:         "test",
-		common.OIDCEndpoint:     "https://oidc.test",
-		common.OIDCVerifyCert:   "true",
-		common.OIDCAutoOnboard:  "false",
-		common.OIDCScope:        "openid, profile",
-		common.OIDCGroupsClaim:  "my_group",
-		common.OIDCUserClaim:    "username",
-		common.OIDCCLientID:     "client",
-		common.OIDCClientSecret: "secret",
-		common.ExtEndpoint:      "https://harbor.test",
-		common.OIDCLogout:       "false",
+		common.OIDCName:          "test",
+		common.OIDCEndpoint:      "https://oidc.test",
+		common.OIDCVerifyCert:    "true",
+		common.OIDCAutoOnboard:   "false",
+		common.OIDCScope:         "openid, profile",
+		common.OIDCGroupsClaim:   "my_group",
+		common.OIDCUserClaim:     "username",
+		common.OIDCRealnameClaim: "real name",
+		common.OIDCCLientID:      "client",
+		common.OIDCClientSecret:  "secret",
+		common.ExtEndpoint:       "https://harbor.test",
+		common.OIDCLogout:        "false",
 	}
 	InitWithSettings(m)
 	v, e := OIDCSetting(orm.Context())
@@ -272,6 +273,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+	assert.Equal(t, "real name", v.RealNameClaim)
 	assert.False(t, v.Logout)
 }
 
