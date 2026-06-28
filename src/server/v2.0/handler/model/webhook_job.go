@@ -43,6 +43,8 @@ func (n *WebhookJob) ToSwagger() *models.WebhookJob {
 		notifyType = "http"
 	} else if n.VendorType == job.SlackJobVendorType {
 		notifyType = "slack"
+	} else if n.VendorType == job.TeamsJobVendorType {
+		notifyType = "teams"
 	}
 	webhookJob.NotifyType = notifyType
 
