@@ -24,8 +24,9 @@ import (
 // Subscribe topics
 func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
-		model.WebhookTopic: {&notification.HTTPHandler{}},
-		model.SlackTopic:   {&notification.SlackHandler{}},
+		model.WebhookTopic:  {&notification.HTTPHandler{}},
+		model.SlackTopic:    {&notification.SlackHandler{}},
+		model.TelegramTopic: {&notification.TelegramHandler{}},
 	}
 
 	for t, handlers := range handlersMap {

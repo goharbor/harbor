@@ -8858,6 +8858,10 @@ definitions:
   NotifyType:
     type: string
     description: Webhook supported notify type.
+    enum:
+      - http
+      - slack
+      - telegram
     example: 'http'
   PayloadFormatType:
     type: string
