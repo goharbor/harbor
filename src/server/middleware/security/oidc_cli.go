@@ -32,16 +32,16 @@ import (
 )
 
 var (
-	base              = fmt.Sprintf("/api/%s", api.APIVersion)
-	sysInfoAPI        = base + "/systeminfo"
-	apiVersionAPI     = "/api/version"
-	labelsAPI         = base + "/labels"
-	projectsAPI       = base + "/projects"
-	reposAPIRe        = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
-	artifactsAPIRe    = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
-	tagsAPIRe         = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
-	uctl              = user.Ctl
-	oidcCliSettingFn  = config.OIDCSetting
+	base             = fmt.Sprintf("/api/%s", api.APIVersion)
+	sysInfoAPI       = base + "/systeminfo"
+	apiVersionAPI    = "/api/version"
+	labelsAPI        = base + "/labels"
+	projectsAPI      = base + "/projects"
+	reposAPIRe       = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories$`, regexp.QuoteMeta(base)))
+	artifactsAPIRe   = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts$`, regexp.QuoteMeta(base)))
+	tagsAPIRe        = regexp.MustCompile(fmt.Sprintf(`^%s/projects/.*/repositories/.*/artifacts/.*/tags/.*$`, regexp.QuoteMeta(base)))
+	uctl             = user.Ctl
+	oidcCliSettingFn = config.OIDCSetting
 )
 
 type oidcCli struct{}
