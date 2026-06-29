@@ -244,6 +244,13 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 			if err != nil {
 				return r.SendError(ctx, err)
 			}
+			// When an existing registry is referenced by id, keep the ping
+			// bound to its saved URL so the health check validates the actual
+			// configured endpoint rather than an arbitrary override.
+			if params.Registry.ID != nil && url != registry.URL {
+				return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).
+					WithMessage("cannot override the URL of an existing registry"))
+			}
 			registry.URL = url
 		}
 		if params.Registry.Insecure != nil {
