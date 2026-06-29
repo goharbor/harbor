@@ -20,6 +20,14 @@ import { JobserviceService } from '../../../../../../ng-swagger-gen/services/job
 import { Worker, WorkerPool } from 'ng-swagger-gen/models';
 import { ScheduleListResponse } from '../job-service-dashboard.interface';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import {
+    ConfirmationState,
+    ConfirmationTargets,
+} from '../../../../shared/entities/shared.const';
+import { ConfirmationDialogService } from '../../../global-confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationAcknowledgement } from '../../../global-confirmation-dialog/confirmation-state-message';
+import { MessageHandlerService } from 'src/app/shared/services/message-handler.service';
+import { OperationService } from '../../../../shared/components/operation/operation.service';
 
 describe('WorkerListComponent', () => {
     let component: WorkerListComponent;
@@ -37,6 +45,9 @@ describe('WorkerListComponent', () => {
     const fakedJobserviceService = {
         getWorkerPools() {
             return of(mockedPools).pipe(delay(0));
+        },
+        stopRunningJob() {
+            return of(null);
         },
     };
     const fakedJobServiceDashboardSharedDataService = {
@@ -82,5 +93,73 @@ describe('WorkerListComponent', () => {
         await fixture.whenStable();
         const rows = fixture.nativeElement.querySelectorAll('clr-dg-row');
         expect(rows.length).toEqual(3); // 1 + 2
+    });
+
+    it('canFree should return correct value based on selected workers', () => {
+        component.selected = [];
+        expect(component.canFree()).toBeFalse();
+
+        // One selected worker with job_id
+        component.selected = [mockedWorkers[0]];
+        expect(component.canFree()).toBeTrue();
+
+        // One selected worker without job_id
+        component.selected = [{ id: '3', pool_id: '1' }];
+        expect(component.canFree()).toBeFalse();
+
+        // Multiple selected, one without job_id
+        component.selected = [mockedWorkers[0], { id: '3', pool_id: '1' }];
+        expect(component.canFree()).toBeFalse();
+    });
+
+    it('freeWorker should open confirm dialog', () => {
+        const dialogService = TestBed.inject(ConfirmationDialogService);
+        const spy = spyOn(dialogService, 'openComfirmDialog').and.callThrough();
+
+        component.selected = [mockedWorkers[0]];
+        component.freeWorker();
+
+        expect(spy).toHaveBeenCalled();
+        const arg = spy.calls.mostRecent().args[0];
+        expect(arg.title).toEqual('JOB_SERVICE_DASHBOARD.CONFIRM_FREE_WORKERS');
+        expect(arg.message).toEqual(
+            'JOB_SERVICE_DASHBOARD.CONFIRM_FREE_WORKERS_CONTENT'
+        );
+    });
+
+    it('should execute free workers when confirmed', () => {
+        const dialogService = TestBed.inject(ConfirmationDialogService);
+        const jobService = TestBed.inject(JobserviceService);
+        const messageHandler = TestBed.inject(MessageHandlerService);
+        const operationService = TestBed.inject(OperationService);
+
+        const stopJobSpy = spyOn(jobService, 'stopRunningJob').and.returnValue(
+            of(null)
+        );
+        const messageInfoSpy = spyOn(messageHandler, 'info');
+        const operationSpy = spyOn(operationService, 'publishInfo');
+
+        component.selected = [mockedWorkers[0]];
+        component.executeFreeWorkers();
+
+        expect(stopJobSpy).toHaveBeenCalledWith({ jobId: '1' });
+        expect(messageInfoSpy).toHaveBeenCalledWith(
+            'JOB_SERVICE_DASHBOARD.FREE_WORKER_SUCCESS'
+        );
+        expect(operationSpy).toHaveBeenCalled();
+    });
+
+    it('should trigger executeFreeWorkers when confirm message is received', () => {
+        const dialogService = TestBed.inject(ConfirmationDialogService);
+        const executeSpy = spyOn(component, 'executeFreeWorkers');
+
+        const ack = new ConfirmationAcknowledgement(
+            ConfirmationState.CONFIRMED,
+            mockedWorkers,
+            ConfirmationTargets.FREE_SPECIFIED_WORKERS
+        );
+        dialogService.confirm(ack);
+
+        expect(executeSpy).toHaveBeenCalled();
     });
 });
