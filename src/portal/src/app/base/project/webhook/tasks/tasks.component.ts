@@ -30,11 +30,16 @@ import {
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { Task } from 'ng-swagger-gen/models/task';
 import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-tasks',
     templateUrl: './tasks.component.html',
     styleUrls: ['./tasks.component.scss'],
+    standalone: false,
 })
 export class TasksComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
@@ -57,7 +62,8 @@ export class TasksComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private webhookService: WebhookService,
-        private messageHandlerService: MessageHandlerService
+        private messageHandlerService: MessageHandlerService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     ngOnInit(): void {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
@@ -90,6 +96,7 @@ export class TasksComponent implements OnInit, OnDestroy {
                     projectNameOrId: this.projectId.toString(),
                     q: encodeURIComponent(`id=${this.executionId}`),
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.inProgress = false)))
                 .subscribe({
                     next: res => {
@@ -163,6 +170,7 @@ export class TasksComponent implements OnInit, OnDestroy {
                 sort: sort,
                 q: q,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;

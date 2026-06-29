@@ -4,13 +4,16 @@ set -x
 set -e
 
 sudo apt-get update && sudo apt-get install -y libldap2-dev
+
+if [ -n "$XDG_CONFIG_HOME" ] && [[ "$XDG_CONFIG_HOME" == *'$HOME'* ]]; then
+    unset XDG_CONFIG_HOME
+fi
+if [ -z "$XDG_CONFIG_HOME" ] || [[ "$XDG_CONFIG_HOME" != /* ]]; then
+    export XDG_CONFIG_HOME="$HOME/.config"
+fi
+
 go env -w GO111MODULE=auto
 pwd
-# cd ./src
-# go get github.com/docker/distribution@latest
-# go get github.com/docker/libtrust@latest
-# set +e
-# go get github.com/stretchr/testify@v1.8.4
 go install golang.org/x/tools/cmd/cover@latest
 go install github.com/mattn/goveralls@latest
 go install github.com/client9/misspell/cmd/misspell@latest
@@ -18,7 +21,7 @@ set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.1.2
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
@@ -26,7 +29,7 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
+sudo make build -e BUILDTARGET="_build_db _build_registry _build_valkey _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
 docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"

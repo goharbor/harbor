@@ -49,6 +49,7 @@ const TARGET_BLANK = '_blank';
             useValue: localStorage.getItem(DEFAULT_LANG_LOCALSTORAGE_KEY),
         },
     ],
+    standalone: false,
 })
 export class SecurityComponent implements OnInit, OnDestroy {
     onGoing = false;

@@ -40,6 +40,11 @@ import { Accessory, ScanType } from 'ng-swagger-gen/models';
 import { ScanTypes } from '../../../../../shared/entities/shared.const';
 import { SBOMOverview } from './sbom-overview';
 import { Scanner } from '../../../../left-side-nav/interrogation-services/scanner/scanner';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
+
 const STATE_CHECK_INTERVAL: number = 3000; // 3s
 const RETRY_TIMES: number = 3;
 
@@ -47,6 +52,7 @@ const RETRY_TIMES: number = 3;
     selector: 'hbr-sbom-bar',
     templateUrl: './sbom-scan-component.html',
     styleUrls: ['./scanning.scss'],
+    standalone: false,
 })
 export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() inputScanner: Scanner;
@@ -76,7 +82,8 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
         private artifactService: ArtifactService,
         private scanService: ScanService,
         private errorHandler: ErrorHandler,
-        private eventService: EventService
+        private eventService: EventService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -239,6 +246,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
                 withAccessory: true,
                 XAcceptVulnerabilities: DEFAULT_SUPPORTED_MIME_TYPES,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(
                 (artifact: Artifact) => {
                     // To keep the same summary reference, use value copy.

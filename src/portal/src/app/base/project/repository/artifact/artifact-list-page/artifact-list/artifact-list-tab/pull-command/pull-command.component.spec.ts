@@ -29,6 +29,9 @@ describe('PullCommandComponent', () => {
 
         fixture = TestBed.createComponent(PullCommandComponent);
         component = fixture.componentInstance;
+        component.registryUrl = 'demo.goharbor.io';
+        component.projectName = 'library';
+        component.repoName = 'hello-world';
 
         component.artifact = {
             type: ArtifactType.CHART,
@@ -44,23 +47,67 @@ describe('PullCommandComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should not display pull command for chart', async () => {
-        // Mock the artifact input with a valid value
-        component.artifact = {
+    const artifactTestCases = [
+        {
+            type: ArtifactType.IMAGE,
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForRuntimeByTag(artifact),
+        },
+        {
+            type: ArtifactType.CNAB,
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForCNABByTag(artifact),
+        },
+        {
             type: ArtifactType.CHART,
-            tagNumber: 0,
-            digest: 'sha256@digest',
-            tags: [],
-        };
-        component.getPullCommandForChart(component.artifact);
-        expect(
-            component.getPullCommandForChart(component.artifact).length
-        ).toBe(0);
-        fixture.detectChanges();
-        await fixture.whenStable();
-        const modal =
-            fixture.nativeElement.querySelector(`#pullCommandForChart`);
-        expect(modal).toBeFalsy();
+            method: (component: any, artifact: any) =>
+                component.getPullCommandForChart(artifact),
+        },
+    ];
+
+    artifactTestCases.forEach(({ type, method }) => {
+        it(`should not display pull command modal when tag is undefined for artifact type: ${type}`, async () => {
+            // Arrange: mock artifact with missing tag data
+            component.artifact = {
+                type,
+                tagNumber: undefined,
+                digest: 'sha256@digest',
+                tags: undefined,
+            };
+
+            const pullCommand = method(component, component.artifact);
+            expect(pullCommand.length).toBe(0);
+
+            fixture.detectChanges();
+            await fixture.whenStable();
+
+            const modal = fixture.nativeElement.querySelector(
+                '#pullCommandForChart'
+            );
+            expect(modal).toBeFalsy();
+        });
+    });
+
+    artifactTestCases.forEach(({ type, method }) => {
+        it(`should not display pull command modal when no tag for artifact type: ${type}`, async () => {
+            component.artifact = {
+                type,
+                tagNumber: 0,
+                digest: 'sha256@digest',
+                tags: [],
+            };
+
+            const pullCommand = method(component, component.artifact);
+            expect(pullCommand.length).toBe(0);
+
+            fixture.detectChanges();
+            await fixture.whenStable();
+
+            const modal = fixture.nativeElement.querySelector(
+                '#pullCommandForChart'
+            );
+            expect(modal).toBeFalsy();
+        });
     });
 
     it('should display when pull command for chart is available', async () => {
@@ -107,5 +154,52 @@ describe('PullCommandComponent', () => {
         const modal =
             fixture.nativeElement.querySelector(`#pullCommandForCNAB`);
         expect(modal).toBeTruthy();
+    });
+
+    [
+        { tagNumber: 1, tags: [{ name: '1.0.0' }] },
+        { tagNumber: 2, tags: [{ name: '1.0.0' }, { name: 'latest' }] },
+        { tagNumber: 0, tags: [] },
+        { tagNumber: undefined, tags: undefined },
+    ].forEach(({ tagNumber, tags }) => {
+        it(`should use selected tag for image tag pull command when artifact tag number is ${tagNumber}`, () => {
+            component.selectedTag = '2.0.0';
+
+            const pullCommand = component.getPullCommandForRuntimeByTag({
+                type: ArtifactType.IMAGE,
+                tagNumber,
+                tags,
+            });
+
+            expect(pullCommand).toEqual(
+                'docker pull demo.goharbor.io/library/hello-world:2.0.0'
+            );
+        });
+    });
+
+    it('should use selected tag for chart tag pull command even when artifact tags are unavailable', () => {
+        component.selectedTag = '2.0.0';
+
+        const pullCommand = component.getPullCommandForChartByTag({
+            type: ArtifactType.CHART,
+            tagNumber: undefined,
+            tags: undefined,
+        });
+
+        expect(pullCommand).toEqual(
+            'helm pull oci://demo.goharbor.io/library/hello-world --version 2.0.0'
+        );
+    });
+
+    it('should not build a tag pull command without selected tag', () => {
+        component.selectedTag = '';
+
+        const pullCommand = component.getPullCommandForRuntimeByTag({
+            type: ArtifactType.IMAGE,
+            tagNumber: 1,
+            tags: [{ name: '1.0.0' }],
+        });
+
+        expect(pullCommand).toEqual('');
     });
 });

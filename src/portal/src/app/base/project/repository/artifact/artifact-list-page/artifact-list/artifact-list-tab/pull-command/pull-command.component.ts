@@ -29,6 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
     selector: 'app-pull-command',
     templateUrl: './pull-command.component.html',
     styleUrls: ['./pull-command.component.scss'],
+    standalone: false,
 })
 export class PullCommandComponent {
     @Input()
@@ -100,18 +101,18 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChart(artifact: Artifact): string {
-        if (artifact.tagNumber > 0) {
-            return getPullCommandByTag(
-                artifact.type,
-                `${this.registryUrl ? this.registryUrl : location.hostname}/${
-                    this.projectName
-                }/${this.repoName}`,
-                artifact.tags[0].name,
-                Clients.CHART
-            );
-        } else {
+        // early return if artifact has no tags
+        if (!this.isArtifactTagValid(artifact)) {
             return '';
         }
+        return getPullCommandByTag(
+            artifact.type,
+            `${this.registryUrl ? this.registryUrl : location.hostname}/${
+                this.projectName
+            }/${this.repoName}`,
+            artifact.tags[0].name,
+            Clients.CHART
+        );
     }
 
     // For tagMode
@@ -127,6 +128,9 @@ export class PullCommandComponent {
     }
 
     getPullCommandForRuntimeByTag(artifact: Artifact): string {
+        if (!this.isSelectedTagValid()) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -138,6 +142,9 @@ export class PullCommandComponent {
     }
 
     getPullCommandForCNABByTag(artifact: Artifact): string {
+        if (!this.isSelectedTagValid()) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -149,6 +156,9 @@ export class PullCommandComponent {
     }
 
     getPullCommandForChartByTag(artifact: Artifact): string {
+        if (!this.isSelectedTagValid()) {
+            return '';
+        }
         return getPullCommandByTag(
             artifact.type,
             `${this.registryUrl ? this.registryUrl : location.hostname}/${
@@ -157,6 +167,20 @@ export class PullCommandComponent {
             this.selectedTag,
             Clients.CHART
         );
+    }
+
+    private isArtifactTagValid(artifact: Artifact): boolean {
+        return (
+            typeof artifact.tagNumber === 'number' &&
+            artifact.tagNumber > 0 &&
+            Array.isArray(artifact.tags) &&
+            artifact.tags.length > 0 &&
+            typeof artifact.tags[0]?.name === 'string'
+        );
+    }
+
+    private isSelectedTagValid(): boolean {
+        return typeof this.selectedTag === 'string' && this.selectedTag !== '';
     }
 
     onCpSuccess(copied: string): void {

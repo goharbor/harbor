@@ -16,10 +16,10 @@ package provider
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/url"
 	"slices"
-
-	"github.com/pkg/errors"
 )
 
 var (
@@ -61,7 +61,7 @@ func (img *PreheatImage) FromJSON(data string) error {
 	}
 
 	if err := json.Unmarshal([]byte(data), img); err != nil {
-		return errors.Wrap(err, "construct preheating image error")
+		return fmt.Errorf("construct preheating image error: %w", err)
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func (img *PreheatImage) FromJSON(data string) error {
 func (img *PreheatImage) ToJSON() (string, error) {
 	data, err := json.Marshal(img)
 	if err != nil {
-		return "", errors.Wrap(err, "encode preheating image error")
+		return "", fmt.Errorf("encode preheating image error: %w", err)
 	}
 
 	return string(data), nil
@@ -80,7 +80,7 @@ func (img *PreheatImage) ToJSON() (string, error) {
 // Validate PreheatImage
 func (img *PreheatImage) Validate() error {
 	if !slices.Contains(SupportedTypes, img.Type) {
-		return errors.Errorf("unsupported type '%s'", img.Type)
+		return fmt.Errorf("unsupported type '%s'", img.Type)
 	}
 
 	if len(img.ImageName) == 0 || len(img.Tag) == 0 {
@@ -93,7 +93,7 @@ func (img *PreheatImage) Validate() error {
 
 	_, err := url.Parse(img.URL)
 	if err != nil {
-		return errors.Wrap(err, "malformed registry URL")
+		return fmt.Errorf("malformed registry URL: %w", err)
 	}
 
 	return nil

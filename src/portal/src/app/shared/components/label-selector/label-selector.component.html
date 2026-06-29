@@ -18,44 +18,41 @@
             (click)="goToLabelPage()">
             {{ 'LABEL.NO_LABELS' | translate }}
         </div>
-        <ng-container *ngIf="usedInDropdown; else notUsedInDropdown">
-            <div [hidden]="!candidateLabels.length" class="has-label">
-                <button
-                    clrDropdownItem
-                    type="button"
-                    class="dropdown-item"
-                    *ngFor="let label of candidateLabels"
-                    (click)="selectLabel(label)">
-                    <clr-icon
-                        shape="check"
-                        class="check-icon"
-                        [style.visibility]="
-                            isSelect(label) ? 'visible' : 'hidden'
-                        ">
-                    </clr-icon>
-                    <hbr-label-piece [label]="label" [labelWidth]="130">
-                    </hbr-label-piece>
-                </button>
-            </div>
-        </ng-container>
-        <ng-template #notUsedInDropdown>
-            <div [hidden]="!candidateLabels.length" class="has-label">
-                <button
-                    type="button"
-                    class="dropdown-item"
-                    *ngFor="let label of candidateLabels"
-                    (click)="selectLabel(label)">
-                    <clr-icon
-                        shape="check"
-                        class="check-icon"
-                        [style.visibility]="
-                            isSelect(label) ? 'visible' : 'hidden'
-                        ">
-                    </clr-icon>
-                    <hbr-label-piece [label]="label" [labelWidth]="130">
-                    </hbr-label-piece>
-                </button>
-            </div>
-        </ng-template>
+        @if (usedInDropdown) {
+        <div [hidden]="!candidateLabels.length" class="has-label">
+            @for (label of candidateLabels; track label) {
+            <button
+                clrDropdownItem
+                type="button"
+                class="dropdown-item"
+                (click)="selectLabel(label)">
+                <clr-icon
+                    shape="check"
+                    class="check-icon"
+                    [style.visibility]="isSelect(label) ? 'visible' : 'hidden'">
+                </clr-icon>
+                <hbr-label-piece [label]="label" [labelWidth]="130">
+                </hbr-label-piece>
+            </button>
+            }
+        </div>
+        } @else {
+        <div [hidden]="!candidateLabels.length" class="has-label">
+            @for (label of candidateLabels; track label) {
+            <button
+                type="button"
+                class="dropdown-item"
+                (click)="selectLabel(label)">
+                <clr-icon
+                    shape="check"
+                    class="check-icon"
+                    [style.visibility]="isSelect(label) ? 'visible' : 'hidden'">
+                </clr-icon>
+                <hbr-label-piece [label]="label" [labelWidth]="130">
+                </hbr-label-piece>
+            </button>
+            }
+        </div>
+        }
     </div>
 </div>

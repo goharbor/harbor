@@ -21,6 +21,13 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 )
 
+const (
+	// HeaderNoSessionRenewal is the header to indicate that the request
+	// should not renew the session TTL. Used by frontend background polling
+	// requests to prevent the session from being kept alive indefinitely.
+	HeaderNoSessionRenewal = "X-Harbor-No-Session-Renewal"
+)
+
 // Middleware returns a session middleware that populates the information indicates whether
 // the request carries session or not
 func Middleware() func(http.Handler) http.Handler {
@@ -32,6 +39,11 @@ func Middleware() func(http.Handler) http.Handler {
 			if err == nil {
 				r = r.WithContext(lib.WithCarrySession(r.Context(), true))
 			}
+
+			if r.Header.Get(HeaderNoSessionRenewal) != "" {
+				r = r.WithContext(lib.WithSkipSessionRenewal(r.Context(), true))
+			}
+
 			handler.ServeHTTP(w, r)
 		})
 	}

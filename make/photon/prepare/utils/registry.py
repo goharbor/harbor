@@ -47,6 +47,7 @@ def parse_redis(redis_url):
         return {
             'redis_host': u.netloc.split('@')[-1],
             'redis_password': '' if u.password is None else unquote(u.password),
+            'redis_username': '' if u.username is None else unquote(u.username),
             'redis_db_index_reg': u.path and int(u.path[1:]) or 0,
             'redis_enableTLS': 'false',
         }
@@ -54,6 +55,7 @@ def parse_redis(redis_url):
         return {
             'redis_host': u.netloc.split('@')[-1],
             'redis_password': '' if u.password is None else unquote(u.password),
+            'redis_username': '' if u.username is None else unquote(u.username),
             'redis_db_index_reg': u.path and int(u.path[1:]) or 0,
             'redis_enableTLS': 'true',
         }
@@ -62,6 +64,7 @@ def parse_redis(redis_url):
             'sentinel_master_set': u.path.split('/')[1],
             'redis_host': u.netloc.split('@')[-1],
             'redis_password': '' if u.password is None else unquote(u.password),
+            'redis_username': '' if u.username is None else unquote(u.username),
             'redis_db_index_reg': len(u.path.split('/')) == 3 and int(u.path.split('/')[2]) or 0,
             'redis_enableTLS': 'false',
         }
@@ -70,6 +73,7 @@ def parse_redis(redis_url):
             'sentinel_master_set': u.path.split('/')[1],
             'redis_host': u.netloc.split('@')[-1],
             'redis_password': '' if u.password is None else unquote(u.password),
+            'redis_username': '' if u.username is None else unquote(u.username),
             'redis_db_index_reg': len(u.path.split('/')) == 3 and int(u.path.split('/')[2]) or 0,
             'redis_enableTLS': 'true',
         }

@@ -47,13 +47,15 @@ class TestLogRotation(unittest.TestCase, object):
         # wait more 5s for status update after stop
         time.sleep(5)
         job_status = self.purge.get_purge_job(latest_job.id).job_status
-        self.assertEqual(self.purge.get_purge_job(latest_job.id).job_status, "Stopped")
+        # The dry-run job can finish before the stop request is processed; in
+        # that case Harbor keeps the final status as Success instead of Stopped.
+        self.assertIn(job_status, ["Stopped", "Success"])
         # 4. Create a purge audit log job
         self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False, audit_retention_hour=1)
         # 5. Verify purge audit log job status is Success
         job_status = None
         job_id = None
-        for i in range(10):
+        for i in range(20):
             print("wait for the job to finish:", i)
             if job_id == None:
                 latest_job = self.purge.get_latest_purge_job()

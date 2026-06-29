@@ -147,10 +147,11 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 
 	if u.User != nil {
 		username := u.User.Username()
+		// Only adding for debugging when username is explicitly set
 		if username != "" {
-			log.Debug(name, "redis has username")
-			redisOptions = append(redisOptions, redis.DialUsername(username))
+			log.Debug(name, "redis has username:", username)
 		}
+		redisOptions = append(redisOptions, redis.DialUsername(username))
 		password, isSet := u.User.Password()
 		if isSet {
 			log.Debug(name, "redis has password")
@@ -161,7 +162,7 @@ func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, er
 	// sentinel doesn't need select db
 	db := 0
 	if len(ps) > 2 {
-		db, err := strconv.Atoi(ps[2])	
+		db, err := strconv.Atoi(ps[2])
 		if err != nil {
 			return nil, fmt.Errorf("invalid redis db: %s, %s", ps[1], name)
 		}

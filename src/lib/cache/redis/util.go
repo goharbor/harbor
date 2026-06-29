@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -167,7 +167,7 @@ func (o *queryOptions) remaining() []string {
 
 // setupConnParams converts query parameters in u to option value in o.
 func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptions, error) {
-    q := queryOptions{q: u.Query()}
+	q := queryOptions{q: u.Query()}
 
 	// compat: a future major release may use q.int("db")
 	if tmp := q.string("db"); tmp != "" {
@@ -187,31 +187,30 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 	o.PoolFIFO = q.bool("pool_fifo")
 	o.PoolSize = q.int("pool_size")
 	o.MinIdleConns = q.int("min_idle_conns")
-	o.MaxConnAge = q.duration("max_conn_age")
+	o.ConnMaxLifetime = q.duration("max_conn_age")
 	o.PoolTimeout = q.duration("pool_timeout")
-	o.IdleTimeout = q.duration("idle_timeout")
+	o.ConnMaxIdleTime = q.duration("idle_timeout")
 	// For compatibility
 	if t := q.duration("idle_timeout_seconds"); t != 0 {
-		o.IdleTimeout = t
+		o.ConnMaxIdleTime = t
 	}
-    o.IdleCheckFrequency = q.duration("idle_check_frequency")
+	// sentinel specific authentication parameters, allowing different credentials
+	// to authenticate against Sentinel while keeping master auth intact
+	if su := q.string("sentinel_username"); su != "" {
+		o.SentinelUsername = su
+	}
+	if sp := q.string("sentinel_password"); sp != "" {
+		o.SentinelPassword = sp
+	}
 
-    // sentinel specific authentication parameters, allowing different credentials
-    // to authenticate against Sentinel while keeping master auth intact
-    if su := q.string("sentinel_username"); su != "" {
-        o.SentinelUsername = su
-    }
-    if sp := q.string("sentinel_password"); sp != "" {
-        o.SentinelPassword = sp
-    }
-    if q.err != nil {
-        return nil, q.err
-    }
+	if q.err != nil {
+		return nil, q.err
+	}
 
 	// any parameters left?
-    if r := q.remaining(); len(r) > 0 {
-        return nil, errors.Errorf("redis: unexpected option: %s", strings.Join(r, ", "))
-    }
+	if r := q.remaining(); len(r) > 0 {
+		return nil, errors.Errorf("redis: unexpected option: %s", strings.Join(r, ", "))
+	}
 
-    return o, nil
+	return o, nil
 }
