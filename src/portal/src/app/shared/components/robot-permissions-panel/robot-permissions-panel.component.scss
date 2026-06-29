@@ -18,3 +18,19 @@
   margin-bottom: 0.25rem;
   width: fit-content;
 }
+
+:host ::ng-deep {
+  .clr-form-control-disabled .clr-checkbox-wrapper input[type="checkbox"]:checked::before,
+  .clr-checkbox-wrapper.clr-checkbox-wrapper-disabled input[type="checkbox"]:checked::before,
+  .clr-checkbox-wrapper input[type="checkbox"]:disabled:checked::before {
+    background-color: var(--clr-forms-checkbox-background-color, #0072a3) !important;
+    border: none !important;
+  }
+
+  .clr-form-control-disabled .clr-checkbox-wrapper input[type="checkbox"]:checked::after,
+  .clr-checkbox-wrapper.clr-checkbox-wrapper-disabled input[type="checkbox"]:checked::after,
+  .clr-checkbox-wrapper input[type="checkbox"]:disabled:checked::after {
+    border-color: var(--clr-forms-checkbox-mark-color, #fff) !important;
+  }
+}
+
