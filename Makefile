@@ -132,7 +132,7 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.71.1
-TRIVYADAPTERVERSION=v0.37.1
+TRIVYADAPTERVERSION=v0.37.2-rc1
 # VALKEYVERSION and VALKEYSHA256 are only used for the arm64 source build.
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
