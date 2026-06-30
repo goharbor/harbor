@@ -140,7 +140,7 @@ VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
 NODEBUILDIMAGE=node:22.22.3
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
+REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.5
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
