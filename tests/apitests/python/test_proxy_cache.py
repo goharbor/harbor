@@ -156,6 +156,108 @@ class TestProxyCache(unittest.TestCase):
         print("Index's reference by ctr CLI:", ret_index_by_c.references)
         self.assertTrue(len(ret_index_by_c.references) == 1)
 
+    def test_cross_project_cache_reuse(self):
+        """
+        Scenario 1: Cross-Project Cache Reuse
+        - Pull image through Proxy Cache Project A.
+        - Pull the same image through Proxy Cache Project B.
+        - Verify repository entries exist in both projects.
+        """
+        registry_type = "docker-hub"
+        registry = "https://hub.docker.com"
+        image = dict(image="alpine", tag="latest")
+
+        registry_payload = {
+            "url": registry,
+            "name": _random_name(registry_type),
+            "registry_type": registry_type,
+            "access_key": DOCKER_USER,
+            "access_secret": DOCKER_PWD,
+            "insecure": True,
+        }
+        registry_id, _ = self.registry.create_registry(
+            registry_payload["url"],
+            name=registry_payload["name"],
+            registry_type=registry_payload["registry_type"],
+            access_key=registry_payload["access_key"],
+            access_secret=registry_payload["access_secret"],
+            insecure=registry_payload["insecure"],
+            **ADMIN_CLIENT
+        )
+
+        project_id_a, project_name_a = self.project.create_project(registry_id=registry_id, metadata={"public": "false"}, **ADMIN_CLIENT)
+        project_id_b, project_name_b = self.project.create_project(registry_id=registry_id, metadata={"public": "false"}, **ADMIN_CLIENT)
+
+        user_id, user_name = self.user.create_user(user_password=self.user_password, **ADMIN_CLIENT)
+        USER_CLIENT = dict(endpoint=self.url, username=user_name, password=self.user_password)
+        self.project.add_project_members(project_id_a, user_id=user_id, **ADMIN_CLIENT)
+        self.project.add_project_members(project_id_b, user_id=user_id, **ADMIN_CLIENT)
+
+        # Pull through Project A
+        pull_harbor_image(harbor_server, USER_CLIENT["username"], USER_CLIENT["password"], project_name_a + "/library/" + image["image"], image["tag"])
+        self.artifact.waiting_for_reference_exist(project_name_a, urllib.parse.quote("library/" + image["image"], 'utf-8'), image["tag"], **USER_CLIENT)
+
+        # Pull through Project B
+        pull_harbor_image(harbor_server, USER_CLIENT["username"], USER_CLIENT["password"], project_name_b + "/library/" + image["image"], image["tag"])
+        self.artifact.waiting_for_reference_exist(project_name_b, urllib.parse.quote("library/" + image["image"], 'utf-8'), image["tag"], **USER_CLIENT)
+
+    def test_existing_local_artifact(self):
+        """
+        Scenario 2: Existing Local Artifact
+        - Seed Harbor with an artifact (e.g. by pushing directly to a normal project).
+        - Pull it through a new Proxy Cache project.
+        - Verify repository creation occurs even when no remote fetch happens.
+        """
+        # Create a standard project and push an image
+        project_id_normal, project_name_normal = self.project.create_project(metadata={"public": "false"}, **ADMIN_CLIENT)
+        user_id, user_name = self.user.create_user(user_password=self.user_password, **ADMIN_CLIENT)
+        USER_CLIENT = dict(endpoint=self.url, username=user_name, password=self.user_password)
+        self.project.add_project_members(project_id_normal, user_id=user_id, **ADMIN_CLIENT)
+
+        # Ensure docker-hub proxy registry exists
+        registry_type = "docker-hub"
+        registry = "https://hub.docker.com"
+        image = dict(image="busybox", tag="latest")
+
+        registry_payload = {
+            "url": registry,
+            "name": _random_name(registry_type),
+            "registry_type": registry_type,
+            "access_key": DOCKER_USER,
+            "access_secret": DOCKER_PWD,
+            "insecure": True,
+        }
+        registry_id, _ = self.registry.create_registry(
+            registry_payload["url"],
+            name=registry_payload["name"],
+            registry_type=registry_payload["registry_type"],
+            access_key=registry_payload["access_key"],
+            access_secret=registry_payload["access_secret"],
+            insecure=registry_payload["insecure"],
+            **ADMIN_CLIENT
+        )
+
+        project_id_proxy, project_name_proxy = self.project.create_project(registry_id=registry_id, metadata={"public": "false"}, **ADMIN_CLIENT)
+        self.project.add_project_members(project_id_proxy, user_id=user_id, **ADMIN_CLIENT)
+
+        # First pull to local (seeds docker host) from docker hub directly
+        subprocess.run(["docker", "pull", image["image"] + ":" + image["tag"]], check=True)
+        # Tag and push to normal project
+        subprocess.run(["docker", "tag", image["image"] + ":" + image["tag"], harbor_server + "/" + project_name_normal + "/library/" + image["image"] + ":" + image["tag"]], check=True)
+        subprocess.run(["docker", "login", harbor_server, "-u", USER_CLIENT["username"], "-p", USER_CLIENT["password"]], check=True)
+        subprocess.run(["docker", "push", harbor_server + "/" + project_name_normal + "/library/" + image["image"] + ":" + image["tag"]], check=True)
+
+        self.artifact.waiting_for_reference_exist(project_name_normal, urllib.parse.quote("library/" + image["image"], 'utf-8'), image["tag"], **USER_CLIENT)
+
+        # Remove image from docker local cache so it triggers a pull through proxy
+        subprocess.run(["docker", "rmi", image["image"] + ":" + image["tag"]], check=False)
+        subprocess.run(["docker", "rmi", harbor_server + "/" + project_name_normal + "/library/" + image["image"] + ":" + image["tag"]], check=False)
+
+        # Pull through Proxy Cache project
+        pull_harbor_image(harbor_server, USER_CLIENT["username"], USER_CLIENT["password"], project_name_proxy + "/library/" + image["image"], image["tag"])
+        self.artifact.waiting_for_reference_exist(project_name_proxy, urllib.parse.quote("library/" + image["image"], 'utf-8'), image["tag"], **USER_CLIENT)
+
+
     def test_proxy_cache(self):
         proxy_upstream_list = os.getenv("PROXY_UPSTREAM_LIST", "").lower()
         if not proxy_upstream_list or "harbor" in proxy_upstream_list:
