@@ -133,6 +133,7 @@ PREPARE_VERSION_NAME=versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.71.1
 TRIVYADAPTERVERSION=v0.38.0-rc1
+
 # VALKEYVERSION and VALKEYSHA256 are only used for the arm64 source build.
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
@@ -179,7 +180,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.3
+GOBUILDIMAGE=golang:1.26.4
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
