@@ -283,7 +283,7 @@ func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, 
 
 	var names []string
 	for _, v := range query.Names {
-		names = append(names, `'`+v+`'`)
+		names = append(names, orm.QuoteLiteral(v))
 	}
 	subQuery := fmt.Sprintf("SELECT project_id FROM project where name IN (%s)", strings.Join(names, ","))
 
