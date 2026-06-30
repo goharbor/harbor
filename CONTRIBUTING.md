@@ -31,8 +31,8 @@ export GOPATH=$HOME/go
 mkdir -p $GOPATH/src/github.com/goharbor
 
 #Get code
-git clone git@github.com:goharbor/harbor.git
 cd $GOPATH/src/github.com/goharbor/harbor
+git clone git@github.com:goharbor/harbor.git
 
 #Track repository under your personal account
 git config push.default nothing # Anything to avoid pushing to goharbor/harbor by default
