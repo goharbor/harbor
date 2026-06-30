@@ -262,10 +262,14 @@ paths:
       responses:
         '200':
           description: Modify system configurations successfully.
+        '400':
+          $ref: '#/responses/400'
         '401':
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
+        '422':
+          $ref: '#/responses/422'
         '500':
           description: Unexpected internal errors.
   /projects:
@@ -316,8 +320,12 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
     head:
@@ -365,7 +373,13 @@ paths:
         '401':
           $ref: '#/responses/401'
         '409':
-          $ref: '#/responses/409'
+          description: Project name already exists.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}':
@@ -386,6 +400,16 @@ paths:
             $ref: '#/definitions/Project'
         '401':
           $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Project not found. No project exists with the specified name or ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     put:
@@ -435,9 +459,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Project not found. No project exists with the specified name or ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '412':
-          $ref: '#/responses/412'
+          description: Project cannot be deleted. The project still contains repositories or has pending tasks.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name_or_id}/_deletable:
@@ -882,6 +918,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}:
@@ -907,7 +945,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository not found. No repository with the specified name exists in this project.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     put:
@@ -959,7 +1003,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository not found. No repository with the specified name exists in this project.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
+        '412':
+          description: Precondition failed. The repository contains images protected by an immutable tag rule and cannot be deleted.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts:
@@ -1035,7 +1093,15 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository or project not found.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
     post:
@@ -1063,7 +1129,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Source artifact or target repository not found.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '405':
           $ref: '#/responses/405'
         '500':
@@ -1138,7 +1210,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact exists for the given reference in this project and repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     delete:
@@ -1160,7 +1238,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact with the specified reference exists in this repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
@@ -1190,9 +1274,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact with the specified reference exists in this repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '422':
-          $ref: '#/responses/422'
+          description: The artifact does not support scanning (for example, it is an image index with no directly scannable layers).
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1290,11 +1386,23 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: The artifact specified by the reference does not exist.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '405':
           $ref: '#/responses/405'
         '409':
-          $ref: '#/responses/409'
+          description: A tag with this name already exists on the artifact.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     get:
@@ -1340,6 +1448,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
@@ -1363,7 +1473,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Tag not found. The specified tag does not exist on this artifact.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/accessories:
@@ -1628,6 +1744,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/scanner':
@@ -5592,9 +5710,21 @@ paths:
         '401':
           $ref: '#/responses/401'
         '403':
-          description: When the  self registration is disabled, non-admin does not have permission to create user.  When self registration is enabled, this API can only be called from UI portal, calling it via script will get a 403 error.
+          description: When self-registration is disabled, only admins can create users. When self-registration is enabled, user creation via API is not permitted (UI only).
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '409':
-          $ref: '#/responses/409'
+          description: Username already exists. A user with the same username already exists in Harbor.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /users/current:
@@ -5733,7 +5863,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: User not found. No user exists with the specified ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /users/{user_id}/sysadmin:
@@ -6455,7 +6591,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
   '400':
-    description: Bad request
+    description: Bad request. The request body or query parameters are invalid. Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6463,7 +6599,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '401':
-    description: Unauthorized
+    description: Unauthorized. Authentication is required to access this resource.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6471,7 +6607,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '403':
-    description: Forbidden
+    description: Forbidden. The caller does not have sufficient permission to perform the requested operation.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6479,7 +6615,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '404':
-    description: Not found
+    description: Not found. The requested resource does not exist.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6487,7 +6623,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '405':
-    description: Method not allowed
+    description: Method not allowed.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6495,7 +6631,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '409':
-    description: Conflict
+    description: Conflict. The resource already exists or the current state prevents the operation.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6503,7 +6639,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '412':
-    description: Precondition failed
+    description: Precondition failed. A dependency or policy check failed; inspect the `errors` array for the constraint that was violated.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6511,7 +6647,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '415':
-    description: Unsupported MediaType
+    description: Unsupported media type.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6519,7 +6655,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '422':
-    description: Unsupported Type
+    description: Unsupported type. The resource or its properties are not supported by the requested operation.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6527,7 +6663,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '500':
-    description: Internal server error
+    description: Internal server error. Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6543,6 +6679,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Error'
+          x-nullable: false
   Error:
     description: a model for all the error response coming from harbor
     type: object
@@ -6553,6 +6690,9 @@ definitions:
       message:
         type: string
         description: The error message
+    example:
+      code: NOT_FOUND
+      message: artifact library/hello-world:latest not found
   Search:
     type: object
     properties:
