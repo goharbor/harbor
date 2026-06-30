@@ -16,6 +16,7 @@ package event
 
 import (
 	"context"
+	"runtime"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -104,7 +105,9 @@ func BuildAndPublish(ctx context.Context, metadata ...Metadata) {
 		// otherwise a panic in this detached goroutine would crash the process
 		defer func() {
 			if err := recover(); err != nil {
-				log.Errorf("recovered from the panic when building and publishing event: %v", err)
+				buf := make([]byte, 1<<20)
+				size := runtime.Stack(buf, false)
+				log.Errorf("recovered from the panic when building and publishing event: %v; stack: %s", err, buf[0:size])
 			}
 		}()
 		event := &Event{}
