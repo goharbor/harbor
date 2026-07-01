@@ -268,7 +268,8 @@ func (m *manifestTestSuite) TestPutManifestArtifactEnsureFailure() {
 	putManifest(w, req)
 
 	// Verify that error response is returned, not the 201 from the proxy
-	m.NotEqual(http.StatusCreated, w.Code, "Expected non-201 response when artifact registration fails")
+	m.Equal(http.StatusInternalServerError, w.Code, "Expected 500 error when artifact registration fails")
+	m.NotEqual(http.StatusCreated, w.Code, "Should NOT return 201 when artifact registration fails")
 }
 
 func (m *manifestTestSuite) TestPutManifestWithTagToDigestReplacement() {

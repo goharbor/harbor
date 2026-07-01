@@ -202,24 +202,19 @@ func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
 	})
 }
 
-func (suite *PutManifestMiddlewareTestSuite) TestBlobHookFailureHandling() {
-	// Regression test for #23199: "storage-only orphans"
+func (suite *PutManifestMiddlewareTestSuite) TestPutManifestMiddlewareSuccessPath() {
+	// Integration test for successful manifest push through PutManifestMiddleware.
+	// Related to issue #23199: validates that ResponseBuffer architecture allows
+	// AfterResponse hooks to run and complete before response is sent to client.
 	//
-	// Issue: manifest push would return HTTP 201 even if blob operations failed
-	// in the AfterResponse hook, leaving "storage-only orphans" that GC can't clean.
+	// This test exercises the happy path where:
+	// 1. Manifest proxy returns 201
+	// 2. putManifest validates outer ResponseBuffer is present (middleware requirement)
+	// 3. All blob association hooks succeed
+	// 4. Final response (201) is sent to client
 	//
-	// Root cause: putManifest handler was flushing the response buffer immediately
-	// after proxy returned 201, preventing the AfterResponse middleware from resetting
-	// it if blob operations failed.
-	//
-	// Fix: Handler no longer prematurely flushes. The outer middleware defers the
-	// flush until after all AfterResponse hooks complete, allowing Reset() to work
-	// on failures.
-	//
-	// Note: This test documents the fix behavior. Full integration testing of
-	// blob hook failures requires database setup (in separate CI environment).
-	// The unit test in manifest_test.go (TestPutManifestArtifactEnsureFailure)
-	// validates that when ensure fails, error is returned not 201.
+	// For testing AfterResponse hook failures, see TestPutManifestArtifactEnsureFailure
+	// in manifest_test.go which validates error handling when artifact.Ctl.Ensure fails.
 	suite.WithProject(func(projectID int64, projectName string) {
 		name := fmt.Sprintf("%s/test", projectName)
 		_, descriptor, req := suite.prepare(name)
@@ -228,7 +223,7 @@ func (suite *PutManifestMiddlewareTestSuite) TestBlobHookFailureHandling() {
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
 		PutManifestMiddleware()(next).ServeHTTP(res, req)
 
-		// The middleware should handle the request successfully when all operations work
+		// Middleware should handle the request successfully when all operations succeed
 		suite.Equal(http.StatusCreated, res.Code)
 	})
 }
