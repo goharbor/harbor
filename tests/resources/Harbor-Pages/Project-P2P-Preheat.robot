@@ -77,7 +77,7 @@ Set P2P Preheat Policy Schedule
     [Arguments]  ${name}  ${type}  ${cron}=${null}
     Retry Double Keywords When Error  Select P2P Preheat Policy   ${name}  Wait Until Element Is Visible  ${p2p_execution_header}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_action_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_edit_btn_id}
-    Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_edit_btn_id}  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
+    Retry Double Keywords When Error  Execute Javascript  document.getElementById('edit-policy').click()  Wait Until Element Is Visible And Enabled  ${p2p_preheat_name_input_id}
     Retry Double Keywords When Error  Select P2P Preheat Policy Trigger  Scheduled  Retry Element Click  ${p2p_preheat_scheduled_edit_id}
     Retry Double Keywords When Error  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}  Retry Element Click  ${p2p_preheat_scheduled_type_select_id}//option[contains(.,'${type}')]
     Run Keyword If  '${type}' == 'Custom'  Retry Text Input  ${p2p_preheat_scheduled_cron_input_id}  ${cron}
