@@ -67,8 +67,8 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 		return nil, err
 	}
 	// Allow all algorithm variants for the key type so that ECDSA (ES256/384/512)
-	// and RSA (RS256/384/512) keys are each accepted regardless of which specific
-	// variant was used when the token was issued.
+	// and RSA (RS256/384/512 and PS256/384/512) keys are each accepted regardless
+	// of which specific variant was used when the token was issued.
 	var validMethods []string
 	switch key.(type) {
 	case *rsa.PrivateKey, *rsa.PublicKey:
