@@ -6665,7 +6665,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '422':
-    description: Unsupported type. The resource or its properties are not supported by the requested operation.
+    description: Unprocessable entity. The request was well-formed but could not be processed (for example, due to validation errors). Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
