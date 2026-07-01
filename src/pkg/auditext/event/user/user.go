@@ -73,9 +73,7 @@ func (u *userEventResolver) Resolve(ce *commonevent.Metadata, event *notifiereve
 	if ce.RequestMethod != http.MethodPut {
 		return nil
 	}
-	// the base resolver leaves event.Data nil when the request URL does not match
-	// a specific user resource (e.g. PUT on the /api/v2.0/users collection), so
-	// skip the update instead of asserting on a nil value
+	// base resolver leaves Data nil for a PUT that isn't on a specific user (e.g. the /users collection)
 	commonEvent, ok := event.Data.(*model.CommonEvent)
 	if !ok || commonEvent == nil {
 		return nil
