@@ -185,7 +185,10 @@ func TestMakeTokenECDSA(t *testing.T) {
 	crtECDSA := path.Join(path.Dir(crt), "ecdsa_root.crt")
 
 	// overwrite the config values for testing.
+	oldPrivateKey := privateKey
+	defer func() { privateKey = oldPrivateKey }()
 	privateKey = pkECDSA
+
 	ra := []*token.ResourceActions{{
 		Type:    "repository",
 		Name:    "10.117.4.142/notary-test/hello-world-2",
@@ -195,12 +198,12 @@ func TestMakeTokenECDSA(t *testing.T) {
 	u := "tester"
 	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
 	if err != nil {
-		t.Errorf("Error while making token: %v", err)
+		t.Fatalf("Error while making token: %v", err)
 	}
 	tokenString := tokenJSON.Token
 	pubKey, err := getECDSAPublicKey(crtECDSA)
 	if err != nil {
-		t.Errorf("Error while getting public key from cert: %s", crtECDSA)
+		t.Fatalf("Error while getting public key from cert: %s", crtECDSA)
 	}
 	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
@@ -210,7 +213,7 @@ func TestMakeTokenECDSA(t *testing.T) {
 	})
 	t.Logf("Token validity: %v", tok.Valid)
 	if err != nil {
-		t.Errorf("Error while parsing the token: %v", err)
+		t.Fatalf("Error while parsing the token: %v", err)
 	}
 	claims := tok.Claims.(*harborClaims)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
