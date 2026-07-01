@@ -271,7 +271,7 @@ paths:
         '422':
           $ref: '#/responses/422'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/500'
   /projects:
     get:
       summary: List projects
