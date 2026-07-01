@@ -28,6 +28,7 @@ import { BuildHistoryComponent } from './artifact-additions/build-history/build-
 import { ArtifactVulnerabilitiesComponent } from './artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component';
 import { ArtifactFilesComponent } from './artifact-additions/files/files.component';
 import { ArtifactLicenseComponent } from './artifact-additions/license/license.component';
+import { DockerfileComponent } from './artifact-additions/dockerfile/dockerfile.component';
 import { ArtifactSbomComponent } from './artifact-additions/artifact-sbom/artifact-sbom.component';
 import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { ArtifactDetailRoutingResolverService } from '../../../../services/routing-resolvers/artifact-detail-routing-resolver.service';
@@ -100,6 +101,7 @@ const routes: Routes = [
         SummaryComponent,
         DependenciesComponent,
         BuildHistoryComponent,
+        DockerfileComponent,
         ArtifactSbomComponent,
         ArtifactVulnerabilitiesComponent,
         ResultBarChartComponent,

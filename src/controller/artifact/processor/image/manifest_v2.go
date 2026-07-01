@@ -33,6 +33,7 @@ const (
 	// ArtifactTypeImage is the artifact type for image
 	ArtifactTypeImage        = "IMAGE"
 	AdditionTypeBuildHistory = "BUILD_HISTORY"
+	AdditionTypeDockerfile   = "DOCKERFILE"
 )
 
 func init() {
@@ -85,7 +86,7 @@ func (m *manifestV2Processor) AbstractMetadata(ctx context.Context, artifact *ar
 }
 
 func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*processor.Addition, error) {
-	if addition != AdditionTypeBuildHistory {
+	if addition != AdditionTypeBuildHistory && addition != AdditionTypeDockerfile {
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessagef("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
@@ -102,20 +103,55 @@ func (m *manifestV2Processor) AbstractAddition(ctx context.Context, artifact *ar
 	if err = m.ManifestProcessor.UnmarshalConfig(ctx, artifact.RepositoryName, content, config); err != nil {
 		return nil, err
 	}
-	content, err = json.Marshal(config.History)
-	if err != nil {
-		return nil, err
+
+	if addition == AdditionTypeBuildHistory {
+		content, err = json.Marshal(config.History)
+		if err != nil {
+			return nil, err
+		}
+		return &processor.Addition{
+			Content:     content,
+			ContentType: "application/json; charset=utf-8",
+		}, nil
+	}
+
+	// AdditionTypeDockerfile
+	dockerfile := m.getDockerfileFromLabels(config)
+	if dockerfile == "" {
+		return nil, errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessage("dockerfile not found in image labels")
 	}
 	return &processor.Addition{
-		Content:     content,
-		ContentType: "application/json; charset=utf-8",
+		Content:     []byte(dockerfile),
+		ContentType: "text/plain; charset=utf-8",
 	}, nil
+}
+
+func (m *manifestV2Processor) getDockerfileFromLabels(config *v1.Image) string {
+	if config == nil || len(config.Config.Labels) == 0 {
+		return ""
+	}
+
+	// Check for common Dockerfile label keys (OCI Image Spec recommended annotations)
+	dockerfileKeys := []string{
+		"org.opencontainers.image.source",
+		"com.example.dockerfile",
+		"dockerfile",
+	}
+	for _, key := range dockerfileKeys {
+		if val, ok := config.Config.Labels[key]; ok && len(val) > 0 {
+			return val
+		}
+	}
+	return ""
 }
 
 func (m *manifestV2Processor) GetArtifactType(_ context.Context, _ *artifact.Artifact) string {
 	return ArtifactTypeImage
 }
 
-func (m *manifestV2Processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
-	return []string{AdditionTypeBuildHistory}
+func (m *manifestV2Processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+	// Dockerfile support is always available for Docker images, but may not have content
+	// The UI will show the tab, and AbstractAddition will handle missing Dockerfile gracefully
+	return []string{AdditionTypeBuildHistory, AdditionTypeDockerfile}
 }

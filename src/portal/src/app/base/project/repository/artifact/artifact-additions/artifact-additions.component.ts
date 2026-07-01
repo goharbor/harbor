@@ -132,8 +132,24 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
         return null;
     }
 
+    getDockerfile(): AdditionLink {
+        if (this.additionLinks && this.additionLinks[ADDITIONS.DOCKERFILE]) {
+            return this.additionLinks[ADDITIONS.DOCKERFILE];
+        }
+        // Return null but dockerfile tab can still show with helpful message
+        return null;
+    }
+
+    hasBuildHistory(): boolean {
+        return this.additionLinks && !!this.additionLinks[ADDITIONS.BUILD_HISTORY];
+    }
+
     actionTab(tab: string): void {
         this.currentTabLinkId = tab;
+    }
+
+    onDockerfileSwitchTab(tab: string): void {
+        this.actionTab(tab);
     }
 
     getScanBtnState(): ClrLoadingState {
