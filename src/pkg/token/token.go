@@ -76,6 +76,9 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 			jwt.SigningMethodRS256.Alg(),
 			jwt.SigningMethodRS384.Alg(),
 			jwt.SigningMethodRS512.Alg(),
+			jwt.SigningMethodPS256.Alg(),
+			jwt.SigningMethodPS384.Alg(),
+			jwt.SigningMethodPS512.Alg(),
 		}
 	case *ecdsa.PrivateKey, *ecdsa.PublicKey:
 		validMethods = []string{
