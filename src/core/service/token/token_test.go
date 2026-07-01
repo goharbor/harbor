@@ -220,6 +220,57 @@ func TestMakeTokenECDSA(t *testing.T) {
 	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch")
 }
 
+func TestParseTokenECDSA(t *testing.T) {
+	pk, crt := getKeyAndCertPath()
+	// Use ECDSA keys for testing
+	pkECDSA := path.Join(path.Dir(pk), "ecdsa_private_key.pem")
+	crtECDSA := path.Join(path.Dir(crt), "ecdsa_root.crt")
+
+	// overwrite the config values for testing.
+	oldPrivateKey := privateKey
+	defer func() { privateKey = oldPrivateKey }()
+	privateKey = pkECDSA
+
+	ra := []*token.ResourceActions{{
+		Type:    "repository",
+		Name:    "10.117.4.142/library/alpine",
+		Actions: []string{"pull"},
+	}}
+	svc := "harbor-registry"
+	u := "reader"
+
+	// Make a token with ECDSA key
+	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
+	if err != nil {
+		t.Fatalf("Error while making token: %v", err)
+	}
+
+	// Parse the ECDSA token
+	tokenString := tokenJSON.Token
+	pubKey, err := getECDSAPublicKey(crtECDSA)
+	if err != nil {
+		t.Fatalf("Error while getting public key from cert: %s", crtECDSA)
+	}
+
+	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return pubKey, nil
+	})
+	if err != nil {
+		t.Fatalf("Error while parsing ECDSA token: %v", err)
+	}
+
+	if !tok.Valid {
+		t.Fatal("ECDSA token is not valid")
+	}
+
+	claims := tok.Claims.(*harborClaims)
+	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch in ECDSA token")
+	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch in ECDSA token")
+}
+
 type parserTestRec struct {
 	input       string
 	expect      image
