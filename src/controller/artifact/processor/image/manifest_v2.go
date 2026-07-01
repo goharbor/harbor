@@ -150,7 +150,7 @@ func (m *manifestV2Processor) GetArtifactType(_ context.Context, _ *artifact.Art
 	return ArtifactTypeImage
 }
 
-func (m *manifestV2Processor) ListAdditionTypes(ctx context.Context, artifact *artifact.Artifact) []string {
+func (m *manifestV2Processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) []string {
 	// Dockerfile support is always available for Docker images, but may not have content
 	// The UI will show the tab, and AbstractAddition will handle missing Dockerfile gracefully
 	return []string{AdditionTypeBuildHistory, AdditionTypeDockerfile}
