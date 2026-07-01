@@ -273,6 +273,7 @@
         "PUBLIC_POLICY": "Bir proje sicilini halka açmak, bütün depoları herkesin erişebileceği hale getirecektir.",
         "SECURITY": "Dağıtım güvenliği",
         "CONTENT_TRUST_POLCIY": "Yalnızca doğrulanmış imajların yüklenilmesine izin verin.",
+        "PREVENT_UNSCANNED_TOGGLE": "Taranmamış görüntülerin çalıştırılmasını engelleyin.",
         "PREVENT_VULNERABLE_TOGGLE": "Güvenlik açığı bulunan görüntülerin çalışmasını önleyin.",
         "PREVENT_VULNERABLE_1": "Güvenlik açığı ciddiyeti olan imajları önleyin",
         "PREVENT_VULNERABLE_2": "ve yukarıda yüklenilmekte.",

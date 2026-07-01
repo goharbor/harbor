@@ -272,6 +272,7 @@
         "PUBLIC_POLICY": "Ein Projekt öffentlich einzustellen, macht die Repositories für alle zugreifbar.",
         "SECURITY": "Deployment Sicherheit",
         "CONTENT_TRUST_POLCIY": "Erlaube ausschließlich verifizierte Images.",
+        "PREVENT_UNSCANNED_TOGGLE": "Ausführung ungescannter Images verhindern.",
         "PREVENT_VULNERABLE_TOGGLE": "Verhindere den Download von Images mit Schwachstellen.",
         "PREVENT_VULNERABLE_1": "Verhindere den Download von Images mit Schwachstellen des Schweregrads ",
         "PREVENT_VULNERABLE_2": "und darüber.",
