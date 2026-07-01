@@ -18,11 +18,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/user"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -33,7 +31,8 @@ type idToken struct{}
 func (i *idToken) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
 	log := log.G(ctx)
-	if lib.GetAuthMode(ctx) != common.OIDCAuth {
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil || setting.Endpoint == "" {
 		return nil
 	}
 	if !strings.HasPrefix(req.URL.Path, "/api") && req.URL.Path != "/service/token" {
@@ -51,11 +50,6 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	u, err := user.Ctl.GetBySubIss(ctx, claims.Subject, claims.Issuer)
 	if err != nil {
 		log.Warningf("failed to get user based on token claims: %v", err)
-		return nil
-	}
-	setting, err := config.OIDCSetting(ctx)
-	if err != nil {
-		log.Errorf("failed to get OIDC settings: %v", err)
 		return nil
 	}
 	info, err := oidc.UserInfoFromIDToken(ctx, &oidc.Token{RawIDToken: token}, *setting)

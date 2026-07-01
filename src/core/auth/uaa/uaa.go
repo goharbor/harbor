@@ -39,6 +39,16 @@ type Auth struct {
 	userMgr userpkg.Manager
 }
 
+// Match returns true when a UAA endpoint is configured.
+func (u *Auth) Match(ctx context.Context) bool {
+	setting, err := config.UAASettings(ctx)
+	if err != nil {
+		log.Debugf("failed to load UAA config: %v", err)
+		return false
+	}
+	return setting.Endpoint != ""
+}
+
 // Authenticate ...
 func (u *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	if err := u.ensureClient(ctx); err != nil {

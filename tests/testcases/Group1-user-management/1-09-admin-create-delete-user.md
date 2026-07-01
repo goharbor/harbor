@@ -1,9 +1,9 @@
-Test 1-09 - Admin User Create, Delete and Recreate a User(DB Mode)
+Test 1-09 - Admin User Create, Delete and Recreate a User
 =======
 
 # Purpose:
 
-To verify that an admin user can create/delete/recreate a user when users are managed locally by Harbor (DB mode).
+To verify that an admin user can create/delete/recreate a user using local database authentication.
 
 # References:
 User guide

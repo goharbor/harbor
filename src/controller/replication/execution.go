@@ -144,6 +144,7 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context
 	// with orm populated to the goroutine
+	// #nosec G118 - goroutine intentionally uses a new context independent from the request scope
 	go func() {
 		c.wp.GetWorker()
 		defer c.wp.ReleaseWorker()

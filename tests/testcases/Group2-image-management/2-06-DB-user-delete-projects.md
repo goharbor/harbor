@@ -1,16 +1,16 @@
-Test 2-06 - User Delete Projects (DB Mode)
+Test 2-06 - User Delete Projects
 =======
 
 # Purpose:
 
-To verify that a non-admin user can delete projects when users are managed locally by Harbor (DB mode).
+To verify that a non-admin user can delete projects using local database authentication.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that two(2) Harbor instances are running and available.
-* Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
+* Harbor uses local database authentication. Users are stored in the local database.
 * A linux host with Docker CLI installed (Docker client).
 * At least a non-admin user. 
 

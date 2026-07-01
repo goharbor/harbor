@@ -1,16 +1,16 @@
-Test 2-11 - User Create Project (LDAP Mode)
+Test 2-11 - User Create Project
 =======
 
 # Purpose:
 
-To verify that a non-admin user can create projects in (LDAP mode).
+To verify that a non-admin user can create projects.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.
 * A linux host with Docker CLI installed (Docker client).
 * At least two non-admin users are in Harbor. 
 

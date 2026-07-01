@@ -44,14 +44,16 @@ import (
 
 type usersAPI struct {
 	BaseAPI
-	ctl     user.Controller
-	getAuth func(ctx context.Context) (string, error) // For testing
+	ctl            user.Controller
+	getPrimaryAuth func(ctx context.Context) (string, error) // For testing
 }
 
 func newUsersAPI() *usersAPI {
 	return &usersAPI{
-		ctl:     user.Ctl,
-		getAuth: config.AuthMode,
+		ctl: user.Ctl,
+		getPrimaryAuth: func(ctx context.Context) (string, error) {
+			return config.DetectAuthMode(ctx), nil
+		},
 	}
 }
 
@@ -222,13 +224,13 @@ func (u *usersAPI) GetUser(ctx context.Context, params operation.GetUserParams) 
 }
 
 func (u *usersAPI) getUserByID(ctx context.Context, id int) (*models.UserResp, error) {
-	auth, err := u.getAuth(ctx)
+	primary, err := u.getPrimaryAuth(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	opt := &user.Option{
-		WithOIDCInfo: auth == common.OIDCAuth && id > 1, // Super user is authenticated via DB
+		WithOIDCInfo: primary == common.OIDCAuth && id > 1, // Super user is authenticated via DB
 	}
 
 	us, err := u.ctl.Get(ctx, id, opt)
@@ -346,13 +348,13 @@ func (u *usersAPI) SetUserSysAdmin(ctx context.Context, params operation.SetUser
 }
 
 func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
-	a, err := u.getAuth(ctx)
+	primary, err := u.getPrimaryAuth(ctx)
 	if err != nil {
-		log.G(ctx).Errorf("Failed to get authmode, error: %v", err)
+		log.G(ctx).Errorf("Failed to get primary auth method, error: %v", err)
 		return err
 	}
-	if a != common.OIDCAuth {
-		return errors.PreconditionFailedError(nil).WithMessagef("unable to update CLI secret under authmode: %s", a)
+	if primary != common.OIDCAuth {
+		return errors.PreconditionFailedError(nil).WithMessagef("unable to update CLI secret under current auth method: %s", primary)
 	}
 	if matchUserID(ctx, id) {
 		return nil
@@ -361,13 +363,13 @@ func (u *usersAPI) requireForCLISecret(ctx context.Context, id int) error {
 }
 
 func (u *usersAPI) requireCreatable(ctx context.Context) error {
-	a, err := u.getAuth(ctx)
+	primary, err := u.getPrimaryAuth(ctx)
 	if err != nil {
-		log.G(ctx).Errorf("Failed to get authmode, error: %v", err)
+		log.G(ctx).Errorf("Failed to get primary auth method, error: %v", err)
 		return err
 	}
-	if a != common.DBAuth {
-		return errors.ForbiddenError(nil).WithMessagef("creating local user is not allowed under auth mode: %s", a)
+	if primary != common.DBAuth {
+		return errors.ForbiddenError(nil).WithMessagef("creating local user is not allowed under current auth method: %s", primary)
 	}
 	sr, err := config.SelfRegistration(ctx)
 	if err != nil {
@@ -402,18 +404,18 @@ func (u *usersAPI) requireDeletable(ctx context.Context, id int) error {
 }
 
 func (u *usersAPI) requireModifiable(ctx context.Context, id int) error {
-	a, err := u.getAuth(ctx)
+	primary, err := u.getPrimaryAuth(ctx)
 	if err != nil {
 		return err
 	}
-	if a == common.DBAuth {
-		// In db auth, admin can update anyone's info, and regular user can update his own
+	if primary == common.DBAuth {
+		// With DB auth, admin can update anyone's info, and regular user can update his own
 		if matchUserID(ctx, id) {
 			return nil
 		}
 		return u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser)
 	}
-	// In none db auth, only the local admin's password can be updated.
+	// With external auth, only the local admin's password can be updated.
 	if id != 1 {
 		return errors.ForbiddenError(nil).WithMessagef("User with ID %d can't be updated", id)
 	}

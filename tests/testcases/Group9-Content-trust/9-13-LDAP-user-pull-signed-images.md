@@ -1,4 +1,4 @@
-Test 9-13 User pull signed images(LDAP mode)
+Test 9-13 User pull signed images
 =======
 
 # Purpose:

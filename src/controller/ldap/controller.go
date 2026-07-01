@@ -17,7 +17,6 @@ package ldap
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -97,21 +96,17 @@ func (c *controller) SearchUser(ctx context.Context, username string) ([]model.U
 }
 
 func defaultPassword(ctx context.Context) (string, error) {
-	mod, err := config.AuthMode(ctx)
+	conf, err := config.LDAPConf(ctx)
 	if err != nil {
 		return "", err
 	}
-	if mod == common.LDAPAuth {
-		conf, err := config.LDAPConf(ctx)
-		if err != nil {
-			return "", err
-		}
-		if len(conf.SearchPassword) == 0 {
-			return "", ldap.ErrEmptyPassword
-		}
-		return conf.SearchPassword, nil
+	if conf.URL == "" {
+		return "", ldap.ErrEmptyPassword
 	}
-	return "", ldap.ErrEmptyPassword
+	if len(conf.SearchPassword) == 0 {
+		return "", ldap.ErrEmptyPassword
+	}
+	return conf.SearchPassword, nil
 }
 
 func (c *controller) ImportUser(ctx context.Context, ldapImportUsers []string) ([]model.FailedImportUser, error) {

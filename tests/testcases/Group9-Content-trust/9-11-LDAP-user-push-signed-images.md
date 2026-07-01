@@ -1,9 +1,9 @@
-Test 9-11 User push signed images(LDAP mode)
+Test 9-11 User push signed images
 =======
 
 # Purpose:
 
-To verify user can sign and push images(LDAP mode)
+To verify user can sign and push images
 
 # References:
 User guide
@@ -11,7 +11,7 @@ User guide
 # Environment:
 
 * This test requires that a Harbor instance is running and available.  
-* Harbor is set to authenticate against an LDAP or AD server.(auth_mode is set to ldap_auth.) The user data is stored in an LDAP or AD server.  
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.  
 * A Linux host with Docker CLI(Docker client) installed.
 
 # Test Steps:

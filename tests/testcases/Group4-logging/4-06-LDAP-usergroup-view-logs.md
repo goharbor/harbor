@@ -1,9 +1,9 @@
-Test 4-06 - User Views Logs (LDAP Mode)
+Test 4-06 - User Views Logs
 =======
 
 # Purpose:
 
-To verify that a LDAP user group can views logs when users are managed externally by LDAP or AD (LDAP mode).
+To verify that a LDAP user group can views logs.
 
 # References:
 User guide
@@ -12,7 +12,7 @@ User guide
 
 * This test requires that a Harbor instance is running and available.
 * An LDAP server is running and available, and enabled memberof overlay feature.
-* Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.
 * A linux host with Docker CLI installed (Docker client).
 * LDAP group config parameter are configured.
     1. ldap_group_basedn

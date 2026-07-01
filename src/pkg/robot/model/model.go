@@ -61,6 +61,7 @@ func (r *Robot) FromJSON(jsonData string) error {
 
 // ToJSON marshals Robot to JSON data
 func (r *Robot) ToJSON() (string, error) {
+	// #nosec G117 - robot secret is intentionally marshaled for storage/transmission
 	data, err := json.Marshal(r)
 	if err != nil {
 		return "", err
