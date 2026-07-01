@@ -51,6 +51,20 @@ linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
         path: "(common/http/|lib/errors/|lib/http/)"
+      # Legitimate uses of reflect.Ptr and intentional credential marshaling
+      - linters:
+          - govet
+        text: "inline: Constant reflect.Ptr should be inlined"
+      - linters:
+          - gosec
+        text: "G117: Marshaled struct field.*matches secret pattern"
+      - linters:
+          - gosec
+        text: "G704: SSRF via taint analysis"
+      - linters:
+          - gosec
+        text: "G118: Goroutine uses context.Background/TODO while request-scoped context is available"
+        path: "controller/replication/execution.go"
     paths:
       - third_party$
       - builtin$

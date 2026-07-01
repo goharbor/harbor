@@ -74,7 +74,6 @@ type Option func(*Config)
 
 func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Option) (orm.QuerySeter, error) {
 	t := reflect.TypeOf(model)
-	// nolint:govet
 	if t.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("<orm.QuerySetter> cannot use non-ptr model struct `%s`", getFullName(t.Elem()))
 	}

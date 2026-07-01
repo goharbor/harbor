@@ -645,7 +645,6 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 		}
 	}
 	utils.SetUserAgentHeader(req)
-	// nolint:gosec
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
