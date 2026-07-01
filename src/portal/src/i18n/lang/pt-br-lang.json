@@ -398,7 +398,8 @@
         "USER": "User",
         "LDAPUSER": "LDAP User",
         "GROUP": "User Group",
-        "MEMBER": "Project Member"
+        "MEMBER": "Project Member",
+        "PROVIDED_SECRET_ENCRYPTED": "Você forneceu seu próprio segredo. Foi armazenado criptografado e não pode ser recuperado em texto simples novamente."
     },
     "GROUP": {
         "GROUP": "Grupo",
@@ -929,8 +930,7 @@
         "COPYRIGHT": "O Projeto Harbor é um projeto de Registry Cloud Nativo, com código aberto e confiável que armazena, assina e analisa conteúdos. Harbor estende o projeto Opensource Docker Distribution adicionando funcionalidades, como segurança, identidade e gerenciamento. Harbor suporta funcionalidades avançadas como gerenciamento de usuários, controle de acesso, auditoria de atividades e replicação entre instâncias. Ter um repositório de imagens mais perto do ambiente de desenvolvimento e produção pode melhorar a eficiência de transferência de imagens.",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Repositórios Populares",
     "STATISTICS": {
         "PRO_ITEM": "PROJETOS",
@@ -1679,7 +1679,7 @@
         "UNSELECT_ALL": "DESFAZER SELEÇÃO",
         "ROBOT_ACCOUNT_NAV": "Contas de Automação",
         "COVERED_PROJECTS": "PROJETO",
-        "CONFIRM_SECRET": "Confirmar Secret",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Digite novamente",
         "INCONSISTENT": "Confirmação do segredo não confere",
         "NAME_TOOLTIP": "Nome da conta deve ter menos de 256 caracteres. Pode conter apenas letras minúsculas, números, ou símbolos ._- e deve começar com uma letra ou número.",
@@ -1699,7 +1699,18 @@
         "EXPIRES_IN": "Expires in",
         "EXPIRED": "Expired",
         "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
-        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",

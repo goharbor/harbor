@@ -197,13 +197,30 @@
                 <label class="form-group-label-override">{{
                     'ROBOT_ACCOUNT.TOKEN' | translate
                 }}</label>
-                <hbr-copy-input
-                    #copyInputComponent
-                    (onCopySuccess)="onCpSuccess($event)"
-                    inputSize="50"
-                    headerTitle=""
-                    defaultValue="{{ robot?.secret }}"
-                    class="copy-input"></hbr-copy-input>
+                <div *ngIf="robot?.secret">
+                    <hbr-copy-input
+                        #copyInputComponent
+                        (onCopySuccess)="onCpSuccess($event)"
+                        inputSize="50"
+                        headerTitle=""
+                        defaultValue="{{ robot?.secret }}"
+                        class="copy-input"></hbr-copy-input>
+                </div>
+                <div *ngIf="!robot?.secret" class="alert alert-info">
+                    <div class="alert-items">
+                        <div class="alert-item static">
+                            <div class="alert-icon-wrapper">
+                                <clr-icon
+                                    class="alert-icon"
+                                    shape="info-circle"></clr-icon>
+                            </div>
+                            <span class="alert-text">{{
+                                'ROBOT_ACCOUNT.PROVIDED_SECRET_ENCRYPTED'
+                                    | translate
+                            }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <a [href]="downLoadHref" [download]="downLoadFileName"
                 ><button class="btn mr-0" (click)="closeModal()">

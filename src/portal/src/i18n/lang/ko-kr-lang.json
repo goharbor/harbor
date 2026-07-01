@@ -398,7 +398,8 @@
         "USER": "User",
         "LDAPUSER": "LDAP User",
         "GROUP": "User Group",
-        "MEMBER": "Project Member"
+        "MEMBER": "Project Member",
+        "PROVIDED_SECRET_ENCRYPTED": "자신의 암호를 제공했습니다. 암호화되어 저장되었으며 다시 평문으로 검색할 수 없습니다."
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "활성",
@@ -926,8 +927,7 @@
         "COPYRIGHT": "프로젝트 'Harbor'는 콘텐츠를 저장, 서명 및 검색하는 신뢰할 수 있는 오픈 소스 클라우드 네이티브 레지스트리 프로젝트입니다. 'Harbor'는 보안, ID, 관리 등 사용자에게 일반적으로 필요한 기능을 추가하여 오픈 소스 Docker 배포를 확장합니다. 'Harbor'는 사용자 관리, 액세스 제어, 활동 모니터링, 인스턴스 간 복제와 같은 고급 기능을 지원합니다. 레지스트리를 빌드 및 실행 환경에 더 가깝게 두면 이미지 전송 효율성도 향상될 수 있습니다.",
         "OPEN_SOURCE_LICENSE": "오픈소스/서드 파티 라이선스"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "인기 저장소",
     "STATISTICS": {
         "PRO_ITEM": "프로젝트",
@@ -1670,7 +1670,7 @@
         "UNSELECT_ALL": "모두 선택하지 않음",
         "ROBOT_ACCOUNT_NAV": "로봇 계정",
         "COVERED_PROJECTS": "프로젝트",
-        "CONFIRM_SECRET": "시크릿 확인",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "시크릿을 다시 입력하세요",
         "INCONSISTENT": "두 시크릿이 일치하지 않습니다",
         "NAME_TOOLTIP": "로봇 이름은 1~255자(영문 소문자, 숫자, ._- 포함)여야 하며 문자나 숫자로 시작해야 합니다.",
@@ -1690,7 +1690,18 @@
         "EXPIRES_IN": "만료 시간",
         "EXPIRED": "만료 됨",
         "SELECT_ALL_PROJECT": "모든 프로젝트 선택",
-        "UNSELECT_ALL_PROJECT": "모든 프로젝트 선택 취소"
+        "UNSELECT_ALL_PROJECT": "모든 프로젝트 선택 취소",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "액세서리 삭제 확인",

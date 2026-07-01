@@ -343,6 +343,7 @@
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ACCOUNT_EXISTING": "Robot Account already exists.",
         "ALERT_TEXT": "This is the only time to copy this secret.You won't have another opportunity",
+        "PROVIDED_SECRET_ENCRYPTED": "You provided your own secret. It has been stored encrypted and cannot be retrieved in plaintext again.",
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
         "COPY_SUCCESS": "Copy secret successfully of '{{param}}'",
         "DELETION_TITLE": "Confirm removal of robot accounts",
@@ -926,8 +927,7 @@
         "COPYRIGHT": "Project Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
         "OPEN_SOURCE_LICENSE": "Open Source/Third Party License"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Popular Repositories",
     "STATISTICS": {
         "PRO_ITEM": "Projects",
@@ -1690,7 +1690,18 @@
         "EXPIRES_IN": "Expires in",
         "EXPIRED": "Expired",
         "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
-        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",

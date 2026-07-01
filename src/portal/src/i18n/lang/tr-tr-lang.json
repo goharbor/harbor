@@ -140,7 +140,6 @@
         "SAVE_SUCCESS": "Kullanıcı şifresi başarıyla değiştirildi.",
         "PASS_TIPS": "1 büyük harf, 1 küçük harf ve 1 sayı ile 8-128 karakter"
     },
-
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Kullanıcı Profili",
         "PREFERENCES": "Preferences",
@@ -399,7 +398,8 @@
         "USER": "User",
         "LDAPUSER": "LDAP User",
         "GROUP": "User Group",
-        "MEMBER": "Project Member"
+        "MEMBER": "Project Member",
+        "PROVIDED_SECRET_ENCRYPTED": "Kendi sırınızı sağladınız. Şifrelenmiş olarak depolanmıştır ve bir daha düz metin olarak alınamaz."
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "AKTİF ET",
@@ -927,8 +927,7 @@
         "COPYRIGHT": "Project Harbor, içeriği depolayan, imzalayan ve tarayan açık kaynaklı, güvenilir bir bulut yerel kayıt defteri projesidir. Harbor, güvenlik, kimlik ve yönetim gibi kullanıcılar tarafından genellikle istenen işlevleri ekleyerek açık kaynaklı Docker Dağıtımını genişletir. Harbor, kullanıcı yönetimi, erişim kontrolü, etkinlik izleme ve örnekler arasında çoğaltma gibi gelişmiş özellikleri destekler. Yapı ve çalıştırma ortamına daha yakın bir kayıt defterine sahip olmak da görüntü aktarma verimliliğini artırabilir.",
         "OPEN_SOURCE_LICENSE": "Açık Kaynak / Üçüncü Parti Lisansı"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Popüler Depolar",
     "STATISTICS": {
         "PRO_ITEM": "PROJELER",
@@ -1691,7 +1690,18 @@
         "EXPIRES_IN": "Expires in",
         "EXPIRED": "Expired",
         "SELECT_ALL_PROJECT": "SELECT ALL PROJECTS",
-        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS"
+        "UNSELECT_ALL_PROJECT": "UNSELECT ALL PROJECTS",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirm Accessory Deletion",

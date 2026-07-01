@@ -30,3 +30,6 @@ ${save_sys_robot_project_filter_chb}         //clr-dg-string-filter/clr-dg-filte
 ${save_sys_robot_project_filter_input}       //input[contains(@name, 'search')]
 ${save_sys_robot_project_filter_close_btn}   //button/cds-icon[contains(@title, 'Close')]
 ${save_sys_robot_project_paste_icon}         //hbr-copy-input//clr-icon
+${sys_robot_account_secret_input}            //input[@id='provided_secret']
+${sys_robot_account_secret_confirm_input}    //input[@id='confirm_secret']
+${sys_robot_account_secret_toggle_btn}       //clr-icon[contains(@class,'clr-input-icon-action')]
