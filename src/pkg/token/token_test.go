@@ -1,6 +1,10 @@
-package token
+package token // nolint:revive
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"os"
 	"testing"
 	"time"
@@ -14,9 +18,34 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	// Generate a temporary RSA key so tests don't depend on /etc/core/private_key.pem
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		panic(err)
+	}
+	f, err := os.CreateTemp("", "harbor-test-key-*.pem")
+	if err != nil {
+		panic(err)
+	}
+	if err := pem.Encode(f, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}); err != nil {
+		f.Close()
+		os.Remove(f.Name())
+		panic(err)
+	}
+	if err := f.Close(); err != nil {
+		os.Remove(f.Name())
+		panic(err)
+	}
+
+	os.Setenv("TOKEN_PRIVATE_KEY_PATH", f.Name())
+
 	config.Init()
 
 	result := m.Run()
+	os.Remove(f.Name())
 	if result != 0 {
 		os.Exit(result)
 	}
