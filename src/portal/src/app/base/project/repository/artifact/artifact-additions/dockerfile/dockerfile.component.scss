@@ -6,7 +6,7 @@
     }
 
     .info-box {
-        border-left: 4px solid #0066cc;
+        border-left: 4px solid #06c;
         background-color: #f5f9ff;
         padding: 16px;
         border-radius: 3px;
@@ -15,7 +15,7 @@
         align-items: flex-start;
 
         .info-icon {
-            color: #0066cc;
+            color: #06c;
             margin-top: 2px;
             flex-shrink: 0;
         }
@@ -24,7 +24,7 @@
             flex: 1;
 
             p {
-                margin: 0 0 12px 0;
+                margin: 0 0 12px;
                 line-height: 1.5;
 
                 &:last-child {
@@ -33,7 +33,7 @@
             }
 
             .clickable-link {
-                color: #0066cc;
+                color: #06c;
                 cursor: pointer;
                 text-decoration: underline;
 
