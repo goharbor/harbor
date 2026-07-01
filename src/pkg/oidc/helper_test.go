@@ -578,10 +578,10 @@ func TestUserInfoFromIDToken_EmptyRawIDToken(t *testing.T) {
 	}
 
 	info, err := UserInfoFromIDToken(
-    orm.Context(),
-    token,
-    cfgModels.OIDCSetting{},
-    )
+		orm.Context(),
+		token,
+		cfgModels.OIDCSetting{},
+	)
 
 	assert.NoError(t, err)
 	assert.Nil(t, info)
