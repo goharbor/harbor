@@ -211,7 +211,10 @@ func ExchangeToken(ctx context.Context, code string, pkceCode pkce.Code) (*Token
 	if err != nil {
 		return nil, err
 	}
-	rawIDToken, _ := oauthToken.Extra("id_token").(string)
+	rawIDToken, ok := oauthToken.Extra("id_token").(string)
+	if !ok || rawIDToken == "" {
+		return nil, fmt.Errorf("id_token not found in the token response from the OIDC provider, please ensure the 'openid' scope is configured")
+	}
 	return &Token{Token: *oauthToken, RawIDToken: rawIDToken}, nil
 }
 
