@@ -141,6 +141,12 @@ func Login(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	}
 	if authMode == "" || IsSuperUser(ctx, m.Principal) {
 		authMode = common.DBAuth
+	} else if authMode == common.OIDCAuth && !canUseOIDCAuth(ctx, m.Principal) {
+		// OIDC migration support: allow local database users (e.g., admin) without OIDC metadata
+		// to authenticate using DB credentials when OIDC is enabled. This prevents lockout
+		// when switching authentication modes while maintaining OIDC-first for users with metadata.
+		log.Debugf("User %s lacks OIDC metadata, falling back to database authentication", m.Principal)
+		authMode = common.DBAuth
 	}
 	log.Debug("Current AUTH_MODE is ", authMode)
 
@@ -264,4 +270,25 @@ func IsSuperUser(ctx context.Context, username string) bool {
 		return false
 	}
 	return u.UserID == 1
+}
+
+// canUseOIDCAuth checks if a user has OIDC metadata linked to their account.
+// Returns true only if the user exists and has OIDC metadata, allowing OIDC authentication.
+// Returns false if the user doesn't exist or doesn't have OIDC metadata, allowing fallback to DB auth.
+func canUseOIDCAuth(ctx context.Context, username string) bool {
+	u, err := user.Mgr.GetByName(ctx, username)
+	if err != nil {
+		log.Debugf("Could not retrieve user %s from database, will fall back to DB auth: %v", username, err)
+		return false
+	}
+	if u == nil {
+		log.Debugf("User %s not found in database, will fall back to DB auth", username)
+		return false
+	}
+	// Check if user has OIDC metadata
+	if u.OIDCUserMeta != nil {
+		return true
+	}
+	log.Debugf("User %s has no OIDC metadata, will fall back to DB auth", username)
+	return false
 }
