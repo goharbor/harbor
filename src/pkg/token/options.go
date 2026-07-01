@@ -22,6 +22,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -110,9 +111,12 @@ func DefaultTokenOptions() *Options {
 }
 
 // NewOptions creates Options based on the input parameters.
-// The first parameter is deprecated and ignored; the signing method is
+// The first parameter (method) is deprecated; the signing method is
 // automatically determined from the key type.
-func NewOptions(_, iss, keyPath string) (*Options, error) {
+func NewOptions(method, iss, keyPath string) (*Options, error) {
+	if method != "" {
+		return nil, fmt.Errorf("signing method parameter is deprecated; method is now determined from key type")
+	}
 	pkBytes, err := os.ReadFile(keyPath)
 	if err != nil {
 		log.Errorf("failed to read private key %s: %v", keyPath, err)
@@ -138,7 +142,7 @@ func NewOptions(_, iss, keyPath string) (*Options, error) {
 		default:
 			// Skip unsupported PEM block types (e.g., EC PARAMETERS) and
 			// continue scanning remaining blocks, if any.
-			if len(rest) > 0 {
+			if len(strings.TrimSpace(string(rest))) > 0 {
 				continue
 			}
 			return nil, fmt.Errorf("unsupported private key type: %s", block.Type)
