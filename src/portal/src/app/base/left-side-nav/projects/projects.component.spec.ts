@@ -35,14 +35,6 @@ describe('ProjectComponent', () => {
     const mockConfigurationService = {
         getConfiguration: () => {
             return of({
-                auth_mode: {
-                    value: 'oidc_auth',
-                    editable: false,
-                },
-                primary_auth_mode: {
-                    value: false,
-                    editable: true,
-                },
                 count_per_project: {
                     value: -1,
                     editable: true,

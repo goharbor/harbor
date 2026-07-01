@@ -11,7 +11,7 @@ User guide
 
 * This test requires that a Harbor instance is running and available.
 * An LDAP server is running and available, and enabled memberof overlay feature
-* Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.
 * LDAP group config parameter are configured.
     1. ldap_group_basedn
     1. ldap_group_filter

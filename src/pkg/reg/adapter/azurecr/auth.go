@@ -84,6 +84,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 		return err
 	}
 
+	// #nosec G704 - URL is constructed from configured registry endpoint, not user input
 	tokenReq, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
 		return nil
@@ -93,6 +94,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 		tokenReq.SetBasicAuth(a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
 	}
 
+	// #nosec G704 - URL is constructed from configured registry endpoint, not user input
 	resp, err := a.client.Do(tokenReq)
 	if err != nil {
 		return err
@@ -123,6 +125,7 @@ func (a *authorizer) buildTokenAPI(u *url.URL) (*url.URL, error) {
 		return nil, err
 	}
 
+	// #nosec G704 - URL is constructed from configured registry endpoint, not user input
 	resp, err := a.client.Get(v2URL.String())
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-Test 9-02 User Push unsigned images(DB mode)
+Test 9-02 User Push unsigned images
 =======
 
 # Purpose:

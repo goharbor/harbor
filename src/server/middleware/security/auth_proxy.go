@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -34,7 +33,8 @@ type authProxy struct{}
 
 func (a *authProxy) Generate(req *http.Request) security.Context {
 	log := log.G(req.Context())
-	if lib.GetAuthMode(req.Context()) != common.HTTPAuth {
+	httpAuthProxyConf, err := config.HTTPAuthProxySetting(req.Context())
+	if err != nil || httpAuthProxyConf.Endpoint == "" {
 		return nil
 	}
 	// only support docker login
@@ -48,11 +48,6 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 	rawUserName, match := a.matchAuthProxyUserName(proxyUserName)
 	if !match {
 		log.Errorf("user name %s doesn't meet the auth proxy name pattern", proxyUserName)
-		return nil
-	}
-	httpAuthProxyConf, err := config.HTTPAuthProxySetting(req.Context())
-	if err != nil {
-		log.Errorf("failed to get auth proxy settings: %v", err)
 		return nil
 	}
 	tokenReviewStatus, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)

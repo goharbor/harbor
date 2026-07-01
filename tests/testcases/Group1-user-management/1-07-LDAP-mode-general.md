@@ -1,16 +1,16 @@
-Test 1-07 - LDAP Mode general functions
+Test 1-07 - LDAP general functions
 =======
 
 # Purpose:
 
-To verify that Harbor's UI works properly in LDAP mode.
+To verify that Harbor's UI works properly.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against an AD or LDAP server. (auth_mode is set to **ldap_auth** .) 
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory. 
 * An Active Directory (AD) or LDAP server has been set up and it has a few users available for testing.
 
 # Test Steps:

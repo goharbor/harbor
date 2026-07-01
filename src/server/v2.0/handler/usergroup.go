@@ -104,10 +104,6 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	if err := u.RequireSystemAccess(ctx, rbac.ActionList, rbac.ResourceUserGroup); err != nil {
 		return u.SendError(ctx, err)
 	}
-	authMode, err := config.AuthMode(ctx)
-	if err != nil {
-		return u.SendError(ctx, err)
-	}
 	query, err := u.BuildQuery(ctx, nil, nil, params.Page, params.PageSize)
 	if err != nil {
 		return u.SendError(ctx, err)
@@ -115,7 +111,7 @@ func (u *userGroupAPI) ListUserGroups(ctx context.Context, params operation.List
 	if params.GroupName != nil && len(*params.GroupName) > 0 {
 		query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: *params.GroupName}
 	}
-	switch authMode {
+	switch config.DetectAuthMode(ctx) {
 	case common.LDAPAuth:
 		query.Keywords["GroupType"] = common.LDAPGroupType
 		if params.LdapGroupDn != nil && len(*params.LdapGroupDn) > 0 {

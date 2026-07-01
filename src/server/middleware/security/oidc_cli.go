@@ -20,12 +20,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/user"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -47,10 +45,11 @@ type oidcCli struct{}
 
 func (o *oidcCli) Generate(req *http.Request) security.Context {
 	ctx := req.Context()
-	if lib.GetAuthMode(ctx) != common.OIDCAuth {
+	logger := log.G(ctx)
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil || setting.Endpoint == "" {
 		return nil
 	}
-	logger := log.G(ctx)
 	username, secret, ok := req.BasicAuth()
 	if !ok {
 		return nil

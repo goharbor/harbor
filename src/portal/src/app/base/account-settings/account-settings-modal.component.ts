@@ -454,4 +454,6 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         this.showSecretDetail = true;
         this.resetSecretInlineAlert.close();
     }
+
+
 }

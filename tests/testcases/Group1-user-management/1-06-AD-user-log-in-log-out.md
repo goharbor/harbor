@@ -1,16 +1,16 @@
-Test 1-06 - AD (Active Directory) User Log In and Log Out (LDAP Mode)
+Test 1-06 - AD (Active Directory) User Log In and Log Out
 =======
 
 # Purpose:
 
-To verify that a non-admin user can log in and log out when users are managed externally by an AD server (LDAP mode).
+To verify that a non-admin user can log in and log out using AD authentication.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against an AD server. (auth_mode is set to **ldap_auth** .) The user data is stored in an AD server.
+* Harbor is configured with AD authentication. Users are stored in an external AD server.
 * A linux host with Docker CLI installed (Docker client).
 * An Active Directory (AD) server has been set up and it has a few users available for testing.
 

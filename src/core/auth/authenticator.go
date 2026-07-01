@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
@@ -66,6 +67,11 @@ func NewErrAuth(msg string) ErrAuth {
 
 // AuthenticateHelper provides interface for user management in different auth modes.
 type AuthenticateHelper interface {
+	// Match returns true when this backend is configured and should be
+	// considered during login dispatch.  Backends that are not installed or
+	// have no configuration (LDAP, OIDC, UAA) return false so they are
+	// skipped without an error.
+	Match(ctx context.Context) bool
 	// Authenticate authenticate the user based on data in m.  Only when the error returned is an instance
 	// of ErrAuth, it will be considered a bad credentials, other errors will be treated as server side error.
 	Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error)
@@ -85,6 +91,11 @@ type AuthenticateHelper interface {
 
 // DefaultAuthenticateHelper - default AuthenticateHelper implementation
 type DefaultAuthenticateHelper struct {
+}
+
+// Match returns false by default so that an unconfigured backend is never tried.
+func (d *DefaultAuthenticateHelper) Match(_ context.Context) bool {
+	return false
 }
 
 // Authenticate ...
@@ -130,51 +141,127 @@ func Register(name string, h AuthenticateHelper) {
 		return
 	}
 	registry[name] = h
-	log.Debugf("Registered authentication helper for auth mode: %s", name)
+	log.Debugf("Registered authentication helper: %s", name)
 }
 
-// Login authenticates user credentials based on setting.
+// Login authenticates user credentials by trying registered backends in
+// priority order.  Every backend whose Match() returns true is attempted;
+// the first successful authentication wins.
 func Login(ctx context.Context, m models.AuthModel) (*models.User, error) {
-	authMode, err := config.AuthMode(ctx)
+	// Use DB auth for robot accounts - they are stored in Harbor DB regardless of auth mode
+	if strings.HasPrefix(m.Principal, config.RobotPrefix(ctx)) {
+		return authenticateWithLock(ctx, m, registry[common.DBAuth])
+	}
+
+	// Superuser always authenticates via DB.
+	if IsSuperUser(ctx, m.Principal) {
+		return authenticateWithLock(ctx, m, registry[common.DBAuth])
+	}
+
+	helpers, err := loginHelpers(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if authMode == "" || IsSuperUser(ctx, m.Principal) {
-		authMode = common.DBAuth
-	}
-	log.Debug("Current AUTH_MODE is ", authMode)
 
-	authenticator, ok := registry[authMode]
-	if !ok {
-		return nil, fmt.Errorf("unrecognized auth_mode: %s", authMode)
+	var lastErr error
+	for i, helper := range helpers {
+		if lock.IsLocked(m.Principal) {
+			log.Debugf("%s is locked due to login failure, login failed", m.Principal)
+			return nil, NewErrAuth("user is locked due to repeated login failures")
+		}
+		user, err := helper.Authenticate(ctx, m)
+		if err != nil {
+			if _, ok := err.(ErrAuth); ok {
+				// Only lock when this is the last helper (no more fallbacks)
+				if i == len(helpers)-1 {
+					log.Warningf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+					lock.Lock(m.Principal)
+					time.Sleep(frozenTime)
+				}
+			}
+			lastErr = err
+			continue
+		}
+		if err := helper.PostAuthenticate(ctx, user); err != nil {
+			return nil, err
+		}
+		return user, nil
 	}
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	return nil, ErrAuth{}
+}
+
+// loginHelpers returns the ordered list of AuthenticateHelper to try for
+// the current request.  The primary backend is determined from the
+// configured backends.  Each backend is first checked with Match() so that
+// unconfigured backends (e.g. LDAP when no LDAP URL is set) are skipped.
+func loginHelpers(ctx context.Context) ([]AuthenticateHelper, error) {
+	authMode := config.DetectAuthMode(ctx)
+
+	switch authMode {
+	case common.HTTPAuth:
+		h := registry[common.HTTPAuth]
+		if h != nil && h.Match(ctx) {
+			return []AuthenticateHelper{h}, nil
+		}
+		return nil, fmt.Errorf("HTTP auth proxy is configured as primary auth method but not properly configured")
+	case common.OIDCAuth:
+		h := registry[common.OIDCAuth]
+		if h != nil && h.Match(ctx) {
+			return []AuthenticateHelper{h, registry[common.DBAuth]}, nil
+		}
+		// OIDC mode with no OIDC configuration — fall back to DB only
+		return []AuthenticateHelper{registry[common.DBAuth]}, nil
+	case common.LDAPAuth:
+		h := registry[common.LDAPAuth]
+		if h != nil && h.Match(ctx) {
+			return []AuthenticateHelper{h}, nil
+		}
+		return nil, fmt.Errorf("LDAP is configured as primary auth method but not properly configured")
+	case common.UAAAuth:
+		h := registry[common.UAAAuth]
+		if h != nil && h.Match(ctx) {
+			return []AuthenticateHelper{h}, nil
+		}
+		return nil, fmt.Errorf("UAA is configured as primary auth method but not properly configured")
+	default:
+		return []AuthenticateHelper{registry[common.DBAuth]}, nil
+	}
+}
+
+// authenticateWithLock wraps Authenticate + PostAuthenticate with the
+// lock check, used by Login for the superuser fast-path.
+func authenticateWithLock(ctx context.Context, m models.AuthModel, h AuthenticateHelper) (*models.User, error) {
 	if lock.IsLocked(m.Principal) {
 		log.Debugf("%s is locked due to login failure, login failed", m.Principal)
-		return nil, nil
+		return nil, NewErrAuth("user is locked due to repeated login failures")
 	}
-	user, err := authenticator.Authenticate(ctx, m)
+	user, err := h.Authenticate(ctx, m)
 	if err != nil {
-		if _, ok = err.(ErrAuth); ok {
-			log.Warningf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+		if _, ok := err.(ErrAuth); ok {
 			lock.Lock(m.Principal)
 			time.Sleep(frozenTime)
 		}
 		return nil, err
 	}
-	err = authenticator.PostAuthenticate(ctx, user)
-	return user, err
+	if err := h.PostAuthenticate(ctx, user); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func getHelper(ctx context.Context) (AuthenticateHelper, error) {
-	authMode, err := config.AuthMode(ctx)
-	if err != nil {
-		return nil, err
-	}
-	AuthenticateHelper, ok := registry[authMode]
+	primary := config.DetectAuthMode(ctx)
+	h, ok := registry[primary]
 	if !ok {
-		return nil, fmt.Errorf("can not get authenticator, authmode: %s", authMode)
+		return nil, fmt.Errorf("can not get authenticator for primary auth method: %s", primary)
 	}
-	return AuthenticateHelper, nil
+	if !h.Match(ctx) {
+		return nil, fmt.Errorf("authenticator for %s is not available", primary)
+	}
+	return h, nil
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
@@ -261,6 +348,10 @@ func IsSuperUser(ctx context.Context, username string) bool {
 	if err != nil {
 		// LDAP user can't be found before onboard to Harbor
 		log.Debugf("Failed to get user from DB, username: %s, error: %v", username, err)
+		return false
+	}
+	if u == nil {
+		log.Debugf("User %s not found in database", username)
 		return false
 	}
 	return u.UserID == 1

@@ -18,9 +18,6 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -46,13 +43,6 @@ type generator interface {
 // Middleware returns a security context middleware that populates the security context into the request context
 func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
-		log := log.G(r.Context())
-		mode, err := config.AuthMode(r.Context())
-		if err == nil {
-			r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
-		} else {
-			log.Warningf("failed to get auth mode: %v", err)
-		}
 		for _, generator := range generators {
 			if ctx := generator.Generate(r); ctx != nil {
 				r = r.WithContext(security.NewContext(r.Context(), ctx))

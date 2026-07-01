@@ -1,4 +1,4 @@
-Test 9-12 User push unsigned images(LDAP mode)
+Test 9-12 User push unsigned images
 =======
 
 # Purpose:
