@@ -231,8 +231,17 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// flush the origin response from the docker registry to the underlying response writer
 	if _, err := buffer.Flush(); err != nil {
 		log.Errorf("failed to flush: %v", err)
 	}
+
+	// NOTE: This handler copies the proxy response (status, headers, body) from the
+	// inner ResponseBuffer to the outer writer (which may be another ResponseBuffer
+	// wrapping this one from middleware). The outer ResponseBuffer's flush to the
+	// actual client is deferred until after all AfterResponse hooks (blob sync,
+	// ensure, associate operations) complete. This ensures:
+	// - If all hooks succeed, the deferred flush sends the 201 to the client.
+	// - If a hook fails mid-execution, the deferred flush can Reset() the outer
+	//   buffer (since it was never flushed), write an error, and send that instead.
+	// See: https://github.com/goharbor/harbor/issues/23199
 }

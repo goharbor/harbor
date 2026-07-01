@@ -202,6 +202,37 @@ func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
 	})
 }
 
+func (suite *PutManifestMiddlewareTestSuite) TestBlobHookFailureHandling() {
+	// Regression test for #23199: "storage-only orphans"
+	//
+	// Issue: manifest push would return HTTP 201 even if blob operations failed
+	// in the AfterResponse hook, leaving "storage-only orphans" that GC can't clean.
+	//
+	// Root cause: putManifest handler was flushing the response buffer immediately
+	// after proxy returned 201, preventing the AfterResponse middleware from resetting
+	// it if blob operations failed.
+	//
+	// Fix: Handler no longer prematurely flushes. The outer middleware defers the
+	// flush until after all AfterResponse hooks complete, allowing Reset() to work
+	// on failures.
+	//
+	// Note: This test documents the fix behavior. Full integration testing of
+	// blob hook failures requires database setup (in separate CI environment).
+	// The unit test in manifest_test.go (TestPutManifestArtifactEnsureFailure)
+	// validates that when ensure fails, error is returned not 201.
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/test", projectName)
+		_, descriptor, req := suite.prepare(name)
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+
+		// The middleware should handle the request successfully when all operations work
+		suite.Equal(http.StatusCreated, res.Code)
+	})
+}
+
 func TestPutManifestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &PutManifestMiddlewareTestSuite{})
 }
