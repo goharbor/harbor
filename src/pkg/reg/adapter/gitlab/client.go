@@ -122,7 +122,8 @@ func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 		return err
 	}
 	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Ptr { // nolint:govet
+	// nolint:govet
+	if rv.Kind() != reflect.Ptr {
 		return errors.New("v should be a pointer to a slice")
 	}
 	elemType := rv.Elem().Type()

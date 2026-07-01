@@ -144,11 +144,13 @@ func (c *controller) Start(ctx context.Context, policy *replicationmodel.Policy,
 	// as the process runs inside a goroutine, the transaction in the outer ctx
 	// may be submitted already when the process starts, so create an new context
 	// with orm populated to the goroutine
-	go func() { // nolint:gosec
+	// nolint:gosec
+	go func() {
 		c.wp.GetWorker()
 		defer c.wp.ReleaseWorker()
 
-		ctx := orm.NewContext(context.Background(), c.ormCreator.Create()) // nolint:gosec
+		// nolint:gosec
+		ctx := orm.NewContext(context.Background(), c.ormCreator.Create())
 		// recover in case panic during the adapter process
 		defer func() {
 			if err := recover(); err != nil {

@@ -44,7 +44,8 @@ func ResolveData(mime string, jsonData []byte, options ...Option) (any, error) {
 	}
 
 	ty := reflect.TypeOf(t)
-	if ty.Kind() == reflect.Ptr { // nolint:govet
+	// nolint:govet
+	if ty.Kind() == reflect.Ptr {
 		ty = ty.Elem()
 	}
 
