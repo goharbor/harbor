@@ -29,6 +29,7 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg"
@@ -174,10 +175,11 @@ func (m *manifestTestSuite) TestPutManifest() {
 	input.SetParam(":splat", "library/hello-world")
 	input.SetParam(":reference", "latest")
 	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
-	w := &httptest.ResponseRecorder{}
+	recorder := &httptest.ResponseRecorder{}
+	w := lib.NewResponseBuffer(recorder)
 	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	putManifest(w, req)
-	m.Equal(http.StatusInternalServerError, w.Code)
+	m.Equal(http.StatusInternalServerError, recorder.Code)
 
 	m.SetupTest()
 
@@ -196,11 +198,12 @@ func (m *manifestTestSuite) TestPutManifest() {
 	input.SetParam(":splat", "library/hello-world")
 	input.SetParam(":reference", "latest")
 	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
-	w = &httptest.ResponseRecorder{}
+	recorder = &httptest.ResponseRecorder{}
+	w = lib.NewResponseBuffer(recorder)
 	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
 	putManifest(w, req)
-	m.Equal(http.StatusCreated, w.Code)
+	m.Equal(http.StatusCreated, recorder.Code)
 }
 
 func (m *manifestTestSuite) TestPutManifestRequiresResponseBuffer() {
@@ -261,15 +264,16 @@ func (m *manifestTestSuite) TestPutManifestArtifactEnsureFailure() {
 	input.SetParam(":reference", "latest")
 	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
 
-	w := &httptest.ResponseRecorder{}
+	recorder := &httptest.ResponseRecorder{}
+	w := lib.NewResponseBuffer(recorder)
 	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
 	// Simulate artifact.Ctl.Ensure failure (e.g., database error, validation failure)
 	mock.OnAnything(m.artCtl, "Ensure").Return(false, int64(0), errors.New("artifact registration failed"))
 	putManifest(w, req)
 
 	// Verify that error response is returned, not the 201 from the proxy
-	m.Equal(http.StatusInternalServerError, w.Code, "Expected 500 error when artifact registration fails")
-	m.NotEqual(http.StatusCreated, w.Code, "Should NOT return 201 when artifact registration fails")
+	m.Equal(http.StatusInternalServerError, recorder.Code, "Expected 500 error when artifact registration fails")
+	m.NotEqual(http.StatusCreated, recorder.Code, "Should NOT return 201 when artifact registration fails")
 }
 
 func (m *manifestTestSuite) TestPutManifestWithTagToDigestReplacement() {
