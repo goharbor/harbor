@@ -1079,7 +1079,10 @@
         "FILE_TOO_LARGE": "El archivo es demasiado grande para procesarlo.",
         "ITEMS": "items",
         "SHOW_KV": "Pares Key Value",
-        "SHOW_YAML": "Archivo YAML"
+        "SHOW_YAML": "Archivo YAML",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "No se encontró Dockerfile en la imagen. El contenido de Dockerfile de las etiquetas de imagen no está disponible.",
+        "NO_DOCKERFILE_SUGGESTION": "Ver el"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Creado en",
