@@ -84,7 +84,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 		return err
 	}
 
-	tokenReq, err := http.NewRequest(http.MethodGet, url.String(), nil) //nolint:gosec
+	tokenReq, err := http.NewRequest(http.MethodGet, url.String(), nil) // nolint:gosec
 	if err != nil {
 		return nil
 	}
@@ -93,7 +93,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 		tokenReq.SetBasicAuth(a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)
 	}
 
-	resp, err := a.client.Do(tokenReq) //nolint:gosec
+	resp, err := a.client.Do(tokenReq) // nolint:gosec
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (a *authorizer) buildTokenAPI(u *url.URL) (*url.URL, error) {
 		return nil, err
 	}
 
-	resp, err := a.client.Get(v2URL.String()) //nolint:gosec
+	resp, err := a.client.Get(v2URL.String()) // nolint:gosec
 	if err != nil {
 		return nil, err
 	}
