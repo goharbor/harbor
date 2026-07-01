@@ -18,7 +18,6 @@ import "github.com/goharbor/harbor/src/pkg/reg/adapter"
 
 // define a new interface to combine the two interfaces of adapter for mockery to generate the mocks
 
-// nolint:deadcode
 // for make gen_mocks use
 type registryAdapter interface {
 	adapter.Adapter

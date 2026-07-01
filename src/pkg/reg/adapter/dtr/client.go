@@ -65,7 +65,6 @@ func (c *Client) getAndIteratePagination(endpoint string, v any) error {
 	}
 
 	rv := reflect.ValueOf(v)
-	// nolint:govet
 	if rv.Kind() != reflect.Ptr {
 		return errors.New("v should be a pointer to a slice")
 	}
@@ -308,7 +307,6 @@ func (c *Client) createRepository(repository string) error {
 // this operation needs admin access
 func (c *Client) createNamespace(namespace string) error {
 	ns := newDefaultDTRNamespace(namespace)
-	// nolint:gosec
 	body, err := json.Marshal(ns)
 	if err != nil {
 		return err

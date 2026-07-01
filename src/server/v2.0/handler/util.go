@@ -66,7 +66,6 @@ func parseScanReportMimeTypes(header *string) []string {
 
 func unescapePathParams(params any, fieldNames ...string) error {
 	val := reflect.ValueOf(params)
-	// nolint:govet
 	if val.Kind() != reflect.Ptr {
 		return fmt.Errorf("params must be ptr")
 	}

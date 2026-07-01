@@ -75,7 +75,6 @@ func NewClient(registry *model.Registry) (*Client, error) {
 // refreshToken authenticates with Docker Hub via POST /v2/auth/token and stores
 // the resulting bearer token. Callers must hold c.mu before calling this method.
 func (c *Client) refreshToken() error {
-	// nolint:gosec
 	b, err := json.Marshal(c.credential)
 	if err != nil {
 		return fmt.Errorf("marshal credential error: %v", err)
