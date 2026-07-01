@@ -50,29 +50,6 @@ func TestGetKey(t *testing.T) {
 	assert.NotNil(t, key)
 }
 
-// writeECKeyFile generates an ECDSA key with the given curve and writes it to
-// a temp PEM file in the specified format ("EC PRIVATE KEY" or "PRIVATE KEY").
-// The caller is responsible for removing the file.
-func writeECKeyFile(t *testing.T, curve elliptic.Curve, pemType string) string {
-	t.Helper()
-	key, err := ecdsa.GenerateKey(curve, rand.Reader)
-	require.NoError(t, err)
-
-	var der []byte
-	if pemType == "EC PRIVATE KEY" {
-		der, err = x509.MarshalECPrivateKey(key)
-	} else {
-		der, err = x509.MarshalPKCS8PrivateKey(key)
-	}
-	require.NoError(t, err)
-
-	f, err := os.CreateTemp("", "harbor-ec-key-*.pem")
-	require.NoError(t, err)
-	require.NoError(t, pem.Encode(f, &pem.Block{Type: pemType, Bytes: der}))
-	require.NoError(t, f.Close())
-	return f.Name()
-}
-
 func TestNewOptionsECDSA(t *testing.T) {
 	cases := []struct {
 		name       string
