@@ -27,6 +27,17 @@ func TestNewOptions(t *testing.T) {
 	assert.Equal(t, defaultOpt.Issuer, "harbor-token-defaultIssuer")
 }
 
+func TestNewOptionsMethodDeprecated(t *testing.T) {
+	// Method parameter is deprecated; any non-empty method should return an error
+	keyFile := writeECKeyFile(t, elliptic.P256(), "EC PRIVATE KEY")
+	defer os.Remove(keyFile)
+
+	opt, err := NewOptions("RS256", "test-issuer", keyFile)
+	assert.Error(t, err)
+	assert.Nil(t, opt)
+	assert.Contains(t, err.Error(), "deprecated")
+}
+
 func TestGetKey(t *testing.T) {
 	defaultOpt := DefaultTokenOptions()
 	if defaultOpt == nil {
