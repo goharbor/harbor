@@ -61,7 +61,8 @@ func (r *Robot) FromJSON(jsonData string) error {
 
 // ToJSON marshals Robot to JSON data
 func (r *Robot) ToJSON() (string, error) {
-	data, err := json.Marshal(r) // nolint:gosec
+	// nolint:gosec
+	data, err := json.Marshal(r)
 	if err != nil {
 		return "", err
 	}

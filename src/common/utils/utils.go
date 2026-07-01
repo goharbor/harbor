@@ -145,7 +145,8 @@ func ConvertMapToStruct(object any, values any) error {
 		return errors.New("nil struct is not supported")
 	}
 
-	if reflect.TypeOf(object).Kind() != reflect.Ptr { // nolint:govet
+	// nolint:govet
+	if reflect.TypeOf(object).Kind() != reflect.Ptr {
 		return errors.New("object should be referred by pointer")
 	}
 
