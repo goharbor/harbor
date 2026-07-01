@@ -15,6 +15,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactAdditionsComponent } from './artifact-additions.component';
 import { DockerfileComponent } from './dockerfile/dockerfile.component';
 import { AdditionLinks } from '../../../../../../../ng-swagger-gen/models/addition-links';
+import { ADDITIONS } from './models';
 import { CURRENT_BASE_HREF } from '../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -71,5 +72,40 @@ describe('ArtifactAdditionsComponent', () => {
         const tabButton: HTMLButtonElement =
             fixture.nativeElement.querySelector('#vulnerability');
         expect(tabButton).toBeTruthy();
+    });
+
+    it('should return null for dockerfile when not available', () => {
+        const dockerfileLink = component.getDockerfile();
+        expect(dockerfileLink).toBeNull();
+    });
+
+    it('should return dockerfile link when available', () => {
+        component.additionLinks = {
+            ...mockedAdditionLinks,
+            dockerfile: { absolute: false, href: '/test-dockerfile' },
+        };
+        const dockerfileLink = component.getDockerfile();
+        expect(dockerfileLink).toBeTruthy();
+        expect(dockerfileLink.href).toBe('/test-dockerfile');
+    });
+
+    it('should return false for hasBuildHistory when not available', () => {
+        const hasBuildHistory = component.hasBuildHistory();
+        expect(hasBuildHistory).toBe(false);
+    });
+
+    it('should return true for hasBuildHistory when available', () => {
+        component.additionLinks = {
+            ...mockedAdditionLinks,
+            build_history: { absolute: false, href: '/test-history' },
+        };
+        const hasBuildHistory = component.hasBuildHistory();
+        expect(hasBuildHistory).toBe(true);
+    });
+
+    it('should call actionTab on onDockerfileSwitchTab', () => {
+        spyOn(component, 'actionTab');
+        component.onDockerfileSwitchTab('build-history');
+        expect(component.actionTab).toHaveBeenCalledWith('build-history');
     });
 });
