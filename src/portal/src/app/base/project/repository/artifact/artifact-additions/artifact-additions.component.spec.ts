@@ -13,6 +13,7 @@
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactAdditionsComponent } from './artifact-additions.component';
+import { DockerfileComponent } from './dockerfile/dockerfile.component';
 import { AdditionLinks } from '../../../../../../../ng-swagger-gen/models/addition-links';
 import { CURRENT_BASE_HREF } from '../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
@@ -45,7 +46,7 @@ describe('ArtifactAdditionsComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
-            declarations: [ArtifactAdditionsComponent],
+            declarations: [ArtifactAdditionsComponent, DockerfileComponent],
             schemas: [NO_ERRORS_SCHEMA],
             providers: [
                 {

@@ -34,4 +34,5 @@ export enum ADDITIONS {
     SBOMS = 'sboms',
     LICENSE = 'license',
     FILES = 'files',
+    DOCKERFILE = 'dockerfile',
 }
