@@ -83,6 +83,14 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     @Input()
     robotMetadata: Permissions;
 
+    secretVisible: boolean = false;
+    secretValidation: { length: boolean; uppercase: boolean; lowercase: boolean; digit: boolean } = {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        digit: false,
+    };
+
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
         private robotService: RobotService,

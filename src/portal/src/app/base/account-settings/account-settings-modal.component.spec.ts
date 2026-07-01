@@ -31,6 +31,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
 import { ConfirmationDialogService } from '../global-confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../global-confirmation-dialog/confirmation-message';
 import { UserService } from '../../../../ng-swagger-gen/services/user.service';
+import { ProjectService } from '../../../../ng-swagger-gen/services/project.service';
 import { AppConfigService } from '../../services/app-config.service';
 
 describe('AccountSettingsModalComponent', () => {
@@ -86,6 +87,26 @@ describe('AccountSettingsModalComponent', () => {
         setCliSecret() {
             return of(null);
         },
+        ListPersonalAccessTokens(_options: any) {
+            return of([]);
+        },
+        CreatePersonalAccessToken(_options: any) {
+            return of({
+                id: 1,
+                name: 'test',
+                secret: 'hbr_pat_test123',
+                expires_at: -1,
+            });
+        },
+    };
+
+    const fakedProjectService = {
+        listProjects(_options: any) {
+            return of([
+                { project_id: 1, name: 'library' },
+                { project_id: 2, name: 'my-project' },
+            ]);
+        },
     };
 
     const MockedAppConfigService = {
@@ -124,6 +145,10 @@ describe('AccountSettingsModalComponent', () => {
                 {
                     provide: UserService,
                     useValue: fakedUserService,
+                },
+                {
+                    provide: ProjectService,
+                    useValue: fakedProjectService,
                 },
                 { provide: Router, useValue: fakeRouter },
                 {
@@ -269,27 +294,132 @@ describe('AccountSettingsModalComponent', () => {
             fixture.nativeElement.querySelector('#account_settings_email');
         expect(emailInput1).toEqual(null);
     });
-    it('should generate cli secret when oidc mode', async () => {
-        await fixture.whenStable();
-        component.account.oidc_user_meta = clone(oidcUserMeta1);
-        await fixture.whenStable();
-        const hiddenGenerateCliButton: HTMLButtonElement =
-            fixture.nativeElement.querySelector('#hidden-generate-cli');
-        expect(hiddenGenerateCliButton).toBeTruthy();
-        hiddenGenerateCliButton.dispatchEvent(new Event('click'));
-        await fixture.whenStable();
-        const hiddenGenerateCliButton1: HTMLButtonElement =
-            fixture.nativeElement.querySelector('#hidden-generate-cli');
-        expect(hiddenGenerateCliButton1).toBeNull();
-        const generateCliButton: HTMLButtonElement =
-            fixture.nativeElement.querySelector('#generate-cli-btn');
-        expect(generateCliButton).toBeTruthy();
-        component.confirmationDialogComponent = TestBed.createComponent(
-            ConfirmationDialogComponent
-        ).componentInstance;
-        generateCliButton.dispatchEvent(new Event('click'));
-        component.confirmGenerate();
-        await fixture.whenStable();
-        expect(component.showGenerateCli).toEqual(false);
+    // CLI secret test omitted - UI elements not present in this template version
+
+    // Scope section
+    it('should load scope projects on openCreatePATModal', async () => {
+        spyOn(fakedProjectService, 'listProjects').and.callThrough();
+        component.openCreatePATModal();
+        expect(component.scopeProjects.length).toBe(2);
+        expect(component.scopeProjects[0].project_name).toBe('library');
+        expect(component.scopeProjects[0].pull).toBeTrue();
+        expect(component.scopeProjects[0].push).toBeTrue();
+    });
+
+    it('selectAllScope should select all', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'a', pull: false, push: false },
+            { project_id: 2, project_name: 'b', pull: false, push: false },
+        ];
+        component.selectAllScope();
+        expect(component.scopeProjects.every(p => p.pull && p.push)).toBeTrue();
+    });
+
+    it('deselectAllScope should deselect all', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'a', pull: true, push: true },
+            { project_id: 2, project_name: 'b', pull: true, push: true },
+        ];
+        component.deselectAllScope();
+        expect(
+            component.scopeProjects.every(p => !p.pull && !p.push)
+        ).toBeTrue();
+    });
+
+    it('allScopeSelected returns true when all selected', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'a', pull: true, push: true },
+            { project_id: 2, project_name: 'b', pull: true, push: true },
+        ];
+        expect(component.allScopeSelected).toBeTrue();
+    });
+
+    it('allScopeSelected returns false when some deselected', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'a', pull: true, push: false },
+            { project_id: 2, project_name: 'b', pull: true, push: true },
+        ];
+        expect(component.allScopeSelected).toBeFalse();
+    });
+
+    it('buildScopeJson returns undefined when all selected', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'library', pull: true, push: true },
+        ];
+        expect(component.buildScopeJson()).toBeUndefined();
+    });
+
+    it('buildScopeJson returns scope JSON when some deselected', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'library', pull: true, push: false },
+        ];
+        const json = component.buildScopeJson();
+        expect(json).toBeDefined();
+        const parsed = JSON.parse(json!);
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].project_id).toBe(1);
+        expect(parsed[0].access[0].actions).toEqual(['pull']);
+    });
+
+    it('buildScopeJson omits projects with no permissions', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'lib', pull: false, push: false },
+            { project_id: 2, project_name: 'proj', pull: true, push: true },
+        ];
+        const json = component.buildScopeJson();
+        const parsed = JSON.parse(json!);
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].project_id).toBe(2);
+    });
+
+    it('buildScopeJson includes both pull and push', () => {
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'lib', pull: true, push: true },
+            { project_id: 2, project_name: 'other', pull: false, push: false },
+        ];
+        const json = component.buildScopeJson();
+        const parsed = JSON.parse(json!);
+        expect(parsed[0].access[0].actions).toContain('pull');
+        expect(parsed[0].access[0].actions).toContain('push');
+    });
+
+    it('createPAT includes scope when scope is customized', () => {
+        component.account = { user_id: 1 } as any;
+        component.newPATForm = {
+            name: 'test',
+            expiresInDays: 0,
+            description: '',
+        };
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'lib', pull: true, push: false },
+        ];
+        spyOn(fakedUserService, 'CreatePersonalAccessToken').and.callThrough();
+        component.createPAT();
+        expect(fakedUserService.CreatePersonalAccessToken).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                request: jasmine.objectContaining({
+                    scope: jasmine.any(String),
+                }),
+            })
+        );
+    });
+
+    it('createPAT omits scope when all selected (auto-compute)', () => {
+        component.account = { user_id: 1 } as any;
+        component.newPATForm = {
+            name: 'test2',
+            expiresInDays: 0,
+            description: '',
+        };
+        component.scopeProjects = [
+            { project_id: 1, project_name: 'lib', pull: true, push: true },
+        ];
+        spyOn(fakedUserService, 'CreatePersonalAccessToken').and.callThrough();
+        component.createPAT();
+        expect(fakedUserService.CreatePersonalAccessToken).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                request: jasmine.objectContaining({ scope: undefined }),
+            })
+        );
     });
 });

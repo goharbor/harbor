@@ -1,0 +1,215 @@
+<clr-modal
+    [(clrModalOpen)]="opened"
+    [clrModalStaticBackdrop]="staticBackdrop"
+    [clrModalSize]="'lg'"
+    id="api-tokens-modal">
+    <h3 class="modal-title" i18n="@@PROFILE.API_TOKENS">API Tokens</h3>
+
+    <div class="modal-body">
+        <div class="api-tokens-container">
+            <div class="token-toolbar">
+                <button
+                    class="btn btn-primary"
+                    (click)="openCreateTokenModal()"
+                    id="create-token-btn">
+                    <clr-icon shape="plus"></clr-icon>
+                    {{ 'PROFILE.CREATE_TOKEN' | translate }}
+                </button>
+            </div>
+
+            <clr-datagrid
+                [(clrDgSelected)]="selectedTokens"
+                [clrDgLoading]="tokenLoading">
+                <clr-dg-column>
+                    <ng-container *clrDgHideableColumn="{ hidden: false }">
+                        {{ 'PROFILE.TOKEN_NAME' | translate }}
+                    </ng-container>
+                </clr-dg-column>
+
+                <clr-dg-column>
+                    <ng-container *clrDgHideableColumn="{ hidden: false }">
+                        {{ 'PROFILE.TOKEN_CREATED' | translate }}
+                    </ng-container>
+                </clr-dg-column>
+
+                <clr-dg-column>
+                    <ng-container *clrDgHideableColumn="{ hidden: false }">
+                        {{ 'PROFILE.TOKEN_EXPIRES' | translate }}
+                    </ng-container>
+                </clr-dg-column>
+
+                <clr-dg-column>
+                    <ng-container *clrDgHideableColumn="{ hidden: false }">
+                        {{ 'PROFILE.TOKEN_STATUS' | translate }}
+                    </ng-container>
+                </clr-dg-column>
+
+                <clr-dg-column>
+                    <ng-container *clrDgHideableColumn="{ hidden: false }">
+                        {{ 'PROFILE.TOKEN_ACTIONS' | translate }}
+                    </ng-container>
+                </clr-dg-column>
+
+                <clr-dg-row
+                    *clrDgItems="let token of tokens"
+                    [clrDgItem]="token">
+                    <clr-dg-cell>{{ token.name }}</clr-dg-cell>
+                    <clr-dg-cell>
+                        {{ token.creation_time | date : 'short' }}
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        <span *ngIf="token.expires_at === -1">
+                            {{ 'PROFILE.TOKEN_NEVER' | translate }}
+                        </span>
+                        <span *ngIf="token.expires_at !== -1">
+                            {{ token.expires_at | date : 'short' }}
+                        </span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        <span *ngIf="token.disabled" class="label label-light">
+                            {{ 'PROFILE.DISABLED' | translate }}
+                        </span>
+                        <span
+                            *ngIf="!token.disabled"
+                            class="label label-success">
+                            {{ 'PROFILE.ACTIVE' | translate }}
+                        </span>
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        <clr-dropdown [clrCloseMenuOnItemClick]="false">
+                            <button class="btn btn-link" clrDropdownTrigger>
+                                <clr-icon shape="ellipsis-vertical"></clr-icon>
+                            </button>
+                            <clr-dropdown-menu
+                                *clrIfOpen
+                                clrPosition="top-right">
+                                <button
+                                    clrDropdownItem
+                                    (click)="revokeToken(token.id)"
+                                    *ngIf="!token.disabled">
+                                    {{ 'PROFILE.REVOKE_TOKEN' | translate }}
+                                </button>
+                                <button
+                                    clrDropdownItem
+                                    (click)="deleteToken(token.id)">
+                                    {{ 'PROFILE.DELETE_TOKEN' | translate }}
+                                </button>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                    </clr-dg-cell>
+                </clr-dg-row>
+
+                <clr-dg-placeholder
+                    *ngIf="tokens.length === 0 && !tokenLoading">
+                    {{ 'PROFILE.NO_TOKENS' | translate }}
+                </clr-dg-placeholder>
+            </clr-datagrid>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn btn-primary"
+            (click)="close()"
+            i18n="@@BUTTON.CLOSE">
+            Close
+        </button>
+    </div>
+</clr-modal>
+
+<!-- Create Token Modal -->
+<clr-modal
+    [(clrModalOpen)]="showCreateTokenModal"
+    [clrModalStaticBackdrop]="true"
+    id="create-token-modal">
+    <h3 class="modal-title" i18n="@@PROFILE.CREATE_TOKEN">Create API Token</h3>
+
+    <div class="modal-body">
+        <form>
+            <clr-input-container>
+                <label i18n="@@PROFILE.TOKEN_NAME">Token Name</label>
+                <input
+                    clrInput
+                    type="text"
+                    placeholder="Enter token name"
+                    [(ngModel)]="newTokenForm.name"
+                    name="token_name"
+                    required />
+            </clr-input-container>
+
+            <clr-textarea-container>
+                <label i18n="@@PROFILE.DESCRIPTION">Description</label>
+                <textarea
+                    clrTextarea
+                    placeholder="Enter token description (optional)"
+                    [(ngModel)]="newTokenForm.description"
+                    name="token_description"></textarea>
+            </clr-textarea-container>
+
+            <div *ngIf="createdTokenSecret" class="alert alert-info">
+                <div class="alert-items">
+                    <div class="alert-item static">
+                        <div class="alert-icon-wrapper">
+                            <clr-icon
+                                class="alert-icon"
+                                shape="info-circle"></clr-icon>
+                        </div>
+                        <span
+                            class="alert-text"
+                            i18n="@@PROFILE.TOKEN_SECRET_WARNING">
+                            Please copy your token now. You won't be able to see
+                            it again.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="createdTokenSecret" class="form-group">
+                <label i18n="@@PROFILE.TOKEN_SECRET">Token Secret</label>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        class="form-control"
+                        [value]="createdTokenSecret"
+                        readonly />
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        (click)="copyTokenSecret()"
+                        i18n="@@BUTTON.COPY">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn"
+            (click)="closeCreateTokenModal()"
+            *ngIf="createdTokenSecret"
+            i18n="@@BUTTON.CLOSE">
+            Close
+        </button>
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="closeCreateTokenModal()"
+            *ngIf="!createdTokenSecret"
+            i18n="@@BUTTON.CANCEL">
+            Cancel
+        </button>
+        <button
+            type="button"
+            class="btn btn-primary"
+            (click)="createToken()"
+            [disabled]="!newTokenForm.name || tokenLoading"
+            *ngIf="!createdTokenSecret">
+            <clr-icon shape="plus"></clr-icon>
+            {{ 'PROFILE.CREATE' | translate }}
+        </button>
+    </div>
+</clr-modal>

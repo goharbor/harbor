@@ -75,6 +75,7 @@ export const enum ConfirmationTargets {
     STOPS_JOBS,
     PAUSE_JOBS,
     RESUME_JOBS,
+    USER_PAT,
 }
 
 export const enum ActionType {

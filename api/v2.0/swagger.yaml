@@ -6014,6 +6014,220 @@ paths:
         '500':
           $ref: '#/responses/500'
 
+  '/users/{user_id}/personal_access_tokens':
+    get:
+      summary: List personal access tokens
+      description: List all personal access tokens for the specified user.
+      tags:
+        - user
+      operationId: ListPersonalAccessTokens
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Successfully retrieved personal access tokens.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PersonalAccessToken'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a personal access token
+      description: Create a new personal access token for the specified user.
+      tags:
+        - user
+      operationId: CreatePersonalAccessToken
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - name: request
+          in: body
+          description: The personal access token to create.
+          required: true
+          schema:
+            $ref: '#/definitions/PersonalAccessTokenCreateRequest'
+      responses:
+        '201':
+          description: Personal access token created successfully.
+          schema:
+            $ref: '#/definitions/PersonalAccessTokenCreatedResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+
+  '/users/{user_id}/personal_access_tokens/{token_id}':
+    get:
+      summary: Get a personal access token
+      description: Get details of a specific personal access token.
+      tags:
+        - user
+      operationId: GetPersonalAccessToken
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - name: token_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Token ID
+      responses:
+        '200':
+          description: Successfully retrieved the personal access token.
+          schema:
+            $ref: '#/definitions/PersonalAccessToken'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a personal access token
+      description: Update the details of a specific personal access token.
+      tags:
+        - user
+      operationId: UpdatePersonalAccessToken
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - name: token_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Token ID
+        - name: request
+          in: body
+          description: The personal access token to update.
+          required: true
+          schema:
+            $ref: '#/definitions/PersonalAccessTokenUpdateRequest'
+      responses:
+        '200':
+          description: Personal access token updated successfully.
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a personal access token
+      description: Delete a specific personal access token.
+      tags:
+        - user
+      operationId: DeletePersonalAccessToken
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - name: token_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Token ID
+      responses:
+        '204':
+          description: Personal access token deleted successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Refresh a personal access token secret
+      description: Refresh the secret of a personal access token.
+      tags:
+        - user
+      operationId: RefreshPersonalAccessTokenSecret
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: user_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: User ID
+        - name: token_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Token ID
+        - name: request
+          in: body
+          description: The personal access token secret refresh request.
+          required: false
+          schema:
+            $ref: '#/definitions/PersonalAccessTokenRefreshRequest'
+      responses:
+        '200':
+          description: Personal access token secret refreshed successfully.
+          schema:
+            $ref: '#/definitions/PersonalAccessTokenCreatedResponse'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
   /labels:
     get:
       summary: List labels according to the query strings.
@@ -10340,3 +10554,112 @@ definitions:
         type: string
         description: 'The scan type for the scan request. Two options are currently supported, vulnerability and sbom'
         enum: [ vulnerability, sbom ]
+  PersonalAccessToken:
+    type: object
+    description: A personal access token for user authentication
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the token
+      user_id:
+        type: integer
+        format: int64
+        description: The ID of the user this token belongs to
+      name:
+        type: string
+        description: The name of the token
+      description:
+        type: string
+        description: The description of the token
+      disabled:
+        type: boolean
+        description: Whether the token is disabled
+      is_legacy:
+        type: boolean
+        description: Whether this is a legacy token migrated from CLI secret
+      expires_at:
+        type: integer
+        format: int64
+        description: Token expiration time in Unix timestamp (seconds). -1 means never expires.
+      expired:
+        type: boolean
+        description: Whether the token has expired
+      last_used_at:
+        type: integer
+        format: int64
+        description: Last time the token was used in Unix timestamp (seconds)
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the token
+      update_time:
+        type: string
+        format: date-time
+        description: The last update time of the token
+      scope:
+        type: string
+        description: The scope of the token, containing project permissions in JSON format
+  PersonalAccessTokenCreateRequest:
+    type: object
+    description: Request for creating a personal access token
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 255
+        description: The name of the token
+      description:
+        type: string
+        maxLength: 1024
+        description: The description of the token
+      expires_in_days:
+        type: integer
+        format: int32
+        description: The number of days until the token expires. If not specified or -1, the token never expires.
+      scope:
+        type: string
+        description: Optional JSON string representing the token's scope as []ProjectScope. If not provided, the scope is auto-computed from the user's project memberships. If provided, the scope is intersected with the user's actual permissions so the user will not receive permissions they don't already have.
+  PersonalAccessTokenCreatedResponse:
+    type: object
+    description: Response when creating or refreshing a personal access token (secret shown only once)
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the token
+      name:
+        type: string
+        description: The name of the token
+      secret:
+        type: string
+        description: The secret of the token (shown only at creation/refresh time)
+      expires_at:
+        type: integer
+        format: int64
+        description: Token expiration time in Unix timestamp (seconds)
+  PersonalAccessTokenUpdateRequest:
+    type: object
+    description: Request for updating a personal access token
+    properties:
+      name:
+        type: string
+        minLength: 1
+        maxLength: 255
+        description: The name of the token
+      description:
+        type: string
+        maxLength: 1024
+        description: The description of the token
+      disabled:
+        type: boolean
+        description: Whether the token is disabled
+  PersonalAccessTokenRefreshRequest:
+    type: object
+    description: Request for refreshing a personal access token secret
+    properties:
+      secret:
+        type: string
+        description: Optional new secret. If not provided, a new one will be generated.

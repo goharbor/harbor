@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
@@ -29,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/pat"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -36,6 +38,9 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
+	"github.com/goharbor/harbor/src/pkg/auditext"
+	auditmodel "github.com/goharbor/harbor/src/pkg/auditext/model"
+	patmodel "github.com/goharbor/harbor/src/pkg/pat/model"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -44,15 +49,216 @@ import (
 
 type usersAPI struct {
 	BaseAPI
-	ctl     user.Controller
-	getAuth func(ctx context.Context) (string, error) // For testing
+	ctl      user.Controller
+	patCtl   pat.Controller
+	auditMgr auditext.Manager
+	getAuth  func(ctx context.Context) (string, error)
 }
 
 func newUsersAPI() *usersAPI {
 	return &usersAPI{
-		ctl:     user.Ctl,
-		getAuth: config.AuthMode,
+		ctl:      user.Ctl,
+		patCtl:   pat.Ctl,
+		auditMgr: auditext.Mgr,
+		getAuth:  config.AuthMode,
 	}
+}
+
+func (u *usersAPI) CreatePersonalAccessToken(ctx context.Context, params operation.CreatePersonalAccessTokenParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, false); err != nil {
+		return u.SendError(ctx, err)
+	}
+	patModel := &patmodel.PersonalAccessToken{
+		UserID:      userID,
+		Name:        *params.Request.Name,
+		Description: params.Request.Description,
+		Scope:       params.Request.Scope,
+	}
+	if params.Request.ExpiresInDays > 0 {
+		patModel.ExpiresAt = time.Now().AddDate(0, 0, int(params.Request.ExpiresInDays)).Unix()
+	}
+	id, secret, err := u.patCtl.Create(ctx, patModel)
+	if err != nil {
+		u.logAuditEntry(ctx, "Create", patModel.Name, fmt.Sprintf("user:%d", userID), false)
+		return u.SendError(ctx, err)
+	}
+	u.logAuditEntry(ctx, "Create", patModel.Name, fmt.Sprintf("user:%d", userID), true)
+	return operation.NewCreatePersonalAccessTokenCreated().WithPayload(&models.PersonalAccessTokenCreatedResponse{
+		ID:        id,
+		Name:      *params.Request.Name,
+		Secret:    secret,
+		ExpiresAt: patModel.ExpiresAt,
+	})
+}
+
+func (u *usersAPI) DeletePersonalAccessToken(ctx context.Context, params operation.DeletePersonalAccessTokenParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, false); err != nil {
+		return u.SendError(ctx, err)
+	}
+	pat, err := u.patCtl.Get(ctx, params.TokenID)
+	patName := fmt.Sprintf("PAT-%d", params.TokenID)
+	if err == nil && pat != nil {
+		patName = pat.Name
+	}
+	if err := u.patCtl.Delete(ctx, params.TokenID); err != nil {
+		u.logAuditEntry(ctx, "Delete", patName, fmt.Sprintf("user:%d", userID), false)
+		return u.SendError(ctx, err)
+	}
+	u.logAuditEntry(ctx, "Delete", patName, fmt.Sprintf("user:%d", userID), true)
+	return operation.NewDeletePersonalAccessTokenNoContent()
+}
+
+func (u *usersAPI) GetPersonalAccessToken(ctx context.Context, params operation.GetPersonalAccessTokenParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, false); err != nil {
+		return u.SendError(ctx, err)
+	}
+	pat, err := u.patCtl.Get(ctx, params.TokenID)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	return operation.NewGetPersonalAccessTokenOK().WithPayload(&models.PersonalAccessToken{
+		ID:           pat.ID,
+		Name:         pat.Name,
+		Description:  pat.Description,
+		UserID:       int64(pat.UserID),
+		CreationTime: strfmt.DateTime(pat.CreationTime),
+		UpdateTime:   strfmt.DateTime(pat.UpdateTime),
+		ExpiresAt:    pat.ExpiresAt,
+		Disabled:     pat.Disabled,
+		IsLegacy:     pat.IsLegacy,
+		LastUsedAt:   pat.LastUsedAt,
+		Scope:        pat.Scope,
+	})
+}
+
+func (u *usersAPI) ListPersonalAccessTokens(ctx context.Context, params operation.ListPersonalAccessTokensParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, true); err != nil {
+		return u.SendError(ctx, err)
+	}
+	query := &q.Query{
+		PageNumber: *params.Page,
+		PageSize:   *params.PageSize,
+		Keywords:   map[string]interface{}{"user_id": userID},
+	}
+	total, err := u.patCtl.Count(ctx, query)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	payload := make([]*models.PersonalAccessToken, 0)
+	if total > 0 {
+		pats, err := u.patCtl.List(ctx, query)
+		if err != nil {
+			return u.SendError(ctx, err)
+		}
+		payload = make([]*models.PersonalAccessToken, len(pats))
+		for i, pat := range pats {
+			payload[i] = &models.PersonalAccessToken{
+				ID:           pat.ID,
+				Name:         pat.Name,
+				Description:  pat.Description,
+				UserID:       int64(pat.UserID),
+				CreationTime: strfmt.DateTime(pat.CreationTime),
+				UpdateTime:   strfmt.DateTime(pat.UpdateTime),
+				ExpiresAt:    pat.ExpiresAt,
+				Disabled:     pat.Disabled,
+				IsLegacy:     pat.IsLegacy,
+				LastUsedAt:   pat.LastUsedAt,
+				Scope:        pat.Scope,
+			}
+		}
+	}
+	return operation.NewListPersonalAccessTokensOK().
+		WithPayload(payload).
+		WithXTotalCount(total)
+}
+
+func (u *usersAPI) RefreshPersonalAccessTokenSecret(ctx context.Context, params operation.RefreshPersonalAccessTokenSecretParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, false); err != nil {
+		return u.SendError(ctx, err)
+	}
+	pat, _ := u.patCtl.Get(ctx, params.TokenID)
+	patName := fmt.Sprintf("PAT-%d", params.TokenID)
+	if pat != nil {
+		patName = pat.Name
+	}
+	secret, err := u.patCtl.RefreshSecret(ctx, params.TokenID, params.Request.Secret)
+	if err != nil {
+		u.logAuditEntry(ctx, "Refresh", patName, fmt.Sprintf("user:%d", userID), false)
+		return u.SendError(ctx, err)
+	}
+	u.logAuditEntry(ctx, "Refresh", patName, fmt.Sprintf("user:%d", userID), true)
+	return operation.NewRefreshPersonalAccessTokenSecretOK().WithPayload(&models.PersonalAccessTokenCreatedResponse{
+		ID:     params.TokenID,
+		Secret: secret,
+	})
+}
+
+func (u *usersAPI) UpdatePersonalAccessToken(ctx context.Context, params operation.UpdatePersonalAccessTokenParams) middleware.Responder {
+	if err := u.RequireAuthenticated(ctx); err != nil {
+		return u.SendError(ctx, err)
+	}
+	userID := int(params.UserID)
+	if err := u.requireForPAT(ctx, userID, false); err != nil {
+		return u.SendError(ctx, err)
+	}
+	pat, err := u.patCtl.Get(ctx, params.TokenID)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	if params.Request.Name != "" {
+		pat.Name = params.Request.Name
+	}
+	if params.Request.Description != "" {
+		pat.Description = params.Request.Description
+	}
+	oldDisabled := pat.Disabled
+	if params.Request.Disabled {
+		pat.Disabled = params.Request.Disabled
+	}
+	auditOp := "Update"
+	if oldDisabled != pat.Disabled {
+		if pat.Disabled {
+			auditOp = "Disable"
+		} else {
+			auditOp = "Enable"
+		}
+	}
+	if err := u.patCtl.Update(ctx, pat); err != nil {
+		u.logAuditEntry(ctx, auditOp, pat.Name, fmt.Sprintf("user:%d", userID), false)
+		return u.SendError(ctx, err)
+	}
+	u.logAuditEntry(ctx, auditOp, pat.Name, fmt.Sprintf("user:%d", userID), true)
+	return operation.NewUpdatePersonalAccessTokenOK()
+}
+
+func (u *usersAPI) requireForPAT(ctx context.Context, userID int, listOrGetSelf bool) error {
+	sctx, _ := security.FromContext(ctx)
+	if localSCtx, ok := sctx.(*local.SecurityContext); ok {
+		if listOrGetSelf && localSCtx.User().UserID == userID {
+			return nil
+		}
+	}
+	return u.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceUser)
 }
 
 func (u *usersAPI) SetCliSecret(ctx context.Context, params operation.SetCliSecretParams) middleware.Responder {
@@ -459,6 +665,29 @@ func getRandomSecret() (string, error) {
 		return "", errors.Wrap(err, "failed to generate an valid random secret for cli in one minute, please try again")
 	}
 	return cliSecret, nil
+}
+
+// logAuditEntry logs an audit entry for PAT operations
+func (u *usersAPI) logAuditEntry(ctx context.Context, operation, patName, _ string, isSuccessful bool) {
+	sctx, _ := security.FromContext(ctx)
+	username := "unknown"
+	if sctx != nil {
+		username = sctx.GetUsername()
+	}
+
+	auditLog := &auditmodel.AuditLogExt{
+		Operation:            operation,
+		ResourceType:         "PAT",
+		Resource:             patName,
+		Username:             username,
+		OpTime:               time.Now(),
+		OperationDescription: fmt.Sprintf("%s personal access token %s", operation, patName),
+		IsSuccessful:         isSuccessful,
+	}
+
+	if _, err := u.auditMgr.Create(ctx, auditLog); err != nil {
+		log.Errorf("failed to log audit entry for PAT %s operation: %v", operation, err)
+	}
 }
 
 func validateUserProfile(user *commonmodels.User, create bool) error {

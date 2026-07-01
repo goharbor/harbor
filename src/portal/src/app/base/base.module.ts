@@ -20,6 +20,7 @@ import { MemberGuard } from '../shared/router-guard/member-guard-activate.servic
 import { ProjectRoutingResolver } from '../services/routing-resolvers/project-routing-resolver.service';
 import { PasswordSettingComponent } from './password-setting/password-setting.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
+import { ApiTokensModalComponent } from './account-settings/api-tokens-modal.component';
 import { ForgotPasswordComponent } from './password-setting/forgot-password/forgot-password.component';
 import { GlobalConfirmationDialogComponent } from './global-confirmation-dialog/global-confirmation-dialog.component';
 
@@ -170,6 +171,7 @@ const routes: Routes = [
         HarborShellComponent,
         PasswordSettingComponent,
         AccountSettingsModalComponent,
+        ApiTokensModalComponent,
         ForgotPasswordComponent,
         GlobalConfirmationDialogComponent,
     ],

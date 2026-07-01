@@ -4,218 +4,248 @@
     [clrModalClosable]="false">
     <h3 class="modal-title">{{ 'PROFILE.TITLE' | translate }}</h3>
     <div class="modal-body body-format">
-        <inline-alert
-            #accountSettingInlineAlert
-            (confirmEvt)="confirmYes($event)"
-            (closeEvt)="confirmNo($event)"></inline-alert>
-        <form
-            #accountSettingsFrom="ngForm"
-            class="clr-form clr-form-horizontal">
-            <div class="clr-form-control">
-                <label
-                    for="account_settings_username"
-                    aria-haspopup="true"
-                    class="clr-control-label"
-                    >{{ 'PROFILE.USER_NAME' | translate }}</label
-                >
-                <div class="clr-control-container display-flex">
-                    <input
-                        class="clr-input"
-                        type="text"
-                        name="account_settings_username"
-                        [(ngModel)]="account.username"
-                        disabled
-                        id="account_settings_username"
-                        size="30" />
-                    @if (canRename) {
-                    <div class="rename-tool">
-                        <button
-                            id="rename-btn"
-                            [disabled]="RenameOnGoing"
-                            (click)="onRename()"
-                            class="btn btn-outline">
-                            {{ 'PROFILE.ADMIN_RENAME_BUTTON' | translate }}
-                        </button>
-                        <clr-tooltip>
-                            <clr-icon
-                                clrTooltipTrigger
-                                shape="info-circle"
-                                size="24"></clr-icon>
-                            <clr-tooltip-content
-                                clrPosition="bottom-left"
-                                clrSize="md"
-                                *clrIfOpen>
-                                <span>
-                                    {{
-                                        'PROFILE.ADMIN_RENAME_TIP' | translate
-                                    }}</span
-                                >
-                            </clr-tooltip-content>
-                        </clr-tooltip>
-                    </div>
-                    }
-                </div>
-            </div>
-            <div class="clr-form-control">
-                <label
-                    for="account_settings_email"
-                    class="required clr-control-label"
-                    >{{ 'PROFILE.EMAIL' | translate }}</label
-                >
-                <div
-                    class="clr-control-container"
-                    [class.clr-error]="
-                        !getValidationState('account_settings_email')
-                    ">
-                    <div class="clr-input-wrapper">
-                        <div class="clr-input-group">
+        <clr-tabs>
+            <clr-tab>
+                <button clrTabLink>{{ 'PROFILE.SETTINGS' | translate }}</button>
+                <clr-tab-content>
+                    <inline-alert
+                        #accountSettingInlineAlert
+                        (confirmEvt)="confirmYes($event)"
+                        (closeEvt)="confirmNo($event)"></inline-alert>
+                    <form
+                        #accountSettingsFrom="ngForm"
+                        class="clr-form clr-form-horizontal">
+                        <div class="clr-form-control">
+                            <label
+                                for="account_settings_username"
+                                aria-haspopup="true"
+                                class="clr-control-label"
+                                >{{ 'PROFILE.USER_NAME' | translate }}</label
+                            >
+                            <div class="clr-control-container display-flex">
+                                <input
+                                    class="clr-input"
+                                    type="text"
+                                    name="account_settings_username"
+                                    [(ngModel)]="account.username"
+                                    disabled
+                                    id="account_settings_username"
+                                    size="30" />
+                                @if (canRename) {
+                                <div class="rename-tool">
+                                    <button
+                                        id="rename-btn"
+                                        [disabled]="RenameOnGoing"
+                                        (click)="onRename()"
+                                        class="btn btn-outline">
+                                        {{
+                                            'PROFILE.ADMIN_RENAME_BUTTON'
+                                                | translate
+                                        }}
+                                    </button>
+                                    <clr-tooltip>
+                                        <clr-icon
+                                            clrTooltipTrigger
+                                            shape="info-circle"
+                                            size="24"></clr-icon>
+                                        <clr-tooltip-content
+                                            clrPosition="bottom-left"
+                                            clrSize="md"
+                                            *clrIfOpen>
+                                            <span>
+                                                {{
+                                                    'PROFILE.ADMIN_RENAME_TIP'
+                                                        | translate
+                                                }}</span
+                                            >
+                                        </clr-tooltip-content>
+                                    </clr-tooltip>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="clr-form-control">
+                            <label
+                                for="account_settings_email"
+                                class="required clr-control-label"
+                                >{{ 'PROFILE.EMAIL' | translate }}</label
+                            >
+                            <div
+                                class="clr-control-container"
+                                [class.clr-error]="
+                                    !getValidationState(
+                                        'account_settings_email'
+                                    )
+                                ">
+                                <div class="clr-input-wrapper">
+                                    <div class="clr-input-group">
+                                        <input
+                                            name="account_settings_email"
+                                            type="text"
+                                            #eamilInput="ngModel"
+                                            class="clr-input"
+                                            [(ngModel)]="account.email"
+                                            required
+                                            email
+                                            id="account_settings_email"
+                                            size="30"
+                                            (input)="
+                                                handleValidation(
+                                                    'account_settings_email',
+                                                    false
+                                                )
+                                            "
+                                            (blur)="
+                                                handleValidation(
+                                                    'account_settings_email',
+                                                    true
+                                                )
+                                            " />
+                                        <clr-icon
+                                            class="clr-validate-icon"
+                                            shape="exclamation-circle"></clr-icon>
+                                        <span
+                                            class="spinner spinner-inline"
+                                            [hidden]="!checkProgress"></span>
+                                    </div>
+                                </div>
+                                @if
+                                (!getValidationState('account_settings_email'))
+                                {
+                                <clr-control-error>
+                                    {{ emailTooltip | translate }}
+                                </clr-control-error>
+                                }
+                            </div>
+                        </div>
+                        <clr-input-container>
+                            <label [class.required]="!account.oidc_user_meta">{{
+                                'PROFILE.FULL_NAME' | translate
+                            }}</label>
                             <input
-                                name="account_settings_email"
+                                clrInput
                                 type="text"
-                                #eamilInput="ngModel"
-                                class="clr-input"
-                                [(ngModel)]="account.email"
-                                required
-                                email
-                                id="account_settings_email"
+                                name="account_settings_full_name"
+                                #fullNameInput="ngModel"
+                                [(ngModel)]="account.realname"
+                                [required]="!account.oidc_user_meta"
+                                maxLengthExt="30"
+                                id="account_settings_full_name"
                                 size="30"
                                 (input)="
                                     handleValidation(
-                                        'account_settings_email',
+                                        'account_settings_full_name',
                                         false
                                     )
                                 "
                                 (blur)="
                                     handleValidation(
-                                        'account_settings_email',
+                                        'account_settings_full_name',
                                         true
                                     )
                                 " />
-                            <clr-icon
-                                class="clr-validate-icon"
-                                shape="exclamation-circle"></clr-icon>
-                            <span
-                                class="spinner spinner-inline"
-                                [hidden]="!checkProgress"></span>
-                        </div>
-                    </div>
-                    @if (!getValidationState('account_settings_email')) {
-                    <clr-control-error>
-                        {{ emailTooltip | translate }}
-                    </clr-control-error>
-                    }
-                </div>
-            </div>
-            <clr-input-container>
-                <label [class.required]="!account.oidc_user_meta">{{
-                    'PROFILE.FULL_NAME' | translate
-                }}</label>
-                <input
-                    clrInput
-                    type="text"
-                    name="account_settings_full_name"
-                    #fullNameInput="ngModel"
-                    [(ngModel)]="account.realname"
-                    [required]="!account.oidc_user_meta"
-                    maxLengthExt="30"
-                    id="account_settings_full_name"
-                    size="30"
-                    (input)="
-                        handleValidation('account_settings_full_name', false)
-                    "
-                    (blur)="
-                        handleValidation('account_settings_full_name', true)
-                    " />
-                @if (!getValidationState('account_settings_full_name')) {
-                <clr-control-error>
-                    {{ 'TOOLTIP.FULL_NAME' | translate }}
-                </clr-control-error>
-                }
-            </clr-input-container>
-            <clr-input-container>
-                <label>{{ 'PROFILE.COMMENT' | translate }}</label>
-                <input
-                    clrInput
-                    type="text"
-                    #commentInput="ngModel"
-                    maxlength="30"
-                    size="30"
-                    name="account_settings_comments"
-                    [(ngModel)]="account.comment"
-                    id="account_settings_comments" />
-                @if ( commentInput.invalid && (commentInput.dirty ||
-                commentInput.touched) ) {
-                <clr-control-error>
-                    {{ 'TOOLTIP.COMMENT' | translate }}
-                </clr-control-error>
-                }
-            </clr-input-container>
+                            @if
+                            (!getValidationState('account_settings_full_name'))
+                            {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.FULL_NAME' | translate }}
+                            </clr-control-error>
+                            }
+                        </clr-input-container>
+                        <clr-input-container>
+                            <label>{{ 'PROFILE.COMMENT' | translate }}</label>
+                            <input
+                                clrInput
+                                type="text"
+                                #commentInput="ngModel"
+                                maxlength="30"
+                                size="30"
+                                name="account_settings_comments"
+                                [(ngModel)]="account.comment"
+                                id="account_settings_comments" />
+                            @if ( commentInput.invalid && (commentInput.dirty ||
+                            commentInput.touched) ) {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.COMMENT' | translate }}
+                            </clr-control-error>
+                            }
+                        </clr-input-container>
 
-            @if (account.oidc_user_meta) {
-            <div class="clr-form-control cli-secret">
-                <label class="clr-control-label"
-                    >{{ 'PROFILE.CLI_PASSWORD' | translate }}
-                    <clr-tooltip>
-                        <clr-icon
-                            clrTooltipTrigger
-                            shape="info-circle"
-                            size="20"></clr-icon>
-                        <clr-tooltip-content
-                            clrPosition="top-right"
-                            clrSize="md"
-                            *clrIfOpen>
-                            <span>
+                        @if (account.oidc_user_meta) {
+                        <div class="clr-form-control cli-secret">
+                            <label class="clr-control-label"
+                                >{{ 'PROFILE.CLI_PASSWORD' | translate }}
+                                <clr-tooltip>
+                                    <clr-icon
+                                        clrTooltipTrigger
+                                        shape="info-circle"
+                                        size="20"></clr-icon>
+                                    <clr-tooltip-content
+                                        clrPosition="top-right"
+                                        clrSize="md"
+                                        *clrIfOpen>
+                                        <span>
+                                            {{
+                                                'PROFILE.CLI_PASSWORD_TIP'
+                                                    | translate
+                                            }}</span
+                                        >
+                                    </clr-tooltip-content>
+                                </clr-tooltip>
+                            </label>
+                            <input
+                                id="cli_password"
+                                class="clr-input input-cli"
+                                type="password"
+                                name="cli_password"
+                                disabled
+                                [ngModel]="'account.oidc_user_meta.secret'"
+                                size="33" />
+                            @if (showGenerateCli) {
+                            <button
+                                (click)="generateCli(account.user_id)"
+                                id="generate-cli-btn"
+                                class="btn btn-outline btn-padding-less">
                                 {{
-                                    'PROFILE.CLI_PASSWORD_TIP' | translate
-                                }}</span
-                            >
-                        </clr-tooltip-content>
-                    </clr-tooltip>
-                </label>
-                <input
-                    id="cli_password"
-                    class="clr-input input-cli"
-                    type="password"
-                    name="cli_password"
-                    disabled
-                    [ngModel]="'account.oidc_user_meta.secret'"
-                    size="33" />
-                @if (showGenerateCli) {
-                <button
-                    (click)="generateCli(account.user_id)"
-                    id="generate-cli-btn"
-                    class="btn btn-outline btn-padding-less">
-                    {{ 'PROFILE.ADMIN_CLI_SECRET_BUTTON' | translate }}
-                </button>
-                } @if (showGenerateCli) {
-                <button
-                    (click)="openSecretDetail()"
-                    id="reset-cli-btn"
-                    class="btn btn-outline btn-padding-less">
-                    {{ 'PROFILE.ADMIN_CLI_SECRET_RESET_BUTTON' | translate }}
-                </button>
-                }
-                <div class="rename-tool reset-cli">
-                    <hbr-copy-input
-                        #copyInput
-                        (onCopySuccess)="onSuccess($event)"
-                        (onCopyError)="onError($event)"
-                        iconMode="true"
-                        [defaultValue]="
-                            account.oidc_user_meta.secret
-                        "></hbr-copy-input>
-                </div>
-                @if (!showGenerateCli) {
-                <div
-                    (click)="showGenerateCliFn()"
-                    id="hidden-generate-cli"
-                    class="hidden-generate-cli">
-                    ···
-                </div>
-                }
-            </div>
-            }
-        </form>
+                                    'PROFILE.ADMIN_CLI_SECRET_BUTTON'
+                                        | translate
+                                }}
+                            </button>
+                            } @if (showGenerateCli) {
+                            <button
+                                (click)="openSecretDetail()"
+                                id="reset-cli-btn"
+                                class="btn btn-outline btn-padding-less">
+                                {{
+                                    'PROFILE.ADMIN_CLI_SECRET_RESET_BUTTON'
+                                        | translate
+                                }}
+                            </button>
+                            }
+                            <div class="rename-tool reset-cli">
+                                <hbr-copy-input
+                                    #copyInput
+                                    (onCopySuccess)="onSuccess($event)"
+                                    (onCopyError)="onError($event)"
+                                    iconMode="true"
+                                    [defaultValue]="
+                                        account.oidc_user_meta.secret
+                                    "></hbr-copy-input>
+                            </div>
+                            @if (!showGenerateCli) {
+                            <div
+                                (click)="showGenerateCliFn()"
+                                id="hidden-generate-cli"
+                                class="hidden-generate-cli">
+                                ···
+                            </div>
+                            }
+                        </div>
+                        }
+                    </form>
+                </clr-tab-content>
+            </clr-tab>
+        </clr-tabs>
     </div>
     <div class="modal-footer">
         <span
@@ -359,3 +389,188 @@
 <confirmation-dialog
     #confirmationDialog
     (confirmAction)="confirmGenerate()"></confirmation-dialog>
+
+<!-- Create PAT Modal -->
+<clr-modal
+    [(clrModalOpen)]="showCreatePATModal"
+    [clrModalSize]="'lg'"
+    [clrModalStaticBackdrop]="staticBackdrop"
+    [clrModalClosable]="false">
+    <h3 class="modal-title">{{ 'PROFILE.CREATE_PAT' | translate }}</h3>
+    <div class="modal-body">
+        @if (createdPATSecret) {
+        <div>
+            <clr-alert
+                clrAlertType="warning"
+                [clrCloseButtonAriaLabel]="'close'">
+                <clr-alert-item>
+                    <span class="alert-text">
+                        {{ 'PROFILE.PAT_SECRET_COPY_WARNING' | translate }}
+                    </span>
+                </clr-alert-item>
+            </clr-alert>
+            <div class="clr-form-control" style="margin-top: 12px">
+                <div
+                    class="clr-input-wrapper"
+                    style="display: flex; align-items: center; gap: 8px">
+                    <input
+                        type="text"
+                        class="clr-input"
+                        readonly
+                        [value]="createdPATSecret"
+                        style="flex: 1; font-family: monospace" />
+                    <button
+                        class="btn btn-sm btn-outline"
+                        type="button"
+                        (click)="copyPATSecret()">
+                        {{ 'BUTTON.COPY' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        } @if (!createdPATSecret) {
+        <form #createPATForm="ngForm" class="clr-form clr-form-horizontal">
+            <clr-input-container>
+                <label for="pat-name" class="required">{{
+                    'PROFILE.PAT_NAME' | translate
+                }}</label>
+                <input
+                    clrInput
+                    type="text"
+                    id="pat-name"
+                    name="pat_name"
+                    [(ngModel)]="newPATForm.name"
+                    required
+                    maxlength="255" />
+            </clr-input-container>
+
+            <clr-textarea-container>
+                <label for="pat-description">{{
+                    'PROFILE.PAT_DESCRIPTION' | translate
+                }}</label>
+                <textarea
+                    clrTextarea
+                    id="pat-description"
+                    name="pat_description"
+                    [(ngModel)]="newPATForm.description"
+                    maxlength="1024"></textarea>
+            </clr-textarea-container>
+
+            <clr-number-input-container>
+                <label for="pat-expires">{{
+                    'PROFILE.PAT_EXPIRES_IN_DAYS' | translate
+                }}</label>
+                <input
+                    clrNumberInput
+                    id="pat-expires"
+                    name="pat_expires"
+                    [(ngModel)]="newPATForm.expiresInDays"
+                    min="0"
+                    placeholder="0 for never expire" />
+                <clr-control-helper>{{
+                    'PROFILE.PAT_EXPIRES_HELP' | translate
+                }}</clr-control-helper>
+            </clr-number-input-container>
+
+            <div class="scope-section" style="margin-top: 24px">
+                <label
+                    style="
+                        font-weight: 600;
+                        display: block;
+                        margin-bottom: 4px;
+                    ">
+                    {{ 'PROFILE.PAT_SCOPE' | translate }}
+                </label>
+                <p style="font-size: 13px; color: #666; margin-bottom: 12px">
+                    {{ 'PROFILE.PAT_SCOPE_HELP' | translate }}
+                </p>
+                @if (scopeLoading) {
+                <div>
+                    <span class="spinner spinner-sm"></span>
+                    {{ 'PROFILE.LOADING' | translate }}
+                </div>
+                } @if (!scopeLoading && scopeProjects.length > 0) {
+                <div>
+                    <div style="margin-bottom: 8px">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-link"
+                            (click)="selectAllScope()">
+                            {{ 'PROFILE.PAT_SCOPE_SELECT_ALL' | translate }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-link"
+                            (click)="deselectAllScope()">
+                            {{ 'PROFILE.PAT_SCOPE_DESELECT_ALL' | translate }}
+                        </button>
+                    </div>
+                    <table class="table table-noborder" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                    {{
+                                        'PROFILE.PAT_SCOPE_PROJECT' | translate
+                                    }}
+                                </th>
+                                <th style="width: 80px; text-align: center">
+                                    {{ 'PROFILE.PAT_SCOPE_PULL' | translate }}
+                                </th>
+                                <th style="width: 80px; text-align: center">
+                                    {{ 'PROFILE.PAT_SCOPE_PUSH' | translate }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (p of scopeProjects; track p) {
+                            <tr>
+                                <td>{{ p.project_name }}</td>
+                                <td style="text-align: center">
+                                    <input
+                                        clrCheckbox
+                                        type="checkbox"
+                                        [(ngModel)]="p.pull"
+                                        [name]="'pull_' + p.project_id" />
+                                </td>
+                                <td style="text-align: center">
+                                    <input
+                                        clrCheckbox
+                                        type="checkbox"
+                                        [(ngModel)]="p.push"
+                                        [name]="'push_' + p.project_id" />
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                } @if (!scopeLoading && scopeProjects.length === 0) {
+                <div style="font-size: 13px; color: #666">
+                    {{ 'PROFILE.PAT_SCOPE_NO_PROJECTS' | translate }}
+                </div>
+                }
+            </div>
+        </form>
+        }
+    </div>
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="btn btn-outline"
+            (click)="closeCreatePATModal()">
+            {{
+                (createdPATSecret ? 'BUTTON.CLOSE' : 'BUTTON.CANCEL')
+                    | translate
+            }}
+        </button>
+        @if (!createdPATSecret) {
+        <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!newPATForm?.name"
+            (click)="createPAT()">
+            {{ 'BUTTON.CREATE' | translate }}
+        </button>
+        }
+    </div>
+</clr-modal>

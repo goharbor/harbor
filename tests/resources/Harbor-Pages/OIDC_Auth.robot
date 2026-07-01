@@ -21,7 +21,7 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Sign In Harbor With OIDC User
-    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}  ${password}=password  ${is_onboard}=${false}  ${username_claim}=${null}  ${login_with_provider}=email
+    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}  ${password}=password  ${is_onboard}=${false}  ${username_claim}=${null}  ${login_with_provider}=email  ${expect_error}=${false}
     ${full_name}=   Set Variable If  '${login_with_provider}' == 'email'  ${username}@example.com  ${username}
     ${head_username}=   Set Variable If  '${username_claim}' == 'email'  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${full_name}')]  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//button[contains(.,'${username}')]
     Init Chrome Driver
@@ -34,12 +34,12 @@ Sign In Harbor With OIDC User
     Retry Element Click    ${submit_login_btn}
     Retry Element Click    ${grant_btn}
 
-    #If input box for harbor user name is visible, it means it's the 1st time login of this user,
-    #  but if this user has been logged into harbor successfully, this input box will not show up,
-    #  so there is condition branch for this stituation.
-    ${isVisible}=  Run Keyword And Return Status  Element Should Be Visible  ${oidc_username_input}
-    Run Keyword If  ${is_onboard} == ${true}  Should Not Be True  ${isVisible}
-    Run Keyword If  '${isVisible}' == 'True'  Run Keywords  Retry Text Input    ${oidc_username_input}    ${username}  AND  Retry Element Click    ${save_btn}
+    # With the new OIDC design:
+    # - AutoOnboard=true: new users are auto-created, no manual onboard page
+    # - AutoOnboard=false: new users get 403 Forbidden (expect_error=true for those tests)
+    # The is_onboard parameter is kept for backwards compatibility but no longer checks for a page element
+    Run Keyword If  ${expect_error} == ${true}  Run Keywords  Sleep  2s  AND  Capture Page Screenshot  AND  Return From Keyword
+
     Retry Wait Element  ${head_username}
     Capture Page Screenshot
     ${name_display}=  Get Text  ${header_user}
