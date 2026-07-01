@@ -35,7 +35,11 @@ rules:
 
   operation-description:
     description: Every operation must have a description field.
+    given: $.paths[*][*]
     severity: error
+    then:
+      field: description
+      function: truthy
 
   operation-summary-required:
     description: Every operation must have a summary field.
