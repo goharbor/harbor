@@ -14,7 +14,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { AdditionsService } from '../additions.service';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { DockerfileComponent } from './dockerfile.component';
 import { AdditionLink } from '../../../../../../../../ng-swagger-gen/models/addition-link';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
@@ -23,6 +23,7 @@ import { SharedTestingModule } from '../../../../../../shared/shared.module';
 describe('DockerfileComponent', () => {
     let component: DockerfileComponent;
     let fixture: ComponentFixture<DockerfileComponent>;
+    let errorHandler: ErrorHandler;
     const mockedLink: AdditionLink = {
         absolute: false,
         href: '/test',
@@ -35,16 +36,26 @@ describe('DockerfileComponent', () => {
             return of(dockerfile);
         },
     };
+
+    const fakedErrorHandler = {
+        error() {},
+        warning() {},
+        info() {},
+        log() {},
+        handleErrorPopupUnauthorized() {},
+    };
+
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [SharedTestingModule],
             declarations: [DockerfileComponent],
             providers: [
-                ErrorHandler,
+                { provide: ErrorHandler, useValue: fakedErrorHandler },
                 { provide: AdditionsService, useValue: fakedAdditionsService },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
+        errorHandler = TestBed.inject(ErrorHandler);
     });
 
     beforeEach(() => {
@@ -63,5 +74,42 @@ describe('DockerfileComponent', () => {
         await fixture.whenStable();
         fixture.detectChanges();
         expect(component.dockerfile).toEqual(dockerfile);
+    });
+
+    it('should handle 404 error and show noDockerfileStatus', async () => {
+        const additionsService = TestBed.inject(AdditionsService);
+        spyOn(additionsService, 'getDetailByLink').and.returnValue(
+            throwError({ status: 404 })
+        );
+        component.dockerfileLink = mockedLink;
+        component.ngOnInit();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.noDockerfileStatus).toBe(true);
+    });
+
+    it('should handle 413 error and show fileTooLargeStatus', async () => {
+        const additionsService = TestBed.inject(AdditionsService);
+        spyOn(additionsService, 'getDetailByLink').and.returnValue(
+            throwError({ status: 413 })
+        );
+        component.dockerfileLink = mockedLink;
+        component.ngOnInit();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.fileTooLargeStatus).toBe(true);
+    });
+
+    it('should handle other errors gracefully', async () => {
+        const additionsService = TestBed.inject(AdditionsService);
+        spyOn(additionsService, 'getDetailByLink').and.returnValue(
+            throwError({ status: 500 })
+        );
+        component.dockerfileLink = mockedLink;
+        component.ngOnInit();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.loading).toBe(false);
+        expect(component.dockerfile).toBeFalsy();
     });
 });
