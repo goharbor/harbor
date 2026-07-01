@@ -265,9 +265,9 @@ paths:
         '400':
           $ref: '#/responses/400'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/401'
         '403':
-          description: User does not have permission of admin role.
+          $ref: '#/responses/403'
         '422':
           $ref: '#/responses/422'
         '500':
