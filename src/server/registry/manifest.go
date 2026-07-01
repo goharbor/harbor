@@ -235,15 +235,16 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		log.Errorf("failed to flush: %v", err)
 	}
 
-	// NOTE: This handler copies the proxy response (status, headers, body) from the
-	// inner ResponseBuffer to the outer writer (which may be another ResponseBuffer
-	// wrapping this one from middleware). The flush above writes into the outer buffer,
-	// not the client. The outer buffer's own `flushed` field remains false (it's only set
-	// when that buffer's own Flush() is called), and its flush to the actual client is
-	// deferred until after all AfterResponse hooks (blob sync, ensure, associate
-	// operations) complete. This ensures:
-	// - If all hooks succeed, the deferred flush sends the 201 to the client.
-	// - If a hook fails mid-execution, the outer buffer can Reset() itself (since its
-	//   flushed field is still false), write an error response, and send that to the client.
+	// NOTE: This handler flushes the inner ResponseBuffer (which wraps the real writer
+	// that may itself be wrapped by outer middleware's ResponseBuffer). Assuming the real
+	// writer is wrapped by an outer ResponseBuffer (e.g., from blob.PutManifestMiddleware),
+	// this flush writes the proxy response into that outer buffer without flushing to the
+	// actual HTTP client. The outer buffer remains unflushed, allowing its AfterResponse
+	// hooks to run and complete before sending any response to the client. This ensures:
+	// - If all AfterResponse hooks succeed, the buffered 201 response is sent to client.
+	// - If an AfterResponse hook fails, the outer buffer's Reset() method can still be
+	//   called to discard the buffered 201 and write an error response instead.
+	// If the real writer is NOT an outer ResponseBuffer, this flush sends 201 directly to
+	// the client, preventing error recovery; this handler assumes proper middleware setup.
 	// See: https://github.com/goharbor/harbor/issues/23199
 }

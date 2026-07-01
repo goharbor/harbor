@@ -51,16 +51,22 @@ linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
         path: "(common/http/|lib/errors/|lib/http/)"
-      # Legitimate uses of reflect.Ptr and intentional credential marshaling
+      # Legitimate uses of reflect.Ptr - issue #23199
       - linters:
           - govet
         text: "inline: Constant reflect.Ptr should be inlined"
+        path: "(server/registry/manifest\\.go|server/middleware/blob/)"
+      # Intentional credential marshaling in API clients - issue #23199
       - linters:
           - gosec
         text: "G117: Marshaled struct field.*matches secret pattern"
+        path: "server/(registry|middleware/blob)/"
+      # Intentional SSRF for registry client HTTP requests - issue #23199
       - linters:
           - gosec
         text: "G704: SSRF via taint analysis"
+        path: "server/(registry|middleware/blob)/"
+      # Intentional use of context.Background for transaction isolation - issue #18900
       - linters:
           - gosec
         text: "G118: Goroutine uses context.Background/TODO while request-scoped context is available"

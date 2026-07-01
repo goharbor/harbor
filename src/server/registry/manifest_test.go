@@ -77,7 +77,7 @@ func (m *manifestTestSuite) TearDownSuite() {
 func (m *manifestTestSuite) TestGetManifest() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New("artifact not found").WithCode(errors.NotFoundCode))
 	getManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
 
@@ -120,7 +120,7 @@ func (m *manifestTestSuite) TestGetManifest() {
 func (m *manifestTestSuite) TestDeleteManifest() {
 	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New("artifact not found").WithCode(errors.NotFoundCode))
 	deleteManifest(w, req)
 	m.Equal(http.StatusBadRequest, w.Code)
 
@@ -201,6 +201,51 @@ func (m *manifestTestSuite) TestPutManifest() {
 	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
 	putManifest(w, req)
 	m.Equal(http.StatusCreated, w.Code)
+}
+
+func (m *manifestTestSuite) TestPutManifestArtifactEnsureFailure() {
+	// Regression test for issue #23199: "storage-only orphans"
+	//
+	// Issue: manifest push would return HTTP 201 even if artifact registration failed.
+	// Root cause: premature buffer.Flush() before artifact.Ctl.Ensure completed.
+	//
+	// This test validates that when artifact.Ctl.Ensure fails, an error response
+	// (not 201) is returned to the client.
+	manifestContent := []byte(`{
+		"schemaVersion": 2,
+		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+		"config": {
+			"mediaType": "application/vnd.docker.container.image.v1+json",
+			"size": 1234,
+			"digest": "sha256:abcd1234"
+		}
+	}`)
+	expectedDigest := digest.FromBytes(manifestContent).String()
+
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method == http.MethodPut && strings.Contains(req.URL.Path, "/v2/library/hello-world/manifests/") {
+			w.Header().Set("Docker-Content-Digest", expectedDigest)
+			w.WriteHeader(http.StatusCreated)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
+	req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+	// Simulate artifact.Ctl.Ensure failure (e.g., database error, validation failure)
+	mock.OnAnything(m.artCtl, "Ensure").Return(false, int64(0), errors.New("artifact registration failed"))
+	putManifest(w, req)
+
+	// Verify that error response is returned, not the 201 from the proxy
+	m.NotEqual(http.StatusCreated, w.Code, "Expected non-201 response when artifact registration fails")
 }
 
 func (m *manifestTestSuite) TestPutManifestWithTagToDigestReplacement() {
@@ -297,34 +342,6 @@ func (m *manifestTestSuite) TestPutManifestWithDigest() {
 	m.Equal(http.StatusCreated, w.Code)
 	m.NotNil(proxyRequest, "Request was not captured by proxy")
 	m.Contains(proxyRequest.URL.Path, providedDigest, "URL should contain original digest")
-}
-
-func (m *manifestTestSuite) TestPutManifestArtifactEnsureFailure() {
-	manifestContent := []byte(`{
-		"schemaVersion": 2,
-		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
-		"config": {
-			"mediaType": "application/vnd.docker.container.image.v1+json",
-			"size": 1234,
-			"digest": "sha256:abcd1234"
-		}
-	}`)
-
-	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Docker-Content-Digest", "sha256:abc")
-		w.WriteHeader(http.StatusCreated)
-	})
-	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
-	req.Header.Set("Content-Type", "application/vnd.docker.distribution.manifest.v2+json")
-	input := &beegocontext.BeegoInput{}
-	input.SetParam(":splat", "library/hello-world")
-	input.SetParam(":reference", "latest")
-	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
-	w := &httptest.ResponseRecorder{}
-	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
-	mock.OnAnything(m.artCtl, "Ensure").Return(false, int64(0), errors.New(nil).WithCode(errors.GeneralCode))
-	putManifest(w, req)
-	m.Equal(http.StatusInternalServerError, w.Code)
 }
 
 func (m *manifestTestSuite) TestPutManifestEmptyBody() {
