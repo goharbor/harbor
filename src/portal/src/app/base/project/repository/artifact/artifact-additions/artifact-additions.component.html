@@ -168,7 +168,9 @@
                     <hbr-artifact-dockerfile
                         [dockerfileLink]="getDockerfile()"
                         [buildHistoryLink]="getBuildHistory()"
-                        (switchTab)="onDockerfileSwitchTab($event)"></hbr-artifact-dockerfile>
+                        (switchTab)="
+                          onDockerfileSwitchTab($event)
+                        "></hbr-artifact-dockerfile>
                     }
                 </clr-tab-content>
             </ng-template>
