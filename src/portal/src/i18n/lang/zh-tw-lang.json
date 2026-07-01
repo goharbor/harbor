@@ -1077,7 +1077,10 @@
         "FILE_TOO_LARGE": "檔案過大，無法處理。",
         "ITEMS": "項",
         "SHOW_KV": "顯示鍵值對",
-        "SHOW_YAML": "顯示 YAML 檔案"
+        "SHOW_YAML": "顯示 YAML 檔案",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "在映像檔中找不到 Dockerfile。映像檔標籤中的 Dockerfile 內容不可用。",
+        "NO_DOCKERFILE_SUGGESTION": "查看"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "建立時間",

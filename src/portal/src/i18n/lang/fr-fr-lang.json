@@ -1078,7 +1078,10 @@
         "FILE_TOO_LARGE": "Le fichier est trop volumineux pour être traité.",
         "ITEMS": "entrées",
         "SHOW_KV": "Paires Clé/Valeur",
-        "SHOW_YAML": "Fichier YAML"
+        "SHOW_YAML": "Fichier YAML",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "Aucun Dockerfile trouvé dans l'image. Le contenu du Dockerfile à partir des étiquettes d'image n'est pas disponible.",
+        "NO_DOCKERFILE_SUGGESTION": "Voir le"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créé le",
