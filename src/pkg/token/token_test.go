@@ -321,3 +321,15 @@ func TestParseWithECDSA(t *testing.T) {
 	assert.Equal(t, tokenID, rClaims.TokenID)
 	assert.Equal(t, projectID, rClaims.ProjectID)
 }
+
+func TestParseInvalidToken(t *testing.T) {
+	defaultOpt := DefaultTokenOptions()
+	if defaultOpt == nil {
+		assert.NotNil(t, defaultOpt)
+		return
+	}
+	rClaims := &robot_claim.Claim{}
+	token, err := Parse(defaultOpt, "invalid.token.string", rClaims)
+	assert.NotNil(t, err)
+	assert.Nil(t, token)
+}
