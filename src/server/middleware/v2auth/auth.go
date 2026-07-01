@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
-	"github.com/goharbor/harbor/src/core/service/token"
+	tokensvc "github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -92,8 +92,47 @@ func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error)
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
-		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
+	// If Docker sends Basic auth, return Bearer challenge to redirect to token service
+	if strings.HasPrefix(auth, "Basic ") {
+		tokenSvc, err := tokenSvcURL(req)
+		if err != nil {
+			logger.Errorf("failed to get the endpoint for token service, error: %v", err)
+			return `Basic realm="harbor"`
+		}
+		scope := ""
+		for _, a := range accessList {
+			if len(scope) > 0 {
+				scope += " "
+			}
+			scope += a.scopeStr(req.Context())
+		}
+		challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, tokensvc.Registry)
+		if len(scope) > 0 {
+			challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
+		}
+		return challenge
+	}
+	// If Docker sends Bearer auth but validation failed, return Bearer to get new token
+	if strings.HasPrefix(auth, "Bearer ") {
+		tokenSvc, err := tokenSvcURL(req)
+		if err != nil {
+			logger.Errorf("failed to get the endpoint for token service, error: %v", err)
+		}
+		scope := ""
+		for _, a := range accessList {
+			if len(scope) > 0 {
+				scope += " "
+			}
+			scope += a.scopeStr(req.Context())
+		}
+		challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, tokensvc.Registry)
+		if len(scope) > 0 {
+			challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
+		}
+		return challenge
+	}
+	// For catalog or no auth, treat as CLI and redirect to token service
+	if lib.V2CatalogURLRe.MatchString(req.URL.Path) {
 		return `Basic realm="harbor"`
 	}
 	// No auth header, treat it as CLI and redirect to token service
@@ -108,7 +147,7 @@ func getChallenge(req *http.Request, accessList []access) string {
 		}
 		scope += a.scopeStr(req.Context())
 	}
-	challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, token.Registry)
+	challenge := fmt.Sprintf(`Bearer realm="%s",service="%s"`, tokenSvc, tokensvc.Registry)
 	if len(scope) > 0 {
 		challenge = fmt.Sprintf(`%s,scope="%s"`, challenge, scope)
 	}

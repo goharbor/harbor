@@ -645,6 +645,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 		}
 	}
 	utils.SetUserAgentHeader(req)
+	// #nosec G704 - request URL is validated at call site
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err

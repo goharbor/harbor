@@ -24,7 +24,7 @@ import { MessageHandlerService } from '../services/message-handler.service';
 import { SearchTriggerService } from '../components/global-search/search-trigger.service';
 import { Observable } from 'rxjs';
 import { UN_LOGGED_PARAM, YES } from '../../account/sign-in/sign-in.service';
-import { CommonRoutes, CONFIG_AUTH_MODE } from '../entities/shared.const';
+import { CommonRoutes } from '../entities/shared.const';
 
 @Injectable({
     providedIn: 'root',
@@ -67,18 +67,6 @@ export class AuthCheckGuard {
                             let navigatorExtra: NavigationExtras = {
                                 queryParams: { redirect_url: state.url },
                             };
-                            // if primary auth mode enabled, skip the first step
-                            if (
-                                this.appConfigService.getConfig().auth_mode ==
-                                    CONFIG_AUTH_MODE.OIDC_AUTH &&
-                                this.appConfigService.getConfig()
-                                    .primary_auth_mode
-                            ) {
-                                window.location.href =
-                                    '/c/oidc/login?redirect_url=' +
-                                    encodeURI(state.url);
-                                return observer.next(false);
-                            }
                             this.router.navigate(
                                 [CommonRoutes.EMBEDDED_SIGN_IN],
                                 navigatorExtra

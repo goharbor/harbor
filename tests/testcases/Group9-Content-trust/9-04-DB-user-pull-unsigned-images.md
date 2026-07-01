@@ -1,4 +1,4 @@
-Test 9-04 User pull unsigned images(DB mode)
+Test 9-04 User pull unsigned images
 =======
 
 # Purpose:

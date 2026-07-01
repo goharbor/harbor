@@ -75,10 +75,7 @@ func TestConfig(t *testing.T) {
 	if _, err := GetSystemCfg(ctx); err != nil {
 		t.Fatalf("failed to get system configurations: %v", err)
 	}
-	mode, err := AuthMode(ctx)
-	if err != nil {
-		t.Fatalf("failed to get auth mode: %v", err)
-	}
+	mode := DetectAuthMode(ctx)
 	if mode != "db_auth" {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
@@ -152,10 +149,7 @@ func TestConfig(t *testing.T) {
 		t.Errorf(`extURL should be "host01.com".`)
 	}
 
-	mode, err = AuthMode(ctx)
-	if err != nil {
-		t.Fatalf("failed to get auth mode: %v", err)
-	}
+	mode = DetectAuthMode(ctx)
 	if mode != "db_auth" {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}

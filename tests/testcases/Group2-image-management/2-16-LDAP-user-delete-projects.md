@@ -1,16 +1,16 @@
-Test 2-16 - User Delete Projects (LDAP Mode)
+Test 2-16 - User Delete Projects
 =======
 
 # Purpose:
 
-To verify that a non-admin user can delete projects in (LDAP mode).
+To verify that a non-admin user can delete projects.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that two(2) Harbor instances are running and available.
-* Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.
 * A linux host with Docker CLI installed (Docker client).
 * At least a non-admin user. 
 

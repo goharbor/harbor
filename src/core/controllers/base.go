@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -50,7 +49,8 @@ func (cc *CommonController) Render() error {
 func (cc *CommonController) Prepare() {}
 
 func redirectForOIDC(ctx context.Context, username string) bool {
-	if lib.GetAuthMode(ctx) != common.OIDCAuth {
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil || setting.Endpoint == "" {
 		return false
 	}
 	u, err := user.Ctl.GetByName(ctx, username)

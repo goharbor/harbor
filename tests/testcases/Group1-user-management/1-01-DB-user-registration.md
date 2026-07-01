@@ -1,16 +1,16 @@
-Test 1-01 - User Registration (DB Mode)
+Test 1-01 - User Registration
 =======
 
 # Purpose:
 
-To verify that a non-admin user can register an account (signup) when users are managed locally by Harbor (DB mode).
+To verify that a non-admin user can register an account (signup) using local database authentication.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
+* Harbor uses local database authentication. Users are stored in the local database.
 * A linux host with Docker CLI installed (Docker client).
 
 # Test Steps:

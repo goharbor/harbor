@@ -25,12 +25,17 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	testingUser "github.com/goharbor/harbor/src/testing/controller/user"
 )
 
 func TestOIDCCli(t *testing.T) {
+	config.Init()
+	config.Upload(map[string]any{
+		common.OIDCEndpoint: "http://example.com/oidc",
+		common.OIDCScope:    "openid,profile",
+	})
 	oidcCli := &oidcCli{}
 	// not the candidate request
 	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/v2.0/users/", nil)
@@ -38,7 +43,7 @@ func TestOIDCCli(t *testing.T) {
 	ctx := oidcCli.Generate(req)
 	assert.Nil(t, ctx)
 
-	// the auth mode isn't OIDC
+	// no OIDC on this request path
 	req, err = http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
 	require.Nil(t, err)
 	ctx = oidcCli.Generate(req)
@@ -55,7 +60,6 @@ func TestOIDCCli(t *testing.T) {
 		}, nil)
 	uctl = testCtl
 	oidc.SetHardcodeVerifierForTest(password)
-	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	req.SetBasicAuth(username, password)
 	ctx = oidcCli.Generate(req)
 	assert.NotNil(t, ctx)

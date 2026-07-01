@@ -1,16 +1,16 @@
-Test 4-05 - User with Admin Role Views Logs (LDAP Mode)
+Test 4-05 - User with Admin Role Views Logs
 =======
 
 # Purpose:
 
-To verify that a user with system admin role can views logs when users are managed externally by LDAP or AD (LDAP mode).
+To verify that a user with system admin role can views logs.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
+* Harbor is configured with LDAP/AD authentication. Users are stored in an external LDAP or AD directory.
 * A linux host with Docker CLI installed (Docker client).
 
 # Test Steps:

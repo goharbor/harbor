@@ -30,6 +30,11 @@ type Auth struct {
 	userMgr user.Manager
 }
 
+// Match returns true — the database authenticator is always available.
+func (d *Auth) Match(_ context.Context) bool {
+	return true
+}
+
 // Authenticate calls dao to authenticate user.
 func (d *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.User, error) {
 	u, err := d.userMgr.MatchLocalPassword(ctx, m.Principal, m.Password)

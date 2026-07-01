@@ -1,91 +1,4 @@
 <form #authConfigFrom="ngForm" class="clr-form clr-form-horizontal">
-    <div class="clr-form-control">
-        <label for="authMode" class="clr-control-label">
-            {{ 'CONFIG.AUTH_MODE' | translate }}
-            <clr-tooltip>
-                <clr-icon
-                    clrTooltipTrigger
-                    shape="info-circle"
-                    size="24"></clr-icon>
-                <clr-tooltip-content
-                    clrPosition="top-right"
-                    clrSize="lg"
-                    *clrIfOpen>
-                    <span>{{ 'CONFIG.TOOLTIP.AUTH_MODE' | translate }}</span>
-                </clr-tooltip-content>
-            </clr-tooltip></label
-        >
-        <div class="clr-control-container">
-            <div class="clr-select-wrapper">
-                <select
-                    class="clr-select"
-                    id="authMode"
-                    name="authMode"
-                    (change)="handleOnChange($event)"
-                    [disabled]="disabled(currentConfig.auth_mode)"
-                    [(ngModel)]="currentConfig.auth_mode.value">
-                    <option value="db_auth">
-                        {{ 'CONFIG.AUTH_MODE_DB' | translate }}
-                    </option>
-                    <option value="ldap_auth">
-                        {{ 'CONFIG.AUTH_MODE_LDAP' | translate }}
-                    </option>
-                    <option value="uaa_auth">
-                        {{ 'CONFIG.AUTH_MODE_UAA' | translate }}
-                    </option>
-                    @if (showHttpAuth) {
-                    <option value="http_auth">
-                        {{ 'CONFIG.AUTH_MODE_HTTP' | translate }}
-                    </option>
-                    }
-                    <option value="oidc_auth">
-                        {{ 'CONFIG.AUTH_MODE_OIDC' | translate }}
-                    </option>
-                </select>
-            </div>
-            @if (currentConfig?.auth_mode?.value === 'oidc_auth') {
-            <a
-                rel="noopener noreferrer"
-                href="https://openid.net/connect/"
-                target="_blank"
-                class="more-info-link"
-                >{{ 'BUTTON.MORE_INFO' | translate }}</a
-            >
-            }
-        </div>
-    </div>
-    @if (currentConfig?.auth_mode?.value !== 'db_auth') {
-    <section>
-        <clr-checkbox-container>
-            <label for="primaryAuthMode"
-                >{{ 'CONFIG.PRIMARY_AUTH_MODE' | translate }}
-                <clr-tooltip>
-                    <clr-icon
-                        clrTooltipTrigger
-                        shape="info-circle"
-                        size="24"></clr-icon>
-                    <clr-tooltip-content
-                        clrPosition="top-right"
-                        clrSize="lg"
-                        *clrIfOpen>
-                        <span>{{
-                            'CONFIG.TOOLTIP.PRIMARY_AUTH_MODE' | translate
-                        }}</span>
-                    </clr-tooltip-content>
-                </clr-tooltip>
-            </label>
-            <clr-checkbox-wrapper>
-                <input
-                    type="checkbox"
-                    clrCheckbox
-                    name="primaryAuthMode"
-                    id="primaryAuthMode"
-                    [(ngModel)]="currentConfig.primary_auth_mode.value"
-                    [disabled]="!currentConfig.primary_auth_mode.editable" />
-            </clr-checkbox-wrapper>
-        </clr-checkbox-container>
-    </section>
-    } @if (showUAA) {
     <section>
         <clr-input-container>
             <label for="uaa-endpoint" class="required">{{
@@ -141,7 +54,6 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    } @if (showLdap) {
     <section>
         <clr-input-container>
             <label for="ldapUrl" class="required"
@@ -526,7 +438,7 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    } @if (showSelfReg) {
+    }
     <clr-checkbox-container>
         <label for="selfReg"
             >{{ 'CONFIG.SELF_REGISTRATION' | translate }}
@@ -561,7 +473,7 @@
                 [disabled]="disabled(currentConfig.self_registration)" />
         </clr-checkbox-wrapper>
     </clr-checkbox-container>
-    } @if (showLdap) {
+    }
     <section>
         <clr-checkbox-container>
             <label for="ldapVerifyCert"
@@ -593,7 +505,7 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    } @if (showHttpAuth) {
+    }
     <section>
         <clr-input-container>
             <label for="http_authproxy_endpoint" class="required">{{
@@ -690,7 +602,7 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    } @if (showOIDC) {
+    }
     <section>
         <clr-input-container>
             <label class="required" for="oidcName"
@@ -1038,18 +950,21 @@
         [disabled]="!isValid() || !hasChanges() || inProcess()">
         {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    @if (showTestingServerBtn) {
     <button
         type="button"
-        id="ping-test"
+        id="ping-ldap-test"
         class="btn btn-outline"
-        (click)="pingTestServer()"
+        (click)="testLdap()"
         [disabled]="!isConfigValidForTesting()">
-        {{ (showLdap ? 'BUTTON.TEST_LDAP' : 'BUTTON.TEST_OIDC') | translate }}
+        {{ 'BUTTON.TEST_LDAP' | translate }}
     </button>
-    }
-    <span
-        id="forTestingLDAP"
-        class="spinner spinner-inline"
-        [hidden]="hideTestingSpinner"></span>
+    <button
+        type="button"
+        id="ping-oidc-test"
+        class="btn btn-outline"
+        (click)="testOidc()"
+        [disabled]="!isConfigValidForTesting()">
+        {{ 'BUTTON.TEST_OIDC' | translate }}
+    </button>
+
 </div>

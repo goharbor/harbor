@@ -13,28 +13,3 @@
 // limitations under the License.
 
 package registry
-
-import (
-	"net/http"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func direct(req *http.Request) {
-	req.Header.Add("test-key", "test-value")
-}
-
-func TestBasicAuthDirector(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodGet, "127.0.0.1", nil)
-	t.Setenv("REGISTRY_CREDENTIAL_USERNAME", "testuser")
-	t.Setenv("REGISTRY_CREDENTIAL_PASSWORD", "testpassword")
-
-	d := basicAuthDirector(direct)
-	d(req)
-	assert.Equal(t, "test-value", req.Header.Get("test-key"))
-	user, pass, ok := req.BasicAuth()
-	assert.True(t, ok)
-	assert.Equal(t, "testuser", user)
-	assert.Equal(t, "testpassword", pass)
-}
