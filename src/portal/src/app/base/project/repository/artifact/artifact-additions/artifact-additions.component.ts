@@ -141,10 +141,7 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     }
 
     hasBuildHistory(): boolean {
-        return (
-            this.additionLinks &&
-            !!this.additionLinks[ADDITIONS.BUILD_HISTORY]
-        );
+        return (this.additionLinks && !!this.additionLinks[ADDITIONS.BUILD_HISTORY]);
     }
 
     actionTab(tab: string): void {
