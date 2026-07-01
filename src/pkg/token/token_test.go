@@ -41,12 +41,22 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	// Save and restore the prior environment value
+	oldKeyPath, oldKeyPathWasSet := os.LookupEnv("TOKEN_PRIVATE_KEY_PATH")
 	os.Setenv("TOKEN_PRIVATE_KEY_PATH", f.Name())
 
 	config.Init()
 
 	result := m.Run()
 	os.Remove(f.Name())
+
+	// Restore the prior environment
+	if oldKeyPathWasSet {
+		os.Setenv("TOKEN_PRIVATE_KEY_PATH", oldKeyPath)
+	} else {
+		os.Unsetenv("TOKEN_PRIVATE_KEY_PATH")
+	}
+
 	if result != 0 {
 		os.Exit(result)
 	}
