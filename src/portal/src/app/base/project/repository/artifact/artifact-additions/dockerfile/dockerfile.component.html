@@ -5,7 +5,9 @@
             @if (dockerfile) {
             <div
                 class="yaml-container"
-                [innerHTML]="dockerfile | language:'dockerfile' | markdown | async"></div>
+                [innerHTML]="
+                  dockerfile | language : 'dockerfile' | markdown | async
+                "></div>
             }
         </div>
         @if (!dockerfile) {
@@ -18,11 +20,15 @@
             <div class="col-md-8 md-container info-box pl-1">
                 <clr-icon shape="info-circle" class="info-icon"></clr-icon>
                 <div class="info-text">
-                    <p>{{ 'ARTIFACT.NO_DOCKERFILE_EXPLANATION' | translate }}</p>
+                    <p>
+                        {{ 'ARTIFACT.NO_DOCKERFILE_EXPLANATION' | translate }}
+                    </p>
                     @if (buildHistoryLink) {
                     <p>
                         {{ 'ARTIFACT.NO_DOCKERFILE_SUGGESTION' | translate }}
-                        <a class="clickable-link" (click)="switchTab.emit('build-history')">
+                        <a
+                          class="clickable-link"
+                          (click)="switchTab.emit('build-history')">
                             {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
                         </a>
                     </p>
