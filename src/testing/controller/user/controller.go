@@ -121,36 +121,6 @@ func (_m *Controller) Get(ctx context.Context, id int, opt *user.Option) (*model
 	return r0, r1
 }
 
-// GetByName provides a mock function with given fields: ctx, username
-func (_m *Controller) GetByName(ctx context.Context, username string) (*models.User, error) {
-	ret := _m.Called(ctx, username)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetByName")
-	}
-
-	var r0 *models.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*models.User, error)); ok {
-		return rf(ctx, username)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *models.User); ok {
-		r0 = rf(ctx, username)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.User)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, username)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // GetByEmail provides a mock function with given fields: ctx, email
 func (_m *Controller) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	ret := _m.Called(ctx, email)
@@ -174,6 +144,36 @@ func (_m *Controller) GetByEmail(ctx context.Context, email string) (*models.Use
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetByName provides a mock function with given fields: ctx, username
+func (_m *Controller) GetByName(ctx context.Context, username string) (*models.User, error) {
+	ret := _m.Called(ctx, username)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByName")
+	}
+
+	var r0 *models.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*models.User, error)); ok {
+		return rf(ctx, username)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *models.User); ok {
+		r0 = rf(ctx, username)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, username)
 	} else {
 		r1 = ret.Error(1)
 	}
