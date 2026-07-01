@@ -41,7 +41,8 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	for userID := 1; userID <= 12; userID++ {
 		username := fmt.Sprintf("testuser%d", userID)
 		email := fmt.Sprintf("user%d@example.com", userID)
-		suite.ExecSQL("INSERT INTO harbor_user (user_id, username, email, password) VALUES (?, ?, ?, ?)", userID, username, email, "Harbor12345")
+		realname := fmt.Sprintf("Test User %d", userID)
+		suite.ExecSQL("INSERT INTO harbor_user (user_id, username, email, password, realname) VALUES (?, ?, ?, ?, ?)", userID, username, email, "Harbor12345", realname)
 	}
 }
 
