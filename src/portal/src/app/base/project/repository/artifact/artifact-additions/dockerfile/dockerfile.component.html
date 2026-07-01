@@ -6,9 +6,8 @@
             <div
                 class="yaml-container"
                 [innerHTML]="
-                  dockerfile | language: 'dockerfile' | markdown | async
-                "
-            ></div>
+                    dockerfile | language : 'dockerfile' | markdown | async
+                "></div>
             }
         </div>
         @if (!dockerfile) {
@@ -28,10 +27,9 @@
                     <p>
                         {{ 'ARTIFACT.NO_DOCKERFILE_SUGGESTION' | translate }}
                         <a
-                          class="clickable-link"
-                          (click)="switchTab.emit('build-history')"
-                        >
-                          {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
+                            class="clickable-link"
+                            (click)="switchTab.emit('build-history')">
+                            {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
                         </a>
                     </p>
                     }
