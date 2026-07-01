@@ -58,4 +58,66 @@ describe('AddRobotComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
+
+    describe('secret validation', () => {
+        it('validateSecret() should set isSecretDirty and populate errors for invalid secret', () => {
+            component.userProvidedSecret = 'abc';
+            component.validateSecret();
+            expect(component.isSecretDirty).toBe(true);
+            expect(component.secretValidationErrors.length).toBeGreaterThan(0);
+        });
+
+        it('validateSecret() should clear errors for valid secret', () => {
+            component.userProvidedSecret = 'Harbor12345';
+            component.validateSecret();
+            expect(component.secretValidationErrors.length).toBe(0);
+        });
+
+        it('validateSecret() should clear errors when secret is empty', () => {
+            component.userProvidedSecret = '';
+            component.validateSecret();
+            expect(component.secretValidationErrors.length).toBe(0);
+        });
+
+        it('toggleSecretVisibility() should toggle showSecretPassword flag', () => {
+            expect(component.showSecretPassword).toBe(false);
+            component.toggleSecretVisibility();
+            expect(component.showSecretPassword).toBe(true);
+            component.toggleSecretVisibility();
+            expect(component.showSecretPassword).toBe(false);
+        });
+
+        it('isSecretInputValid() should return falsy for empty secret', () => {
+            component.userProvidedSecret = '';
+            expect(component.isSecretInputValid()).toBeFalsy();
+        });
+
+        it('isSecretInputValid() should return falsy for invalid secret', () => {
+            component.userProvidedSecret = 'abc';
+            expect(component.isSecretInputValid()).toBeFalsy();
+        });
+
+        it('isSecretInputValid() should return truthy for valid secret', () => {
+            component.userProvidedSecret = 'Harbor12345';
+            expect(component.isSecretInputValid()).toBeTruthy();
+        });
+
+        it('secretsMatch() should return falsy when confirm secret is empty', () => {
+            component.userProvidedSecret = 'Harbor12345';
+            component.userProvidedSecretConfirm = '';
+            expect(component.secretsMatch()).toBeFalsy();
+        });
+
+        it('secretsMatch() should return falsy when secrets do not match', () => {
+            component.userProvidedSecret = 'Harbor12345';
+            component.userProvidedSecretConfirm = 'Harbor123456';
+            expect(component.secretsMatch()).toBeFalsy();
+        });
+
+        it('secretsMatch() should return truthy when secrets match', () => {
+            component.userProvidedSecret = 'Harbor12345';
+            component.userProvidedSecretConfirm = 'Harbor12345';
+            expect(component.secretsMatch()).toBeTruthy();
+        });
+    });
 });

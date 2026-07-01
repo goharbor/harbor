@@ -64,3 +64,56 @@ Check Project Robot Account API Permission
     [Arguments]  ${robot_account_name}  ${token}  ${admin_user_name}  ${admin_password}  ${project_id}  ${project_name}  ${source_artifact_name}  ${source_artifact_tag}  ${resources}  ${expected_status}=0
     ${rc}  ${output}=  Run And Return Rc And Output  USER_NAME='${robot_account_name}' PASSWORD='${token}' ADMIN_USER_NAME=${admin_user_name} ADMIN_PASSWORD=${admin_password} HARBOR_BASE_URL=https://${ip}/api/v2.0 PROJECT_ID=${project_id} PROJECT_NAME=${project_name} SOURCE_ARTIFACT_NAME=${source_artifact_name} SOURCE_ARTIFACT_TAG=${source_artifact_tag} RESOURCES=${resources} python ./tests/apitests/python/test_project_permission.py
     Should Be Equal As Integers  ${rc}  ${expected_status}
+
+Create A Project Robot Account With User Secret
+    [Arguments]  ${robot_account_name}  ${user_secret}  ${expiration_type}  ${description}=${null}  ${days}=${null}  ${resources}=${null}
+    Retry Element Click  ${project_robot_account_create_btn}
+    Retry Wait Element Should Be Disabled  //button[text()='Next']
+    Retry Text Input  ${project_robot_account_create_name_input}  ${robot_account_name}
+    Run Keyword If  '${description}' != '${null}'  Retry Text Input  //textarea  ${description}
+    Retry Text Input  ${project_robot_account_secret_input}  ${user_secret}
+    Retry Wait Until Page Contains Element  ${project_robot_account_secret_confirm_input}
+    Retry Text Input  ${project_robot_account_secret_confirm_input}  ${user_secret}
+    Select From List By Value  ${project_robot_account_create_sexpiration_type_btn}  ${expiration_type}
+    Run Keyword If  '${expiration_type}' == 'days'  Retry Text Input  ${project_robot_account_token_expiration_days}  ${days}
+    Retry Double Keywords When Error  Retry Button Click  //button[text()='Next']  Retry Wait Element Not Visible  //button[text()='Next']
+    Retry Wait Element Should Be Disabled  ${project_robot_account_create_finish_btn}
+    ${first_resource}=  Set Variable  ${resources}[0]
+    ${permission_count}=  Create Dictionary
+    ${total}=  Set Variable  0
+    IF  '${first_resource}' == 'all'
+        Set To Dictionary  ${permission_count}  all= 70
+        ${total}=  Set Variable  70
+        Retry Element Click  //span[text()='Select all']
+    ELSE
+        FOR  ${item}  IN  @{resources}
+            ${elements}=  Get WebElements  //table//tr[./td[text()='${item}']]//clr-checkbox-wrapper//label
+            ${elements_count}=  Get Length  ${elements}
+            Set To Dictionary  ${permission_count}  ${item}=${elements_count}
+            ${total}=  Evaluate  ${total} + ${elements_count}
+            FOR  ${element}  IN  @{elements}
+                Execute JavaScript    arguments[0].click();    ARGUMENTS    ${element}
+                Sleep    1s
+            END
+        END
+    END
+    Retry Double Keywords When Error  Retry Element Click  ${project_robot_account_create_finish_btn}  Retry Wait Until Page Not Contains Element  ${project_robot_account_create_finish_btn}
+    ${robot_account_name}=  Get Text  ${project_robot_account_name_xpath}
+    Retry Wait Until Page Contains Element  //span[contains(.,'You provided your own secret')]
+    Retry Wait Element Visible  //clr-dg-row[.//clr-dg-cell[contains(.,'${robot_account_name}')] and .//clr-icon[contains(@class, 'color-green')] and .//button[text()=' ${total} PERMISSION(S) '] and .//span[contains(.,'${expires}')] and .//clr-dg-cell[text()='${description}'] ]
+    [Return]  ${robot_account_name}  ${permission_count}
+
+Verify Secret Validation Error
+    [Arguments]  ${secret}  ${expected_error}
+    Retry Element Click  ${project_robot_account_create_btn}
+    Retry Wait Element Should Be Disabled  //button[text()='Next']
+    Retry Text Input  ${project_robot_account_create_name_input}  test_robot
+    Retry Text Input  ${project_robot_account_secret_input}  ${secret}
+    Retry Wait Until Page Contains Element  //li[contains(., '${expected_error}')]
+    Retry Wait Element Should Be Disabled  ${project_robot_account_secret_confirm_input}
+    Retry Element Click  //button[@aria-label='Close']
+
+Toggle Secret Visibility
+    Retry Element Click  ${project_robot_account_secret_toggle_btn}
+    ${input_type}=  Get Element Attribute  ${project_robot_account_secret_input}  type
+    Should Be Equal  ${input_type}  text

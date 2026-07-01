@@ -123,6 +123,159 @@
                         [(ngModel)]="robot.description"></textarea>
                 </clr-textarea-container>
                 <div class="clr-form-control mt-2">
+                    <label class="clr-control-label">{{
+                        'SYSTEM_ROBOT.PROVIDED_SECRET' | translate
+                    }}</label>
+                    <div
+                        class="clr-control-container"
+                        [class.clr-error]="
+                            isSecretDirty &&
+                            userProvidedSecret &&
+                            secretValidationErrors.length > 0
+                        ">
+                        <div class="clr-input-wrapper">
+                            <input
+                                class="clr-input input-width"
+                                [type]="
+                                    showSecretPassword ? 'text' : 'password'
+                                "
+                                id="provided_secret"
+                                [(ngModel)]="userProvidedSecret"
+                                (blur)="validateSecret()"
+                                (input)="validateSecret()"
+                                name="provided_secret"
+                                placeholder="{{
+                                    'SYSTEM_ROBOT.OPTIONAL_CUSTOM_SECRET'
+                                        | translate
+                                }}"
+                                autocomplete="off" />
+                            <clr-icon
+                                *ngIf="userProvidedSecret"
+                                [shape]="
+                                    showSecretPassword ? 'eye-hide' : 'eye'
+                                "
+                                (click)="toggleSecretVisibility()"
+                                tabindex="0"
+                                role="button"
+                                [attr.aria-label]="
+                                    showSecretPassword
+                                        ? 'Hide secret'
+                                        : 'Show secret'
+                                "
+                                (keyup.enter)="toggleSecretVisibility()"
+                                class="clr-input-icon-action"></clr-icon>
+                        </div>
+                        @if ( isSecretDirty && userProvidedSecret &&
+                        secretValidationErrors.length > 0 ) {
+                        <clr-control-error>
+                            <ul class="error-list">
+                                @for (error of secretValidationErrors; track
+                                error.code) {
+                                <li>{{ error.message | translate }}</li>
+                                }
+                            </ul>
+                        </clr-control-error>
+                        }
+                    </div>
+                    @if (isSecretDirty && userProvidedSecret) {
+                    <div class="validation-progress mt-2">
+                        <div
+                            class="requirement"
+                            [class.met]="
+                                SecretValidator.validateLength(
+                                    userProvidedSecret
+                                )
+                            ">
+                            <clr-icon
+                                [shape]="
+                                    SecretValidator.validateLength(
+                                        userProvidedSecret
+                                    )
+                                        ? 'check'
+                                        : 'times'
+                                "></clr-icon>
+                            <span>{{
+                                'SYSTEM_ROBOT.SECRET_LENGTH_REQUIREMENT'
+                                    | translate
+                            }}</span>
+                        </div>
+                        <div
+                            class="requirement"
+                            [class.met]="
+                                SecretValidator.hasUppercase(userProvidedSecret)
+                            ">
+                            <clr-icon
+                                [shape]="
+                                    SecretValidator.hasUppercase(
+                                        userProvidedSecret
+                                    )
+                                        ? 'check'
+                                        : 'times'
+                                "></clr-icon>
+                            <span>{{
+                                'SYSTEM_ROBOT.SECRET_UPPERCASE_REQUIREMENT'
+                                    | translate
+                            }}</span>
+                        </div>
+                        <div
+                            class="requirement"
+                            [class.met]="
+                                SecretValidator.hasLowercase(userProvidedSecret)
+                            ">
+                            <clr-icon
+                                [shape]="
+                                    SecretValidator.hasLowercase(
+                                        userProvidedSecret
+                                    )
+                                        ? 'check'
+                                        : 'times'
+                                "></clr-icon>
+                            <span>{{
+                                'SYSTEM_ROBOT.SECRET_LOWERCASE_REQUIREMENT'
+                                    | translate
+                            }}</span>
+                        </div>
+                        <div
+                            class="requirement"
+                            [class.met]="
+                                SecretValidator.hasDigit(userProvidedSecret)
+                            ">
+                            <clr-icon
+                                [shape]="
+                                    SecretValidator.hasDigit(userProvidedSecret)
+                                        ? 'check'
+                                        : 'times'
+                                "></clr-icon>
+                            <span>{{
+                                'SYSTEM_ROBOT.SECRET_DIGIT_REQUIREMENT'
+                                    | translate
+                            }}</span>
+                        </div>
+                    </div>
+                    } @if (isSecretInputValid()) {
+                    <clr-input-container class="mt-2">
+                        <label class="clr-control-label">{{
+                            'SYSTEM_ROBOT.CONFIRM_SECRET' | translate
+                        }}</label>
+                        <input
+                            clrInput
+                            [type]="showSecretPassword ? 'text' : 'password'"
+                            [(ngModel)]="userProvidedSecretConfirm"
+                            name="confirm_secret"
+                            id="confirm_secret"
+                            placeholder="{{
+                                'SYSTEM_ROBOT.CONFIRM_SECRET' | translate
+                            }}"
+                            autocomplete="off" />
+                        @if (!secretsMatch()) {
+                        <clr-control-error>
+                            {{ 'SYSTEM_ROBOT.SECRETS_NOT_MATCH' | translate }}
+                        </clr-control-error>
+                        }
+                    </clr-input-container>
+                    }
+                </div>
+                <div class="clr-form-control mt-2">
                     <label class="clr-control-label required"
                         >{{ 'SYSTEM_ROBOT.EXPIRATION_TIME' | translate }}
                         <clr-tooltip>
