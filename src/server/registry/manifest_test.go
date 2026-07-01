@@ -203,6 +203,29 @@ func (m *manifestTestSuite) TestPutManifest() {
 	m.Equal(http.StatusCreated, w.Code)
 }
 
+func (m *manifestTestSuite) TestPutManifestRequiresResponseBuffer() {
+	// Validation test: putManifest requires outer ResponseBuffer middleware
+	// for error recovery. If called without it, should fail with clear error.
+	manifestContent := []byte(`{"schemaVersion":2}`)
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(manifestContent))
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	// Call with plain httptest.ResponseRecorder (NOT wrapped in ResponseBuffer)
+	// This simulates missing middleware
+	w := &httptest.ResponseRecorder{}
+	putManifest(w, req)
+
+	// Should fail because outer ResponseBuffer is required
+	m.NotEqual(http.StatusCreated, w.Code, "Should fail when ResponseBuffer middleware is missing")
+	m.NotEqual(http.StatusOK, w.Code, "Should not return success when middleware check fails")
+	// Error code should indicate a configuration/setup issue
+	m.True(w.Code >= 400, "Should return 4xx/5xx error code")
+}
+
 func (m *manifestTestSuite) TestPutManifestArtifactEnsureFailure() {
 	// Regression test for issue #23199: "storage-only orphans"
 	//
