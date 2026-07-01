@@ -222,7 +222,7 @@ paths:
         '403':
           description: User does not have permission of admin role.
         '500':
-          description: Unexpected internal errors.
+            $ref: '#/responses/500'
   /configurations:
     get:
       summary: Get system configurations.
