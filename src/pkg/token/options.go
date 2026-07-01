@@ -111,11 +111,11 @@ func DefaultTokenOptions() *Options {
 }
 
 // NewOptions creates Options based on the input parameters.
-// The first parameter (method) is deprecated; the signing method is
-// automatically determined from the key type.
+// The first parameter (method) is deprecated and ignored; the signing method is
+// automatically determined from the key type and curve (RSA → RS256, ECDSA P-256 → ES256, etc).
 func NewOptions(method, iss, keyPath string) (*Options, error) {
 	if method != "" {
-		return nil, fmt.Errorf("signing method parameter is deprecated; method is now determined from key type")
+		log.Debugf("NewOptions: method parameter '%s' is deprecated and ignored; using auto-detection from key type", method)
 	}
 	pkBytes, err := os.ReadFile(keyPath)
 	if err != nil {

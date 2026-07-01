@@ -131,17 +131,17 @@ func getECDSAPublicKey(crtPath string) (*ecdsa.PublicKey, error) {
 	}
 	block, _ := pem.Decode(crt)
 	if block == nil {
-		return nil, fmt.Errorf("failed to decode PEM in %s", crtPath)
+		return nil, fmt.Errorf("failed to decode PEM from %s", crtPath)
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	pub, ok := cert.PublicKey.(*ecdsa.PublicKey)
+	pubKey, ok := cert.PublicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("unexpected public key type %T", cert.PublicKey)
+		return nil, fmt.Errorf("certificate public key is not ECDSA, got %T", cert.PublicKey)
 	}
-	return pub, nil
+	return pubKey, nil
 }
 
 type harborClaims struct {

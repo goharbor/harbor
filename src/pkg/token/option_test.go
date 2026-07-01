@@ -28,14 +28,15 @@ func TestNewOptions(t *testing.T) {
 }
 
 func TestNewOptionsMethodDeprecated(t *testing.T) {
-	// Method parameter is deprecated; any non-empty method should return an error
+	// Method parameter is deprecated but still accepted for backward compatibility.
+	// The method is determined from the key type regardless of the parameter value.
 	keyFile := writeECKeyFile(t, elliptic.P256(), "EC PRIVATE KEY")
 	defer os.Remove(keyFile)
 
 	opt, err := NewOptions("RS256", "test-issuer", keyFile)
-	assert.Error(t, err)
-	assert.Nil(t, opt)
-	assert.Contains(t, err.Error(), "deprecated")
+	require.NoError(t, err)
+	// Despite passing "RS256", the signing method is determined from the ECDSA key
+	assert.Equal(t, jwt.SigningMethodES256, opt.SignMethod)
 }
 
 func TestGetKey(t *testing.T) {
@@ -424,9 +425,13 @@ func TestNewOptionsRSAPKCS8(t *testing.T) {
 	opt, err := NewOptions("", "test-issuer", f.Name())
 	require.NoError(t, err)
 	assert.Equal(t, jwt.SigningMethodRS256, opt.SignMethod)
+
+	// Verify the key can actually be parsed via GetKey()
 	gotKey, err := opt.GetKey()
 	require.NoError(t, err)
 	assert.IsType(t, &rsa.PrivateKey{}, gotKey)
+	privKey := gotKey.(*rsa.PrivateKey)
+	assert.Equal(t, key.PublicKey.E, privKey.PublicKey.E)
 }
 
 func TestGetKeyErrors(t *testing.T) {
