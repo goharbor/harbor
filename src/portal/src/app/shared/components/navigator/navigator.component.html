@@ -89,6 +89,12 @@
                     (click)="openPreferencesModal()"
                     >{{ 'ACCOUNT_SETTINGS.PREFERENCES' | translate }}</a
                 >
+                <a
+                    href="javascript:void(0)"
+                    clrDropdownItem
+                    (click)="openApiTokensModal()"
+                    >{{ 'ACCOUNT_SETTINGS.API_TOKENS' | translate }}</a
+                >
                 @if (canChangePassword) {
                 <a
                     href="javascript:void(0)"

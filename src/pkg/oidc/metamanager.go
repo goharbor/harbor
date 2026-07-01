@@ -65,7 +65,11 @@ func (m *metaManager) GetBySubIss(ctx context.Context, sub, iss string) (*models
 	if len(l) > 1 {
 		logger.Warningf("Multiple oidc info records found for issuer %s, subject %s", iss, sub)
 	}
-	return l[0], nil
+	res := l[0]
+	if res.ID == 0 {
+		return nil, errors.UnknownError(nil).WithMessagef("oidc user data with issuer %s, subject %s has invalid ID (0); possible database issue", iss, sub)
+	}
+	return res, nil
 }
 
 func (m *metaManager) Create(ctx context.Context, oidcUser *models.OIDCUser) (int, error) {
@@ -85,6 +89,9 @@ func (m *metaManager) GetByUserID(ctx context.Context, uid int) (*models.OIDCUse
 		logger.Warningf("%d records of oidc user Info found for user %d", len(l), uid)
 	}
 	res := l[0]
+	if res.ID == 0 {
+		return nil, errors.UnknownError(nil).WithMessagef("oidc user data for user %d has invalid ID (0); possible database issue", uid)
+	}
 	key, err := keyLoader.encryptKey()
 	if err != nil {
 		return nil, err

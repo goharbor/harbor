@@ -14,6 +14,7 @@
 export const modalEvents = {
     USER_PROFILE: 'USER_PROFILE',
     PREFERENCES: 'PREFERENCES',
+    API_TOKENS: 'API_TOKENS',
     CHANGE_PWD: 'CHANGE_PWD',
     ABOUT: 'ABOUT',
 };

@@ -31,14 +31,6 @@ const harborRoutes: Routes = [
             import('./account/account.module').then(m => m.AccountModule),
     },
     {
-        path: 'oidc-onboard',
-        canActivate: [OidcGuard, SignInGuard],
-        loadChildren: () =>
-            import('./oidc-onboard/oidc-onboard.module').then(
-                m => m.OidcOnboardModule
-            ),
-    },
-    {
         path: 'license',
         loadChildren: () =>
             import('./license/license.module').then(m => m.LicenseModule),

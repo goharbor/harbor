@@ -24,8 +24,6 @@ ${dex_login_btn}    //*[@id='login']
 ${dex_pwd_btn}    //*[@id='password']
 ${submit_login_btn}    //*[@id='submit-login']
 ${grant_btn}      xpath=/html/body/div[2]/div/div[2]/div[1]/form/button
-${oidc_username_input}    //*[@id='oidcUsername']
-${save_btn}       //*[@id='saveButton']
 ${OIDC_USERNAME}  test1
 ${generate_secret_btn}       //*[@id='generate-cli-btn']
 ${more_btn}       //*[@id='hidden-generate-cli']

@@ -114,6 +114,13 @@ export class NewRobotComponent implements OnInit, OnDestroy {
 
     permissionForSystemForEdit: RobotPermission;
     showPage3: boolean = false;
+    secretVisible: boolean = false;
+    secretValidation: { length: boolean; uppercase: boolean; lowercase: boolean; digit: boolean } = {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        digit: false,
+    };
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
         private configService: ConfigurationService,

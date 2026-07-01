@@ -55,6 +55,7 @@ import { signInStatusError } from '../../../account/sign-in/sign-in.component';
 })
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
+    @Output() showApiTokensModal = new EventEmitter<ModalEvent>();
     @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
     readonly guiLanguages = Object.entries(LANGUAGES);
@@ -187,6 +188,14 @@ export class NavigatorComponent implements OnInit {
     openPreferencesModal(): void {
         this.showDialogModalAction.emit({
             modalName: modalEvents.PREFERENCES,
+            modalFlag: true,
+        });
+    }
+
+    // Open API tokens dialog
+    openApiTokensModal(): void {
+        this.showApiTokensModal.emit({
+            modalName: modalEvents.API_TOKENS,
             modalFlag: true,
         });
     }
