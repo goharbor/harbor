@@ -884,6 +884,8 @@
             "GROUP_CLAIM_NAME_INFO": "Le claim du nom de groupe personnalisé qui a été configuré dans votre fournisseur OIDC.",
             "OIDC_ADMIN_GROUP": "Groupe d'admin OIDC",
             "OIDC_ADMIN_GROUP_INFO": "Spécifie le nom d'un groupe d'admin OIDC. Tous les utilisateurs OIDC de ce groupe auront les droits d'admin dans Harbor. Laisser vide pour ne pas l'utiliser.",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
             "OIDC_GROUP_FILTER": "Filtre de groupe OIDC",
             "OIDC_GROUP_FILTER_INFO": "Filtre les groupes OIDC qui correspondent à l'expression régulière fournie. Laisser vide pour ne pas l'utiliser.",
             "OIDC_LOGOUT": "OIDC Session Logout"

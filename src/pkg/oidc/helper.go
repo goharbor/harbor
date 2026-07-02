@@ -478,6 +478,28 @@ func filterGroup(groupNames []string, filter string) []string {
 	return result
 }
 
+// IsLoginAllowed checks whether the user is permitted to log in based on the
+// oidc_login_groups setting. Returns true when no restriction is configured.
+// Note: info.Groups contains the raw, unfiltered groups from the token claim;
+// oidc_group_filter is applied separately in InjectGroupsToUser and does not
+// affect this check.
+func IsLoginAllowed(info *UserInfo, setting cfgModels.OIDCSetting) bool {
+	allowed := config.SplitAndTrim(setting.LoginGroups, ",")
+	if len(allowed) == 0 {
+		return true
+	}
+	if !info.hasGroupClaim {
+		log.Error("oidc_login_groups is set but the token carried no group claim; all OIDC logins are blocked — verify oidc_groups_claim is configured")
+		return false
+	}
+	for _, g := range allowed {
+		if slices.Contains(info.Groups, g) {
+			return true
+		}
+	}
+	return false
+}
+
 // InjectGroupsToUser populates the group to DB and inject the group IDs to user model.
 // The third optional parm is for UT only.
 func InjectGroupsToUser(info *UserInfo, user *models.User, f ...populate) {

@@ -884,6 +884,8 @@
             "GROUP_CLAIM_NAME_INFO": "您在 OIDC 提供商中配置的自定义组声明的名称",
             "OIDC_ADMIN_GROUP": "OIDC管理员组",
             "OIDC_ADMIN_GROUP_INFO": "OIDC管理员组名称。所有该组内用户都会有管理员权限，此属性可以为空。",
+            "OIDC_LOGIN_GROUPS": "OIDC Login Groups",
+            "OIDC_LOGIN_GROUPS_INFO": "Comma-separated list of OIDC group names allowed to log in to Harbor. Users not in any listed group will be denied. Leave blank to allow all users.",
             "OIDC_GROUP_FILTER": "OIDC 组过滤器",
             "OIDC_GROUP_FILTER_INFO": "该过滤器将会过滤掉不匹配此项正则表达式的 OIDC 组。若不填，则表示匹配所有。",
             "OIDC_LOGOUT": "OIDC Session Logout"
