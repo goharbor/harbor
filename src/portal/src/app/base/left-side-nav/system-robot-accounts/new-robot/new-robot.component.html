@@ -40,11 +40,16 @@
         <ng-template clrPageTitle>{{
             'ROBOT_ACCOUNT.BASIC_INFO' | translate
         }}</ng-template>
-        <form clrForm #robotForm="ngForm" class="clr-form clr-form-horizontal">
+        <form
+            clrForm
+            #robotForm="ngForm"
+            class="clr-form clr-form-horizontal"
+            clrLabelSize="4">
             @if (addRobotOpened) {
             <section class="form-block">
-                <div class="clr-form-control">
-                    <label for="name" class="clr-control-label required"
+                <!-- Name -->
+                <clr-input-container>
+                    <label for="name" class="required"
                         >{{ 'P2P_PROVIDER.NAME' | translate }}
                         @if (!isEditMode) {
                         <clr-tooltip>
@@ -64,53 +69,38 @@
                         </clr-tooltip>
                         }
                     </label>
-                    <div
-                        class="clr-control-container"
-                        [class.clr-error]="
-                            ((name.dirty || name.touched) && name.invalid) ||
-                            isNameExisting
-                        ">
-                        <div class="clr-input-wrapper">
-                            <input
-                                class="clr-input input-width"
-                                [disabled]="loading || isEditMode"
-                                type="text"
-                                id="name"
-                                [(ngModel)]="systemRobot.name"
-                                required
-                                pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
-                                maxLengthExt="255"
-                                autocomplete="off"
-                                size="30"
-                                name="name"
-                                #name="ngModel"
-                                (keyup)="inputName()" />
-                            <clr-icon
-                                class="clr-validate-icon"
-                                shape="exclamation-circle"></clr-icon>
-                            <span
-                                class="spinner spinner-inline"
-                                [hidden]="!checkNameOnGoing"></span>
-                        </div>
-                        @if ( ((name.dirty || name.touched) && name.invalid) ||
-                        isNameExisting ) {
-                        <clr-control-error>
-                            @if ( !( (name.dirty || name.touched) &&
-                            name.invalid ) && isNameExisting ) {
-                            <span>{{
-                                'ROBOT_ACCOUNT.ACCOUNT_EXISTING' | translate
-                            }}</span>
-                            } @if ( (name.dirty || name.touched) && name.invalid
-                            ) {
-                            <span>{{
-                                'SYSTEM_ROBOT.NAME_TOOLTIP' | translate
-                            }}</span>
-                            }
-                        </clr-control-error>
+                    <input
+                        clrInput
+                        [disabled]="loading || isEditMode"
+                        type="text"
+                        id="name"
+                        class="input-width"
+                        [(ngModel)]="systemRobot.name"
+                        required
+                        pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
+                        maxLengthExt="255"
+                        autocomplete="off"
+                        size="30"
+                        name="name"
+                        #name="ngModel"
+                        (keyup)="inputName()" />
+
+                    <clr-control-error>
+                        @if ( !( (name.dirty || name.touched) && name.invalid )
+                        && isNameExisting ) {
+                        <span>{{
+                            'ROBOT_ACCOUNT.ACCOUNT_EXISTING' | translate
+                        }}</span>
+                        } @if ( (name.dirty || name.touched) && name.invalid ) {
+                        <span>{{
+                            'SYSTEM_ROBOT.NAME_TOOLTIP' | translate
+                        }}</span>
                         }
-                    </div>
-                </div>
-                <clr-textarea-container class="mt-2">
+                    </clr-control-error>
+                </clr-input-container>
+
+                <!-- Description -->
+                <clr-textarea-container class="">
                     <label>{{ 'DISTRIBUTION.DESCRIPTION' | translate }}</label>
                     <textarea
                         class="input-width"
@@ -121,7 +111,9 @@
                         [ngModelOptions]="{ standalone: true }"
                         [(ngModel)]="systemRobot.description"></textarea>
                 </clr-textarea-container>
-                <div class="clr-form-control mt-2">
+
+                <!-- Expiration Time -->
+                <div class="clr-form-control clr-row">
                     <label class="clr-control-label required"
                         >{{ 'SYSTEM_ROBOT.EXPIRATION_TIME' | translate }}
                         <clr-tooltip>
@@ -267,19 +259,20 @@
         <form class="clr-form clr-form-horizontal pb-0 pt-0">
             @if (addRobotOpened) {
             <section class="form-block">
-                <div class="clr-form-control mt-1">
+                <div class="clr-form-control mt-1 cover-all-form-control">
                     <label class="clr-control-label">{{
                         'SYSTEM_ROBOT.COVER_ALL' | translate
                     }}</label>
                     <div class="clr-control-container">
-                        <clr-checkbox-wrapper>
+                        <clr-checkbox-wrapper
+                            class="cover-all-checkbox-wrapper">
                             <input
                                 clrCheckbox
                                 id="coverAll"
                                 name="coverAll"
                                 type="checkbox"
                                 [(ngModel)]="coverAll" />
-                            <label>
+                            <label for="coverAll">
                                 <clr-tooltip>
                                     <clr-icon
                                         class="opacity-07"

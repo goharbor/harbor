@@ -68,31 +68,36 @@
                         !getValidationState('account_settings_email')
                     ">
                     <div class="clr-input-wrapper">
-                        <input
-                            name="account_settings_email"
-                            type="text"
-                            #eamilInput="ngModel"
-                            class="clr-input"
-                            [(ngModel)]="account.email"
-                            required
-                            email
-                            id="account_settings_email"
-                            size="30"
-                            (input)="
-                                handleValidation(
-                                    'account_settings_email',
-                                    false
-                                )
-                            "
-                            (blur)="
-                                handleValidation('account_settings_email', true)
-                            " />
-                        <clr-icon
-                            class="clr-validate-icon"
-                            shape="exclamation-circle"></clr-icon>
-                        <span
-                            class="spinner spinner-inline"
-                            [hidden]="!checkProgress"></span>
+                        <div class="clr-input-group">
+                            <input
+                                name="account_settings_email"
+                                type="text"
+                                #eamilInput="ngModel"
+                                class="clr-input"
+                                [(ngModel)]="account.email"
+                                required
+                                email
+                                id="account_settings_email"
+                                size="30"
+                                (input)="
+                                    handleValidation(
+                                        'account_settings_email',
+                                        false
+                                    )
+                                "
+                                (blur)="
+                                    handleValidation(
+                                        'account_settings_email',
+                                        true
+                                    )
+                                " />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                            <span
+                                class="spinner spinner-inline"
+                                [hidden]="!checkProgress"></span>
+                        </div>
                     </div>
                     @if (!getValidationState('account_settings_email')) {
                     <clr-control-error>

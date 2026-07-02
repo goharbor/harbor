@@ -1,6 +1,6 @@
 module github.com/goharbor/harbor/src
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/FZambia/sentinel v1.1.0
@@ -71,7 +71,7 @@ require (
 	golang.org/x/text v0.37.0
 	golang.org/x/time v0.15.0
 	gopkg.in/h2non/gock.v1 v1.1.2
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	helm.sh/helm/v3 v3.18.5
 	k8s.io/api v0.36.1
 	k8s.io/apimachinery v0.36.1
@@ -85,6 +85,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.19
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.58.0
 	github.com/aws/smithy-go v1.26.0
+	github.com/goccy/go-yaml v1.19.2
 	github.com/jackc/pgx/v5 v5.10.0
 )
 
