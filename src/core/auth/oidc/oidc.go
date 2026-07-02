@@ -20,6 +20,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 )
@@ -27,6 +29,16 @@ import (
 // Auth of OIDC mode only implements the funcs for onboarding group
 type Auth struct {
 	auth.DefaultAuthenticateHelper
+}
+
+// Match returns true when an OIDC endpoint is configured.
+func (a *Auth) Match(ctx context.Context) bool {
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		log.Debugf("failed to load OIDC config: %v", err)
+		return false
+	}
+	return setting.Endpoint != ""
 }
 
 // SearchGroup is skipped in OIDC mode, so it makes sure any group will be onboarded.

@@ -24,7 +24,6 @@ type contextKey string
 const (
 	contextKeyAPIVersion         contextKey = "apiVersion"
 	contextKeyArtifactInfo       contextKey = "artifactInfo"
-	contextKeyAuthMode           contextKey = "authMode"
 	contextKeyCarrySession       contextKey = "carrySession"
 	contextKeySkipSessionRenewal contextKey = "skipSessionRenewal"
 	contextKeyRequestID          contextKey = "X-Request-ID"
@@ -83,21 +82,6 @@ func GetArtifactInfo(ctx context.Context) (art ArtifactInfo) {
 		art, _ = value.(ArtifactInfo)
 	}
 	return
-}
-
-// WithAuthMode returns a context with auth mode set
-func WithAuthMode(ctx context.Context, mode string) context.Context {
-	return setToContext(ctx, contextKeyAuthMode, mode)
-}
-
-// GetAuthMode gets the auth mode from the context
-func GetAuthMode(ctx context.Context) string {
-	mode := ""
-	value := getFromContext(ctx, contextKeyAuthMode)
-	if value != nil {
-		mode, _ = value.(string)
-	}
-	return mode
 }
 
 // WithCarrySession returns a context with "carry session" set that indicates whether the request carries session or not

@@ -49,6 +49,16 @@ type Auth struct {
 	userMgr user.Manager
 }
 
+// Match returns true when an LDAP URL is configured.
+func (l *Auth) Match(ctx context.Context) bool {
+	conf, err := config.LDAPConf(ctx)
+	if err != nil {
+		log.Debugf("failed to load LDAP config: %v", err)
+		return false
+	}
+	return conf.URL != ""
+}
+
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.

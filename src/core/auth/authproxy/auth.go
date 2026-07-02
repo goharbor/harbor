@@ -61,6 +61,15 @@ type Auth struct {
 	userMgr             user.Manager
 }
 
+// Match returns true when HTTP auth proxy is configured.
+func (a *Auth) Match(ctx context.Context) bool {
+	setting, err := config.HTTPAuthProxySetting(ctx)
+	if err != nil {
+		return false
+	}
+	return setting.Endpoint != ""
+}
+
 type session struct {
 	SessionID string `json:"session_id,omitempty"`
 }

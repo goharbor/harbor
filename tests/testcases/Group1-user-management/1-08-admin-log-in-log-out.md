@@ -1,4 +1,4 @@
-Test 1-08 - Admin User Log In and Log Out (DB Mode or LDAP mode)
+Test 1-08 - Admin User Log In and Log Out
 =======
 
 # Purpose:

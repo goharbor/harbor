@@ -1,4 +1,4 @@
-Test 9-05 User delete signed images(DB mode)
+Test 9-05 User delete signed images
 =======
 
 # Purpose:

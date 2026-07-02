@@ -1,16 +1,16 @@
-Test 2-33 - Admin Role User Delete Images (DB Mode)
+Test 2-33 - Admin Role User Delete Images
 =======
 
 # Purpose:
 
-To verify that a user with system admin role can delete images owned by other users when users are managed locally by Harbor (DB mode).
+To verify that a user with system admin role can delete images owned by other users using local database authentication.
 
 # References:
 User guide
 
 # Environment:
 * This test requires that a Harbor instance is running and available.
-* Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
+* Harbor uses local database authentication. Users are stored in the local database.
 * A linux host with Docker CLI installed (Docker client).
 * At least tow non-admin users. 
 

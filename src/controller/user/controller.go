@@ -17,13 +17,11 @@ package user // nolint:revive
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gdpr"
-	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -183,7 +181,8 @@ func (c *controller) Delete(ctx context.Context, id int) error {
 		return errors.UnknownError(err).WithMessagef("delete user failed, user id: %v, cannot delete project user member, error:%v", id, err)
 	}
 	// delete oidc metadata under the user
-	if lib.GetAuthMode(ctx) == common.OIDCAuth {
+	setting, err := config.OIDCSetting(ctx)
+	if err == nil && setting.Endpoint != "" {
 		if err := c.oidcMetaMgr.DeleteByUserID(ctx, id); err != nil {
 			return errors.UnknownError(err).WithMessagef("delete user failed, user id: %v, cannot delete oidc user, error:%v", id, err)
 		}

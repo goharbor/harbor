@@ -24,7 +24,7 @@ import (
 func Wrap(j any) job.Interface {
 	theType := reflect.TypeOf(j)
 
-	if theType.Kind() == reflect.Ptr {
+	if theType.Kind() == reflect.Ptr { // nolint:govet
 		theType = theType.Elem()
 	}
 

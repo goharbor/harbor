@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	ctlevent "github.com/goharbor/harbor/src/controller/event"
@@ -55,8 +54,8 @@ func (l *logoutResolver) Resolve(ce *commonevent.Metadata, event *event.Event) e
 
 // check if current auth is oidc common user
 func isOIDCAuthCommonUser(ctx context.Context, username string) bool {
-	authMode, err := config.AuthMode(ctx)
-	if err != nil || common.OIDCAuth != authMode {
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil || setting.Endpoint == "" {
 		return false
 	}
 	u, err := user.Ctl.GetByName(ctx, username)
