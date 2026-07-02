@@ -470,7 +470,8 @@
         "GUEST": "Guest",
         "LIMITED_GUEST": "Limited Guest",
         "DELETION_TITLE": "Confirm group members deletion",
-        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?",
+        "FILTER_PLACEHOLDER": "Filter groups"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",

@@ -470,7 +470,8 @@
         "GUEST": "게스트",
         "LIMITED_GUEST": "제한된 게스트",
         "DELETION_TITLE": "그룹 구성원 삭제 확인",
-        "DELETION_SUMMARY": "그룹 구성원(들){{param}}을 정말 삭제하시겠습니까?"
+        "DELETION_SUMMARY": "그룹 구성원(들){{param}}을 정말 삭제하시겠습니까?",
+        "FILTER_PLACEHOLDER": "그룹 필터"
     },
     "AUDIT_LOG": {
         "USERNAME": "사용자 이름",
