@@ -63,7 +63,7 @@ jobs:
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.0.0
+        uses: sigstore/cosign-installer@v4.1.2
       - name: Sign Release Artifacts
         run: |
           cur=${{ env.CUR_TAG }}
