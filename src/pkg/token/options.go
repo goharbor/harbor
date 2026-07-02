@@ -15,9 +15,14 @@
 package token // nolint:revive
 
 import (
+	"bytes"
+	"crypto/ecdsa"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -26,8 +31,7 @@ import (
 )
 
 const (
-	defaultIssuer       = "harbor-token-defaultIssuer"
-	defaultSignedMethod = "RS256"
+	defaultIssuer = "harbor-token-defaultIssuer"
 )
 
 // Options ...
@@ -62,41 +66,119 @@ func (o *Options) GetKey() (any, error) {
 			if publicKey != nil {
 				return publicKey, nil
 			}
-			return nil, fmt.Errorf("key is provided")
+			return nil, fmt.Errorf("no key provided")
 		}
-		if publicKey != nil && publicKey.E != privateKey.E && publicKey.N.Cmp(privateKey.N) != 0 {
-			return nil, fmt.Errorf("the public key and private key are not match")
+		if publicKey != nil && (publicKey.E != privateKey.E || publicKey.N.Cmp(privateKey.N) != 0) {
+			return nil, fmt.Errorf("public key and private key do not match")
+		}
+		return privateKey, nil
+	case *jwt.SigningMethodECDSA:
+		var privateKey *ecdsa.PrivateKey
+		var publicKey *ecdsa.PublicKey
+		var err error
+
+		if len(o.PrivateKey) > 0 {
+			privateKey, err = jwt.ParseECPrivateKeyFromPEM(o.PrivateKey)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if len(o.PublicKey) > 0 {
+			publicKey, err = jwt.ParseECPublicKeyFromPEM(o.PublicKey)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if privateKey == nil {
+			if publicKey != nil {
+				return publicKey, nil
+			}
+			return nil, fmt.Errorf("no key provided")
+		}
+		if publicKey != nil && !publicKey.Equal(&privateKey.PublicKey) {
+			return nil, fmt.Errorf("public key and private key do not match")
 		}
 		return privateKey, nil
 	default:
-		return nil, fmt.Errorf("unsupported sign method, %s", o.SignMethod)
+		return nil, fmt.Errorf("unsupported sign method, %v", o.SignMethod)
 	}
 }
 
 // DefaultTokenOptions ...
 func DefaultTokenOptions() *Options {
-	opt, _ := NewOptions(defaultSignedMethod, defaultIssuer, config.TokenPrivateKeyPath())
+	opt, _ := NewOptions("", defaultIssuer, config.TokenPrivateKeyPath())
 	return opt
 }
 
-// NewOptions create Options based on input parms
-func NewOptions(sm, iss, keyPath string) (*Options, error) {
-	signMethod := jwt.GetSigningMethod(sm)
-	if signMethod == nil {
-		return nil, fmt.Errorf("unknown sign method: %s", sm)
+// NewOptions creates Options based on the input parameters.
+// The first parameter (method) is deprecated and ignored; the signing method is
+// automatically determined from the key type and curve (RSA → RS256, ECDSA P-256 → ES256, etc).
+func NewOptions(method, iss, keyPath string) (*Options, error) {
+	if method != "" {
+		log.Debugf("NewOptions: method parameter '%s' is deprecated and ignored; using auto-detection from key type", method)
 	}
-	switch signMethod.(type) {
-	case *jwt.SigningMethodRSA, *jwt.SigningMethodRSAPSS:
-	default:
-		return nil, fmt.Errorf("sign method %q is not allowed: only RSA methods are supported", sm)
-	}
-	pk, err := os.ReadFile(keyPath)
+	pkBytes, err := os.ReadFile(keyPath)
 	if err != nil {
-		log.Errorf("failed to read private key %v", err)
+		log.Errorf("failed to read private key %s: %v", keyPath, err)
+		return nil, fmt.Errorf("failed to read private key %s: %w", keyPath, err)
+	}
+	var (
+		block      *pem.Block
+		rest       = pkBytes
+		privateKey any
+	)
+	for {
+		block, rest = pem.Decode(rest)
+		if block == nil {
+			return nil, fmt.Errorf("failed to decode PEM in %s", keyPath)
+		}
+		switch block.Type {
+		case "RSA PRIVATE KEY":
+			privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+		case "PRIVATE KEY":
+			privateKey, err = x509.ParsePKCS8PrivateKey(block.Bytes)
+		case "EC PRIVATE KEY":
+			privateKey, err = x509.ParseECPrivateKey(block.Bytes)
+		default:
+			// Skip unsupported PEM block types (e.g., EC PARAMETERS) and
+			// continue scanning remaining blocks, if any.
+			if len(strings.TrimSpace(string(rest))) > 0 {
+				continue
+			}
+			return nil, fmt.Errorf("unsupported private key type: %s", block.Type)
+		}
+		// Reached a supported private key block (parsing result checked below).
+		break
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private key: %w", err)
+	}
+	// Re-encode only the matched PEM block so GetKey() sees the correct block
+	var buf bytes.Buffer
+	if err := pem.Encode(&buf, &pem.Block{Type: block.Type, Bytes: block.Bytes}); err != nil {
 		return nil, err
 	}
+	pkBytes = buf.Bytes()
+	var signMethod jwt.SigningMethod
+	switch k := privateKey.(type) {
+	case *rsa.PrivateKey:
+		signMethod = jwt.SigningMethodRS256
+	case *ecdsa.PrivateKey:
+		switch k.Curve.Params().Name {
+		case "P-256":
+			signMethod = jwt.SigningMethodES256
+		case "P-384":
+			signMethod = jwt.SigningMethodES384
+		case "P-521":
+			signMethod = jwt.SigningMethodES512
+		default:
+			return nil, fmt.Errorf("unsupported ECDSA curve: %s", k.Curve.Params().Name)
+		}
+	default:
+		return nil, fmt.Errorf("unsupported private key type: %T", privateKey)
+	}
 	return &Options{
-		PrivateKey: pk,
+		PrivateKey: pkBytes,
 		SignMethod: signMethod,
 		Issuer:     iss,
 	}, nil

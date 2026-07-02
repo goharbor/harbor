@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package token
+package token // nolint:revive
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -123,6 +124,26 @@ func getPublicKey(crtPath string) (*rsa.PublicKey, error) {
 	return cert.PublicKey.(*rsa.PublicKey), nil
 }
 
+func getECDSAPublicKey(crtPath string) (*ecdsa.PublicKey, error) {
+	crt, err := os.ReadFile(crtPath)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(crt)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM from %s", crtPath)
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	pubKey, ok := cert.PublicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("certificate public key is not ECDSA, got %T", cert.PublicKey)
+	}
+	return pubKey, nil
+}
+
 type harborClaims struct {
 	jwt.RegisteredClaims
 	// Private claims
@@ -162,6 +183,99 @@ func TestMakeToken(t *testing.T) {
 	claims := tok.Claims.(*harborClaims)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
 	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch")
+}
+
+func TestMakeTokenECDSA(t *testing.T) {
+	pk, crt := getKeyAndCertPath()
+	// Use ECDSA keys for testing
+	pkECDSA := path.Join(path.Dir(pk), "ecdsa_private_key.pem")
+	crtECDSA := path.Join(path.Dir(crt), "ecdsa_root.crt")
+
+	// overwrite the config values for testing.
+	oldPrivateKey := privateKey
+	defer func() { privateKey = oldPrivateKey }()
+	privateKey = pkECDSA
+
+	ra := []*token.ResourceActions{{
+		Type:    "repository",
+		Name:    "10.117.4.142/notary-test/hello-world-2",
+		Actions: []string{"pull", "push"},
+	}}
+	svc := "harbor-registry"
+	u := "tester"
+	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
+	if err != nil {
+		t.Fatalf("Error while making token: %v", err)
+	}
+	tokenString := tokenJSON.Token
+	pubKey, err := getECDSAPublicKey(crtECDSA)
+	if err != nil {
+		t.Fatalf("Error while getting public key from cert: %s", crtECDSA)
+	}
+	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return pubKey, nil
+	})
+	t.Logf("Token validity: %v", tok.Valid)
+	if err != nil {
+		t.Fatalf("Error while parsing the token: %v", err)
+	}
+	claims := tok.Claims.(*harborClaims)
+	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
+	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch")
+}
+
+func TestParseTokenECDSA(t *testing.T) {
+	pk, crt := getKeyAndCertPath()
+	// Use ECDSA keys for testing
+	pkECDSA := path.Join(path.Dir(pk), "ecdsa_private_key.pem")
+	crtECDSA := path.Join(path.Dir(crt), "ecdsa_root.crt")
+
+	// overwrite the config values for testing.
+	oldPrivateKey := privateKey
+	defer func() { privateKey = oldPrivateKey }()
+	privateKey = pkECDSA
+
+	ra := []*token.ResourceActions{{
+		Type:    "repository",
+		Name:    "10.117.4.142/library/alpine",
+		Actions: []string{"pull"},
+	}}
+	svc := "harbor-registry"
+	u := "reader"
+
+	// Make a token with ECDSA key
+	tokenJSON, err := MakeToken(orm.Context(), u, svc, ra)
+	if err != nil {
+		t.Fatalf("Error while making token: %v", err)
+	}
+
+	// Parse the ECDSA token
+	tokenString := tokenJSON.Token
+	pubKey, err := getECDSAPublicKey(crtECDSA)
+	if err != nil {
+		t.Fatalf("Error while getting public key from cert: %s", crtECDSA)
+	}
+
+	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return pubKey, nil
+	})
+	if err != nil {
+		t.Fatalf("Error while parsing ECDSA token: %v", err)
+	}
+
+	if !tok.Valid {
+		t.Fatal("ECDSA token is not valid")
+	}
+
+	claims := tok.Claims.(*harborClaims)
+	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch in ECDSA token")
+	assert.Equal(t, claims.Audience, jwt.ClaimStrings([]string{svc}), "Audience mismatch in ECDSA token")
 }
 
 type parserTestRec struct {

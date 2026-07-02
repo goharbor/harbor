@@ -18,6 +18,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"errors"
+	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
 
@@ -65,13 +66,40 @@ func Parse(opt *Options, rawToken string, claims jwt.Claims) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods([]string{opt.SignMethod.Alg()}))
+	// Allow all algorithm variants for the key type so that ECDSA (ES256/384/512)
+	// and RSA (RS256/384/512 and PS256/384/512) keys are each accepted regardless
+	// of which specific variant was used when the token was issued.
+	var validMethods []string
+	switch key.(type) {
+	case *rsa.PrivateKey, *rsa.PublicKey:
+		validMethods = []string{
+			jwt.SigningMethodRS256.Alg(),
+			jwt.SigningMethodRS384.Alg(),
+			jwt.SigningMethodRS512.Alg(),
+			jwt.SigningMethodPS256.Alg(),
+			jwt.SigningMethodPS384.Alg(),
+			jwt.SigningMethodPS512.Alg(),
+		}
+	case *ecdsa.PrivateKey, *ecdsa.PublicKey:
+		validMethods = []string{
+			jwt.SigningMethodES256.Alg(),
+			jwt.SigningMethodES384.Alg(),
+			jwt.SigningMethodES512.Alg(),
+		}
+	default:
+		return nil, fmt.Errorf("unsupported key type: %T", key)
+	}
+	var parser = jwt.NewParser(jwt.WithLeeway(common.JwtLeeway), jwt.WithValidMethods(validMethods))
 	token, err := parser.ParseWithClaims(rawToken, claims, func(_ *jwt.Token) (any, error) {
 		switch k := key.(type) {
 		case *rsa.PrivateKey:
 			return &k.PublicKey, nil
+		case *rsa.PublicKey:
+			return k, nil
 		case *ecdsa.PrivateKey:
 			return &k.PublicKey, nil
+		case *ecdsa.PublicKey:
+			return k, nil
 		default:
 			return key, nil
 		}
