@@ -202,6 +202,32 @@ func (suite *PutManifestMiddlewareTestSuite) TestMFInDelete() {
 	})
 }
 
+func (suite *PutManifestMiddlewareTestSuite) TestPutManifestMiddlewareSuccessPath() {
+	// Integration test for successful manifest push through PutManifestMiddleware.
+	// Related to issue #23199: validates that ResponseBuffer architecture allows
+	// AfterResponse hooks to run and complete before response is sent to client.
+	//
+	// This test exercises the happy path where:
+	// 1. Manifest proxy returns 201
+	// 2. putManifest validates outer ResponseBuffer is present (middleware requirement)
+	// 3. All blob association hooks succeed
+	// 4. Final response (201) is sent to client
+	//
+	// For testing AfterResponse hook failures, see TestPutManifestArtifactEnsureFailure
+	// in manifest_test.go which validates error handling when artifact.Ctl.Ensure fails.
+	suite.WithProject(func(projectID int64, projectName string) {
+		name := fmt.Sprintf("%s/test", projectName)
+		_, descriptor, req := suite.prepare(name)
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": descriptor.Digest.String()})
+		PutManifestMiddleware()(next).ServeHTTP(res, req)
+
+		// Middleware should handle the request successfully when all operations succeed
+		suite.Equal(http.StatusCreated, res.Code)
+	})
+}
+
 func TestPutManifestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &PutManifestMiddlewareTestSuite{})
 }

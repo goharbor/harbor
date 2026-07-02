@@ -176,6 +176,18 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	repo := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
 
+	// Verify the writer is a ResponseBuffer from outer middleware.
+	// This is required for error recovery: when artifact registration fails after
+	// a successful proxy response (201), we need the outer buffer to Reset() the
+	// buffered 201 and send an error response instead. If the writer is not a
+	// ResponseBuffer, the 201 would be sent directly to the client, preventing
+	// error recovery and causing storage-only orphans (issue #23199).
+	_, isBuffer := w.(*lib.ResponseBuffer)
+	if !isBuffer {
+		lib_http.SendError(w, errors.New("putManifest requires outer ResponseBuffer middleware for error recovery"))
+		return
+	}
+
 	// make sure the repository exist before pushing the manifest
 	_, _, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
@@ -231,8 +243,18 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// flush the origin response from the docker registry to the underlying response writer
 	if _, err := buffer.Flush(); err != nil {
 		log.Errorf("failed to flush: %v", err)
 	}
+
+	// NOTE: This handler flushes the inner ResponseBuffer (which wraps the outer
+	// ResponseBuffer provided by middleware). This flush writes the proxy response
+	// into that outer buffer without flushing to the actual HTTP client. The outer
+	// buffer remains unflushed, allowing its AfterResponse hooks to run and complete
+	// before sending any response to the client. This ensures:
+	// - If all AfterResponse hooks succeed, the buffered 201 response is sent to client.
+	// - If an AfterResponse hook fails, the outer buffer's Reset() method can reset
+	//   the buffered 201 response and send an error response instead.
+	// The middleware requirement is validated at handler entry (see check above).
+	// See: https://github.com/goharbor/harbor/issues/23199
 }

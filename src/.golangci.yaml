@@ -51,6 +51,11 @@ linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
         path: "(common/http/|lib/errors/|lib/http/)"
+      # Intentional use of context.Background for transaction isolation - issue #18900
+      - linters:
+          - gosec
+        text: "G118: Goroutine uses context.Background/TODO while request-scoped context is available"
+        path: "controller/replication/execution.go"
     paths:
       - third_party$
       - builtin$
