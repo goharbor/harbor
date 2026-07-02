@@ -1,0 +1,47 @@
+.api-tokens-container {
+    .token-toolbar {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .btn {
+            margin-right: 10px;
+        }
+    }
+
+    clr-datagrid {
+        margin-top: 20px;
+    }
+
+    .label {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 600;
+
+        &.label-success {
+            background-color: #e2f3e2;
+            color: #3d7d3d;
+        }
+
+        &.label-light {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+    }
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    input {
+        flex: 1;
+    }
+
+    .btn {
+        white-space: nowrap;
+    }
+}

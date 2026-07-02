@@ -2,6 +2,7 @@
     <app-app-level-alerts></app-app-level-alerts>
     <navigator
         (showAccountSettingsModal)="openModal($event)"
+        (showApiTokensModal)="openModal($event)"
         (showDialogModalAction)="openModal($event)"></navigator>
     <global-message class="global-msg"></global-message>
     <div class="content-container">
@@ -204,6 +205,7 @@
     </div>
 </clr-main-container>
 <account-settings-modal></account-settings-modal>
+<api-tokens-modal></api-tokens-modal>
 <preference-settings></preference-settings>
 <password-setting></password-setting>
 <global-confirmation-dialog></global-confirmation-dialog>

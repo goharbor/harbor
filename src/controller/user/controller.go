@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -57,6 +58,8 @@ type Controller interface {
 	Get(ctx context.Context, id int, opt *Option) (*commonmodels.User, error)
 	// GetByName gets the user model by username, it only supports getting the basic and does not support opt
 	GetByName(ctx context.Context, username string) (*commonmodels.User, error)
+	// GetByEmail gets the user model by email address
+	GetByEmail(ctx context.Context, email string) (*commonmodels.User, error)
 	// GetBySubIss gets the user model by subject and issuer, the result will contain the basic user model and does not support opt
 	GetBySubIss(ctx context.Context, sub, iss string) (*commonmodels.User, error)
 	// Delete ...
@@ -71,6 +74,8 @@ type Controller interface {
 	// OnboardOIDCUser inserts the record for basic user info and the oidc metadata
 	// if the onboard process is successful the input parm of user model will be populated with user id
 	OnboardOIDCUser(ctx context.Context, u *commonmodels.User) error
+	// LinkExistingUserToOIDC links an existing user to OIDC by creating the OIDC metadata record
+	LinkExistingUserToOIDC(ctx context.Context, userID int, sub, iss, secret, token string) error
 	// SearchByName search user by name with fuzzy search
 	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
 }
@@ -100,6 +105,12 @@ type controller struct {
 }
 
 func (c *controller) UpdateOIDCMeta(ctx context.Context, ou *commonmodels.OIDCUser, cols ...string) error {
+	if ou == nil {
+		return errors.BadRequestError(nil).WithMessage("OIDC user meta is nil")
+	}
+	if ou.ID == 0 {
+		return errors.BadRequestError(nil).WithMessage("OIDC user meta ID is not set; cannot update a record without an ID")
+	}
 	defaultCols := []string{"secret", "token"}
 	if len(cols) == 0 {
 		cols = defaultCols
@@ -129,6 +140,35 @@ func (c *controller) OnboardOIDCUser(ctx context.Context, u *commonmodels.User) 
 	return nil
 }
 
+// LinkExistingUserToOIDC links an existing user to OIDC by creating the OIDC metadata record.
+// This handles the case where a user exists in harbor_user but not in oidc_user.
+func (c *controller) LinkExistingUserToOIDC(ctx context.Context, userID int, sub, iss, secret, token string) error {
+	subIss := sub + ":" + iss
+	oidcUser := &commonmodels.OIDCUser{
+		UserID: userID,
+		SubIss: subIss,
+		Secret: secret,
+		Token:  token,
+	}
+	_, err := c.oidcMetaMgr.Create(ctx, oidcUser)
+	if err != nil {
+		if errors.IsConflictErr(err) {
+			// Conflict means OIDC metadata already exists for this user.
+			// Retrieve the existing record to get its ID, then update.
+			existing, err := c.oidcMetaMgr.GetByUserID(ctx, userID)
+			if err != nil {
+				return errors.Wrap(err, "failed to retrieve existing OIDC metadata")
+			}
+			existing.SubIss = subIss
+			existing.Secret = secret
+			existing.Token = token
+			return c.oidcMetaMgr.Update(ctx, existing, "subiss", "secret", "token")
+		}
+		return errors.Wrap(err, "failed to create OIDC metadata record")
+	}
+	return nil
+}
+
 func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*commonmodels.User, error) {
 	oidcMeta, err := c.oidcMetaMgr.GetBySubIss(ctx, sub, iss)
 	if err != nil {
@@ -139,6 +179,24 @@ func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*commonm
 
 func (c *controller) GetByName(ctx context.Context, username string) (*commonmodels.User, error) {
 	return c.mgr.GetByName(ctx, username)
+}
+
+func (c *controller) GetByEmail(ctx context.Context, email string) (*commonmodels.User, error) {
+	u, err := c.mgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"email": email,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(u) == 0 {
+		return nil, errors.NotFoundError(nil)
+	}
+	if len(u) > 1 {
+		log.G(ctx).Warningf("found %d users with email %s, returning first match", len(u), email)
+	}
+	return u[0], nil
 }
 
 func (c *controller) SetCliSecret(ctx context.Context, id int, secret string) error {
@@ -167,6 +225,12 @@ func (c *controller) Get(ctx context.Context, id int, opt *Option) (*commonmodel
 		oidcMeta, err := c.oidcMetaMgr.GetByUserID(ctx, id)
 		if err != nil {
 			return nil, errors.UnknownError(err)
+		}
+		if oidcMeta == nil {
+			return nil, errors.UnknownError(nil).WithMessagef("OIDC metadata for user %d is nil; this should not happen", id)
+		}
+		if oidcMeta.ID == 0 {
+			return nil, errors.UnknownError(nil).WithMessagef("OIDC metadata for user %d has invalid ID (0); the database may be corrupted", id)
 		}
 		u.OIDCUserMeta = oidcMeta
 	}
