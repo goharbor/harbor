@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -29,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	ctluser "github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/core/api"
+	cachepkg "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -43,7 +45,15 @@ const stateKey = "oidc_state"
 const pkceCodeKey = "oidc_pkce_code"
 const userInfoKey = "oidc_user_info"
 const redirectURLKey = "oidc_redirect_url"
+const cliStateSessionKey = "oidc_cli_state"
 const oidcUserComment = "Onboarded via OIDC provider"
+const oidcCLIStatePrefix = "oidc_cli_state:"
+const oidcCLIStatusPending = "pending"
+const oidcCLIStatusReady = "ready"
+const oidcCLIStatusFailed = "failed"
+
+var oidcCLIPendingTTL = 10 * time.Minute
+var oidcCLIResultTTL = 5 * time.Minute
 
 const loginUserOperation = "login_user"
 
@@ -54,6 +64,30 @@ type OIDCController struct {
 
 type onboardReq struct {
 	Username string `json:"username"`
+}
+
+type oidcCLILoginResponse struct {
+	RedirectURL string `json:"redirect_url"`
+	State       string `json:"state"`
+}
+
+type oidcCLITokenResponse struct {
+	Status       string `json:"status"`
+	IDToken      string `json:"id_token,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Username     string `json:"username,omitempty"`
+	ExpiresAt    int64  `json:"expires_at,omitempty"`
+	Error        string `json:"error,omitempty"`
+}
+
+type oidcCLIState struct {
+	Status       string `json:"status"`
+	PKCECode     string `json:"pkce_code,omitempty"`
+	IDToken      string `json:"id_token,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Username     string `json:"username,omitempty"`
+	ExpiresAt    int64  `json:"expires_at,omitempty"`
+	Error        string `json:"error,omitempty"`
 }
 
 // Prepare include public code path for call request handler of OIDCController
@@ -76,6 +110,21 @@ func (oc *OIDCController) RedirectLogin() {
 	url, err := oidc.AuthCodeURL(oc.Context(), state, pkceCode)
 	if err != nil {
 		oc.SendInternalServerError(err)
+		return
+	}
+	if oc.isCLILogin() {
+		entry := &oidcCLIState{
+			Status:   oidcCLIStatusPending,
+			PKCECode: string(pkceCode),
+		}
+		if err := saveOIDCCLIState(oc.Context(), state, entry, oidcCLIPendingTTL); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+		oc.writeJSON(http.StatusOK, &oidcCLILoginResponse{
+			RedirectURL: url,
+			State:       state,
+		})
 		return
 	}
 	redirectURL := oc.Ctx.Request.URL.Query().Get("redirect_url")
@@ -107,9 +156,18 @@ func (oc *OIDCController) RedirectLogin() {
 // Callback handles redirection from OIDC provider.  It will exchange the token and
 // kick off onboard if needed.
 func (oc *OIDCController) Callback() {
-	if oc.Ctx.Request.URL.Query().Get("state") != oc.GetSession(stateKey) {
+	queryState := oc.Ctx.Request.URL.Query().Get("state")
+	cliState, cliFlow, err := getOIDCCLIState(oc.Context(), queryState)
+	if err != nil && !errors.Is(err, cachepkg.ErrNotFound) {
+		oc.SendInternalServerError(err)
+		return
+	}
+	if errors.Is(err, cachepkg.ErrNotFound) {
+		cliFlow = false
+	}
+	if !cliFlow && queryState != oc.GetSession(stateKey) {
 		log.Errorf("State mismatch, in session: %s, in url: %s", oc.GetSession(stateKey),
-			oc.Ctx.Request.URL.Query().Get("state"))
+			queryState)
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
@@ -117,22 +175,37 @@ func (oc *OIDCController) Callback() {
 	if errorCode != "" {
 		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
 		log.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription)
+		if cliFlow {
+			if err := saveOIDCCLIState(oc.Context(), queryState, &oidcCLIState{
+				Status: oidcCLIStatusFailed,
+				Error:  fmt.Sprintf("%s - %s", errorCode, errorDescription),
+			}, oidcCLIResultTTL); err != nil {
+				log.Errorf("failed to save OIDC CLI failure state, error: %v", err)
+			}
+		}
 		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
 		return
 	}
 	var redirectURLStr string
-	redirectURL := oc.GetSession(redirectURLKey)
-	if redirectURL != nil {
-		redirectURLStr = redirectURL.(string)
-		if err := oc.DelSession(redirectURLKey); err != nil {
-			log.Errorf("failed to delete session for key:%s, error: %v", redirectURLKey, err)
-			oc.SendInternalServerError(err)
-			return
+	if !cliFlow {
+		redirectURL := oc.GetSession(redirectURLKey)
+		if redirectURL != nil {
+			redirectURLStr = redirectURL.(string)
+			if err := oc.DelSession(redirectURLKey); err != nil {
+				log.Errorf("failed to delete session for key:%s, error: %v", redirectURLKey, err)
+				oc.SendInternalServerError(err)
+				return
+			}
 		}
 	}
-	pkceCode, _ := oc.GetSession(pkceCodeKey).(string)
-	if err := oc.DelSession(pkceCodeKey); err != nil {
-		log.Warningf("failed to delete session for key:%s, error: %v", pkceCodeKey, err)
+	var pkceCode string
+	if cliFlow {
+		pkceCode = cliState.PKCECode
+	} else {
+		pkceCode, _ = oc.GetSession(pkceCodeKey).(string)
+		if err := oc.DelSession(pkceCodeKey); err != nil {
+			log.Warningf("failed to delete session for key:%s, error: %v", pkceCodeKey, err)
+		}
 	}
 	code := oc.Ctx.Request.URL.Query().Get("code")
 	ctx := oc.Ctx.Request.Context()
@@ -143,7 +216,7 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(err)
 		return
 	}
-	_, err = oidc.VerifyToken(ctx, token.RawIDToken)
+	verifiedToken, err := oidc.VerifyToken(ctx, token.RawIDToken)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
@@ -200,6 +273,13 @@ func (oc *OIDCController) Callback() {
 				oc.SendInternalServerError(err)
 				return
 			}
+			if cliFlow {
+				if err := oc.SetSession(cliStateSessionKey, queryState); err != nil {
+					log.Errorf("failed to set session for key: %s, error: %v", cliStateSessionKey, err)
+					oc.SendInternalServerError(err)
+					return
+				}
+			}
 			oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s&redirect_url=%s", username, redirectURLStr), http.StatusFound)
 			// Once redirected, no further actions are done
 			return
@@ -225,6 +305,18 @@ func (oc *OIDCController) Callback() {
 		oc.SendError(err)
 		return
 	}
+	if cliFlow {
+		if err := saveOIDCCLIState(ctx, queryState, &oidcCLIState{
+			Status:       oidcCLIStatusReady,
+			IDToken:      token.RawIDToken,
+			RefreshToken: token.RefreshToken,
+			Username:     u.Username,
+			ExpiresAt:    verifiedToken.Expiry.Unix(),
+		}, oidcCLIResultTTL); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+	}
 	oc.PopulateUserSession(*u)
 
 	if redirectURLStr == "" {
@@ -243,6 +335,46 @@ func (oc *OIDCController) Callback() {
 			RequestURL:    oc.Ctx.Request.URL.String(),
 		}
 		notification.AddEvent(e.Ctx, e, true)
+	}
+}
+
+func (oc *OIDCController) CLIToken() {
+	state := oc.GetString("state")
+	if state == "" {
+		oc.SendBadRequestError(errors.New("missing state"))
+		return
+	}
+
+	entry, _, err := getOIDCCLIState(oc.Context(), state)
+	if errors.Is(err, cachepkg.ErrNotFound) {
+		oc.writeJSON(http.StatusAccepted, &oidcCLITokenResponse{Status: oidcCLIStatusPending})
+		return
+	}
+	if err != nil {
+		oc.SendInternalServerError(err)
+		return
+	}
+
+	switch entry.Status {
+	case oidcCLIStatusReady:
+		if err := deleteOIDCCLIState(oc.Context(), state); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+		oc.writeJSON(http.StatusOK, &oidcCLITokenResponse{
+			Status:       oidcCLIStatusReady,
+			IDToken:      entry.IDToken,
+			RefreshToken: entry.RefreshToken,
+			Username:     entry.Username,
+			ExpiresAt:    entry.ExpiresAt,
+		})
+	case oidcCLIStatusFailed:
+		oc.writeJSON(http.StatusBadRequest, &oidcCLITokenResponse{
+			Status: oidcCLIStatusFailed,
+			Error:  entry.Error,
+		})
+	default:
+		oc.writeJSON(http.StatusAccepted, &oidcCLITokenResponse{Status: oidcCLIStatusPending})
 	}
 }
 
@@ -400,7 +532,96 @@ func (oc *OIDCController) Onboard() {
 			return
 		}
 		oc.PopulateUserSession(*user)
+		if cliState, ok := oc.GetSession(cliStateSessionKey).(string); ok && cliState != "" {
+			token, err := unmarshalOIDCToken(tb)
+			if err != nil {
+				oc.SendInternalServerError(err)
+				return
+			}
+			verifiedToken, err := oidc.VerifyToken(ctx, token.RawIDToken)
+			if err != nil {
+				oc.SendInternalServerError(err)
+				return
+			}
+			if err := saveOIDCCLIState(ctx, cliState, &oidcCLIState{
+				Status:       oidcCLIStatusReady,
+				IDToken:      token.RawIDToken,
+				RefreshToken: token.RefreshToken,
+				Username:     user.Username,
+				ExpiresAt:    verifiedToken.Expiry.Unix(),
+			}, oidcCLIResultTTL); err != nil {
+				oc.SendInternalServerError(err)
+				return
+			}
+			if err := oc.DelSession(cliStateSessionKey); err != nil {
+				log.Warningf("failed to delete session for key:%s, error: %v", cliStateSessionKey, err)
+			}
+		}
 	}
+}
+
+func (oc *OIDCController) isCLILogin() bool {
+	return oc.Ctx.Request.URL.Query().Get("mode") == "cli"
+}
+
+func (oc *OIDCController) writeJSON(status int, payload any) {
+	oc.Ctx.Output.SetStatus(status)
+	oc.Data["json"] = payload
+	if err := oc.ServeJSON(); err != nil {
+		log.Errorf("failed to serve json, %v", err)
+		oc.SendInternalServerError(err)
+	}
+}
+
+func oidcCLIKey(state string) string {
+	return oidcCLIStatePrefix + state
+}
+
+func oidcCLICache() (cachepkg.Cache, error) {
+	c := cachepkg.Default()
+	if c == nil {
+		return nil, errors.New("cache is not initialized")
+	}
+	return c, nil
+}
+
+func saveOIDCCLIState(ctx context.Context, state string, entry *oidcCLIState, ttl time.Duration) error {
+	c, err := oidcCLICache()
+	if err != nil {
+		return err
+	}
+	return c.Save(ctx, oidcCLIKey(state), entry, ttl)
+}
+
+func getOIDCCLIState(ctx context.Context, state string) (*oidcCLIState, bool, error) {
+	c, err := oidcCLICache()
+	if err != nil {
+		return nil, false, err
+	}
+	entry := &oidcCLIState{}
+	if err := c.Fetch(ctx, oidcCLIKey(state), entry); err != nil {
+		if errors.Is(err, cachepkg.ErrNotFound) {
+			return nil, false, err
+		}
+		return nil, false, err
+	}
+	return entry, true, nil
+}
+
+func deleteOIDCCLIState(ctx context.Context, state string) error {
+	c, err := oidcCLICache()
+	if err != nil {
+		return err
+	}
+	return c.Delete(ctx, oidcCLIKey(state))
+}
+
+func unmarshalOIDCToken(tokenBytes []byte) (*oidc.Token, error) {
+	token := &oidc.Token{}
+	if err := json.Unmarshal(tokenBytes, token); err != nil {
+		return nil, err
+	}
+	return token, nil
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
