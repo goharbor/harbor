@@ -1,21 +1,54 @@
 <form #projectPolicyForm="ngForm" class="clr-form clr-form-horizontal">
     <section class="form-block">
-        <clr-checkbox-container id="clr-wrapper-public">
-            <label>{{ 'PROJECT_CONFIG.REGISTRY' | translate }}</label>
-            <clr-checkbox-wrapper>
-                <input
-                    type="checkbox"
-                    id="clr-checkbox-wrapper-public"
-                    clrCheckbox
-                    [(ngModel)]="projectPolicy.Public"
-                    name="public"
-                    [disabled]="!hasChangeConfigRole" />
-                <label>{{ 'PROJECT_CONFIG.PUBLIC_TOGGLE' | translate }}</label>
-            </clr-checkbox-wrapper>
-            <clr-control-helper class="config-subtext">
-                {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
-            </clr-control-helper>
-        </clr-checkbox-container>
+        <div class="clr-form-control" id="clr-wrapper-public">
+            <label class="clr-control-label">{{
+                'PROJECT.ACCESS_LEVEL' | translate
+            }}</label>
+            <div class="clr-control-container">
+                <clr-radio-wrapper>
+                    <input
+                        type="radio"
+                        clrRadio
+                        id="policy_private"
+                        name="public"
+                        [value]="'false'"
+                        [(ngModel)]="projectPolicy.Public"
+                        [disabled]="!hasChangeConfigRole" />
+                    <label for="policy_private">{{
+                        'PROJECT.PRIVATE' | translate
+                    }}</label>
+                </clr-radio-wrapper>
+                <clr-radio-wrapper>
+                    <input
+                        type="radio"
+                        clrRadio
+                        id="policy_auth_only"
+                        name="public"
+                        [value]="'auth_only'"
+                        [(ngModel)]="projectPolicy.Public"
+                        [disabled]="!hasChangeConfigRole" />
+                    <label for="policy_auth_only">{{
+                        'PROJECT.AUTH_ONLY' | translate
+                    }}</label>
+                </clr-radio-wrapper>
+                <clr-radio-wrapper>
+                    <input
+                        type="radio"
+                        clrRadio
+                        id="policy_public"
+                        name="public"
+                        [value]="'true'"
+                        [(ngModel)]="projectPolicy.Public"
+                        [disabled]="!hasChangeConfigRole" />
+                    <label for="policy_public">{{
+                        'PROJECT.PUBLIC' | translate
+                    }}</label>
+                </clr-radio-wrapper>
+                <span class="clr-subtext config-subtext">{{
+                    'PROJECT_CONFIG.PUBLIC_POLICY' | translate
+                }}</span>
+            </div>
+        </div>
         @if (hasChangeConfigRole) {
         <clr-checkbox-container clrInline>
             <label class="label-color-input">

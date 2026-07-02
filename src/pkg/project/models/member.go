@@ -44,7 +44,8 @@ type MemberQuery struct {
 	Role     int    // the role of the member has to the project
 	GroupIDs []int  // the group ID of current user belongs to
 
-	WithPublic bool // include the public projects for the member
+	WithPublic   bool // include the public projects for the member
+	WithAuthOnly bool // include auth_only projects (accessible to all authenticated users)
 }
 
 // TableName ...
