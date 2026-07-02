@@ -1077,7 +1077,10 @@
         "MODEL_NO_README": "Bu Model için dosya sağlanmadı.",
         "ITEMS": "öğeler",
         "SHOW_KV": "Anahtar Değer Çiftleri",
-        "SHOW_YAML": "YAML Dosyası"
+        "SHOW_YAML": "YAML Dosyası",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "Görüntüde Dockerfile bulunamadı. Resim etiketlerinden Dockerfile içeriği kullanılamıyor.",
+        "NO_DOCKERFILE_SUGGESTION": "Görüntüle"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Oluştur",

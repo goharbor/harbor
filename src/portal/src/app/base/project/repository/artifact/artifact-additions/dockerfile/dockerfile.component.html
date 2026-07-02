@@ -1,0 +1,47 @@
+@if (!loading) {
+<div class="row content-wrapper">
+    <div class="col-md-8">
+        <div class="col-xs-8">
+            @if (dockerfile) {
+            <div
+                class="yaml-container"
+                [innerHTML]="
+                    dockerfile | language : 'dockerfile' | markdown | async
+                "></div>
+            }
+        </div>
+        @if (!dockerfile) {
+        <div>
+            @if (fileTooLargeStatus) {
+            <div class="col-md-8 md-container pl-1">
+                {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
+            </div>
+            } @if (noDockerfileStatus) {
+            <div class="col-md-8 md-container info-box pl-1">
+                <clr-icon shape="info-circle" class="info-icon"></clr-icon>
+                <div class="info-text">
+                    <p>
+                        {{ 'ARTIFACT.NO_DOCKERFILE_EXPLANATION' | translate }}
+                    </p>
+                    @if (buildHistoryLink) {
+                    <p>
+                        {{ 'ARTIFACT.NO_DOCKERFILE_SUGGESTION' | translate }}
+                        <a
+                            class="clickable-link"
+                            (click)="switchTab.emit('build-history')">
+                            {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
+                        </a>
+                    </p>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
+} @if (loading) {
+<div class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
+}

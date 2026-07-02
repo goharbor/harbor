@@ -176,7 +176,7 @@ func (m *manifestV2ProcessorTestSuite) TestGetArtifactType() {
 
 func (m *manifestV2ProcessorTestSuite) TestListAdditionTypes() {
 	additions := m.processor.ListAdditionTypes(nil, nil)
-	m.EqualValues([]string{AdditionTypeBuildHistory}, additions)
+	m.EqualValues([]string{AdditionTypeBuildHistory, AdditionTypeDockerfile}, additions)
 }
 
 func TestManifestV2ProcessorTestSuite(t *testing.T) {

@@ -1278,7 +1278,10 @@
         "UNTAGGED": "Непомеченные",
         "ALL": "Все",
         "PLACEHOLDER": "Мы не смогли найти никаких артефактов!",
-        "SCAN_UNSUPPORTED": "Неподдерживаемый"
+        "SCAN_UNSUPPORTED": "Неподдерживаемый",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "Dockerfile не найден в образе. Содержимое Dockerfile из меток образа недоступно.",
+        "NO_DOCKERFILE_SUGGESTION": "Просмотреть"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Создано",
@@ -2314,7 +2317,10 @@
     "FILE_TOO_LARGE": "Файл слишком большой для обработки.",
     "ITEMS": "элементов",
     "SHOW_KV": "Пары Ключ-Значений",
-    "SHOW_YAML": "Файл YAML"
+    "SHOW_YAML": "Файл YAML",
+    "DOCKERFILE": "Dockerfile",
+    "NO_DOCKERFILE_EXPLANATION": "Dockerfile не найден в образе. Содержимое Dockerfile из меток образа недоступно.",
+    "NO_DOCKERFILE_SUGGESTION": "Просмотреть"
   },
   "TAG": {
     "CREATION_TIME_PREFIX": "Создано",

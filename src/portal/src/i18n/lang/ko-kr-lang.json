@@ -1076,7 +1076,10 @@
         "FILE_TOO_LARGE": "파일이 너무 커서 처리할 수 없습니다.",
         "ITEMS": "아이템",
         "SHOW_KV": "키-값 쌍",
-        "SHOW_YAML": "YAML 파일"
+        "SHOW_YAML": "YAML 파일",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "이미지에서 Dockerfile을 찾을 수 없습니다. 이미지 레이블의 Dockerfile 내용을 사용할 수 없습니다.",
+        "NO_DOCKERFILE_SUGGESTION": "보기"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "생성 날짜",

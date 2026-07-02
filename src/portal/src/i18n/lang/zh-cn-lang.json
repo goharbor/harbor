@@ -1078,7 +1078,10 @@
         "FILE_TOO_LARGE": "文件太大，无法处理",
         "ITEMS": "条记录",
         "SHOW_KV": "展示健值对",
-        "SHOW_YAML": "展示YAML文件"
+        "SHOW_YAML": "展示YAML文件",
+        "DOCKERFILE": "Dockerfile",
+        "NO_DOCKERFILE_EXPLANATION": "未在镜像中找到 Dockerfile。镜像标签中的 Dockerfile 内容不可用。",
+        "NO_DOCKERFILE_SUGGESTION": "查看"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
