@@ -61,6 +61,10 @@ import { errorHandler } from '../../../../shared/units/shared.utils';
 import { RobotPermission } from '../../../../../../ng-swagger-gen/models/robot-permission';
 import { PermissionSelectPanelModes } from '../../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
+import {
+    SecretValidator,
+    SecretValidationError,
+} from '../../../../shared/entities/secret-validator';
 
 const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 
@@ -114,6 +118,13 @@ export class NewRobotComponent implements OnInit, OnDestroy {
 
     permissionForSystemForEdit: RobotPermission;
     showPage3: boolean = false;
+
+    userProvidedSecret: string = '';
+    userProvidedSecretConfirm: string = '';
+    showSecretPassword: boolean = false;
+    secretValidationErrors: SecretValidationError[] = [];
+    isSecretDirty: boolean = false;
+
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
         private configService: ConfigurationService,
@@ -513,5 +524,35 @@ export class NewRobotComponent implements OnInit, OnDestroy {
         this.showPage3 = true;
     }
 
+    validateSecret() {
+        this.isSecretDirty = true;
+        if (this.userProvidedSecret) {
+            const result = SecretValidator.validate(this.userProvidedSecret);
+            this.secretValidationErrors = result.errors;
+        } else {
+            this.secretValidationErrors = [];
+        }
+    }
+
+    toggleSecretVisibility() {
+        this.showSecretPassword = !this.showSecretPassword;
+    }
+
+    isSecretInputValid(): boolean {
+        return (
+            this.userProvidedSecret &&
+            SecretValidator.validate(this.userProvidedSecret).isValid
+        );
+    }
+
+    secretsMatch(): boolean {
+        return (
+            this.userProvidedSecret &&
+            this.userProvidedSecretConfirm &&
+            this.userProvidedSecret === this.userProvidedSecretConfirm
+        );
+    }
+
     protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
+    protected readonly SecretValidator = SecretValidator;
 }

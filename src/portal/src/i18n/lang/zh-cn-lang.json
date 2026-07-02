@@ -398,7 +398,8 @@
         "USER": "用户",
         "LDAPUSER": "LDAP 用户",
         "GROUP": "用户组",
-        "MEMBER": "项目成员"
+        "MEMBER": "项目成员",
+        "PROVIDED_SECRET_ENCRYPTED": "您提供了自己的密钥。它已加密存储，无法再以明文形式检索。"
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "启用",
@@ -928,8 +929,7 @@
         "COPYRIGHT": "Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，通过添加一些企业必需的功能特性，例如安全、标识和管理等，扩展了开源Docker Distribution。作为一个企业级私有Registry服务器，Harbor提供了更好的性能和安全。提升用户使用Registry构建和运行环境传输镜像的效率。",
         "OPEN_SOURCE_LICENSE": "开源/第三方许可协议"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "受欢迎的镜像仓库",
     "STATISTICS": {
         "PRO_ITEM": "项目",
@@ -1672,7 +1672,7 @@
         "UNSELECT_ALL": "全不选",
         "ROBOT_ACCOUNT_NAV": "机器人账户",
         "COVERED_PROJECTS": "个项目",
-        "CONFIRM_SECRET": "确认令牌",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "请再次输入令牌",
         "INCONSISTENT": "两次输入不一致",
         "NAME_TOOLTIP": "机器人名称由小写字符、数字和._-组成且至少1个字符并以字符或者数字开头。",
@@ -1692,7 +1692,18 @@
         "EXPIRES_IN": "有效期剩余",
         "EXPIRED": "已过期",
         "SELECT_ALL_PROJECT": "选择全部项目",
-        "UNSELECT_ALL_PROJECT": "取消选择全部项目"
+        "UNSELECT_ALL_PROJECT": "取消选择全部项目",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "删除附件确认",

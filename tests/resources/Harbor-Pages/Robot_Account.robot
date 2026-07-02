@@ -127,3 +127,39 @@ Get Robot Account Info By File
     ${creation_time}=  Set Variable  ${json["creation_time"]}
     ${expires_at}=  Set Variable  ${json["expires_at"]}
     [Return]  ${id}  ${name}  ${secret}  ${creation_time}  ${expires_at}
+
+Create A System Robot Account With User Secret
+    [Arguments]  ${robot_account_name}  ${user_secret}  ${expiration_type}  ${description}=${null}  ${days}=${null}  ${cover_all_system_resources}=${null}  ${cover_all_project_resources}=${null}
+    Retry Element Click  ${new_sys_robot_account_btn}
+    Retry Wait Element Should Be Disabled  //button[text()='Next']
+    Retry Text Input  ${sys_robot_account_name_input}  ${robot_account_name}
+    Run Keyword If  '${description}' != '${null}'  Retry Text Input  ${sys_robot_account_description_textarea}  ${description}
+    Retry Text Input  ${sys_robot_account_secret_input}  ${user_secret}
+    Retry Wait Until Page Contains Element  ${sys_robot_account_secret_confirm_input}
+    Retry Text Input  ${sys_robot_account_secret_confirm_input}  ${user_secret}
+    Select From List By Value  ${sys_robot_account_expiration_type_select}  ${expiration_type}
+    Run Keyword If  '${expiration_type}' == 'days'  Retry Text Input  ${sys_robot_account_expiration_input}  ${days}
+    Retry Button Click  //button[text()='Next']
+    Retry Wait Element Should Be Disabled  ${project_robot_account_create_finish_btn}
+    Run Keyword If  '${cover_all_system_resources}' == '${true}'  Retry Element Click  //*[@id='clr-wizard-page-1']//span[text()='Select all']
+    Retry Double Keywords When Error  Retry Button Click  //button[text()='Next']  Retry Wait Element Not Visible  //button[text()='Next']
+    Run Keyword If  '${cover_all_project_resources}' == '${true}'  Run Keywords  Retry Element Click  ${sys_robot_account_coverall_chb}  AND  Retry Element Click  //*[@id='clr-wizard-page-2']//span[text()='Select all']
+    Retry Double Keywords When Error  Retry Element Click  ${project_robot_account_create_finish_btn}  Retry Wait Element Not Visible  ${project_robot_account_create_finish_btn}
+    ${robot_account_name}=  Get Text  ${project_robot_account_name_xpath}
+    Retry Wait Until Page Contains Element  //span[contains(.,'You provided your own secret')]
+    [Return]  ${robot_account_name}
+
+Verify System Robot Secret Validation Error
+    [Arguments]  ${secret}  ${expected_error}
+    Retry Element Click  ${new_sys_robot_account_btn}
+    Retry Wait Element Should Be Disabled  //button[text()='Next']
+    Retry Text Input  ${sys_robot_account_name_input}  test_sys_robot
+    Retry Text Input  ${sys_robot_account_secret_input}  ${secret}
+    Retry Wait Until Page Contains Element  //li[contains(., '${expected_error}')]
+    Retry Wait Element Should Be Disabled  ${sys_robot_account_secret_confirm_input}
+    Retry Element Click  //button[@aria-label='Close']
+
+Toggle System Robot Secret Visibility
+    Retry Element Click  ${sys_robot_account_secret_toggle_btn}
+    ${input_type}=  Get Element Attribute  ${sys_robot_account_secret_input}  type
+    Should Be Equal  ${input_type}  text

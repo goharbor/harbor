@@ -398,7 +398,8 @@
         "USER": "使用者",
         "LDAPUSER": "LDAP 使用者",
         "GROUP": "使用者群組",
-        "MEMBER": "專案成員"
+        "MEMBER": "專案成員",
+        "PROVIDED_SECRET_ENCRYPTED": "您提供了自己的密鑰。它已加密儲存，無法再以明文形式檢索。"
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "啟用",
@@ -927,8 +928,7 @@
         "COPYRIGHT": "Harbor 是開放原始碼且受信賴的雲原生 Docker Registry 專案，可儲存、簽署並掃描內容。Harbor 擴充開放原始碼 Docker Distribution，加入安全性、身分認證和使用者管理等常用功能。Harbor 也支援資源監控，以及在不同執行個體之間複製。讓 Registry 更靠近建置與執行環境，也能提升映像檔傳輸效率。",
         "OPEN_SOURCE_LICENSE": "開放原始碼/第三方授權條款"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "熱門儲存庫",
     "STATISTICS": {
         "PRO_ITEM": "專案",
@@ -1671,7 +1671,7 @@
         "UNSELECT_ALL": "取消全選",
         "ROBOT_ACCOUNT_NAV": "機器人帳號",
         "COVERED_PROJECTS": "個專案",
-        "CONFIRM_SECRET": "確認金鑰",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "再次輸入金鑰",
         "INCONSISTENT": "兩個金鑰不一致。",
         "NAME_TOOLTIP": "機器人名稱長度應為 1-255 個字元，可包含小寫字母、數字及 ._-，且必須以字母或數字開頭。",
@@ -1691,7 +1691,18 @@
         "EXPIRES_IN": "到期於",
         "EXPIRED": "已過期",
         "SELECT_ALL_PROJECT": "選取所有專案",
-        "UNSELECT_ALL_PROJECT": "取消選取所有專案"
+        "UNSELECT_ALL_PROJECT": "取消選取所有專案",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "確認刪除附件",

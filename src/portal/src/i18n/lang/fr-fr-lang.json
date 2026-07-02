@@ -399,7 +399,8 @@
         "USER": "Utilisateur",
         "LDAPUSER": "Utilisateur LDAP",
         "GROUP": "Groupe d'utilisateurs",
-        "MEMBER": "Membre de projet"
+        "MEMBER": "Membre de projet",
+        "PROVIDED_SECRET_ENCRYPTED": "Vous avez fourni votre propre secret. Il a été stocké chiffré et ne peut pas être récupéré en clair à nouveau."
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "Activer",
@@ -928,8 +929,7 @@
         "COPYRIGHT": "Le Project Harbor est un projet de registre cloud native fiable et open source qui stocke, signe et analyse le contenu. Harbor étend la distribution open source Docker en ajoutant les fonctionnalités généralement requises par les utilisateurs telles que la sécurité, l'authentification et la gestion. Harbor prend en charge des fonctionnalités avancées telles que la gestion des utilisateurs, le contrôle d'accès, la surveillance des activités et la réplication entre les instances. Un registre plus proche de l'environnement de build et d'exécution peut également améliorer l'efficacité du transfert d'image.",
         "OPEN_SOURCE_LICENSE": "Licence Open Source / Tierce Partie"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Dépôts populaires",
     "STATISTICS": {
         "PRO_ITEM": "Projets",
@@ -1672,7 +1672,7 @@
         "UNSELECT_ALL": "Désélectionner tout",
         "ROBOT_ACCOUNT_NAV": "Comptes robot",
         "COVERED_PROJECTS": "Projet(s)",
-        "CONFIRM_SECRET": "Confirmer le secret",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Entrez le secret une nouvelle fois",
         "INCONSISTENT": "Les deux secrets ne correspondent pas",
         "NAME_TOOLTIP": "Le nom du robot doit comporter de 1 à 255 caractères avec des caractères minuscules, des chiffres et ._- et doit commencer par des caractères ou des chiffres.",
@@ -1692,7 +1692,18 @@
         "EXPIRES_IN": "Expire dans",
         "EXPIRED": "Expiré",
         "SELECT_ALL_PROJECT": "SELECTIONNER TOUS LES PROJETS",
-        "UNSELECT_ALL_PROJECT": "DESELECTIONNER TOUS LES PROJETS"
+        "UNSELECT_ALL_PROJECT": "DESELECTIONNER TOUS LES PROJETS",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirmer la suppression de l'accessoire",

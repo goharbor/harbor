@@ -230,7 +230,7 @@
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
-        "PROXY_CACHE_BANDWIDTH":"Establezca el ancho de banda de red máximo para extraer imágenes desde el servidor proxy-cache. Para un ancho de banda ilimitado, ingrese -1. ",
+        "PROXY_CACHE_BANDWIDTH": "Establezca el ancho de banda de red máximo para extraer imágenes desde el servidor proxy-cache. Para un ancho de banda ilimitado, ingrese -1. ",
         "BANDWIDTH": "Ancho de banda",
         "SPEED_LIMIT_TIP": "Por favor, introduzca -1 o un número entero mayor que 0. ",
         "OF": "de",
@@ -399,7 +399,8 @@
         "USER": "Usuario",
         "LDAPUSER": "Usuario LDAP",
         "GROUP": "Usuario Grupo",
-        "MEMBER": "Miembro Proyecto"
+        "MEMBER": "Miembro Proyecto",
+        "PROVIDED_SECRET_ENCRYPTED": "Ha proporcionado su propio secreto. Se ha almacenado encriptado y no se puede recuperar en texto plano nuevamente."
     },
     "WEBHOOK": {
         "ENABLED_BUTTON": "ACTIVAR",
@@ -929,8 +930,7 @@
         "COPYRIGHT": "Project Harbor es un proyecto de código abierto de cloud native registry confiable que almacena, firma y escanea contenido. Harbor extiende la distribución Docker de código abierto agregando las funcionalidades que suelen requerir los usuarios, como seguridad, identidad y administración. Harbor admite funciones avanzadas, como administración de usuarios, control de acceso, monitoreo de actividad y replicación entre instancias. Tener un registro más cerca del entorno de compilación y ejecución también puede mejorar la eficiencia de la transferencia de imágenes.",
         "OPEN_SOURCE_LICENSE": "Código Abierto/Licencias de Terceros"
     },
-    "START_PAGE": {
-    },
+    "START_PAGE": {},
     "TOP_REPO": "Repositorios Populares",
     "STATISTICS": {
         "PRO_ITEM": "PROYECTOS",
@@ -1111,7 +1111,6 @@
         "ADD_TAG": "AGREGAR TAG",
         "REMOVE_TAG": "REMOVER TAG",
         "NAME_ALREADY_EXISTS": "Tag ya existe en el repositorio"
-
     },
     "LABEL": {
         "LABEL": "Etiqueta",
@@ -1677,7 +1676,7 @@
         "UNSELECT_ALL": "DESELEGIR TODO",
         "ROBOT_ACCOUNT_NAV": "Cuentas Robot",
         "COVERED_PROJECTS": "PROJECTO(S)",
-        "CONFIRM_SECRET": "Confirmar secreto",
+        "CONFIRM_SECRET": "Confirm Secret",
         "SECRET_AGAIN": "Ingrese el secreto nuevamente",
         "INCONSISTENT": "Dos secretos son inconsistentes",
         "NAME_TOOLTIP": "El nombre del robot debe tener entre 1 y 255 caracteres, con letras minúsculas, números y ._-, y debe comenzar con caracteres o números.",
@@ -1697,7 +1696,18 @@
         "EXPIRES_IN": "Expira en",
         "EXPIRED": "Expirado",
         "SELECT_ALL_PROJECT": "SELECCIONAR TODOS LOS PROYECTOS",
-        "UNSELECT_ALL_PROJECT": "DESELEGIR TODOS LOS PROYECTOS"
+        "UNSELECT_ALL_PROJECT": "DESELEGIR TODOS LOS PROYECTOS",
+        "PROVIDED_SECRET": "Provided Secret",
+        "OPTIONAL_CUSTOM_SECRET": "Optional: provide your own secret",
+        "SECRET_LENGTH_REQUIREMENT": "8-128 characters",
+        "SECRET_UPPERCASE_REQUIREMENT": "At least 1 uppercase letter",
+        "SECRET_LOWERCASE_REQUIREMENT": "At least 1 lowercase letter",
+        "SECRET_DIGIT_REQUIREMENT": "At least 1 digit",
+        "SECRET_LENGTH_ERROR": "Secret must be 8-128 characters long",
+        "SECRET_UPPERCASE_ERROR": "Secret must contain at least 1 uppercase letter",
+        "SECRET_LOWERCASE_ERROR": "Secret must contain at least 1 lowercase letter",
+        "SECRET_DIGIT_ERROR": "Secret must contain at least 1 digit",
+        "SECRETS_NOT_MATCH": "Secrets do not match"
     },
     "ACCESSORY": {
         "DELETION_TITLE_ACCESSORY": "Confirmar eliminación de accesorio",

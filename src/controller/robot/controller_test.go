@@ -324,6 +324,176 @@ func (suite *ControllerTestSuite) TestCreateSec() {
 	suite.Nil(err)
 	suite.True(IsValidSec(pwd))
 }
+
+func (suite *ControllerTestSuite) TestCreateSecretValidation() {
+	// Test the IsValidSec function comprehensively
+	testCases := []struct {
+		name      string
+		secret    string
+		expected  bool
+		failReason string
+	}{
+		{"valid_mixed", "TestSecret123", true, ""},
+		{"valid_8chars", "Aa1bbbbb", true, ""},
+		{"valid_128chars", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcd", true, ""},
+		{"invalid_too_short", "Pass1", false, "less than 8 chars"},
+		{"invalid_too_long", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcde", false, "129 chars"},
+		{"invalid_no_uppercase", "testpassword123", false, "missing uppercase"},
+		{"invalid_no_lowercase", "TESTPASSWORD123", false, "missing lowercase"},
+		{"invalid_no_digit", "TestPasswordABC", false, "missing digit"},
+		{"invalid_only_letters", "TestPasswordABC", false, "no numbers"},
+	}
+
+	for _, tc := range testCases {
+		valid := IsValidSec(tc.secret)
+		suite.Equal(tc.expected, valid, "Secret validation failed for: %s (%s)", tc.name, tc.failReason)
+	}
+}
+
+func (suite *ControllerTestSuite) TestCreateWithUserProvidedSecretEncryption() {
+	secretKeyPath := "/tmp/secretkey"
+	_, err := test.GenerateKey(secretKeyPath)
+	suite.Nil(err)
+	defer os.Remove(secretKeyPath)
+	suite.T().Setenv("KEY_PATH", secretKeyPath)
+
+	conf := map[string]any{
+		common.RobotTokenDuration: "30",
+	}
+	config.InitWithSettings(conf)
+
+	projectMgr := &project.Manager{}
+	rbacMgr := &rbac.Manager{}
+	robotMgr := &robot.Manager{}
+
+	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
+	secCtx := &testsec.Context{}
+	secCtx.On("GetUsername").Return("test-user")
+	ctx := security.NewContext(context.Background(), secCtx)
+	projectMgr.On("Get", mock.Anything, mock.Anything).Return(&proModels.Project{ProjectID: 1, Name: "library"}, nil)
+	robotMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	rbacMgr.On("CreatePermission", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	userSecret := "ValidSecret123"
+	id, returnedPwd, err := c.Create(ctx, &Robot{
+		Robot: model.Robot{
+			Name:        "robot-with-secret",
+			Description: "test encryption",
+			Duration:    -1,
+			Secret:      userSecret,
+		},
+		ProjectName: "library",
+		Level:       LEVELPROJECT,
+		Permissions: []*Permission{
+			{
+				Kind:      "project",
+				Namespace: "library",
+				Access: []*types.Policy{{Resource: "repository", Action: "pull"}},
+			},
+		},
+	})
+
+	// Verify the secret handling
+	suite.Nil(err, "Create should succeed with valid secret")
+	suite.Equal(int64(1), id)
+	suite.Equal(userSecret, returnedPwd, "Returned password should be the user-provided secret")
+}
+
+func (suite *ControllerTestSuite) TestCreateWithInvalidSecrets() {
+	secretKeyPath := "/tmp/secretkey"
+	_, err := test.GenerateKey(secretKeyPath)
+	suite.Nil(err)
+	defer os.Remove(secretKeyPath)
+	suite.T().Setenv("KEY_PATH", secretKeyPath)
+
+	conf := map[string]any{
+		common.RobotTokenDuration: "30",
+	}
+	config.InitWithSettings(conf)
+
+	projectMgr := &project.Manager{}
+	rbacMgr := &rbac.Manager{}
+	robotMgr := &robot.Manager{}
+
+	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
+	secCtx := &testsec.Context{}
+	secCtx.On("GetUsername").Return("test-user")
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	invalidSecrets := []string{
+		"short1",          // too short
+		"NoDigitsInThis",  // no digits
+		"nouppercased1",   // no uppercase
+		"NOLOWERCASE1",    // no lowercase
+		"onlydigits123",   // no letters
+	}
+
+	for _, invalidSecret := range invalidSecrets {
+		_, _, err := c.Create(ctx, &Robot{
+			Robot: model.Robot{
+				Name:   "test-robot",
+				Secret: invalidSecret,
+			},
+			ProjectName: "library",
+			Level:       LEVELPROJECT,
+			Permissions: []*Permission{},
+		})
+		suite.NotNil(err, "Should reject invalid secret: %s", invalidSecret)
+		suite.Contains(err.Error(), "invalid secret format", "Error message should indicate invalid format for: %s", invalidSecret)
+	}
+}
+
+func (suite *ControllerTestSuite) TestCreateWithoutSecretGeneratesRandom() {
+	secretKeyPath := "/tmp/secretkey"
+	_, err := test.GenerateKey(secretKeyPath)
+	suite.Nil(err)
+	defer os.Remove(secretKeyPath)
+	suite.T().Setenv("KEY_PATH", secretKeyPath)
+
+	conf := map[string]any{
+		common.RobotTokenDuration: "30",
+	}
+	config.InitWithSettings(conf)
+
+	projectMgr := &project.Manager{}
+	rbacMgr := &rbac.Manager{}
+	robotMgr := &robot.Manager{}
+
+	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
+	secCtx := &testsec.Context{}
+	secCtx.On("GetUsername").Return("test-user")
+	ctx := security.NewContext(context.Background(), secCtx)
+	projectMgr.On("Get", mock.Anything, mock.Anything).Return(&proModels.Project{ProjectID: 1, Name: "library"}, nil)
+
+	robotMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	rbacMgr.On("CreatePermission", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	// Create robot without providing a secret
+	_, pwd, err := c.Create(ctx, &Robot{
+		Robot: model.Robot{
+			Name:        "robot-random-secret",
+			Description: "test auto-generation",
+			Duration:    -1,
+			Secret:      "", // No secret provided
+		},
+		ProjectName: "library",
+		Level:       LEVELPROJECT,
+		Permissions: []*Permission{
+			{
+				Kind:      "project",
+				Namespace: "library",
+				Access: []*types.Policy{{Resource: "repository", Action: "pull"}},
+			},
+		},
+	})
+
+	suite.Nil(err)
+	suite.NotEmpty(pwd, "Password should be generated when not provided")
+	suite.True(IsValidSec(pwd), "Generated password should pass validation: %s", pwd)
+}
+
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &ControllerTestSuite{})
 }
