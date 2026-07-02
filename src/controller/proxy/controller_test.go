@@ -79,6 +79,7 @@ func (l *localInterfaceMock) CheckDependencies(ctx context.Context, repo string,
 }
 
 func (l *localInterfaceMock) DeleteManifest(repo, ref string) {
+	l.Called(repo, ref)
 }
 
 func (l *localInterfaceMock) UpdatePullTime(ctx context.Context, art lib.ArtifactInfo) error {
