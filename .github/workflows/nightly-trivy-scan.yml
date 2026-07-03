@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
         # tag 0.35.0, get the commit hash from https://github.com/aquasecurity/trivy-action.git
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.tags }}'
           severity: 'CRITICAL,HIGH'
