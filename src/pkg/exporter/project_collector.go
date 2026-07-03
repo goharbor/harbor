@@ -32,11 +32,11 @@ var (
 	FROM project INNER JOIN project_metadata ON project.project_id=project_metadata.project_id
 	WHERE project.deleted=FALSE AND project_metadata.name='public'
 	GROUP BY project_metadata.value;`
-	projectBasicSQL = `SELECT project.project_id, project.name, project_metadata.value AS public, quota.hard AS quota, quota_usage.used AS usage FROM project
-	INNER JOIN project_metadata ON (project.project_id = project_metadata.project_id)
-	INNER JOIN quota ON project.project_id = CAST(quota.reference_id AS Integer)
-	INNER JOIN quota_usage ON project.project_id = CAST(quota_usage.reference_id AS Integer)
-	WHERE quota.reference='project' AND quota_usage.reference='project' AND project.deleted=FALSE AND project_metadata.name='public';`
+	projectBasicSQL = `SELECT project.project_id, project.name, COALESCE(project_metadata.value, 'false') AS public, COALESCE(quota.hard, '{}') AS quota, COALESCE(quota_usage.used, '{}') AS usage FROM project
+	LEFT JOIN project_metadata ON (project.project_id = project_metadata.project_id AND project_metadata.name='public')
+	LEFT JOIN quota ON (project.project_id::text = quota.reference_id AND quota.reference='project')
+	LEFT JOIN quota_usage ON (project.project_id::text = quota_usage.reference_id AND quota_usage.reference='project')
+	WHERE project.deleted=FALSE;`
 	projectMemberSQL = `SELECT project.project_id, COUNT(project.project_id) AS member_total
 	FROM project INNER JOIN project_member ON project.project_id=project_member.project_id
 	WHERE project.deleted=FALSE AND project_member.entity_type='u'
