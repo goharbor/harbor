@@ -127,28 +127,20 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	return serveBlob(w, reader, size, art.Digest)
 }
 
-// serveBlob writes a proxied blob to the response. The headers (notably
-// Content-Length) are set before the body is streamed: once the first byte is
-// written the status line and headers are committed, so setting them afterwards
-// is a no-op and the response goes out with chunked transfer-encoding and no
-// Content-Length (and the Docker-Content-Digest/ETag headers dropped). Declaring
-// the length up front lets net/http enforce it, so a truncated upstream read
-// (fewer bytes than size) is delivered as a short body that clients and
-// intermediary caches reject, rather than being framed as a complete 200 response.
+// serveBlob sets the blob headers before streaming the body: the first write
+// commits the status line and headers, so setting Content-Length (and the
+// digest/ETag headers) afterwards is a no-op and truncated upstream reads
+// would be framed as complete chunked 200 responses that caches may store.
 func serveBlob(w http.ResponseWriter, reader io.Reader, size int64, dig string) error {
 	setHeaders(w, size, "", dig)
 	// Use io.CopyN to avoid out of memory when pulling big blob
 	written, err := io.CopyN(w, reader, size)
 	if err == nil {
-		// io.CopyN returns a nil error only when exactly size bytes were copied.
 		return nil
 	}
 	if written == 0 {
-		// The upstream read failed before any byte was written, so the status line
-		// and headers have not been committed yet. Remove the blob headers so an
-		// error response written by the caller (e.g. SendError) is not framed with
-		// the blob's Content-Length, which a client would otherwise read as an
-		// unexpected EOF.
+		// Headers are not committed yet; drop the blob headers so the caller's
+		// error response is not framed with the blob's Content-Length.
 		h := w.Header()
 		h.Del(contentLength)
 		h.Del(dockerContentDigest)
@@ -156,13 +148,9 @@ func serveBlob(w http.ResponseWriter, reader io.Reader, size int64, dig string) 
 
 		return err
 	}
-	// Some bytes were already written, so the 200 status and the Content-Length are
-	// committed. The response must not be turned into an error here: the caller's
-	// SendError cannot change the status and would only append its body to the blob
-	// stream, which in a boundary case could reach the declared Content-Length and be
-	// cached as a complete but corrupted blob. Returning nil leaves the response short
-	// of its Content-Length, so net/http closes the connection and the client (and any
-	// cache) sees a truncated body and rejects it.
+	// The 200 and Content-Length are committed. Returning an error would make the
+	// caller append an error body to the blob stream; returning nil instead leaves
+	// the response short of Content-Length so clients and caches reject it.
 	log.Errorf("failed to stream blob %s after %d of %d bytes: %v", dig, written, size, err)
 
 	return nil
