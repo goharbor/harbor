@@ -29,6 +29,7 @@ var (
 	eve      = models.User{Username: "eve", Password: "password", Email: "eve@test.com"}
 	testPro1 = proModels.Project{OwnerID: 1, Name: "test1", Metadata: map[string]string{"public": "true"}}
 	testPro2 = proModels.Project{OwnerID: 1, Name: "test2", Metadata: map[string]string{"public": "false"}}
+	testPro3 = proModels.Project{OwnerID: 1, Name: "test3", Metadata: map[string]string{"public": "false"}}
 	rs1      = qtypes.ResourceList{qtypes.ResourceStorage: 100}
 	rs2      = qtypes.ResourceList{qtypes.ResourceStorage: 200}
 	repo1    = model.RepoRecord{Name: "repo1"}
@@ -65,8 +66,14 @@ func setupTest(t *testing.T) {
 	if err != nil {
 		t.Errorf("project creating %v", err)
 	}
+	// testPro3 has no quota records — simulates quota_per_project_enable=false
+	proID3, err := proctl.Ctl.Create(ctx, &testPro3)
+	if err != nil {
+		t.Errorf("project creating %v", err)
+	}
 	testPro1.ProjectID = proID1
 	testPro2.ProjectID = proID2
+	testPro3.ProjectID = proID3
 
 	// Create quota for project
 	quotactl.Ctl.Create(ctx, "project", strconv.Itoa(int(testPro1.ProjectID)), rs1)
@@ -125,14 +132,14 @@ func setupTest(t *testing.T) {
 }
 
 func tearDownTest(t *testing.T) {
-	dao.GetOrmer().Raw("delete from project_member where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from project_metadata where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from quota where reference=\"project\" and reference_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from quota_usage where reference=\"project\" and reference_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from project where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from artifact where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from repository where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
-	dao.GetOrmer().Raw("delete from cve_allowlist where project_id in (?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from project_member where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from project_metadata where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from quota where reference=\"project\" and reference_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from quota_usage where reference=\"project\" and reference_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from project where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from artifact where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from repository where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from cve_allowlist where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from harbor_user where user_id in (?, ?, ?)", []int{alice.UserID, bob.UserID, eve.UserID}).Exec()
 }
 
@@ -166,5 +173,14 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro2.ProjectID].MemberTotal, float64(3), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
+
+	// testPro3 has no quota records (simulates quota_per_project_enable=false).
+	// Verify it is still included in the map with zero quota/usage rather than
+	// being silently dropped and logged as "project not found".
+	c.Containsf(pMap, testPro3.ProjectID, "project without quota records should appear in pMap")
+	c.Equalf(pMap[testPro3.ProjectID].Name, testPro3.Name, "pMap %v", pMap)
+	c.Equalf(strconv.FormatBool(pMap[testPro3.ProjectID].Public), testPro3.Metadata["public"], "pMap %v", pMap)
+	c.Equalf(pMap[testPro3.ProjectID].Quota, "{}", "project without quota record should have empty quota")
+	c.Equalf(pMap[testPro3.ProjectID].Usage, "{}", "project without quota record should have empty usage")
 
 }
