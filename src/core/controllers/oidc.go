@@ -46,15 +46,20 @@ const stateKey = "oidc_state"
 const pkceCodeKey = "oidc_pkce_code"
 const userInfoKey = "oidc_user_info"
 const redirectURLKey = "oidc_redirect_url"
-const cliStateSessionKey = "oidc_cli_state"
+const cliPollTokenSessionKey = "oidc_cli_poll_token"
 const oidcUserComment = "Onboarded via OIDC provider"
 const oidcCLIStatePrefix = "oidc_cli_state:"
+const oidcCLIPollPrefix = "oidc_cli_poll:"
+const oidcCLIMetaPrefix = "oidc_cli_meta:"
 const oidcCLIStatusPending = "pending"
 const oidcCLIStatusReady = "ready"
 const oidcCLIStatusFailed = "failed"
+const oidcCLIStatusExpired = "expired"
 
 var oidcCLIPendingTTL = 10 * time.Minute
 var oidcCLIResultTTL = 5 * time.Minute
+var oidcCLIExpiredTTL = 5 * time.Minute
+var oidcCLIMetaTTL = oidcCLIPendingTTL + oidcCLIResultTTL + oidcCLIExpiredTTL
 
 const loginUserOperation = "login_user"
 
@@ -69,7 +74,7 @@ type onboardReq struct {
 
 type oidcCLILoginResponse struct {
 	RedirectURL string `json:"redirect_url"`
-	State       string `json:"state"`
+	PollToken   string `json:"poll_token"`
 }
 
 type oidcCLITokenResponse struct {
@@ -94,6 +99,8 @@ type oidcCLIRefreshResponse struct {
 
 type oidcCLIState struct {
 	Status       string `json:"status"`
+	State        string `json:"state,omitempty"`
+	PollToken    string `json:"poll_token,omitempty"`
 	PKCECode     string `json:"pkce_code,omitempty"`
 	IDToken      string `json:"id_token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
@@ -125,17 +132,28 @@ func (oc *OIDCController) RedirectLogin() {
 		return
 	}
 	if oc.isCLILogin() {
+		pollToken := utils.GenerateRandomString()
 		entry := &oidcCLIState{
-			Status:   oidcCLIStatusPending,
-			PKCECode: string(pkceCode),
+			Status:    oidcCLIStatusPending,
+			State:     state,
+			PollToken: pollToken,
+			PKCECode:  string(pkceCode),
 		}
-		if err := saveOIDCCLIState(oc.Context(), state, entry, oidcCLIPendingTTL); err != nil {
+		if err := saveOIDCCLIPollState(oc.Context(), pollToken, entry, oidcCLIPendingTTL); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+		if err := saveOIDCCLIStateIndex(oc.Context(), state, pollToken, oidcCLIPendingTTL); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+		if err := saveOIDCCLIPollMeta(oc.Context(), pollToken, oidcCLIMetaTTL); err != nil {
 			oc.SendInternalServerError(err)
 			return
 		}
 		oc.writeJSON(http.StatusOK, &oidcCLILoginResponse{
 			RedirectURL: url,
-			State:       state,
+			PollToken:   pollToken,
 		})
 		return
 	}
@@ -169,7 +187,7 @@ func (oc *OIDCController) RedirectLogin() {
 // kick off onboard if needed.
 func (oc *OIDCController) Callback() {
 	queryState := oc.Ctx.Request.URL.Query().Get("state")
-	cliState, cliFlow, err := getOIDCCLIState(oc.Context(), queryState)
+	pollToken, cliFlow, err := getOIDCCLIPollTokenByState(oc.Context(), queryState)
 	if err != nil && !errors.Is(err, cachepkg.ErrNotFound) {
 		oc.SendInternalServerError(err)
 		return
@@ -183,16 +201,33 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
+	var cliState *oidcCLIState
+	if cliFlow {
+		cliState, _, err = getOIDCCLIPollState(oc.Context(), pollToken)
+		if err != nil {
+			if errors.Is(err, cachepkg.ErrNotFound) {
+				cliFlow = false
+			} else {
+				oc.SendInternalServerError(err)
+				return
+			}
+		}
+	}
 	errorCode := oc.Ctx.Request.URL.Query().Get("error")
 	if errorCode != "" {
 		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
 		log.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription)
 		if cliFlow {
-			if err := saveOIDCCLIState(oc.Context(), queryState, &oidcCLIState{
-				Status: oidcCLIStatusFailed,
-				Error:  fmt.Sprintf("%s - %s", errorCode, errorDescription),
+			if err := saveOIDCCLIPollState(oc.Context(), pollToken, &oidcCLIState{
+				Status:    oidcCLIStatusFailed,
+				State:     queryState,
+				PollToken: pollToken,
+				Error:     fmt.Sprintf("%s - %s", errorCode, errorDescription),
 			}, oidcCLIResultTTL); err != nil {
 				log.Errorf("failed to save OIDC CLI failure state, error: %v", err)
+			}
+			if err := deleteOIDCCLIStateIndex(oc.Context(), queryState); err != nil {
+				log.Warningf("failed to delete OIDC CLI state index, error: %v", err)
 			}
 		}
 		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
@@ -286,8 +321,11 @@ func (oc *OIDCController) Callback() {
 				return
 			}
 			if cliFlow {
-				if err := oc.SetSession(cliStateSessionKey, queryState); err != nil {
-					log.Errorf("failed to set session for key: %s, error: %v", cliStateSessionKey, err)
+				if err := deleteOIDCCLIStateIndex(ctx, queryState); err != nil {
+					log.Warningf("failed to delete OIDC CLI state index, error: %v", err)
+				}
+				if err := oc.SetSession(cliPollTokenSessionKey, pollToken); err != nil {
+					log.Errorf("failed to set session for key: %s, error: %v", cliPollTokenSessionKey, err)
 					oc.SendInternalServerError(err)
 					return
 				}
@@ -318,8 +356,13 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	if cliFlow {
-		if err := saveOIDCCLIState(ctx, queryState, &oidcCLIState{
+		if err := deleteOIDCCLIStateIndex(ctx, queryState); err != nil {
+			log.Warningf("failed to delete OIDC CLI state index, error: %v", err)
+		}
+		if err := saveOIDCCLIPollState(ctx, pollToken, &oidcCLIState{
 			Status:       oidcCLIStatusReady,
+			State:        queryState,
+			PollToken:    pollToken,
 			IDToken:      token.RawIDToken,
 			RefreshToken: token.RefreshToken,
 			Username:     u.Username,
@@ -351,14 +394,23 @@ func (oc *OIDCController) Callback() {
 }
 
 func (oc *OIDCController) CLIToken() {
-	state := oc.GetString("state")
-	if state == "" {
-		oc.SendBadRequestError(errors.New("missing state"))
+	pollToken := oc.GetString("poll_token")
+	if pollToken == "" {
+		oc.SendBadRequestError(errors.New("missing poll_token"))
 		return
 	}
 
-	entry, _, err := getOIDCCLIState(oc.Context(), state)
+	entry, _, err := getOIDCCLIPollState(oc.Context(), pollToken)
 	if errors.Is(err, cachepkg.ErrNotFound) {
+		known, metaErr := hasOIDCCLIPollMeta(oc.Context(), pollToken)
+		if metaErr != nil {
+			oc.SendInternalServerError(metaErr)
+			return
+		}
+		if known {
+			oc.writeJSON(http.StatusGone, &oidcCLITokenResponse{Status: oidcCLIStatusExpired})
+			return
+		}
 		oc.writeJSON(http.StatusAccepted, &oidcCLITokenResponse{Status: oidcCLIStatusPending})
 		return
 	}
@@ -369,7 +421,7 @@ func (oc *OIDCController) CLIToken() {
 
 	switch entry.Status {
 	case oidcCLIStatusReady:
-		if err := deleteOIDCCLIState(oc.Context(), state); err != nil {
+		if err := markOIDCCLIPollExpired(oc.Context(), pollToken); err != nil {
 			oc.SendInternalServerError(err)
 			return
 		}
@@ -384,6 +436,10 @@ func (oc *OIDCController) CLIToken() {
 		oc.writeJSON(http.StatusBadRequest, &oidcCLITokenResponse{
 			Status: oidcCLIStatusFailed,
 			Error:  entry.Error,
+		})
+	case oidcCLIStatusExpired:
+		oc.writeJSON(http.StatusGone, &oidcCLITokenResponse{
+			Status: oidcCLIStatusExpired,
 		})
 	default:
 		oc.writeJSON(http.StatusAccepted, &oidcCLITokenResponse{Status: oidcCLIStatusPending})
@@ -591,7 +647,7 @@ func (oc *OIDCController) Onboard() {
 			return
 		}
 		oc.PopulateUserSession(*user)
-		if cliState, ok := oc.GetSession(cliStateSessionKey).(string); ok && cliState != "" {
+		if cliPollToken, ok := oc.GetSession(cliPollTokenSessionKey).(string); ok && cliPollToken != "" {
 			token, err := unmarshalOIDCToken(tb)
 			if err != nil {
 				oc.SendInternalServerError(err)
@@ -602,8 +658,9 @@ func (oc *OIDCController) Onboard() {
 				oc.SendInternalServerError(err)
 				return
 			}
-			if err := saveOIDCCLIState(ctx, cliState, &oidcCLIState{
+			if err := saveOIDCCLIPollState(ctx, cliPollToken, &oidcCLIState{
 				Status:       oidcCLIStatusReady,
+				PollToken:    cliPollToken,
 				IDToken:      token.RawIDToken,
 				RefreshToken: token.RefreshToken,
 				Username:     user.Username,
@@ -612,8 +669,8 @@ func (oc *OIDCController) Onboard() {
 				oc.SendInternalServerError(err)
 				return
 			}
-			if err := oc.DelSession(cliStateSessionKey); err != nil {
-				log.Warningf("failed to delete session for key:%s, error: %v", cliStateSessionKey, err)
+			if err := oc.DelSession(cliPollTokenSessionKey); err != nil {
+				log.Warningf("failed to delete session for key:%s, error: %v", cliPollTokenSessionKey, err)
 			}
 		}
 	}
@@ -636,8 +693,16 @@ func (oc *OIDCController) writeJSON(status int, payload any) {
 	}
 }
 
-func oidcCLIKey(state string) string {
+func oidcCLIStateKey(state string) string {
 	return oidcCLIStatePrefix + state
+}
+
+func oidcCLIPollKey(pollToken string) string {
+	return oidcCLIPollPrefix + pollToken
+}
+
+func oidcCLIMetaKey(pollToken string) string {
+	return oidcCLIMetaPrefix + pollToken
 }
 
 func oidcCLICache() (cachepkg.Cache, error) {
@@ -648,21 +713,21 @@ func oidcCLICache() (cachepkg.Cache, error) {
 	return c, nil
 }
 
-func saveOIDCCLIState(ctx context.Context, state string, entry *oidcCLIState, ttl time.Duration) error {
+func saveOIDCCLIPollState(ctx context.Context, pollToken string, entry *oidcCLIState, ttl time.Duration) error {
 	c, err := oidcCLICache()
 	if err != nil {
 		return err
 	}
-	return c.Save(ctx, oidcCLIKey(state), entry, ttl)
+	return c.Save(ctx, oidcCLIPollKey(pollToken), entry, ttl)
 }
 
-func getOIDCCLIState(ctx context.Context, state string) (*oidcCLIState, bool, error) {
+func getOIDCCLIPollState(ctx context.Context, pollToken string) (*oidcCLIState, bool, error) {
 	c, err := oidcCLICache()
 	if err != nil {
 		return nil, false, err
 	}
 	entry := &oidcCLIState{}
-	if err := c.Fetch(ctx, oidcCLIKey(state), entry); err != nil {
+	if err := c.Fetch(ctx, oidcCLIPollKey(pollToken), entry); err != nil {
 		if errors.Is(err, cachepkg.ErrNotFound) {
 			return nil, false, err
 		}
@@ -671,12 +736,65 @@ func getOIDCCLIState(ctx context.Context, state string) (*oidcCLIState, bool, er
 	return entry, true, nil
 }
 
-func deleteOIDCCLIState(ctx context.Context, state string) error {
+func saveOIDCCLIStateIndex(ctx context.Context, state, pollToken string, ttl time.Duration) error {
 	c, err := oidcCLICache()
 	if err != nil {
 		return err
 	}
-	return c.Delete(ctx, oidcCLIKey(state))
+	return c.Save(ctx, oidcCLIStateKey(state), pollToken, ttl)
+}
+
+func getOIDCCLIPollTokenByState(ctx context.Context, state string) (string, bool, error) {
+	c, err := oidcCLICache()
+	if err != nil {
+		return "", false, err
+	}
+	var pollToken string
+	if err := c.Fetch(ctx, oidcCLIStateKey(state), &pollToken); err != nil {
+		if errors.Is(err, cachepkg.ErrNotFound) {
+			return "", false, err
+		}
+		return "", false, err
+	}
+	return pollToken, true, nil
+}
+
+func deleteOIDCCLIStateIndex(ctx context.Context, state string) error {
+	c, err := oidcCLICache()
+	if err != nil {
+		return err
+	}
+	return c.Delete(ctx, oidcCLIStateKey(state))
+}
+
+func saveOIDCCLIPollMeta(ctx context.Context, pollToken string, ttl time.Duration) error {
+	c, err := oidcCLICache()
+	if err != nil {
+		return err
+	}
+	return c.Save(ctx, oidcCLIMetaKey(pollToken), true, ttl)
+}
+
+func hasOIDCCLIPollMeta(ctx context.Context, pollToken string) (bool, error) {
+	c, err := oidcCLICache()
+	if err != nil {
+		return false, err
+	}
+	var known bool
+	if err := c.Fetch(ctx, oidcCLIMetaKey(pollToken), &known); err != nil {
+		if errors.Is(err, cachepkg.ErrNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return known, nil
+}
+
+func markOIDCCLIPollExpired(ctx context.Context, pollToken string) error {
+	return saveOIDCCLIPollState(ctx, pollToken, &oidcCLIState{
+		Status:    oidcCLIStatusExpired,
+		PollToken: pollToken,
+	}, oidcCLIExpiredTTL)
 }
 
 func unmarshalOIDCToken(tokenBytes []byte) (*oidc.Token, error) {
