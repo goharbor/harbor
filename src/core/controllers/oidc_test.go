@@ -80,7 +80,8 @@ func TestGetSessionType(t *testing.T) {
 }
 
 func TestOIDCCLIKey(t *testing.T) {
-	assert.Equal(t, "oidc_cli_state:state-123", oidcCLIKey("state-123"))
+	assert.Equal(t, "oidc_cli_state:state-123", oidcCLIStateKey("state-123"))
+	assert.Equal(t, "oidc_cli_poll:poll-123", oidcCLIPollKey("poll-123"))
 }
 
 func TestUnmarshalOIDCToken(t *testing.T) {
@@ -102,19 +103,20 @@ func TestOIDCCLILoginPendingAndReadyFlow(t *testing.T) {
 
 	loginResp := startCLILogin(t, handler)
 	assert.NotEmpty(t, loginResp.RedirectURL)
-	assert.NotEmpty(t, loginResp.State)
+	assert.NotEmpty(t, loginResp.PollToken)
 	assert.Contains(t, loginResp.RedirectURL, provider.server.URL+"/authorize")
+	state := stateFromRedirectURL(t, loginResp.RedirectURL)
 
-	pendingResp := cliTokenResponse(t, handler, loginResp.State)
+	pendingResp := cliTokenResponse(t, handler, loginResp.PollToken)
 	assert.Equal(t, http.StatusAccepted, pendingResp.Code)
 	assert.Equal(t, oidcCLIStatusPending, decodeCLITokenResponse(t, pendingResp).Status)
 
-	callbackReq := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s?code=test-code&state=%s", common.OIDCCallbackPath, url.QueryEscape(loginResp.State)), nil)
+	callbackReq := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s?code=test-code&state=%s", common.OIDCCallbackPath, url.QueryEscape(state)), nil)
 	callbackRec := httptest.NewRecorder()
 	handler.ServeHTTP(callbackRec, callbackReq)
 	require.Equal(t, http.StatusFound, callbackRec.Code)
 
-	readyResp := cliTokenResponse(t, handler, loginResp.State)
+	readyResp := cliTokenResponse(t, handler, loginResp.PollToken)
 	assert.Equal(t, http.StatusOK, readyResp.Code)
 	ready := decodeCLITokenResponse(t, readyResp)
 	assert.Equal(t, oidcCLIStatusReady, ready.Status)
@@ -123,9 +125,9 @@ func TestOIDCCLILoginPendingAndReadyFlow(t *testing.T) {
 	assert.Equal(t, provider.username, ready.Username)
 	assert.NotZero(t, ready.ExpiresAt)
 
-	afterConsumeResp := cliTokenResponse(t, handler, loginResp.State)
-	assert.Equal(t, http.StatusAccepted, afterConsumeResp.Code)
-	assert.Equal(t, oidcCLIStatusPending, decodeCLITokenResponse(t, afterConsumeResp).Status)
+	afterConsumeResp := cliTokenResponse(t, handler, loginResp.PollToken)
+	assert.Equal(t, http.StatusGone, afterConsumeResp.Code)
+	assert.Equal(t, oidcCLIStatusExpired, decodeCLITokenResponse(t, afterConsumeResp).Status)
 }
 
 func TestOIDCCLILoginFailureFlow(t *testing.T) {
@@ -135,17 +137,18 @@ func TestOIDCCLILoginFailureFlow(t *testing.T) {
 	handler := newOIDCTestHandler()
 
 	loginResp := startCLILogin(t, handler)
+	state := stateFromRedirectURL(t, loginResp.RedirectURL)
 
 	callbackReq := httptest.NewRequest(
 		http.MethodGet,
-		fmt.Sprintf("%s?state=%s&error=access_denied&error_description=%s", common.OIDCCallbackPath, url.QueryEscape(loginResp.State), url.QueryEscape("user denied access")),
+		fmt.Sprintf("%s?state=%s&error=access_denied&error_description=%s", common.OIDCCallbackPath, url.QueryEscape(state), url.QueryEscape("user denied access")),
 		nil,
 	)
 	callbackRec := httptest.NewRecorder()
 	handler.ServeHTTP(callbackRec, callbackReq)
 	require.Equal(t, http.StatusBadRequest, callbackRec.Code)
 
-	failedResp := cliTokenResponse(t, handler, loginResp.State)
+	failedResp := cliTokenResponse(t, handler, loginResp.PollToken)
 	assert.Equal(t, http.StatusBadRequest, failedResp.Code)
 	failed := decodeCLITokenResponse(t, failedResp)
 	assert.Equal(t, oidcCLIStatusFailed, failed.Status)
@@ -178,13 +181,23 @@ func startCLILogin(t *testing.T, handler http.Handler) *oidcCLILoginResponse {
 	return resp
 }
 
-func cliTokenResponse(t *testing.T, handler http.Handler, state string) *httptest.ResponseRecorder {
+func cliTokenResponse(t *testing.T, handler http.Handler, pollToken string) *httptest.ResponseRecorder {
 	t.Helper()
 
-	req := httptest.NewRequest(http.MethodGet, "/c/oidc/cli-token?state="+url.QueryEscape(state), nil)
+	req := httptest.NewRequest(http.MethodGet, "/c/oidc/cli-token?poll_token="+url.QueryEscape(pollToken), nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	return rec
+}
+
+func stateFromRedirectURL(t *testing.T, redirectURL string) string {
+	t.Helper()
+
+	u, err := url.Parse(redirectURL)
+	require.NoError(t, err)
+	state := u.Query().Get("state")
+	require.NotEmpty(t, state)
+	return state
 }
 
 func decodeCLITokenResponse(t *testing.T, rec *httptest.ResponseRecorder) *oidcCLITokenResponse {
