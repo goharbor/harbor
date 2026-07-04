@@ -42,6 +42,7 @@ func registerRoutes() {
 	web.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 	web.Router(common.OIDCLoginoutPath, &controllers.OIDCController{}, "get:RedirectLogout")
 	web.Router("/c/oidc/cli-token", &controllers.OIDCController{}, "get:CLIToken")
+	web.Router("/c/oidc/refresh", &controllers.OIDCController{}, "post:Refresh")
 	web.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	web.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
 	web.Router(common.AuthProxyRedirectPath, &controllers.AuthProxyController{}, "get:HandleRedirect")

@@ -280,6 +280,11 @@ func refreshToken(ctx context.Context, token *Token) (*Token, error) {
 	return &Token{Token: *nt, RawIDToken: it}, nil
 }
 
+// RefreshToken refreshes an OIDC token using the configured Harbor OIDC client.
+func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
+	return refreshToken(ctx, token)
+}
+
 // UserInfoFromToken tries to call the UserInfo endpoint of the OIDC provider, and consolidate with ID token
 // to generate a UserInfo object, if the ID token is not in the input token struct, some attributes will be empty
 func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {

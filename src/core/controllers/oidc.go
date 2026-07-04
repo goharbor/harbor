@@ -38,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/oidc"
 
 	"go.pinniped.dev/pkg/oidcclient/pkce"
+	"golang.org/x/oauth2"
 )
 
 const tokenKey = "oidc_token"
@@ -77,6 +78,17 @@ type oidcCLITokenResponse struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 	Username     string `json:"username,omitempty"`
 	ExpiresAt    int64  `json:"expires_at,omitempty"`
+	Error        string `json:"error,omitempty"`
+}
+
+type oidcCLIRefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type oidcCLIRefreshResponse struct {
+	IDToken      string `json:"id_token"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	ExpiresAt    int64  `json:"expires_at"`
 	Error        string `json:"error,omitempty"`
 }
 
@@ -378,6 +390,53 @@ func (oc *OIDCController) CLIToken() {
 	}
 }
 
+func (oc *OIDCController) Refresh() {
+	req := &oidcCLIRefreshRequest{}
+	if err := oc.DecodeJSONReq(req); err != nil {
+		oc.SendBadRequestError(err)
+		return
+	}
+	if strings.TrimSpace(req.RefreshToken) == "" {
+		oc.SendBadRequestError(errors.New("missing refresh_token"))
+		return
+	}
+
+	ctx := oc.Ctx.Request.Context()
+	token, err := oidc.RefreshToken(ctx, &oidc.Token{
+		Token: oauth2.Token{
+			RefreshToken: req.RefreshToken,
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to refresh OIDC token: %v", err)
+		oc.writeJSON(http.StatusBadRequest, &oidcCLIRefreshResponse{
+			Error: "failed to refresh OIDC token",
+		})
+		return
+	}
+	if token.RawIDToken == "" {
+		oc.writeJSON(http.StatusBadRequest, &oidcCLIRefreshResponse{
+			Error: "OIDC provider did not return an id_token",
+		})
+		return
+	}
+
+	verifiedToken, err := oidc.VerifyToken(ctx, token.RawIDToken)
+	if err != nil {
+		log.Errorf("failed to verify refreshed OIDC token: %v", err)
+		oc.writeJSON(http.StatusBadRequest, &oidcCLIRefreshResponse{
+			Error: "failed to verify refreshed OIDC token",
+		})
+		return
+	}
+
+	oc.writeJSON(http.StatusOK, &oidcCLIRefreshResponse{
+		IDToken:      token.RawIDToken,
+		RefreshToken: token.RefreshToken,
+		ExpiresAt:    verifiedToken.Expiry.Unix(),
+	})
+}
+
 func (oc *OIDCController) RedirectLogout() {
 	sessionData := oc.GetSession(tokenKey)
 	ctx := oc.Ctx.Request.Context()
@@ -565,6 +624,10 @@ func (oc *OIDCController) isCLILogin() bool {
 }
 
 func (oc *OIDCController) writeJSON(status int, payload any) {
+	// These CLI endpoints can carry sensitive auth material (e.g. refresh tokens).
+	// Prevent caching by browsers/proxies.
+	oc.Ctx.Output.Header("Cache-Control", "no-store")
+	oc.Ctx.Output.Header("Pragma", "no-cache")
 	oc.Ctx.Output.SetStatus(status)
 	oc.Data["json"] = payload
 	if err := oc.ServeJSON(); err != nil {
