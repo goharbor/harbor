@@ -107,6 +107,21 @@ func parseScopes(req *http.Request) []*scope {
 			}}
 	}
 
-	// base or no match, return nil
+	// base ping request (e.g. GET /v2/): no resource-specific scope can be
+	// derived from the path, but some token services (e.g. registry.istio.io)
+	// reject a token request that carries no scope at all. Request the same
+	// minimal registry-level scope used for catalog listing so the ping still
+	// succeeds; a registry that doesn't grant it will simply respond with
+	// 401/403, which PingSimple already treats as "reachable".
+	if path == "/v2" {
+		return []*scope{
+			{
+				Type:    scopeTypeRegistry,
+				Name:    "catalog",
+				Actions: []string{scopeActionAll},
+			}}
+	}
+
+	// no match, return nil
 	return nil
 }

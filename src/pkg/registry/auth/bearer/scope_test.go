@@ -35,7 +35,11 @@ func TestParseScopes(t *testing.T) {
 	// base
 	req, _ := http.NewRequest(http.MethodGet, "/v2/", nil)
 	scopes := parseScopes(req)
-	require.Nil(t, scopes)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRegistry, scopes[0].Type)
+	assert.Equal(t, "catalog", scopes[0].Name)
+	require.Len(t, scopes[0].Actions, 1)
+	assert.Equal(t, scopeActionAll, scopes[0].Actions[0])
 
 	// catalog
 	req, _ = http.NewRequest(http.MethodGet, "/v2/_catalog", nil)
@@ -151,4 +155,13 @@ func TestParseScopes(t *testing.T) {
 	assert.Equal(t, "library/hello-world", scopes[0].Name)
 	require.Len(t, scopes[0].Actions, 1)
 	assert.Equal(t, scopeActionPull, scopes[0].Actions[0])
+}
+
+func TestParseScopesBasePing(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "https://registry.example.com/v2/", nil)
+	scopes := parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRegistry, scopes[0].Type)
+	assert.Equal(t, "catalog", scopes[0].Name)
+	assert.Equal(t, []string{scopeActionAll}, scopes[0].Actions)
 }
