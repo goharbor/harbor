@@ -165,3 +165,12 @@ func TestParseScopesBasePing(t *testing.T) {
 	assert.Equal(t, "catalog", scopes[0].Name)
 	assert.Equal(t, []string{scopeActionAll}, scopes[0].Actions)
 }
+
+func TestParseScopesBasePingWithPrefix(t *testing.T) {
+	req, _ := http.NewRequest(http.MethodGet, "https://registry.example.com/prefix/v2/", nil)
+	scopes := parseScopes(req)
+	require.Len(t, scopes, 1)
+	assert.Equal(t, scopeTypeRegistry, scopes[0].Type)
+	assert.Equal(t, "catalog", scopes[0].Name)
+	assert.Equal(t, []string{scopeActionAll}, scopes[0].Actions)
+}

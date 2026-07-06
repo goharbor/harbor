@@ -113,7 +113,7 @@ func parseScopes(req *http.Request) []*scope {
 	// minimal registry-level scope used for catalog listing so the ping still
 	// succeeds; a registry that doesn't grant it will simply respond with
 	// 401/403, which PingSimple already treats as "reachable".
-	if path == "/v2" {
+	if strings.HasSuffix(path, "/v2") {
 		return []*scope{
 			{
 				Type:    scopeTypeRegistry,
