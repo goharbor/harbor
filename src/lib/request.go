@@ -41,7 +41,9 @@ func (n nopCloser) Close() error {
 	return nil
 }
 
-func copyBody(body io.ReadCloser) io.ReadCloser {
+// limit <= 0 preserves the original unbounded buffering; a positive limit caps
+// the retained bytes to avoid buffering an arbitrarily large body.
+func copyBody(body io.ReadCloser, limit int64) io.ReadCloser {
 	// check if body was already read and converted into our nopCloser
 	if nc, ok := body.(nopCloser); ok {
 		_, _ = nc.Seek(0, io.SeekStart)
@@ -50,16 +52,21 @@ func copyBody(body io.ReadCloser) io.ReadCloser {
 
 	defer body.Close()
 
+	var src io.Reader = body
+	if limit > 0 {
+		src = io.LimitReader(body, limit)
+	}
+
 	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, body)
+	_, _ = io.Copy(&buf, src)
 
 	return nopCloser{bytes.NewReader(buf.Bytes())}
 }
 
-// NopCloseRequest ...
-func NopCloseRequest(r *http.Request) *http.Request {
+// NopCloseRequest makes r.Body re-readable; limit <= 0 keeps it unbounded.
+func NopCloseRequest(r *http.Request, limit int64) *http.Request {
 	if r != nil && r.Body != nil {
-		r.Body = copyBody(r.Body)
+		r.Body = copyBody(r.Body, limit)
 	}
 
 	return r

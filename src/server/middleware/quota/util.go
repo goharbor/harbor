@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -48,7 +49,7 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 
 var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		lib.NopCloseRequest(r)
+		lib.NopCloseRequest(r, common.MaxManifestBodySize)
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {

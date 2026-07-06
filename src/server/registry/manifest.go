@@ -191,9 +191,14 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	// backend registry storage, while Harbor maintains the tag-to-digest mapping in the database.
 	if _, err := digest.Parse(reference); err != nil {
 		// reference is a tag, not a digest
-		data, err := io.ReadAll(req.Body)
+		// read one extra byte so an over-limit body is detected rather than silently truncated
+		data, err := io.ReadAll(io.LimitReader(req.Body, common.MaxManifestBodySize+1))
 		if err != nil {
 			lib_http.SendError(w, err)
+			return
+		}
+		if int64(len(data)) > common.MaxManifestBodySize {
+			lib_http.SendError(w, errors.RequestEntityTooLargeError(nil))
 			return
 		}
 
