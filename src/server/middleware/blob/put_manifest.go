@@ -18,6 +18,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -33,7 +34,7 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		ctx := r.Context()
 		logger := log.G(ctx)
 
-		lib.NopCloseRequest(r) // make the r.Body re-readable
+		lib.NopCloseRequest(r, common.MaxManifestBodySize) // make the r.Body re-readable
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return err

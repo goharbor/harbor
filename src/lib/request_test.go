@@ -39,7 +39,7 @@ func (suite *NopCloseRequestTestSuite) TestReusableBody() {
 	suite.Equal([]byte(""), body)
 
 	r, _ = http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-	r = NopCloseRequest(r)
+	r = NopCloseRequest(r, 0)
 
 	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
@@ -48,6 +48,15 @@ func (suite *NopCloseRequestTestSuite) TestReusableBody() {
 	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), body)
+}
+
+func (suite *NopCloseRequestTestSuite) TestLimitCapsBufferedBody() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+	r = NopCloseRequest(r, 2)
+
+	body, err := io.ReadAll(r.Body)
+	suite.Nil(err)
+	suite.Equal([]byte("bo"), body)
 }
 
 func TestNopCloseRequestTestSuite(t *testing.T) {

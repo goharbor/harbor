@@ -52,7 +52,7 @@ func Middleware() func(http.Handler) http.Handler {
 			RequestURL:    r.URL.String(),
 		}
 		if matched, resName := e.PreCheckMetadata(); matched {
-			lib.NopCloseRequest(r)
+			lib.NopCloseRequest(r, 0) // audit path buffers non-manifest API bodies, so the manifest cap doesn't apply
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, "failed to read request body", http.StatusInternalServerError)
