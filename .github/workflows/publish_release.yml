@@ -13,7 +13,7 @@ jobs:
       id-token: write   # Required for Cosign keyless signing
       packages: write   # Required for pushing images to ghcr.io
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV

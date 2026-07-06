@@ -23,7 +23,7 @@ jobs:
     outputs:
       build_base: ${{ steps.decide.outputs.build_base || 'false' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         continue-on-error: true
@@ -89,8 +89,8 @@ jobs:
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: Build Package
@@ -205,8 +205,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: repos-*
           merge-multiple: true
