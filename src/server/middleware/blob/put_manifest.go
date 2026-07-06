@@ -34,8 +34,10 @@ func PutManifestMiddleware() func(http.Handler) http.Handler {
 		ctx := r.Context()
 		logger := log.G(ctx)
 
-		lib.NopCloseRequest(r, common.MaxManifestBodySize) // make the r.Body re-readable
-		body, err := io.ReadAll(r.Body)
+		// bound the buffered manifest body; an over-limit body yields a 413
+		// rather than being parsed as a truncated (and misleadingly invalid)
+		// manifest
+		body, err := lib.ReadRequestBody(r, common.MaxManifestBodySize)
 		if err != nil {
 			return err
 		}

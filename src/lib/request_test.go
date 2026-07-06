@@ -21,6 +21,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 type NopCloseRequestTestSuite struct {
@@ -39,7 +41,7 @@ func (suite *NopCloseRequestTestSuite) TestReusableBody() {
 	suite.Equal([]byte(""), body)
 
 	r, _ = http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-	r = NopCloseRequest(r, 0)
+	r = NopCloseRequest(r)
 
 	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
@@ -48,17 +50,53 @@ func (suite *NopCloseRequestTestSuite) TestReusableBody() {
 	body, err = io.ReadAll(r.Body)
 	suite.Nil(err)
 	suite.Equal([]byte("body"), body)
-}
-
-func (suite *NopCloseRequestTestSuite) TestLimitCapsBufferedBody() {
-	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-	r = NopCloseRequest(r, 2)
-
-	body, err := io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("bo"), body)
 }
 
 func TestNopCloseRequestTestSuite(t *testing.T) {
 	suite.Run(t, &NopCloseRequestTestSuite{})
+}
+
+type ReadRequestBodyTestSuite struct {
+	suite.Suite
+}
+
+func (suite *ReadRequestBodyTestSuite) TestWithinLimit() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 8)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), data)
+
+	// body is restored and re-readable for downstream consumers
+	rest, err := io.ReadAll(r.Body)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), rest)
+}
+
+func (suite *ReadRequestBodyTestSuite) TestAtLimit() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 4)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), data)
+}
+
+func (suite *ReadRequestBodyTestSuite) TestOverLimit() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 3)
+	suite.Nil(data)
+	suite.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
+}
+
+func (suite *ReadRequestBodyTestSuite) TestUnbounded() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 0)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), data)
+}
+
+func TestReadRequestBodyTestSuite(t *testing.T) {
+	suite.Run(t, &ReadRequestBodyTestSuite{})
 }

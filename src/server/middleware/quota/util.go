@@ -16,7 +16,6 @@ package quota
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -49,9 +48,7 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 
 var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		lib.NopCloseRequest(r, common.MaxManifestBodySize)
-
-		body, err := io.ReadAll(r.Body)
+		body, err := lib.ReadRequestBody(r, common.MaxManifestBodySize)
 		if err != nil {
 			return nil, distribution.Descriptor{}, err
 		}
