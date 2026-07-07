@@ -35,6 +35,11 @@ packages:
       Controller:
         config:
           dir: testing/controller/quota
+  github.com/goharbor/harbor/src/controller/registry:
+    interfaces:
+      Controller:
+        config:
+          dir: testing/controller/registry
   github.com/goharbor/harbor/src/controller/scan:
     interfaces:
       Controller:
