@@ -286,3 +286,52 @@ func TestValidate(t *testing.T) {
 	err = policy.Validate()
 	assert.Nil(err)
 }
+
+func TestShouldCreateRepoIfNotExist(t *testing.T) {
+	assert := assert.New(t)
+
+	// nil defaults to true
+	p := &Policy{
+		CreateRepoIfNotExist: nil,
+	}
+	assert.True(p.ShouldCreateRepoIfNotExist())
+
+	// true is true
+	vTrue := true
+	p = &Policy{
+		CreateRepoIfNotExist: &vTrue,
+	}
+	assert.True(p.ShouldCreateRepoIfNotExist())
+
+	// false is false
+	vFalse := false
+	p = &Policy{
+		CreateRepoIfNotExist: &vFalse,
+	}
+	assert.False(p.ShouldCreateRepoIfNotExist())
+}
+
+func TestPolicyRoundTrip(t *testing.T) {
+	assert := assert.New(t)
+
+	vFalse := false
+	p := &Policy{
+		ID:           123,
+		Name:         "test-policy",
+		CopyByChunk:  true,
+		CreateRepoIfNotExist: &vFalse,
+	}
+
+	pkgModel, err := p.To()
+	assert.Nil(err)
+	assert.NotNil(pkgModel)
+	assert.NotNil(pkgModel.CreateRepoIfNotExist)
+	assert.False(*pkgModel.CreateRepoIfNotExist)
+
+	p2 := &Policy{}
+	err = p2.From(pkgModel)
+	assert.Nil(err)
+	assert.NotNil(p2.CreateRepoIfNotExist)
+	assert.False(*p2.CreateRepoIfNotExist)
+}
+

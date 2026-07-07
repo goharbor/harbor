@@ -91,13 +91,14 @@ func assembleDestinationResources(resources []*model.Resource,
 			return nil, err
 		}
 		res := &model.Resource{
-			Type:         resource.Type,
-			Registry:     policy.DestRegistry,
-			ExtendedInfo: resource.ExtendedInfo,
-			Deleted:      resource.Deleted,
-			IsDeleteTag:  resource.IsDeleteTag,
-			Override:     policy.Override,
-			Skip:         resource.Skip,
+			Type:                 resource.Type,
+			Registry:             policy.DestRegistry,
+			ExtendedInfo:         resource.ExtendedInfo,
+			Deleted:              resource.Deleted,
+			IsDeleteTag:          resource.IsDeleteTag,
+			Override:             policy.Override,
+			Skip:                 resource.Skip,
+			CreateRepoIfNotExist: policy.ShouldCreateRepoIfNotExist(),
 		}
 		res.Metadata = &model.ResourceMetadata{
 			Repository: &model.Repository{

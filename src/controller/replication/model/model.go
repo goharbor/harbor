@@ -48,6 +48,20 @@ type Policy struct {
 	Speed                     int32           `json:"speed"`
 	CopyByChunk               bool            `json:"copy_by_chunk"`
 	SingleActiveReplication   bool            `json:"single_active_replication"`
+	// CreateRepoIfNotExist: nil/true keeps current behavior (Harbor pre-creates the
+	// repository on the destination registry). false skips creation so the
+	// destination registry can auto-create it on push instead.
+	CreateRepoIfNotExist *bool `json:"create_repo_if_not_exist,omitempty"`
+}
+
+// ShouldCreateRepoIfNotExist returns whether Harbor should pre-create the
+// destination repository before pushing. Defaults to true (legacy behavior)
+// when the policy doesn't specify a value.
+func (p *Policy) ShouldCreateRepoIfNotExist() bool {
+	if p.CreateRepoIfNotExist == nil {
+		return true
+	}
+	return *p.CreateRepoIfNotExist
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -143,6 +157,7 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.Speed = policy.Speed
 	p.CopyByChunk = policy.CopyByChunk
 	p.SingleActiveReplication = policy.SingleActiveReplication
+	p.CreateRepoIfNotExist = policy.CreateRepoIfNotExist
 
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
@@ -189,6 +204,7 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		Speed:                     p.Speed,
 		CopyByChunk:               p.CopyByChunk,
 		SingleActiveReplication:   p.SingleActiveReplication,
+		CreateRepoIfNotExist:      p.CreateRepoIfNotExist,
 	}
 	if p.SrcRegistry != nil {
 		policy.SrcRegistryID = p.SrcRegistry.ID

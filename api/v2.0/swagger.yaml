@@ -7680,6 +7680,14 @@ definitions:
           Whether to skip execution until the previous active execution finishes,
           avoiding the execution of the same replication rules multiple times in parallel.
         x-isnullable: true # make this field optional to keep backward compatibility
+      create_repo_if_not_exist:
+        type: boolean
+        description: |-
+          Whether Harbor should pre-create the repository on the destination registry
+          before pushing. Defaults to true (current behavior). Set to false to let the
+          destination registry auto-create the repository on push instead, so
+          registry-side automation (e.g. AWS ECR repository creation templates) can apply.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7851,6 +7859,11 @@ definitions:
       supported_copy_by_chunk:
         type: boolean
         description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
+      supported_create_repo_config:
+        type: boolean
+        description: Whether the registry adapter supports the "create repository if not exists" toggle.
         x-omitempty: true
         x-isnullable: true
   RegistryProviderInfo:
