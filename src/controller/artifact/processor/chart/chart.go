@@ -40,6 +40,9 @@ const (
 	// as helm put the media type definition under "internal" package, we cannot
 	// import it, defines it by ourselves
 	mediaType = "application/vnd.cncf.helm.config.v1+json"
+
+	// maxChartBytes limits the maximum size of chart layer to read (20 MB)
+	maxChartBytes = 20 * 1024 * 1024
 )
 
 func init() {
@@ -86,9 +89,13 @@ func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artif
 				return nil, err
 			}
 			defer blob.Close()
-			content, err := io.ReadAll(blob)
+			content, err := io.ReadAll(io.LimitReader(blob, maxChartBytes+1))
 			if err != nil {
 				return nil, err
+			}
+			if len(content) > maxChartBytes {
+				return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+					WithMessagef("chart layer size %d exceeds limit of %d bytes", len(content), maxChartBytes)
 			}
 			chartDetails, err := p.chartOperator.GetDetails(content)
 			if err != nil {

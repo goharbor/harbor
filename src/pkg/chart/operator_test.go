@@ -2,6 +2,7 @@ package chart
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"io"
 	"io/fs"
@@ -122,4 +123,42 @@ func TestGetChartDetails(t *testing.T) {
 		// the length of files should be greater than 0
 		assert.Greater(t, len(details.Files), 0)
 	}
+}
+
+func TestGetData_ExceedDecompressedLimit(t *testing.T) {
+	chartOpr := NewOperator()
+
+	// Create a tar.gz with a file of size maxDecompressedChartBytes + 1
+	var buf bytes.Buffer
+	gzw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gzw)
+
+	header := &tar.Header{
+		Name: "harbor/values.yaml",
+		Size: int64(maxDecompressedChartBytes + 1),
+		Mode: 0600,
+	}
+	err := tw.WriteHeader(header)
+	assert.Nil(t, err)
+
+	// Write zero bytes to satisfy the size in header (gzip handles zeros very efficiently)
+	chunkSize := 1024 * 1024
+	zeroChunk := make([]byte, chunkSize)
+	remaining := maxDecompressedChartBytes + 1
+	for remaining > 0 {
+		toWrite := chunkSize
+		if remaining < chunkSize {
+			toWrite = remaining
+		}
+		_, err = tw.Write(zeroChunk[:toWrite])
+		assert.Nil(t, err)
+		remaining -= toWrite
+	}
+
+	tw.Close()
+	gzw.Close()
+
+	_, err = chartOpr.GetData(buf.Bytes())
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "is larger than the maximum file size")
 }

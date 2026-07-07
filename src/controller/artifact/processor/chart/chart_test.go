@@ -15,6 +15,7 @@
 package chart
 
 import (
+	"bytes"
 	"io"
 	"strings"
 	"testing"
@@ -125,6 +126,21 @@ func (p *processorTestSuite) TestAbstractAddition() {
 	p.Require().Nil(err)
 	p.Equal("application/json; charset=utf-8", addition.ContentType)
 	p.Equal(`[{"name":"harbor","version":"v1.10","repository":"github.com/goharbor"}]`, string(addition.Content))
+}
+
+func (p *processorTestSuite) TestAbstractAddition_ExceedLimit() {
+	artifact := &artifact.Artifact{}
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(chartManifest))
+	p.Require().Nil(err)
+	p.regCli.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "", nil)
+
+	largeData := make([]byte, maxChartBytes+1)
+	p.regCli.On("PullBlob", mock.Anything, mock.Anything).Return(int64(0), io.NopCloser(bytes.NewReader(largeData)), nil)
+
+	_, err = p.processor.AbstractAddition(nil, artifact, AdditionTypeValues)
+	p.Require().NotNil(err)
+	p.True(errors.IsErr(err, errors.BadRequestCode))
+	p.Contains(err.Error(), "chart layer size")
 }
 
 func (p *processorTestSuite) TestGetArtifactType() {
