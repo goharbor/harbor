@@ -37,7 +37,7 @@ func TestFilterRepositories_ProjectPublic(t *testing.T) {
 	}{
 		{"public project", map[string]string{"public": "true"}, true},
 		{"private project", map[string]string{"public": "false"}, false},
-		{"auth_only project", map[string]string{"public": "auth_only"}, true},
+		{"auth_only project", map[string]string{"public": "auth_only"}, false},
 	}
 
 	for _, tc := range cases {
@@ -101,6 +101,6 @@ func TestFilterRepositories_AuthOnlyProjectName(t *testing.T) {
 	result, err := s.filterRepositories(context.Background(), []*project.Project{proj}, "")
 	require.NoError(t, err)
 	require.Len(t, result, 1)
-	assert.True(t, result[0].ProjectPublic, "auth_only project should have ProjectPublic=true in search results")
+	assert.False(t, result[0].ProjectPublic, "auth_only project should not be reported as public in search results")
 	assert.Equal(t, "internal-proj", result[0].ProjectName)
 }
