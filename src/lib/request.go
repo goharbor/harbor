@@ -78,11 +78,16 @@ func ReadRequestBody(r *http.Request, limit int64) ([]byte, error) {
 		return nil, nil
 	}
 
-	var reader io.Reader = r.Body
+	// keep a reference to the original body so we can close it safely once we
+	// have buffered its contents (or bailed out on an over-limit body)
+	originalBody := r.Body
+	defer originalBody.Close()
+
+	var reader io.Reader = originalBody
 	if limit > 0 {
 		// read one extra byte so an over-limit body is detected rather than
 		// silently truncated
-		reader = io.LimitReader(r.Body, limit+1)
+		reader = io.LimitReader(originalBody, limit+1)
 	}
 
 	data, err := io.ReadAll(reader)
