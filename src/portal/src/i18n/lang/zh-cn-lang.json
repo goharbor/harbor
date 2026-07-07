@@ -215,6 +215,7 @@
         "ALL_PROJECTS": "所有项目",
         "PRIVATE_PROJECTS": "私有项目",
         "PUBLIC_PROJECTS": "公开项目",
+        "INTERNAL_PROJECTS": "内部项目",
         "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
         "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少1个字符并以字符或者数字开头。",

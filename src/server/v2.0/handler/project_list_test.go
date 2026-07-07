@@ -85,6 +85,78 @@ func boolPtr(b bool) *bool {
 	return &b
 }
 
+func strPtr(s string) *string {
+	return &s
+}
+
+// TestListProjects_MemberQueryExplicitAuthOnly verifies that an explicit
+// q=public=auth_only request for a non-admin local user narrows the result
+// to strictly auth_only projects: the member query still unions in the
+// auth_only set (so the FilterByMember subquery has something to AND
+// against), but the "public" keyword is kept rather than dropped, since
+// ANDing it with FilterByPublic(auth_only) yields exactly the global
+// auth_only set regardless of the member's own project memberships.
+func TestListProjects_MemberQueryExplicitAuthOnly(t *testing.T) {
+	mockCtl := &projecttesting.Controller{}
+	a := &projectAPI{projectCtl: mockCtl}
+
+	mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+		member, ok := query.Keywords["member"].(*pkgModels.MemberQuery)
+		if !ok || member.WithPublic || !member.WithAuthOnly {
+			return false
+		}
+		public, publicKept := query.Keywords["public"]
+		if !publicKept {
+			return false
+		}
+		s, isStr := public.(string)
+		return isStr && s == pkgModels.ProjectAuthOnly
+	})).Return(int64(0), nil).Once()
+
+	user := &commonmodels.User{UserID: 1, Username: "member-user"}
+	secCtx := local.NewSecurityContext(user)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	resp := a.ListProjects(ctx, operation.ListProjectsParams{Q: strPtr("public=auth_only")})
+	require.NotNil(t, resp)
+
+	mockCtl.AssertExpectations(t)
+}
+
+// TestListProjects_RobotNamesQueryExplicitAuthOnly mirrors
+// TestListProjects_MemberQueryExplicitAuthOnly for a project-scoped
+// (non cover-all) system robot account.
+func TestListProjects_RobotNamesQueryExplicitAuthOnly(t *testing.T) {
+	mockCtl := &projecttesting.Controller{}
+	a := &projectAPI{projectCtl: mockCtl}
+
+	mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+		names, ok := query.Keywords["names"].(*pkgModels.NamesQuery)
+		if !ok || names.WithPublic || !names.WithAuthOnly {
+			return false
+		}
+		public, publicKept := query.Keywords["public"]
+		if !publicKept {
+			return false
+		}
+		s, isStr := public.(string)
+		return isStr && s == pkgModels.ProjectAuthOnly
+	})).Return(int64(0), nil).Once()
+
+	r := &ctlrobot.Robot{
+		Permissions: []*ctlrobot.Permission{
+			{Namespace: "myproject", Scope: ctlrobot.SCOPEPROJECT},
+		},
+	}
+	secCtx := robotSec.NewSecurityContext(r)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	resp := a.ListProjects(ctx, operation.ListProjectsParams{Q: strPtr("public=auth_only")})
+	require.NotNil(t, resp)
+
+	mockCtl.AssertExpectations(t)
+}
+
 // TestListProjects_RobotNamesQueryAuthOnly mirrors TestListProjects_MemberQueryAuthOnly
 // for a project-scoped (non cover-all) system robot account.
 func TestListProjects_RobotNamesQueryAuthOnly(t *testing.T) {

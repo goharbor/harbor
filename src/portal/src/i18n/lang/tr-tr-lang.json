@@ -216,6 +216,7 @@
         "ALL_PROJECTS": "Tüm Projeler",
         "PRIVATE_PROJECTS": "Özel Projeler",
         "PUBLIC_PROJECTS": "Genel Projeler",
+        "INTERNAL_PROJECTS": "Dahili Projeler",
         "PROJECT": "Proje",
         "NEW_PROJECT": "Yeni Proje",
         "NAME_TOOLTIP": "Proje adı, en az 1~255 karakter uzunluğunda, küçük harf, rakam ve ._- ile yazılmalı ve karakter veya rakamlarla başlamalıdır.",

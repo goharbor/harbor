@@ -88,7 +88,7 @@ export abstract class ProjectService {
      */
     abstract listProjects(
         name: string,
-        isPublic?: number,
+        isPublic?: number | string,
         page?: number,
         pageSize?: number,
         sort?: string
@@ -193,7 +193,7 @@ export class ProjectDefaultService extends ProjectService {
     }
     public listProjects(
         name: string,
-        isPublic?: number,
+        isPublic?: number | string,
         page?: number,
         pageSize?: number,
         sort?: string
@@ -207,7 +207,12 @@ export class ProjectDefaultService extends ProjectService {
         if (name && name.trim() !== '') {
             params = params.set('name', name);
         }
-        if (isPublic !== undefined) {
+        if (isPublic === 'auth_only') {
+            // the "public" query param only accepts a boolean, so filtering
+            // for internal (auth_only) projects goes through the generic
+            // advanced query string instead
+            params = params.set('q', 'public=auth_only');
+        } else if (isPublic !== undefined) {
             params = params.set('public', '' + isPublic);
         }
         if (sort) {

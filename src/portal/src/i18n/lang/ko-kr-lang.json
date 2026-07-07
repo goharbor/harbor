@@ -215,6 +215,7 @@
         "ALL_PROJECTS": "모든 프로젝트",
         "PRIVATE_PROJECTS": "공개 프로젝트",
         "PUBLIC_PROJECTS": "비공개 프로젝트",
+        "INTERNAL_PROJECTS": "내부 프로젝트",
         "PROJECT": "프로젝트",
         "NEW_PROJECT": "새 프로젝트",
         "NAME_TOOLTIP": "프로젝트 이름은 1~255자(영문 소문자, 숫자, ._- 포함)이어야 하며 문자나 숫자로 시작해야 합니다.",

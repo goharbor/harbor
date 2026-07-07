@@ -216,6 +216,7 @@
         "ALL_PROJECTS": "Tous les projets",
         "PRIVATE_PROJECTS": "Projets privés",
         "PUBLIC_PROJECTS": "Projets publics",
+        "INTERNAL_PROJECTS": "Projets internes",
         "PROJECT": "Projet",
         "NEW_PROJECT": "Nouveau Projet",
         "NAME_TOOLTIP": "Le nom du projet doit comporter 1~255 caractères avec des minuscules, des chiffres et ._- et doit commencer par des caractères ou des chiffres.",

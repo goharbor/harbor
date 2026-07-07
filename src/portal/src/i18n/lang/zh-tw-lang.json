@@ -215,6 +215,7 @@
         "ALL_PROJECTS": "所有專案",
         "PRIVATE_PROJECTS": "私有專案",
         "PUBLIC_PROJECTS": "公開專案",
+        "INTERNAL_PROJECTS": "內部專案",
         "PROJECT": "專案",
         "NEW_PROJECT": "新增專案",
         "NAME_TOOLTIP": "專案名稱長度應為 1-255 個字元，可包含小寫字母、數字及 ._-，且必須以字母或數字開頭。",

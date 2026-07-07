@@ -449,6 +449,15 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 	if params.Public != nil {
 		query.Keywords["public"] = lib.BoolValue(params.Public)
 	}
+	// an explicit request for strictly auth_only projects (via q=public=auth_only,
+	// since the dedicated "public" param above only accepts a boolean) must not be
+	// collapsed into the "not strictly public" member/robot union below.
+	isExplicitAuthOnly := false
+	if public, ok := query.Keywords["public"]; ok {
+		if s, isStr := public.(string); isStr && s == pkgModels.ProjectAuthOnly {
+			isExplicitAuthOnly = true
+		}
+	}
 
 	secCtx, ok := security.FromContext(ctx)
 	if ok && secCtx.IsAuthenticated() {
@@ -475,8 +484,11 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				query.Keywords["member"] = member
 				// FilterByPublic(false) only matches value='false' and would exclude auth_only
 				// projects. The member query already encodes the auth_only inclusion via
-				// WithAuthOnly, so drop the conflicting 'public' keyword here.
-				if member.WithAuthOnly {
+				// WithAuthOnly, so drop the conflicting 'public' keyword here — unless the
+				// caller explicitly asked for auth_only projects, in which case ANDing with
+				// FilterByPublic(auth_only) is exactly what narrows the member/public/auth_only
+				// union down to the strict auth_only set.
+				if member.WithAuthOnly && !isExplicitAuthOnly {
 					delete(query.Keywords, "public")
 				}
 			} else if r, ok := secCtx.(*robotSec.SecurityContext); ok {
@@ -501,7 +513,7 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 					if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
 						namesQuery.WithAuthOnly = true
 					}
-					if namesQuery.WithAuthOnly {
+					if namesQuery.WithAuthOnly && !isExplicitAuthOnly {
 						delete(query.Keywords, "public")
 					}
 					query.Keywords["names"] = namesQuery
