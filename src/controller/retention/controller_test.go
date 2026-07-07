@@ -344,3 +344,24 @@ func (f *fakeLauncher) Stop(ctx context.Context, executionID int64) error {
 func (f *fakeLauncher) Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	return 0, nil
 }
+
+func TestConvertExecutionDryRun(t *testing.T) {
+	cases := []struct {
+		name  string
+		attrs map[string]any
+		want  bool
+	}{
+		{"nil extra attrs", nil, false},
+		{"missing dry_run", map[string]any{"operator": "admin"}, false},
+		{"dry_run true", map[string]any{"dry_run": true}, true},
+		{"invalid dry_run type", map[string]any{"dry_run": "true"}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := convertExecution(&task.Execution{ExtraAttrs: tc.attrs})
+			if got.DryRun != tc.want {
+				t.Fatalf("DryRun = %v, want %v", got.DryRun, tc.want)
+			}
+		})
+	}
+}
