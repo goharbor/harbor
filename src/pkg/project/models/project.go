@@ -222,8 +222,7 @@ func (p *Project) FilterByPublic(_ context.Context, qs orm.QuerySeter, _ string,
 	} else if s, ok := value.(string); ok && s == ProjectAuthOnly {
 		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'auth_only'`
 	} else {
-		// false means "not public" — includes both private and auth_only projects
-		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value != 'true'`
+		subQuery = `SELECT project_id FROM project_metadata WHERE name = 'public' AND value = 'false'`
 	}
 	return qs.FilterRaw("project_id", fmt.Sprintf("IN (%s)", subQuery))
 }

@@ -473,6 +473,12 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				}
 
 				query.Keywords["member"] = member
+				// FilterByPublic(false) only matches value='false' and would exclude auth_only
+				// projects. The member query already encodes the auth_only inclusion via
+				// WithAuthOnly, so drop the conflicting 'public' keyword here.
+				if member.WithAuthOnly {
+					delete(query.Keywords, "public")
+				}
 			} else if r, ok := secCtx.(*robotSec.SecurityContext); ok {
 				// for the system level robot that covers all the project, see it as the system admin.
 				var coverAll bool
@@ -494,6 +500,9 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 					// include auth_only projects when not filtering for strictly public-only results
 					if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
 						namesQuery.WithAuthOnly = true
+					}
+					if namesQuery.WithAuthOnly {
+						delete(query.Keywords, "public")
 					}
 					query.Keywords["names"] = namesQuery
 				}

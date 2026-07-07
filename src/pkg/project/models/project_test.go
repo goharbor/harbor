@@ -67,8 +67,8 @@ func TestFilterByPublic(t *testing.T) {
 	}{
 		{"true bool selects public", true, "value = 'true'"},
 		{"true string selects public", "true", "value = 'true'"},
-		{"false bool selects non-public", false, "value != 'true'"},
-		{"false string selects non-public", "false", "value != 'true'"},
+		{"false bool selects private", false, "value = 'false'"},
+		{"false string selects private", "false", "value = 'false'"},
 		{"auth_only string selects auth_only", "auth_only", "value = 'auth_only'"},
 	}
 
