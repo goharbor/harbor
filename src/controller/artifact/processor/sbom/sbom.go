@@ -33,6 +33,8 @@ const (
 	ArtifactTypeSBOM = "SBOM"
 	// processorMediaType is the media type for SBOM, it's scope is only used to register the processor
 	processorMediaType = "application/vnd.goharbor.harbor.sbom.v1"
+	// maxSBOMBytes is the maximum allowed size for an SBOM layer (4MB)
+	maxSBOMBytes = 1024 * 1024 * 4
 )
 
 func init() {
@@ -67,15 +69,27 @@ func (m *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 	if len(manifest.Layers) != 1 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("The sbom is not found")
 	}
-	layerDgst := manifest.Layers[0].Digest.String()
+	layer := manifest.Layers[0]
+	if layer.Size > maxSBOMBytes {
+		return nil, errors.RequestEntityTooLargeError(nil).WithMessage("The sbom layer is too large")
+	}
+	layerDgst := layer.Digest.String()
 	_, blob, err := m.RegCli.PullBlob(art.RepositoryName, layerDgst)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pull the blob")
 	}
 	defer blob.Close()
-	content, err := io.ReadAll(blob)
+	content, err := io.ReadAll(io.LimitReader(blob, maxSBOMBytes))
 	if err != nil {
 		return nil, err
+	}
+	if int64(len(content)) >= maxSBOMBytes {
+		// Check if we actually hit the limit by trying to read one more byte
+		var checkBuf [1]byte
+		n, _ := blob.Read(checkBuf[:])
+		if n > 0 {
+			return nil, errors.RequestEntityTooLargeError(nil).WithMessage("The sbom layer is too large")
+		}
 	}
 	return &processor.Addition{
 		Content:     content,
