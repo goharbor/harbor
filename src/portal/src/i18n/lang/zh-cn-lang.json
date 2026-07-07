@@ -230,7 +230,7 @@
         "CREATED_SUCCESS": "成功创建项目。",
         "DELETED_SUCCESS": "成功删除项目。",
         "TOGGLED_SUCCESS": "切换状态成功。",
-        “INLINE_HELP_PUBLIC”: “公开：任何人无需登录即可拉取镜像。内部：任何已认证用户均可拉取镜像。私有：仅项目成员可访问。”,
+        "INLINE_HELP_PUBLIC": "公开：任何人无需登录即可拉取镜像。内部：任何已认证用户均可拉取镜像。私有：仅项目成员可访问。", 
         "PROXY_CACHE_BANDWIDTH": "Set the maximum network bandwidth to pull image from upstream for proxy-cache. For unlimited bandwidth, please enter -1. ",
         "BANDWIDTH": "Bandwidth",
         "SPEED_LIMIT_TIP": "Please enter -1 or an integer greater than 0. ",
