@@ -32,13 +32,29 @@ def prepare_nginx_certs(cert_key_path, cert_path):
     host_ngx_cert_key_path = Path(os.path.join(host_root_dir, cert_key_path.lstrip('/')))
     host_ngx_cert_path = Path(os.path.join(host_root_dir, cert_path.lstrip('/')))
 
-    os.makedirs(host_ngx_real_cert_dir, mode=0o755, exist_ok=True)
+    cert_dir = Path(host_ngx_real_cert_dir)
+
+    # Create if missing, preserve if existing
+    cert_dir.mkdir(parents=True, exist_ok=True)
+
+    # Remove all contents but keep the directory itself
+    for entry in cert_dir.iterdir():
+        if entry.is_dir() and not entry.is_symlink():
+            shutil.rmtree(entry)
+        else:
+            entry.unlink()
+
+    # Enforce permissions
+    os.chmod(cert_dir, 0o755)
+
+    # Enforce ownership
+    os.chown(cert_dir, DEFAULT_UID, DEFAULT_GID)
+
     real_key_path = os.path.join(host_ngx_real_cert_dir, 'server.key')
     real_crt_path = os.path.join(host_ngx_real_cert_dir, 'server.crt')
     shutil.copy2(host_ngx_cert_key_path, real_key_path)
     shutil.copy2(host_ngx_cert_path, real_crt_path)
 
-    os.chown(host_ngx_real_cert_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     mark_file(real_key_path, uid=DEFAULT_UID, gid=DEFAULT_GID)
     mark_file(real_crt_path, uid=DEFAULT_UID, gid=DEFAULT_GID)
 
