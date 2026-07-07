@@ -3,8 +3,10 @@ package handler
 import (
 	"testing"
 
+	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	models2 "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -39,10 +41,16 @@ func (suite *StatisticsTestSuite) SetupSuite() {
 	suite.Suite.SetupSuite()
 }
 
+func isAuthOnlyQuery(query *q.Query) bool {
+	return query != nil && query.Keywords["public"] == "auth_only"
+}
+
 func (suite *StatisticsTestSuite) TestGetStatistic() {
-	// List is called twice before the admin check: once for public projects and
-	// once for auth_only projects.  Return empty slices for both so counts are 0.
+	// List is called once (for public projects); the auth_only count now goes
+	// through Count.  Return an empty slice so the public count is 0.
 	suite.projectCtl.On("List", mock.Anything, mock.Anything, mock.Anything).Return([]*models.Project{}, nil)
+	// auth_only count query returns 0; the total-project count (nil query) returns 10.
+	suite.projectCtl.On("Count", mock.Anything, testifymock.MatchedBy(isAuthOnlyQuery)).Return(int64(0), nil)
 	suite.projectCtl.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
 	suite.repoCtl.On("Count", mock.Anything, mock.Anything).Return(int64(20), nil)
 	suite.blobCtl.On("CalculateTotalSize", mock.Anything, true).Return(int64(1000), nil)
@@ -66,7 +74,6 @@ func (suite *StatisticsTestSuite) TestGetStatistic() {
 }
 
 func (suite *StatisticsTestSuite) TestGetStatisticWithAuthOnly() {
-	authOnlyProject := &models.Project{ProjectID: 3, Name: "auth-only-proj"}
 	publicProject := &models.Project{ProjectID: 2, Name: "public-proj"}
 
 	// Clear accumulated expectations from previous tests so the ordered Once()
@@ -76,11 +83,11 @@ func (suite *StatisticsTestSuite) TestGetStatisticWithAuthOnly() {
 	suite.blobCtl.ExpectedCalls = nil
 	suite.sysArtifactMgr.ExpectedCalls = nil
 
-	// First List call returns public projects; second returns auth_only.
+	// List returns the public project; the auth_only count now goes through Count.
 	suite.projectCtl.On("List", mock.Anything, mock.Anything, mock.Anything).
 		Return([]*models.Project{publicProject}, nil).Once()
-	suite.projectCtl.On("List", mock.Anything, mock.Anything, mock.Anything).
-		Return([]*models.Project{authOnlyProject}, nil).Once()
+	// auth_only count query returns 1; the total-project count (nil query) returns 5.
+	suite.projectCtl.On("Count", mock.Anything, testifymock.MatchedBy(isAuthOnlyQuery)).Return(int64(1), nil)
 	suite.projectCtl.On("Count", mock.Anything, mock.Anything).Return(int64(5), nil)
 	suite.repoCtl.On("Count", mock.Anything, mock.Anything).Return(int64(10), nil)
 	suite.blobCtl.On("CalculateTotalSize", mock.Anything, true).Return(int64(500), nil)

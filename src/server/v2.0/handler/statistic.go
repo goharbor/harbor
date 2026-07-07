@@ -76,11 +76,11 @@ func (s *statisticAPI) GetStatistic(ctx context.Context, _ operation.GetStatisti
 		statistic.PublicRepoCount = n
 	}
 
-	authOnlyProjs, err := s.proCtl.List(ctx, q.New(q.KeyWords{"public": "auth_only"}), project.Metadata(false))
+	authOnlyCount, err := s.proCtl.Count(ctx, q.New(q.KeyWords{"public": "auth_only"}))
 	if err != nil {
 		return s.SendError(ctx, err)
 	}
-	statistic.AuthOnlyProjectCount = int64(len(authOnlyProjs))
+	statistic.AuthOnlyProjectCount = authOnlyCount
 
 	securityCtx, err := s.GetSecurityContext(ctx)
 	if err != nil {
