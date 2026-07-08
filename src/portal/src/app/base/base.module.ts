@@ -51,7 +51,6 @@ const routes: Routes = [
                         m => m.UserModule
                     ),
             },
-            // MGS TODO
             {
                 path: 'roles',
                 canActivate: [SystemAdminGuard],

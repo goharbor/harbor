@@ -21,8 +21,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/security/local"
-	"github.com/goharbor/harbor/src/controller/member"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
@@ -33,13 +31,11 @@ import (
 type permissionsAPI struct {
 	BaseAPI
 	uc user.Controller
-	mc member.Controller
 }
 
 func newPermissionsAPIAPI() *permissionsAPI {
 	return &permissionsAPI{
 		uc: user.Ctl,
-		mc: member.NewController(),
 	}
 }
 
@@ -58,21 +54,6 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 	}
 
 	isSystemAdmin := secCtx.IsSysAdmin()
-
-	// Project-admin check is only needed to decide whether to include project-admin
-	// scoped permissions; it does not gate access to this endpoint.
-	var isProjectAdmin bool
-	if !isSystemAdmin {
-		if sc, ok := secCtx.(*local.SecurityContext); ok {
-			user := sc.User()
-			var err error
-			isProjectAdmin, err = p.mc.IsProjectAdmin(ctx, *user)
-			if err != nil {
-				return p.SendError(ctx, err)
-			}
-		}
-	}
-	_ = isProjectAdmin // reserved for future scope filtering
 
 	provider := rbac.GetPermissionProvider()
 	sysPermissions := make([]*types.Policy, 0)

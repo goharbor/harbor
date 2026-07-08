@@ -213,9 +213,7 @@ func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRole
 	return operation.NewUpdateRoleOK()
 }
 
-// more validation
 func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
-
 	if len(permissions) == 0 {
 		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
 	}

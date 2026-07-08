@@ -95,7 +95,6 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     ) {}
     ngOnInit(): void {
         this.subscribeName();
-        console.log("init new robot component");
     }
     ngOnDestroy() {
         if (this._nameSubscription) {
