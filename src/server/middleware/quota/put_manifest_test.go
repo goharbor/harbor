@@ -294,6 +294,26 @@ func (suite *PutManifestMiddlewareTestSuite) TestPutInvalid() {
 
 }
 
+func (suite *PutManifestMiddlewareTestSuite) TestOverLimitManifestReturns413() {
+	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
+
+	// an over-limit body must surface as 413, not be re-wrapped into a
+	// MANIFEST_INVALID (400) by the quota middleware
+	unmarshalManifest = func(_ *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
+		return nil, distribution.Descriptor{}, errors.RequestEntityTooLargeError(nil)
+	}
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/photon/manifests/2.0", nil)
+	rr := httptest.NewRecorder()
+
+	PutManifestMiddleware()(next).ServeHTTP(rr, req)
+	suite.Equal(http.StatusRequestEntityTooLarge, rr.Code)
+}
+
 func TestPutManifestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &PutManifestMiddlewareTestSuite{})
 }
