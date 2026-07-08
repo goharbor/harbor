@@ -402,6 +402,7 @@
         "MEMBER": "Project Member"
     },
     "ROLE": {
+        "ROLE_NAV": "Kullanıcı Rolleri",
         "NAME": "İsim",
         "PERMISSIONS": "İzinler",
         "TOKEN": "Token",

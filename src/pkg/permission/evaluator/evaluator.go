@@ -56,7 +56,6 @@ func (evaluators Evaluators) Add(newEvaluators ...Evaluator) Evaluators {
 
 // HasPermission returns true when one of evaluator has action permission for the resource
 func (evaluators Evaluators) HasPermission(ctx context.Context, resource types.Resource, action types.Action) bool {
-
 	for _, evaluator := range evaluators {
 		if evaluator != nil && evaluator.HasPermission(ctx, resource, action) {
 			return true

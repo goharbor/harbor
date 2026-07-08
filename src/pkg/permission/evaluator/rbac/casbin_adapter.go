@@ -32,7 +32,6 @@ func policyLinesOfRole(rbacRole types.RBACRole) []string {
 	lines := []string{}
 
 	roleName := rbacRole.GetRoleName()
-
 	// returns empty policy lines if role name is empty
 	if roleName == "" {
 		return lines
@@ -73,12 +72,8 @@ func (a *adapter) getPolicyLines() []string {
 
 	lines = append(lines, policyLinesOfRBACUser(a.rbacUser)...)
 
-	// lines = append(lines, policyLinesOfRole(role)...)
 	for _, role := range a.rbacUser.GetRoles() {
-		for _, policy := range role.GetPolicies() {
-			line := fmt.Sprintf("p, %s, %s, %s, %s", role.GetRoleName(), policy.Resource, policy.Action, policy.GetEffect())
-			lines = append(lines, line)
-		}
+		lines = append(lines, policyLinesOfRole(role)...)
 		lines = append(lines, fmt.Sprintf("g, %s, %s", username, role.GetRoleName()))
 	}
 

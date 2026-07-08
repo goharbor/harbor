@@ -401,6 +401,7 @@
         "MEMBER": "專案成員"
     },
     "ROLE": {
+        "ROLE_NAV": "使用者角色",
         "NAME": "名稱",
         "PERMISSIONS": "權限",
         "TOKEN": "權杖",

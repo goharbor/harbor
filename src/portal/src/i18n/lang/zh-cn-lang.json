@@ -401,6 +401,7 @@
         "MEMBER": "项目成员"
     },
     "ROLE": {
+        "ROLE_NAV": "用户角色",
         "NAME": "名称",
         "PERMISSIONS": "权限",
         "TOKEN": "令牌",

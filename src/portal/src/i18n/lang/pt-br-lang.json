@@ -401,6 +401,7 @@
         "MEMBER": "Project Member"
     },
     "ROLE": {
+        "ROLE_NAV": "Funções do Usuário",
         "NAME": "Nome",
         "PERMISSIONS": "Permissões",
         "TOKEN": "Token",
