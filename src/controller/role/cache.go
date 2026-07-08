@@ -16,6 +16,7 @@ package role
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -48,6 +49,11 @@ const (
 	envL1MemoryTTL = "ROLE_CACHE_L1_MEMORY_TTL"
 	envL2RedisTTL  = "ROLE_CACHE_L2_REDIS_TTL"
 )
+
+// errRoleNotFound signals that the inner controller has no such role. It is used
+// only to keep a missing role out of the cache (FetchOrSave must not persist a nil
+// value); callers translate it back to the (nil, nil) not-found contract.
+var errRoleNotFound = errors.New("role not found")
 
 // l1Entry is the process-local (L1) cache value: the role and the absolute
 // instant after which it must be re-validated against L2/DB.
@@ -160,26 +166,53 @@ func (c *cachingController) Get(ctx context.Context, id int64, option *Option) (
 		}
 	}
 
-	// L2: Redis (honours its own TTL — expired keys are already gone).
+	// build reads the source of truth (DB). A missing role is reported as
+	// errRoleNotFound so it is never written to the cache.
+	build := func() (*Role, error) {
+		r, err := c.Controller.Get(ctx, id, option)
+		if err != nil {
+			return nil, err
+		}
+		if r == nil {
+			return nil, errRoleNotFound
+		}
+		return r, nil
+	}
+
+	// L2: Redis. FetchOrSave coalesces concurrent L1 misses for the same key
+	// (singleflight => a single DB build) and populates Redis with a
+	// non-cancelable context (l2RedisTTL). It runs only after an L1 miss, so the
+	// per-request hot path stays L1-only. On any L2/Redis error we fall through
+	// to a direct DB read, so a Redis hiccup never fails an authz check.
 	if rc := c.redis(); rc != nil {
-		var cached Role
-		if err := rc.Fetch(ctx, roleCacheKey(id), &cached); err == nil {
-			c.storeL1(id, &cached) // promote to L1
-			return &cached, nil
+		var r Role
+		err := cache.FetchOrSave(ctx, rc, roleCacheKey(id), &r, func() (any, error) {
+			v, err := build()
+			if err != nil {
+				return nil, err
+			}
+			return v, nil
+		}, c.l2RedisTTL)
+		switch {
+		case errors.Is(err, errRoleNotFound):
+			return nil, nil
+		case err == nil:
+			c.storeL1(id, &r) // promote to L1
+			return &r, nil
+		default:
+			log.Warningf("role cache L2 path failed for id %d, falling back to DB: %v", id, err)
 		}
 	}
 
-	// Inner (DB): source of truth. Populate the enabled layers.
-	r, err := c.Controller.Get(ctx, id, option)
+	// L2 disabled (or L2 errored above): read the DB directly and populate L1.
+	r, err := build()
+	if errors.Is(err, errRoleNotFound) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	if r != nil {
-		if rc := c.redis(); rc != nil {
-			_ = rc.Save(ctx, roleCacheKey(id), r, c.l2RedisTTL)
-		}
-		c.storeL1(id, r)
-	}
+	c.storeL1(id, r)
 	return r, nil
 }
 
@@ -198,9 +231,14 @@ func (c *cachingController) Update(ctx context.Context, r *Role, option *Option)
 	if err := c.Controller.Update(ctx, r, option); err != nil {
 		return err
 	}
-	if r != nil {
-		c.invalidate(ctx, r.ID)
+	// A successful inner Update guarantees a non-nil role with a valid ID (the
+	// inner controller rejects a nil role). Guard defensively, but log rather than
+	// silently skip: a missed invalidation would serve stale permissions.
+	if r == nil {
+		log.Warningf("role cache: Update succeeded with a nil role; cannot invalidate, permissions may be stale")
+		return nil
 	}
+	c.invalidate(ctx, r.ID)
 	return nil
 }
 
