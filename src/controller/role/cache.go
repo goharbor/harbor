@@ -34,10 +34,15 @@ const (
 	// on freshness: a change made on another node is picked up within this window
 	// (the shared L2 entry is deleted on write, so the next L1 refresh re-reads it).
 	defaultL1MemoryTTL = time.Second
-	// defaultL2RedisTTL bounds how long a Redis (L2) entry can survive an
-	// out-of-band change (e.g. a direct SQL UPDATE to role_permission that bypasses
-	// the controller). It is the backstop for when no in-app write invalidates it.
-	defaultL2RedisTTL = 30 * time.Minute
+	// defaultL2RedisTTL is the disabled sentinel: Redis (L2) is OFF by default.
+	// RBAC is a per-request hot path, so we keep Redis off it unless an operator
+	// explicitly opts in via ROLE_CACHE_L2_REDIS_TTL — avoiding a new Redis
+	// availability/latency dependency on authz (see goharbor/harbor#23335, where a
+	// per-request Redis cache path exhausted the DB pool and hung core). L1's
+	// in-memory TTL bounds staleness without Redis. When enabled, 30m is the
+	// suggested value; it then doubles as the backstop for out-of-band DB changes
+	// (e.g. a direct SQL UPDATE to role_permission that bypasses the controller).
+	defaultL2RedisTTL = time.Duration(-1)
 
 	// Env vars (see envDuration for the accepted format and the <=0 "disable" rule).
 	envL1MemoryTTL = "ROLE_CACHE_L1_MEMORY_TTL"

@@ -80,7 +80,8 @@ inner controller stays completely cache-agnostic. It is a **two-level cache**:
 - **L1 — process-local** (`sync.Map` of `l1Entry`, per node): zero network hops
   on the hot path. Each entry carries an absolute expiry.
 - **L2 — shared Redis** via `cache.Default()` (the same instance the quota
-  controller uses), keyed by `role:<id>`.
+  controller uses), keyed by `role:<id>`. **Opt-in, off by default** — RBAC is a
+  per-request hot path, so Redis is kept off it unless an operator enables it.
 
 Read path for `Get(WithPermission)`: `L1 (fresh) → L2 (Redis) → inner (DB)`;
 results are written back to the enabled layers. `Get` without permissions, plus
@@ -98,19 +99,21 @@ layer. This mirrors the parser in `src/lib/cache/redis/util.go`.
 | Env var | Default | Effect |
 |---|---|---|
 | `ROLE_CACHE_L1_MEMORY_TTL` | `1s` | L1 freshness window; `-1` disables L1 (every read consults L2/DB). |
-| `ROLE_CACHE_L2_REDIS_TTL` | `30m` | Redis entry TTL / backstop for out-of-band edits; `-1` disables Redis (reads go L1 → DB). |
+| `ROLE_CACHE_L2_REDIS_TTL` | `off` (unset) | Redis (L2) is **off by default**; set e.g. `30m` to enable shared cross-node caching (the value is also the backstop for out-of-band edits). |
 
-Setting both to `-1` is the full-bypass mode (DB every request). There is no
-separate on/off flag — the two TTLs express every mode.
+**The default is L1-memory-only, with no Redis dependency** — RBAC stays off
+Redis unless `ROLE_CACHE_L2_REDIS_TTL` is set. Setting both layers to `-1` is the
+full-bypass mode (DB every request). There is no separate on/off flag — the two
+TTLs express every mode.
 
-Behaviour matrix:
+Behaviour matrix (the first row is the default):
 
 | `..._L1_MEMORY_TTL` | `..._L2_REDIS_TTL` | Read path |
 |---|---|---|
-| `1s` | `30m` | L1 → L2 → DB |
+| `1s` | `off` | L1 → DB (default; no Redis) |
+| `1s` | `30m` | L1 → L2 → DB (opt-in Redis) |
 | `-1` | `30m` | L2 → DB every request |
-| `1s` | `-1` | L1 → DB (Redis off) |
-| `-1` | `-1` | DB every request (full bypass) |
+| `-1` | `off` | DB every request (full bypass) |
 
 ## 5. Frontend (Angular portal)
 
