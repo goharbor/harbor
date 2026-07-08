@@ -17,8 +17,11 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
 	testifymock "github.com/stretchr/testify/mock"
 
@@ -29,6 +32,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
+	memberop "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/member"
 	securityMock "github.com/goharbor/harbor/src/testing/common/security"
 )
 
@@ -223,6 +228,53 @@ func TestCheckNoEscalation_ProjectNameInsteadOfID(t *testing.T) {
 	// numeric int64 → no DB lookup → should work cleanly
 	err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, 70)
 	assert.NoError(t, err)
+}
+
+// ---------------------------------------------------------------------------
+// Handler-level escalation gate on the MODIFY path (UpdateProjectMember)
+// ---------------------------------------------------------------------------
+
+// TestUpdateProjectMember_EscalationBlocked proves that modifying a member's
+// role is subject to the anti-escalation check: a caller who may update members
+// but does NOT hold a permission granted by the target role is rejected with 403,
+// and the member controller's UpdateRole is never reached. This guards against a
+// regression that drops checkNoEscalation from the update (modification) path.
+func TestUpdateProjectMember_EscalationBlocked(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsSysAdmin").Return(false)
+	sc.On("IsAuthenticated").Return(true)
+	// caller may update members (passes RequireProjectAccess)...
+	sc.On("Can", testifymock.Anything,
+		rbac.ActionUpdate, projectResource(rbac.ResourceMember)).Return(true)
+	// ...but does NOT hold member:create, which the target role grants
+	sc.On("Can", testifymock.Anything,
+		rbac.ActionCreate, projectResource(rbac.ResourceMember)).Return(false)
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(30), testifymock.Anything).
+		Return(&roleCtl.Role{
+			Permissions: []*roleCtl.Permission{{
+				Access: policyAccess(rbac.ResourceMember, rbac.ActionCreate),
+			}},
+		}, nil)
+
+	xFalse := false
+	params := memberop.UpdateProjectMemberParams{
+		ProjectNameOrID: fmt.Sprintf("%d", testProjectID),
+		XIsResourceName: &xFalse,
+		Mid:             7,
+		Role:            &models.RoleRequest{RoleID: 30},
+	}
+
+	// ctl (member controller) is intentionally nil: the escalation check must
+	// reject before UpdateRole is reached, so it is never dereferenced.
+	resp := newAPI(rc).UpdateProjectMember(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusForbidden, rr.Code)
+	// reached checkNoEscalation (fetched the target role) before rejecting
+	rc.AssertCalled(t, "Get", testifymock.Anything, int64(30), testifymock.Anything)
 }
 
 // ---------------------------------------------------------------------------
