@@ -15,8 +15,11 @@
 package handler
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
 	testifymock "github.com/stretchr/testify/mock"
 
@@ -24,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/role"
 	securityMock "github.com/goharbor/harbor/src/testing/common/security"
 )
 
@@ -57,6 +61,43 @@ func TestCheckSysAdmin_UnauthenticatedUnauthorized(t *testing.T) {
 	err := (&roleAPI{}).checkSysAdmin(newCtxWithSecurity(sc))
 	assert.Error(t, err)
 	assert.Equal(t, errors.UnAuthorizedCode, errors.ErrCode(err))
+}
+
+// ---------------------------------------------------------------------------
+// CreateRole authorization gate (escalation prevention)
+// ---------------------------------------------------------------------------
+
+// TestCreateRole_NonSysAdminForbidden proves that role definition is restricted
+// to system admins: a non-sysadmin attempting to create a role with broad
+// permissions is rejected at the checkSysAdmin gate before any role is created,
+// so there is no privilege-escalation path through this handler. roleCtl is
+// intentionally nil — the request must never reach it.
+func TestCreateRole_NonSysAdminForbidden(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(false)
+
+	api := &roleAPI{}
+	params := operation.CreateRoleParams{
+		Role: &models.RoleCreate{
+			Name: "escalated-role",
+			Permissions: []*models.RolePermission{
+				{
+					Kind:      roleCtl.LEVELROLE,
+					Namespace: "*",
+					Access: []*models.Access{
+						{Resource: "repository", Action: "push"},
+					},
+				},
+			},
+		},
+	}
+
+	resp := api.CreateRole(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusForbidden, rr.Code)
 }
 
 // ---------------------------------------------------------------------------
