@@ -53,7 +53,16 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		} else {
 			log.Warningf("failed to get auth mode: %v", err)
 		}
+		// When Authorization is provided (e.g. Swagger UI "Authorize"), do not
+		// fall back to the portal session. Failed credentials must not silently
+		// use the logged-in user (https://github.com/goharbor/harbor/issues/7704).
+		hasAuthorization := r.Header.Get("Authorization") != ""
 		for _, generator := range generators {
+			if hasAuthorization {
+				if _, ok := generator.(*session); ok {
+					continue
+				}
+			}
 			if ctx := generator.Generate(r); ctx != nil {
 				r = r.WithContext(security.NewContext(r.Context(), ctx))
 				break
