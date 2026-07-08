@@ -1,32 +1,35 @@
 <div>
-    <form #newUserFrom="ngForm" class="clr-form clr-form-horizontal">
-        <div class="clr-form-control">
+    <form clrForm #newUserFrom="ngForm" clrLayout="horizontal" clrLabelSize="4">
+        <!-- Name -->
+        <div class="clr-form-control clr-row">
             <label class="required clr-control-label">{{
                 'PROFILE.USER_NAME' | translate
             }}</label>
             <div
-                class="clr-control-container"
+                class="clr-control-container clr-col-md-8 clr-col-12"
                 [class.clr-error]="getValidationState('username')">
                 <div class="clr-input-wrapper">
-                    <input
-                        type="text"
-                        class="clr-input"
-                        required
-                        pattern='[^,"~#$%]+'
-                        maxLengthExt="255"
-                        #usernameInput="ngModel"
-                        name="username"
-                        [(ngModel)]="newUser.username"
-                        id="username"
-                        size="30"
-                        (input)="handleValidation('username', false)"
-                        (blur)="handleValidation('username', true)" />
-                    <clr-icon
-                        class="clr-validate-icon"
-                        shape="exclamation-circle"></clr-icon>
-                    <span
-                        class="spinner spinner-inline spinner-pos"
-                        [hidden]="isChecking('username')"></span>
+                    <div class="clr-input-group">
+                        <input
+                            type="text"
+                            class="clr-input"
+                            required
+                            pattern='[^,"~#$%]+'
+                            maxLengthExt="255"
+                            #usernameInput="ngModel"
+                            name="username"
+                            [(ngModel)]="newUser.username"
+                            id="username"
+                            size="30"
+                            (input)="handleValidation('username', false)"
+                            (blur)="handleValidation('username', true)" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                        <span
+                            class="spinner spinner-inline spinner-pos"
+                            [hidden]="isChecking('username')"></span>
+                    </div>
                 </div>
                 @if (getValidationState('username')) {
                 <clr-control-error>
@@ -35,101 +38,120 @@
                 }
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control clr-row">
             <label class="required clr-control-label">{{
                 'PROFILE.EMAIL' | translate
             }}</label>
             <div
-                class="clr-control-container"
+                class="clr-control-container clr-col-md-8 clr-col-12"
                 [class.clr-error]="getValidationState('email')">
                 <div class="clr-input-wrapper">
-                    <input
-                        name="email"
-                        type="text"
-                        #eamilInput="ngModel"
-                        [(ngModel)]="newUser.email"
-                        required
-                        email
-                        id="email"
-                        size="30"
-                        (input)="handleValidation('email', false)"
-                        (blur)="handleValidation('email', true)"
-                        class="clr-input" />
-                    <clr-icon
-                        class="clr-validate-icon"
-                        shape="exclamation-circle"></clr-icon>
-                    <span
-                        class="spinner spinner-inline spinner-pos"
-                        [hidden]="isChecking('email')"></span>
-                    @if (isSelfRegistration) {
-                    <clr-control-helper>{{
-                        'TOOLTIP.SIGN_UP_MAIL' | translate
-                    }}</clr-control-helper>
-                    } @if (getValidationState('email')) {
-                    <clr-control-error>
-                        {{ emailTooltip | translate }}
-                    </clr-control-error>
-                    }
+                    <div class="clr-input-group">
+                        <input
+                            name="email"
+                            type="text"
+                            #eamilInput="ngModel"
+                            [(ngModel)]="newUser.email"
+                            required
+                            email
+                            id="email"
+                            size="30"
+                            (input)="handleValidation('email', false)"
+                            (blur)="handleValidation('email', true)"
+                            class="clr-input" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                        <span
+                            class="spinner spinner-inline spinner-pos"
+                            [hidden]="isChecking('email')"></span>
+                    </div>
                 </div>
+                @if (isSelfRegistration) {
+                <clr-control-helper>{{
+                    'TOOLTIP.SIGN_UP_MAIL' | translate
+                }}</clr-control-helper>
+                } @if (getValidationState('email')) {
+                <clr-control-error>
+                    {{ emailTooltip | translate }}
+                </clr-control-error>
+                }
             </div>
         </div>
-        <clr-input-container>
-            <label class="required">{{
+
+        <!-- Full Name -->
+        <div class="clr-form-control clr-row">
+            <label class="required clr-control-label">{{
                 'PROFILE.FULL_NAME' | translate
             }}</label>
-            <input
-                clrInput
-                type="text"
-                name="realname"
-                #fullNameInput="ngModel"
-                [(ngModel)]="newUser.realname"
-                required
-                maxLengthExt="80"
-                id="realname"
-                size="30"
-                (input)="handleValidation('realname', false)"
-                (blur)="handleValidation('realname', true)" />
-            @if (getValidationState('realname')) {
-            <clr-control-error>
-                {{ 'TOOLTIP.FULL_NAME' | translate }}
-            </clr-control-error>
-            }
-        </clr-input-container>
-        <div class="clr-form-control">
+            <div
+                class="clr-control-container clr-col-md-8 clr-col-12"
+                [class.clr-error]="getValidationState('realname')">
+                <div class="clr-input-wrapper">
+                    <div class="clr-input-group">
+                        <input
+                            type="text"
+                            class="clr-input"
+                            name="realname"
+                            #fullNameInput="ngModel"
+                            [(ngModel)]="newUser.realname"
+                            required
+                            maxLengthExt="80"
+                            id="realname"
+                            size="30"
+                            (input)="handleValidation('realname', false)"
+                            (blur)="handleValidation('realname', true)" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                </div>
+                @if (getValidationState('realname')) {
+                <clr-control-error>
+                    {{ 'TOOLTIP.FULL_NAME' | translate }}
+                </clr-control-error>
+                }
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="clr-form-control clr-row">
             <label for="newPassword" class="clr-control-label required">{{
                 'PROFILE.PASSWORD' | translate
             }}</label>
             <div
-                class="clr-control-container"
+                class="clr-control-container clr-col-md-8 clr-col-12"
                 [class.clr-error]="getValidationState('newPassword')">
                 <div class="clr-input-wrapper">
-                    <input
-                        class="clr-input pwd-input"
-                        [type]="showNewPwd ? 'text' : 'password'"
-                        id="newPassword"
-                        required
-                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
-                        name="newPassword"
-                        [(ngModel)]="newUser.password"
-                        #newPassInput="ngModel"
-                        size="30"
-                        maxLength="128"
-                        (input)="handleValidation('newPassword', false)"
-                        (blur)="handleValidation('newPassword', true)" />
-                    @if (!showNewPwd) {
-                    <clr-icon
-                        shape="eye"
-                        class="pw-eye"
-                        (click)="showNewPwd = !showNewPwd"></clr-icon>
-                    } @if (showNewPwd) {
-                    <clr-icon
-                        shape="eye-hide"
-                        class="pw-eye"
-                        (click)="showNewPwd = !showNewPwd"></clr-icon>
-                    }
-                    <clr-icon
-                        class="clr-validate-icon"
-                        shape="exclamation-circle"></clr-icon>
+                    <div class="clr-input-group">
+                        <input
+                            class="clr-input pwd-input"
+                            [type]="showNewPwd ? 'text' : 'password'"
+                            id="newPassword"
+                            required
+                            pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
+                            name="newPassword"
+                            [(ngModel)]="newUser.password"
+                            #newPassInput="ngModel"
+                            size="30"
+                            maxLength="128"
+                            (input)="handleValidation('newPassword', false)"
+                            (blur)="handleValidation('newPassword', true)" />
+                        @if (!showNewPwd) {
+                        <clr-icon
+                            shape="eye"
+                            class="pw-eye"
+                            (click)="showNewPwd = !showNewPwd"></clr-icon>
+                        } @if (showNewPwd) {
+                        <clr-icon
+                            shape="eye-hide"
+                            class="pw-eye"
+                            (click)="showNewPwd = !showNewPwd"></clr-icon>
+                        }
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
                 </div>
                 @if (isSelfRegistration) {
                 <clr-control-helper>{{
@@ -142,41 +164,51 @@
                 }
             </div>
         </div>
-        <div class="clr-form-control">
+
+        <!-- Confirm Password -->
+        <div class="clr-form-control clr-row">
             <label for="confirmPassword" class="clr-control-label required">{{
                 'CHANGE_PWD.CONFIRM_PWD' | translate
             }}</label>
             <div
-                class="clr-control-container"
+                class="clr-control-container clr-col-md-8 clr-col-12"
                 [class.clr-error]="getValidationState('confirmPassword')">
                 <div class="clr-input-wrapper">
-                    <input
-                        class="clr-input pwd-input"
-                        [type]="showConfirmPwd ? 'text' : 'password'"
-                        id="confirmPassword"
-                        required
-                        pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
-                        name="confirmPassword"
-                        [(ngModel)]="confirmedPwd"
-                        #confirmPassInput="ngModel"
-                        size="30"
-                        maxLength="128"
-                        (input)="handleValidation('confirmPassword', false)"
-                        (blur)="handleValidation('confirmPassword', true)" />
-                    @if (!showConfirmPwd) {
-                    <clr-icon
-                        shape="eye"
-                        class="pw-eye"
-                        (click)="showConfirmPwd = !showConfirmPwd"></clr-icon>
-                    } @if (showConfirmPwd) {
-                    <clr-icon
-                        shape="eye-hide"
-                        class="pw-eye"
-                        (click)="showConfirmPwd = !showConfirmPwd"></clr-icon>
-                    }
-                    <clr-icon
-                        class="clr-validate-icon"
-                        shape="exclamation-circle"></clr-icon>
+                    <div class="clr-input-group">
+                        <input
+                            class="clr-input pwd-input"
+                            [type]="showConfirmPwd ? 'text' : 'password'"
+                            id="confirmPassword"
+                            required
+                            pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,128}$"
+                            name="confirmPassword"
+                            [(ngModel)]="confirmedPwd"
+                            #confirmPassInput="ngModel"
+                            size="30"
+                            maxLength="128"
+                            (input)="handleValidation('confirmPassword', false)"
+                            (blur)="
+                                handleValidation('confirmPassword', true)
+                            " />
+                        @if (!showConfirmPwd) {
+                        <clr-icon
+                            shape="eye"
+                            class="pw-eye"
+                            (click)="
+                                showConfirmPwd = !showConfirmPwd
+                            "></clr-icon>
+                        } @if (showConfirmPwd) {
+                        <clr-icon
+                            shape="eye-hide"
+                            class="pw-eye"
+                            (click)="
+                                showConfirmPwd = !showConfirmPwd
+                            "></clr-icon>
+                        }
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
                 </div>
                 @if (getValidationState('confirmPassword')) {
                 <clr-control-error>
@@ -185,24 +217,39 @@
                 }
             </div>
         </div>
-        <clr-input-container>
-            <label>{{ 'PROFILE.COMMENT' | translate }}</label>
-            <input
-                clrInput
-                type="text"
-                #commentInput="ngModel"
-                name="comment"
-                [(ngModel)]="newUser.comment"
-                maxLengthExt="30"
-                id="comment"
-                size="30"
-                (input)="handleValidation('comment', false)"
-                (blur)="handleValidation('comment', true)" />
-            @if (getValidationState('comment')) {
-            <clr-control-error>
-                {{ 'TOOLTIP.COMMENT' | translate }}
-            </clr-control-error>
-            }
-        </clr-input-container>
+
+        <!-- Comment -->
+        <div class="clr-form-control clr-row">
+            <label class="clr-control-label">{{
+                'PROFILE.COMMENT' | translate
+            }}</label>
+            <div
+                class="clr-control-container clr-col-md-8 clr-col-12"
+                [class.clr-error]="getValidationState('comment')">
+                <div class="clr-input-wrapper">
+                    <div class="clr-input-group">
+                        <input
+                            type="text"
+                            class="clr-input"
+                            #commentInput="ngModel"
+                            name="comment"
+                            [(ngModel)]="newUser.comment"
+                            maxLengthExt="30"
+                            id="comment"
+                            size="30"
+                            (input)="handleValidation('comment', false)"
+                            (blur)="handleValidation('comment', true)" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                </div>
+                @if (getValidationState('comment')) {
+                <clr-control-error>
+                    {{ 'TOOLTIP.COMMENT' | translate }}
+                </clr-control-error>
+                }
+            </div>
+        </div>
     </form>
 </div>
