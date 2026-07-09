@@ -34,6 +34,7 @@ import (
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/lib/redis"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/proxy/connection"
@@ -193,6 +194,22 @@ func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
 }
 
+// matchRepositoryFilter returns true if repository matches the filter.
+// filterPattern is the plain pattern string; filterKind is "doublestar" or "regex" (defaults to doublestar when empty).
+// If filterPattern is empty, all repositories are allowed.
+// An invalid pattern is treated as no match.
+func matchRepositoryFilter(repository, filterPattern, filterKind string) bool {
+	log.Debugf("matching repository %q against filter pattern: %q (kind: %s)", repository, filterPattern, filterKind)
+	rf := pattern.NewRepositoryFilter(filterPattern, filterKind)
+	matched, err := rf.Match(repository)
+	if err != nil {
+		log.Warningf("invalid proxy_cache_filter_pattern %q (kind: %s): %v", rf.Filter, rf.Kind, err)
+		return false
+	}
+	log.Debugf("repository %q match result: %v (filter: %q, kind: %s)", repository, matched, rf.Filter, rf.Kind)
+	return matched
+}
+
 // upstreamRegistryConnectionKey get upstream registry connection key
 func upstreamRegistryConnectionKey(art lib.ArtifactInfo) string {
 	limitOnProject := os.Getenv(upstreamRegistryLimitOnProject)
@@ -217,6 +234,16 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if defaultProj {
 		http.Redirect(w, r, defaultManifestURL(p.Name, name, art), http.StatusMovedPermanently)
 		return nil
+	}
+
+	// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+	if filterPattern, ok := p.GetMetadata(proModels.ProMetaProxyCacheFilterPattern); ok && filterPattern != "" {
+		filterKind, _ := p.GetMetadata(proModels.ProMetaProxyCacheFilterKind)
+		remoteRepo := strings.TrimPrefix(art.Repository, art.ProjectName+"/")
+		if !matchRepositoryFilter(remoteRepo, filterPattern, filterKind) {
+			log.Infof("blocked proxy cache pull for project %q repository %q: repository does not match filter %q (kind: %s)", p.Name, remoteRepo, filterPattern, filterKind)
+			return errors.NotFoundError(fmt.Errorf("repository %q does not match project repository filter %q (kind: %s)", remoteRepo, filterPattern, filterKind))
+		}
 	}
 
 	if !canProxy(r.Context(), p) {

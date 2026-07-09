@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/pattern"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project_metadata"
@@ -168,6 +169,20 @@ func (p *projectMetadataAPI) validate(metas map[string]string) (map[string]strin
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid value: %s", value)
 		}
 		metas[proModels.ProMetaMaxUpstreamConn] = strconv.FormatInt(v, 10)
+	case proModels.ProMetaProxyCacheFilterPattern:
+		// plain pattern string; empty means match all — no further validation needed at metadata level
+		if err := pattern.ValidateRepositoryFilter(value, pattern.KindDoublestar); err != nil {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("invalid proxy_cache_filter_pattern: %q, err: %v", value, err)
+		}
+		metas[proModels.ProMetaProxyCacheFilterPattern] = value
+	case proModels.ProMetaProxyCacheFilterKind:
+		// must be "doublestar" or "regex" when specified
+		if value != "" && value != pattern.KindRegex && value != pattern.KindDoublestar {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("invalid proxy_cache_filter_kind: %q, must be %q or %q", value, pattern.KindDoublestar, pattern.KindRegex)
+		}
+		metas[proModels.ProMetaProxyCacheFilterKind] = value
 	default:
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid key: %s", key)
 	}

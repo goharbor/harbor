@@ -44,6 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
@@ -163,10 +164,12 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb, metadata.max_upstream_conn, proxy_cache_filter_pattern and proxy_cache_filter_kind for non-proxy-cache project
 	if req.RegistryID == nil {
 		req.Metadata.ProxySpeedKb = nil
 		req.Metadata.MaxUpstreamConn = nil
+		req.Metadata.ProxyCacheFilterPattern = nil
+		req.Metadata.ProxyCacheFilterKind = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -567,16 +570,21 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		}
 	}
 
-	// ignore metadata.proxy_speed_kb and metadata.max_upstream_conn for non-proxy-cache project
+	// ignore metadata.proxy_speed_kb, metadata.max_upstream_conn, proxy_cache_filter_pattern and proxy_cache_filter_kind for non-proxy-cache project
 	if params.Project.Metadata != nil && !p.IsProxy() {
 		params.Project.Metadata.ProxySpeedKb = nil
 		params.Project.Metadata.MaxUpstreamConn = nil
+		params.Project.Metadata.ProxyCacheFilterPattern = nil
+		params.Project.Metadata.ProxyCacheFilterKind = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
+		if err := validateProxyCacheRepositoryFilter(params.Project.Metadata); err != nil {
+			return a.SendError(ctx, err)
+		}
 	}
 	if err := lib.JSONCopy(&p.Metadata, params.Project.Metadata); err != nil {
 		log.Warningf("failed to call JSONCopy on project metadata when UpdateProject, error: %v", err)
@@ -826,6 +834,10 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 				return errors.BadRequestError(nil).WithMessagef("metadata.max_upstream_conn should be an int, but got '%s', err: %s", *cnt, err)
 			}
 		}
+
+		if err := validateProxyCacheRepositoryFilter(req.Metadata); err != nil {
+			return err
+		}
 	}
 
 	if req.StorageLimit != nil {
@@ -835,6 +847,27 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		}
 	}
 
+	return nil
+}
+
+func validateProxyCacheRepositoryFilter(metadata *models.ProjectMetadata) error {
+	if metadata == nil {
+		return nil
+	}
+
+	filterKind := lib.StringValue(metadata.ProxyCacheFilterKind)
+	if filterKind == "" {
+		filterKind = pattern.KindDoublestar
+	}
+	if filterKind != pattern.KindRegex && filterKind != pattern.KindDoublestar {
+		return errors.BadRequestError(nil).
+			WithMessagef("metadata.proxy_cache_filter_kind should be %q or %q, but got: %q", pattern.KindDoublestar, pattern.KindRegex, filterKind)
+	}
+
+	if err := pattern.ValidateRepositoryFilter(lib.StringValue(metadata.ProxyCacheFilterPattern), filterKind); err != nil {
+		return errors.BadRequestError(nil).
+			WithMessagef("metadata.proxy_cache_filter_pattern is invalid for kind %q: %v", filterKind, err)
+	}
 	return nil
 }
 
