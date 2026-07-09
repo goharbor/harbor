@@ -969,7 +969,8 @@
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
-            "STOPPED": "Generation stopped"
+            "STOPPED": "Generation stopped",
+            "MULTI_ARCH_HINT": "查看各架构的软件物料清单和漏洞扫描结果"
         },
         "NO_SBOM": "无软件物料清单",
         "PACKAGES": "SBOM",

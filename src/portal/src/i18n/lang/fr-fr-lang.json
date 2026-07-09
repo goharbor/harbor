@@ -969,7 +969,8 @@
             "QUEUED": "En attente",
             "ERROR": "Voir le log",
             "SCANNING": "En cours de génération",
-            "STOPPED": "Génération arrêtée"
+            "STOPPED": "Génération arrêtée",
+            "MULTI_ARCH_HINT": "Voir les résultats SBOM et de vulnérabilités par architecture"
         },
         "NO_SBOM": "Pas de SBOM",
         "PACKAGES": "SBOM",

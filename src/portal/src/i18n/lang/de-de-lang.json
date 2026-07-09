@@ -967,7 +967,8 @@
             "QUEUED": "Queued",
             "ERROR": "View Log",
             "SCANNING": "Generating",
-            "STOPPED": "Generation stopped"
+            "STOPPED": "Generation stopped",
+            "MULTI_ARCH_HINT": "SBOM- und Schwachstellenergebnisse pro Architektur anzeigen"
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",
