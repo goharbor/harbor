@@ -30,7 +30,9 @@
             [sbomSummary]="sbomOverview"
             [sbomDigest]="sbomDigest"
             [hasChild]="hasChild"
-            (viewMultiArchSbom)="viewMultiArchSbom.emit()"></hbr-sbom-tip-histogram>
+            (viewMultiArchSbom)="
+                viewMultiArchSbom.emit()
+            "></hbr-sbom-tip-histogram>
     </div>
     } @if (stopped) {
     <div class="bar-state">

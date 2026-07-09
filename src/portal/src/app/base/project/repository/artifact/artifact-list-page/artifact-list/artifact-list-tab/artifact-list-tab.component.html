@@ -465,7 +465,8 @@
                         <span>
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
-                        } @if ( hasSbom(artifact) && !artifact?.accessoryLoading ) {
+                        } @if ( hasSbom(artifact) && !artifact?.accessoryLoading
+                        ) {
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
