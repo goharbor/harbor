@@ -79,7 +79,11 @@ type cachingController struct {
 	l1MemoryTTL time.Duration // <=0 => L1 disabled
 	l2RedisTTL  time.Duration // <=0 => Redis (L2) disabled
 
-	// redisCache, when set, overrides cache.Default() (used by tests). nil in prod.
+	// redisCache is the injected L2 backend (a cache.Cache implementation). It is
+	// the dependency-injection seam for the L2 tier: tests inject a fake here (an
+	// in-memory cache, or one that errors to exercise the DB-fallback path). It is
+	// nil in production, where redis() lazily resolves the shared cache.Default()
+	// instead — see redis() for why the resolution must be lazy.
 	redisCache cache.Cache
 
 	warmOnce sync.Once
@@ -133,8 +137,14 @@ func envDuration(name string, def time.Duration) time.Duration {
 func (c *cachingController) l1Enabled() bool { return c.l1MemoryTTL > 0 }
 func (c *cachingController) l2Enabled() bool { return c.l2RedisTTL > 0 }
 
-// redis returns the L2 backend, or nil when Redis is disabled or not yet
-// initialized. Falls back to the shared default cache in production.
+// redis returns the L2 backend, or nil when Redis (L2) is disabled.
+//
+// If an L2 backend was injected (redisCache, e.g. in tests) it is used; otherwise
+// it resolves the shared cache.Default(). The default is resolved lazily here, on
+// each call, rather than stored at construction: this controller's singleton
+// (role.Ctl) is built at package-import time, whereas cache.Default() is not
+// initialized until startup (cache.Initialize in core/main.go). At construction
+// time the default cache does not exist yet, so it can only be read at use time.
 func (c *cachingController) redis() cache.Cache {
 	if !c.l2Enabled() {
 		return nil
