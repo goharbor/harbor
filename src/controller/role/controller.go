@@ -16,10 +16,8 @@ package role
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/goharbor/harbor/src/controller/event/metadata"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -245,12 +243,7 @@ func (d *controller) populate(ctx context.Context, r *model.Role, option *Option
 	}
 	role.setLevel()
 	role.setEditable()
-	// for the v2 role, add prefix to the role name
-	if role.Editable {
-		role.Name = fmt.Sprintf("%s%s", config.RolePrefix(ctx), r.Name)
-	} else {
-		role.Name = r.Name
-	}
+	role.Name = r.Name
 	if option != nil && option.WithPermission {
 		if err := d.populatePermissions(ctx, role); err != nil {
 			return nil, err

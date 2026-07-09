@@ -16,12 +16,10 @@ package metadata
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/security"
 	event2 "github.com/goharbor/harbor/src/controller/event"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/pkg/role/model"
 )
@@ -43,7 +41,6 @@ func (c *CreateRoleEventMetadata) Resolve(event *event.Event) error {
 	if exist {
 		data.Operator = cx.GetUsername()
 	}
-	data.Role.Name = fmt.Sprintf("%s%s", config.RolePrefix(c.Ctx), data.Role.Name)
 	event.Topic = event2.TopicCreateRole
 	event.Data = data
 	return nil
@@ -66,7 +63,6 @@ func (u *UpdateRoleEventMetadata) Resolve(event *event.Event) error {
 	if exist {
 		data.Operator = cx.GetUsername()
 	}
-	data.Role.Name = fmt.Sprintf("%s%s", config.RolePrefix(u.Ctx), data.Role.Name)
 	event.Topic = event2.TopicUpdateRole
 	event.Data = data
 	return nil
@@ -94,7 +90,6 @@ func (d *DeleteRoleEventMetadata) Resolve(event *event.Event) error {
 			data.Operator = cx.GetUsername()
 		}
 	}
-	data.Role.Name = fmt.Sprintf("%s%s", config.RolePrefix(d.Ctx), data.Role.Name)
 	event.Topic = event2.TopicDeleteRole
 	event.Data = data
 	return nil
