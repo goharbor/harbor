@@ -78,7 +78,6 @@ export class RolesComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.SYSTEM_ROBOT_COMPONENT
-        //TODO create page size for ROBOT
     );
     currentPage: number = 1;
     total: number = 0;
@@ -166,10 +165,6 @@ export class RolesComponent implements OnInit, OnDestroy {
                     }
                 );
         }
-    }
-
-    ngAfterViewInit() {
-        console.log("new role component: " + this.newRoleComponent);
     }
 
 
