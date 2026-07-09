@@ -35,7 +35,10 @@ import { NgForm, Validators } from '@angular/forms';
 import { forkJoin, fromEvent, Observable, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Project } from '../../../project/project';
+import {
+    Project,
+    REPOSITORY_FILTER_KIND_DOUBLESTAR,
+} from '../../../project/project';
 import {
     QuotaUnits,
     QuotaUnlimited,
@@ -386,25 +389,27 @@ export class CreateProjectComponent
         const registryId: number = this.enableProxyCache
             ? +this.project.registry_id
             : null;
+        const metadata: Record<string, string> = {
+            public: this.project.metadata.public ? 'true' : 'false',
+            proxy_speed_kb: this.project.metadata.bandwidth.toString(),
+            max_upstream_conn:
+                this.project.metadata.max_upstream_conn.toString(),
+        };
+        if (
+            this.enableProxyCache &&
+            this.project.metadata.proxy_cache_filter_pattern
+        ) {
+            metadata.proxy_cache_filter_pattern =
+                this.project.metadata.proxy_cache_filter_pattern;
+            metadata.proxy_cache_filter_kind =
+                this.project.metadata.proxy_cache_filter_kind ||
+                REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        }
         this.projectService
             .createProject({
                 project: {
                     project_name: this.project.name,
-                    metadata: {
-                        public: this.project.metadata.public ? 'true' : 'false',
-                        proxy_speed_kb:
-                            this.project.metadata.bandwidth.toString(),
-                        max_upstream_conn:
-                            this.project.metadata.max_upstream_conn.toString(),
-                        proxy_cache_local_on_not_found: this.project.metadata
-                            .proxy_cache_local_on_not_found
-                            ? 'true'
-                            : 'false',
-                        proxy_referrer_api: this.project.metadata
-                            .proxy_referrer_api
-                            ? 'true'
-                            : 'false',
-                    },
+                    metadata,
                     storage_limit: +storageByte,
                     registry_id: registryId,
                 },
@@ -449,8 +454,9 @@ export class CreateProjectComponent
         this.selectedSpeedLimitUnit = BandwidthUnit.KB;
         this.speedLimit = -1;
         this.project.metadata.max_upstream_conn = -1;
-        this.project.metadata.proxy_cache_local_on_not_found = false;
-        this.project.metadata.proxy_referrer_api = false;
+        this.project.metadata.proxy_cache_filter_pattern = '';
+        this.project.metadata.proxy_cache_filter_kind =
+            REPOSITORY_FILTER_KIND_DOUBLESTAR;
     }
 
     public get isValid(): boolean {

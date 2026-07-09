@@ -16,7 +16,7 @@
                 {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        @if (hasChangeConfigRole) {
+        @if (isSystemAdmin) {
         <clr-checkbox-container clrInline>
             <label class="label-color-input">
                 {{ 'PROJECT.PROXY_CACHE' | translate }}
@@ -25,7 +25,7 @@
                 <input
                     type="checkbox"
                     clrCheckbox
-                    disabled
+                    [disabled]="!allowUpdateProxyCacheConfiguration"
                     [(ngModel)]="projectPolicy.ProxyCacheEnabled"
                     name="project-proxy-cache-enabled" />
             </clr-checkbox-wrapper>
@@ -33,8 +33,8 @@
                 {{ 'PROJECT.PROXY_CACHE_TOOLTIP' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        } @if (hasChangeConfigRole && projectPolicy.ProxyCacheEnabled) {
-        <div class="clr-form-control mt-0 mb-2">
+        } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
+        <div class="clr-form-control mt-0">
             <label class="clr-control-label"></label>
             <div class="clr-select-wrapper row-inline">
                 <label class="clr-control-label">
@@ -122,33 +122,77 @@
                     }
                 </div>
             </div>
-            <div class="row-inline ml-2" clrInline>
-                <clr-checkbox-wrapper class="ml-1">
+        </div>
+        } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
+        <div class="clr-form-control">
+            <label class="clr-control-label"></label>
+            <div class="row-inline">
+                <label class="clr-control-label">
+                    {{ 'PROJECT.REPOSITORY_FILTER' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="bottom-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.REPOSITORY_FILTER_TOOLTIP' | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div class="clr-control-container ml-1">
                     <input
-                        id="proxy_referrer_api"
-                        type="checkbox"
-                        clrCheckbox
-                        [(ngModel)]="projectPolicy.ProxyReferrerAPI"
-                        name="proxy_referrer_api"
-                        [disabled]="!allowUpdateProxyCacheConfiguration" />
-                    <label for="proxy_referrer_api">
-                        {{ 'PROJECT.PROXY_REFERRER_API_LABEL' | translate }}
-                        <clr-tooltip>
-                            <clr-icon
-                                clrTooltipTrigger
-                                shape="info-circle"
-                                size="24"></clr-icon>
-                            <clr-tooltip-content
-                                clrPosition="top-left"
-                                clrSize="lg"
-                                *clrIfOpen>
-                                <span>{{
-                                    'PROJECT.PROXY_REFERRER_API_TIP' | translate
-                                }}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
-                    </label>
-                </clr-checkbox-wrapper>
+                        type="text"
+                        id="repositoryFilter"
+                        [(ngModel)]="projectPolicy.ProxyCacheFilterPattern"
+                        name="repositoryFilter"
+                        [disabled]="!hasChangeConfigRole"
+                        class="clr-input width-164 mr-10 clr-input-underline"
+                        placeholder="{{
+                            'PROJECT.REPOSITORY_FILTER_PLACEHOLDER' | translate
+                        }}"
+                        autocomplete="off" />
+                    <div class="clr-select-wrapper mr-10">
+                        <select
+                            id="repositoryFilterKind"
+                            name="repositoryFilterKind"
+                            [disabled]="!hasChangeConfigRole"
+                            [(ngModel)]="projectPolicy.ProxyCacheFilterKind">
+                            <option value="doublestar">
+                                {{
+                                    'PROJECT.FILTER_KIND_DOUBLESTAR' | translate
+                                }}
+                            </option>
+                            <option value="regex">
+                                {{ 'PROJECT.FILTER_KIND_REGEX' | translate }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        } @else if (!isSystemAdmin && isProxyCacheProject &&
+        projectPolicy.ProxyCacheFilterPattern) {
+        <div class="clr-form-control">
+            <label class="clr-control-label"></label>
+            <div class="row-inline">
+                <label class="clr-control-label">
+                    {{ 'PROJECT.REPOSITORY_FILTER' | translate }}
+                </label>
+                <div class="clr-control-container ml-1">
+                    <input
+                        type="text"
+                        disabled
+                        [value]="projectPolicy.ProxyCacheFilterPattern"
+                        class="clr-input width-492 mr-10 clr-input-underline" />
+                    <span class="label label-info ml-05">{{
+                        projectPolicy.ProxyCacheFilterKind || 'doublestar'
+                    }}</span>
+                </div>
             </div>
         </div>
         } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {

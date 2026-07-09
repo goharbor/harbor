@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Für eine unbegrenzte Speicherbeschränkung '-1' eingeben.",
         "TYPE": "Typ",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen.",
+        "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen. Harbor unterstützt die Proxy Funktion nur für DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, und Github GHCR",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
@@ -248,9 +248,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Veraltete Inhalte bereitstellen, wenn der Upstream nicht verfügbar ist",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Aktivieren Sie diese Option, damit dieses Projekt weiterhin zwischengespeicherte Inhalte bereitstellt, auch wenn das Artefakt im Upstream-Registry nicht gefunden wird oder das Upstream-Registry nicht verfügbar ist. Dies kann dazu führen, dass veraltete Inhalte bereitgestellt werden, wenn das Upstream-Registry nicht verfügbar ist.",
-        "NO_PROJECT": "Es konnte kein Projekt gefunden werden",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Repository-Filter",
+        "REPOSITORY_FILTER_TOOLTIP": "Optionaler Filter zur Begrenzung der aus dem Upstream-Registry gecachten Repositories. 'Doublestar' (Standard) verwendet Glob-Muster mit ** Unterstützung (z. B. library/**). 'Regex' verwendet reguläre Ausdrücke (z. B. ^library/.*), reguläre Ausdrücke sind am Anfang verankert. Gilt nur für aktuelle Proxy-Cache-Projekte.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "z. B. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",

@@ -239,7 +239,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. For unlimited quota enter '-1'.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a proxy cache for a particular target registry instance.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a proxy cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR, and JFrog Artifactory registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "CONNECTION_LIMIT": "Max connection to upstream registry",
@@ -248,9 +248,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Please enter -1 or an integer greater than 0.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Serve stale content when upstream is unavailable",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Enable this to allow this project to keep serving cached content even if the artifact is not found in the upstream registry or the upstream registry is unavailable. This can lead to stale content being served if the upstream registry is unavailable.",
-        "NO_PROJECT": "We couldn't find any projects",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Repository filter",
+        "REPOSITORY_FILTER_TOOLTIP": "Optional filter to limit which repositories are cached from the upstream registry. 'Doublestar' (default) uses glob-style patterns with ** support (e.g. library/**). 'Regex' uses regular expression patterns (e.g. ^library/.*), regular expression patterns are head-anchored. Only applies to the current proxy cache projects.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "e.g. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

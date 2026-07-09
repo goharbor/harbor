@@ -240,7 +240,7 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Bu kotayı sınırsız istiyorsanız, lütfen -1 girin.",
         "TYPE": "Type",
         "PROXY_CACHE": "Proxy Cache",
-        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a proxy cache for a particular target registry instance.",
+        "PROXY_CACHE_TOOLTIP": "Enable this to allow this project to act as a proxy cache for a particular target registry instance. Harbor can only act a proxy for DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, JFrog Artifactory, and Github GHCR registries.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
         "CONNECTION_LIMIT": "Üst kayıt defterine maksimum bağlantı",
@@ -249,9 +249,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Lütfen -1 veya 0'dan büyük bir tam sayı girin.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Üst kaynak kullanılamadığında önbelleğe alınmış içeriği sun",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Bu projenin, yapıt üst kayıt defterinde bulunamasa veya üst kayıt defteri kullanılamasa bile önbelleğe alınmış içeriği sunmaya devam etmesine izin vermek için bunu etkinleştirin. Üst kayıt defteri kullanılamıyorsa bu, eski içeriğin sunulmasına yol açabilir.",
-        "NO_PROJECT": "Herhangi bir proje bulunamadı",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Depo filtresi",
+        "REPOSITORY_FILTER_TOOLTIP": "Yukarı akış kayıt defterinden hangi depoların önbelleğe alınacağını sınırlamak için isteğe bağlı filtre. 'Doublestar' (varsayılan) ** destekli glob tarzı desenler kullanır (örn. library/**). 'Regex' düzenli ifade desenleri kullanır (örn. ^library/.*), düzenli ifade desenleri başa sabitlenmiştir. Yalnızca geçerli proxy önbellek projeleri için geçerlidir.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "örn. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "Herhangi bir proje bulunamadı"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",

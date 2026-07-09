@@ -153,38 +153,44 @@ export class ProjectDefaultService extends ProjectService {
         projectAllowlist: object
     ): any {
         let baseUrl: string = CURRENT_BASE_HREF + '/projects';
+        const metadata: Record<string, string> = {
+            public: projectPolicy.Public ? 'true' : 'false',
+            enable_content_trust: projectPolicy.ContentTrust ? 'true' : 'false',
+            enable_content_trust_cosign: projectPolicy.ContentTrustCosign
+                ? 'true'
+                : 'false',
+            prevent_vul: projectPolicy.PreventVulImg ? 'true' : 'false',
+            severity: projectPolicy.PreventVulImgSeverity,
+            auto_scan: projectPolicy.ScanImgOnPush ? 'true' : 'false',
+            auto_sbom_generation: projectPolicy.GenerateSbomOnPush
+                ? 'true'
+                : 'false',
+            reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
+            proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
+            proxy_cache_local_on_not_found:
+                projectPolicy.ProxyCacheLocalOnNotFound ? 'true' : 'false',
+            proxy_referrer_api: projectPolicy.ProxyReferrerAPI
+                ? 'true'
+                : 'false',
+        };
+        if (
+            projectPolicy.ProxyCacheFilterPattern !== undefined &&
+            projectPolicy.ProxyCacheFilterPattern !== null
+        ) {
+            metadata.proxy_cache_filter_pattern =
+                projectPolicy.ProxyCacheFilterPattern;
+            metadata.proxy_cache_filter_kind =
+                projectPolicy.ProxyCacheFilterKind || 'doublestar';
+        } else {
+            metadata.proxy_cache_filter_pattern = '';
+            metadata.proxy_cache_filter_kind = 'doublestar';
+        }
         return this.http
             .put<any>(
                 `${baseUrl}/${projectId}`,
                 {
                     registry_id: projectPolicy.RegistryId,
-                    metadata: {
-                        public: projectPolicy.Public ? 'true' : 'false',
-                        enable_content_trust: projectPolicy.ContentTrust
-                            ? 'true'
-                            : 'false',
-                        enable_content_trust_cosign:
-                            projectPolicy.ContentTrustCosign ? 'true' : 'false',
-                        prevent_vul: projectPolicy.PreventVulImg
-                            ? 'true'
-                            : 'false',
-                        severity: projectPolicy.PreventVulImgSeverity,
-                        auto_scan: projectPolicy.ScanImgOnPush
-                            ? 'true'
-                            : 'false',
-                        auto_sbom_generation: projectPolicy.GenerateSbomOnPush
-                            ? 'true'
-                            : 'false',
-                        reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
-                        proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
-                        proxy_cache_local_on_not_found:
-                            projectPolicy.ProxyCacheLocalOnNotFound
-                                ? 'true'
-                                : 'false',
-                        proxy_referrer_api: projectPolicy.ProxyReferrerAPI
-                            ? 'true'
-                            : 'false',
-                    },
+                    metadata,
                     cve_allowlist: projectAllowlist,
                 },
                 HTTP_JSON_OPTIONS
