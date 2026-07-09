@@ -55,10 +55,10 @@ func (f *Filter) Validate() error {
 					WithMessagef("invalid resource filter: %s", value)
 			}
 		}
-		if f.Type == FilterTypeName || f.Type == FilterTypeResource {
+		if f.Type == FilterTypeResource {
 			if f.Decoration != "" {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessage("only tag and label filter support decoration")
+					WithMessage("only tag, label and name filter support decoration")
 			}
 		}
 	case FilterTypeLabel:
