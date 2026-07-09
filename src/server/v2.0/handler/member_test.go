@@ -277,6 +277,46 @@ func TestUpdateProjectMember_EscalationBlocked(t *testing.T) {
 	rc.AssertCalled(t, "Get", testifymock.Anything, int64(30), testifymock.Anything)
 }
 
+// TestCreateProjectMember_EscalationBlocked proves the same anti-escalation guard
+// applies on the ASSIGN path: a caller allowed to create members but lacking a
+// permission the target role grants is rejected with 403, before the member
+// controller's Create is reached.
+func TestCreateProjectMember_EscalationBlocked(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsSysAdmin").Return(false)
+	sc.On("IsAuthenticated").Return(true)
+	// caller may create members (passes RequireProjectAccess)...
+	sc.On("Can", testifymock.Anything,
+		rbac.ActionCreate, projectResource(rbac.ResourceMember)).Return(true)
+	// ...but does NOT hold repository:push, which the target role grants
+	sc.On("Can", testifymock.Anything,
+		rbac.ActionPush, projectResource(rbac.ResourceRepository)).Return(false)
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(30), testifymock.Anything).
+		Return(&roleCtl.Role{
+			Permissions: []*roleCtl.Permission{{
+				Access: policyAccess(rbac.ResourceRepository, rbac.ActionPush),
+			}},
+		}, nil)
+
+	xFalse := false
+	params := memberop.CreateProjectMemberParams{
+		ProjectNameOrID: fmt.Sprintf("%d", testProjectID),
+		XIsResourceName: &xFalse,
+		ProjectMember:   &models.ProjectMember{RoleID: 30},
+	}
+
+	// ctl (member controller) is intentionally nil: the escalation check must
+	// reject before Create is reached, so it is never dereferenced.
+	resp := newAPI(rc).CreateProjectMember(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusForbidden, rr.Code)
+	rc.AssertCalled(t, "Get", testifymock.Anything, int64(30), testifymock.Anything)
+}
+
 // ---------------------------------------------------------------------------
 // Compile-time interface check — fails the build if stubRoleCtl drifts.
 // ---------------------------------------------------------------------------

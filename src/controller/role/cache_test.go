@@ -16,6 +16,7 @@ package role
 
 import (
 	"context"
+	"errors"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -38,10 +39,14 @@ type stubController struct {
 	createCalls int32
 	updateCalls int32
 	deleteCalls int32
+	returnNil   bool // when true, Get reports the role as not found (nil, nil)
 }
 
 func (s *stubController) Get(_ context.Context, id int64, _ *Option) (*Role, error) {
 	atomic.AddInt32(&s.getCalls, 1)
+	if s.returnNil {
+		return nil, nil
+	}
 	return &Role{Role: model.Role{ID: id, Name: "r"}}, nil
 }
 func (s *stubController) Count(context.Context, *q.Query) (int64, error) { return 0, nil }
@@ -225,6 +230,55 @@ func TestCacheBothDisabled(t *testing.T) {
 	_, ok := c.local.Load(int64(1))
 	assert.False(t, ok, "with L1 off nothing should be populated in L1")
 	assert.False(t, c.redisCache.Contains(ctx, roleCacheKey(1)), "with L2 off nothing should be written to Redis")
+}
+
+// erroringCache is a cache.Cache whose read/write operations all fail, used to
+// simulate an unavailable Redis (errors are not cache.ErrNotFound).
+type erroringCache struct{ err error }
+
+func (e *erroringCache) Contains(context.Context, string) bool    { return false }
+func (e *erroringCache) Delete(context.Context, string) error     { return e.err }
+func (e *erroringCache) Fetch(context.Context, string, any) error { return e.err }
+func (e *erroringCache) Ping(context.Context) error               { return e.err }
+func (e *erroringCache) Save(context.Context, string, any, ...time.Duration) error {
+	return e.err
+}
+func (e *erroringCache) Scan(context.Context, string) (cache.Iterator, error) {
+	return nil, e.err
+}
+
+// A missing role (inner returns nil, nil) must not be cached in either tier, and
+// the read returns nil without error.
+func TestCacheRoleNotFoundNotCached(t *testing.T) {
+	inner := &stubController{returnNil: true}
+	c := newCachingControllerWith(inner, time.Minute, time.Minute) // L1 + L2 on
+	c.redisCache = newMemoryCache(t)
+	ctx := context.Background()
+
+	r, err := c.Get(ctx, 1, withPermission())
+	require.NoError(t, err)
+	assert.Nil(t, r, "a missing role should return nil")
+
+	_, ok := c.local.Load(int64(1))
+	assert.False(t, ok, "a missing role must not be cached in L1")
+	assert.False(t, c.redisCache.Contains(ctx, roleCacheKey(1)), "a missing role must not be cached in L2")
+}
+
+// When Redis (L2) errors, the read falls back to the inner (DB) and still serves
+// the role and populates L1 — a Redis hiccup must never fail an authz check.
+func TestCacheRedisErrorFallsBackToDB(t *testing.T) {
+	inner := &stubController{}
+	c := newCachingControllerWith(inner, time.Minute, time.Minute) // L1 + L2 on
+	c.redisCache = &erroringCache{err: errors.New("redis down")}
+	ctx := context.Background()
+
+	r, err := c.Get(ctx, 1, withPermission())
+	require.NoError(t, err, "a Redis error must not fail the read")
+	require.NotNil(t, r)
+	assert.Equal(t, int32(1), inner.gets(), "should fall back to the inner (DB) when Redis errors")
+
+	_, ok := c.local.Load(int64(1))
+	assert.True(t, ok, "the fallback result should still populate L1")
 }
 
 // envDuration parses seconds, duration strings, and the <=0 disable sentinel.

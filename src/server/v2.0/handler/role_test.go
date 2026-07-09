@@ -101,6 +101,58 @@ func TestCreateRole_NonSysAdminForbidden(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Delete / Update role handlers (auth gate + wiring)
+// ---------------------------------------------------------------------------
+
+// A sysadmin can delete a custom role: the handler fetches it and returns 200.
+func TestDeleteRole_Success(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(true)
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(5), testifymock.Anything).
+		Return(&roleCtl.Role{Editable: true}, nil)
+
+	resp := (&roleAPI{roleCtl: rc}).DeleteRole(newCtxWithSecurity(sc), operation.DeleteRoleParams{RoleID: 5})
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusOK, rr.Code)
+	rc.AssertCalled(t, "Get", testifymock.Anything, int64(5), testifymock.Anything)
+}
+
+// A non-sysadmin cannot update a role — rejected at the gate before roleCtl is used.
+func TestUpdateRole_NonSysAdminForbidden(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(false)
+
+	resp := (&roleAPI{}).UpdateRole(newCtxWithSecurity(sc), operation.UpdateRoleParams{RoleID: 5})
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.Equal(t, http.StatusForbidden, rr.Code)
+}
+
+// Updating a legacy/built-in (non-editable) role is denied even for a sysadmin.
+func TestUpdateRole_LegacyRoleDenied(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(true)
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(1), testifymock.Anything).
+		Return(&roleCtl.Role{Editable: false}, nil) // built-in / legacy: immutable
+
+	resp := (&roleAPI{roleCtl: rc}).UpdateRole(newCtxWithSecurity(sc), operation.UpdateRoleParams{RoleID: 1})
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.NotEqual(t, http.StatusOK, rr.Code, "updating an immutable role must be rejected")
+}
+
+// ---------------------------------------------------------------------------
 // validate
 // ---------------------------------------------------------------------------
 
