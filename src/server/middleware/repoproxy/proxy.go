@@ -44,6 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg"
@@ -120,6 +121,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if isDefault {
 		http.Redirect(w, r, defaultBlobURL(p.Name, name, art.Digest), http.StatusMovedPermanently)
 		return nil
+	}
+
+	// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+	if err := checkRepositoryFilter(p, art); err != nil {
+		return err
 	}
 
 	if p.IsProxy() && config.Metric().Enabled {
@@ -241,6 +247,44 @@ func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
 }
 
+// defaultTagURL return the real url for request with default project
+func defaultTagURL(projectName string, name string) string {
+	return fmt.Sprintf("/v2/%s/library/%s/tags/list", projectName, name)
+}
+
+// matchRepositoryFilter returns true if repository matches the filter.
+// filterPattern is the plain pattern string; filterKind is "doublestar" or "regex" (defaults to doublestar when empty).
+// If filterPattern is empty, all repositories are allowed.
+// An invalid pattern is treated as no match.
+func matchRepositoryFilter(repository, filterPattern, filterKind string) bool {
+	log.Debugf("matching repository %q against filter pattern: %q (kind: %s)", repository, filterPattern, filterKind)
+	matched, err := pattern.Match(repository, filterPattern, filterKind)
+	if err != nil {
+		log.Warningf("invalid proxy_cache_filter_pattern %q (kind: %s): %v", filterPattern, filterKind, err)
+		return false
+	}
+	log.Debugf("repository %q match result: %v (filter: %q, kind: %s)", repository, matched, filterPattern, filterKind)
+	return matched
+}
+
+// checkRepositoryFilter returns a NotFoundError if the project has a proxy_cache_filter_pattern
+// set and the artifact's repository does not match it. It is enforced for both manifest and
+// blob requests so the filter acts as an access boundary rather than a manifest-only convenience,
+// since a client that knows a blob digest out-of-band could otherwise bypass the filter.
+func checkRepositoryFilter(p *proModels.Project, art lib.ArtifactInfo) error {
+	filterPattern, ok := p.GetMetadata(proModels.ProMetaProxyCacheFilterPattern)
+	if !ok || filterPattern == "" {
+		return nil
+	}
+	filterKind, _ := p.GetMetadata(proModels.ProMetaProxyCacheFilterKind)
+	remoteRepo := strings.TrimPrefix(art.Repository, art.ProjectName+"/")
+	if !matchRepositoryFilter(remoteRepo, filterPattern, filterKind) {
+		log.Debugf("blocked proxy cache pull for project %q repository %q: repository does not match filter %q (kind: %s)", p.Name, remoteRepo, filterPattern, filterKind)
+		return errors.NotFoundError(fmt.Errorf("repository %q does not match project repository filter", remoteRepo))
+	}
+	return nil
+}
+
 // upstreamRegistryConnectionKey get upstream registry connection key
 func upstreamRegistryConnectionKey(art lib.ArtifactInfo) string {
 	limitOnProject := os.Getenv(upstreamRegistryLimitOnProject)
@@ -265,6 +309,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	if defaultProj {
 		http.Redirect(w, r, defaultManifestURL(p.Name, name, art), http.StatusMovedPermanently)
 		return nil
+	}
+
+	// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+	if err := checkRepositoryFilter(p, art); err != nil {
+		return err
 	}
 
 	if p.IsProxy() && config.Metric().Enabled {
@@ -448,7 +497,7 @@ func ProxyReferrerMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		ctx := r.Context()
 		art := lib.GetArtifactInfo(ctx)
-		p, err := project.Ctl.GetByName(ctx, art.ProjectName)
+		p, err := project.Ctl.GetByName(ctx, art.ProjectName, project.Metadata(true))
 		if err != nil {
 			httpLib.SendError(w, err)
 			return
@@ -461,6 +510,12 @@ func ProxyReferrerMiddleware() func(http.Handler) http.Handler {
 		if !p.ProxyReferrerAPI() {
 			log.Debug("the proxy referrer API is not enabled for current project, fallback to local registry")
 			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+		if err := checkRepositoryFilter(p, art); err != nil {
+			httpLib.SendError(w, err)
 			return
 		}
 
