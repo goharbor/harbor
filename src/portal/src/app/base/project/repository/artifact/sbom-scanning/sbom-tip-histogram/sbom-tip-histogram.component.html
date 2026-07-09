@@ -12,6 +12,16 @@
                     {{ 'SBOM.Details' | translate }}</a
                 >
             </div>
+            } @if (showMultiArchSbom()) {
+            <div class="circle-block">
+                <a
+                    href="javascript:void(0)"
+                    class="digest"
+                    (click)="goIntoMultiArchSbom()"
+                    title="{{ 'SBOM.STATE.MULTI_ARCH_HINT' | translate }}">
+                    {{ 'SBOM.Details' | translate }}</a
+                >
+            </div>
             } @if (showNoSbom()) {
             <div class="tip-wrapper label width-120">
                 {{ 'SBOM.NO_SBOM' | translate }}
@@ -31,6 +41,8 @@
                         {{ 'SBOM.PACKAGES' | translate }}
                     </div>
                 </div>
+                } @if (showMultiArchSbom()) {
+                <span>{{ 'SBOM.STATE.MULTI_ARCH_HINT' | translate }}</span>
                 } @if (showNoSbom()) {
                 <span>{{ 'SBOM.NO_SBOM' | translate }}</span>
                 }

@@ -465,8 +465,7 @@
                         <span>
                             {{ 'ARTIFACT.SBOM_UNSUPPORTED' | translate }}
                         </span>
-                        } @if ( hasSbom(artifact) && !artifact?.accessoryLoading
-                        && !hasChild(artifact) ) {
+                        } @if ( hasSbom(artifact) && !artifact?.accessoryLoading ) {
                         <hbr-sbom-bar
                             (submitStopFinish)="submitSbomStopFinish($event)"
                             (scanFinished)="sbomFinished($event)"
@@ -481,7 +480,9 @@
                             [accessories]="artifact?.accessories"
                             [artifactDigest]="artifact?.digest"
                             [sbomDigest]="artifact?.sbomDigest"
-                            [sbomOverview]="artifact?.sbom_overview">
+                            [hasChild]="hasChild(artifact)"
+                            [sbomOverview]="artifact?.sbom_overview"
+                            (viewMultiArchSbom)="goIntoIndexArtifact(artifact)">
                         </hbr-sbom-bar>
                         }
                     </div>

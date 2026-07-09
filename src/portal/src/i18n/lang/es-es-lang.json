@@ -970,7 +970,8 @@
             "QUEUED": "Encolado",
             "ERROR": "Ver Log",
             "SCANNING": "Generando",
-            "STOPPED": "Generación detenida"
+            "STOPPED": "Generación detenida",
+            "MULTI_ARCH_HINT": "Ver resultados de SBOM y vulnerabilidades por arquitectura"
         },
         "NO_SBOM": "No SBOM",
         "PACKAGES": "SBOM",

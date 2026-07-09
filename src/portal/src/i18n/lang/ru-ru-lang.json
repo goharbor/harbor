@@ -2205,7 +2205,8 @@
       "QUEUED": "Запланировано",
       "ERROR": "Посмотреть Лог",
       "SCANNING": "Генерация",
-      "STOPPED": "Генерация остановлена"
+      "STOPPED": "Генерация остановлена",
+      "MULTI_ARCH_HINT": "View per-architecture SBOM and vulnerability results"
     },
     "NO_SBOM": "Нет SBOM",
     "PACKAGES": "SBOM",
