@@ -20,11 +20,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 func init() {
@@ -128,7 +129,7 @@ func (b *Blob) FilterByArtifactDigest(_ context.Context, qs orm.QuerySeter, _ st
 	if !ok {
 		return qs
 	}
-	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+v+`'`)
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", orm.QuoteLiteral(v))
 	return qs.FilterRaw("digest", sql)
 }
 
@@ -140,7 +141,7 @@ func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ s
 	}
 	var afs []string
 	for _, v := range artifactDigests {
-		afs = append(afs, `'`+v+`'`)
+		afs = append(afs, orm.QuoteLiteral(v))
 	}
 
 	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(afs, ","))

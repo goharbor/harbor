@@ -52,12 +52,12 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.25
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-           go-version: 1.25.7
+           go-version: 1.26.4
         id: go
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
          path: src/github.com/goharbor/harbor
       - name: setup env
@@ -100,7 +100,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -119,7 +119,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -170,6 +170,7 @@ jobs:
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
+    if: ${{ github.event.repository.custom_properties.SKIP_PROXY_CACHE != 'true' }}
     runs-on:
       #- self-hosted
       - oracle-vm-24cpu-96gb-x86-64
@@ -180,7 +181,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -241,7 +242,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -300,7 +301,7 @@ jobs:
         with:
           go-version: 1.23.2
         id: go
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -349,8 +350,8 @@ jobs:
     steps:
       - uses: actions/setup-node@v6
         with:
-          node-version: '18'
-      - uses: actions/checkout@v6
+          node-version: '22'
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: script
@@ -361,7 +362,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

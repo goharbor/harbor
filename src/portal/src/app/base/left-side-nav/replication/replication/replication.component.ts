@@ -76,6 +76,10 @@ import { ReplicationService } from 'ng-swagger-gen/services/replication.service'
 import { ReplicationPolicy } from '../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationExecutionFilter } from '../replication';
 import { ReplicationExecution } from '../../../../../../ng-swagger-gen/models/replication-execution';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
@@ -105,6 +109,7 @@ const STATUS_MAP = {
     selector: 'hbr-replication',
     templateUrl: './replication.component.html',
     styleUrls: ['./replication.component.scss'],
+    standalone: false,
 })
 export class ReplicationComponent implements OnInit, OnDestroy {
     @Input() projectId: number | string;
@@ -166,7 +171,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         private errorHandlerEntity: ErrorHandler,
         private replicationService: ReplicationService,
         private operationService: OperationService,
-        private translateService: TranslateService
+        private translateService: TranslateService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     public get showPaginationIndex(): boolean {
@@ -291,6 +297,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         }
         this.replicationService
             .listReplicationExecutionsResponse(params)
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(
                 response => {
                     this.totalCount = Number.parseInt(

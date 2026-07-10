@@ -26,6 +26,10 @@ import {
     WORKER_OPTIONS,
 } from '../../clearing-job-interfact';
 import { clone } from '../../../../../shared/units/utils';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../services/skip-session-renewal.service';
 
 const ONE_MINUTE = 60000;
 
@@ -33,6 +37,7 @@ const ONE_MINUTE = 60000;
     selector: 'gc-config',
     templateUrl: './gc.component.html',
     styleUrls: ['./gc.component.scss'],
+    standalone: false,
 })
 export class GcComponent implements OnInit, OnDestroy {
     originCron: OriginCron;
@@ -55,7 +60,8 @@ export class GcComponent implements OnInit, OnDestroy {
     @ViewChild(GcHistoryComponent) gcHistoryComponent: GcHistoryComponent;
     constructor(
         private gcService: GcService,
-        private errorHandler: ErrorHandler
+        private errorHandler: ErrorHandler,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit() {
@@ -78,6 +84,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 pageSize: 1,
                 sort: '-update_time',
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(res => {
                 if (res?.length) {
                     this.isDryRun = JSON.parse(res[0]?.job_parameters).dry_run;

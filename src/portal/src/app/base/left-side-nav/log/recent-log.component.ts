@@ -29,6 +29,7 @@ import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
     selector: 'hbr-log',
     templateUrl: './recent-log.component.html',
     styleUrls: ['./recent-log.component.scss'],
+    standalone: false,
 })
 export class RecentLogComponent {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

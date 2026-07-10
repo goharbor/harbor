@@ -30,6 +30,7 @@ const FIRST_PROJECTS_PAGE_SIZE: number = 100;
     selector: 'app-list-all-projects',
     templateUrl: './list-all-projects.component.html',
     styleUrls: ['./list-all-projects.component.scss'],
+    standalone: false,
 })
 export class ListAllProjectsComponent implements OnInit {
     selectedRow: Project[] = [];
