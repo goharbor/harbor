@@ -324,6 +324,7 @@ func (c *controllerTestSuite) TestList() {
 		{RepositoryID: 1, Name: "library/hello-world"},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)
 	c.Require().Len(artifacts, 1)
@@ -362,6 +363,7 @@ func (c *controllerTestSuite) TestListWithLatest() {
 		{RepositoryID: 1, Name: "library/hello-world"},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	artifacts, err := c.ctl.ListWithLatest(nil, query, option)
 	c.Require().Nil(err)
 	c.Require().Len(artifacts, 1)
@@ -528,6 +530,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
 	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
@@ -706,6 +709,7 @@ func (c *controllerTestSuite) TestWalk() {
 		{Digest: "d2", ManifestMediaType: v1.MediaTypeImageManifest},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 
 	{
 		root := &Artifact{}
