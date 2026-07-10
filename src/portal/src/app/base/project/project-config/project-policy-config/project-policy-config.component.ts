@@ -61,6 +61,8 @@ export class ProjectPolicy {
     MaxUpstreamConn?: number | null;
     ProxyCacheLocalOnNotFound?: boolean;
     ProxyReferrerAPI?: boolean;
+    ProxyCacheFilterPattern?: string | null;
+    ProxyCacheFilterKind?: string | null;
 
     constructor() {
         this.Public = false;
@@ -76,6 +78,8 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = -1;
         this.ProxyCacheLocalOnNotFound = false;
         this.ProxyReferrerAPI = false;
+        this.ProxyCacheFilterPattern = null;
+        this.ProxyCacheFilterKind = 'doublestar';
     }
 
     initByProject(pro: Project) {
@@ -101,6 +105,10 @@ export class ProjectPolicy {
             pro.metadata.proxy_cache_local_on_not_found === 'true';
         this.ProxyReferrerAPI =
             pro.metadata.proxy_referrer_api === 'true' ? true : false;
+        this.ProxyCacheFilterPattern =
+            pro.metadata.proxy_cache_filter_pattern || null;
+        this.ProxyCacheFilterKind =
+            pro.metadata.proxy_cache_filter_kind || 'doublestar';
     }
 }
 const PAGE_SIZE: number = 100;
@@ -113,7 +121,6 @@ const PAGE_SIZE: number = 100;
 })
 export class ProjectPolicyConfigComponent implements OnInit {
     onGoing = false;
-    allowUpdateProxyCacheConfiguration = false;
     @Input() projectId: number;
     @Input() projectName = 'unknown';
     @Input() isProxyCacheProject: boolean = false;
@@ -164,6 +171,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
     maxUpstreamConnError: string | null = null;
+    repositoryFilterError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
@@ -223,6 +231,77 @@ export class ProjectPolicyConfigComponent implements OnInit {
         } else {
             this.bandwidthError = null;
         }
+    }
+
+    validateMaxUpstreamConnections(): void {
+        const value = Number(this.projectPolicy.MaxUpstreamConn);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translate
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.maxUpstreamConnError = res;
+                });
+        } else {
+            this.maxUpstreamConnError = null;
+        }
+    }
+
+    validateRepositoryFilter(): void {
+        const pattern = this.projectPolicy.ProxyCacheFilterPattern;
+        const kind = this.projectPolicy.ProxyCacheFilterKind;
+
+        if (!pattern) {
+            this.repositoryFilterError = null;
+            return;
+        }
+
+        if (kind === 'regex') {
+            try {
+                new RegExp(pattern);
+                this.repositoryFilterError = null;
+            } catch (e) {
+                this.translate
+                    .get('PROJECT.REPOSITORY_FILTER_REGEX_INVALID')
+                    .subscribe((res: string) => {
+                        this.repositoryFilterError = res;
+                    });
+            }
+        } else if (kind === 'doublestar') {
+            if (!this.checkBalancedChars(pattern)) {
+                this.translate
+                    .get('PROJECT.REPOSITORY_FILTER_DOUBLESTAR_INVALID')
+                    .subscribe((res: string) => {
+                        this.repositoryFilterError = res;
+                    });
+            } else {
+                this.repositoryFilterError = null;
+            }
+        } else {
+            this.repositoryFilterError = null;
+        }
+    }
+
+    checkBalancedChars(pattern: string): boolean {
+        const stack: string[] = [];
+        const openCloseMap = {
+            '[': ']',
+            '{': '}',
+        };
+        for (const char of pattern) {
+            if (char === '[' || char === '{') {
+                stack.push(char);
+            } else if (char === ']' || char === '}') {
+                const last = stack.pop();
+                if (!last || openCloseMap[last] !== char) {
+                    return false;
+                }
+            }
+        }
+        return stack.length === 0;
     }
 
     getRegistries() {
@@ -307,8 +386,6 @@ export class ProjectPolicyConfigComponent implements OnInit {
             )
             .subscribe(permissins => {
                 this.hasChangeConfigRole = permissins as boolean;
-                this.allowUpdateProxyCacheConfiguration =
-                    this.hasChangeConfigRole && !this.isProxyCacheProject;
             });
     }
 
@@ -360,10 +437,13 @@ export class ProjectPolicyConfigComponent implements OnInit {
     isValid() {
         let flag = false;
         if (
-            !this.projectPolicy.PreventVulImg ||
-            this.severityOptions.some(
-                x => x.severity === this.projectPolicy.PreventVulImgSeverity
-            )
+            (!this.projectPolicy.PreventVulImg ||
+                this.severityOptions.some(
+                    x => x.severity === this.projectPolicy.PreventVulImgSeverity
+                )) &&
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError &&
+            !this.repositoryFilterError
         ) {
             flag = true;
         }
@@ -416,6 +496,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     reset(): void {
         this.projectPolicy = clone(this.orgProjectPolicy);
+        this.bandwidthError = null;
+        this.maxUpstreamConnError = null;
+        this.repositoryFilterError = null;
     }
 
     confirmCancel(ack: ConfirmationAcknowledgement): void {

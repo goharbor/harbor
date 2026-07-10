@@ -35,7 +35,10 @@ import { NgForm, Validators } from '@angular/forms';
 import { forkJoin, fromEvent, Observable, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Project } from '../../../project/project';
+import {
+    Project,
+    REPOSITORY_FILTER_KIND_DOUBLESTAR,
+} from '../../../project/project';
 import {
     QuotaUnits,
     QuotaUnlimited,
@@ -114,6 +117,8 @@ export class CreateProjectComponent
     bandwidthError: string | null = null;
 
     maxUpstreamConnError: string | null = null;
+
+    repositoryFilterError: string | null = null;
 
     constructor(
         private projectService: ProjectService,
@@ -350,6 +355,60 @@ export class CreateProjectComponent
         }
     }
 
+    validateRepositoryFilter(): void {
+        const pattern = this.project.metadata.proxy_cache_filter_pattern;
+        const kind = this.project.metadata.proxy_cache_filter_kind;
+
+        if (!pattern) {
+            this.repositoryFilterError = null;
+            return;
+        }
+
+        if (kind === 'regex') {
+            try {
+                new RegExp(pattern);
+                this.repositoryFilterError = null;
+            } catch (e) {
+                this.translateService
+                    .get('PROJECT.REPOSITORY_FILTER_REGEX_INVALID')
+                    .subscribe((res: string) => {
+                        this.repositoryFilterError = res;
+                    });
+            }
+        } else if (kind === 'doublestar') {
+            if (!this.checkBalancedChars(pattern)) {
+                this.translateService
+                    .get('PROJECT.REPOSITORY_FILTER_DOUBLESTAR_INVALID')
+                    .subscribe((res: string) => {
+                        this.repositoryFilterError = res;
+                    });
+            } else {
+                this.repositoryFilterError = null;
+            }
+        } else {
+            this.repositoryFilterError = null;
+        }
+    }
+
+    checkBalancedChars(pattern: string): boolean {
+        const stack: string[] = [];
+        const openCloseMap = {
+            '[': ']',
+            '{': '}',
+        };
+        for (const char of pattern) {
+            if (char === '[' || char === '{') {
+                stack.push(char);
+            } else if (char === ']' || char === '}') {
+                const last = stack.pop();
+                if (!last || openCloseMap[last] !== char) {
+                    return false;
+                }
+            }
+        }
+        return stack.length === 0;
+    }
+
     convertSpeedValue(realSpeed: number): number {
         if (this.selectedSpeedLimitUnit == BandwidthUnit.MB) {
             return realSpeed * KB_TO_MB;
@@ -372,6 +431,12 @@ export class CreateProjectComponent
             return;
         }
 
+        this.validateRepositoryFilter();
+        if (this.repositoryFilterError) {
+            this.inlineAlert.showInlineError(this.repositoryFilterError);
+            return;
+        }
+
         this.project.metadata.bandwidth = this.convertSpeedValue(
             this.speedLimit
         );
@@ -386,25 +451,34 @@ export class CreateProjectComponent
         const registryId: number = this.enableProxyCache
             ? +this.project.registry_id
             : null;
+        const metadata: Record<string, string> = {
+            public: this.project.metadata.public ? 'true' : 'false',
+            proxy_speed_kb: this.project.metadata.bandwidth.toString(),
+            max_upstream_conn:
+                this.project.metadata.max_upstream_conn.toString(),
+            proxy_cache_local_on_not_found: this.project.metadata
+                .proxy_cache_local_on_not_found
+                ? 'true'
+                : 'false',
+            proxy_referrer_api: this.project.metadata.proxy_referrer_api
+                ? 'true'
+                : 'false',
+        };
+        if (
+            this.enableProxyCache &&
+            this.project.metadata.proxy_cache_filter_pattern
+        ) {
+            metadata.proxy_cache_filter_pattern =
+                this.project.metadata.proxy_cache_filter_pattern;
+            metadata.proxy_cache_filter_kind =
+                this.project.metadata.proxy_cache_filter_kind ||
+                REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        }
         this.projectService
             .createProject({
                 project: {
                     project_name: this.project.name,
-                    metadata: {
-                        public: this.project.metadata.public ? 'true' : 'false',
-                        proxy_speed_kb:
-                            this.project.metadata.bandwidth.toString(),
-                        max_upstream_conn:
-                            this.project.metadata.max_upstream_conn.toString(),
-                        proxy_cache_local_on_not_found: this.project.metadata
-                            .proxy_cache_local_on_not_found
-                            ? 'true'
-                            : 'false',
-                        proxy_referrer_api: this.project.metadata
-                            .proxy_referrer_api
-                            ? 'true'
-                            : 'false',
-                    },
+                    metadata,
                     storage_limit: +storageByte,
                     registry_id: registryId,
                 },
@@ -451,6 +525,10 @@ export class CreateProjectComponent
         this.project.metadata.max_upstream_conn = -1;
         this.project.metadata.proxy_cache_local_on_not_found = false;
         this.project.metadata.proxy_referrer_api = false;
+        this.project.metadata.proxy_cache_filter_pattern = '';
+        this.project.metadata.proxy_cache_filter_kind =
+            REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        this.repositoryFilterError = null;
     }
 
     public get isValid(): boolean {
@@ -461,7 +539,8 @@ export class CreateProjectComponent
             this.isNameValid &&
             !this.checkOnGoing &&
             !this.bandwidthError &&
-            !this.maxUpstreamConnError
+            !this.maxUpstreamConnError &&
+            !this.repositoryFilterError
         );
     }
 
