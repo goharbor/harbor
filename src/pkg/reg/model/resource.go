@@ -37,12 +37,11 @@ type Resource struct {
 	IsDeleteTag bool `json:"is_delete_tag"`
 	// indicate whether the resource can be overridden
 	Override bool `json:"override"`
-	// CreateRepoIfNotExist indicates whether the adapter should pre-create the
-	// repository on the destination registry before pushing. Defaults to true
-	// (current behavior). Set to false to let the destination registry
-	// auto-create the repository on push instead (e.g. so AWS ECR repository
-	// creation templates can apply).
-	CreateRepoIfNotExist bool `json:"create_repo_if_not_exist"`
+	// AdapterOptions is a generic key/value bag threaded down from the
+	// replication policy so adapters can read settings specific to them
+	// without every adapter-specific concept needing its own field here.
+	// e.g. the AWS ECR adapter reads "skip_repo_creation" from this map.
+	AdapterOptions map[string]string `json:"adapter_options,omitempty"`
 	// Skip is a flag for resource which satisfies replication rules but should
 	// be skipped because of other limits like when dest project's type is proxy cache.
 	Skip bool `json:"-"`

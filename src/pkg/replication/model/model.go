@@ -44,13 +44,12 @@ type Policy struct {
 	Speed                     int32     `orm:"column(speed_kb)"`
 	CopyByChunk               bool      `orm:"column(copy_by_chunk)"`
 	SingleActiveReplication   bool      `orm:"column(single_active_replication)"`
-	// CreateRepoIfNotExist controls whether Harbor should pre-create the repository
-	// on the destination registry before pushing. Stored as a nullable bool so we
-	// can distinguish "not set" (legacy behavior, defaults to true) from an explicit
-	// false. Nil/true = current behavior (Harbor creates the repo). False = skip
-	// creation and let the destination registry auto-create it on push (e.g. so
-	// AWS ECR repository creation templates can apply).
-	CreateRepoIfNotExist *bool `orm:"column(create_repo_if_not_exist);null"`
+	// AdapterOptions is a generic JSON-encoded key/value bag for adapter-specific
+	// settings that don't warrant a dedicated column of their own. Each adapter
+	// reads only the keys it understands and ignores the rest. e.g. the AWS ECR
+	// adapter reads "skip_repo_creation" to decide whether to pre-create the
+	// destination repository before pushing.
+	AdapterOptions string `orm:"column(adapter_options)"`
 }
 
 // TableName set table name for ORM

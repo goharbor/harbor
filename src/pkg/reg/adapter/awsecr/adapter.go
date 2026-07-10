@@ -192,12 +192,16 @@ func (a *adapter) HealthCheck() (string, error) {
 	return model.Healthy, nil
 }
 
+// AdapterOptionSkipRepoCreation is the AdapterOptions key that, when set to
+// "true", tells this adapter to skip pre-creating the destination repository
+// and let the push itself trigger ECR's native create-on-push behavior.
+// This is needed for ECR repository creation templates, which only apply
+// when ECR creates the repository itself, not when it's created via an
+// explicit CreateRepository API call.
+const AdapterOptionSkipRepoCreation = "skip_repo_creation"
+
 // PrepareForPush checks/creates the destination repository, unless the
-// resource has opted out via CreateRepoIfNotExist=false, in which case Harbor
-// skips pre-creation and lets the push itself trigger ECR's native
-// create-on-push behavior (needed for ECR repository creation templates,
-// which only apply when ECR creates the repository itself, not when it's
-// created via an explicit CreateRepository API call).
+// caller has opted out via the AdapterOptionSkipRepoCreation option.
 func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 	for _, resource := range resources {
 		if resource == nil {
@@ -213,7 +217,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			return errors.New("the name of the namespace cannot be nil")
 		}
 
-		if !resource.CreateRepoIfNotExist {
+		if resource.AdapterOptions[AdapterOptionSkipRepoCreation] == "true" {
 			log.Infof("skip pre-creating repository %s in AWS ECR, relying on the registry to auto-create it on push",
 				resource.Metadata.Repository.Name)
 			continue

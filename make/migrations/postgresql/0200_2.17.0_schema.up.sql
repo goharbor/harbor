@@ -1,12 +1,16 @@
 /*
-Add create_repo_if_not_exist to replication_policy.
+Add adapter_options to replication_policy.
 
-Controls whether Harbor pre-creates the repository on the destination registry
-before pushing during replication. NULL/true preserves current behavior
-(Harbor creates the repo if it doesn't exist). false lets the destination
-registry auto-create it on push instead, so registry-side automation such as
-AWS ECR repository creation templates can apply.
+A generic JSON-encoded key/value bag for adapter-specific settings that don't
+warrant a dedicated column of their own. Each registry adapter reads only the
+keys it understands and ignores the rest.
+
+Initial use case: the AWS ECR adapter reads "skip_repo_creation": "true" to
+skip pre-creating the destination repository before pushing, so that ECR
+repository creation templates -- which only apply when ECR creates the
+repository itself, not when it's created via an explicit CreateRepository
+API call -- can take effect.
 
 See: https://github.com/goharbor/harbor/issues/22842
 */
-ALTER TABLE replication_policy ADD COLUMN IF NOT EXISTS create_repo_if_not_exist boolean;
+ALTER TABLE replication_policy ADD COLUMN IF NOT EXISTS adapter_options text;

@@ -121,7 +121,7 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
-	policy.CreateRepoIfNotExist = params.Policy.CreateRepoIfNotExist
+	policy.AdapterOptions = params.Policy.AdapterOptions
 
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
@@ -199,7 +199,7 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
-	policy.CreateRepoIfNotExist = params.Policy.CreateRepoIfNotExist
+	policy.AdapterOptions = params.Policy.AdapterOptions
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
 		return r.SendError(ctx, err)
@@ -467,7 +467,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
 		SingleActiveReplication:   &policy.SingleActiveReplication,
-		CreateRepoIfNotExist:      policy.CreateRepoIfNotExist,
+		AdapterOptions:            policy.AdapterOptions,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)

@@ -287,51 +287,51 @@ func TestValidate(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestShouldCreateRepoIfNotExist(t *testing.T) {
+func TestAdapterOption(t *testing.T) {
 	assert := assert.New(t)
 
-	// nil defaults to true
-	p := &Policy{
-		CreateRepoIfNotExist: nil,
-	}
-	assert.True(p.ShouldCreateRepoIfNotExist())
+	// nil map: key not set
+	p := &Policy{}
+	v, ok := p.AdapterOption("skip_repo_creation")
+	assert.False(ok)
+	assert.Equal("", v)
 
-	// true is true
-	vTrue := true
+	// key present
 	p = &Policy{
-		CreateRepoIfNotExist: &vTrue,
+		AdapterOptions: map[string]string{
+			"skip_repo_creation": "true",
+		},
 	}
-	assert.True(p.ShouldCreateRepoIfNotExist())
+	v, ok = p.AdapterOption("skip_repo_creation")
+	assert.True(ok)
+	assert.Equal("true", v)
 
-	// false is false
-	vFalse := false
-	p = &Policy{
-		CreateRepoIfNotExist: &vFalse,
-	}
-	assert.False(p.ShouldCreateRepoIfNotExist())
+	// key absent from a non-nil map
+	v, ok = p.AdapterOption("some_other_key")
+	assert.False(ok)
+	assert.Equal("", v)
 }
 
-func TestPolicyRoundTrip(t *testing.T) {
+func TestPolicyAdapterOptionsRoundTrip(t *testing.T) {
 	assert := assert.New(t)
 
-	vFalse := false
 	p := &Policy{
-		ID:           123,
-		Name:         "test-policy",
-		CopyByChunk:  true,
-		CreateRepoIfNotExist: &vFalse,
+		ID:          123,
+		Name:        "test-policy",
+		CopyByChunk: true,
+		AdapterOptions: map[string]string{
+			"skip_repo_creation": "true",
+		},
 	}
 
 	pkgModel, err := p.To()
 	assert.Nil(err)
 	assert.NotNil(pkgModel)
-	assert.NotNil(pkgModel.CreateRepoIfNotExist)
-	assert.False(*pkgModel.CreateRepoIfNotExist)
+	assert.NotEmpty(pkgModel.AdapterOptions)
 
 	p2 := &Policy{}
 	err = p2.From(pkgModel)
 	assert.Nil(err)
-	assert.NotNil(p2.CreateRepoIfNotExist)
-	assert.False(*p2.CreateRepoIfNotExist)
+	assert.Equal("true", p2.AdapterOptions["skip_repo_creation"])
 }
 
