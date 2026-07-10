@@ -31,6 +31,11 @@ type User struct {
 	Rolename        string `json:"role_name"`
 	Role            int    `json:"role_id"`
 	SysAdminFlag    bool   `json:"sysadmin_flag"`
+	// SysAdminFlagSource records who last set SysAdminFlag: "manual" for an explicit operator
+	// action, "sync" for the LDAP/OIDC admin-group sync, or "" if never set. Auth sync only
+	// ever changes the flag when the source is not "manual", so it never overrides an
+	// operator's explicit grant or revocation.
+	SysAdminFlagSource string `json:"-"`
 	// AdminRoleInAuth to store the admin privilege granted by external authentication provider
 	AdminRoleInAuth bool      `json:"admin_role_in_auth"`
 	ResetUUID       string    `json:"reset_uuid"`
