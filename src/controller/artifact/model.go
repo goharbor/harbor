@@ -29,10 +29,11 @@ import (
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags          []*tag.Tag                 `json:"tags"`           // the list of tags that attached to the artifact
-	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
-	Labels        []*model.Label             `json:"labels"`
-	Accessories   []accessoryModel.Accessory `json:"-"`
+	Tags                 []*tag.Tag                 `json:"tags"`           // the list of tags that attached to the artifact
+	AdditionLinks        map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Labels               []*model.Label             `json:"labels"`
+	Accessories          []accessoryModel.Accessory `json:"-"`
+	InheritedAccessories []accessoryModel.Accessory `json:"-"` // accessories inherited from the parent OCI index, display only, never use in copy/delete/walk
 }
 
 // UnmarshalJSON to customize the accessories unmarshal
