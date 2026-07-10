@@ -421,7 +421,12 @@
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Отдавать кэшированный контент при недоступности вышестоящего реестра",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Включите эту опцию, чтобы разрешить проекту продолжать отдавать кэшированный контент, даже если артефакт не найден в вышестоящем реестре или вышестоящий реестр недоступен. Это может привести к отдаче устаревшего контента, если вышестоящий реестр недоступен.",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Фильтр репозитория",
+        "REPOSITORY_FILTER_TOOLTIP": "Необязательный фильтр для ограничения кэшируемых репозиториев из вышестоящего реестра. 'Doublestar' (по умолчанию) использует glob-шаблоны с поддержкой ** (напр. library/**). 'Regex' использует регулярные выражения (напр. ^library/.*), шаблоны регулярных выражений привязаны к началу. Применяется только к текущим проектам прокси-кэша.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "напр. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Сводка",

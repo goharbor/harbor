@@ -249,9 +249,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Por favor, ingrese -1 o un número entero mayor que 0.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir contenido en caché cuando el registro de origen no está disponible",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opción para permitir que este proyecto continúe sirviendo contenido en caché incluso si el artefacto no se encuentra en el registro de origen o si el registro de origen no está disponible. Esto puede provocar que se sirva contenido obsoleto si el registro de origen no está disponible.",
-        "NO_PROJECT": "No pudimos encontrar ningún proyecto",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Filtro de repositorio",
+        "REPOSITORY_FILTER_TOOLTIP": "Filtro opcional para limitar qué repositorios se almacenan en caché del registro de origen. 'Doublestar' (predeterminado) usa patrones glob con soporte ** (ej. library/**). 'Regex' usa expresiones regulares (ej. ^library/.*), los patrones de expresiones regulares están anclados al principio. Solo se aplica a proyectos de caché proxy actuales.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "ej. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
