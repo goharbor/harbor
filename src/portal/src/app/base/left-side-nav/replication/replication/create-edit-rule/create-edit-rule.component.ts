@@ -46,6 +46,7 @@ import { RegistryService } from '../../../../../../../ng-swagger-gen/services/re
 import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
 import { Label } from '../../../../../../../ng-swagger-gen/models/label';
 import { LabelService } from '../../../../../../../ng-swagger-gen/services/label.service';
+import { Router } from '@angular/router';
 import {
     BandwidthUnit,
     Decoration,
@@ -64,6 +65,7 @@ export const KB_TO_MB: number = 1024;
     selector: 'hbr-create-edit-rule',
     templateUrl: './create-edit-rule.component.html',
     styleUrls: ['./create-edit-rule.component.scss'],
+    standalone: false,
 })
 export class CreateEditRuleComponent implements OnInit, OnDestroy {
     sourceList: Registry[] = [];
@@ -128,7 +130,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
         private jobServiceService: JobserviceService,
-        private labelService: LabelService
+        private labelService: LabelService,
+        private router: Router
     ) {
         this.createForm();
     }
@@ -676,6 +679,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     close(): void {
         this.createEditRuleOpened = false;
+    }
+
+    goToLabels(): void {
+        this.close();
+        this.router.navigate(['/harbor/labels']);
     }
 
     confirmCancel(confirmed: boolean) {

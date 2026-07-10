@@ -89,6 +89,7 @@ import {
     selector: 'hbr-repository-gridview',
     templateUrl: './repository-gridview.component.html',
     styleUrls: ['./repository-gridview.component.scss'],
+    standalone: false,
 })
 export class RepositoryGridviewComponent
     implements OnChanges, OnInit, OnDestroy

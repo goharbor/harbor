@@ -59,6 +59,7 @@ const PAGE_SIZE: number = 100;
     selector: 'create-project',
     templateUrl: 'create-project.component.html',
     styleUrls: ['create-project.scss'],
+    standalone: false,
 })
 export class CreateProjectComponent
     implements OnInit, AfterViewInit, OnChanges, OnDestroy
@@ -366,7 +367,7 @@ export class CreateProjectComponent
         }
 
         this.validateMaxUpstreamConnections();
-        if (this.bandwidthError) {
+        if (this.maxUpstreamConnError) {
             this.inlineAlert.showInlineError(this.maxUpstreamConnError);
             return;
         }
@@ -459,7 +460,8 @@ export class CreateProjectComponent
             !this.isSubmitOnGoing &&
             this.isNameValid &&
             !this.checkOnGoing &&
-            !this.bandwidthError
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError
         );
     }
 
