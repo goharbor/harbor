@@ -447,7 +447,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 fbLabel.setControl('value', filterLabel);
                 return fbLabel;
             }
-            if (filter.type === FilterType.TAG || filter.type === FilterType.NAME) {
+            if (
+                filter.type === FilterType.TAG ||
+                filter.type === FilterType.NAME
+            ) {
                 return this.fb.group({
                     type: filter.type,
                     decoration: filter.decoration || Decoration.MATCHES,

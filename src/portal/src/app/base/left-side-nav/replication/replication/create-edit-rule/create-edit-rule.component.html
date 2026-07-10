@@ -181,7 +181,8 @@
                             >
                             @if (supportedFilters[i]?.style === 'input') {
                             <div class="flex">
-                                @if (supportedFilters[i]?.type === 'tag' || supportedFilters[i]?.type === 'name') {
+                                @if ( supportedFilters[i]?.type === 'tag' ||
+                                supportedFilters[i]?.type === 'name' ) {
                                 <div class="clr-select-wrapper mr-1">
                                     <select
                                         class="clr-select width-match-exclude"
