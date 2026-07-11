@@ -14,14 +14,18 @@ fi
 
 go env -w GO111MODULE=auto
 pwd
-go install golang.org/x/tools/cmd/cover@latest
-go install github.com/mattn/goveralls@latest
-go install github.com/client9/misspell/cmd/misspell@latest
+GOBIN_DIR="$(go env GOPATH | cut -d: -f1)/bin"
+# These are restored from the CI tool cache; only build what is missing.
+command -v cover     >/dev/null 2>&1 || go install golang.org/x/tools/cmd/cover@latest
+command -v goveralls >/dev/null 2>&1 || go install github.com/mattn/goveralls@latest
+command -v misspell  >/dev/null 2>&1 || go install github.com/client9/misspell/cmd/misspell@latest
 set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
+if ! "${GOBIN_DIR}/golangci-lint" --version 2>/dev/null | grep -q ' 2\.9\.0 '; then
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "${GOBIN_DIR}" v2.9.0
+fi
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 

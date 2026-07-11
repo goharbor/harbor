@@ -50,14 +50,20 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
+      - uses: actions/checkout@v7
+        with:
+         path: src/github.com/goharbor/harbor
       - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
            go-version: 1.26.4
+           cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
-      - uses: actions/checkout@v7
+      - name: Cache CI Go tools
+        uses: actions/cache@v4
         with:
-         path: src/github.com/goharbor/harbor
+          path: ~/go/bin
+          key: ci-gotools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('src/github.com/goharbor/harbor/tests/ci/ut_install.sh') }}
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -112,14 +118,15 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
+      - uses: actions/checkout@v7
+        with:
+          path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
+          cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
-      - uses: actions/checkout@v7
-        with:
-          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -174,14 +181,15 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
+      - uses: actions/checkout@v7
+        with:
+          path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
+          cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
-      - uses: actions/checkout@v7
-        with:
-          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -235,14 +243,15 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
+      - uses: actions/checkout@v7
+        with:
+          path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
+          cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
-      - uses: actions/checkout@v7
-        with:
-          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
@@ -294,14 +303,15 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
+      - uses: actions/checkout@v7
+        with:
+          path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
         uses: actions/setup-go@v5
         with:
           go-version: 1.23.2
+          cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
-      - uses: actions/checkout@v7
-        with:
-          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
           cd src/github.com/goharbor/harbor
