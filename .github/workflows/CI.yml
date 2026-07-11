@@ -47,7 +47,7 @@ jobs:
        UTTEST: true
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.26
@@ -109,7 +109,7 @@ jobs:
       APITEST_DB: true
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -171,7 +171,7 @@ jobs:
     if: ${{ github.event.repository.custom_properties.SKIP_PROXY_CACHE != 'true' }}
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -232,7 +232,7 @@ jobs:
       APITEST_LDAP: true
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -291,7 +291,7 @@ jobs:
       OFFLINE: true
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - name: Set up Go 1.23
@@ -343,7 +343,7 @@ jobs:
       UI_UT: true
     runs-on:
       #- self-hosted
-      - oracle-vm-24cpu-96gb-x86-64
+      - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
       - uses: actions/setup-node@v6
