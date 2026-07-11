@@ -534,9 +534,6 @@ misspell:
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
-# GOPATH may be a colon-separated list (CI appends the workspace to it). Go installs
-# binaries into the first entry's bin, so resolve tools against that entry, not the
-# whole list, which would expand to a nonexistent "a:b/bin" path.
 GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
 GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
 lint:
