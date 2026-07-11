@@ -534,14 +534,18 @@ misspell:
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
-GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
+# GOPATH may be a colon-separated list (CI appends the workspace to it). Go installs
+# binaries into the first entry's bin, so resolve tools against that entry, not the
+# whole list, which would expand to a nonexistent "a:b/bin" path.
+GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
+GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
 # go install golang.org/x/vuln/cmd/govulncheck@latest
-GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
+GOVULNCHECK := $(GOPATH_BIN)/govulncheck
 govulncheck:
 	@echo golang vulnerability check
 	@cd ./src/; $(GOVULNCHECK) ./...;
