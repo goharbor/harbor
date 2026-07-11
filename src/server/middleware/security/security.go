@@ -16,6 +16,7 @@ package security
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib"
@@ -53,10 +54,14 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		} else {
 			log.Warningf("failed to get auth mode: %v", err)
 		}
-		// When Authorization is provided (e.g. Swagger UI "Authorize"), do not
-		// fall back to the portal session. Failed credentials must not silently
-		// use the logged-in user (https://github.com/goharbor/harbor/issues/7704).
-		hasAuthorization := r.Header.Get("Authorization") != ""
+		// When Basic/Bearer Authorization is provided (e.g. Swagger UI "Authorize"),
+		// do not fall back to the portal session. Failed credentials must not
+		// silently use the logged-in user (https://github.com/goharbor/harbor/issues/7704).
+		// Only Harbor-supported schemes skip session; non-standard Authorization
+		// values (e.g. injected by proxies) must not disable session auth.
+		authHeader := strings.ToLower(r.Header.Get("Authorization"))
+		hasAuthorization := strings.HasPrefix(authHeader, "basic ") ||
+			strings.HasPrefix(authHeader, "bearer ")
 		for _, generator := range generators {
 			if hasAuthorization {
 				if _, ok := generator.(*session); ok {

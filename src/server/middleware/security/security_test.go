@@ -137,3 +137,76 @@ func TestSecurityUsesSessionWhenNoAuthorization(t *testing.T) {
 	require.NotNil(t, ctx)
 	assert.Equal(t, "admin", ctx.GetUsername())
 }
+
+// TestSecurityAuthorizationTakesPrecedenceOverSession verifies that when both a
+// valid Authorization header and a portal session are present, the identity from
+// the header wins.
+func TestSecurityAuthorizationTakesPrecedenceOverSession(t *testing.T) {
+	initMemorySessionManager(t)
+
+	orig := generators
+	defer func() { generators = orig }()
+	generators = []generator{&basicAuth{}, &session{}}
+
+	sessionUser := models.User{
+		Username:     "session-user",
+		UserID:       2,
+		Email:        "session-user@example.com",
+		SysAdminFlag: false,
+	}
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	req = req.WithContext(orm.Context())
+	store, err := web.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	require.Nil(t, err)
+	require.Nil(t, store.Set(req.Context(), "user", sessionUser))
+
+	// Valid Basic auth for admin (User A) while session holds session-user (User B).
+	req.SetBasicAuth("admin", "Harbor12345")
+
+	var ctx security.Context
+	var exist bool
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, exist = security.FromContext(r.Context())
+	})
+	Middleware()(handler).ServeHTTP(httptest.NewRecorder(), req)
+
+	require.True(t, exist)
+	require.NotNil(t, ctx)
+	assert.Equal(t, "admin", ctx.GetUsername(), "Authorization identity must take precedence over session")
+}
+
+// TestSecurityUsesSessionWhenNonStandardAuthorization ensures a non-Basic/Bearer
+// Authorization value does not disable session auth (e.g. proxy-injected headers).
+func TestSecurityUsesSessionWhenNonStandardAuthorization(t *testing.T) {
+	initMemorySessionManager(t)
+
+	orig := generators
+	defer func() { generators = orig }()
+	generators = []generator{&basicAuth{}, &session{}}
+
+	user := models.User{
+		Username:     "admin",
+		UserID:       1,
+		Email:        "admin@example.com",
+		SysAdminFlag: true,
+	}
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	store, err := web.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	require.Nil(t, err)
+	require.Nil(t, store.Set(req.Context(), "user", user))
+
+	req.Header.Set("Authorization", "Negotiate abc123")
+
+	var ctx security.Context
+	var exist bool
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, exist = security.FromContext(r.Context())
+	})
+	Middleware()(handler).ServeHTTP(httptest.NewRecorder(), req)
+
+	require.True(t, exist)
+	require.NotNil(t, ctx)
+	assert.Equal(t, "admin", ctx.GetUsername())
+}
