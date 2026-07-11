@@ -29,36 +29,36 @@ on:
 jobs:
   UTTEST:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
 
   APITEST_DB:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
 
   APITEST_DB_PROXY_CACHE:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
 
   APITEST_LDAP:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
 
   OFFLINE:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
 
   UI_UT:
     runs-on:
-      - cncf-ubuntu-16-64-x86
+      - cncf-ubuntu-2-8-x86
     steps:
       - run: 'echo "No run required"'
