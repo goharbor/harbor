@@ -15,9 +15,7 @@ fi
 go env -w GO111MODULE=auto
 pwd
 GOBIN_DIR="$(go env GOPATH | cut -d: -f1)/bin"
-command -v cover     >/dev/null 2>&1 || go install golang.org/x/tools/cmd/cover@latest
-command -v goveralls >/dev/null 2>&1 || go install github.com/mattn/goveralls@latest
-command -v misspell  >/dev/null 2>&1 || go install github.com/client9/misspell/cmd/misspell@latest
+command -v misspell >/dev/null 2>&1 || go install github.com/client9/misspell/cmd/misspell@v0.3.4
 set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
