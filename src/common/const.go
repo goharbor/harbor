@@ -250,6 +250,10 @@ const (
 	// DefaultBeegoMaxUploadSizeBytes sets default max upload size to 128GB
 	DefaultBeegoMaxUploadSizeBytes = 1 << 37
 
+	// MaxManifestBodySize bounds the manifest PUT body buffered in memory. OCI
+	// manifests are sub-MiB in practice, so 4MiB is a generous ceiling.
+	MaxManifestBodySize = 4 << 20
+
 	// Global Leeway used for token validation
 	JwtLeeway = 60 * time.Second
 
