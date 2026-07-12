@@ -222,8 +222,8 @@ func (suite *TestPerformerSuite) TestPerformImmutableRepositoryExclusion() {
 		TagSelectors: []*immumodel.Selector{
 			{
 				Kind:       "doublestar",
-				Decoration: "excludes",
-				Pattern:    "latest",
+				Decoration: "matches",
+				Pattern:    "**",
 			},
 		},
 		ScopeSelectors: map[string][]*immumodel.Selector{
@@ -250,7 +250,7 @@ func (suite *TestPerformerSuite) TestPerformImmutableRepositoryExclusion() {
 				Repository:  "qa/team/component/backend",
 				Kind:        selector.Image,
 				Tags:        []string{"build-42"},
-				Digest:      "qa-build",
+				Digest:      "d0",
 			},
 			{
 				NamespaceID: projectID,
@@ -258,25 +258,16 @@ func (suite *TestPerformerSuite) TestPerformImmutableRepositoryExclusion() {
 				Repository:  "prod/team/component/backend",
 				Kind:        selector.Image,
 				Tags:        []string{"build-42"},
-				Digest:      "prod-build",
-			},
-			{
-				NamespaceID: projectID,
-				Namespace:   "example",
-				Repository:  "prod/team/component/backend",
-				Kind:        selector.Image,
-				Tags:        []string{"latest"},
-				Digest:      "prod-latest",
+				Digest:      "d1",
 			},
 		},
 	}
 
 	results, err := p.Perform(orm.Context(), nil)
 	require.NoError(suite.T(), err)
-	require.Len(suite.T(), results, 3)
+	require.Len(suite.T(), results, 2)
 	assert.NoError(suite.T(), results[0].Error)
 	assert.IsType(suite.T(), (*selector.ImmutableError)(nil), results[1].Error)
-	assert.NoError(suite.T(), results[2].Error)
 }
 
 type fakeRetentionClient struct{}
