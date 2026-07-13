@@ -447,9 +447,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 fbLabel.setControl('value', filterLabel);
                 return fbLabel;
             }
-            if (filter.type === FilterType.TAG) {
+            if (
+                filter.type === FilterType.TAG ||
+                filter.type === FilterType.NAME
+            ) {
                 return this.fb.group({
-                    type: FilterType.TAG,
+                    type: filter.type,
                     decoration: filter.decoration || Decoration.MATCHES,
                     value: filter.value,
                 });
@@ -470,7 +473,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             labelControl.setControl('value', labelArray);
             return labelControl;
         }
-        if (name === FilterType.TAG) {
+        if (name === FilterType.TAG || name === FilterType.NAME) {
             return this.fb.group({
                 type: name,
                 decoration: Decoration.MATCHES,

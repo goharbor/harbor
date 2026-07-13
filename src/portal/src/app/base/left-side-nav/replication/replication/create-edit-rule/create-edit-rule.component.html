@@ -181,7 +181,8 @@
                             >
                             @if (supportedFilters[i]?.style === 'input') {
                             <div class="flex">
-                                @if (supportedFilters[i]?.type === 'tag') {
+                                @if ( supportedFilters[i]?.type === 'tag' ||
+                                supportedFilters[i]?.type === 'name' ) {
                                 <div class="clr-select-wrapper mr-1">
                                     <select
                                         class="clr-select width-match-exclude"
@@ -206,10 +207,14 @@
                                         [ngClass]="{
                                             'width-name-resource':
                                                 supportedFilters[i]?.type !==
-                                                'tag',
+                                                    'tag' &&
+                                                supportedFilters[i]?.type !==
+                                                    'name',
                                             'width-tag-label':
                                                 supportedFilters[i]?.type ===
-                                                'tag'
+                                                    'tag' ||
+                                                supportedFilters[i]?.type ===
+                                                    'name'
                                         }"
                                         (input)="trimText($event)"
                                         type="text"

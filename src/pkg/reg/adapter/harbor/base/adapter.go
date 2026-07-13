@@ -229,7 +229,9 @@ func (a *Adapter) ListProjects(filters []*model.Filter) ([]*Project, error) {
 	pattern := ""
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
-			pattern = filter.Value.(string)
+			if filter.Decoration != model.Excludes {
+				pattern = filter.Value.(string)
+			}
 			break
 		}
 	}

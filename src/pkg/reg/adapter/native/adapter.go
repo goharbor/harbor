@@ -186,7 +186,9 @@ func (a *Adapter) listRepositories(filters []*model.Filter) ([]*model.Repository
 	pattern := ""
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
-			pattern = filter.Value.(string)
+			if filter.Decoration != model.Excludes {
+				pattern = filter.Value.(string)
+			}
 			break
 		}
 	}
