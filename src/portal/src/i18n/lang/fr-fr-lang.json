@@ -285,6 +285,7 @@
         "CONTENT_TRUST_POLICY": "Autoriser uniquement le déploiement d'images vérifiées."
     },
     "MEMBER": {
+        "BUILT_IN": "Intégré",
         "NEW_MEMBER": "Nouveau membre",
         "MEMBER": "Membre",
         "NAME": "Nom",

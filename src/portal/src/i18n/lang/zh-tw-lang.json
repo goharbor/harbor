@@ -284,6 +284,7 @@
         "CONTENT_TRUST_POLICY": "只允許部署已驗證的映像檔。"
     },
     "MEMBER": {
+        "BUILT_IN": "內建",
         "NEW_MEMBER": "新增成員",
         "MEMBER": "成員",
         "NAME": "名稱",

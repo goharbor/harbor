@@ -285,6 +285,7 @@
         "CONTENT_TRUST_POLICY": "Solo permita la implementación de imágenes verificadas."
     },
     "MEMBER": {
+        "BUILT_IN": "Integrado",
         "NEW_MEMBER": "Nuevo miembro",
         "MEMBER": "Miembro",
         "NAME": "Nombre",

@@ -285,6 +285,7 @@
         "CONTENT_TRUST_POLICY": "Yalnızca doğrulanmış imajların yüklenilmesine izin verin."
     },
     "MEMBER": {
+        "BUILT_IN": "Yerleşik",
         "NEW_MEMBER": "Yeni Üye",
         "MEMBER": "Üye",
         "NAME": "İsim",

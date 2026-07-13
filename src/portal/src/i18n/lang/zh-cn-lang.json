@@ -284,6 +284,7 @@
         "CONTENT_TRUST_POLICY": "仅允许部署经过验证的镜像。"
     },
     "MEMBER": {
+        "BUILT_IN": "内置",
         "NEW_MEMBER": "新建成员",
         "MEMBER": "成员",
         "NAME": "名称",

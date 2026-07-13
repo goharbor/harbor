@@ -284,6 +284,7 @@
         "CONTENT_TRUST_POLICY": "Erlaube ausschließlich verifizierte Images."
     },
     "MEMBER": {
+        "BUILT_IN": "Integriert",
         "NEW_MEMBER": "Neues Mitglied",
         "MEMBER": "Mitglied",
         "NAME": "Name",

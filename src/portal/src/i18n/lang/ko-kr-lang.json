@@ -365,6 +365,7 @@
         "SBOM": "SBOM 생성"
     },
     "MEMBER": {
+        "BUILT_IN": "내장",
         "NEW_MEMBER": "새 구성원",
         "MEMBER": "구성원",
         "NAME": "이름",
