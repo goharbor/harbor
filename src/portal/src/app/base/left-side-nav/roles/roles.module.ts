@@ -29,7 +29,7 @@ const routes: Routes = [
     declarations: [
         RolesComponent,
         AddRoleComponent,
-        RolePermissionsPanelComponent
+        RolePermissionsPanelComponent,
     ],
     imports: [SharedModule, RouterModule.forChild(routes)],
 })

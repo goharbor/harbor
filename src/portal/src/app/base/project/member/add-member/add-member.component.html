@@ -73,7 +73,8 @@
                                     [value]="r.id"
                                     [(ngModel)]="roleId"
                                     [disabled]="!isRoleAssignable(r)" />
-                                <label for="add-member-role-{{ r.id }}"
+                                <label
+                                    for="add-member-role-{{ r.id }}"
                                     [class.text-muted]="!isRoleAssignable(r)">
                                     <strong *ngIf="r.is_builtin">{{
                                         getRoleDisplayName(r) | translate

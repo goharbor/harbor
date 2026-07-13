@@ -62,7 +62,9 @@
                                 !(
                                     selectedRow.length &&
                                     hasUpdateMemberPermission
-                                ) || onlySelf || !isRoleAssignable(role)
+                                ) ||
+                                onlySelf ||
+                                !isRoleAssignable(role)
                             ">
                             {{ getRoleDisplayName(role) | translate }}
                             <span class="label label-blue role-builtin-badge">{{
@@ -80,7 +82,9 @@
                                 !(
                                     selectedRow.length &&
                                     hasUpdateMemberPermission
-                                ) || onlySelf || !isRoleAssignable(role)
+                                ) ||
+                                onlySelf ||
+                                !isRoleAssignable(role)
                             ">
                             {{ role.name }}
                         </button>

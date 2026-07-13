@@ -35,7 +35,6 @@ import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity'
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
-
 @Component({
     selector: 'add-member',
     templateUrl: 'add-member.component.html',
@@ -68,7 +67,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
 
     roles: Role[];
 
-
     constructor(
         private roleService: RoleService,
         private memberService: MemberService,
@@ -77,18 +75,17 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute
     ) {}
 
-
-
-
     ngOnInit(): void {
-        this.roleSub = this.roleService.ListRole({
-            page: 1,
-            pageSize: 100,
-        }).subscribe(res => {
-            if (res) {
-                this.roles = res;
-            }
-        });
+        this.roleSub = this.roleService
+            .ListRole({
+                page: 1,
+                pageSize: 100,
+            })
+            .subscribe(res => {
+                if (res) {
+                    this.roles = res;
+                }
+            });
 
         let resolverData = this.route.snapshot.parent.parent.data;
         let hasProjectAdminRole: boolean;
@@ -211,9 +208,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.searchedUserLists = [];
     }
 
-
-
-
     onCancel() {
         this.addMemberOpened = false;
     }
@@ -258,7 +252,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     }
 
     isRoleAssignable(role: Role): boolean {
-        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
+        return (
+            this.assignableRoleIds === null ||
+            this.assignableRoleIds.has(role.id)
+        );
     }
 
     getRoleDisplayName(role: Role): string {

@@ -214,9 +214,7 @@ const BUILTIN_ROLES: Role[] = [
         { resource: 'repository', action: 'pull' },
         { resource: 'repository', action: 'push' },
     ]),
-    makeRole(4, 'guest', true, [
-        { resource: 'repository', action: 'pull' },
-    ]),
+    makeRole(4, 'guest', true, [{ resource: 'repository', action: 'pull' }]),
     makeRole(5, 'limitedGuest', true, [
         { resource: 'repository', action: 'pull' },
     ]),
@@ -318,7 +316,11 @@ describe('MemberComponent — isRoleAssignable', () => {
 
     it('returns true only for roles in the assignable set', () => {
         const c = buildComponent({});
-        (c as any).assignableRoleIds = new Set<number>([4, 5, CUSTOM_PULL_ONLY.id]);
+        (c as any).assignableRoleIds = new Set<number>([
+            4,
+            5,
+            CUSTOM_PULL_ONLY.id,
+        ]);
         expect(c.isRoleAssignable(makeRole(4, 'guest', true))).toBeTrue();
         expect(c.isRoleAssignable(CUSTOM_PULL_ONLY)).toBeTrue();
         expect(c.isRoleAssignable(BUILTIN_ROLES[0])).toBeFalse(); // projectAdmin id=1
@@ -332,42 +334,51 @@ describe('MemberComponent — isRoleAssignable', () => {
 
 describe('MemberComponent — getRoleDisplayName', () => {
     let c: MemberComponent;
-    beforeEach(() => { c = buildComponent({}); });
+    beforeEach(() => {
+        c = buildComponent({});
+    });
 
     it('returns translation key for built-in projectAdmin', () => {
-        expect(c.getRoleDisplayName(makeRole(1, 'projectAdmin', true)))
-            .toBe('MEMBER.PROJECT_ADMIN');
+        expect(c.getRoleDisplayName(makeRole(1, 'projectAdmin', true))).toBe(
+            'MEMBER.PROJECT_ADMIN'
+        );
     });
 
     it('returns translation key for built-in maintainer', () => {
-        expect(c.getRoleDisplayName(makeRole(4, 'maintainer', true)))
-            .toBe('MEMBER.PROJECT_MAINTAINER');
+        expect(c.getRoleDisplayName(makeRole(4, 'maintainer', true))).toBe(
+            'MEMBER.PROJECT_MAINTAINER'
+        );
     });
 
     it('returns translation key for built-in developer', () => {
-        expect(c.getRoleDisplayName(makeRole(2, 'developer', true)))
-            .toBe('MEMBER.DEVELOPER');
+        expect(c.getRoleDisplayName(makeRole(2, 'developer', true))).toBe(
+            'MEMBER.DEVELOPER'
+        );
     });
 
     it('returns translation key for built-in guest', () => {
-        expect(c.getRoleDisplayName(makeRole(3, 'guest', true)))
-            .toBe('MEMBER.GUEST');
+        expect(c.getRoleDisplayName(makeRole(3, 'guest', true))).toBe(
+            'MEMBER.GUEST'
+        );
     });
 
     it('returns translation key for built-in limitedGuest', () => {
-        expect(c.getRoleDisplayName(makeRole(5, 'limitedGuest', true)))
-            .toBe('MEMBER.LIMITED_GUEST');
+        expect(c.getRoleDisplayName(makeRole(5, 'limitedGuest', true))).toBe(
+            'MEMBER.LIMITED_GUEST'
+        );
     });
 
     it('returns raw name for unknown built-in name', () => {
-        expect(c.getRoleDisplayName(makeRole(99, 'unknownBuiltin', true)))
-            .toBe('unknownBuiltin');
+        expect(c.getRoleDisplayName(makeRole(99, 'unknownBuiltin', true))).toBe(
+            'unknownBuiltin'
+        );
     });
 
     it('returns raw name for custom role regardless of name', () => {
         expect(c.getRoleDisplayName(CUSTOM_PULL_ONLY)).toBe('pull-only');
-        expect(c.getRoleDisplayName(makeRole(200, 'projectAdmin', false)))
-            .toBe('projectAdmin');
+        expect(c.getRoleDisplayName(makeRole(200, 'projectAdmin', false))).toBe(
+            'projectAdmin'
+        );
     });
 });
 
@@ -383,18 +394,27 @@ describe('MemberComponent — getMemberRoleDisplayName', () => {
     });
 
     function member(roleId: number, roleName: string): ProjectMemberEntity {
-        return { id: 1, project_id: 1, entity_name: 'u', role_id: roleId,
-                 role_name: roleName, entity_id: 1, entity_type: 'u' };
+        return {
+            id: 1,
+            project_id: 1,
+            entity_name: 'u',
+            role_id: roleId,
+            role_name: roleName,
+            entity_id: 1,
+            entity_type: 'u',
+        };
     }
 
     it('returns translation key for built-in role found in roles list', () => {
-        expect(c.getMemberRoleDisplayName(member(2, 'maintainer')))
-            .toBe('MEMBER.PROJECT_MAINTAINER');
+        expect(c.getMemberRoleDisplayName(member(2, 'maintainer'))).toBe(
+            'MEMBER.PROJECT_MAINTAINER'
+        );
     });
 
     it('returns raw name for custom role found in roles list', () => {
-        expect(c.getMemberRoleDisplayName(member(CUSTOM_PULL_ONLY.id, 'pull-only')))
-            .toBe('pull-only');
+        expect(
+            c.getMemberRoleDisplayName(member(CUSTOM_PULL_ONLY.id, 'pull-only'))
+        ).toBe('pull-only');
     });
 
     it('falls back to RoleInfo translation key when roles list is empty (race condition)', () => {
@@ -406,8 +426,9 @@ describe('MemberComponent — getMemberRoleDisplayName', () => {
 
     it('falls back to raw role_name when id is not in RoleInfo', () => {
         (c as any).roles = [];
-        expect(c.getMemberRoleDisplayName(member(999, 'my-custom-role')))
-            .toBe('my-custom-role');
+        expect(c.getMemberRoleDisplayName(member(999, 'my-custom-role'))).toBe(
+            'my-custom-role'
+        );
     });
 });
 
@@ -421,7 +442,7 @@ describe('MemberComponent — anti-escalation: valid assignments allowed', () =>
     it('maintainer can assign developer (developer perms ⊆ maintainer perms)', () => {
         // maintainer has push+pull; developer has push+pull → equal subset → OK
         const maintainer = BUILTIN_ROLES.find(r => r.name === 'maintainer')!;
-        const developer  = BUILTIN_ROLES.find(r => r.name === 'developer')!;
+        const developer = BUILTIN_ROLES.find(r => r.name === 'developer')!;
         const c = buildComponent({ has_admin_role: false });
         (c as any).roles = BUILTIN_ROLES;
         (c as any).currentUserRoleId = maintainer.id;
@@ -432,7 +453,7 @@ describe('MemberComponent — anti-escalation: valid assignments allowed', () =>
 
     it('maintainer can assign guest (guest perms ⊂ maintainer perms)', () => {
         const maintainer = BUILTIN_ROLES.find(r => r.name === 'maintainer')!;
-        const guest      = BUILTIN_ROLES.find(r => r.name === 'guest')!;
+        const guest = BUILTIN_ROLES.find(r => r.name === 'guest')!;
         const c = buildComponent({ has_admin_role: false });
         (c as any).roles = BUILTIN_ROLES;
         (c as any).currentUserRoleId = maintainer.id;
@@ -442,8 +463,10 @@ describe('MemberComponent — anti-escalation: valid assignments allowed', () =>
     });
 
     it('maintainer cannot assign projectAdmin (projectAdmin perms ⊄ maintainer perms)', () => {
-        const maintainer    = BUILTIN_ROLES.find(r => r.name === 'maintainer')!;
-        const projectAdmin  = BUILTIN_ROLES.find(r => r.name === 'projectAdmin')!;
+        const maintainer = BUILTIN_ROLES.find(r => r.name === 'maintainer')!;
+        const projectAdmin = BUILTIN_ROLES.find(
+            r => r.name === 'projectAdmin'
+        )!;
         const c = buildComponent({ has_admin_role: false });
         (c as any).roles = BUILTIN_ROLES;
         (c as any).currentUserRoleId = maintainer.id;

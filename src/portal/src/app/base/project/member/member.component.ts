@@ -154,7 +154,9 @@ export class MemberComponent implements OnInit, OnDestroy {
         }).subscribe(({ roles, membership }) => {
             this.roles = roles ?? [];
             const myEntry = membership?.find(
-                m => m.entity_type === 'u' && m.entity_id === this.currentUser.user_id
+                m =>
+                    m.entity_type === 'u' &&
+                    m.entity_id === this.currentUser.user_id
             );
             this.currentUserRoleId = myEntry?.role_id ?? null;
             this.computeAssignableRoles();
@@ -434,7 +436,10 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
 
     isRoleAssignable(role: Role): boolean {
-        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
+        return (
+            this.assignableRoleIds === null ||
+            this.assignableRoleIds.has(role.id)
+        );
     }
 
     private computeAssignableRoles(): void {

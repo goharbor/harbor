@@ -23,9 +23,7 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AppConfigService } from '../../../../services/app-config.service';
-import {
-    GroupType,
-} from '../../../../shared/entities/shared.const';
+import { GroupType } from '../../../../shared/entities/shared.const';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { UsergroupService } from '../../../../../../ng-swagger-gen/services/usergroup.service';
 import { of, Subject, Subscription } from 'rxjs';
@@ -35,7 +33,6 @@ import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
-
 
 @Component({
     selector: 'add-group',
@@ -85,16 +82,17 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     roleSub: Subscription;
 
     ngOnInit(): void {
-        this.roleSub = this.roleService.ListRole({
-                        page: 1,
-                        pageSize: 100
-                    }).subscribe(res => {
-            if (res) {
-                this.roles = res;
-            }
-        });
+        this.roleSub = this.roleService
+            .ListRole({
+                page: 1,
+                pageSize: 100,
+            })
+            .subscribe(res => {
+                if (res) {
+                    this.roles = res;
+                }
+            });
 
-        
         if (!this.groupCheckerSub) {
             this.groupCheckerSub = this.groupChecker
                 .pipe(
@@ -266,7 +264,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     }
 
     isRoleAssignable(role: Role): boolean {
-        return this.assignableRoleIds === null || this.assignableRoleIds.has(role.id);
+        return (
+            this.assignableRoleIds === null ||
+            this.assignableRoleIds.has(role.id)
+        );
     }
 
     getRoleDisplayName(role: Role): string {

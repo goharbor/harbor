@@ -252,25 +252,23 @@ export class AddRoleComponent implements OnInit, OnDestroy {
             opeMessage.state = OperationState.progressing;
             opeMessage.data.name = `${this.projectName}+${role.name}`;
             this.operationService.publishInfo(opeMessage);
-            this.roleService
-                .CreateRole({ role })
-                .subscribe(
-                    res => {
-                        this.saveBtnState = ClrLoadingState.SUCCESS;
-                        this.addSuccess.emit(res);
-                        this.cancel();
-                        operateChanges(opeMessage, OperationState.success);
-                    },
-                    error => {
-                        this.saveBtnState = ClrLoadingState.ERROR;
-                        this.inlineAlertComponent.showInlineError(error);
-                        operateChanges(
-                            opeMessage,
-                            OperationState.failure,
-                            errorHandler(error)
-                        );
-                    }
-                );
+            this.roleService.CreateRole({ role }).subscribe(
+                res => {
+                    this.saveBtnState = ClrLoadingState.SUCCESS;
+                    this.addSuccess.emit(res);
+                    this.cancel();
+                    operateChanges(opeMessage, OperationState.success);
+                },
+                error => {
+                    this.saveBtnState = ClrLoadingState.ERROR;
+                    this.inlineAlertComponent.showInlineError(error);
+                    operateChanges(
+                        opeMessage,
+                        OperationState.failure,
+                        errorHandler(error)
+                    );
+                }
+            );
         }
     }
 

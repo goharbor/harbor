@@ -66,7 +66,7 @@ import { Access } from '../../../../../ng-swagger-gen/models/access';
 import { PermissionSelectPanelModes } from '../../../shared/components/role-permissions-panel/role-permissions-panel.component';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
-import {AddRoleComponent } from './add-role/add-role.component'
+import { AddRoleComponent } from './add-role/add-role.component';
 
 @Component({
     standalone: false,
@@ -166,7 +166,6 @@ export class RolesComponent implements OnInit, OnDestroy {
                 );
         }
     }
-
 
     ngOnDestroy() {
         if (this.searchSub) {
@@ -276,9 +275,7 @@ export class RolesComponent implements OnInit, OnDestroy {
                 if (error) {
                     this.msgHandler.handleError(error);
                 } else {
-                    this.msgHandler.showSuccess(
-                        'ROLE.DELETE_ROLE_SUCCESS'
-                    );
+                    this.msgHandler.showSuccess('ROLE.DELETE_ROLE_SUCCESS');
                 }
                 this.refresh();
             });
@@ -317,8 +314,7 @@ export class RolesComponent implements OnInit, OnDestroy {
 
     addSuccess(role: Role) {
         if (role) {
-            this.translate
-                .get('ROLE.CREATED_SUCCESS', { param: role.name });
+            this.translate.get('ROLE.CREATED_SUCCESS', { param: role.name });
             // export to token file
             const downLoadUrl = `data:text/json;charset=utf-8, ${encodeURIComponent(
                 JSON.stringify(role)
@@ -326,9 +322,6 @@ export class RolesComponent implements OnInit, OnDestroy {
         }
         this.refresh();
     }
-
-
-
 
     isBuiltinSelected(): boolean {
         return this.selectedRows.some(r => r.is_builtin);

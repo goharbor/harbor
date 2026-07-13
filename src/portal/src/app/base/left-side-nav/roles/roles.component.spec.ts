@@ -78,10 +78,19 @@ describe('RolesComponent', () => {
                 TranslateService,
                 ConfirmationDialogService,
                 OperationService,
-                { provide: MessageHandlerService, useValue: fakedMessageHandlerService },
+                {
+                    provide: MessageHandlerService,
+                    useValue: fakedMessageHandlerService,
+                },
                 { provide: RoleService, useValue: fakedRoleService },
-                { provide: SysteminfoService, useValue: fakedSystemInfoService },
-                { provide: PermissionsService, useValue: fakedPermissionsService },
+                {
+                    provide: SysteminfoService,
+                    useValue: fakedSystemInfoService,
+                },
+                {
+                    provide: PermissionsService,
+                    useValue: fakedPermissionsService,
+                },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
@@ -126,9 +135,9 @@ describe('RolesComponent', () => {
             await fixture.whenStable();
             component.selectedRows = [builtinRole];
             fixture.detectChanges();
-            const editBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-                '#system-robot-edit'
-            )?.closest('button');
+            const editBtn: HTMLButtonElement = fixture.nativeElement
+                .querySelector('#system-robot-edit')
+                ?.closest('button');
             expect(editBtn?.disabled).toBeTrue();
         });
 
@@ -137,9 +146,9 @@ describe('RolesComponent', () => {
             await fixture.whenStable();
             component.selectedRows = [customRole];
             fixture.detectChanges();
-            const editBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-                '#system-robot-edit'
-            )?.closest('button');
+            const editBtn: HTMLButtonElement = fixture.nativeElement
+                .querySelector('#system-robot-edit')
+                ?.closest('button');
             expect(editBtn?.disabled).toBeFalse();
         });
 
@@ -148,9 +157,9 @@ describe('RolesComponent', () => {
             await fixture.whenStable();
             component.selectedRows = [builtinRole];
             fixture.detectChanges();
-            const deleteBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-                '#system-robot-delete'
-            )?.closest('button');
+            const deleteBtn: HTMLButtonElement = fixture.nativeElement
+                .querySelector('#system-robot-delete')
+                ?.closest('button');
             expect(deleteBtn?.disabled).toBeTrue();
         });
 
@@ -159,9 +168,9 @@ describe('RolesComponent', () => {
             await fixture.whenStable();
             component.selectedRows = [builtinRole, customRole];
             fixture.detectChanges();
-            const deleteBtn: HTMLButtonElement = fixture.nativeElement.querySelector(
-                '#system-robot-delete'
-            )?.closest('button');
+            const deleteBtn: HTMLButtonElement = fixture.nativeElement
+                .querySelector('#system-robot-delete')
+                ?.closest('button');
             expect(deleteBtn?.disabled).toBeTrue();
         });
     });

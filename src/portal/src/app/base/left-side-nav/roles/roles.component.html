@@ -79,24 +79,14 @@
             <clr-dg-column [clrDgSortBy]="'name'">{{
                 'ROLE.NAME' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{
-                'ROLE.BUILTIN' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{
-                'ROLE.DESCRIPTION' | translate
-            }}</clr-dg-column>
+            <clr-dg-column>{{ 'ROLE.BUILTIN' | translate }}</clr-dg-column>
+            <clr-dg-column>{{ 'ROLE.DESCRIPTION' | translate }}</clr-dg-column>
             <clr-dg-column class="permission-col">{{
                 'ROLE.PERMISSIONS' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{
-                'ROLE.CREATED_BY' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{
-                'ROLE.CREATED_AT' | translate
-            }}</clr-dg-column>
-            <clr-dg-column>{{
-                'ROLE.MODIFIED_AT' | translate
-            }}</clr-dg-column>
+            <clr-dg-column>{{ 'ROLE.CREATED_BY' | translate }}</clr-dg-column>
+            <clr-dg-column>{{ 'ROLE.CREATED_AT' | translate }}</clr-dg-column>
+            <clr-dg-column>{{ 'ROLE.MODIFIED_AT' | translate }}</clr-dg-column>
             <clr-dg-placeholder>{{
                 'SYSTEM_ROBOT.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
@@ -104,7 +94,11 @@
             <clr-dg-row [clrDgItem]="r">
                 <clr-dg-cell>{{ getRoleName(r) }}</clr-dg-cell>
                 <clr-dg-cell>
-                    <clr-icon *ngIf="r.is_builtin" shape="check-circle" size="16" style="color: var(--clr-color-success-700)"></clr-icon>
+                    <clr-icon
+                        *ngIf="r.is_builtin"
+                        shape="check-circle"
+                        size="16"
+                        style="color: var(--clr-color-success-700)"></clr-icon>
                 </clr-dg-cell>
                 <clr-dg-cell>{{ r.description || '–' }}</clr-dg-cell>
 
@@ -129,12 +123,24 @@
                 </clr-dg-cell>
 
                 <clr-dg-cell>{{ r.created_by || '–' }}</clr-dg-cell>
-                <clr-dg-cell>{{ r.created_at ? (r.created_at | harborDatetime:'short') : '–' }}</clr-dg-cell>
+                <clr-dg-cell>{{
+                    r.created_at
+                        ? (r.created_at | harborDatetime : 'short')
+                        : '–'
+                }}</clr-dg-cell>
                 <clr-dg-cell>
-                    {{ r.modified_at ? (r.modified_at | harborDatetime:'short') : '–' }}
-                    <span *ngIf="r.modified" class="label label-warning" style="margin-left:4px">{{ 'ROLE.MODIFIED' | translate }}</span>
+                    {{
+                        r.modified_at
+                            ? (r.modified_at | harborDatetime : 'short')
+                            : '–'
+                    }}
+                    <span
+                        *ngIf="r.modified"
+                        class="label label-warning"
+                        style="margin-left: 4px"
+                        >{{ 'ROLE.MODIFIED' | translate }}</span
+                    >
                 </clr-dg-cell>
-
             </clr-dg-row>
             }
             <clr-dg-footer>
@@ -167,4 +173,3 @@
     [roleMetadata]="roleMetadata"></add-role>
 
 <view-token (refreshSuccess)="refresh()"></view-token>
-

@@ -5,10 +5,17 @@
     (clrWizardOnCancel)="cancel()">
     <clr-wizard-title>
         <h3 class="modal-title">
-            {{ (isEditMode ? 'ROLE.EDIT_ROLE' : 'ROLE.CREATE_ROLE') | translate }}
+            {{
+                (isEditMode ? 'ROLE.EDIT_ROLE' : 'ROLE.CREATE_ROLE') | translate
+            }}
         </h3>
         <p class="mt-0">
-            {{ (isEditMode ? 'ROLE.EDIT_ROLE_SUMMARY' : 'ROLE.CREATEROLE_SUMMARY') | translate }}
+            {{
+                (isEditMode
+                    ? 'ROLE.EDIT_ROLE_SUMMARY'
+                    : 'ROLE.CREATEROLE_SUMMARY'
+                ) | translate
+            }}
         </p>
     </clr-wizard-title>
     <clr-wizard-button [type]="'cancel'">{{
@@ -27,16 +34,14 @@
     <!-- Page 1: Basic Info -->
     <clr-wizard-page
         [clrWizardPageNextDisabled]="
-            (!roleBasicForm.valid || checkNameOnGoing || isNameExisting) && !isEditMode
+            (!roleBasicForm.valid || checkNameOnGoing || isNameExisting) &&
+            !isEditMode
         ">
         <ng-template clrPageTitle>{{
             'ROLE.BASIC_INFO' | translate
         }}</ng-template>
-        <form
-            #roleBasicForm="ngForm"
-            class="clr-form clr-form-horizontal mt-1">
+        <form #roleBasicForm="ngForm" class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
-
                 <!-- Name -->
                 <div class="clr-form-control">
                     <label for="name" class="clr-control-label required">
@@ -71,13 +76,24 @@
                         </div>
                         <clr-control-error
                             *ngIf="
-                                ((name.dirty || name.touched) && name.invalid) ||
+                                ((name.dirty || name.touched) &&
+                                    name.invalid) ||
                                 isNameExisting
                             ">
-                            <span *ngIf="isNameExisting && !((name.dirty || name.touched) && name.invalid)">
+                            <span
+                                *ngIf="
+                                    isNameExisting &&
+                                    !(
+                                        (name.dirty || name.touched) &&
+                                        name.invalid
+                                    )
+                                ">
                                 {{ 'ROLE.ACCOUNT_EXISTING' | translate }}
                             </span>
-                            <span *ngIf="(name.dirty || name.touched) && name.invalid">
+                            <span
+                                *ngIf="
+                                    (name.dirty || name.touched) && name.invalid
+                                ">
                                 {{ 'ROLE.NAME_TOOLTIP' | translate }}
                             </span>
                         </clr-control-error>
@@ -97,12 +113,13 @@
                                 name="description"
                                 rows="6"
                                 [(ngModel)]="role.description"
-                                placeholder="{{ 'ROLE.DESCRIPTION_PLACEHOLDER' | translate }}">
+                                placeholder="{{
+                                    'ROLE.DESCRIPTION_PLACEHOLDER' | translate
+                                }}">
                             </textarea>
                         </div>
                     </div>
                 </div>
-
             </section>
         </form>
     </clr-wizard-page>

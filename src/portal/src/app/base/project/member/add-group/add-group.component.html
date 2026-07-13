@@ -63,7 +63,6 @@
                     'GROUP.ROLE' | translate
                 }}</label>
 
-
                 <div class="clr-control-container">
                     <div class="role-radio-list">
                         @for (r of roles; track r.id) {
@@ -76,15 +75,16 @@
                                 [value]="r.id"
                                 [(ngModel)]="roleId"
                                 [disabled]="!isRoleAssignable(r)" />
-                            <label for="add-group-role-{{ r.id }}"
+                            <label
+                                for="add-group-role-{{ r.id }}"
                                 [class.text-muted]="!isRoleAssignable(r)">
                                 @if (r.is_builtin) {
-                                <strong>{{ getRoleDisplayName(r) | translate }}</strong>
-                                }
-                                @if (!r.is_builtin) {
+                                <strong>{{
+                                    getRoleDisplayName(r) | translate
+                                }}</strong>
+                                } @if (!r.is_builtin) {
                                 <span>{{ r.name }}</span>
-                                }
-                                @if (r.is_builtin) {
+                                } @if (r.is_builtin) {
                                 <span
                                     class="label label-blue role-builtin-badge"
                                     >{{ 'MEMBER.BUILT_IN' | translate }}</span
@@ -95,9 +95,6 @@
                         }
                     </div>
                 </div>
-
-
-
             </div>
         </form>
     </div>

@@ -148,7 +148,8 @@ export function isCandidate(
     if (candidatePermissions?.length) {
         for (let i = 0; i < candidatePermissions.length; i++) {
             if (
-                (candidatePermissions[i].resource ?? '') === (permission.resource ?? '') &&
+                (candidatePermissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 candidatePermissions[i].action === permission.action
             ) {
                 return true;
@@ -165,7 +166,8 @@ export function hasPermission(
     if (permissions?.length) {
         for (let i = 0; i < permissions.length; i++) {
             if (
-                (permissions[i].resource ?? '') === (permission.resource ?? '') &&
+                (permissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 permissions[i].action === permission.action
             ) {
                 return true;

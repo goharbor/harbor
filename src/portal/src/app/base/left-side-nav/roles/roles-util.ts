@@ -134,8 +134,6 @@ export function onlyHasPushPermission(access: Access[]): boolean {
     return false;
 }
 
-
-
 export function isCandidate(
     candidatePermissions: Permission[],
     permission: Access
@@ -143,7 +141,8 @@ export function isCandidate(
     if (candidatePermissions?.length) {
         for (let i = 0; i < candidatePermissions.length; i++) {
             if (
-                (candidatePermissions[i].resource ?? '') === (permission.resource ?? '') &&
+                (candidatePermissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 candidatePermissions[i].action === permission.action
             ) {
                 return true;
@@ -160,7 +159,8 @@ export function hasPermission(
     if (permissions?.length) {
         for (let i = 0; i < permissions.length; i++) {
             if (
-                (permissions[i].resource ?? '') === (permission.resource ?? '') &&
+                (permissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 permissions[i].action === permission.action
             ) {
                 return true;
@@ -181,7 +181,7 @@ export const NEW_EMPTY_ROLE: Role = {
 export function getRoleAccess(r: Role): Access[] {
     let systemPermissions: RolePermission[] = [];
     systemPermissions = r.permissions;
-/*    if (r?.permissions?.length) {
+    /*    if (r?.permissions?.length) {
         systemPermissions = r.permissions.filter(
             item => item.kind === PermissionsKinds.ROLE
         );
