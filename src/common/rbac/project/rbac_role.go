@@ -26,13 +26,11 @@ type projectRBACRole struct {
 }
 
 func (role *projectRBACRole) GetRoleName() string {
-
 	return role.role.Name
 }
 
 // GetPolicies returns policies for the visitor role
 func (role *projectRBACRole) GetPolicies() []*types.Policy {
-
 	policies := []*types.Policy{}
 	namespace := NewNamespace(role.projectID)
 

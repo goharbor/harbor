@@ -32,7 +32,7 @@ import (
 type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller, ctl_r role.Controller) RBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller, ctlR role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
 			return &rbacUser{project: p, username: "anonymous"}
@@ -46,7 +46,7 @@ func NewBuilderForUser(user *models.User, ctl project.Controller, ctl_r role.Con
 
 		var roles []*role.Role
 		for _, roleID := range roleIDs {
-			r, err := ctl_r.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
+			r, err := ctlR.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
 			if err != nil {
 				log.Errorf("failed to get role %d: %v", roleID, err)
 				return nil

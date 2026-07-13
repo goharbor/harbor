@@ -96,7 +96,6 @@ func (d *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // Create ...
 func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
-
 	name := r.Name
 
 	rCreate := &model.Role{

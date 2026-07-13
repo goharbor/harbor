@@ -235,11 +235,9 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 	// to validate the access scope
 	for _, perm := range permissions {
 		if perm.Kind == role.LEVELROLE {
-
 			polices := provider.GetPermissions(rbac.ScopeRole)
 
 			for _, acc := range perm.Access {
-
 				if !containsAccess(polices, acc) {
 					return errors.New(nil).WithMessagef("bad request permission: %s:%s", acc.Resource, acc.Action).WithCode(errors.BadRequestCode)
 				}
@@ -274,6 +272,9 @@ func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRo
 
 // validateName validates the role name, especially '+' cannot be a valid character
 func validateRoleName(name string) error {
+	if strings.Contains(name, "+") {
+		return errors.New(nil).WithMessage("role name cannot contain the '+' character").WithCode(errors.BadRequestCode)
+	}
 	return nil
 }
 

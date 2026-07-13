@@ -159,7 +159,7 @@ func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
 			&types.Policy{Resource: ResourceMember, Action: ActionDelete})
 	}
 	if s == ScopeRole {
-		return append(n.BaseProvider.GetPermissions(ScopeRole))
+		return n.BaseProvider.GetPermissions(ScopeRole)
 	}
 
 	return []*types.Policy{}

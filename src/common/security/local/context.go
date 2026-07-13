@@ -34,7 +34,7 @@ const ContextName = "local"
 type SecurityContext struct {
 	user      *models.User
 	ctl       project.Controller
-	ctl_r     role.Controller
+	ctlR      role.Controller
 	evaluator evaluator.Evaluator
 	once      sync.Once
 }
@@ -42,9 +42,9 @@ type SecurityContext struct {
 // NewSecurityContext ...
 func NewSecurityContext(user *models.User) *SecurityContext {
 	return &SecurityContext{
-		user:  user,
-		ctl:   project.Ctl,
-		ctl_r: role.Ctl,
+		user: user,
+		ctl:  project.Ctl,
+		ctlR: role.Ctl,
 	}
 }
 
@@ -94,7 +94,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
 
-		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl, s.ctl_r)))
+		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl, s.ctlR)))
 
 		s.evaluator = evaluators
 	})

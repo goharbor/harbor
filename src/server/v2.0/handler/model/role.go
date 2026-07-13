@@ -16,6 +16,7 @@ package model
 
 import (
 	"github.com/go-openapi/strfmt"
+
 	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/log"
