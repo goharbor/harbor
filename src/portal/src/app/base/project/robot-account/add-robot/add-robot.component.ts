@@ -86,6 +86,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
     @Input()
     effectivePermissions: Permission[] = [];
+    @Input()
+    effectivePermissionsLoaded: boolean = false;
 
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
@@ -198,11 +200,14 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     }
     get filteredCandidatePermissions(): Permission[] {
         const all = this.robotMetadata?.project ?? [];
-        if (!this.effectivePermissions?.length) {
+        // Until the caller's effective permissions have loaded, show the full
+        // catalog; once loaded, restrict to the caller's permissions. An empty
+        // (but loaded) result means the user holds none, so offer no candidates.
+        if (!this.effectivePermissionsLoaded) {
             return all;
         }
         return all.filter(p =>
-            this.effectivePermissions.some(
+            this.effectivePermissions?.some(
                 e => e.resource === p.resource && e.action === p.action
             )
         );

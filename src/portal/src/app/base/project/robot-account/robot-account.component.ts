@@ -104,6 +104,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     loadingMetadata: boolean = false;
     robotMetadata: Permissions;
     effectivePermissions: Permission[] = [];
+    effectivePermissionsLoaded: boolean = false;
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -207,9 +208,17 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
                         `/api/v2.0/projects/${this.projectName}/permissions/effective`,
                         { headers: { 'X-Is-Resource-Name': 'true' } }
                     )
-                    .subscribe(perms => {
-                        this.effectivePermissions = perms ?? [];
-                    });
+                    .subscribe(
+                        perms => {
+                            this.effectivePermissions = perms ?? [];
+                            this.effectivePermissionsLoaded = true;
+                        },
+                        () => {
+                            // on error, treat as no effective permissions loaded
+                            this.effectivePermissions = [];
+                            this.effectivePermissionsLoaded = true;
+                        }
+                    );
             });
     }
 

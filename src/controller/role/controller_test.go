@@ -87,7 +87,8 @@ func (suite *ControllerTestSuite) TestUpdateCustomRole() {
 		Name:      "myCustomRole",
 		IsBuiltin: false,
 	}, nil)
-	suite.roleMgr.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	// Update now persists description + the modification audit columns
+	suite.roleMgr.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(2)).Return(nil)
 	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
 	suite.rbacMgr.On("CreatePermission", mock.Anything, mock.Anything).Return(int64(1), nil)

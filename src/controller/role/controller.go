@@ -17,6 +17,7 @@ package role
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -160,11 +161,17 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 	if existing.IsBuiltin {
 		return errors.ForbiddenError(nil).WithMessagef("cannot modify built-in role %d", r.ID)
 	}
-	// update role record fields
+	// update role record fields, including the modification audit columns
+	modifiedBy := ""
+	if sc, ok := security.FromContext(ctx); ok {
+		modifiedBy = sc.GetUsername()
+	}
 	if err := d.roleMgr.Update(ctx, &model.Role{
 		ID:          r.ID,
 		Description: r.Description,
-	}, "description"); err != nil {
+		Modified:    true,
+		ModifiedBy:  modifiedBy,
+	}, "description", "modified", "modified_by", "modified_at"); err != nil {
 		return err
 	}
 	// update the permission
