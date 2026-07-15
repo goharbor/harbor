@@ -11,9 +11,7 @@ If you know of a publicly disclosed security vulnerability for Harbor, please **
 
 **IMPORTANT: Do not file public issues on GitHub for security vulnerabilities**
 
-To report a vulnerability or a security-related issue, use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new): open the [Security tab](https://github.com/goharbor/harbor/security) of the affected repository and click **Report a vulnerability**. The report is only visible to the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Reports will be addressed within 3 business days, including a detailed plan to investigate the issue and any potential workarounds to perform in the meantime. Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead.
-
-Filing a report requires a GitHub account. If you cannot use GitHub, email the details of the vulnerability to cncf-harbor-security@lists.cncf.io instead.
+To report a vulnerability or a security-related issue, use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new): open the [Security tab](https://github.com/goharbor/harbor/security) of the affected repository and click **Report a vulnerability**. The report is visible only to you and the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Reports will be addressed within 3 business days, including a detailed plan to investigate the issue and any potential workarounds to perform in the meantime. Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead. Note that filing a report requires a GitHub account.
 
 ### Proposed Report Content
 Provide a descriptive title and in the description of the report include the following information:

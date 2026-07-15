@@ -5,7 +5,7 @@ about: Create a report to help us improve
 
 **⚠️ If this is a security vulnerability, do NOT file a public issue.** Report it privately via [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new). See [SECURITY.md](https://github.com/goharbor/harbor/blob/main/SECURITY.md) for the full disclosure policy.
 
-If you are reporting a problem, please make sure the following information are provided:
+If you are reporting a problem, please make sure the following information is provided:
 
 **Expected behavior and actual behavior:**
 A clear and concise description of what you expected to happen and what's the actual behavior. If applicable, add screenshots to help explain your problem.
