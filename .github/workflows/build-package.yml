@@ -42,7 +42,7 @@ jobs:
         run: echo "build_base=true" >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
           # has shipped broken releases that fail arm64 emulation with
