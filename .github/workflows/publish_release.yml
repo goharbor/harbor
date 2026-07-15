@@ -84,7 +84,7 @@ jobs:
           docker_version: 20.10
           docker_channel: stable
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Publish Images (amd64 + arm64)
         run: |
           set -euo pipefail
