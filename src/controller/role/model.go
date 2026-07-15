@@ -49,6 +49,36 @@ func (r *Role) setEditable() {
 	r.Editable = true
 }
 
+// clone returns a deep copy of the role. The cache serves roles from a shared,
+// process-local store; returning a copy prevents request code (e.g. an update
+// handler) from mutating cached authorization state.
+func (r *Role) clone() *Role {
+	if r == nil {
+		return nil
+	}
+	cp := *r // copy scalar fields (embedded model.Role, Level, Editable)
+	if r.Permissions != nil {
+		cp.Permissions = make([]*Permission, len(r.Permissions))
+		for i, p := range r.Permissions {
+			if p == nil {
+				continue
+			}
+			pc := *p
+			if p.Access != nil {
+				pc.Access = make([]*types.Policy, len(p.Access))
+				for j, a := range p.Access {
+					if a != nil {
+						ac := *a
+						pc.Access[j] = &ac
+					}
+				}
+			}
+			cp.Permissions[i] = &pc
+		}
+	}
+	return &cp
+}
+
 // Permission ...
 type Permission struct {
 	Kind      string          `json:"kind"`

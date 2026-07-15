@@ -271,7 +271,16 @@ func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRo
 }
 
 // validateName validates the role name, especially '+' cannot be a valid character
+// validateRoleName enforces the server-side role name contract: non-empty, at
+// most 255 characters (matching the role.name column and the UI), and free of the
+// '+' reserved character.
 func validateRoleName(name string) error {
+	if name == "" {
+		return errors.New(nil).WithMessage("role name cannot be empty").WithCode(errors.BadRequestCode)
+	}
+	if len(name) > 255 {
+		return errors.New(nil).WithMessage("role name cannot exceed 255 characters").WithCode(errors.BadRequestCode)
+	}
 	if strings.Contains(name, "+") {
 		return errors.New(nil).WithMessage("role name cannot contain the '+' character").WithCode(errors.BadRequestCode)
 	}

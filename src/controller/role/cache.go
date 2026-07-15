@@ -164,7 +164,8 @@ func (c *cachingController) Get(ctx context.Context, id int64, option *Option) (
 	if c.l1Enabled() {
 		if v, ok := c.local.Load(id); ok {
 			if e := v.(*l1Entry); time.Now().Before(e.expiresAt) {
-				return e.role, nil
+				// return a copy so callers cannot mutate the cached role
+				return e.role.clone(), nil
 			}
 		}
 	}
@@ -201,7 +202,7 @@ func (c *cachingController) Get(ctx context.Context, id int64, option *Option) (
 			return nil, nil
 		case err == nil:
 			c.storeL1(id, &r) // promote to L1
-			return &r, nil
+			return (&r).clone(), nil
 		default:
 			log.Warningf("role cache L2 path failed for id %d, falling back to DB: %v", id, err)
 		}
@@ -216,7 +217,7 @@ func (c *cachingController) Get(ctx context.Context, id int64, option *Option) (
 		return nil, err
 	}
 	c.storeL1(id, r)
-	return r, nil
+	return r.clone(), nil
 }
 
 // Create delegates to the inner controller, then invalidates the cache.

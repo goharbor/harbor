@@ -17,6 +17,11 @@ ALTER TABLE role ADD COLUMN IF NOT EXISTS created_at   TIMESTAMP WITH TIME ZONE;
 ALTER TABLE role ADD COLUMN IF NOT EXISTS modified_by  VARCHAR(255);
 ALTER TABLE role ADD COLUMN IF NOT EXISTS modified_at  TIMESTAMP WITH TIME ZONE;
 
+-- Widen the role name to match the API/UI contract (was varchar(20)) and enforce
+-- name uniqueness so custom roles cannot collide.
+ALTER TABLE role ALTER COLUMN name TYPE varchar(255);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_role_name ON role (name);
+
 -- Mark all roles seeded by migrations as built-in (immutable)
 UPDATE role SET is_builtin = TRUE
 WHERE name IN ('projectAdmin', 'developer', 'guest', 'maintainer', 'limitedGuest');
@@ -86,6 +91,7 @@ BEGIN
 	(ResourceMetadata, ActionRead, PROJECT_ADMIN),
 	(ResourceMetadata, ActionUpdate, PROJECT_ADMIN),
 	(ResourceMetadata, ActionDelete, PROJECT_ADMIN),
+	(ResourceMetadata, ActionList, PROJECT_ADMIN),
 
 	(ResourceLog, ActionList, PROJECT_ADMIN),
 

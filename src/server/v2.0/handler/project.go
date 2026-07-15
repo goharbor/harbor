@@ -988,14 +988,21 @@ func (a *projectAPI) GetLogExts(ctx context.Context, params operation.GetLogExts
 func (a *projectAPI) GetEffectivePermissions(ctx context.Context, params operation.GetEffectivePermissionsParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 
+	// Resolve the project once (by its numeric ID) rather than resolving the name
+	// on every candidate permission, and fail the request on lookup/check errors.
+	pro, err := a.projectCtl.Get(ctx, projectNameOrID)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	candidates := rbac.GetPermissionProvider().GetPermissions(rbac.ScopeProject)
 
 	var effective []*models.Permission
 	for _, p := range candidates {
 		resource := mapRobotToHumanResource(p.Resource)
-		has, err := a.HasProjectPermission(ctx, projectNameOrID, p.Action, resource)
+		has, err := a.HasProjectPermission(ctx, pro.ProjectID, p.Action, resource)
 		if err != nil {
-			continue
+			return a.SendError(ctx, err)
 		}
 		if has {
 			effective = append(effective, &models.Permission{

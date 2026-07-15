@@ -10,6 +10,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/role/model"
 	"github.com/goharbor/harbor/src/testing/mock"
+	testmember "github.com/goharbor/harbor/src/testing/pkg/member"
 	testproject "github.com/goharbor/harbor/src/testing/pkg/project"
 	testrbac "github.com/goharbor/harbor/src/testing/pkg/rbac"
 	testrole "github.com/goharbor/harbor/src/testing/pkg/role"
@@ -17,20 +18,23 @@ import (
 
 type ControllerTestSuite struct {
 	suite.Suite
-	roleMgr *testrole.Manager
-	rbacMgr *testrbac.Manager
-	proMgr  *testproject.Manager
-	c       controller
+	roleMgr   *testrole.Manager
+	rbacMgr   *testrbac.Manager
+	proMgr    *testproject.Manager
+	memberMgr *testmember.Manager
+	c         controller
 }
 
 func (suite *ControllerTestSuite) SetupTest() {
 	suite.roleMgr = &testrole.Manager{}
 	suite.rbacMgr = &testrbac.Manager{}
 	suite.proMgr = &testproject.Manager{}
+	suite.memberMgr = &testmember.Manager{}
 	suite.c = controller{
-		roleMgr: suite.roleMgr,
-		rbacMgr: suite.rbacMgr,
-		proMgr:  suite.proMgr,
+		roleMgr:   suite.roleMgr,
+		rbacMgr:   suite.rbacMgr,
+		proMgr:    suite.proMgr,
+		memberMgr: suite.memberMgr,
 	}
 }
 
@@ -53,11 +57,28 @@ func (suite *ControllerTestSuite) TestDeleteCustomRole() {
 		Name:      "myCustomRole",
 		IsBuiltin: false,
 	}, nil)
+	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 2).Return(0, nil)
 	suite.roleMgr.On("Delete", mock.Anything, int64(2)).Return(nil)
 	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(2)).Return(nil)
 
 	err := suite.c.Delete(context.TODO(), int64(2))
 	suite.Nil(err)
+}
+
+// A role still assigned to project members cannot be deleted (avoids orphaning
+// project_member rows, which have no FK to role).
+func (suite *ControllerTestSuite) TestDeleteAssignedRoleRejected() {
+	suite.roleMgr.On("Get", mock.Anything, int64(3)).Return(&model.Role{
+		ID:        3,
+		Name:      "assignedRole",
+		IsBuiltin: false,
+	}, nil)
+	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 3).Return(2, nil)
+
+	err := suite.c.Delete(context.TODO(), int64(3))
+	suite.Require().NotNil(err)
+	suite.True(errors.IsErr(err, errors.PreconditionCode))
+	suite.roleMgr.AssertNotCalled(suite.T(), "Delete", mock.Anything, mock.Anything)
 }
 
 func (suite *ControllerTestSuite) TestUpdateNilRole() {

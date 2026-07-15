@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
+	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -61,9 +62,10 @@ type Controller interface {
 // controller is the DB-backed implementation of Controller. It is cache-agnostic;
 // the permission cache is layered on top by cachingController (see cache.go).
 type controller struct {
-	roleMgr role.Manager
-	proMgr  project.Manager
-	rbacMgr rbac.Manager
+	roleMgr   role.Manager
+	proMgr    project.Manager
+	rbacMgr   rbac.Manager
+	memberMgr member.Manager
 }
 
 // NewController returns the default role controller: the DB-backed controller
@@ -75,9 +77,10 @@ func NewController() Controller {
 // newDBController returns the bare DB-backed controller, without caching.
 func newDBController() *controller {
 	return &controller{
-		roleMgr: role.Mgr,
-		proMgr:  pkg.ProjectMgr,
-		rbacMgr: rbac.Mgr,
+		roleMgr:   role.Mgr,
+		proMgr:    pkg.ProjectMgr,
+		rbacMgr:   rbac.Mgr,
+		memberMgr: member.Mgr,
 	}
 }
 
@@ -130,6 +133,15 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 	}
 	if rDelete.IsBuiltin {
 		return errors.ForbiddenError(nil).WithMessagef("cannot delete built-in role %d", id)
+	}
+	// A role assigned to project members cannot be deleted: project_member.role
+	// has no FK, so deleting would orphan those memberships.
+	assigned, err := d.memberMgr.GetTotalOfProjectMembersByRole(ctx, int(id))
+	if err != nil {
+		return err
+	}
+	if assigned > 0 {
+		return errors.PreconditionFailedError(nil).WithMessagef("cannot delete role %d: it is still assigned to %d project member(s)", id, assigned)
 	}
 	if err := d.roleMgr.Delete(ctx, id); err != nil {
 		return err
