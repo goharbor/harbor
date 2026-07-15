@@ -327,3 +327,36 @@ cache:
 #   # suggest switch provider to redis if you were ran into the db connections spike around
 #   # the scenario of high concurrent pushing to same project, no improvement for other scenes.
 #   quota_update_provider: redis # Or db
+#
+#   # The registry types that are permitted to be used as proxy cache targets.
+#   # NOTE: this list is curated by the Harbor maintainers because these are the
+#   # adapters that are actively maintained and tested. Adding adapters that are
+#   # unmaintained or scheduled for deprecation is not officially supported;
+#   # override this at your own risk.
+#   permitted_registry_types_for_proxy_cache:
+#     - docker-hub
+#     - harbor
+#     - azure-acr
+#     - ali-acr
+#     - aws-ecr
+#     - google-gcr
+#     - docker-registry
+#     - github-ghcr
+#     - jfrog-artifactory
+#
+#   # The registry adapter types that are permitted to be used as replication
+#   # targets. Same caveat as above: overriding this to include unmaintained or
+#   # deprecated adapters is not officially supported.
+#   replication_adapter_whitelist:
+#     - ali-acr
+#     - aws-ecr
+#     - azure-acr
+#     - docker-hub
+#     - docker-registry
+#     - github-ghcr
+#     - google-gcr
+#     - harbor
+#     - huawei-SWR
+#     - jfrog-artifactory
+#     - tencent-tcr
+#     - volcengine-cr
