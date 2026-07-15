@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   BUILD_BASE_IMAGE:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: read
     outputs:
@@ -71,7 +71,7 @@ jobs:
         BUILD_PACKAGE: true
         ARCH: ${{ matrix.arch }}
         BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'cncf-ubuntu-16-64-arm' || 'cncf-ubuntu-16-64-x86' }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.2.1
@@ -79,11 +79,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.26.4
-        id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
@@ -93,6 +88,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26.4
+          cache-dependency-path: src/go.sum
+        id: go
       - name: Build Package
         run: |
           set -x
@@ -201,7 +202,7 @@ jobs:
 
   CREATE_MANIFEST:
     needs: [BUILD_BASE_IMAGE, BUILD_PACKAGE]
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: read
     steps:

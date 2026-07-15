@@ -51,8 +51,8 @@ func (*cacheClient) Save(ctx context.Context, key string, value any, expiration 
 	// intercept here
 	// it should ignore save cache if this request is wrapped by orm.Transaction,
 	// because if tx rollback, we can not rollback cache,
-	// identify whether in transaction by checking the commitedKey in context.
-	// commitedKey is a context value which be injected in the transaction middleware.
+	// identify whether in transaction by checking the committedKey in context.
+	// committedKey is a context value which is injected in the transaction middleware.
 	if orm.HasCommittedKey(ctx) {
 		return nil
 	}
