@@ -33,6 +33,7 @@ import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { loadAllRoles } from '../../../left-side-nav/roles/roles-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -76,16 +77,11 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.roleSub = this.roleService
-            .ListRole({
-                page: 1,
-                pageSize: 100,
-            })
-            .subscribe(res => {
-                if (res) {
-                    this.roles = res;
-                }
-            });
+        this.roleSub = loadAllRoles(this.roleService).subscribe(res => {
+            if (res) {
+                this.roles = res;
+            }
+        });
 
         let resolverData = this.route.snapshot.parent.parent.data;
         let hasProjectAdminRole: boolean;

@@ -11,10 +11,47 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { forkJoin, Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { Role } from '../../../../../ng-swagger-gen/models/role';
 import { Access } from '../../../../../ng-swagger-gen/models/access';
 import { RolePermission } from '../../../../../ng-swagger-gen/models/role-permission';
 import { Permission } from '../../../../../ng-swagger-gen/models/permission';
+import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
+
+const ROLE_PAGE_SIZE: number = 100;
+
+// loadAllRoles fetches every page of roles so callers are not limited to the
+// first page. Once an installation has more than ROLE_PAGE_SIZE roles, a single
+// page would silently hide the rest from selection/assignability.
+export function loadAllRoles(roleService: RoleService): Observable<Role[]> {
+    return roleService
+        .ListRoleResponse({ page: 1, pageSize: ROLE_PAGE_SIZE })
+        .pipe(
+            switchMap(resp => {
+                const first: Role[] = resp.body ?? [];
+                const total: number = Number.parseInt(
+                    resp.headers.get('x-total-count') ?? '0',
+                    10
+                );
+                if (!total || total <= ROLE_PAGE_SIZE) {
+                    return of(first);
+                }
+                const lastPage: number = Math.ceil(total / ROLE_PAGE_SIZE);
+                const rest: Observable<Role[]>[] = [];
+                for (let page = 2; page <= lastPage; page++) {
+                    rest.push(
+                        roleService.ListRole({ page, pageSize: ROLE_PAGE_SIZE })
+                    );
+                }
+                return forkJoin(rest).pipe(
+                    map(pages =>
+                        pages.reduce((acc, cur) => acc.concat(cur ?? []), first)
+                    )
+                );
+            })
+        );
+}
 
 export interface FrontRole extends Role {
     permissionScope?: {

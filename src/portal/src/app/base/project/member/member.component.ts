@@ -57,6 +57,7 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
 import { AddGroupComponent } from './add-group/add-group.component';
 import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
+import { loadAllRoles } from '../../left-side-nav/roles/roles-util';
 import { Role } from '../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -144,7 +145,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         // get member permission rule
         this.getMemberPermissionRule(this.projectId);
         forkJoin({
-            roles: this.roleService.ListRole({ page: 1, pageSize: 100 }),
+            roles: loadAllRoles(this.roleService),
             membership: this.memberService.listProjectMembers({
                 projectNameOrId: this.projectId.toString(),
                 entityname: this.currentUser.username,
