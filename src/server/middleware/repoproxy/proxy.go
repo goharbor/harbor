@@ -15,13 +15,19 @@
 package repoproxy
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 	"time"
+
+	"github.com/opencontainers/go-digest"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
@@ -29,12 +35,16 @@ import (
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/lib"
+	libCache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/pkg/accessory"
+	"github.com/goharbor/harbor/src/pkg/artifact"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -49,7 +59,16 @@ const (
 	ensureTagInterval              = 10 * time.Second
 	ensureTagMaxRetry              = 60
 	upstreamRegistryLimitOnProject = "UPSTREAM_REGISTRY_LIMIT_ON_PROJECT" // if UPSTREAM_REGISTRY_LIMIT_ON_PROJECT is true, the upstream registry connection is based on project level, by default it is artifact level
+	referrerCacheTTL               = 7 * 24 * time.Hour
+	link                           = "Link"
+	xTotalCount                    = "X-Total-Count"
 )
+
+var proxyHeaderNames = []string{
+	contentType,
+	link,
+	xTotalCount,
+}
 
 var tooManyRequestsError = errors.New("too many requests to upstream registry").WithCode(errors.RateLimitCode)
 
@@ -130,7 +149,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return err
 	}
 	if written != size {
-		return errors.Errorf("The size mismatch, actual:%d, expected: %d", written, size)
+		return errors.Errorf("the size mismatch, actual:%d, expected: %d", written, size)
 	}
 	setHeaders(w, size, "", art.Digest)
 	return nil
@@ -174,7 +193,7 @@ func defaultLibrary(ctx context.Context, registryID int64, a lib.ArtifactInfo) (
 		return false, "", err
 	}
 	if reg.Type != model.RegistryTypeDockerHub {
-		return false, "", err
+		return false, "", nil
 	}
 	name := strings.TrimPrefix(a.Repository, a.ProjectName+"/")
 	if strings.Contains(name, "/") {
@@ -387,5 +406,211 @@ func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Con
 	w.Header().Set(contentLength, fmt.Sprintf("%v", desc.Size))
 	w.Header().Set(dockerContentDigest, string(desc.Digest))
 	w.Header().Set(etag, string(desc.Digest))
+	return nil
+}
+
+func ProxyReferrerMiddleware() func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		ctx := r.Context()
+		art := lib.GetArtifactInfo(ctx)
+		p, err := project.Ctl.GetByName(ctx, art.ProjectName)
+		if err != nil {
+			httpLib.SendError(w, err)
+			return
+		}
+		if !p.IsProxy() {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		if !p.ProxyReferrerAPI() {
+			log.Debug("the proxy referrer API is not enabled for current project, fallback to local registry")
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		log.Debug("current project is a harbor proxy cache project, will proxy the referrer API to the upstream")
+		remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
+		if err != nil {
+			log.Errorf("failed to proxy the referrer API to upstream, error %v, fallback to local registry", err)
+			next.ServeHTTP(w, r)
+			return
+		}
+		err = proxyReferrerGet(r, w, art, remote, p.RegistryID)
+		// for any error, fallback to local registry
+		if err != nil {
+			log.Errorf("failed to proxy the referrer API to upstream, error %v, fallback to local registry", err)
+			next.ServeHTTP(w, r)
+		}
+	})
+}
+
+// referrerCache defines the cache structure for referrer index
+type referrerCache struct {
+	Content []byte              `json:"content"`
+	Header  map[string][]string `json:"header"`
+}
+
+// WriteProxyHeaders writes proxy-allowed headers from headerMap to response writer
+func WriteProxyHeaders(w http.ResponseWriter, headerMap map[string][]string) {
+	for k, v := range headerMap {
+		if slices.Contains(proxyHeaderNames, k) {
+			for _, hv := range v {
+				w.Header().Add(k, hv)
+			}
+		}
+	}
+}
+
+// referrerCacheKey generates cache key for referrer index
+func referrerCacheKey(requestURI string) string {
+	return fmt.Sprintf("{referrer_cache}:%s", requestURI)
+}
+
+const sourceLocal = "local"
+
+// hasNextLink checks whether the Link header in headerMap contains a rel="next" entry,
+// indicating that there are more pages of results from the upstream.
+func hasNextLink(headerMap map[string][]string) bool {
+	linkValues, ok := headerMap[link]
+	if !ok || len(linkValues) == 0 {
+		return false
+	}
+	for _, lv := range linkValues {
+		links := lib.ParseLinks(lv)
+		for _, l := range links {
+			if l.Rel == "next" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// artMgr is the package-level artifact manager, initialized once on startup.
+var artMgr = artifact.NewManager()
+
+// getLocalReferrers queries the local accessory table for accessories with source "local"
+// and builds OCI descriptors from the corresponding artifacts.
+func getLocalReferrers(ctx context.Context, art lib.ArtifactInfo, artifactType string) []ocispec.Descriptor {
+	query := q.New(q.KeyWords{
+		"SubjectArtifactDigest": art.Reference,
+		"SubjectArtifactRepo":   art.Repository,
+		"Source":                sourceLocal,
+	})
+	accs, err := accessory.Mgr.List(ctx, query)
+	if err != nil {
+		log.Warningf("failed to list local accessories for %s@%s: %v", art.Repository, art.Reference, err)
+		return nil
+	}
+	if len(accs) == 0 {
+		return nil
+	}
+
+	var descs []ocispec.Descriptor
+	for _, acc := range accs {
+		accData := acc.GetData()
+		accArt, err := artMgr.GetByDigest(ctx, art.Repository, accData.Digest)
+		if err != nil {
+			log.Warningf("failed to get artifact for local accessory %s: %v", accData.Digest, err)
+			continue
+		}
+		if artifactType != "" && accArt.ArtifactType != artifactType {
+			continue
+		}
+		desc := ocispec.Descriptor{
+			MediaType:    accArt.ManifestMediaType,
+			Size:         accArt.Size,
+			Digest:       digest.Digest(accArt.Digest),
+			Annotations:  accArt.Annotations,
+			ArtifactType: accArt.ArtifactType,
+		}
+		descs = append(descs, desc)
+	}
+	return descs
+}
+
+func proxyReferrerGet(r *http.Request, w http.ResponseWriter, art lib.ArtifactInfo, remote proxy.RemoteInterface, registryID int64) error {
+	key := referrerCacheKey(r.RequestURI)
+	c := libCache.Default()
+	if c == nil {
+		return fmt.Errorf("the global cache is not initialized")
+	}
+	ctx := r.Context()
+	// get registry status
+	reg, err := registry.Ctl.Get(ctx, registryID)
+	if err != nil {
+		return err
+	}
+	// if registry is unhealthy, try to get from cache
+	if reg.Status != model.Healthy {
+		cachedContent := referrerCache{}
+		err = c.Fetch(ctx, key, &cachedContent)
+		if err != nil {
+			log.Debugf("failed to get referrer index from cache, key: %s, error: %v", key, err)
+			return fmt.Errorf("failed to get referrer index from cache")
+		}
+		if len(cachedContent.Content) == 0 {
+			log.Debugf("no cached referrer index found in cache, key: %s", key)
+			return fmt.Errorf("the upstream registry is unhealthy or no cached referrer index found")
+		}
+
+		log.Debugf("referrer index found in cache, key: %s", key)
+		WriteProxyHeaders(w, cachedContent.Header)
+		w.WriteHeader(http.StatusOK)
+		_, err = io.Copy(w, bytes.NewReader(cachedContent.Content)) // return cached content if registry is unhealthy
+		if err != nil {
+			// just log the error, as the response has been written
+			log.Errorf("failed to copy response body from cache, %v", err)
+		}
+		return nil
+	}
+
+	index, headerMap, err := remote.ListReferrers(proxy.GetRemoteRepo(art), art.Reference, r.URL.RawQuery)
+	// if upstream return 404, return not found error
+	if errors.IsNotFoundErr(err) {
+		httpLib.SendError(w, err)
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// append local referrers (source=local) only on the last page of remote results
+	isLastPage := !hasNextLink(headerMap)
+	if isLastPage {
+		artifactTypeFilter := r.URL.Query().Get("artifactType")
+		localDescs := getLocalReferrers(ctx, art, artifactTypeFilter)
+		if len(localDescs) > 0 {
+			log.Debugf("appending %d local referrer(s) to remote referrer index for %s@%s", len(localDescs), art.Repository, art.Reference)
+			index.Manifests = append(index.Manifests, localDescs...)
+		}
+	}
+	// always update X-Total-Count to reflect the actual number of manifests in the response
+	headerMap[xTotalCount] = []string{fmt.Sprintf("%d", len(index.Manifests))}
+
+	// Marshal before touching the response so we can still return an error on failure.
+	b, err := json.Marshal(index)
+	if err != nil {
+		return err
+	}
+	cacheContent := referrerCache{
+		Content: b,
+		Header:  headerMap,
+	}
+	log.Debugf("save referrer index to cache, key: %s", key)
+	if err := c.Save(ctx, key, cacheContent, referrerCacheTTL); err != nil {
+		log.Warningf("failed to save referrer index to cache, key: %s, error: %v", key, err)
+	}
+
+	log.Debugf("current headers from upstream registry: %v", headerMap)
+	WriteProxyHeaders(w, headerMap)
+	w.WriteHeader(http.StatusOK)
+	_, err = io.Copy(w, bytes.NewReader(b))
+	if err != nil {
+		// just log the error, as the response has already been committed
+		log.Errorf("failed to copy response body, %v", err)
+	}
 	return nil
 }
