@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/redis"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -99,7 +100,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
+	proxyProject := canProxy(r.Context(), p)
+	if proxyProject && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+	}
+	if !proxyProject || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
 	}
@@ -119,6 +124,10 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		// cache miss: the blob is about to be fetched from the upstream registry
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+	}
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
@@ -223,6 +232,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
+	if config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+	}
 	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
 		return err
@@ -263,6 +275,10 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		// cache miss: the manifest is about to be fetched from the upstream registry
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
 		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
