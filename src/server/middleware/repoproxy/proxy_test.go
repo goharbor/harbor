@@ -80,3 +80,129 @@ func TestIsProxySession(t *testing.T) {
 		})
 	}
 }
+
+func TestMatchRepositoryFilter(t *testing.T) {
+	cases := []struct {
+		name          string
+		repository    string
+		filterPattern string
+		filterKind    string
+		want          bool
+	}{
+		{
+			name:          "empty pattern matches all",
+			repository:    "library/nginx",
+			filterPattern: "",
+			filterKind:    "",
+			want:          true,
+		},
+		{
+			name:          "regex exact match",
+			repository:    "library/nginx",
+			filterPattern: "^library/nginx$",
+			filterKind:    "regex",
+			want:          true,
+		},
+		{
+			name:          "regex partial match is anchored",
+			repository:    "library/nginx",
+			filterPattern: "nginx",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex prefix match is anchored",
+			repository:    "library/nginx",
+			filterPattern: "^library/",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex wildcard match",
+			repository:    "library/nginx",
+			filterPattern: "^library/.*",
+			filterKind:    "regex",
+			want:          true,
+		},
+		{
+			name:          "regex no match",
+			repository:    "library/nginx",
+			filterPattern: "^other/",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex invalid pattern treated as no match",
+			repository:    "library/nginx",
+			filterPattern: "[invalid",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "doublestar exact match",
+			repository:    "library/nginx",
+			filterPattern: "library/nginx",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar single star",
+			repository:    "library/nginx",
+			filterPattern: "library/*",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar double star",
+			repository:    "org/team/repo",
+			filterPattern: "org/**",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar match all",
+			repository:    "library/nginx",
+			filterPattern: "**",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar no match",
+			repository:    "library/nginx",
+			filterPattern: "other/*",
+			filterKind:    "doublestar",
+			want:          false,
+		},
+		{
+			name:          "doublestar alternation",
+			repository:    "library/nginx",
+			filterPattern: "library/{nginx,alpine}",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "empty kind defaults to doublestar",
+			repository:    "library/nginx",
+			filterPattern: "library/**",
+			filterKind:    "",
+			want:          true,
+		},
+		{
+			name:          "empty pattern with kind set matches all",
+			repository:    "library/nginx",
+			filterPattern: "",
+			filterKind:    "regex",
+			want:          true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := matchRepositoryFilter(tt.repository, tt.filterPattern, tt.filterKind)
+			if got != tt.want {
+				t.Errorf("matchRepositoryFilter(%q, %q, %q) = %v; want %v",
+					tt.repository, tt.filterPattern, tt.filterKind, got, tt.want)
+			}
+		})
+	}
+}

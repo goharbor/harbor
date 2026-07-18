@@ -7533,6 +7533,14 @@ definitions:
         type: string
         description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
         x-nullable: true
+      proxy_cache_filter_pattern:
+        type: string
+        description: 'Repository filter pattern for proxy cache project. Only repositories matching the pattern will be proxied. Empty means allow all. Only has value when the current project is a proxy cache project.'
+        x-nullable: true
+      proxy_cache_filter_kind:
+        type: string
+        description: 'Matching mode for proxy_cache_filter_pattern: "doublestar" (default, glob-style with ** support) or "regex". Only has value when the current project is a proxy cache project.'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
