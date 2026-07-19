@@ -471,7 +471,8 @@
         "GUEST": "Misafir",
         "LIMITED_GUEST": "Limited Guest",
         "DELETION_TITLE": "Confirm group members deletion",
-        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
+        "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?",
+        "FILTER_PLACEHOLDER": "Grupları filtrele"
     },
     "AUDIT_LOG": {
         "USERNAME": "Kullanıcı Adı",

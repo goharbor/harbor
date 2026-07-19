@@ -471,7 +471,8 @@
         "GUEST": "Invitado",
         "LIMITED_GUEST": "Invitado Limitado",
         "DELETION_TITLE": "Confirmar borrado de miembros del Grupo",
-        "DELETION_SUMMARY": "Quieres borrar los miembros del Grupo {{param}}?"
+        "DELETION_SUMMARY": "Quieres borrar los miembros del Grupo {{param}}?",
+        "FILTER_PLACEHOLDER": "Filtrar grupos"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",

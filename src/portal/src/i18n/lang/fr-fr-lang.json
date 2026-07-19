@@ -472,7 +472,8 @@
         "GUEST": "Invité",
         "LIMITED_GUEST": "Invité avec droits limités",
         "DELETION_TITLE": "Confirmer la suppression des membres du groupe",
-        "DELETION_SUMMARY": "Voulez-vous supprimer le(s) membre(s) du groupe {{param}} ?"
+        "DELETION_SUMMARY": "Voulez-vous supprimer le(s) membre(s) du groupe {{param}} ?",
+        "FILTER_PLACEHOLDER": "Filtrer les groupes"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
