@@ -124,7 +124,11 @@ func (c *controller) DeleteExecution(ctx context.Context, executionID int64) err
 
 func (c *controller) Start(ctx context.Context, request export.Request) (executionID int64, err error) {
 	logger := log.GetLogger(ctx)
-	vendorID := int64(ctx.Value(export.CsvJobVendorIDKey).(int))
+	vID, ok := ctx.Value(export.CsvJobVendorIDKey).(int)
+	if !ok {
+		return 0, fmt.Errorf("failed to get vendor ID from context")
+	}
+	vendorID := int64(vID)
 	extraAttrs := make(map[string]any)
 	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
