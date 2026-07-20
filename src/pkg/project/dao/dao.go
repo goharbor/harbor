@@ -197,7 +197,9 @@ func (d *dao) ListRoles(ctx context.Context, projectID int64, userID int, groupI
 
 	var roles []int
 	for _, value := range values {
-		roles = append(roles, int(value.(int64)))
+		if roleInt64, ok := value.(int64); ok {
+			roles = append(roles, int(roleInt64))
+		}
 	}
 
 	return roles, nil
