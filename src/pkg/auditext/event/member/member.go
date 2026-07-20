@@ -217,8 +217,13 @@ func ensureORMContext(ctx context.Context) context.Context {
 	if ctx == nil {
 		return orm.Context()
 	}
-	if _, err := orm.FromContext(ctx); err == nil {
-		return ctx
+	if o, err := orm.FromContext(ctx); err == nil {
+		if _, ok := o.(beegoorm.TxOrmer); !ok {
+			return ctx
+		}
 	}
+	// Member audit events are resolved asynchronously and may run after the
+	// request transaction has already been committed/rolled back. Replace
+	// transaction-bound ORM with a fresh ORM to avoid using a completed tx.
 	return orm.NewContext(ctx, beegoorm.NewOrm())
 }
