@@ -15,6 +15,7 @@
 package rbac
 
 import (
+	"fmt"
 	"math/rand"
 	"regexp"
 	"strings"
@@ -95,8 +96,14 @@ func keyMatch2(key1 string, key2 string) bool {
 }
 
 func keyMatch2Func(args ...any) (any, error) {
-	name1 := args[0].(string)
-	name2 := args[1].(string)
+	if len(args) != 2 {
+		return false, fmt.Errorf("keyMatch2Func expects 2 arguments, got %d", len(args))
+	}
+	name1, ok1 := args[0].(string)
+	name2, ok2 := args[1].(string)
+	if !ok1 || !ok2 {
+		return false, fmt.Errorf("keyMatch2Func expects 2 string arguments")
+	}
 
 	return keyMatch2(name1, name2), nil
 }
