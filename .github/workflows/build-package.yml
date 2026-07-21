@@ -193,7 +193,7 @@ jobs:
             : > "$GITHUB_WORKSPACE/_base_repos_${ARCH}.txt"
           fi
       - name: Upload repo list
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: repos-${{ matrix.arch }}
           path: |
