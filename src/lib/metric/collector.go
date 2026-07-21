@@ -72,7 +72,7 @@ var (
 			Name:      "http_registry_proxy_requests_total",
 			Help:      "The total number of requests sent to the proxy cache",
 		},
-		[]string{"project", "repository", "method"})
+		[]string{"project", "method"})
 
 	// TotalProxyUpstreamReq used to collect total requests sent to the upstream
 	TotalProxyUpstreamReq = prometheus.NewCounterVec(
@@ -82,5 +82,5 @@ var (
 			Name:      "http_registry_proxy_upstream_requests_total",
 			Help:      "The total number of proxy requests sent to the upstream server",
 		},
-		[]string{"project", "repository", "method"})
+		[]string{"project", "method"})
 )

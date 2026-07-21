@@ -102,7 +102,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 
 	proxyProject := canProxy(r.Context(), p)
 	if proxyProject && config.Metric().Enabled {
-		metric.TotalProxyReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	if !proxyProject || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
@@ -126,7 +126,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 
 	if config.Metric().Enabled {
 		// cache miss: the blob is about to be fetched from the upstream registry
-		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
@@ -233,7 +233,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 	if config.Metric().Enabled {
-		metric.TotalProxyReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
@@ -277,7 +277,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 
 	if config.Metric().Enabled {
 		// cache miss: the manifest is about to be fetched from the upstream registry
-		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, art.Repository, r.Method).Inc()
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
