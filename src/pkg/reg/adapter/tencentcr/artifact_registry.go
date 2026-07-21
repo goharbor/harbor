@@ -38,10 +38,14 @@ var _ adp.ArtifactRegistry = &adapter{}
 func filterToPatterns(filters []*model.Filter) (namespacePattern, repoPattern, tagsPattern string) {
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
-			repoPattern = filter.Value.(string)
+			if v, ok := filter.Value.(string); ok {
+				repoPattern = v
+			}
 		}
 		if filter.Type == model.FilterTypeTag {
-			tagsPattern = filter.Value.(string)
+			if v, ok := filter.Value.(string); ok {
+				tagsPattern = v
+			}
 		}
 	}
 	namespacePattern = strings.Split(repoPattern, "/")[0]

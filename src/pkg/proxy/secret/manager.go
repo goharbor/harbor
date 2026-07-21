@@ -133,7 +133,9 @@ func (man *mgr) gc() {
 		repoV, ok := v.(targetRepository)
 		if ok && repoV.expiresAt.Before(time.Now()) {
 			log.Debugf("Removed expire secret: %s, repo: %s", k, repoV.name)
-			man.delete(k.(string))
+			if kStr, ok := k.(string); ok {
+				man.delete(kStr)
+			}
 		}
 		return true
 	})
