@@ -7,13 +7,13 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
       id-token: write   # Required for Cosign keyless signing
       packages: write   # Required for pushing images to ghcr.io
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV

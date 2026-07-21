@@ -18,10 +18,10 @@ jobs:
     permissions:
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
 
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run Trivy vulnerability scanner
         # tag 0.35.0, get the commit hash from https://github.com/aquasecurity/trivy-action.git
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
