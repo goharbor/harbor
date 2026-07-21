@@ -32,6 +32,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+    env_file:
+      - ./common/config/registry/env
     volumes:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
@@ -264,7 +266,7 @@ services:
         tag: "jobservice"
 {% if external_redis == False %}
   redis:
-    image: goharbor/redis-photon:{{redis_version}}
+    image: goharbor/valkey-photon:{{redis_version}}
     container_name: redis
     restart: always
     cap_drop:
@@ -399,4 +401,3 @@ services:
 networks:
   harbor:
     external: false
-

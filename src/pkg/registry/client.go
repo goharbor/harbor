@@ -21,10 +21,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -63,32 +61,6 @@ var (
 	}
 )
 
-// const definition
-const (
-	// DefaultHTTPClientTimeout is the default timeout for registry http client.
-	DefaultHTTPClientTimeout = 30 * time.Minute
-)
-
-var (
-	// registryHTTPClientTimeout is the timeout for registry http client.
-	registryHTTPClientTimeout time.Duration
-)
-
-func init() {
-	registryHTTPClientTimeout = DefaultHTTPClientTimeout
-	// override it if read from environment variable, in minutes
-	if env := os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"); len(env) > 0 {
-		timeout, err := strconv.ParseInt(env, 10, 64)
-		if err != nil {
-			log.Errorf("Failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT: %v, use default value: %v", err, DefaultHTTPClientTimeout)
-		} else {
-			if timeout > 0 {
-				registryHTTPClientTimeout = time.Duration(timeout) * time.Minute
-			}
-		}
-	}
-}
-
 // Client defines the methods that a registry client should implements
 type Client interface {
 	// Ping the base API endpoint "/v2/"
@@ -125,6 +97,8 @@ type Client interface {
 	Copy(srcRepository, srcReference, dstRepository, dstReference string, override bool) (err error)
 	// Do send generic HTTP requests to the target registry service
 	Do(req *http.Request) (*http.Response, error)
+	// ListReferrers returns all referrers
+	ListReferrers(repository, digest string, rawQuery string) (*v1.Index, map[string][]string, error)
 }
 
 // NewClient creates a registry client with the default authorizer which determines the auth scheme
@@ -155,7 +129,7 @@ func NewClientWithAuthorizer(url string, authorizer lib.Authorizer, insecure boo
 		interceptors: interceptors,
 		client: &http.Client{
 			Transport: transport,
-			Timeout:   registryHTTPClientTimeout,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}
 }
@@ -474,7 +448,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 		return location, end, err
 	}
 
-	req.Header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
+	req.ContentLength = end - start + 1
 	req.Header.Set("Content-Range", fmt.Sprintf("%d-%d", start, end))
 	resp, err := c.do(req)
 	if err != nil {
@@ -698,6 +672,44 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+func (c *client) ListReferrers(repository, digest string, rawQuery string) (*v1.Index, map[string][]string, error) {
+	remoteURL := buildReferrersURL(c.url, repository, digest, rawQuery)
+	req, err := http.NewRequest(http.MethodGet, remoteURL, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	log.Debugf("upstream url %v", remoteURL)
+
+	if c.authorizer == nil {
+		log.Debug("registry client authorizer is nil") // only log this case, not an error
+	}
+
+	resp, err := c.do(req)
+	if err != nil {
+		if errors.IsErr(err, errors.NotFoundCode) {
+			return nil, nil, errors.New(nil).WithCode(errors.NotFoundCode).
+				WithMessagef("referrers for %s:%s not found", repository, digest)
+		}
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	// Decode JSON into ocispec.Index
+	var index v1.Index
+	decoder := json.NewDecoder(resp.Body)
+	// copy the header to headerMap
+	headerMap := make(map[string][]string)
+	for k, v := range resp.Header {
+		headerMap[k] = v
+	}
+	log.Debugf("headerMap from upstream %v", headerMap)
+	if err := decoder.Decode(&index); err != nil {
+		return nil, nil, err
+	}
+
+	return &index, headerMap, nil
+}
+
 // parse the next page link from the link header
 func next(link string) string {
 	links := lib.ParseLinks(link)
@@ -735,6 +747,14 @@ func buildMountBlobURL(endpoint, repository, digest, from string) string {
 
 func buildInitiateBlobUploadURL(endpoint, repository string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repository)
+}
+
+func buildReferrersURL(endpoint, repository, digest, rawQuery string) string {
+	url := fmt.Sprintf("%s/v2/%s/referrers/%s", endpoint, repository, digest)
+	if len(rawQuery) > 0 {
+		url = url + "?" + rawQuery
+	}
+	return url
 }
 
 func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {

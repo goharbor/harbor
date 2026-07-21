@@ -24,6 +24,7 @@ export const enum CopyStatus {
     selector: 'hbr-copy-input',
     templateUrl: './copy-input.coponent.html',
     styleUrls: ['./push-image.scss'],
+    standalone: false,
 })
 export class CopyInputComponent {
     @Input() inputSize: number = 40;

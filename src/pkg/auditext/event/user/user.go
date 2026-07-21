@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package user // nolint:revive
 
 import (
 	"net/http"
@@ -73,12 +73,17 @@ func (u *userEventResolver) Resolve(ce *commonevent.Metadata, event *notifiereve
 	if ce.RequestMethod != http.MethodPut {
 		return nil
 	}
+	// base resolver leaves Data nil for a PUT that isn't on a specific user (e.g. the /users collection)
+	commonEvent, ok := event.Data.(*model.CommonEvent)
+	if !ok || commonEvent == nil {
+		return nil
+	}
 	// update operation description for update user password and add/remove user as system administrator
-	origin := event.Data.(*model.CommonEvent).OperationDescription
+	origin := commonEvent.OperationDescription
 	if strings.HasSuffix(ce.RequestURL, "/sysadmin") {
-		event.Data.(*model.CommonEvent).OperationDescription = origin + ", add/remove user as system administrator"
+		commonEvent.OperationDescription = origin + ", add/remove user as system administrator"
 	} else if strings.HasSuffix(ce.RequestURL, "/password") {
-		event.Data.(*model.CommonEvent).OperationDescription = origin + ", change user password"
+		commonEvent.OperationDescription = origin + ", change user password"
 	}
 	return nil
 }

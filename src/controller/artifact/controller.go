@@ -262,7 +262,20 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		}
 	}
 
+	if created {
+		c.touchRepo(ctx, repo.RepositoryID)
+	}
+
 	return created, artifact, nil
+}
+
+// touchRepo bumps update_time on the parent repository so the "last modified"
+// timestamp reflects artifact create/delete events. Errors are logged only;
+// the caller's operation has already succeeded.
+func (c *controller) touchRepo(ctx context.Context, repositoryID int64) {
+	if err := c.repoMgr.Touch(ctx, repositoryID); err != nil {
+		log.G(ctx).Warningf("failed to touch repository %d update_time: %v", repositoryID, err)
+	}
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -438,6 +451,9 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot, isAcces
 			return nil
 		}
 		return err
+	}
+	if isRoot {
+		c.touchRepo(ctx, art.RepositoryID)
 	}
 
 	blobs, err := c.blobMgr.List(ctx, q.New(q.KeyWords{"artifactDigest": art.Digest}))

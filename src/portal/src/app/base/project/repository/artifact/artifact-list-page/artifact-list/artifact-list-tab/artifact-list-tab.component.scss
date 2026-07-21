@@ -90,9 +90,6 @@
 .width-p-100 {
   width: 100%;
 
-  .lg {
-    width: 550px;
-  }
 }
 
 .tag-header-color {
@@ -124,14 +121,9 @@
 
 .action-dropdown {
   .action-dropdown-item {
-    position: static;
-    padding-left: 1rem;
+    padding: 6px 1rem;
     line-height: inherit;
     height: auto;
-
-    &::before {
-      margin-top: .5rem;
-    }
   }
 
   .dropdown-header {

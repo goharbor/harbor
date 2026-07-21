@@ -28,6 +28,7 @@ Test Case - Get Harbor Version
     Get Harbor Version
 
 Test Case - Trivy Is Default Scanner And It Is Immutable
+    [Tags]  default_immutable
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Scanners Page
