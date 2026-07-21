@@ -12,7 +12,8 @@
     <clr-dg-placeholder>
         {{ 'TAG_RETENTION.NO_HISTORY' | translate }}
     </clr-dg-placeholder>
-    <clr-dg-row *ngFor="let task of tasks" [clrDgItem]="task">
+    @for (task of tasks; track task) {
+    <clr-dg-row [clrDgItem]="task">
         <clr-dg-cell>{{ task.repository }}</clr-dg-cell>
         <clr-dg-cell>{{ task.status }}</clr-dg-cell>
         <clr-dg-cell
@@ -32,13 +33,16 @@
             ></span>
         </clr-dg-cell>
     </clr-dg-row>
+    }
     <clr-dg-footer>
-        <span *ngIf="innerPagination"
+        @if (innerPagination) {
+        <span
             >{{ innerPagination.firstItem + 1 }}
             -
             {{ innerPagination.lastItem + 1 }}
             {{ 'ROBOT_ACCOUNT.OF' | translate }}
         </span>
+        }
         {{ total }} {{ 'ROBOT_ACCOUNT.ITEMS' | translate }}
         <clr-dg-pagination
             [clrDgTotalItems]="total"

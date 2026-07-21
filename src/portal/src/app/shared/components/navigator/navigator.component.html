@@ -1,13 +1,13 @@
 <clr-header class="header-5 header" [attr.style]="getBgColor()">
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
+            @if (customStyle?.product?.logo) {
             <img
                 [attr.src]="'images/' + customStyle?.product?.logo"
-                *ngIf="customStyle?.product?.logo; else elseBlock"
                 class="headerLogo" />
-            <ng-template #elseBlock
-                ><img [src]="'images/harbor-logo.svg'" class="harbor-logo"
-            /></ng-template>
+            } @else {
+            <img [src]="'images/harbor-logo.svg'" class="harbor-logo" />
+            }
             <span class="title">{{
                 customStyle?.product?.name
                     ? customStyle?.product?.name
@@ -16,40 +16,39 @@
         </a>
     </div>
 
-    <global-search></global-search>
+    <global-search class="global-search"></global-search>
     <div class="header-actions">
-        <clr-dropdown
-            class="dropdown-lang dropdown bottom-left"
-            *ngIf="!isSessionValid">
+        @if (!isSessionValid) {
+        <clr-dropdown class="dropdown-lang dropdown bottom-left">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{ currentLang }}</span>
-                <clr-icon size="10" shape="caret down"></clr-icon>
+                <clr-icon size="10" shape="caret" direction="down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
+                @for (lang of guiLanguages; track lang) {
                 <a
-                    *ngFor="let lang of guiLanguages"
                     href="javascript:void(0)"
                     clrDropdownItem
                     (click)="switchLanguage(lang[0])"
                     [class.lang-selected]="matchLang(lang[0])"
                     >{{ lang[1][0] }}</a
                 >
+                }
             </clr-dropdown-menu>
         </clr-dropdown>
-        <clr-dropdown
-            class="dropdown-locale dropdown bottom-left"
-            *ngIf="!isSessionValid">
+        } @if (!isSessionValid) {
+        <clr-dropdown class="dropdown-locale dropdown bottom-left">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
-                <clr-icon shape="date" class="icon-left"></clr-icon>
+                <clr-icon shape="calendar" class="icon-left"></clr-icon>
                 <span class="currentLocale">{{
                     currentDatetimeRendering | translate
                 }}</span>
-                <clr-icon size="10" shape="caret down"></clr-icon>
+                <clr-icon size="10" shape="caret" direction="down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
+                @for (rendering of guiDatetimeRenderings; track rendering) {
                 <a
-                    *ngFor="let rendering of guiDatetimeRenderings"
                     href="javascript:void(0)"
                     clrDropdownItem
                     (click)="switchDatetimeRendering(rendering[0])"
@@ -58,10 +57,13 @@
                     "
                     >{{ rendering[1] | translate }}</a
                 >
+                }
             </clr-dropdown-menu>
         </clr-dropdown>
+        }
         <div class="nav-divider"></div>
-        <clr-dropdown class="dropdown" *ngIf="isSessionValid">
+        @if (isSessionValid) {
+        <clr-dropdown class="dropdown">
             <button class="nav-text" clrDropdownToggle>
                 <clr-icon
                     shape="user"
@@ -71,7 +73,8 @@
                 <clr-icon
                     class="user-down"
                     size="10"
-                    shape="caret down"></clr-icon>
+                    shape="caret"
+                    direction="down"></clr-icon>
             </button>
             <clr-dropdown-menu [clrPosition]="'bottom-right'" *clrIfOpen>
                 <a
@@ -86,13 +89,14 @@
                     (click)="openPreferencesModal()"
                     >{{ 'ACCOUNT_SETTINGS.PREFERENCES' | translate }}</a
                 >
+                @if (canChangePassword) {
                 <a
-                    *ngIf="canChangePassword"
                     href="javascript:void(0)"
                     clrDropdownItem
                     (click)="openChangePwdModal()"
                     >{{ 'ACCOUNT_SETTINGS.CHANGE_PWD' | translate }}</a
                 >
+                }
                 <a
                     href="javascript:void(0)"
                     clrDropdownItem
@@ -108,13 +112,14 @@
                 >
             </clr-dropdown-menu>
         </clr-dropdown>
+        } @if (!isSessionValid) {
         <a
             href="javascript:void(0)"
             id="aboutMenu"
             class="nav-link nav-text nav-about-link"
             (click)="openAboutDialog()"
-            *ngIf="!isSessionValid"
             >{{ 'ACCOUNT_SETTINGS.ABOUT' | translate }}</a
         >
+        }
     </div>
 </clr-header>

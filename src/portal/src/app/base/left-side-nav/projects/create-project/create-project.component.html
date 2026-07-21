@@ -14,30 +14,32 @@
                     class="clr-control-container"
                     [class.clr-error]="!isNameValid">
                     <div class="clr-input-wrapper">
-                        <input
-                            type="text"
-                            id="create_project_name"
-                            [(ngModel)]="project.name"
-                            name="create_project_name"
-                            class="clr-input input-width"
-                            required
-                            pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
-                            #projectName
-                            autocomplete="off" />
-                        <clr-icon
-                            class="clr-validate-icon"
-                            shape="exclamation-circle"></clr-icon>
-                        <span
-                            class="spinner spinner-inline"
-                            [hidden]="!checkOnGoing"></span>
+                        <div class="clr-input-group">
+                            <input
+                                type="text"
+                                id="create_project_name"
+                                [(ngModel)]="project.name"
+                                name="create_project_name"
+                                class="clr-input input-width"
+                                required
+                                pattern="^[a-z0-9]+(?:[._\-][a-z0-9]+)*$"
+                                #projectName
+                                autocomplete="off" />
+                            <clr-icon
+                                class="clr-validate-icon"
+                                shape="exclamation-circle"></clr-icon>
+                            <span
+                                class="spinner spinner-inline"
+                                [hidden]="!checkOnGoing"></span>
+                        </div>
                     </div>
-                    <clr-control-error
-                        *ngIf="!isNameValid"
-                        class="tooltip-content">
+                    @if (!isNameValid) {
+                    <clr-control-error class="tooltip-content">
                         <span id="name-error">{{
                             nameTooltipText | translate
                         }}</span>
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <clr-checkbox-container>
@@ -68,7 +70,8 @@
                     <label>{{ 'PROJECT.PUBLIC' | translate }}</label>
                 </clr-checkbox-wrapper>
             </clr-checkbox-container>
-            <div class="clr-form-control" *ngIf="isSystemAdmin">
+            @if (isSystemAdmin) {
+            <div class="clr-form-control">
                 <label
                     for="create_project_storage_limit"
                     class="required clr-control-label"
@@ -112,30 +115,25 @@
                             id="create_project_storage_limit_unit"
                             name="create_project_storage_limit_unit"
                             [(ngModel)]="storageLimitUnit">
-                            <ng-template
-                                ngFor
-                                let-quotaUnit
-                                [ngForOf]="quotaUnits"
-                                let-i="index">
-                                <option *ngIf="i > 1" [value]="quotaUnit.UNIT">
-                                    {{ quotaUnit.UNIT }}
-                                </option>
-                            </ng-template>
+                            @for (quotaUnit of quotaUnits; track quotaUnit; let
+                            i = $index) { @if (i > 1) {
+                            <option [value]="quotaUnit.UNIT">
+                                {{ quotaUnit.UNIT }}
+                            </option>
+                            } }
                         </select>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            (projectStorageLimit.invalid &&
-                                (projectStorageLimit.dirty ||
-                                    projectStorageLimit.touched)) ||
-                            projectStorageLimit.errors
-                        "
-                        class="tooltip-content">
+                    @if ( (projectStorageLimit.invalid &&
+                    (projectStorageLimit.dirty || projectStorageLimit.touched))
+                    || projectStorageLimit.errors ) {
+                    <clr-control-error class="tooltip-content">
                         {{ 'PROJECT.STORAGE_QUOTA_TIP' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
-            <div class="clr-form-control" *ngIf="isSystemAdmin">
+            } @if (isSystemAdmin) {
+            <div class="clr-form-control">
                 <label
                     for="create_project_storage_limit"
                     class="clr-control-label"
@@ -163,19 +161,22 @@
                         id="proxy-cache"
                         [(ngModel)]="enableProxyCache" />
                 </clr-toggle-wrapper>
-                <div *ngIf="enableProxyCache" class="clr-select-wrapper ml-1">
+                @if (enableProxyCache) {
+                <div class="clr-select-wrapper ml-1">
                     <select
                         class="width-164"
                         id="registry"
                         name="registry"
                         [(ngModel)]="project.registry_id">
                         <option class="display-none" value=""></option>
-                        <option *ngFor="let r of registries" [value]="r.id">
-                            {{ r.name }}-{{ r.url }}
-                        </option>
+                        @for (r of registries; track r) {
+                        <option [value]="r.id">{{ r.name }}-{{ r.url }}</option>
+                        }
                     </select>
                 </div>
+                }
             </div>
+            }
             <div
                 class="clr-form-control mt-0"
                 [style.visibility]="
@@ -185,9 +186,8 @@
                     for="create_project_storage_limit"
                     class="clr-control-label"></label>
                 <div class="clr-control-container input-width">
-                    <div
-                        class="space-between"
-                        *ngIf="enableProxyCache && !registries.length">
+                    @if (enableProxyCache && !registries.length) {
+                    <div class="space-between">
                         <span class="alert-label">{{
                             'REPLICATION.NO_ENDPOINT_INFO' | translate
                         }}</span>
@@ -197,6 +197,7 @@
                             >{{ 'REPLICATION.ENDPOINTS' | translate }}</a
                         >
                     </div>
+                    }
                 </div>
             </div>
             <div
@@ -209,17 +210,20 @@
                     class="clr-control-label"></label>
                 <div class="clr-control-container">
                     <div class="clr-input-wrapper">
-                        <label class="clr-control-label endpoint required">{{
-                            'PROJECT.ENDPOINT' | translate
-                        }}</label>
-                        <input
-                            placeholder="http(s)://192.168.1.1"
-                            [value]="getEndpoint()"
-                            readonly
-                            class="clr-input"
-                            type="text"
-                            id="endpoint"
-                            autocomplete="off" />
+                        <div class="clr-input-group">
+                            <label
+                                class="clr-control-label endpoint required"
+                                >{{ 'PROJECT.ENDPOINT' | translate }}</label
+                            >
+                            <input
+                                placeholder="http(s)://192.168.1.1"
+                                [value]="getEndpoint()"
+                                readonly
+                                class="clr-input"
+                                type="text"
+                                id="endpoint"
+                                autocomplete="off" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,27 +262,28 @@
                         placeholder="Enter bandwidth"
                         autocomplete="off"
                         (ngModelChange)="validateBandwidth()" />
+                    @if (bandwidthError) {
                     <clr-icon
-                        *ngIf="bandwidthError"
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
+                    }
                     <div class="clr-select-wrapper mr-10">
                         <select
                             id="bandwidth_unit"
                             name="bandwidth_unit"
                             [(ngModel)]="selectedSpeedLimitUnit">
-                            <option
-                                *ngFor="let unit of speedUnits"
-                                [value]="unit.UNIT">
+                            @for (unit of speedUnits; track unit) {
+                            <option [value]="unit.UNIT">
                                 {{ unit.UNIT }}
                             </option>
+                            }
                         </select>
                     </div>
-                    <clr-control-error
-                        *ngIf="bandwidthError"
-                        class="tooltip-content">
+                    @if (bandwidthError) {
+                    <clr-control-error class="tooltip-content">
                         {{ 'PROJECT.SPEED_LIMIT_TIP' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <div
@@ -313,21 +318,24 @@
                         [(ngModel)]="project.metadata.max_upstream_conn"
                         name="maxUpStreamConn"
                         class="clr-input width-164 mr-10"
-                        placeholder="Enter upstream connection limit"
+                        [placeholder]="
+                            'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER'
+                                | translate
+                        "
                         autocomplete="off"
                         (ngModelChange)="validateMaxUpstreamConnections()" />
+                    @if (maxUpstreamConnError) {
                     <clr-icon
-                        *ngIf="maxUpstreamConnError"
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
-                    <clr-control-error
-                        *ngIf="maxUpstreamConnError"
-                        class="tooltip-content">
+                    } @if (maxUpstreamConnError) {
+                    <clr-control-error class="tooltip-content">
                         {{
                             'PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP'
                                 | translate
                         }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <clr-checkbox-container
@@ -363,6 +371,37 @@
                         name="proxy_cache_local_on_not_found" />
                 </clr-checkbox-wrapper>
             </clr-checkbox-container>
+            <div
+                class="clr-checkbox-container mt-05"
+                [style.visibility]="
+                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
+                ">
+                <clr-checkbox-wrapper>
+                    <input
+                        id="proxy-referrer-api"
+                        type="checkbox"
+                        clrCheckbox
+                        [(ngModel)]="project.metadata.proxy_referrer_api"
+                        name="proxy-referrer-api" />
+                    <label for="proxy-referrer-api">
+                        {{ 'PROJECT.PROXY_REFERRER_API_LABEL' | translate }}
+                        <clr-tooltip>
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-right"
+                                clrSize="lg"
+                                *clrIfOpen>
+                                <span>{{
+                                    'PROJECT.PROXY_REFERRER_API_TIP' | translate
+                                }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+            </div>
         </form>
     </div>
     <div class="modal-footer">

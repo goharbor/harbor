@@ -184,6 +184,15 @@ func (p *Project) MaxUpstreamConnection() int {
 	return int(cnt)
 }
 
+// ProxyReferrerAPI
+func (p *Project) ProxyReferrerAPI() bool {
+	enable, exist := p.GetMetadata(ProMetaProxyReferrerAPI)
+	if !exist {
+		return false
+	}
+	return isTrue(enable)
+}
+
 // ProxyCacheLocalOnNotFound returns true if images should be served from local cache when removed from upstream
 func (p *Project) ProxyCacheLocalOnNotFound() bool {
 	val, exist := p.GetMetadata(ProMetaProxyCacheLocalOnNotFound)
@@ -255,7 +264,7 @@ func (p *Project) FilterByNames(_ context.Context, qs orm.QuerySeter, _ string, 
 
 	var names []string
 	for _, v := range query.Names {
-		names = append(names, `'`+v+`'`)
+		names = append(names, orm.QuoteLiteral(v))
 	}
 	subQuery := fmt.Sprintf("SELECT project_id FROM project where name IN (%s)", strings.Join(names, ","))
 

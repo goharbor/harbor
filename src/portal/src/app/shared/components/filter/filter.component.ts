@@ -28,6 +28,7 @@ import { debounceTime } from 'rxjs/operators';
     selector: 'hbr-filter',
     templateUrl: './filter.component.html',
     styleUrls: ['./filter.component.scss'],
+    standalone: false,
 })
 export class FilterComponent implements OnInit {
     placeHolder: string = '';

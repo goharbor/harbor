@@ -24,6 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -43,6 +44,7 @@ func New(registry *model.Registry) (*Adapter, error) {
 			// If using the secure one, as we'll replace the URL with 127.0.0.1 and this will
 			// cause error "x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs"
 			Transport: common_http.GetHTTPTransport(common_http.WithInsecure(true)),
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		}, authorizer)
 		client, err := NewClient(registry.URL, httpClient)
 		if err != nil {
@@ -68,6 +70,7 @@ func New(registry *model.Registry) (*Adapter, error) {
 			common_http.WithInsecure(registry.Insecure),
 			common_http.WithCACert(registry.CACertificate),
 		),
+		Timeout: config.RegistryHTTPClientTimeout(),
 	}, authorizers...)
 	client, err := NewClient(registry.URL, httpClient)
 	if err != nil {

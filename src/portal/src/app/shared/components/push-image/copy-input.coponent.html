@@ -1,5 +1,7 @@
 <div>
-    <div class="command-title" *ngIf="!iconMode">{{ headerTitle }}</div>
+    @if (!iconMode) {
+    <div class="command-title">{{ headerTitle }}</div>
+    }
     <div>
         <span [class.hide]="iconMode">
             <input
@@ -23,8 +25,7 @@
         <span>
             <clr-icon
                 shape="copy"
-                [class.is-success]="isCopied"
-                [class.is-error]="hasCopyError"
+                [status]="isCopied ? 'success' : hasCopyError ? 'danger' : null"
                 class="info-tips-icon"
                 size="24"
                 [ngxClipboard]="inputTarget1"

@@ -5,10 +5,9 @@ package quota
 import (
 	context "context"
 
+	q "github.com/goharbor/harbor/src/lib/q"
 	models "github.com/goharbor/harbor/src/pkg/quota/models"
 	mock "github.com/stretchr/testify/mock"
-
-	q "github.com/goharbor/harbor/src/lib/q"
 
 	types "github.com/goharbor/harbor/src/pkg/quota/types"
 )
