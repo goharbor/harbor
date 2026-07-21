@@ -100,11 +100,10 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	proxyProject := canProxy(r.Context(), p)
-	if proxyProject && config.Metric().Enabled {
+	if p.IsProxy() && config.Metric().Enabled {
 		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
-	if !proxyProject || proxyCtl.UseLocalBlob(ctx, art) {
+	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
 	}
@@ -228,12 +227,12 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 
+	if p.IsProxy() && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	if !canProxy(r.Context(), p) {
 		next.ServeHTTP(w, r)
 		return nil
-	}
-	if config.Metric().Enabled {
-		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {

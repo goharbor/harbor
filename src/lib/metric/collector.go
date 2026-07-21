@@ -80,7 +80,7 @@ var (
 			Namespace: os.Getenv(NamespaceEnvKey),
 			Subsystem: os.Getenv(SubsystemEnvKey),
 			Name:      "http_registry_proxy_upstream_requests_total",
-			Help:      "The total number of proxy requests sent to the upstream server",
+			Help:      "The total number of proxy cache requests that fetched from the upstream registry (cache miss)",
 		},
 		[]string{"project", "method"})
 )
