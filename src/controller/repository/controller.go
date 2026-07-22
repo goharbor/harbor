@@ -171,7 +171,9 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 				continue
 			}
 			if err = c.artCtl.Delete(ctx, artifact.ID); err != nil {
-				return err
+				if !errors.IsErr(err, errors.NotFoundCode) {
+					return err
+				}
 			}
 			log.Debugf("the artifact %d is deleted", artifact.ID)
 		}
