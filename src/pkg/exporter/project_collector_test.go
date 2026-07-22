@@ -155,6 +155,7 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro1.ProjectID].Usage, "{\"storage\": 0}", "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].MemberTotal, float64(2), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].PushTotal, float64(1), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactType, "IMAGE", "pMap %v", pMap)
 
@@ -165,6 +166,7 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro2.ProjectID].Usage, "{\"storage\": 0}", "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].MemberTotal, float64(3), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	c.Equalf(pMap[testPro2.ProjectID].PushTotal, float64(1), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 
 }
