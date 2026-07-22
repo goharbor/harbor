@@ -47,7 +47,14 @@ type resumeBlobFunc func(offset int64) (io.ReadCloser, error)
 // docker/OCI client retries an interrupted layer pull. Resuming is bounded by
 // maxBlobFetchRetries and disabled when size is unknown (<= 0), since the
 // read offset can't be validated against the blob length in that case.
+//
+// resume itself isn't cancelable once a request is in flight - the
+// underlying RemoteInterface doesn't accept a context - but the backoff wait
+// between attempts, and any attempt not yet started, respect ctx, so a
+// canceled caller (e.g. a disconnected pulling client) stops this reader
+// from waiting out further backoffs and opening further upstream requests.
 type resumingBlobReader struct {
+	ctx     context.Context
 	reader  io.ReadCloser
 	resume  resumeBlobFunc
 	size    int64
@@ -58,8 +65,12 @@ type resumingBlobReader struct {
 // newResumingBlobReader wraps reader so a mid-stream read failure is retried
 // up to maxBlobFetchRetries times by resuming the fetch from the last
 // successfully read byte offset (via an HTTP range request through resume).
-func newResumingBlobReader(reader io.ReadCloser, size int64, resume resumeBlobFunc) io.ReadCloser {
-	return &resumingBlobReader{reader: reader, size: size, resume: resume}
+// ctx bounds the retry loop itself (see resumingBlobReader); pass the
+// pulling client's request context to give up promptly if it disconnects,
+// or a detached context (e.g. context.Background()) for background work
+// that should keep retrying regardless.
+func newResumingBlobReader(ctx context.Context, reader io.ReadCloser, size int64, resume resumeBlobFunc) io.ReadCloser {
+	return &resumingBlobReader{ctx: ctx, reader: reader, size: size, resume: resume}
 }
 
 func (r *resumingBlobReader) Read(p []byte) (int, error) {
@@ -96,15 +107,25 @@ func (r *resumingBlobReader) Read(p []byte) (int, error) {
 
 // reconnect closes the broken reader and resumes the fetch from the current
 // offset, retrying the resume itself (bounded by the same retry budget) if
-// establishing the new connection also fails.
+// establishing the new connection also fails. It gives up early, without
+// waiting out the backoff or starting another attempt, if ctx is canceled.
 func (r *resumingBlobReader) reconnect(cause error) error {
 	_ = r.reader.Close()
 	for {
+		if ctxErr := r.ctx.Err(); ctxErr != nil {
+			return fmt.Errorf("blob fetch canceled while resuming after %v: %w", cause, ctxErr)
+		}
 		r.retries++
 		backoff := blobFetchRetryBackoff * time.Duration(uint64(1)<<uint(r.retries-1))
 		log.Warningf("proxy cache: upstream blob read interrupted at byte %d/%d (%v), resuming attempt %d/%d in %s",
 			r.offset, r.size, cause, r.retries, maxBlobFetchRetries, backoff)
-		time.Sleep(backoff)
+		timer := time.NewTimer(backoff)
+		select {
+		case <-r.ctx.Done():
+			timer.Stop()
+			return fmt.Errorf("blob fetch canceled while waiting to resume after %v: %w", cause, r.ctx.Err())
+		case <-timer.C:
+		}
 		next, err := r.resume(r.offset)
 		if err == nil {
 			r.reader = next

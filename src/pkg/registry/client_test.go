@@ -394,6 +394,29 @@ func (c *clientTestSuite) TestPullBlobChunk_RejectsIgnoredRangeAtNonZeroOffset()
 	c.Require().Error(err)
 }
 
+func (c *clientTestSuite) TestPullBlobChunk_RejectsFull200ForPartialFirstChunk() {
+	// start == 0 but end is short of blobSize-1, e.g. the first of several
+	// fixed-size chunks of a larger blob - a full 200 body is not the same
+	// as that sub-range even though both start at byte 0.
+	data := []byte("hello world")
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "GET",
+			Pattern: "/v2/library/hello-world/blobs/digest",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusOK,
+				Headers: map[string]string{
+					"Content-Length": strconv.Itoa(len(data)),
+				},
+				Body: data,
+			}),
+		})
+	defer server.Close()
+
+	_, _, err := NewClient(server.URL, "", "", true).PullBlobChunk("library/hello-world", "digest", int64(len(data)+50), 0, 4)
+	c.Require().Error(err)
+}
+
 func (c *clientTestSuite) TestPullBlobChunk_RejectsMismatchedContentRange() {
 	data := []byte("wrong chunk")
 	server := test.NewServer(
