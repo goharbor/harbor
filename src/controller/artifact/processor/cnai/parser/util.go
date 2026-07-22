@@ -22,11 +22,54 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-func untar(reader io.Reader) ([]byte, error) {
-	tr := tar.NewReader(reader)
+// maxTarMetadataOverhead is the extra budget of raw tar stream bytes allowed
+// on top of the logical content limit, to account for tar headers (including
+// PAX extended records and GNU sparse maps), block padding and end-of-archive
+// markers of a legitimate archive.
+const maxTarMetadataOverhead = 1 << 20 // 1MB
+
+// limitedReader is like io.LimitReader, but returns a RequestEntityTooLarge
+// error instead of io.EOF once more than remaining bytes have been consumed,
+// so that hitting the limit is distinguishable from a legitimate end of
+// stream.
+type limitedReader struct {
+	r         io.Reader
+	remaining int64
+}
+
+func (l *limitedReader) Read(p []byte) (int, error) {
+	if l.remaining <= 0 {
+		return 0, errors.RequestEntityTooLargeError(errFileTooLarge)
+	}
+	if int64(len(p)) > l.remaining {
+		p = p[:l.remaining]
+	}
+	n, err := l.r.Read(p)
+	l.remaining -= int64(n)
+	return n, err
+}
+
+// untar reads all file entries from the tar stream and returns their
+// concatenated content. It enforces that the total number of bytes written
+// across all entries does not exceed limit, so that a tar declaring a small
+// blob size but expanding to a huge payload (e.g. GNU sparse files) cannot
+// exhaust memory.
+func untar(reader io.Reader, limit int64) ([]byte, error) {
+	if limit < 0 {
+		return nil, fmt.Errorf("invalid limit: %d", limit)
+	}
+
+	// Cap the raw bytes consumed from the underlying stream as well: the
+	// manifest-declared blob size can lie, and tar.Reader.Next() materializes
+	// metadata (PAX extended records, GNU sparse maps) in memory before the
+	// per-entry content copy below ever sees it.
+	tr := tar.NewReader(&limitedReader{r: reader, remaining: limit + maxTarMetadataOverhead})
 	var buf bytes.Buffer
+	remaining := limit
 	for {
 		header, err := tr.Next()
 		if err == io.EOF {
@@ -42,8 +85,16 @@ func untar(reader io.Reader) ([]byte, error) {
 			continue
 		}
 
-		if _, err := io.Copy(&buf, tr); err != nil {
+		// Copy at most remaining+1 bytes so we can detect when the cumulative
+		// content exceeds the limit without trusting the declared header size.
+		n, err := io.Copy(&buf, io.LimitReader(tr, remaining+1))
+		if err != nil {
 			return nil, fmt.Errorf("failed to copy content to buffer: %w", err)
+		}
+
+		remaining -= n
+		if remaining < 0 {
+			return nil, errors.RequestEntityTooLargeError(errFileTooLarge)
 		}
 	}
 
