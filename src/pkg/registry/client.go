@@ -398,6 +398,31 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 		return 0, nil, err
 	}
 
+	// A server is allowed to ignore the Range header and return the full blob
+	// with a 200 instead of a 206. Callers use this method to resume a fetch
+	// from a byte offset, so silently accepting a mismatched range here would
+	// splice bytes from the wrong offset into whatever they're assembling.
+	// Require a 206 whose Content-Range actually starts at the requested
+	// offset, or a plain 200 only when the whole blob was requested from the
+	// start.
+	switch resp.StatusCode {
+	case http.StatusPartialContent:
+		cr := resp.Header.Get("Content-Range")
+		got, crErr := parseContentRangeStart(cr)
+		if crErr != nil || got != start {
+			defer resp.Body.Close()
+			return 0, nil, fmt.Errorf("registry returned Content-Range %q for requested range bytes=%d-%d, refusing to treat it as that chunk", cr, start, end)
+		}
+	case http.StatusOK:
+		if start != 0 {
+			defer resp.Body.Close()
+			return 0, nil, fmt.Errorf("registry ignored range request bytes=%d-%d and returned a full 200 response", start, end)
+		}
+	default:
+		defer resp.Body.Close()
+		return 0, nil, fmt.Errorf("unexpected status code %d for ranged blob pull", resp.StatusCode)
+	}
+
 	var size int64
 	n := resp.Header.Get("Content-Length")
 	// no content-length is acceptable, which can taken from manifests
@@ -410,6 +435,17 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 	}
 
 	return size, resp.Body, nil
+}
+
+// parseContentRangeStart extracts the start offset from a GET response's
+// Content-Range header, e.g. "bytes 100-499/1234" or "bytes 100-499/*".
+func parseContentRangeStart(cr string) (int64, error) {
+	cr = strings.TrimPrefix(cr, "bytes ")
+	dash := strings.IndexByte(cr, '-')
+	if dash <= 0 {
+		return -1, fmt.Errorf("invalid Content-Range format: %q", cr)
+	}
+	return strconv.ParseInt(cr[:dash], 10, 64)
 }
 
 func (c *client) PushBlob(repository, digest string, size int64, blob io.Reader) error {

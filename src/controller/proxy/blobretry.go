@@ -66,8 +66,20 @@ func (r *resumingBlobReader) Read(p []byte) (int, error) {
 	for {
 		n, err := r.reader.Read(p)
 		r.offset += int64(n)
-		if err == nil || err == io.EOF { // nolint:errorlint
+		if err == nil {
 			return n, err
+		}
+		if err == io.EOF { // nolint:errorlint
+			if r.size > 0 && r.offset < r.size {
+				// The stream ended cleanly but short of the expected size -
+				// e.g. a network intermediary that terminates a chunked
+				// response gracefully instead of resetting the connection.
+				// Treat it the same as a dropped connection so it consumes
+				// the retry budget instead of being accepted as complete.
+				err = io.ErrUnexpectedEOF
+			} else {
+				return n, err
+			}
 		}
 		if !r.canRetry(err) {
 			return n, err
@@ -120,31 +132,43 @@ func isRetryableBlobReadErr(err error) bool {
 	return err != nil && !errors.Is(err, context.Canceled)
 }
 
-// verifyingReadCloser wraps a blob reader and, once the wrapped reader signals
-// a genuine end of stream, verifies the bytes read so far match the expected
-// digest. A mismatch is surfaced as a Read error instead of io.EOF, so a
-// corrupted or truncated blob that still parses as a well-formed HTTP
-// response is never mistaken for a complete, valid one by the caller (e.g.
-// the local registry committing a blob push).
+// verifyingReadCloser wraps a blob reader and verifies the bytes read so far
+// match the expected digest as soon as the declared size has been read - not
+// only when the wrapped reader happens to signal io.EOF on some later call.
+// A consumer with its own framing (e.g. an HTTP request body capped by
+// Content-Length) may never issue that extra call, since it can determine
+// on its own that it has all the bytes it declared and stop reading. A
+// mismatch is surfaced as a Read error, so a corrupted or truncated blob
+// that still parses as a well-formed HTTP response is never mistaken for a
+// complete, valid one by the caller (e.g. the local registry committing a
+// blob push).
 type verifyingReadCloser struct {
 	io.ReadCloser
 	verifier digest.Verifier
 	dig      digest.Digest
+	size     int64
+	read     int64
+	verified bool
 }
 
-// newVerifyingReadCloser wraps reader so that reaching the end of the stream
-// without the content matching dig surfaces as a Read error.
-func newVerifyingReadCloser(reader io.ReadCloser, dig digest.Digest) io.ReadCloser {
-	return &verifyingReadCloser{ReadCloser: reader, verifier: dig.Verifier(), dig: dig}
+// newVerifyingReadCloser wraps reader so that, once size bytes have been
+// read (or the stream ends, if size is unknown), content not matching dig
+// surfaces as a Read error.
+func newVerifyingReadCloser(reader io.ReadCloser, dig digest.Digest, size int64) io.ReadCloser {
+	return &verifyingReadCloser{ReadCloser: reader, verifier: dig.Verifier(), dig: dig, size: size}
 }
 
 func (v *verifyingReadCloser) Read(p []byte) (int, error) {
 	n, err := v.ReadCloser.Read(p)
 	if n > 0 {
 		_, _ = v.verifier.Write(p[:n])
+		v.read += int64(n)
 	}
-	if err == io.EOF && !v.verifier.Verified() { // nolint:errorlint
-		return n, fmt.Errorf("blob content does not match expected digest %s after fetching from upstream", v.dig)
+	if !v.verified && ((v.size > 0 && v.read >= v.size) || err == io.EOF) { // nolint:errorlint
+		v.verified = true
+		if !v.verifier.Verified() {
+			return n, fmt.Errorf("blob content does not match expected digest %s after fetching from upstream", v.dig)
+		}
 	}
 	return n, err
 }
