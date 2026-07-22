@@ -470,7 +470,8 @@
         "GUEST": "訪客",
         "LIMITED_GUEST": "受限訪客",
         "DELETION_TITLE": "確認刪除群組成員",
-        "DELETION_SUMMARY": "確定要刪除群組成員 {{param}} 嗎？"
+        "DELETION_SUMMARY": "確定要刪除群組成員 {{param}} 嗎？",
+        "FILTER_PLACEHOLDER": "篩選群組"
     },
     "AUDIT_LOG": {
         "USERNAME": "使用者名稱",
