@@ -7680,6 +7680,19 @@ definitions:
           Whether to skip execution until the previous active execution finishes,
           avoiding the execution of the same replication rules multiple times in parallel.
         x-isnullable: true # make this field optional to keep backward compatibility
+      adapter_options:
+        type: object
+        additionalProperties:
+          type: string
+        description: |-
+          Generic key/value options interpreted differently by each registry
+          adapter; unknown keys are ignored by adapters that don't understand
+          them. For example, the AWS ECR adapter reads "skip_repo_creation":
+          "true" to skip pre-creating the destination repository before
+          pushing, letting the destination registry auto-create it on push
+          instead so registry-side automation (e.g. AWS ECR repository
+          creation templates) can apply.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7851,6 +7864,11 @@ definitions:
       supported_copy_by_chunk:
         type: boolean
         description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
+      supported_create_repo_config:
+        type: boolean
+        description: Whether the registry adapter supports the "create repository if not exists" toggle.
         x-omitempty: true
         x-isnullable: true
   RegistryProviderInfo:

@@ -649,6 +649,8 @@
         "CRON_ERROR_TIP": "The 1st field of the cron string must be 0 and the 2nd filed can not be \"*\"",
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
+        "CREATE_REPO_IF_NOT_EXIST": "Create repository if not exists",
+        "CREATE_REPO_IF_NOT_EXIST_TIP": "When enabled (default), Harbor pre-creates the repository on the destination registry before pushing. Disable this to let the destination registry auto-create the repository on push instead, so registry-side automation (e.g. AWS ECR repository creation templates) can apply.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
         "CRON_STR": "Cron String"
     },
