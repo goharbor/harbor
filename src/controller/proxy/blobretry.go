@@ -1,0 +1,150 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package proxy
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"time"
+
+	"github.com/opencontainers/go-digest"
+
+	"github.com/goharbor/harbor/src/lib/log"
+)
+
+const (
+	// maxBlobFetchRetries bounds how many times an interrupted upstream blob
+	// fetch is resumed before the read error is returned to the caller.
+	maxBlobFetchRetries = 3
+)
+
+// blobFetchRetryBackoff is the delay before the first resume attempt; it
+// doubles on each subsequent attempt (1s, 2s, 4s by default). It's a var
+// rather than a const so tests can shrink it.
+var blobFetchRetryBackoff = time.Second
+
+// resumeBlobFunc opens a reader for the remaining bytes of a blob, starting
+// at offset. It's used to resume a fetch that broke mid-stream.
+type resumeBlobFunc func(offset int64) (io.ReadCloser, error)
+
+// resumingBlobReader wraps an upstream blob body and transparently resumes
+// the fetch, via resume, if the connection breaks mid-stream - instead of
+// failing the whole blob on a single dropped connection, the way a plain
+// docker/OCI client retries an interrupted layer pull. Resuming is bounded by
+// maxBlobFetchRetries and disabled when size is unknown (<= 0), since the
+// read offset can't be validated against the blob length in that case.
+type resumingBlobReader struct {
+	reader  io.ReadCloser
+	resume  resumeBlobFunc
+	size    int64
+	offset  int64
+	retries int
+}
+
+// newResumingBlobReader wraps reader so a mid-stream read failure is retried
+// up to maxBlobFetchRetries times by resuming the fetch from the last
+// successfully read byte offset (via an HTTP range request through resume).
+func newResumingBlobReader(reader io.ReadCloser, size int64, resume resumeBlobFunc) io.ReadCloser {
+	return &resumingBlobReader{reader: reader, size: size, resume: resume}
+}
+
+func (r *resumingBlobReader) Read(p []byte) (int, error) {
+	for {
+		n, err := r.reader.Read(p)
+		r.offset += int64(n)
+		if err == nil || err == io.EOF { // nolint:errorlint
+			return n, err
+		}
+		if !r.canRetry(err) {
+			return n, err
+		}
+		if rErr := r.reconnect(err); rErr != nil {
+			return n, rErr
+		}
+		if n > 0 {
+			return n, nil
+		}
+		// n == 0: loop and read immediately from the freshly resumed reader.
+	}
+}
+
+// reconnect closes the broken reader and resumes the fetch from the current
+// offset, retrying the resume itself (bounded by the same retry budget) if
+// establishing the new connection also fails.
+func (r *resumingBlobReader) reconnect(cause error) error {
+	_ = r.reader.Close()
+	for {
+		r.retries++
+		backoff := blobFetchRetryBackoff * time.Duration(uint64(1)<<uint(r.retries-1))
+		log.Warningf("proxy cache: upstream blob read interrupted at byte %d/%d (%v), resuming attempt %d/%d in %s",
+			r.offset, r.size, cause, r.retries, maxBlobFetchRetries, backoff)
+		time.Sleep(backoff)
+		next, err := r.resume(r.offset)
+		if err == nil {
+			r.reader = next
+			return nil
+		}
+		if r.retries >= maxBlobFetchRetries {
+			return fmt.Errorf("failed to resume interrupted blob fetch after %v: %w", cause, err)
+		}
+		cause = err
+	}
+}
+
+func (r *resumingBlobReader) canRetry(err error) bool {
+	return r.size > 0 && r.retries < maxBlobFetchRetries && r.offset < r.size && isRetryableBlobReadErr(err)
+}
+
+func (r *resumingBlobReader) Close() error {
+	return r.reader.Close()
+}
+
+// isRetryableBlobReadErr reports whether err looks like a transient failure
+// of the upstream connection - dropped, reset, or timed out mid-transfer -
+// worth retrying, as opposed to the pulling client itself having given up.
+func isRetryableBlobReadErr(err error) bool {
+	return err != nil && !errors.Is(err, context.Canceled)
+}
+
+// verifyingReadCloser wraps a blob reader and, once the wrapped reader signals
+// a genuine end of stream, verifies the bytes read so far match the expected
+// digest. A mismatch is surfaced as a Read error instead of io.EOF, so a
+// corrupted or truncated blob that still parses as a well-formed HTTP
+// response is never mistaken for a complete, valid one by the caller (e.g.
+// the local registry committing a blob push).
+type verifyingReadCloser struct {
+	io.ReadCloser
+	verifier digest.Verifier
+	dig      digest.Digest
+}
+
+// newVerifyingReadCloser wraps reader so that reaching the end of the stream
+// without the content matching dig surfaces as a Read error.
+func newVerifyingReadCloser(reader io.ReadCloser, dig digest.Digest) io.ReadCloser {
+	return &verifyingReadCloser{ReadCloser: reader, verifier: dig.Verifier(), dig: dig}
+}
+
+func (v *verifyingReadCloser) Read(p []byte) (int, error) {
+	n, err := v.ReadCloser.Read(p)
+	if n > 0 {
+		_, _ = v.verifier.Write(p[:n])
+	}
+	if err == io.EOF && !v.verifier.Verified() { // nolint:errorlint
+		return n, fmt.Errorf("blob content does not match expected digest %s after fetching from upstream", v.dig)
+	}
+	return n, err
+}

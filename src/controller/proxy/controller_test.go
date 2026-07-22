@@ -60,8 +60,11 @@ func (l *localInterfaceMock) BlobExist(ctx context.Context, art lib.ArtifactInfo
 	return args.Bool(0), args.Error(1)
 }
 
-func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
-	panic("implement me")
+func (l *localInterfaceMock) PushBlob(_ string, _ distribution.Descriptor, bReader io.ReadCloser) error {
+	// Drain the reader the way the real registry client would, so tests can
+	// exercise the retry/digest-verification wrapping around the reader chain.
+	_, err := io.ReadAll(bReader)
+	return err
 }
 
 func (l *localInterfaceMock) PushManifest(repo string, tag string, manifest distribution.Manifest) error {
@@ -200,6 +203,34 @@ func (p *proxyControllerTestSuite) TestUseLocalBlob_False() {
 	p.local.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
 	result := p.ctr.UseLocalBlob(ctx, art)
 	p.Assert().False(result)
+}
+
+func (p *proxyControllerTestSuite) TestPutBlobToLocal_ResumesAfterInterruptionAndVerifiesDigest() {
+	withShortBlobRetryBackoff(p.T())
+	content := []byte("hello dependency blob")
+	dig := digest.FromBytes(content)
+	desc := distribution.Descriptor{Size: int64(len(content)), Digest: dig}
+
+	first := &stubReader{data: content[:5], err: io.ErrUnexpectedEOF}
+	second := &stubReader{data: content[5:]}
+	p.remote.On("BlobReader", "library/hello-world", string(dig)).Return(desc.Size, io.ReadCloser(first), nil)
+	p.remote.On("BlobReaderAt", "library/hello-world", string(dig), desc.Size, int64(5)).Return(io.ReadCloser(second), nil)
+
+	err := p.ctr.(*controller).putBlobToLocal("library/hello-world", "proxy/library/hello-world", desc, p.remote)
+	p.Assert().NoError(err)
+	p.remote.AssertExpectations(p.T())
+}
+
+func (p *proxyControllerTestSuite) TestPutBlobToLocal_RejectsDigestMismatch() {
+	content := []byte("actual upstream content")
+	wrongDigest := digest.FromBytes([]byte("a different blob entirely"))
+	desc := distribution.Descriptor{Size: int64(len(content)), Digest: wrongDigest}
+
+	p.remote.On("BlobReader", "library/hello-world", string(wrongDigest)).Return(desc.Size, io.ReadCloser(&stubReader{data: content}), nil)
+
+	err := p.ctr.(*controller).putBlobToLocal("library/hello-world", "proxy/library/hello-world", desc, p.remote)
+	p.Assert().Error(err)
+	p.remote.AssertExpectations(p.T())
 }
 
 func TestProxyControllerTestSuite(t *testing.T) {
