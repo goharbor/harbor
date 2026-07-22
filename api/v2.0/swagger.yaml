@@ -9293,6 +9293,9 @@ definitions:
       oidc_group_filter:
         $ref: '#/definitions/StringConfigItem'
         description: The OIDC group filter which filters out the group doesn't match the regular expression
+      oidc_login_groups:
+        $ref: '#/definitions/StringConfigItem'
+        description: Comma-separated list of OIDC group names allowed to log in. Leave blank to allow all users
       oidc_scope:
         $ref: '#/definitions/StringConfigItem'
         description: The scope of the OIDC provider
@@ -9558,6 +9561,11 @@ definitions:
       oidc_group_filter:
         type: string
         description: The OIDC group filter which filters out the group name doesn't match the regular expression
+        x-omitempty: true
+        x-isnullable: true
+      oidc_login_groups:
+        type: string
+        description: Comma-separated list of OIDC group names allowed to log in. Leave blank to allow all users
         x-omitempty: true
         x-isnullable: true
       oidc_scope:
