@@ -20,7 +20,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gorilla/csrf"
+	csrf "filippo.io/csrf/gorilla"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
@@ -37,30 +37,12 @@ const (
 )
 
 var (
-	once       sync.Once
-	secureFlag = true
-	protect    func(handler http.Handler) http.Handler
+	once    sync.Once
+	protect func(handler http.Handler) http.Handler
 )
 
-// attachToken makes sure if csrf generate a new token it will be included in the response header
-func attachToken(w http.ResponseWriter, r *http.Request) {
-	if t := csrf.Token(r); len(t) > 0 {
-		w.Header().Set(tokenHeader, t)
-	} else {
-		log.Warningf("token not found in context, skip attaching")
-	}
-}
-
 func handleError(w http.ResponseWriter, r *http.Request) {
-	attachToken(w, r)
 	lib_http.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
-}
-
-func attach(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		attachToken(rw, req)
-		handler.ServeHTTP(rw, req)
-	})
 }
 
 // Middleware initialize the middleware to apply csrf selectively
@@ -78,15 +60,10 @@ func Middleware() func(handler http.Handler) http.Handler {
 			}
 			return
 		}
-		secureFlag = secureCookie()
-		protect = csrf.Protect([]byte(key), csrf.RequestHeader(tokenHeader),
-			csrf.Secure(secureFlag),
-			csrf.ErrorHandler(http.HandlerFunc(handleError)),
-			csrf.SameSite(csrf.SameSiteStrictMode),
-			csrf.Path("/"))
+		protect = csrf.Protect([]byte(key), csrf.ErrorHandler(http.HandlerFunc(handleError)))
 	})
 	return middleware.New(func(rw http.ResponseWriter, req *http.Request, next http.Handler) {
-		protect(attach(next)).ServeHTTP(rw, req)
+		protect(next).ServeHTTP(rw, req)
 	}, csrfSkipper)
 }
 
