@@ -47,7 +47,8 @@ func TestGC(t *testing.T) {
 		manager.Generate(rn)
 	}
 	assert.Equal(t, uint64(1000), atomic.LoadUint64(&manager.size))
-	time.Sleep(4 * time.Second)
-	assert.Equal(t, uint64(0), atomic.LoadUint64(&manager.size))
+	assert.Eventually(t, func() bool {
+		return atomic.LoadUint64(&manager.size) == 0
+	}, 10*time.Second, 100*time.Millisecond, "secret manager GC should eventually clear expired items")
 
 }
