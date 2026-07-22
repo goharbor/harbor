@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/server/web"
+	beegosession "github.com/beego/beego/v2/server/web/session"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -325,6 +326,63 @@ func main() {
 			log.Errorf("failed to schedule system execution sweep job, error: %v", err)
 		}
 	}()
+
+	// Add start hook to override session manager settings after Beego initializes it
+	web.AddAPPStartHook(func() error {
+		if web.BConfig.WebConfig.Session.SessionOn {
+			secure := true
+			ep, err := config.ExtEndpoint()
+			if err != nil {
+				log.Warningf("Failed to get external endpoint: %v, set session cookie secure flag to true", err)
+			} else if strings.HasPrefix(strings.ToLower(ep), "http://") {
+				secure = false
+			}
+
+			sameSite := http.SameSiteLaxMode
+			if sameSiteStr := os.Getenv("SESSION_COOKIE_SAMESITE"); sameSiteStr != "" {
+				switch strings.ToLower(sameSiteStr) {
+				case "strict":
+					sameSite = http.SameSiteStrictMode
+				case "lax":
+					sameSite = http.SameSiteLaxMode
+				case "none":
+					sameSite = http.SameSiteNoneMode
+				case "default":
+					sameSite = http.SameSiteDefaultMode
+				}
+			}
+
+			if sameSite == http.SameSiteNoneMode && !secure {
+				log.Warning("SESSION_COOKIE_SAMESITE is set to None, but the external endpoint is HTTP. SameSite None requires a Secure cookie. Falling back to Lax mode.")
+				sameSite = http.SameSiteLaxMode
+			}
+
+			provider := web.BConfig.WebConfig.Session.SessionProvider
+			if provider == "" {
+				provider = "memory"
+			}
+
+			conf := &beegosession.ManagerConfig{
+				CookieName:      web.BConfig.WebConfig.Session.SessionName,
+				EnableSetCookie: web.BConfig.WebConfig.Session.SessionAutoSetCookie,
+				Gclifetime:      web.BConfig.WebConfig.Session.SessionGCMaxLifetime,
+				Secure:          secure,
+				CookieLifeTime:  web.BConfig.WebConfig.Session.SessionCookieLifeTime,
+				ProviderConfig:  web.BConfig.WebConfig.Session.SessionProviderConfig,
+				Domain:          web.BConfig.WebConfig.Session.SessionDomain,
+				DisableHTTPOnly: web.BConfig.WebConfig.Session.SessionDisableHTTPOnly,
+				CookieSameSite:  sameSite,
+			}
+
+			var errSession error
+			web.GlobalSessions, errSession = beegosession.NewManager(provider, conf)
+			if errSession != nil {
+				log.Fatalf("failed to initialize global sessions: %v", errSession)
+			}
+		}
+		return nil
+	})
+
 	web.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 
