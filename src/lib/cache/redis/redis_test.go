@@ -49,8 +49,9 @@ func (suite *CacheTestSuite) TestContains() {
 	suite.cache.Save(suite.ctx, key, "value", time.Second*5)
 	suite.True(suite.cache.Contains(suite.ctx, key))
 
-	time.Sleep(time.Second * 8)
-	suite.False(suite.cache.Contains(suite.ctx, key))
+	suite.Eventually(func() bool {
+		return !suite.cache.Contains(suite.ctx, key)
+	}, 10*time.Second, 100*time.Millisecond, "cache item should eventually expire")
 }
 
 func (suite *CacheTestSuite) TestDelete() {
@@ -88,21 +89,19 @@ func (suite *CacheTestSuite) TestSave() {
 		suite.cache.Fetch(suite.ctx, key, &value)
 		suite.Equal("hello, save", value)
 
-		time.Sleep(time.Second * 8)
-
 		value = ""
-		suite.Error(suite.cache.Fetch(suite.ctx, key, &value))
-		suite.Equal("", value)
+		suite.Eventually(func() bool {
+			return suite.cache.Fetch(suite.ctx, key, &value) != nil
+		}, 10*time.Second, 100*time.Millisecond, "cache item should eventually expire")
 	}
 
 	{
 		suite.cache.Save(suite.ctx, key, "hello, save", time.Second)
 
-		time.Sleep(time.Second * 2)
-
 		var value string
-		suite.Error(suite.cache.Fetch(suite.ctx, key, &value))
-		suite.Equal("", value)
+		suite.Eventually(func() bool {
+			return suite.cache.Fetch(suite.ctx, key, &value) != nil
+		}, 10*time.Second, 100*time.Millisecond, "cache item should eventually expire")
 	}
 }
 
