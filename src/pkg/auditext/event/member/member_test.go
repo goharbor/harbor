@@ -21,7 +21,9 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 )
 
 func stubLookups() func() {
@@ -387,6 +389,16 @@ func TestResolver_Resolve_NilInputs(t *testing.T) {
 func TestAuditLogMemberEventEnabled_EmptyOperation(t *testing.T) {
 	if auditLogMemberEventEnabled(context.Background(), "") {
 		t.Fatal("auditLogMemberEventEnabled() = true, want false for empty operation")
+	}
+}
+
+func TestEnsureORMContext(t *testing.T) {
+	// context with a regular (non-tx) ORM: returned as-is, covering the new
+	// TxOrmer type-assertion branch added to ensureORMContext.
+	regularCtx := orm.NewContext(context.Background(), &ormtesting.FakeOrmer{})
+	gotCtx := ensureORMContext(regularCtx)
+	if gotCtx != regularCtx {
+		t.Error("ensureORMContext with non-tx ORM should return the same context")
 	}
 }
 
