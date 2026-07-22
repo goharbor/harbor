@@ -9,7 +9,7 @@ on:
 jobs:
   CodeQL-Build:
 
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
 
     steps:
     - name: Checkout repository
