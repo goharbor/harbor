@@ -15,6 +15,7 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -142,11 +143,32 @@ func TestResumingBlobReader_RecoversFromMultipleInterruptions(t *testing.T) {
 	assert.Equal(t, []int64{3, 6}, resumeOffsets)
 }
 
+func TestResumingBlobReader_RetriesOnPrematureCleanEOF(t *testing.T) {
+	withShortBlobRetryBackoff(t)
+
+	// first ends with a clean nil error (io.EOF on the next call), not a
+	// transport error - e.g. a network intermediary that terminates a
+	// chunked response gracefully instead of resetting the connection.
+	first := &stubReader{data: []byte("hello ")}
+	second := &stubReader{data: []byte("world")}
+
+	var resumeOffsets []int64
+	reader := newResumingBlobReader(first, 11, func(offset int64) (io.ReadCloser, error) {
+		resumeOffsets = append(resumeOffsets, offset)
+		return second, nil
+	})
+
+	got, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	assert.Equal(t, "hello world", string(got))
+	assert.Equal(t, []int64{6}, resumeOffsets, "a clean EOF short of the declared size must still trigger a resume")
+}
+
 func TestVerifyingReadCloser_PassesThroughValidContent(t *testing.T) {
 	content := []byte("valid blob content")
 	dig := digest.FromBytes(content)
 
-	reader := newVerifyingReadCloser(io.NopCloser(&stubReader{data: content}), dig)
+	reader := newVerifyingReadCloser(io.NopCloser(&stubReader{data: content}), dig, int64(len(content)))
 	got, err := io.ReadAll(reader)
 	require.NoError(t, err)
 	assert.Equal(t, content, got)
@@ -156,8 +178,24 @@ func TestVerifyingReadCloser_RejectsMismatchedContent(t *testing.T) {
 	content := []byte("corrupted blob content")
 	wrongDigest := digest.FromBytes([]byte("something else entirely"))
 
-	reader := newVerifyingReadCloser(io.NopCloser(&stubReader{data: content}), wrongDigest)
+	reader := newVerifyingReadCloser(io.NopCloser(&stubReader{data: content}), wrongDigest, int64(len(content)))
 	_, err := io.ReadAll(reader)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "does not match expected digest")
+}
+
+func TestVerifyingReadCloser_VerifiesAssoonAsSizeReachedWithoutFurtherEOFCall(t *testing.T) {
+	// bytes.Reader returns the final chunk with a nil error and only signals
+	// io.EOF on a subsequent call - the same pattern net/http's
+	// io.LimitReader-wrapped request body uses. A consumer capped by
+	// Content-Length (e.g. the real blob upload) may never make that
+	// subsequent call, so verification must not depend on it.
+	content := []byte("AAAAAAAAAA")
+	wrongDigest := digest.FromBytes([]byte("BBBBBBBBBB"))
+
+	reader := newVerifyingReadCloser(io.NopCloser(bytes.NewReader(content)), wrongDigest, int64(len(content)))
+	buf := make([]byte, len(content))
+	n, err := reader.Read(buf)
+	require.Error(t, err, "the read call that reaches the declared size must itself surface the mismatch")
+	assert.Equal(t, len(content), n)
 }

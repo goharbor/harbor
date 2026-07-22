@@ -324,7 +324,7 @@ func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc di
 	bReader = newResumingBlobReader(bReader, desc.Size, func(offset int64) (io.ReadCloser, error) {
 		return r.BlobReaderAt(remoteRepo, string(desc.Digest), desc.Size, offset)
 	})
-	bReader = newVerifyingReadCloser(bReader, desc.Digest)
+	bReader = newVerifyingReadCloser(bReader, desc.Digest, desc.Size)
 	defer bReader.Close()
 	err = c.local.PushBlob(localRepo, desc, bReader)
 	return err
