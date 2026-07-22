@@ -60,6 +60,10 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 		return "", nil, fmt.Errorf("artifact or manifest cannot be nil")
 	}
 
+	// Reject early based on the manifest-declared size. This is only a cheap
+	// pre-check: layer.Size is attacker-controlled and reflects the packed blob
+	// size, which can be far smaller than the number of bytes materialized when
+	// the content is decompressed/expanded (e.g. GNU tar sparse files).
 	if layer.Size > defaultFileSizeLimit {
 		return "", nil, errors.RequestEntityTooLargeError(errFileTooLarge)
 	}
@@ -70,7 +74,11 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 	}
 
 	defer stream.Close()
-	content, err := untar(stream)
+
+	// Enforce the size limit against the actual bytes materialized, not just the
+	// declared blob size, to prevent decompression/sparse-file bombs from
+	// exhausting memory.
+	content, err := untar(stream, defaultFileSizeLimit)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to untar the content: %w", err)
 	}

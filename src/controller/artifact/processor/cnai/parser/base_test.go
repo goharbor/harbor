@@ -22,6 +22,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	mock "github.com/goharbor/harbor/src/testing/pkg/registry"
@@ -32,12 +33,13 @@ import (
 
 func TestBaseParse(t *testing.T) {
 	tests := []struct {
-		name          string
-		artifact      *artifact.Artifact
-		layer         *v1.Descriptor
-		mockSetup     func(*mock.Client)
-		expectedType  string
-		expectedError string
+		name            string
+		artifact        *artifact.Artifact
+		layer           *v1.Descriptor
+		mockSetup       func(*mock.Client)
+		expectedType    string
+		expectedError   string
+		expectedErrCode string
 	}{
 		{
 			name:          "nil artifact",
@@ -50,6 +52,15 @@ func TestBaseParse(t *testing.T) {
 			artifact:      &artifact.Artifact{},
 			layer:         nil,
 			expectedError: "artifact or manifest cannot be nil",
+		},
+		{
+			name:     "declared layer size exceeds limit",
+			artifact: &artifact.Artifact{RepositoryName: "test/repo"},
+			layer: &v1.Descriptor{
+				Digest: "sha256:1234",
+				Size:   defaultFileSizeLimit + 1,
+			},
+			expectedErrCode: errors.RequestEntityTooLargeCode,
 		},
 		{
 			name:     "registry client error",
@@ -94,9 +105,13 @@ func TestBaseParse(t *testing.T) {
 			b := &base{regCli: mockClient}
 			contentType, _, err := b.Parse(context.Background(), tt.artifact, tt.layer)
 
-			if tt.expectedError != "" {
+			switch {
+			case tt.expectedErrCode != "":
+				assert.Error(t, err)
+				assert.True(t, errors.IsErr(err, tt.expectedErrCode), "expected error code %s, got %v", tt.expectedErrCode, err)
+			case tt.expectedError != "":
 				assert.EqualError(t, err, tt.expectedError)
-			} else {
+			default:
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedType, contentType)
 			}
