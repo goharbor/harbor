@@ -385,7 +385,7 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 }
 
 // PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
-func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end int64) (int64, io.ReadCloser, error) {
+func (c *client) PullBlobChunk(repository, digest string, blobSize, start, end int64) (int64, io.ReadCloser, error) {
 	req, err := http.NewRequest(http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
 	if err != nil {
 		return 0, nil, err
@@ -414,7 +414,14 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 			return 0, nil, fmt.Errorf("registry returned Content-Range %q for requested range bytes=%d-%d, refusing to treat it as that chunk", cr, start, end)
 		}
 	case http.StatusOK:
-		if start != 0 {
+		// A 200 only actually satisfies this request if the whole blob was
+		// requested (start at 0 through the last byte); otherwise - e.g. the
+		// first of several fixed-size chunks of a larger blob - a full body
+		// is not the same as the requested sub-range, even though both start
+		// at 0. When blobSize isn't known, fall back to the weaker start==0
+		// check, since there's nothing to validate end against.
+		wholeBlobRequested := start == 0 && (blobSize <= 0 || end == blobSize-1)
+		if !wholeBlobRequested {
 			defer resp.Body.Close()
 			return 0, nil, fmt.Errorf("registry ignored range request bytes=%d-%d and returned a full 200 response", start, end)
 		}

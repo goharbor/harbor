@@ -248,8 +248,9 @@ func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc
 	// Resume on a dropped upstream connection and verify the assembled
 	// content against the expected digest, same as controller.putBlobToLocal,
 	// so a corrupted/truncated blob is never pushed to local storage as if
-	// it were complete.
-	bReader = newResumingBlobReader(bReader, desc.Size, func(offset int64) (io.ReadCloser, error) {
+	// it were complete. This is background work detached from any pulling
+	// client's request, so it uses its own context.
+	bReader = newResumingBlobReader(context.Background(), bReader, desc.Size, func(offset int64) (io.ReadCloser, error) {
 		return r.BlobReaderAt(remoteRepo, string(desc.Digest), desc.Size, offset)
 	})
 	bReader = newVerifyingReadCloser(bReader, desc.Digest, desc.Size)

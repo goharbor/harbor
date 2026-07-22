@@ -65,7 +65,7 @@ func TestResumingBlobReader_ResumesAfterMidStreamError(t *testing.T) {
 	second := &stubReader{data: []byte("world")}
 
 	var resumeOffsets []int64
-	reader := newResumingBlobReader(first, 11, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 11, func(offset int64) (io.ReadCloser, error) {
 		resumeOffsets = append(resumeOffsets, offset)
 		return second, nil
 	})
@@ -82,7 +82,7 @@ func TestResumingBlobReader_GivesUpAfterMaxRetries(t *testing.T) {
 
 	first := &stubReader{err: io.ErrUnexpectedEOF}
 	resumeAttempts := 0
-	reader := newResumingBlobReader(first, 100, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 100, func(offset int64) (io.ReadCloser, error) {
 		resumeAttempts++
 		return nil, errors.New("upstream still unreachable")
 	})
@@ -97,7 +97,7 @@ func TestResumingBlobReader_DoesNotRetryOnContextCanceled(t *testing.T) {
 
 	first := &stubReader{err: context.Canceled}
 	resumeAttempts := 0
-	reader := newResumingBlobReader(first, 100, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 100, func(offset int64) (io.ReadCloser, error) {
 		resumeAttempts++
 		return &stubReader{}, nil
 	})
@@ -107,12 +107,30 @@ func TestResumingBlobReader_DoesNotRetryOnContextCanceled(t *testing.T) {
 	assert.Equal(t, 0, resumeAttempts, "a canceled request should not be retried")
 }
 
+func TestResumingBlobReader_StopsRetryingWhenContextCanceled(t *testing.T) {
+	withShortBlobRetryBackoff(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // already canceled before the reader ever attempts to resume
+
+	first := &stubReader{err: io.ErrUnexpectedEOF}
+	resumeAttempts := 0
+	reader := newResumingBlobReader(ctx, first, 100, func(offset int64) (io.ReadCloser, error) {
+		resumeAttempts++
+		return &stubReader{}, nil
+	})
+
+	_, err := io.ReadAll(reader)
+	require.Error(t, err)
+	assert.Equal(t, 0, resumeAttempts, "a canceled context should stop retrying before opening another upstream request")
+}
+
 func TestResumingBlobReader_DoesNotRetryWithUnknownSize(t *testing.T) {
 	withShortBlobRetryBackoff(t)
 
 	first := &stubReader{err: io.ErrUnexpectedEOF}
 	resumeAttempts := 0
-	reader := newResumingBlobReader(first, 0, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 0, func(offset int64) (io.ReadCloser, error) {
 		resumeAttempts++
 		return &stubReader{}, nil
 	})
@@ -130,7 +148,7 @@ func TestResumingBlobReader_RecoversFromMultipleInterruptions(t *testing.T) {
 	third := &stubReader{data: []byte("ccc")}
 	var resumeOffsets []int64
 	readers := []*stubReader{second, third}
-	reader := newResumingBlobReader(first, 9, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 9, func(offset int64) (io.ReadCloser, error) {
 		resumeOffsets = append(resumeOffsets, offset)
 		next := readers[0]
 		readers = readers[1:]
@@ -153,7 +171,7 @@ func TestResumingBlobReader_RetriesOnPrematureCleanEOF(t *testing.T) {
 	second := &stubReader{data: []byte("world")}
 
 	var resumeOffsets []int64
-	reader := newResumingBlobReader(first, 11, func(offset int64) (io.ReadCloser, error) {
+	reader := newResumingBlobReader(context.Background(), first, 11, func(offset int64) (io.ReadCloser, error) {
 		resumeOffsets = append(resumeOffsets, offset)
 		return second, nil
 	})
