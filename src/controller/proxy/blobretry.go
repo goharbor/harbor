@@ -54,12 +54,13 @@ type resumeBlobFunc func(offset int64) (io.ReadCloser, error)
 // canceled caller (e.g. a disconnected pulling client) stops this reader
 // from waiting out further backoffs and opening further upstream requests.
 type resumingBlobReader struct {
-	ctx     context.Context
-	reader  io.ReadCloser
-	resume  resumeBlobFunc
-	size    int64
-	offset  int64
-	retries int
+	ctx       context.Context
+	reader    io.ReadCloser
+	resume    resumeBlobFunc
+	size      int64
+	offset    int64
+	retries   int
+	completed bool
 }
 
 // newResumingBlobReader wraps reader so a mid-stream read failure is retried
@@ -74,23 +75,40 @@ func newResumingBlobReader(ctx context.Context, reader io.ReadCloser, size int64
 }
 
 func (r *resumingBlobReader) Read(p []byte) (int, error) {
+	if r.completed {
+		// A prior call already reached the declared size; self-terminate
+		// instead of calling into a reader that may now be stale/exhausted.
+		return 0, io.EOF
+	}
 	for {
 		n, err := r.reader.Read(p)
 		r.offset += int64(n)
+
+		if r.size > 0 && r.offset >= r.size {
+			// We now have the full declared size, regardless of what error
+			// (if any) came with these final bytes - an io.Reader may
+			// legally pair its last bytes with a non-nil error instead of
+			// returning them cleanly and erroring only on a subsequent
+			// call. Report success once; further calls are handled by the
+			// completed check above rather than re-reading this reader.
+			r.completed = true
+			return n, nil
+		}
+
 		if err == nil {
-			return n, err
+			return n, nil
 		}
 		if err == io.EOF { // nolint:errorlint
-			if r.size > 0 && r.offset < r.size {
-				// The stream ended cleanly but short of the expected size -
-				// e.g. a network intermediary that terminates a chunked
-				// response gracefully instead of resetting the connection.
-				// Treat it the same as a dropped connection so it consumes
-				// the retry budget instead of being accepted as complete.
-				err = io.ErrUnexpectedEOF
-			} else {
+			if r.size <= 0 {
+				// Nothing to validate the EOF against; trust it.
 				return n, err
 			}
+			// The stream ended cleanly but short of the expected size -
+			// e.g. a network intermediary that terminates a chunked
+			// response gracefully instead of resetting the connection.
+			// Treat it the same as a dropped connection so it consumes
+			// the retry budget instead of being accepted as complete.
+			err = io.ErrUnexpectedEOF
 		}
 		if !r.canRetry(err) {
 			return n, err

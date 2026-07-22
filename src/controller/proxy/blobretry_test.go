@@ -52,6 +52,22 @@ func (s *stubReader) Close() error {
 	return nil
 }
 
+// oneShotReader returns all of data together with err in a single Read call,
+// unlike stubReader, which always separates the final data from a
+// subsequent terminal error/EOF call - both are legal io.Reader behavior.
+type oneShotReader struct {
+	data []byte
+	err  error
+}
+
+func (o *oneShotReader) Read(p []byte) (int, error) {
+	n := copy(p, o.data)
+	o.data = o.data[n:]
+	return n, o.err
+}
+
+func (o *oneShotReader) Close() error { return nil }
+
 func withShortBlobRetryBackoff(t *testing.T) {
 	orig := blobFetchRetryBackoff
 	blobFetchRetryBackoff = time.Millisecond
@@ -180,6 +196,24 @@ func TestResumingBlobReader_RetriesOnPrematureCleanEOF(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "hello world", string(got))
 	assert.Equal(t, []int64{6}, resumeOffsets, "a clean EOF short of the declared size must still trigger a resume")
+}
+
+func TestResumingBlobReader_TreatsErrorAccompanyingFinalBytesAsSuccess(t *testing.T) {
+	// An io.Reader may legally return its final bytes together with a
+	// non-nil, non-EOF error in the same call, instead of returning them
+	// cleanly and erroring only on a subsequent call. If those bytes bring
+	// the reader to the full declared size, that's a complete blob and must
+	// not be treated as a failed/retryable read.
+	content := []byte("complete blob")
+	reader := newResumingBlobReader(context.Background(), &oneShotReader{data: content, err: io.ErrUnexpectedEOF}, int64(len(content)),
+		func(offset int64) (io.ReadCloser, error) {
+			t.Fatal("resume should not be called when the blob was already fully read")
+			return nil, nil
+		})
+
+	got, err := io.ReadAll(reader)
+	require.NoError(t, err)
+	assert.Equal(t, content, got)
 }
 
 func TestVerifyingReadCloser_PassesThroughValidContent(t *testing.T) {
