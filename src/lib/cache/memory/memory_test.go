@@ -89,10 +89,11 @@ func (suite *CacheTestSuite) TestSave() {
 		suite.cache.Fetch(suite.ctx, key, &value)
 		suite.Equal("hello, save", value)
 
-		value = ""
 		suite.Eventually(func() bool {
+			value = ""
 			return suite.cache.Fetch(suite.ctx, key, &value) != nil
 		}, 10*time.Second, 100*time.Millisecond, "cache item should eventually expire")
+		suite.Equal("", value)
 	}
 
 	{
@@ -100,8 +101,10 @@ func (suite *CacheTestSuite) TestSave() {
 
 		var value string
 		suite.Eventually(func() bool {
+			value = ""
 			return suite.cache.Fetch(suite.ctx, key, &value) != nil
 		}, 10*time.Second, 100*time.Millisecond, "cache item should eventually expire")
+		suite.Equal("", value)
 	}
 }
 
