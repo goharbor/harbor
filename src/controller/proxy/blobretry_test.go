@@ -202,7 +202,7 @@ func TestVerifyingReadCloser_RejectsMismatchedContent(t *testing.T) {
 	assert.Contains(t, err.Error(), "does not match expected digest")
 }
 
-func TestVerifyingReadCloser_VerifiesAssoonAsSizeReachedWithoutFurtherEOFCall(t *testing.T) {
+func TestVerifyingReadCloser_VerifiesAsSoonAsSizeReachedWithoutFurtherEOFCall(t *testing.T) {
 	// bytes.Reader returns the final chunk with a nil error and only signals
 	// io.EOF on a subsequent call - the same pattern net/http's
 	// io.LimitReader-wrapped request body uses. A consumer capped by
