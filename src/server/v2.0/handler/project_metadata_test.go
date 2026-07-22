@@ -50,6 +50,11 @@ func TestValidate(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name:      "valid prevent unscanned value",
+			metas:     map[string]string{proModels.ProMetaPreventUnscanned: "true"},
+			expectErr: false,
+		},
+		{
 			name:      "Unsupported key",
 			metas:     map[string]string{"unsupported_key": "value"},
 			expectErr: true,

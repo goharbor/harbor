@@ -86,7 +86,29 @@ const mockProjectPolicies: Project[] | any[] = [
             severity: 'low',
         },
     },
+    {
+        project_id: 3,
+        owner_id: 1,
+        name: 'legacy-none',
+        creation_time: '2017-11-03T02:37:24Z',
+        update_time: '2017-11-03T02:37:24Z',
+        deleted: 0,
+        owner_name: '',
+        togglable: false,
+        current_user_role_id: 0,
+        repo_count: 0,
+        metadata: {
+            auto_scan: 'true',
+            auto_sbom_generation: 'true',
+            enable_content_trust: 'true',
+            prevent_vul: 'false',
+            prevent_unscanned: 'false',
+            public: 'true',
+            severity: 'none',
+        },
+    },
 ];
+let selectedMockProject = mockProjectPolicies[1];
 const mockSystemAllowlist: SystemCVEAllowlist = {
     expires_at: 1561996800,
     id: 1,
@@ -95,7 +117,7 @@ const mockSystemAllowlist: SystemCVEAllowlist = {
 };
 const projectService = {
     getProject() {
-        return of(mockProjectPolicies[1]);
+        return of(selectedMockProject);
     },
 };
 
@@ -145,6 +167,7 @@ describe('ProjectPolicyConfigComponent', () => {
         }).compileComponents();
     });
     beforeEach(() => {
+        selectedMockProject = mockProjectPolicies[1];
         fixture = TestBed.createComponent(TestHostComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -213,6 +236,34 @@ describe('ProjectPolicyConfigComponent', () => {
         expect(
             component.projectPolicyConfigComponent.hasChangeConfigRole
         ).toBeTruthy();
+    });
+
+    it('should not include none in vulnerability severity options', () => {
+        const severities =
+            component.projectPolicyConfigComponent.severityOptions.map(
+                item => item.severity
+            );
+
+        expect(severities).not.toContain('none');
+    });
+
+    it('should normalize legacy none severity policy', async () => {
+        selectedMockProject = mockProjectPolicies[2];
+
+        component.projectPolicyConfigComponent.retrieve();
+        await fixture.whenStable();
+
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy.PreventVulImg
+        ).toBeTrue();
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy
+                .PreventUnscannedImages
+        ).toBeTrue();
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy
+                .PreventVulImgSeverity
+        ).toBe('low');
     });
 });
 

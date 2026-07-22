@@ -31,6 +31,7 @@ export class Project {
         enable_content_trust?: string | boolean;
         enable_content_trust_cosign?: string | boolean;
         prevent_vul: string | boolean;
+        prevent_unscanned?: string | boolean;
         severity: string;
         auto_scan: string | boolean;
         auto_sbom_generation: string | boolean;
@@ -45,6 +46,7 @@ export class Project {
         this.metadata.public = false;
         this.metadata.enable_content_trust_cosign = false;
         this.metadata.prevent_vul = false;
+        this.metadata.prevent_unscanned = false;
         this.metadata.severity = 'low';
         this.metadata.auto_scan = false;
         this.metadata.auto_sbom_generation = false;
