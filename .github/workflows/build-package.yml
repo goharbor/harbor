@@ -51,7 +51,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
       - name: Set up Docker Buildx
         if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build and push goharbor/photon:5.0 multi-arch manifest
         if: steps.decide.outputs.build_base == 'true'
         run: |
@@ -212,7 +212,7 @@ jobs:
           pattern: repos-*
           merge-multiple: true
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Determine image tag
         id: tag
         run: |
