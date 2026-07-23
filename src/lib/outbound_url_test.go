@@ -89,7 +89,7 @@ func TestPublicDialAddressUsesResolvedPublicIP(t *testing.T) {
 		return []net.IPAddr{{IP: net.ParseIP("1.1.1.1")}}, nil
 	}
 
-	address, err := publicDialAddress(context.Background(), "example.com", "443")
+	address, err := PublicDialAddress(context.Background(), "example.com", "443")
 	require.NoError(t, err)
 	require.Equal(t, "1.1.1.1:443", address)
 }
