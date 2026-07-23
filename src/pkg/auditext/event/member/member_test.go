@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"testing"
 
+	beegoorm "github.com/beego/beego/v2/client/orm"
+
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -393,13 +395,41 @@ func TestAuditLogMemberEventEnabled_EmptyOperation(t *testing.T) {
 }
 
 func TestEnsureORMContext(t *testing.T) {
-	// context with a regular (non-tx) ORM: returned as-is, covering the new
-	// TxOrmer type-assertion branch added to ensureORMContext.
-	regularCtx := orm.NewContext(context.Background(), &ormtesting.FakeOrmer{})
-	gotCtx := ensureORMContext(regularCtx)
-	if gotCtx != regularCtx {
-		t.Error("ensureORMContext with non-tx ORM should return the same context")
-	}
+	// Stub the ORM factory so the transaction-replacement branch does not need a
+	// registered default DB (beegoorm.NewOrm panics otherwise).
+	origNewOrm := newBeegoOrm
+	defer func() { newBeegoOrm = origNewOrm }()
+	fresh := &ormtesting.FakeOrmer{}
+	newBeegoOrm = func() beegoorm.Ormer { return fresh }
+
+	t.Run("non-tx ORM returned as-is", func(t *testing.T) {
+		// A regular (non-tx) ORM must be returned unchanged, covering the
+		// TxOrmer type-assertion branch in ensureORMContext.
+		ctx := orm.NewContext(context.Background(), &ormtesting.FakeOrmer{})
+		if got := ensureORMContext(ctx); got != ctx {
+			t.Error("ensureORMContext with non-tx ORM should return the same context")
+		}
+	})
+
+	t.Run("tx ORM replaced with fresh non-tx ORM", func(t *testing.T) {
+		// A transaction ORM must be swapped for a fresh non-tx ORM, guarding the
+		// regression where member audit events reused a completed transaction.
+		ctx := orm.NewContext(context.Background(), &ormtesting.FakeTxOrmer{})
+		got := ensureORMContext(ctx)
+		if got == ctx {
+			t.Fatal("ensureORMContext with tx ORM should return a new context")
+		}
+		o, err := orm.FromContext(got)
+		if err != nil {
+			t.Fatalf("orm.FromContext returned error: %v", err)
+		}
+		if _, isTx := o.(beegoorm.TxOrmer); isTx {
+			t.Error("ensureORMContext should replace the transaction ORM with a non-tx ORM")
+		}
+		if o != fresh {
+			t.Error("ensureORMContext should install the ORM produced by newBeegoOrm")
+		}
+	})
 }
 
 func TestParsePreResolved(t *testing.T) {

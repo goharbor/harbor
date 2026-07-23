@@ -213,6 +213,11 @@ func parsePreResolved(info string) (string, string) {
 	return info, ""
 }
 
+// newBeegoOrm builds a fresh, non-transaction ORM. It is a package-level seam
+// so tests can exercise the transaction-replacement branch of ensureORMContext
+// without a registered default database (beegoorm.NewOrm panics otherwise).
+var newBeegoOrm = beegoorm.NewOrm
+
 func ensureORMContext(ctx context.Context) context.Context {
 	if ctx == nil {
 		return orm.Context()
@@ -225,5 +230,5 @@ func ensureORMContext(ctx context.Context) context.Context {
 	// Member audit events are resolved asynchronously and may run after the
 	// request transaction has already been committed/rolled back. Replace
 	// transaction-bound ORM with a fresh ORM to avoid using a completed tx.
-	return orm.NewContext(ctx, beegoorm.NewOrm())
+	return orm.NewContext(ctx, newBeegoOrm())
 }
