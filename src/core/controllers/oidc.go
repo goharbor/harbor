@@ -209,6 +209,13 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	oidc.InjectGroupsToUser(info, u)
+	// persist the admin role granted by the OIDC admin group at this login, so the Users list
+	// can report it accurately. Never overrides a flag an operator set manually, and any
+	// failure is only logged - this is a best-effort reporting improvement, not something that
+	// should ever fail a login.
+	if err := ctluser.Ctl.SyncSysAdmin(ctx, u.UserID, u.AdminRoleInAuth); err != nil {
+		log.Warningf("failed to sync sysadmin flag from OIDC group for user %s: %v", u.Username, err)
+	}
 	um, err := ctluser.Ctl.Get(ctx, u.UserID, &ctluser.Option{WithOIDCInfo: true})
 	if err != nil {
 		oc.SendError(err)

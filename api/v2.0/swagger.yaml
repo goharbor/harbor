@@ -9793,6 +9793,9 @@ definitions:
       sysadmin_flag:
         type: boolean
         x-omitempty: false
+      sysadmin_flag_source:
+        type: string
+        description: how sysadmin_flag was last set - "manual" for an explicit operator action, "sync" for the LDAP/OIDC admin-group sync, or empty if never set for a non-DB-auth user.
       admin_role_in_auth:
         type: boolean
         x-omitempty: false
