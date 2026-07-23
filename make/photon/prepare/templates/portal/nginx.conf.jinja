@@ -27,7 +27,11 @@ http {
         ssl_certificate /etc/harbor/tls/portal.crt;
         ssl_certificate_key /etc/harbor/tls/portal.key;
 
+    {% if ssl_protocols is defined %}
+        ssl_protocols {{ssl_protocols}};
+    {% else %}
         ssl_protocols TLSv1.2 TLSv1.3;
+    {% endif %}
     {% if strong_ssl_ciphers %}
         ssl_ciphers ECDHE+AESGCM:DHE+AESGCM:ECDHE+RSA+SHA256:DHE+RSA+SHA256:!AES128;
     {% else %}
