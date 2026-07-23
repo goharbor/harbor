@@ -23,6 +23,7 @@ import (
 
 	"github.com/opencontainers/go-digest"
 
+	libErrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -148,6 +149,14 @@ func (r *resumingBlobReader) reconnect(cause error) error {
 		if err == nil {
 			r.reader = next
 			return nil
+		}
+		if libErrors.IsRateLimitError(err) {
+			// A registry that's rate-limiting won't be helped by retrying
+			// within a few seconds of backoff - real rate limits typically
+			// need a much longer cool-down - so give up instead of burning
+			// through the retry budget on requests likely to fail the same
+			// way and adding more load to an already-throttled upstream.
+			return fmt.Errorf("upstream rate-limited the resume attempt after %v: %w", cause, err)
 		}
 		if r.retries >= maxBlobFetchRetries {
 			return fmt.Errorf("failed to resume interrupted blob fetch after %v: %w", cause, err)
