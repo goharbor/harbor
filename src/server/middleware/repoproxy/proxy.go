@@ -185,7 +185,7 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func defaultLibrary(ctx context.Context, registryID int64, a lib.ArtifactInfo) (bool, string, error) {
+var defaultLibrary = func(ctx context.Context, registryID int64, a lib.ArtifactInfo) (bool, string, error) {
 	if registryID <= 0 {
 		return false, "", nil
 	}
@@ -211,6 +211,18 @@ func defaultManifestURL(projectName string, name string, a lib.ArtifactInfo) str
 // defaultBlobURL return the real url for request with default project
 func defaultBlobURL(projectName string, name string, digest string) string {
 	return fmt.Sprintf("/v2/%s/library/%s/blobs/%s", projectName, name, digest)
+}
+
+// defaultTagsListURL return the real url for the tags list request with default
+// project. The original query string (e.g. the n and last pagination
+// parameters) is preserved so that paginated requests keep working after the
+// redirect.
+func defaultTagsListURL(projectName string, name string, rawQuery string) string {
+	u := fmt.Sprintf("/v2/%s/library/%s/tags/list", projectName, name)
+	if rawQuery != "" {
+		u += "?" + rawQuery
+	}
+	return u
 }
 
 // upstreamRegistryConnectionKey get upstream registry connection key
