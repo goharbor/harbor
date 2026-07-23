@@ -92,7 +92,7 @@ func (suite *WebhookTestSuite) TestCreateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://198.51.100.1"}}})
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://1.1.1.1"}}})
 		suite.NoError(err)
 		suite.Equal(201, resp.StatusCode)
 	}
@@ -128,7 +128,7 @@ func (suite *WebhookTestSuite) TestUpdateWebhookPolicyOfProject() {
 
 	{
 		// valid policy should got 200
-		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://198.51.100.1"}}})
+		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://1.1.1.1"}}})
 		suite.NoError(err)
 		suite.Equal(200, resp.StatusCode)
 	}
