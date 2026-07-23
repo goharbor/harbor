@@ -1,0 +1,196 @@
+name: Playwright Tests
+
+env:
+   POSTGRESQL_HOST: localhost
+   POSTGRESQL_PORT: 5432
+   POSTGRESQL_USR: postgres
+   POSTGRESQL_PWD: root123
+   POSTGRESQL_DATABASE: registry
+   DOCKER_COMPOSE_VERSION: 2.27.1
+   HARBOR_ADMIN: admin
+   HARBOR_PASSWORD: Harbor12345
+   CORE_SECRET: tempString
+   KEY_PATH: "/data/secret/keys/secretkey"
+   REDIS_HOST: localhost
+   REG_VERSION: v2.7.1-patch-2819-2553
+   UI_BUILDER_VERSION: 1.6.0
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'tests/**'
+      - '!tests/**.sh'
+      - '!tests/apitests/**'
+      - '!tests/ci/**'
+      - '!tests/resources/**'
+      - '!tests/robot-cases/**'
+      - '!tests/robot-cases/Group1-Nightly/**'
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  E2E_PLAYWRIGHT:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Set up Go 1.23
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.23.2
+      - uses: actions/checkout@v6
+        with:
+          path: src/github.com/goharbor/harbor
+      - name: setup env
+        run: |
+          cd src/github.com/goharbor/harbor
+          pwd
+          go env
+          echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          echo "GOPATH=$(go env GOPATH):$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          echo "TOKEN_PRIVATE_KEY_PATH=${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem" >> $GITHUB_ENV
+          IP=`hostname -I | awk '{print $1}'`
+          echo "IP=$IP" >> $GITHUB_ENV
+          echo "BASE_URL=https://$IP" >> $GITHUB_ENV
+        shell: bash
+      - name: before_install
+        run: |
+          set -x
+          cd src/github.com/goharbor/harbor
+          curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+          chmod +x docker-compose
+          sudo mv docker-compose /usr/local/bin
+      - name: Start Harbor for E2E
+        run: |
+          cd src/github.com/goharbor/harbor
+          docker system prune -a -f
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
+      - name: Run Playwright tests
+        run: |
+          cd src/github.com/goharbor/harbor
+          make playwright-test \
+            BASE_URL=$BASE_URL \
+            HARBOR_ADMIN=$HARBOR_ADMIN \
+            HARBOR_PASSWORD=$HARBOR_PASSWORD
+      - name: Add Playwright report to job summary
+        if: ${{ !cancelled() }}
+        run: |
+          cd src/github.com/goharbor/harbor
+          node <<'EOF'
+          const fs = require('fs');
+
+          const reportPath = 'src/portal/test-results/results.json';
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+          const escapeHtml = (value) => String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+          let html = '<h2>Playwright Test Results</h2>\n';
+
+          if (!fs.existsSync(reportPath)) {
+            html += `<p>No JSON report found at <code>${escapeHtml(reportPath)}</code>.</p>\n`;
+            html += `<p>Download the HTML report from the <a href="${runUrl}">workflow artifacts</a>.</p>\n`;
+            fs.appendFileSync(summaryPath, html);
+            process.exit(0);
+          }
+
+          const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          const counts = { passed: 0, failed: 0, skipped: 0, timedOut: 0, interrupted: 0, flaky: 0 };
+          const failures = [];
+          const tests = [];
+
+          const visitSpec = (spec, file) => {
+            for (const test of spec.tests || []) {
+              const results = test.results || [];
+              const finalResult = results[results.length - 1] || {};
+              const status = finalResult.status || test.status || 'unknown';
+              const flaky = status === 'passed' && results.some((result) => result.status !== 'passed');
+
+              counts[status] = (counts[status] || 0) + 1;
+              if (flaky) counts.flaky += 1;
+
+              tests.push({
+                title: test.title,
+                file,
+                status: flaky ? 'flaky' : status,
+                duration: results.reduce((sum, result) => sum + (result.duration || 0), 0),
+              });
+
+              if (status !== 'passed' && status !== 'skipped') {
+                failures.push({
+                  title: test.title,
+                  file,
+                  status,
+                  error: finalResult.error?.message || '',
+                });
+              }
+            }
+          };
+
+          const visitSuite = (suite) => {
+            for (const spec of suite.specs || []) visitSpec(spec, suite.file);
+            for (const child of suite.suites || []) visitSuite(child);
+          };
+
+          for (const suite of report.suites || []) visitSuite(suite);
+
+          const total = ['passed', 'failed', 'timedOut', 'skipped', 'interrupted']
+            .reduce((sum, status) => sum + (counts[status] || 0), 0);
+
+          html += '<table>\n';
+          html += '<thead><tr><th>Total</th><th>Passed</th><th>Failed</th><th>Timed out</th><th>Skipped</th><th>Interrupted</th><th>Flaky</th></tr></thead>\n';
+          html += '<tbody><tr>';
+          html += `<td align="right">${total}</td>`;
+          html += `<td align="right">${counts.passed || 0}</td>`;
+          html += `<td align="right">${counts.failed || 0}</td>`;
+          html += `<td align="right">${counts.timedOut || 0}</td>`;
+          html += `<td align="right">${counts.skipped || 0}</td>`;
+          html += `<td align="right">${counts.interrupted || 0}</td>`;
+          html += `<td align="right">${counts.flaky || 0}</td>`;
+          html += '</tr></tbody>\n</table>\n';
+          html += `<p>Full HTML report: download <code>playwright-report</code> from the <a href="${runUrl}">workflow artifacts</a>.</p>\n`;
+
+          if (tests.length) {
+            html += '<h3>Test Cases</h3>\n';
+            html += '<table>\n';
+            html += '<thead><tr><th>Status</th><th>Test</th><th>File</th><th>Duration</th></tr></thead>\n<tbody>\n';
+            for (const test of tests) {
+              html += '<tr>';
+              html += `<td>${escapeHtml(test.status)}</td>`;
+              html += `<td>${escapeHtml(test.title)}</td>`;
+              html += `<td><code>${escapeHtml(test.file || '')}</code></td>`;
+              html += `<td align="right">${(test.duration / 1000).toFixed(1)}s</td>`;
+              html += '</tr>\n';
+            }
+            html += '</tbody>\n</table>\n';
+          }
+
+          if (failures.length) {
+            html += '<h3>Failures</h3>\n';
+            for (const failure of failures.slice(0, 10)) {
+              html += '<details>\n';
+              html += `<summary><strong>${escapeHtml(failure.title)}</strong> (${escapeHtml(failure.status)}) in <code>${escapeHtml(failure.file)}</code></summary>\n`;
+              if (failure.error) html += `<pre>${escapeHtml(failure.error.slice(0, 1000))}</pre>\n`;
+              html += '</details>\n';
+            }
+          }
+
+          fs.appendFileSync(summaryPath, html);
+          EOF
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: src/github.com/goharbor/harbor/src/portal/playwright-report/
+          retention-days: 30
