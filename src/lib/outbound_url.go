@@ -136,7 +136,8 @@ func validatePublicHost(ctx context.Context, host string, resolve bool) error {
 	return nil
 }
 
-func publicDialAddress(ctx context.Context, host, port string) (string, error) {
+// PublicDialAddress resolves address, rejects non-public resolved IPs, and returns the first validated IP address.
+func PublicDialAddress(ctx context.Context, host, port string) (string, error) {
 	dialAddresses, err := publicDialAddresses(ctx, host, port)
 	if err != nil {
 		return "", err
