@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/namespace"
@@ -31,20 +32,26 @@ import (
 type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller, ctlR role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
-			// anonymous access
-			return &rbacUser{
-				project:  p,
-				username: "anonymous",
-			}
+			return &rbacUser{project: p, username: "anonymous"}
 		}
 
-		roles, err := ctl.ListRoles(ctx, p.ProjectID, user)
+		roleIDs, err := ctl.ListRoles(ctx, p.ProjectID, user)
 		if err != nil {
 			log.Errorf("failed to list roles: %v", err)
 			return nil
+		}
+
+		var roles []*role.Role
+		for _, roleID := range roleIDs {
+			r, err := ctlR.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
+			if err != nil {
+				log.Errorf("failed to get role %d: %v", roleID, err)
+				return nil
+			}
+			roles = append(roles, r)
 		}
 
 		return &rbacUser{
@@ -76,9 +83,7 @@ func NewEvaluator(ctl project.Controller, builders ...RBACUserBuilder) evaluator
 	return namespace.New(NamespaceKind, func(ctx context.Context, ns types.Namespace) evaluator.Evaluator {
 		p, err := ctl.Get(ctx, ns.Identity().(int64), project.Metadata(true))
 		if err != nil {
-			if err != nil {
-				log.Warningf("Failed to get info of project %d for permission evaluator, error: %v", ns.Identity(), err)
-			}
+			log.Warningf("Failed to get info of project %d for permission evaluator, error: %v", ns.Identity(), err)
 			return nil
 		}
 
