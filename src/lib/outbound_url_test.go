@@ -48,6 +48,12 @@ func TestValidatePublicHTTPURL(t *testing.T) {
 		{name: "Class E reserved IPv4", rawURL: "http://240.0.0.1/hook", wantErr: true},
 		{name: "IPv6 discard-only", rawURL: "http://[100::1]/hook", wantErr: true},
 		{name: "IPv6 documentation", rawURL: "http://[2001:db8::1]/hook", wantErr: true},
+		{name: "NAT64 well-known prefix private IPv4", rawURL: "http://[64:ff9b::0a00:0001]/hook", wantErr: true},
+		{name: "NAT64 well-known prefix metadata IPv4", rawURL: "http://[64:ff9b::a9fe:a9fe]/hook", wantErr: true},
+		{name: "NAT64 well-known prefix public IPv4", rawURL: "http://[64:ff9b::0101:0101]/hook", want: "http://[64:ff9b::0101:0101]/hook"},
+		{name: "NAT64 local prefix private IPv4", rawURL: "http://[64:ff9b:1:a00:0:100::]/hook", wantErr: true},
+		{name: "NAT64 local prefix metadata IPv4", rawURL: "http://[64:ff9b:1:a9fe:a9:fe00::]/hook", wantErr: true},
+		{name: "NAT64 local prefix public IPv4", rawURL: "http://[64:ff9b:1:101:1:100::]/hook", want: "http://[64:ff9b:1:101:1:100::]/hook"},
 	}
 
 	for _, tt := range tests {

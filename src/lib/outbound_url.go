@@ -188,7 +188,17 @@ func parseIP(host string) net.IP {
 	return net.ParseIP(host)
 }
 
-var specialUseIPNets []*net.IPNet
+var (
+	specialUseIPNets     []*net.IPNet
+	nat64WellKnownPrefix = &net.IPNet{
+		IP:   net.ParseIP("64:ff9b::"),
+		Mask: net.CIDRMask(96, 128),
+	}
+	nat64LocalPrefix = &net.IPNet{
+		IP:   net.ParseIP("64:ff9b:1::"),
+		Mask: net.CIDRMask(48, 128),
+	}
+)
 
 func init() {
 	cidrs := []string{
@@ -250,5 +260,30 @@ func validatePublicIP(ip net.IP, host string) error {
 		}
 	}
 
+	// Detect NAT64 translation ranges and validate the embedded IPv4 address
+	if embeddedIPv4 := getEmbeddedIPv4(ip); embeddedIPv4 != nil {
+		if err := validatePublicIP(embeddedIPv4, host); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func getEmbeddedIPv4(ip net.IP) net.IP {
+	ip16 := ip.To16()
+	if ip16 == nil {
+		return nil
+	}
+	if ip.To4() != nil {
+		return nil
+	}
+
+	if nat64WellKnownPrefix.Contains(ip16) {
+		return net.IPv4(ip16[12], ip16[13], ip16[14], ip16[15])
+	}
+	if nat64LocalPrefix.Contains(ip16) {
+		return net.IPv4(ip16[6], ip16[7], ip16[9], ip16[10])
+	}
 	return nil
 }
