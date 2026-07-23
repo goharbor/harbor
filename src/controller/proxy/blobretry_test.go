@@ -25,6 +25,8 @@ import (
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	libErrors "github.com/goharbor/harbor/src/lib/errors"
 )
 
 // stubReader serves data and then, once exhausted, returns err (or io.EOF if
@@ -106,6 +108,22 @@ func TestResumingBlobReader_GivesUpAfterMaxRetries(t *testing.T) {
 	_, err := io.ReadAll(reader)
 	require.Error(t, err)
 	assert.Equal(t, maxBlobFetchRetries, resumeAttempts)
+}
+
+func TestResumingBlobReader_GivesUpImmediatelyOnRateLimitedResume(t *testing.T) {
+	withShortBlobRetryBackoff(t)
+
+	first := &stubReader{err: io.ErrUnexpectedEOF}
+	resumeAttempts := 0
+	rateLimitErr := libErrors.New("too many requests").WithCode(libErrors.RateLimitCode)
+	reader := newResumingBlobReader(context.Background(), first, 100, func(offset int64) (io.ReadCloser, error) {
+		resumeAttempts++
+		return nil, rateLimitErr
+	})
+
+	_, err := io.ReadAll(reader)
+	require.Error(t, err)
+	assert.Equal(t, 1, resumeAttempts, "a rate-limited resume shouldn't be retried - a few seconds of backoff won't help and it just adds more load")
 }
 
 func TestResumingBlobReader_DoesNotRetryOnContextCanceled(t *testing.T) {
