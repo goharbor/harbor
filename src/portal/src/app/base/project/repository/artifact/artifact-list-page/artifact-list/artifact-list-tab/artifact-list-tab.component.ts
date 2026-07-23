@@ -916,11 +916,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
     }
 
+    // true for image index / manifest list artifacts (eg. multi-arch images)
+    // SBOM accessories are attached to the platform-specific child artifacts,
+    // not the index itself, so the index never resolves its own sbomDigest
     hasChild(artifact: Artifact): boolean {
         return !!(
             artifact &&
             artifact.references &&
-            artifact.references.some(ref => ref['child_digest'])
+            artifact.references.some(ref => ref.child_digest)
         );
     }
 

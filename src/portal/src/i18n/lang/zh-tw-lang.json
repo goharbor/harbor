@@ -968,7 +968,8 @@
             "QUEUED": "已排入佇列",
             "ERROR": "檢視日誌",
             "SCANNING": "產生中",
-            "STOPPED": "已停止產生"
+            "STOPPED": "已停止產生",
+            "MULTI_ARCH_HINT": "View per-architecture SBOM and vulnerability results"
         },
         "NO_SBOM": "沒有 SBOM",
         "PACKAGES": "SBOM",
