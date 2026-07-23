@@ -119,6 +119,7 @@ const (
 	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
+	OIDCRealnameClaim                = "oidc_realname_claim"
 	OIDCLogout                       = "oidc_logout"
 
 	CfgDriverDB                       = "db"
