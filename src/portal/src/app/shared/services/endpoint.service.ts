@@ -43,6 +43,7 @@ export const ADAPTERS_MAP = {
     'tencent-tcr': 'Tencent TCR',
     'github-ghcr': 'Github GHCR',
     'volcengine-cr': 'VolcEngine CR',
+    chainguard: 'Chainguard',
 };
 
 /**
