@@ -16,10 +16,12 @@ package notification
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -107,7 +109,79 @@ func webhookTransport(insecure bool) http.RoundTripper {
 	if insecure {
 		opts = append(opts, commonhttp.WithInsecureSkipVerify(true))
 	}
-	return commonhttp.NewTransport(opts...)
+	underlying := commonhttp.NewTransport(opts...)
+	return &ssrfProxyRoundTripper{
+		insecure:   insecure,
+		underlying: underlying,
+	}
+}
+
+type ssrfProxyRoundTripper struct {
+	insecure     bool
+	underlying   http.RoundTripper
+	transportsMu sync.Mutex
+	transports   map[string]*http.Transport
+}
+
+func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	useProxy, ok := req.Context().Value(useProxyKey).(bool)
+	if !ok || !useProxy {
+		return s.underlying.RoundTrip(req)
+	}
+
+	host := req.URL.Hostname()
+	port := req.URL.Port()
+	if port == "" {
+		if req.URL.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+
+	// Resolve and validate target host, pinning the IP address to prevent DNS-rebinding SSRF
+	dialAddr, err := lib.PublicDialAddress(req.Context(), host, port)
+	if err != nil {
+		return nil, err
+	}
+
+	ip, _, err := net.SplitHostPort(dialAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	s.transportsMu.Lock()
+	if s.transports == nil {
+		s.transports = make(map[string]*http.Transport)
+	}
+	tr, exists := s.transports[host]
+	if !exists {
+		tr = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return dialer.DialContext(ctx, network, addr)
+			},
+			TLSClientConfig: &tls.Config{
+				ServerName:         host,
+				InsecureSkipVerify: s.insecure,
+			},
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
+		s.transports[host] = tr
+	}
+	s.transportsMu.Unlock()
+
+	clonedReq := req.Clone(req.Context())
+	if clonedReq.Host == "" {
+		clonedReq.Host = req.URL.Host
+	}
+
+	clonedReq.URL.Host = net.JoinHostPort(ip, port)
+
+	return tr.RoundTrip(clonedReq)
 }
 
 func noRedirect(_ *http.Request, _ []*http.Request) error {
