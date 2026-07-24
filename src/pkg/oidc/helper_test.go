@@ -16,6 +16,8 @@ package oidc
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
@@ -570,4 +572,54 @@ func Test_filterGroup(t *testing.T) {
 			assert.Equalf(t, tt.want, filterGroup(tt.args.groupNames, tt.args.filter), "filterGroup(%v, %v)", tt.args.groupNames, tt.args.filter)
 		})
 	}
+}
+
+func TestExchangeTokenMissingIDToken(t *testing.T) {
+	// Mock the OIDC provider's discovery and token endpoints
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/.well-known/openid-configuration" {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]any{
+				"issuer":                 "http://" + r.Host,
+				"authorization_endpoint": "http://" + r.Host + "/auth",
+				"token_endpoint":         "http://" + r.Host + "/token",
+				"jwks_uri":               "http://" + r.Host + "/keys",
+				"response_types_supported": []string{"code"},
+				"subject_types_supported":  []string{"public"},
+				"id_token_signing_alg_values_supported": []string{"RS256"},
+			})
+			return
+		}
+		if r.URL.Path == "/token" {
+			w.Header().Set("Content-Type", "application/json")
+			// Deliberately omit "id_token"
+			json.NewEncoder(w).Encode(map[string]any{
+				"access_token": "test-access-token",
+				"token_type":   "Bearer",
+				"expires_in":   3600,
+			})
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer ts.Close()
+
+	ctx := orm.Context()
+	conf := map[string]any{
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     ts.URL, // Use our mock server
+		common.OIDCVerifyCert:   "false",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
+	}
+	config.GetCfgManager(ctx).UpdateConfig(ctx, conf)
+
+	// Invalidate cached provider so it re-fetches from our mock endpoint
+	provider = nil
+
+	_, err := ExchangeToken(ctx, "fake-code", "fake-pkce")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "id_token is missing or not a string")
 }
