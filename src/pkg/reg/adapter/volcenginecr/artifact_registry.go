@@ -100,10 +100,14 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 	var tagsPattern string
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
-			repoPattern = filter.Value.(string)
+			if v, ok := filter.Value.(string); ok {
+				repoPattern = v
+			}
 		}
 		if filter.Type == model.FilterTypeTag {
-			tagsPattern = filter.Value.(string)
+			if v, ok := filter.Value.(string); ok {
+				tagsPattern = v
+			}
 		}
 	}
 	namespacePattern := strings.Split(repoPattern, "/")[0]
