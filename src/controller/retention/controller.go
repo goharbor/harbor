@@ -336,27 +336,29 @@ func (r *defaultController) ListRetentionExecs(ctx context.Context, policyID int
 }
 
 func convertExecution(exec *task.Execution) *retention.Execution {
-	retentionExec := &retention.Execution{
+	var dryRun bool
+	var operator string
+
+	if exec.ExtraAttrs != nil {
+		if dr, ok := exec.ExtraAttrs["dry_run"].(bool); ok {
+			dryRun = dr
+		}
+		if op, ok := exec.ExtraAttrs["operator"].(string); ok {
+			operator = op
+		}
+	}
+
+	return &retention.Execution{
 		ID:        exec.ID,
 		PolicyID:  exec.VendorID,
 		StartTime: exec.StartTime,
 		EndTime:   exec.EndTime,
 		Status:    exec.Status,
 		Trigger:   exec.Trigger,
-		DryRun:    false,
+		DryRun:    dryRun,
 		Type:      exec.VendorType,
+		Operator:  operator,
 	}
-
-	if exec.ExtraAttrs != nil {
-		if dryRun, ok := exec.ExtraAttrs["dry_run"].(bool); ok {
-			retentionExec.DryRun = dryRun
-		}
-		if operator, ok := exec.ExtraAttrs["operator"].(string); ok {
-			retentionExec.Operator = operator
-		}
-	}
-
-	return retentionExec
 }
 
 // GetTotalOfRetentionExecs Count Retention Executions
