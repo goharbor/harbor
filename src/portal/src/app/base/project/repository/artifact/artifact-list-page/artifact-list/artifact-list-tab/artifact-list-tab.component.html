@@ -323,6 +323,21 @@
                 </clr-dg-cell>
                 }
                 <clr-dg-cell class="center">
+ fix/tag-overlap-23110
+                    <div class="tags-wrapper" *ngIf="artifact.tags">
+                        <clr-tooltip class="width-p-100">
+                            <div clrTooltipTrigger class="center">
+                                <div class="center width-p-100">
+                                    <div class="tags-wrapper" #tagsSpan>
+                                        <span *ngFor="let tag of artifact.tags" class="tag-item">{{ tag.name }}</span>
+                                    </div>
+                                    <span
+                                        *ngIf="
+                                            artifact?.tagNumber > artifact?.tags?.length || (artifact?.tags?.length > 1 && isEllipsisActive(tagsSpan))
+                                        "
+                                        >({{ artifact?.tagNumber }} )</span
+                                    >
+
                     @if (artifact.tags) {
                     <div class="truncated width-p-100">
                         <clr-tooltip class="width-p-100">
@@ -337,6 +352,7 @@
                                     isEllipsisActive(tagsSpan) ) {
                                     <span>({{ artifact?.tagNumber }} )</span>
                                     }
+ main
                                 </div>
                             </div>
                             <clr-tooltip-content
