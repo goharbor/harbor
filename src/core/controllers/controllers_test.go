@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
@@ -73,11 +74,11 @@ func TestAll(t *testing.T) {
 	assert := assert.New(t)
 	handler := http.Handler(web.BeeApp.Handlers)
 	mws := middlewares.MiddleWares()
-	for i := len(mws) - 1; i >= 0; i-- {
-		if mws[i] == nil {
+	for _, mw := range slices.Backward(mws) {
+		if mw == nil {
 			continue
 		}
-		handler = mws[i](handler)
+		handler = mw(handler)
 	}
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
