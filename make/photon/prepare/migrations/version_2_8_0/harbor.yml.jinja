@@ -530,7 +530,7 @@ proxy:
 
 {% if metric is defined %}
 metric:
-  enabled: {{ metric.enabled }}
+  enabled: {{ metric.enabled  | lower }}
   port: {{ metric.port }}
   path: {{ metric.path }}
 {% else %}
