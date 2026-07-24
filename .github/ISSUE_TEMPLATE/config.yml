@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/goharbor/harbor/security/advisories/new
+    about: Report a security vulnerability privately to the Harbor Security Team. Do not file a public issue. See SECURITY.md for the full disclosure policy.
