@@ -82,3 +82,37 @@ func TestRegexpStore(t *testing.T) {
 	s.Purge()
 	assert.Equal(0, sLen())
 }
+
+func Test_keyMatch2Func(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []any
+		wantErr bool
+	}{
+		{
+			name:    "valid arguments",
+			args:    []any{"/project/1/robot", "/project/:pid/robot"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid number of arguments",
+			args:    []any{"/project/1/robot"},
+			wantErr: true,
+		},
+		{
+			name:    "invalid argument types",
+			args:    []any{"/project/1/robot", 123},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := keyMatch2Func(tt.args...)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

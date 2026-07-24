@@ -344,3 +344,66 @@ func (f *fakeLauncher) Stop(ctx context.Context, executionID int64) error {
 func (f *fakeLauncher) Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	return 0, nil
 }
+
+func (s *ControllerTestSuite) TestConvertExecution() {
+	// Case 1: ExtraAttrs is nil
+	e1 := &task.Execution{
+		ID:         1,
+		VendorID:   10,
+		Status:     "Success",
+		VendorType: "RETENTION",
+		ExtraAttrs: nil,
+	}
+	r1 := convertExecution(e1)
+	s.Equal(int64(1), r1.ID)
+	s.Equal(int64(10), r1.PolicyID)
+	s.Equal("Success", r1.Status)
+	s.False(r1.DryRun)
+	s.Empty(r1.Operator)
+
+	// Case 2: ExtraAttrs is empty
+	e2 := &task.Execution{
+		ID:         2,
+		VendorID:   10,
+		Status:     "Success",
+		VendorType: "RETENTION",
+		ExtraAttrs: map[string]any{},
+	}
+	r2 := convertExecution(e2)
+	s.Equal(int64(2), r2.ID)
+	s.False(r2.DryRun)
+	s.Empty(r2.Operator)
+
+	// Case 3: ExtraAttrs has invalid types
+	e3 := &task.Execution{
+		ID:         3,
+		VendorID:   10,
+		Status:     "Success",
+		VendorType: "RETENTION",
+		ExtraAttrs: map[string]any{
+			"dry_run":  "not-a-bool",
+			"operator": 12345,
+		},
+	}
+	r3 := convertExecution(e3)
+	s.Equal(int64(3), r3.ID)
+	s.False(r3.DryRun)
+	s.Empty(r3.Operator)
+
+	// Case 4: ExtraAttrs has valid types
+	e4 := &task.Execution{
+		ID:         4,
+		VendorID:   10,
+		Status:     "Success",
+		VendorType: "RETENTION",
+		ExtraAttrs: map[string]any{
+			"dry_run":  true,
+			"operator": "admin",
+		},
+	}
+	r4 := convertExecution(e4)
+	s.Equal(int64(4), r4.ID)
+	s.True(r4.DryRun)
+	s.Equal("admin", r4.Operator)
+}
+

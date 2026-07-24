@@ -124,7 +124,11 @@ func (c *controller) DeleteExecution(ctx context.Context, executionID int64) err
 
 func (c *controller) Start(ctx context.Context, request export.Request) (executionID int64, err error) {
 	logger := log.GetLogger(ctx)
-	vendorID := int64(ctx.Value(export.CsvJobVendorIDKey).(int))
+	vID, ok := ctx.Value(export.CsvJobVendorIDKey).(int)
+	if !ok {
+		return 0, fmt.Errorf("failed to get vendor ID from context")
+	}
+	vendorID := int64(vID)
 	extraAttrs := make(map[string]any)
 	extraAttrs[export.ProjectIDsAttribute] = request.Projects
 	extraAttrs[export.JobNameAttribute] = request.JobName
@@ -183,22 +187,24 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 		StartTime:     exec.StartTime,
 		EndTime:       exec.EndTime,
 	}
-	if pids, ok := exec.ExtraAttrs[export.ProjectIDsAttribute]; ok {
-		for _, pid := range pids.([]any) {
-			execStatus.ProjectIDs = append(execStatus.ProjectIDs, int64(pid.(float64)))
+	if pids, ok := exec.ExtraAttrs[export.ProjectIDsAttribute].([]any); ok {
+		for _, pid := range pids {
+			if floatPid, ok := pid.(float64); ok {
+				execStatus.ProjectIDs = append(execStatus.ProjectIDs, int64(floatPid))
+			}
 		}
 	}
-	if digest, ok := exec.ExtraAttrs[export.DigestKey]; ok {
-		execStatus.ExportDataDigest = digest.(string)
+	if digest, ok := exec.ExtraAttrs[export.DigestKey].(string); ok {
+		execStatus.ExportDataDigest = digest
 	}
-	if jobName, ok := exec.ExtraAttrs[export.JobNameAttribute]; ok {
-		execStatus.JobName = jobName.(string)
+	if jobName, ok := exec.ExtraAttrs[export.JobNameAttribute].(string); ok {
+		execStatus.JobName = jobName
 	}
-	if userName, ok := exec.ExtraAttrs[export.UserNameAttribute]; ok {
-		execStatus.UserName = userName.(string)
+	if userName, ok := exec.ExtraAttrs[export.UserNameAttribute].(string); ok {
+		execStatus.UserName = userName
 	}
-	if statusMessage, ok := exec.ExtraAttrs[export.StatusMessageAttribute]; ok {
-		execStatus.StatusMessage = statusMessage.(string)
+	if statusMessage, ok := exec.ExtraAttrs[export.StatusMessageAttribute].(string); ok {
+		execStatus.StatusMessage = statusMessage
 	}
 
 	if len(execStatus.ExportDataDigest) > 0 {

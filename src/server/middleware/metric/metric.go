@@ -48,8 +48,9 @@ const (
 // SetMetricOpID used to set operation ID for metrics
 func SetMetricOpID(ctx context.Context, value string) {
 	if config.Metric().Enabled {
-		v := ctx.Value(contextOpIDKey{}).(*string)
-		*v = value
+		if v, ok := ctx.Value(contextOpIDKey{}).(*string); ok && v != nil {
+			*v = value
+		}
 	}
 }
 
