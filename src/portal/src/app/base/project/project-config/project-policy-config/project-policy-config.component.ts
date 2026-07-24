@@ -61,6 +61,8 @@ export class ProjectPolicy {
     MaxUpstreamConn?: number | null;
     ProxyCacheLocalOnNotFound?: boolean;
     ProxyReferrerAPI?: boolean;
+    ProxyCacheFilterPattern?: string | null;
+    ProxyCacheFilterKind?: string | null;
 
     constructor() {
         this.Public = false;
@@ -76,6 +78,8 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = -1;
         this.ProxyCacheLocalOnNotFound = false;
         this.ProxyReferrerAPI = false;
+        this.ProxyCacheFilterPattern = null;
+        this.ProxyCacheFilterKind = 'doublestar';
     }
 
     initByProject(pro: Project) {
@@ -101,6 +105,10 @@ export class ProjectPolicy {
             pro.metadata.proxy_cache_local_on_not_found === 'true';
         this.ProxyReferrerAPI =
             pro.metadata.proxy_referrer_api === 'true' ? true : false;
+        this.ProxyCacheFilterPattern =
+            pro.metadata.proxy_cache_filter_pattern || null;
+        this.ProxyCacheFilterKind =
+            pro.metadata.proxy_cache_filter_kind || 'doublestar';
     }
 }
 const PAGE_SIZE: number = 100;
@@ -167,6 +175,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
+    repositoryFilterPattern: string | null = null;
+    repositoryFilterKind: string | null = null;
 
     constructor(
         private errorHandler: ErrorHandler,
@@ -307,8 +317,6 @@ export class ProjectPolicyConfigComponent implements OnInit {
             )
             .subscribe(permissins => {
                 this.hasChangeConfigRole = permissins as boolean;
-                this.allowUpdateProxyCacheConfiguration =
-                    this.hasChangeConfigRole && !this.isProxyCacheProject;
             });
     }
 
@@ -322,6 +330,11 @@ export class ProjectPolicyConfigComponent implements OnInit {
             response => {
                 this.orgProjectPolicy.initByProject(response);
                 this.projectPolicy.initByProject(response);
+                // read proxy_cache_filter_pattern and proxy_cache_filter_kind as plain strings
+                this.repositoryFilterPattern =
+                    response.metadata?.proxy_cache_filter_pattern || null;
+                this.repositoryFilterKind =
+                    response.metadata?.proxy_cache_filter_kind || null;
                 // get projectAllowlist
                 if (!response.cve_allowlist) {
                     response.cve_allowlist = {

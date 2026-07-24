@@ -248,9 +248,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "請輸入 -1 或大於 0 的整數。",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "上游不可用時提供快取內容",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "啟用此選項後，當上游 Registry 找不到 Artifact 或無法使用時，此專案仍可繼續提供快取內容。上游 Registry 無法使用時，可能會提供過期內容。",
-        "NO_PROJECT": "找不到任何專案",
         "PROXY_REFERRER_API_TIP": "啟用此選項可將 OCI 1.1 referrer API 請求代理至上游 Registry。",
-        "PROXY_REFERRER_API_LABEL": "啟用 referrer API 代理"
+        "PROXY_REFERRER_API_LABEL": "啟用 referrer API 代理",
+        "REPOSITORY_FILTER": "倉庫篩選",
+        "REPOSITORY_FILTER_TOOLTIP": "可選篩選條件，用於限制從上游倉庫快取哪些倉庫。'Doublestar'（預設）使用支援 ** 的 glob 樣式模式（如 library/**）。'正則表達式'使用正則表達式模式（如 ^library/.*），正則表達式模式是頭部錨定的。僅適用於當前代理快取專案。",
+        "REPOSITORY_FILTER_PLACEHOLDER": "例如 library/**",
+        "FILTER_KIND_REGEX": "正則表達式",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "找不到任何專案"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",

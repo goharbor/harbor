@@ -248,9 +248,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "请输入 -1 或大于 0 的整数。",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "上游不可用时提供缓存内容",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "启用此项以允许该项目在上游仓库中找不到制品或上游仓库不可用时继续提供缓存内容。当上游仓库不可用时，这可能会导致提供过期的内容。",
-        "NO_PROJECT": "未找到任何项目",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "仓库过滤",
+        "REPOSITORY_FILTER_TOOLTIP": "可选过滤条件，用于限制从上游仓库缓存哪些仓库。'Doublestar'（默认）使用支持 ** 的 glob 样式模式（如 library/**）。'正则表达式'使用正则表达式模式（如 ^library/.*），正则表达式模式是头部锚定的。仅适用于当前镜像代理项目。",
+        "REPOSITORY_FILTER_PLACEHOLDER": "例如 library/**",
+        "FILTER_KIND_REGEX": "正则表达式",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "未找到任何项目"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",

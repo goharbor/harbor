@@ -249,9 +249,14 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Veuillez entrer -1 ou un entier supérieur à 0.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir le contenu mis en cache lorsque le registre amont est indisponible",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Activez cette option pour permettre à ce projet de continuer à servir le contenu mis en cache même si l'artefact n'est pas trouvé dans le registre amont ou si le registre amont est indisponible. Cela peut entraîner la diffusion de contenu obsolète si le registre amont est indisponible.",
-        "NO_PROJECT": "Nous n'avons trouvé aucun projet",
         "PROXY_REFERRER_API_TIP": "Cochez cette case pour activer le proxy des requêtes de l'API referrer OCI 1.1 vers le registre en amont.",
-        "PROXY_REFERRER_API_LABEL": "Activer le proxy pour l'API referrer"
+        "PROXY_REFERRER_API_LABEL": "Activer le proxy pour l'API referrer",
+        "REPOSITORY_FILTER": "Filtre de dépôt",
+        "REPOSITORY_FILTER_TOOLTIP": "Filtre optionnel pour limiter les dépôts mis en cache depuis le registre amont. 'Doublestar' (par défaut) utilise des motifs glob avec support ** (ex. library/**). 'Regex' utilise des expressions régulières (ex. ^library/.*), les motifs d'expressions régulières sont ancrés au début. S'applique uniquement aux projets de cache proxy actuels.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "ex. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "NO_PROJECT": "Nous n'avons trouvé aucun projet"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",
