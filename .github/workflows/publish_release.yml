@@ -1,4 +1,6 @@
 name: Publish Release
+permissions:
+  contents: read
 
 on:
   push:

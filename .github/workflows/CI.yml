@@ -1,4 +1,6 @@
 name: CI
+permissions:
+  contents: read
 env:
    POSTGRESQL_HOST: localhost
    POSTGRESQL_PORT: 5432
