@@ -33,9 +33,21 @@ func newProxy() http.Handler {
 		panic(fmt.Sprintf("failed to parse the URL of registry: %v", err))
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
-	if commonhttp.InternalTLSEnabled() {
-		proxy.Transport = commonhttp.GetHTTPTransport()
+	// The reverse proxy forwards all /v2/ traffic to a single host (the registry),
+	// so it deserves a dedicated transport with a large per-host idle connection
+	// pool. Relying on http.DefaultTransport (MaxIdleConnsPerHost=2) closes almost
+	// every connection after use under high concurrency, piling up TIME_WAIT
+	// sockets and eventually exhausting ephemeral ports (EADDRNOTAVAIL).
+	opts := []func(*http.Transport){
+		func(tr *http.Transport) {
+			tr.MaxIdleConns = 1024
+			tr.MaxIdleConnsPerHost = 1024
+		},
 	}
+	if commonhttp.InternalTLSEnabled() {
+		opts = append(opts, commonhttp.WithInternalTLSConfig())
+	}
+	proxy.Transport = commonhttp.NewTransport(opts...)
 
 	proxy.Director = basicAuthDirector(proxy.Director)
 	return proxy
