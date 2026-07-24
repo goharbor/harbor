@@ -413,6 +413,11 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		}
 		// Prevent SSRF security issue #3755
 		target.Address = url.Scheme + "://" + url.Host + url.Path
+		address, err := lib.ValidatePublicHTTPURL(context.Background(), target.Address, false)
+		if err != nil {
+			return false, err
+		}
+		target.Address = address
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)

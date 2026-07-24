@@ -16,6 +16,7 @@ package notification
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -94,7 +96,7 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 
 	sj.logger.Info("start to run slack job")
 
-	err := sj.execute(params)
+	err := sj.execute(ctx, params)
 	if err != nil {
 		sj.logger.Errorf("exit slack job, error: %s", err)
 	} else {
@@ -121,11 +123,23 @@ func (sj *SlackJob) init(ctx job.Context, params map[string]any) error {
 }
 
 // execute slack job
-func (sj *SlackJob) execute(params map[string]any) error {
+func (sj *SlackJob) execute(ctx job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
+	validatedAddress, err := lib.ValidatePublicHTTPURL(ctx.SystemContext(), address, true)
+	if err != nil {
+		return errors.Wrap(err, "invalid slack target")
+	}
 
-	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
+	var useProxy bool
+	if dummyReq, err := http.NewRequest(http.MethodPost, validatedAddress, nil); err == nil {
+		if proxyURL, err := http.ProxyFromEnvironment(dummyReq); err == nil && proxyURL != nil {
+			useProxy = true
+		}
+	}
+
+	reqCtx := context.WithValue(ctx.SystemContext(), useProxyKey, useProxy)
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, validatedAddress, bytes.NewReader([]byte(payload)))
 	if err != nil {
 		return errors.Wrap(err, "error to generate request")
 	}

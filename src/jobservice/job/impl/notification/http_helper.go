@@ -15,13 +15,18 @@
 package notification
 
 import (
+	"context"
+	"crypto/tls"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 )
 
 const (
@@ -65,11 +70,120 @@ func init() {
 		clients: map[string]*http.Client{},
 	}
 	httpHelper.clients[secure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(),
-		Timeout:   timeout,
+		Transport:     webhookTransport(false),
+		Timeout:       timeout,
+		CheckRedirect: noRedirect,
 	}
 	httpHelper.clients[insecure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
-		Timeout:   timeout,
+		Transport:     webhookTransport(true),
+		Timeout:       timeout,
+		CheckRedirect: noRedirect,
 	}
+}
+
+type contextKey string
+
+const (
+	useProxyKey contextKey = "useProxy"
+)
+
+var (
+	dialer = &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+)
+
+func webhookTransport(insecure bool) http.RoundTripper {
+	opts := []func(*http.Transport){
+		func(tr *http.Transport) {
+			tr.Proxy = http.ProxyFromEnvironment
+			tr.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+				if useProxy, ok := ctx.Value(useProxyKey).(bool); ok && useProxy {
+					return dialer.DialContext(ctx, network, addr)
+				}
+				return lib.PublicDialContext(ctx, network, addr)
+			}
+		},
+	}
+	if insecure {
+		opts = append(opts, commonhttp.WithInsecureSkipVerify(true))
+	}
+	underlying := commonhttp.NewTransport(opts...)
+	return &ssrfProxyRoundTripper{
+		insecure:   insecure,
+		underlying: underlying,
+	}
+}
+
+type ssrfProxyRoundTripper struct {
+	insecure     bool
+	underlying   http.RoundTripper
+	transportsMu sync.Mutex
+	transports   map[string]*http.Transport
+}
+
+func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	useProxy, ok := req.Context().Value(useProxyKey).(bool)
+	if !ok || !useProxy {
+		return s.underlying.RoundTrip(req)
+	}
+
+	host := req.URL.Hostname()
+	port := req.URL.Port()
+	if port == "" {
+		if req.URL.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+
+	// Resolve and validate target host, pinning the IP address to prevent DNS-rebinding SSRF
+	dialAddr, err := lib.PublicDialAddress(req.Context(), host, port)
+	if err != nil {
+		return nil, err
+	}
+
+	ip, _, err := net.SplitHostPort(dialAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	s.transportsMu.Lock()
+	if s.transports == nil {
+		s.transports = make(map[string]*http.Transport)
+	}
+	tr, exists := s.transports[host]
+	if !exists {
+		tr = &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return dialer.DialContext(ctx, network, addr)
+			},
+			TLSClientConfig: &tls.Config{
+				ServerName:         host,
+				InsecureSkipVerify: s.insecure,
+			},
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
+		s.transports[host] = tr
+	}
+	s.transportsMu.Unlock()
+
+	clonedReq := req.Clone(req.Context())
+	if clonedReq.Host == "" {
+		clonedReq.Host = req.URL.Host
+	}
+
+	clonedReq.URL.Host = net.JoinHostPort(ip, port)
+
+	return tr.RoundTrip(clonedReq)
+}
+
+func noRedirect(_ *http.Request, _ []*http.Request) error {
+	return http.ErrUseLastResponse
 }

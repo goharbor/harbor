@@ -16,6 +16,7 @@ package notification
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
@@ -98,11 +100,23 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]any) error {
 }
 
 // execute webhook job
-func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
+func (wj *WebhookJob) execute(ctx job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
+	validatedAddress, err := lib.ValidatePublicHTTPURL(ctx.SystemContext(), address, true)
+	if err != nil {
+		return errors.Wrap(err, "invalid webhook target")
+	}
 
-	req, err := http.NewRequest(http.MethodPost, address, bytes.NewReader([]byte(payload)))
+	var useProxy bool
+	if dummyReq, err := http.NewRequest(http.MethodPost, validatedAddress, nil); err == nil {
+		if proxyURL, err := http.ProxyFromEnvironment(dummyReq); err == nil && proxyURL != nil {
+			useProxy = true
+		}
+	}
+
+	reqCtx := context.WithValue(ctx.SystemContext(), useProxyKey, useProxy)
+	req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, validatedAddress, bytes.NewReader([]byte(payload)))
 	if err != nil {
 		return errors.Wrap(err, "error to generate request")
 	}
@@ -112,6 +126,7 @@ func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
 		if err = json.Unmarshal([]byte(h), &header); err != nil {
 			return errors.Wrap(err, "error to unmarshal header")
 		}
+		deleteHeader(header)
 		req.Header = header
 	}
 
@@ -133,4 +148,12 @@ func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
 	}
 
 	return nil
+}
+
+func deleteHeader(header http.Header) {
+	for key := range header {
+		if http.CanonicalHeaderKey(key) == "Host" {
+			delete(header, key)
+		}
+	}
 }
