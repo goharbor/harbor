@@ -16,13 +16,13 @@ package replication
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/goharbor/harbor/src/controller/event"
 	repevent "github.com/goharbor/harbor/src/controller/event/handler/replication/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
@@ -63,13 +63,15 @@ func (r *Handler) IsStateful() bool {
 
 func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtifactEvent) error {
 	art := event.Artifact
-	public := false
 	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project: %d, error: %v", art.ProjectID, err)
 		return err
 	}
-	public = prj.IsPublic()
+	pubMeta, _ := prj.GetMetadata(proModels.ProMetaPublic)
+	if pubMeta == "" {
+		pubMeta = "false"
+	}
 
 	e := &repevent.Event{
 		Type: repevent.EventTypeArtifactPush,
@@ -79,7 +81,7 @@ func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtif
 				Repository: &model.Repository{
 					Name: event.Repository,
 					Metadata: map[string]any{
-						"public": strconv.FormatBool(public),
+						"public": pubMeta,
 					},
 				},
 				Artifacts: []*model.Artifact{
@@ -123,13 +125,15 @@ func (r *Handler) handleDeleteArtifact(ctx context.Context, event *event.DeleteA
 
 func (r *Handler) handleCreateTag(ctx context.Context, event *event.CreateTagEvent) error {
 	art := event.AttachedArtifact
-	public := false
 	prj, err := project.Ctl.Get(orm.Context(), art.ProjectID, project.Metadata(true))
 	if err != nil {
 		log.Errorf("failed to get project: %d, error: %v", art.ProjectID, err)
 		return err
 	}
-	public = prj.IsPublic()
+	pubMeta, _ := prj.GetMetadata(proModels.ProMetaPublic)
+	if pubMeta == "" {
+		pubMeta = "false"
+	}
 
 	e := &repevent.Event{
 		Type: repevent.EventTypeArtifactPush,
@@ -139,7 +143,7 @@ func (r *Handler) handleCreateTag(ctx context.Context, event *event.CreateTagEve
 				Repository: &model.Repository{
 					Name: event.Repository,
 					Metadata: map[string]any{
-						"public": strconv.FormatBool(public),
+						"public": pubMeta,
 					},
 				},
 				Artifacts: []*model.Artifact{

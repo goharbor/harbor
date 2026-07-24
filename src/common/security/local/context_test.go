@@ -48,6 +48,13 @@ var (
 		},
 	}
 
+	authOnly = &proModels.Project{
+		ProjectID: 3,
+		Name:      "auth_only_project",
+		OwnerID:   1,
+		Metadata:  map[string]string{"public": "auth_only"},
+	}
+
 	projectAdminUser = &models.User{
 		Username: "projectAdminUser",
 		Email:    "projectAdminUser@vmware.com",
@@ -272,4 +279,53 @@ func TestSysadminPerms(t *testing.T) {
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource) && ctx.Can(context.TODO(), rbac.ActionPull, resource))
 	assert.False(t, ctx.Can(context.TODO(), rbac.ActionScannerPull, resource))
 
+}
+
+func TestHasPullPermAuthOnly(t *testing.T) {
+	resource := rbac_project.NewNamespace(authOnly.ProjectID).Resource(rbac.ResourceRepository)
+
+	{ // auth_only, unauthenticated → denied
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		ctx := NewSecurityContext(nil)
+		ctx.ctl = ctl
+		assert.False(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
+	}
+	{ // auth_only, authenticated non-member → pull allowed
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{}, nil)
+		ctx := NewSecurityContext(&models.User{Username: "nonmember"})
+		ctx.ctl = ctl
+		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
+	}
+	{ // auth_only, authenticated non-member → push denied
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{}, nil)
+		ctx := NewSecurityContext(&models.User{Username: "nonmember"})
+		ctx.ctl = ctl
+		assert.False(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
+	}
+	{ // auth_only, system admin → pull and push allowed
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		ctx := NewSecurityContext(&models.User{Username: "admin", SysAdminFlag: true})
+		ctx.ctl = ctl
+		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
+		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
+	}
+}
+
+func TestHasPushPermAuthOnly(t *testing.T) {
+	resource := rbac_project.NewNamespace(authOnly.ProjectID).Resource(rbac.ResourceRepository)
+
+	{ // developer member → push allowed via role policies
+		ctl := &projecttesting.Controller{}
+		mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{common.RoleDeveloper}, nil)
+		ctx := NewSecurityContext(developerUser)
+		ctx.ctl = ctl
+		assert.True(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
+	}
 }

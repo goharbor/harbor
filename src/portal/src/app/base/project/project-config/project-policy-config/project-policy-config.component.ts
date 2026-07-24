@@ -48,7 +48,7 @@ const CVE_DETAIL_PRE_URL = `https://nvd.nist.gov/vuln/detail/`;
 const TARGET_BLANK = '_blank';
 
 export class ProjectPolicy {
-    Public: boolean;
+    Public: string;
     ContentTrust: boolean;
     ContentTrustCosign: boolean;
     PreventVulImg: boolean;
@@ -63,7 +63,7 @@ export class ProjectPolicy {
     ProxyReferrerAPI?: boolean;
 
     constructor() {
-        this.Public = false;
+        this.Public = 'false';
         this.ContentTrust = false;
         this.ContentTrustCosign = false;
         this.PreventVulImg = false;
@@ -79,7 +79,13 @@ export class ProjectPolicy {
     }
 
     initByProject(pro: Project) {
-        this.Public = pro.metadata.public === 'true';
+        const pub = pro.metadata.public;
+        this.Public =
+            pub === 'true'
+                ? 'true'
+                : pub === 'auth_only'
+                ? 'auth_only'
+                : 'false';
         this.ContentTrust = pro.metadata.enable_content_trust === 'true';
         this.ContentTrustCosign =
             pro.metadata.enable_content_trust_cosign === 'true';

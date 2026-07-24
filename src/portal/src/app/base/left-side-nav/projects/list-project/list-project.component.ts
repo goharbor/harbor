@@ -192,9 +192,14 @@ export class ListProjectComponent implements OnDestroy {
 
         this.loading = true;
 
-        let passInFilteredType: number = undefined;
-        if (this.filteredType > 0) {
-            passInFilteredType = this.filteredType - 1;
+        // filteredType: 0 = all, 1 = private, 2 = internal (auth_only), 3 = public
+        let passInFilteredType: number | string = undefined;
+        if (this.filteredType === 1) {
+            passInFilteredType = 0;
+        } else if (this.filteredType === 2) {
+            passInFilteredType = 'auth_only';
+        } else if (this.filteredType === 3) {
+            passInFilteredType = 1;
         }
         this.proService
             .listProjects(

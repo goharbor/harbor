@@ -104,6 +104,8 @@ func (a *Handler) constructArtifactPayload(ctx context.Context, event *event.Art
 	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
 		repoType = proModels.ProjectPublic
+	} else if project.IsAuthOnly() {
+		repoType = proModels.ProjectAuthOnly
 	}
 
 	imageName := util.GetNameFromImgRepoFullName(repoName)

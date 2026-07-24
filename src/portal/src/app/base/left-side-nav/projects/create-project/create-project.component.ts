@@ -391,7 +391,7 @@ export class CreateProjectComponent
                 project: {
                     project_name: this.project.name,
                     metadata: {
-                        public: this.project.metadata.public ? 'true' : 'false',
+                        public: this.project.metadata.public as string,
                         proxy_speed_kb:
                             this.project.metadata.bandwidth.toString(),
                         max_upstream_conn:
