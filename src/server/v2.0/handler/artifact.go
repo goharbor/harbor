@@ -41,6 +41,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -370,11 +371,11 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 		return a.SendError(ctx, err)
 	}
 
-	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	query.Keywords["SubjectArtifactID"] = artifact.ID
+	query.Keywords["SubjectArtifactID"] = art.ID
 
 	// list accessories according to the query
 	total, err := a.accMgr.Count(ctx, query)
@@ -384,6 +385,24 @@ func (a *artifactAPI) ListAccessories(ctx context.Context, params operation.List
 	accs, err := a.accMgr.List(ctx, query)
 	if err != nil {
 		return a.SendError(ctx, err)
+	}
+
+	// if no direct signature found, check for cosign signatures inherited from a parent OCI index;
+	// use strings.Contains because the UI sends a list of types (e.g. type={signature.cosign ...})
+	if len(accs) == 0 && strings.Contains(lib.StringValue(params.Q), "signature.cosign") {
+		artWithAccs, err := a.artCtl.Get(ctx, art.ID, &artifact.Option{WithAccessory: true})
+		if err != nil {
+			log.Warningf("failed to get artifact %d with accessories for inheritance check: %v", art.ID, err)
+		} else if artWithAccs != nil {
+			allAccs := append(artWithAccs.Accessories, artWithAccs.InheritedAccessories...)
+			for _, acc := range allAccs {
+				if acc.GetData().Type == accessorymodel.TypeCosignSignature {
+					accs = append(accs, acc)
+					total = 1
+					break
+				}
+			}
+		}
 	}
 
 	var res []*models.Accessory
