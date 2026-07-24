@@ -131,8 +131,9 @@ PREPARE_VERSION_NAME=versions
 
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
-TRIVYVERSION=v0.71.1
-TRIVYADAPTERVERSION=v0.37.2-rc1
+TRIVYVERSION=v0.72.0
+TRIVYADAPTERVERSION=v0.38.0-rc1
+
 # VALKEYVERSION and VALKEYSHA256 are only used for the arm64 source build.
 # On amd64 the Photon tdnf package version is used directly.
 VALKEYVERSION=9.0.3
@@ -140,7 +141,7 @@ VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
 NODEBUILDIMAGE=node:22.22.3
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.1-rc.4
+REGISTRY_SRC_TAG=v2.8.3-harbor.1
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
@@ -179,7 +180,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.3
+GOBUILDIMAGE=golang:1.26.4
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -533,14 +534,15 @@ misspell:
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
-GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
+GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
+GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
 # go install golang.org/x/vuln/cmd/govulncheck@latest
-GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
+GOVULNCHECK := $(GOPATH_BIN)/govulncheck
 govulncheck:
 	@echo golang vulnerability check
 	@cd ./src/; $(GOVULNCHECK) ./...;

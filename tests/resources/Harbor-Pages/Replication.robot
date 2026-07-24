@@ -93,7 +93,7 @@ Check New Rule UI Without Endpoint
     Retry Wait Element  ${new_endpoint_button}
 
 Create A New Endpoint
-    [Arguments]    ${provider}    ${name}    ${url}    ${username}    ${pwd}    ${save}=Y
+    [Arguments]    ${provider}    ${name}    ${url}    ${username}    ${pwd}    ${save}=Y    ${ca_cert}=${null}
     #click new button
     Retry Element Click  xpath=${new_endpoint_button}
     #input necessary info
@@ -104,11 +104,21 @@ Create A New Endpoint
     Run Keyword If  '${provider}' != 'google-gcr' and '${username}' != '${null}'  Retry Password Input  xpath=${destination_username_xpath}  ${username}
     Run Keyword If  '${username}' != '${null}'  Retry Text Input  xpath=${destination_username_xpath}  ${username}
     Run Keyword If  '${pwd}' != '${null}'  Retry Password Input  xpath=${destination_password_xpath}  ${pwd}
-    #cancel verify cert since we use a selfsigned cert
-    Retry Element Click  ${destination_insecure_xpath}
+    # if a per-endpoint CA certificate is supplied, keep "Verify Remote Cert" enabled
+    # and paste the CA certificate in, instead of disabling cert verification
+    IF    $ca_cert == $None
+        Retry Element Click  ${destination_insecure_xpath}
+    ELSE
+        Input CA Certificate  ${ca_cert}
+    END
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Filter Registry  ${name}
     Run Keyword If  '${save}' == 'N'  No Operation
+
+Input CA Certificate
+    [Arguments]    ${ca_cert}
+    Retry Text Input  ${destination_ca_cert_xpath}  ${ca_cert}
+
 
 Create A Rule With Existing Endpoint
     [Arguments]  ${name}  ${replication_mode}  ${filter_project_name}  ${resource_type}  ${endpoint}  ${dest_namespace}

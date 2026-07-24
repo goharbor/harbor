@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 // nopCloser is just like ioutil's, but here to let us re-read the same
@@ -56,11 +58,46 @@ func copyBody(body io.ReadCloser) io.ReadCloser {
 	return nopCloser{bytes.NewReader(buf.Bytes())}
 }
 
-// NopCloseRequest ...
+// NopCloseRequest makes r.Body re-readable so it can be consumed more than once.
 func NopCloseRequest(r *http.Request) *http.Request {
 	if r != nil && r.Body != nil {
 		r.Body = copyBody(r.Body)
 	}
 
 	return r
+}
+
+// ReadRequestBody reads and returns r.Body while enforcing an optional size
+// limit. When limit > 0 and the body is larger than limit, a
+// RequestEntityTooLargeError is returned so callers surface a 413 instead of
+// buffering or parsing a truncated body. On success r.Body is replaced with a
+// re-readable buffer holding the same (<= limit) bytes for any downstream
+// consumer.
+func ReadRequestBody(r *http.Request, limit int64) ([]byte, error) {
+	if r == nil || r.Body == nil {
+		return nil, nil
+	}
+
+	// keep a reference to the original body so we can close it safely once we
+	// have buffered its contents (or bailed out on an over-limit body)
+	originalBody := r.Body
+	defer originalBody.Close()
+
+	var reader io.Reader = originalBody
+	if limit > 0 {
+		// read one extra byte so an over-limit body is detected rather than
+		// silently truncated
+		reader = io.LimitReader(originalBody, limit+1)
+	}
+
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	if limit > 0 && int64(len(data)) > limit {
+		return nil, errors.RequestEntityTooLargeError(nil)
+	}
+
+	r.Body = nopCloser{bytes.NewReader(data)}
+	return data, nil
 }

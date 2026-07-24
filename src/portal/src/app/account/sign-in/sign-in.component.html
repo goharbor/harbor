@@ -4,11 +4,13 @@
     <search-result></search-result>
     <div
         class="login-wrapper"
-        [ngStyle]="{
-            'background-image': customLoginBgImg
-                ? 'url(/images/' + customLoginBgImg + ')'
-                : ''
-        }">
+        [style.background-image]="
+            customLoginBgImg ? 'url(/images/' + customLoginBgImg + ')' : null
+        "
+        [style.background-color]="
+            customLoginBgImg ? null : 'var(--clr-login-background-color)'
+        "
+        [style.background-blend-mode]="customLoginBgImg ? null : 'multiply'">
         <form #signInForm="ngForm" class="login">
             @if (isOidcLoginMode && steps === 2) {
             <span (click)="steps = 1" class="back-icon">
