@@ -231,3 +231,10 @@
   overflow-y: auto;
   margin-bottom: -10px;
 }
+
+.tags-wrapper.truncated {
+  white-space: normal;
+  height: auto;
+  overflow: visible;
+}
+
