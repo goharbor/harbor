@@ -5,7 +5,7 @@ package proxy
 import (
 	io "io"
 
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution/v3"
 	mock "github.com/stretchr/testify/mock"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -160,7 +160,7 @@ func (_m *RemoteInterface) Manifest(repo string, ref string) (distribution.Manif
 }
 
 // ManifestExist provides a mock function with given fields: repo, ref
-func (_m *RemoteInterface) ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error) {
+func (_m *RemoteInterface) ManifestExist(repo string, ref string) (bool, *v1.Descriptor, error) {
 	ret := _m.Called(repo, ref)
 
 	if len(ret) == 0 {
@@ -168,9 +168,9 @@ func (_m *RemoteInterface) ManifestExist(repo string, ref string) (bool, *distri
 	}
 
 	var r0 bool
-	var r1 *distribution.Descriptor
+	var r1 *v1.Descriptor
 	var r2 error
-	if rf, ok := ret.Get(0).(func(string, string) (bool, *distribution.Descriptor, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, string) (bool, *v1.Descriptor, error)); ok {
 		return rf(repo, ref)
 	}
 	if rf, ok := ret.Get(0).(func(string, string) bool); ok {
@@ -179,11 +179,11 @@ func (_m *RemoteInterface) ManifestExist(repo string, ref string) (bool, *distri
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string) *distribution.Descriptor); ok {
+	if rf, ok := ret.Get(1).(func(string, string) *v1.Descriptor); ok {
 		r1 = rf(repo, ref)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(*distribution.Descriptor)
+			r1 = ret.Get(1).(*v1.Descriptor)
 		}
 	}
 

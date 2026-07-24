@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/v3/health"
 
 	httputil "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -38,7 +38,7 @@ import (
 // returned matches the expected one
 func HTTPStatusCodeHealthChecker(method string, url string, header http.Header,
 	timeout time.Duration, statusCode int) health.Checker {
-	return health.CheckFunc(func() error {
+	return health.CheckFunc(func(_ context.Context) error {
 		req, err := http.NewRequest(method, url, nil)
 		if err != nil {
 			return fmt.Errorf("failed to create request: %v", err)
@@ -75,7 +75,7 @@ type updater struct {
 	status error
 }
 
-func (u *updater) Check() error {
+func (u *updater) Check(_ context.Context) error {
 	u.Lock()
 	defer u.Unlock()
 
@@ -100,7 +100,7 @@ func PeriodicHealthChecker(checker health.Checker, period time.Duration) health.
 	go func() {
 		ticker := time.NewTicker(period)
 		for {
-			u.update(checker.Check())
+			u.update(checker.Check(context.TODO()))
 			<-ticker.C
 		}
 	}()
@@ -109,7 +109,7 @@ func PeriodicHealthChecker(checker health.Checker, period time.Duration) health.
 }
 
 func coreHealthChecker() health.Checker {
-	return health.CheckFunc(func() error {
+	return health.CheckFunc(func(_ context.Context) error {
 		return nil
 	})
 }
@@ -148,7 +148,7 @@ func registryCtlHealthChecker() health.Checker {
 
 func databaseHealthChecker() health.Checker {
 	period := 10 * time.Second
-	checker := health.CheckFunc(func() error {
+	checker := health.CheckFunc(func(_ context.Context) error {
 		_, err := orm.NewOrm().Raw("SELECT 1").Exec()
 		if err != nil {
 			return fmt.Errorf("failed to run SQL \"SELECT 1\": %v", err)
@@ -160,8 +160,8 @@ func databaseHealthChecker() health.Checker {
 
 func redisHealthChecker() health.Checker {
 	period := 10 * time.Second
-	checker := health.CheckFunc(func() error {
-		return cache.Default().Ping(context.TODO())
+	checker := health.CheckFunc(func(ctx context.Context) error {
+		return cache.Default().Ping(ctx)
 	})
 	return PeriodicHealthChecker(checker, period)
 }

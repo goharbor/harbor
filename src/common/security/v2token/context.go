@@ -18,7 +18,7 @@ import (
 	"context"
 	"strings"
 
-	registry_token "github.com/docker/distribution/registry/auth/token"
+	registry_token "github.com/distribution/distribution/v3/registry/auth/token"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
