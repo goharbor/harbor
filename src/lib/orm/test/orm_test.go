@@ -357,6 +357,94 @@ func (suite *OrmSuite) TestNestedSavepoint() {
 	suite.False(existFoo(ctx, id2))
 }
 
+// TestAfterCommit_FiresOnSuccess asserts that callbacks registered via
+// AfterCommit inside a transaction run only after the transaction commits.
+func (suite *OrmSuite) TestAfterCommit_FiresOnSuccess() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	ranInsideTx := false
+	ranAfter := false
+
+	err := WithTransaction(func(ctx context.Context) error {
+		AfterCommit(ctx, func() { ranAfter = true })
+		// At this point the commit has not happened yet.
+		ranInsideTx = ranAfter
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.False(ranInsideTx, "hook must not fire before commit")
+	suite.True(ranAfter, "hook must fire after successful commit")
+}
+
+// TestAfterCommit_DiscardedOnRollback asserts that rollback drops all
+// registered callbacks so side effects for rolled-back work don't execute.
+func (suite *OrmSuite) TestAfterCommit_DiscardedOnRollback() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	ran := false
+
+	err := WithTransaction(func(ctx context.Context) error {
+		AfterCommit(ctx, func() { ran = true })
+		return errors.New("oops")
+	})(ctx)
+
+	suite.Error(err)
+	suite.False(ran, "hook must be discarded on rollback")
+}
+
+// TestAfterCommit_NestedDeferredToOutermost asserts that callbacks
+// registered inside a nested WithTransaction fire only after the
+// outermost transaction commits, not after the inner savepoint release.
+func (suite *OrmSuite) TestAfterCommit_NestedDeferredToOutermost() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var innerCommitted, outerCommitted bool
+	var ranAfterInner, ranAfterOuter bool
+
+	err := WithTransaction(func(ctx context.Context) error {
+		if err := WithTransaction(func(ctx context.Context) error {
+			AfterCommit(ctx, func() { ranAfterOuter = true })
+			return nil
+		})(ctx); err != nil {
+			return err
+		}
+		// Inner has returned (savepoint released), but outer hasn't committed yet.
+		innerCommitted = true
+		ranAfterInner = ranAfterOuter // should still be false
+		return nil
+	})(ctx)
+	outerCommitted = err == nil
+
+	suite.NoError(err)
+	suite.True(innerCommitted)
+	suite.True(outerCommitted)
+	suite.False(ranAfterInner, "hook must not fire when a nested tx returns — only after outermost commit")
+	suite.True(ranAfterOuter, "hook must fire after outermost commit")
+}
+
+// TestAfterCommit_OuterRollbackDropsNested asserts that if the outermost
+// transaction rolls back after a nested commit, nested-registered hooks
+// are still discarded.
+func (suite *OrmSuite) TestAfterCommit_OuterRollbackDropsNested() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	ran := false
+
+	err := WithTransaction(func(ctx context.Context) error {
+		if err := WithTransaction(func(ctx context.Context) error {
+			AfterCommit(ctx, func() { ran = true })
+			return nil
+		})(ctx); err != nil {
+			return err
+		}
+		return errors.New("oops")
+	})(ctx)
+
+	suite.Error(err)
+	suite.False(ran, "hooks registered in nested scope must be discarded when outer rolls back")
+}
+
 func (suite *OrmSuite) TestReadOrCreate() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
