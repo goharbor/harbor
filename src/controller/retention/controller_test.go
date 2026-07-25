@@ -51,7 +51,11 @@ func (s *ControllerTestSuite) SetupSuite() {
 }
 
 func TestMain(m *testing.M) {
-	dao.PrepareTestForPostgresSQL()
+	// Integration-style tests need Postgres. Pure unit tests such as
+	// TestConvertExecution do not, so only init DB when configured.
+	if os.Getenv("POSTGRESQL_HOST") != "" {
+		dao.PrepareTestForPostgresSQL()
+	}
 	os.Exit(m.Run())
 }
 
@@ -343,4 +347,66 @@ func (f *fakeLauncher) Stop(ctx context.Context, executionID int64) error {
 
 func (f *fakeLauncher) Launch(ctx context.Context, policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	return 0, nil
+}
+
+// TestConvertExecution covers missing/invalid extra_attrs.dry_run (#23506).
+func TestConvertExecution(t *testing.T) {
+	t.Run("dry_run true", func(t *testing.T) {
+		got := convertExecution(&task.Execution{
+			ID:         1,
+			VendorID:   10,
+			VendorType: job.RetentionVendorType,
+			Status:     job.SuccessStatus.String(),
+			ExtraAttrs: map[string]any{
+				"dry_run":  true,
+				"operator": "admin",
+			},
+		})
+		if !got.DryRun {
+			t.Fatalf("expected DryRun true, got false")
+		}
+		if got.Operator != "admin" {
+			t.Fatalf("expected operator admin, got %q", got.Operator)
+		}
+	})
+
+	t.Run("dry_run missing defaults to false", func(t *testing.T) {
+		got := convertExecution(&task.Execution{
+			ID:         2,
+			VendorID:   10,
+			VendorType: job.RetentionVendorType,
+			Status:     job.SuccessStatus.String(),
+			ExtraAttrs: map[string]any{},
+		})
+		if got.DryRun {
+			t.Fatalf("expected DryRun false when dry_run missing")
+		}
+	})
+
+	t.Run("nil extra_attrs defaults dry_run to false", func(t *testing.T) {
+		got := convertExecution(&task.Execution{
+			ID:         3,
+			VendorID:   10,
+			VendorType: job.RetentionVendorType,
+			Status:     job.SuccessStatus.String(),
+		})
+		if got.DryRun {
+			t.Fatalf("expected DryRun false when ExtraAttrs is nil")
+		}
+	})
+
+	t.Run("invalid dry_run type defaults to false", func(t *testing.T) {
+		got := convertExecution(&task.Execution{
+			ID:         4,
+			VendorID:   10,
+			VendorType: job.RetentionVendorType,
+			Status:     job.SuccessStatus.String(),
+			ExtraAttrs: map[string]any{
+				"dry_run": "yes",
+			},
+		})
+		if got.DryRun {
+			t.Fatalf("expected DryRun false when dry_run has invalid type")
+		}
+	})
 }
