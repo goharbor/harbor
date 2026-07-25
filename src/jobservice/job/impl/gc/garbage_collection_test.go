@@ -197,6 +197,19 @@ func (suite *gcTestSuite) TestInit() {
 	suite.True(gc.deleteTag)
 }
 
+func (suite *gcTestSuite) TestParseParamsRedisURL() {
+	gc := &GarbageCollector{}
+
+	// falls back to the persisted param when the env var isn't set
+	gc.parseParams(map[string]any{"redis_url_reg": "persisted url"})
+	suite.Equal("persisted url", gc.redisURL)
+
+	// the current env var takes precedence over a stale persisted value
+	suite.T().Setenv("_REDIS_URL_REG", "current url")
+	gc.parseParams(map[string]any{"redis_url_reg": "persisted url"})
+	suite.Equal("current url", gc.redisURL)
+}
+
 func (suite *gcTestSuite) TestStop() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
