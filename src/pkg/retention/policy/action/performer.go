@@ -17,6 +17,7 @@ package action
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
@@ -94,8 +95,10 @@ func (ra *retainAction) Perform(ctx context.Context, candidates []*selector.Cand
 
 func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 	projectID := c.NamespaceID
+	repo := c.Repository
+	_, repoName := utils.ParseRepository(repo)
 	matched, err := rule.NewRuleMatcher().Match(ctx, projectID, selector.Candidate{
-		Repository:  c.Repository,
+		Repository:  repoName,
 		Tags:        c.Tags,
 		NamespaceID: projectID,
 	})

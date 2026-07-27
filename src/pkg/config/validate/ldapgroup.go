@@ -37,16 +37,28 @@ func (l LdapGroupValidateRule) Validate(ctx context.Context, cfgMgr config.Manag
 	updated := false
 	// Merge the cfgs and the cfgMgr to get the final GroupConf
 	if val, exist := cfgs[common.LDAPGroupSearchFilter]; exist {
-		cfg.Filter = val.(string)
-		updated = true
+		if v, ok := val.(string); ok {
+			cfg.Filter = v
+			updated = true
+		} else {
+			return errors.New("ldap group search filter must be a string")
+		}
 	}
 	if val, exist := cfgs[common.LDAPGroupAttributeName]; exist {
-		cfg.NameAttribute = val.(string)
-		updated = true
+		if v, ok := val.(string); ok {
+			cfg.NameAttribute = v
+			updated = true
+		} else {
+			return errors.New("ldap group attribute name must be a string")
+		}
 	}
 	if val, exist := cfgs[common.LDAPGroupMembershipAttribute]; exist {
-		cfg.MembershipAttribute = val.(string)
-		updated = true
+		if v, ok := val.(string); ok {
+			cfg.MembershipAttribute = v
+			updated = true
+		} else {
+			return errors.New("ldap group membership attribute must be a string")
+		}
 	}
 	if !updated {
 		return nil

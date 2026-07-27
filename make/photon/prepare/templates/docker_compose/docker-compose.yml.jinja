@@ -32,8 +32,6 @@ services:
       - CHOWN
       - SETGID
       - SETUID
-    env_file:
-      - ./common/config/registry/env
     volumes:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z

@@ -67,10 +67,6 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 		return "", nil, fmt.Errorf("artifact or manifest cannot be nil")
 	}
 
-	// Reject early based on the manifest-declared size. This is only a cheap
-	// pre-check: layer.Size is attacker-controlled and reflects the packed blob
-	// size, which can be far smaller than the number of bytes materialized when
-	// the content is decompressed/expanded (e.g. GNU tar sparse files).
 	if layer.Size > defaultFileSizeLimit {
 		return "", nil, errors.RequestEntityTooLargeError(errFileTooLarge)
 	}
@@ -82,10 +78,7 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 
 	defer stream.Close()
 
-	// Enforce the size limit against the actual bytes materialized, not just the
-	// declared blob size, to prevent decompression/sparse-file bombs from
-	// exhausting memory.
-	content, err := decodeContent(layer.MediaType, stream, defaultFileSizeLimit)
+	content, err := decodeContent(layer.MediaType, stream)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to decode content: %w", err)
 	}
@@ -93,37 +86,14 @@ func (b *base) Parse(_ context.Context, artifact *artifact.Artifact, layer *ocis
 	return contentTypeTextPlain, content, nil
 }
 
-// decodeContent decodes the content read from reader according to mediaType,
-// enforcing that no more than limit bytes are materialized in memory.
-func decodeContent(mediaType string, reader io.Reader, limit int64) ([]byte, error) {
+func decodeContent(mediaType string, reader io.Reader) ([]byte, error) {
 	format := filepath.Ext(mediaType)
 	switch format {
 	case formatTar:
-		return untar(reader, limit)
+		return untar(reader)
 	case formatRaw:
-		return readAllLimited(reader, limit)
+		return io.ReadAll(reader)
 	default:
 		return nil, fmt.Errorf("unsupported format: %s", format)
 	}
-}
-
-// readAllLimited reads from reader until EOF, but fails once more than limit
-// bytes have been read.
-func readAllLimited(reader io.Reader, limit int64) ([]byte, error) {
-	if limit < 0 {
-		return nil, fmt.Errorf("invalid limit: %d", limit)
-	}
-
-	// Read up to limit+1 bytes so we can distinguish "exactly at the limit"
-	// from "over the limit".
-	content, err := io.ReadAll(io.LimitReader(reader, limit+1))
-	if err != nil {
-		return nil, err
-	}
-
-	if int64(len(content)) > limit {
-		return nil, errors.RequestEntityTooLargeError(errFileTooLarge)
-	}
-
-	return content, nil
 }

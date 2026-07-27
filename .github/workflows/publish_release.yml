@@ -7,13 +7,13 @@ on:
 
 jobs:
   release:
-    runs-on: cncf-ubuntu-16-64-x86
+    runs-on: ubuntu-latest
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
       id-token: write   # Required for Cosign keyless signing
       packages: write   # Required for pushing images to ghcr.io
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v6
       - name: Setup env
         run: |
           echo "CUR_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
@@ -24,7 +24,7 @@ jobs:
           echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -63,7 +63,7 @@ jobs:
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
           echo "MD5SUM_PATH=$assets_path/md5sum" >> $GITHUB_ENV
       - name: Install Cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        uses: sigstore/cosign-installer@v4.1.2
       - name: Sign Release Artifacts
         run: |
           cur=${{ env.CUR_TAG }}
@@ -79,12 +79,12 @@ jobs:
             fi
           done
       - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master (no tagged release newer than v1/2023 covers this fix; commit dated 2025-08-24)
+        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master
         with:
           docker_version: 20.10
           docker_channel: stable
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+        uses: docker/setup-buildx-action@v3
       - name: Publish Images (amd64 + arm64)
         run: |
           set -euo pipefail
@@ -126,7 +126,7 @@ jobs:
           source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
           echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
       - name: RC Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'true' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
@@ -137,7 +137,7 @@ jobs:
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz.sigstore.json
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@v2
         if: ${{ env.PRERELEASE == 'false' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
