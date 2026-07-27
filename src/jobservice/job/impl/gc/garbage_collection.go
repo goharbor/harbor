@@ -121,13 +121,8 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 
 // parseParams set the parameters according to the GC API call.
 func (gc *GarbageCollector) parseParams(params job.Parameters) {
-	// redis url: prefer the current environment value so that a redis URL
-	// change takes effect immediately, instead of relying on the value that
-	// was persisted in the schedule/task parameters when the job was created.
-	gc.redisURL = os.Getenv("_REDIS_URL_REG")
-	if gc.redisURL == "" {
-		gc.redisURL, _ = params["redis_url_reg"].(string)
-	}
+	// redis url
+	gc.redisURL, _ = params["redis_url_reg"].(string)
 
 	// delete untagged: default is to delete the untagged artifact
 	gc.deleteUntagged = true
