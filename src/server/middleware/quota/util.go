@@ -16,11 +16,11 @@ package quota
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -48,7 +48,9 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 
 var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		body, err := lib.ReadRequestBody(r, common.MaxManifestBodySize)
+		lib.NopCloseRequest(r)
+
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, distribution.Descriptor{}, err
 		}

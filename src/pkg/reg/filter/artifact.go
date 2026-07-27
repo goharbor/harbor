@@ -15,7 +15,6 @@
 package filter
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -38,22 +37,14 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 		var f ArtifactFilter
 		switch filter.Type {
 		case model.FilterTypeLabel:
-			if labels, ok := filter.Value.([]string); ok {
-				f = &artifactLabelFilter{
-					labels:     labels,
-					decoration: filter.Decoration,
-				}
-			} else {
-				return nil, fmt.Errorf("invalid filter value type for label filter, expecting []string")
+			f = &artifactLabelFilter{
+				labels:     filter.Value.([]string),
+				decoration: filter.Decoration,
 			}
 		case model.FilterTypeTag:
-			if pattern, ok := filter.Value.(string); ok {
-				f = &artifactTagFilter{
-					pattern:    pattern,
-					decoration: filter.Decoration,
-				}
-			} else {
-				return nil, fmt.Errorf("invalid filter value type for tag filter, expecting string")
+			f = &artifactTagFilter{
+				pattern:    filter.Value.(string),
+				decoration: filter.Decoration,
 			}
 		}
 		if f != nil {

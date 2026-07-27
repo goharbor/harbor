@@ -11,9 +11,9 @@ permissions:
 
 jobs:
   check:
-    runs-on: cncf-ubuntu-16-64-x86
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: delimit-ai/delimit-action@v1

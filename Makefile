@@ -534,15 +534,14 @@ misspell:
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
-GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
-GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
+GOLANGCI_LINT := $(shell go env GOPATH)/bin/golangci-lint
 lint:
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
 
 # go install golang.org/x/vuln/cmd/govulncheck@latest
-GOVULNCHECK := $(GOPATH_BIN)/govulncheck
+GOVULNCHECK := $(shell go env GOPATH)/bin/govulncheck
 govulncheck:
 	@echo golang vulnerability check
 	@cd ./src/; $(GOVULNCHECK) ./...;
