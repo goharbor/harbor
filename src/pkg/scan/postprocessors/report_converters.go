@@ -373,16 +373,12 @@ func parseScoreFromVendorAttribute(ctx context.Context, vendorAttribute string) 
 
 	// set the nvd as the first priority, if it's unavailable, return the first V3Score available.
 	if val, ok := data.CVSS["nvd"]["V3Score"]; ok {
-		if f, ok := val.(float64); ok {
-			return f
-		}
+		return val.(float64)
 	}
 
 	for vendor := range data.CVSS {
 		if val, ok := data.CVSS[vendor]["V3Score"]; ok {
-			if f, ok := val.(float64); ok {
-				return f
-			}
+			return val.(float64)
 		}
 	}
 	return 0

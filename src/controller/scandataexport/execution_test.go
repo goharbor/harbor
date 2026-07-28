@@ -338,3 +338,62 @@ func (suite *ScanDataExportExecutionTestSuite) validateExecutionManagerInvocatio
 func TestScanDataExportExecutionTestSuite(t *testing.T) {
 	suite.Run(t, &ScanDataExportExecutionTestSuite{})
 }
+
+func (suite *ScanDataExportExecutionTestSuite) TestStartWithMissingVendorID() {
+	suite.taskMgr = &testingTask.Manager{}
+	suite.execMgr = &testingTask.ExecutionManager{}
+	suite.ctl = &controller{
+		execMgr: suite.execMgr,
+		taskMgr: suite.taskMgr,
+		makeCtx: func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
+	}
+	
+	ctx := context.Background() // Missing vendor ID
+	_, err := suite.ctl.Start(ctx, export.Request{JobName: "test-job", UserName: "test-user"})
+	suite.Error(err)
+	suite.Equal("failed to get vendor ID from context", err.Error())
+}
+
+func (suite *ScanDataExportExecutionTestSuite) TestGetExecutionInvalidExtraAttrs() {
+	suite.taskMgr = &testingTask.Manager{}
+	suite.execMgr = &testingTask.ExecutionManager{}
+	suite.sysArtifactMgr = &systemartifacttesting.Manager{}
+	suite.ctl = &controller{
+		execMgr:        suite.execMgr,
+		taskMgr:        suite.taskMgr,
+		makeCtx:        func() context.Context { return orm.NewContext(nil, &ormtesting.FakeOrmer{}) },
+		sysArtifactMgr: suite.sysArtifactMgr,
+	}
+	
+	attrs := make(map[string]any)
+	// Invalid types to trigger type assertion failures
+	attrs[export.JobNameAttribute] = 123
+	attrs[export.UserNameAttribute] = 456
+	attrs[export.DigestKey] = 789
+	attrs["status_message"] = 101
+	attrs[export.ProjectIDsAttribute] = []any{"invalid_pid_type"}
+	
+	exec := task.Execution{
+		ID:            101,
+		VendorType:    "SCAN_DATA_EXPORT",
+		VendorID:      -1,
+		Status:        "Success",
+		StatusMessage: "",
+		Metrics:       nil,
+		Trigger:       "Manual",
+		ExtraAttrs:    attrs,
+	}
+	
+	suite.execMgr.On("Get", mock.Anything, int64(101)).Return(&exec, nil).Once()
+	suite.sysArtifactMgr.On("Exists", mock.Anything, mock.Anything).Return(true, nil).Once()
+
+	exportExec, err := suite.ctl.GetExecution(context.TODO(), 101)
+	suite.NoError(err)
+	suite.Equal(exec.ID, exportExec.ID)
+	// All these fields should default to empty strings or slices due to failed type assertions
+	suite.Equal("", exportExec.UserName)
+	suite.Equal("", exportExec.JobName)
+	suite.Equal("", exportExec.StatusMessage)
+	suite.Equal("", exportExec.ExportDataDigest)
+	suite.Equal(0, len(exportExec.ProjectIDs))
+}

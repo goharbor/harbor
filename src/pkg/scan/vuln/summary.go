@@ -63,9 +63,7 @@ func (sum *NativeReportSummary) Merge(another *NativeReportSummary) *NativeRepor
 
 	r.TotalCount = sum.TotalCount + another.TotalCount
 	r.CompleteCount = sum.CompleteCount + another.CompleteCount
-	if r.TotalCount > 0 {
-		r.CompletePercent = r.CompleteCount * 100 / r.TotalCount
-	}
+	r.CompletePercent = r.CompleteCount * 100 / r.TotalCount
 	r.ReportID = mergeReportID(sum.ReportID, another.ReportID)
 	r.ScanStatus = MergeScanStatus(sum.ScanStatus, another.ScanStatus)
 

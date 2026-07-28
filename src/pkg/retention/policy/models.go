@@ -66,17 +66,10 @@ func (m *Metadata) ValidateRetentionPolicy() error {
 	if m.Trigger != nil {
 		if m.Trigger.Kind == TriggerKindSchedule && m.Trigger.Settings != nil {
 			cronItem, ok := m.Trigger.Settings[TriggerSettingsCron]
-			if ok {
-				if cronStr, isStr := cronItem.(string); isStr {
-					if len(cronStr) > 0 {
-						if err := utils.ValidateCronString(cronStr); err != nil {
-							return errors.New(nil).WithCode(errors.BadRequestCode).
-								WithMessagef("invalid cron string for scheduled tag retention: %s, error: %v", cronStr, err)
-						}
-					}
-				} else {
+			if ok && len(cronItem.(string)) > 0 {
+				if err := utils.ValidateCronString(cronItem.(string)); err != nil {
 					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessage("invalid cron type for scheduled tag retention: must be a string")
+						WithMessagef("invalid cron string for scheduled tag retention: %s, error: %v", cronItem.(string), err)
 				}
 			}
 		}
