@@ -76,11 +76,15 @@ func (m *manifestTestSuite) TearDownSuite() {
 }
 
 func (m *manifestTestSuite) TestGetManifest() {
+	// a missing manifest must be reported with the MANIFEST_UNKNOWN code defined by
+	// the OCI distribution spec rather than Harbor's general purpose NOT_FOUND
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/latest", nil)
-	w := &httptest.ResponseRecorder{}
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
+	w := httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).
+		WithCode(errors.NotFoundCode).WithMessage("artifact library/hello-world:latest not found"))
 	getManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
+	m.JSONEq(`{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown: artifact library/hello-world:latest not found"}]}`, w.Body.String())
 
 	m.SetupTest()
 
@@ -156,6 +160,20 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	deleteManifest(w, req)
 	m.Equal(http.StatusAccepted, w.Code)
 	m.cachedMgr.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
+func (m *manifestTestSuite) TestDeleteManifestNotFound() {
+	dgt := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
+	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/"+dgt, nil)
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":reference", dgt)
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+	w := httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).
+		WithCode(errors.NotFoundCode).WithMessage("artifact not found"))
+	deleteManifest(w, req)
+	m.Equal(http.StatusNotFound, w.Code)
+	m.JSONEq(`{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown: artifact not found"}]}`, w.Body.String())
 }
 
 func (m *manifestTestSuite) TestPutManifest() {

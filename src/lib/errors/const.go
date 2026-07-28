@@ -45,6 +45,10 @@ const (
 	DIGESTINVALID = "DIGEST_INVALID"
 	// MANIFESTINVALID ...
 	MANIFESTINVALID = "MANIFEST_INVALID"
+	// MANIFESTUNKNOWN is the code the OCI distribution spec defines for a manifest
+	// that is unknown to the registry, it's only used by the manifest endpoints of
+	// the /v2/ API, NotFoundCode remains the general purpose code of the other APIs
+	MANIFESTUNKNOWN = "MANIFEST_UNKNOWN"
 	// UNSUPPORTED is for digest UNSUPPORTED error
 	UNSUPPORTED = "UNSUPPORTED"
 	// RequestEntityTooLargeCode is the error code for request entity too large error.
@@ -54,6 +58,21 @@ const (
 // NotFoundError is error for the case of object not found
 func NotFoundError(err error) *Error {
 	return New("resource not found").WithCode(NotFoundCode).WithCause(err)
+}
+
+// AsManifestUnknownError converts a not found error into a manifest unknown error,
+// any other error is returned unchanged.
+//
+// The error code of a /v2/ API response MUST be one of the codes the OCI distribution
+// spec defines, and NOT_FOUND isn't one of them, so clients cannot tell a missing
+// manifest from a server side failure. Only the manifest endpoints are converted,
+// the general purpose NOT_FOUND is kept for the Harbor APIs.
+// https://github.com/opencontainers/distribution-spec/blob/v1.1.1/spec.md#error-codes
+func AsManifestUnknownError(err error) error {
+	if !IsNotFoundErr(err) {
+		return err
+	}
+	return New("manifest unknown").WithCode(MANIFESTUNKNOWN).WithCause(err)
 }
 
 // ConflictError is error for the case of object conflict
