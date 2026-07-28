@@ -278,7 +278,7 @@ func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, data)
+	logger.Debugf("Serve http request '%s %s': %d, %d bytes", req.Method, req.URL.String(), code, len(data))
 
 	w.Header().Set("Accept", "application/json")
 	w.Header().Set("Content-Type", "application/json")
