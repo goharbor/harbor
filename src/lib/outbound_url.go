@@ -248,16 +248,16 @@ func init() {
 		"255.255.255.255/32", // Limited Broadcast
 
 		// IPv6 special-use / non-public ranges
-		"::/128",        // Unspecified
-		"::1/128",       // Loopback
-		"100::/64",      // Discard-only address block (RFC 6666)
-		"2001:2::/48",   // Benchmarking (RFC 5180)
-		"2001:db8::/32", // Documentation (RFC 3849)
+		"::/128",         // Unspecified
+		"::1/128",        // Loopback
+		"100::/64",       // Discard-only address block (RFC 6666)
+		"2001:2::/48",    // Benchmarking (RFC 5180)
+		"2001:db8::/32",  // Documentation (RFC 3849)
 		"64:ff9b:1::/48", // Local-use IPv4/IPv6 translation prefix (RFC 8215)
 		"fec0::/10",      // Deprecated Site-Local Unicast (RFC 3879)
-		"fc00::/7",      // Unique-Local / ULA (RFC 4193)
-		"fe80::/10",     // Link-Local Unicast
-		"ff00::/8",      // Multicast
+		"fc00::/7",       // Unique-Local / ULA (RFC 4193)
+		"fe80::/10",      // Link-Local Unicast
+		"ff00::/8",       // Multicast
 	}
 
 	for _, cidr := range cidrs {
