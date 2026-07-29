@@ -73,7 +73,21 @@ func PublicDialContext(ctx context.Context, network, address string) (net.Conn, 
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		conn, err := publicDialer.DialContext(ctx, network, dialAddress)
+
+		// Calculate a separate timeout for this attempt to prevent a black-holed IP
+		// from consuming the entire parent context deadline.
+		attemptTimeout := 2 * time.Second
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining := time.Until(deadline)
+			if remaining < attemptTimeout {
+				attemptTimeout = remaining / time.Duration(len(dialAddresses))
+			}
+		}
+
+		attemptCtx, cancel := context.WithTimeout(ctx, attemptTimeout)
+		conn, err := publicDialer.DialContext(attemptCtx, network, dialAddress)
+		cancel()
+
 		if err == nil {
 			return conn, nil
 		}

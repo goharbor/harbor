@@ -233,7 +233,19 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 			continue
 		}
 
-		ctx := context.WithValue(req.Context(), targetHostKey, host)
+		// Calculate a separate timeout for this attempt to prevent a black-holed IP
+		// from consuming the entire parent context deadline.
+		attemptTimeout := 2 * time.Second
+		if deadline, ok := req.Context().Deadline(); ok {
+			remaining := time.Until(deadline)
+			if remaining < attemptTimeout {
+				attemptTimeout = remaining / time.Duration(len(dialAddrs))
+			}
+		}
+
+		attemptCtx, cancel := context.WithTimeout(req.Context(), attemptTimeout)
+
+		ctx := context.WithValue(attemptCtx, targetHostKey, host)
 		clonedReq := req.Clone(ctx)
 		if clonedReq.Host == "" {
 			clonedReq.Host = req.URL.Host
@@ -243,6 +255,7 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		if req.GetBody != nil {
 			body, err := req.GetBody()
 			if err != nil {
+				cancel()
 				lastErr = err
 				continue
 			}
@@ -250,6 +263,8 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		}
 
 		resp, err := tr.RoundTrip(clonedReq)
+		cancel()
+
 		if err == nil {
 			return resp, nil
 		}
