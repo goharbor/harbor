@@ -126,7 +126,11 @@ func (sj *SlackJob) init(ctx job.Context, params map[string]any) error {
 func (sj *SlackJob) execute(ctx job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
-	validatedAddress, err := lib.ValidatePublicHTTPURL(ctx.SystemContext(), address, true)
+
+	reqCtx, cancel := context.WithTimeout(ctx.SystemContext(), timeout)
+	defer cancel()
+
+	validatedAddress, err := lib.ValidatePublicHTTPURL(reqCtx, address, true)
 	if err != nil {
 		return errors.Wrap(err, "invalid slack target")
 	}
@@ -138,7 +142,7 @@ func (sj *SlackJob) execute(ctx job.Context, params map[string]any) error {
 		}
 	}
 
-	reqCtx := context.WithValue(ctx.SystemContext(), useProxyKey, useProxy)
+	reqCtx = context.WithValue(reqCtx, useProxyKey, useProxy)
 	req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, validatedAddress, bytes.NewReader([]byte(payload)))
 	if err != nil {
 		return errors.Wrap(err, "error to generate request")
