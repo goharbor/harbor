@@ -145,6 +145,20 @@ func PublicDialAddress(ctx context.Context, host, port string) (string, error) {
 	return dialAddresses[0], nil
 }
 
+// PublicDialAddresses resolves address, rejects non-public resolved IPs, and returns all validated IP addresses.
+func PublicDialAddresses(ctx context.Context, host, port string) ([]string, error) {
+	return publicDialAddresses(ctx, host, port)
+}
+
+// SetLookupIPAddrForTest is used for unit testing.
+func SetLookupIPAddrForTest(fn func(context.Context, string) ([]net.IPAddr, error)) func() {
+	orig := lookupIPAddr
+	lookupIPAddr = fn
+	return func() {
+		lookupIPAddr = orig
+	}
+}
+
 func publicDialAddresses(ctx context.Context, host, port string) ([]string, error) {
 	host = strings.Trim(strings.TrimSuffix(strings.ToLower(host), "."), "[]")
 	if err := validatePublicHost(ctx, host, false); err != nil {
@@ -225,6 +239,8 @@ func init() {
 		"100::/64",      // Discard-only address block (RFC 6666)
 		"2001:2::/48",   // Benchmarking (RFC 5180)
 		"2001:db8::/32", // Documentation (RFC 3849)
+		"64:ff9b:1::/48", // Local-use IPv4/IPv6 translation prefix (RFC 8215)
+		"fec0::/10",      // Deprecated Site-Local Unicast (RFC 3879)
 		"fc00::/7",      // Unique-Local / ULA (RFC 4193)
 		"fe80::/10",     // Link-Local Unicast
 		"ff00::/8",      // Multicast

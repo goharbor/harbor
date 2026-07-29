@@ -3,14 +3,26 @@ package notification
 import (
 	"context"
 	"io"
+	"net"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/lib"
 )
+
+type mockDialer struct {
+	dialFunc func(ctx context.Context, network, address string) (net.Conn, error)
+}
+
+func (m *mockDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	return m.dialFunc(ctx, network, address)
+}
 
 func TestHttpHelper(t *testing.T) {
 	c1 := httpHelper.clients[insecure]
@@ -66,8 +78,35 @@ func TestSsrfProxyRoundTripper(t *testing.T) {
 	})
 
 	t.Run("with proxy key and public host", func(t *testing.T) {
+		// Mock DNS resolution to return a public IP
+		cleanupDNS := lib.SetLookupIPAddrForTest(func(ctx context.Context, host string) ([]net.IPAddr, error) {
+			if host == "example.com" {
+				return []net.IPAddr{{IP: net.ParseIP("1.1.1.1")}}, nil
+			}
+			return net.DefaultResolver.LookupIPAddr(ctx, host)
+		})
+		defer cleanupDNS()
+
+		// Start local TLS test server with self-signed certificate
+		server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("ok"))
+		}))
+		defer server.Close()
+
+		// Mock dialer to redirect connection to the local test server
+		originalDialer := dialer
+		t.Cleanup(func() {
+			dialer = originalDialer
+		})
+		dialer = &mockDialer{
+			dialFunc: func(ctx context.Context, network, address string) (net.Conn, error) {
+				return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
+			},
+		}
+
 		rt := &ssrfProxyRoundTripper{
-			insecure:   false,
+			insecure:   true, // skip verification for self-signed test server cert
 			underlying: http.DefaultTransport,
 		}
 
@@ -76,14 +115,8 @@ func TestSsrfProxyRoundTripper(t *testing.T) {
 		req = req.WithContext(context.WithValue(req.Context(), useProxyKey, true))
 
 		resp, err := rt.RoundTrip(req)
-		if err == nil {
-			defer resp.Body.Close()
-			// Status can be 200 or 404 or any other HTTP status since it reached example.com
-			assert.True(t, resp.StatusCode > 0)
-		} else {
-			// If network is not reachable (e.g. offline builder), we allow dial/connect errors,
-			// but we shouldn't get validation errors.
-			assert.True(t, strings.Contains(err.Error(), "dial") || strings.Contains(err.Error(), "connect") || strings.Contains(err.Error(), "lookup") || strings.Contains(err.Error(), "no such host") || strings.Contains(err.Error(), "timeout"))
-		}
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 }

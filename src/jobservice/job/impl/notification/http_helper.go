@@ -81,14 +81,19 @@ func init() {
 	}
 }
 
+type dialerInterface interface {
+	DialContext(ctx context.Context, network, addr string) (net.Conn, error)
+}
+
 type contextKey string
 
 const (
-	useProxyKey contextKey = "useProxy"
+	useProxyKey   contextKey = "useProxy"
+	targetHostKey contextKey = "targetHost"
 )
 
 var (
-	dialer = &net.Dialer{
+	dialer dialerInterface = &net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
 	}
@@ -121,6 +126,7 @@ type ssrfProxyRoundTripper struct {
 	underlying   http.RoundTripper
 	transportsMu sync.Mutex
 	transports   map[string]*http.Transport
+	hosts        []string // for LRU cache eviction
 }
 
 func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -140,12 +146,7 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 	}
 
 	// Resolve and validate target host, pinning the IP address to prevent DNS-rebinding SSRF
-	dialAddr, err := lib.PublicDialAddress(req.Context(), host, port)
-	if err != nil {
-		return nil, err
-	}
-
-	ip, _, err := net.SplitHostPort(dialAddr)
+	dialAddrs, err := lib.PublicDialAddresses(req.Context(), host, port)
 	if err != nil {
 		return nil, err
 	}
@@ -156,10 +157,46 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 	}
 	tr, exists := s.transports[host]
 	if !exists {
+		// LRU Eviction: If map has 100 or more entries, evict the oldest
+		if len(s.hosts) >= 100 {
+			oldest := s.hosts[0]
+			s.hosts = s.hosts[1:]
+			if oldTr, ok := s.transports[oldest]; ok {
+				oldTr.CloseIdleConnections()
+				delete(s.transports, oldest)
+			}
+		}
+
 		tr = &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 				return dialer.DialContext(ctx, network, addr)
+			},
+			DialTLSContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				dialHost, _, err := net.SplitHostPort(addr)
+				if err != nil {
+					dialHost = addr
+				}
+				serverName := dialHost
+				if targetHost, ok := ctx.Value(targetHostKey).(string); ok {
+					if dialHost == targetHost || net.ParseIP(dialHost) != nil {
+						serverName = targetHost
+					}
+				}
+				plainConn, err := dialer.DialContext(ctx, network, addr)
+				if err != nil {
+					return nil, err
+				}
+				tlsConfig := &tls.Config{
+					ServerName:         serverName,
+					InsecureSkipVerify: s.insecure,
+				}
+				tlsConn := tls.Client(plainConn, tlsConfig)
+				if err := tlsConn.HandshakeContext(ctx); err != nil {
+					plainConn.Close()
+					return nil, err
+				}
+				return tlsConn, nil
 			},
 			TLSClientConfig: &tls.Config{
 				ServerName:         host,
@@ -171,17 +208,54 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 			ExpectContinueTimeout: 1 * time.Second,
 		}
 		s.transports[host] = tr
+		s.hosts = append(s.hosts, host)
+	} else {
+		// Update LRU position: move host to the end
+		for i, h := range s.hosts {
+			if h == host {
+				s.hosts = append(s.hosts[:i], s.hosts[i+1:]...)
+				break
+			}
+		}
+		s.hosts = append(s.hosts, host)
 	}
 	s.transportsMu.Unlock()
 
-	clonedReq := req.Clone(req.Context())
-	if clonedReq.Host == "" {
-		clonedReq.Host = req.URL.Host
+	var lastErr error
+	for _, dialAddr := range dialAddrs {
+		if err := req.Context().Err(); err != nil {
+			return nil, err
+		}
+
+		ip, _, err := net.SplitHostPort(dialAddr)
+		if err != nil {
+			lastErr = err
+			continue
+		}
+
+		ctx := context.WithValue(req.Context(), targetHostKey, host)
+		clonedReq := req.Clone(ctx)
+		if clonedReq.Host == "" {
+			clonedReq.Host = req.URL.Host
+		}
+		clonedReq.URL.Host = net.JoinHostPort(ip, port)
+
+		if req.GetBody != nil {
+			body, err := req.GetBody()
+			if err != nil {
+				lastErr = err
+				continue
+			}
+			clonedReq.Body = body
+		}
+
+		resp, err := tr.RoundTrip(clonedReq)
+		if err == nil {
+			return resp, nil
+		}
+		lastErr = err
 	}
-
-	clonedReq.URL.Host = net.JoinHostPort(ip, port)
-
-	return tr.RoundTrip(clonedReq)
+	return nil, lastErr
 }
 
 func noRedirect(_ *http.Request, _ []*http.Request) error {
