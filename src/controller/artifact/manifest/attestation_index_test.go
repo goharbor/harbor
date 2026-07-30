@@ -155,47 +155,33 @@ func TestIndexAbstractorClassifiesAttestationAsAccessory(t *testing.T) {
 	assert.Equal(t, int64(len(attestationIndex)+13), art.Size)
 }
 
-// Resolution falls back to the reference annotation when the in-toto payload
-// cannot be read.
-func TestIndexAbstractorFallsBackToAnnotation(t *testing.T) {
+// An annotation naming a child of the index resolves without touching the
+// payload, which is the whole point of trying it first.
+func TestIndexAbstractorResolvesFromAnnotationWithoutPullingPayload(t *testing.T) {
 	artMgr, regCli := attestationIndexMocks(t)
-	regCli.On("PullManifest", mock.Anything, attestationDigest).Return(nil, "", fmt.Errorf("no in-toto payload")).Once()
 
 	art := &artifact.Artifact{ID: 1, RepositoryName: "library/test", ManifestMediaType: v1.MediaTypeImageIndex}
 	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(attestationIndexAnnotationOnly)))
 
+	regCli.AssertNotCalled(t, "PullManifest", mock.Anything, attestationDigest)
+	regCli.AssertNotCalled(t, "PullBlob", mock.Anything, mock.Anything)
 	require.Len(t, art.References, 1)
 	require.Len(t, art.AccessoryCandidates, 1)
 	assert.Equal(t, amd64Digest, art.AccessoryCandidates[0].SubArtifactDigest)
 	assert.Equal(t, model.TypeInTotoAttestation, art.AccessoryCandidates[0].Type)
 }
 
-// An attestation whose subject cannot be resolved stays an ordinary child rather
-// than being dropped from the index.
+// With the annotation pointing outside the index and the payload unreadable,
+// nothing resolves and the attestation stays an ordinary child rather than
+// being dropped.
 func TestIndexAbstractorKeepsUnresolvableAttestationAsChild(t *testing.T) {
 	artMgr, regCli := attestationIndexMocks(t)
 	regCli.On("PullManifest", mock.Anything, attestationDigest).Return(nil, "", fmt.Errorf("boom")).Once()
 
-	// no platform children for the annotation to point at
-	index := `{
-  "schemaVersion": 2,
-  "mediaType": "application/vnd.oci.image.index.v1+json",
-  "manifests": [
-    {
-      "mediaType": "application/vnd.oci.image.manifest.v1+json",
-      "size": 1024,
-      "digest": "sha256:44401ce7f2bf39029d0d56f095374b7f344e1986c8b4970ef4f4fdb98e3f7220",
-      "annotations": {
-        "vnd.docker.reference.digest": "sha256:480b518ed0138eacf2d070de80cb8eb019fb0b3565e2598ed654a541c31061a0",
-        "vnd.docker.reference.type": "attestation-manifest"
-      },
-      "platform": {"architecture": "unknown", "os": "unknown"}
-    }
-  ]
-}`
 	art := &artifact.Artifact{ID: 1, RepositoryName: "library/test", ManifestMediaType: v1.MediaTypeImageIndex}
-	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(index)))
+	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(attestationIndex)))
 
+	regCli.AssertCalled(t, "PullManifest", mock.Anything, attestationDigest)
 	assert.Empty(t, art.AccessoryCandidates)
-	assert.Len(t, art.References, 1)
+	assert.Len(t, art.References, 2, "the unresolved attestation is still a child")
 }

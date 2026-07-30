@@ -69,13 +69,11 @@ func NewInTotoAttestationClassifier(artMgr artifact.Manager, regCli registry.Cli
 
 func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository string, descriptor v1.Descriptor, siblings []v1.Descriptor) (*artifact.AccessoryCandidate, error) {
 	if !isAttestationDescriptor(descriptor) {
-		//nolint:nilnil // descriptor is not an attestation
 		return nil, nil
 	}
 
 	children := platformChildren(siblings)
 	if len(children) == 0 {
-		//nolint:nilnil // nothing in the index for the attestation to describe
 		return nil, nil
 	}
 
@@ -90,7 +88,6 @@ func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository s
 		targetDigest = resolveSubjectFromStatement(children, subjects)
 	}
 	if targetDigest == "" {
-		//nolint:nilnil // no target artifact could be resolved
 		return nil, nil
 	}
 

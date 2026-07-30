@@ -319,7 +319,7 @@ func TestResolveSubjectFromStatement(t *testing.T) {
 	// two children must not resolve differently between runs.
 	t.Run("ambiguous digests within one subject are order independent", func(t *testing.T) {
 		sha512Encoded := strings.Repeat("ab", 64)
-		withSha512 := append(children, v1.Descriptor{ //nolint:gocritic // intentional copy
+		withSha512 := append(children, v1.Descriptor{
 			Digest:   digest.Digest("sha512:" + sha512Encoded),
 			Platform: &v1.Platform{OS: "linux", Architecture: "s390x"},
 		})
