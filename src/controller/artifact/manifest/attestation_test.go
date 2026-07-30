@@ -270,141 +270,62 @@ func TestDigestBySubjectName(t *testing.T) {
 	})
 }
 
-func TestResolveAttestationSubject(t *testing.T) {
-	amd64Digest := "sha256:cad250bb95ea402adf4f687cc7d6747ecf0de875e6d6117f74437893964903df"
-	arm64Digest := "sha256:480b518ed0138eacf2d070de80cb8eb019fb0b3565e2598ed654a541c31061a0"
-
-	amd64Child := v1.Descriptor{
-		Digest:   digest.Digest(amd64Digest),
-		Platform: &v1.Platform{OS: "linux", Architecture: "amd64"},
-	}
-	arm64Child := v1.Descriptor{
-		Digest:   digest.Digest(arm64Digest),
-		Platform: &v1.Platform{OS: "linux", Architecture: "arm64"},
-	}
-	attestation := v1.Descriptor{
-		MediaType: v1.MediaTypeImageManifest,
-		Digest:    digest.FromString("attestation"),
-		Annotations: map[string]string{
-			referenceTypeAnnotation:   attestationManifestType,
-			referenceDigestAnnotation: amd64Digest,
-		},
-	}
-	siblings := []v1.Descriptor{amd64Child, arm64Child, attestation}
-
-	t.Run("annotation digest matches platform child", func(t *testing.T) {
-		got := resolveAttestationSubject(attestation, siblings, nil)
-		assert.Equal(t, amd64Digest, got)
-	})
-
-	t.Run("annotation digest not in index falls back to subject digest", func(t *testing.T) {
-		desc := v1.Descriptor{
-			MediaType: v1.MediaTypeImageManifest,
-			Annotations: map[string]string{
-				referenceTypeAnnotation:   attestationManifestType,
-				referenceDigestAnnotation: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-			},
-		}
-		subjects := []inTotoSubject{
-			{
-				Name:   "amd64",
-				Digest: map[string]string{"sha256": "cad250bb95ea402adf4f687cc7d6747ecf0de875e6d6117f74437893964903df"},
-			},
-		}
-		got := resolveAttestationSubject(desc, siblings, subjects)
-		assert.Equal(t, amd64Digest, got)
-	})
-
-	t.Run("falls back to subject name matching", func(t *testing.T) {
-		desc := v1.Descriptor{
-			MediaType: v1.MediaTypeImageManifest,
-			Annotations: map[string]string{
-				referenceTypeAnnotation:   attestationManifestType,
-				referenceDigestAnnotation: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-			},
-		}
-		subjects := []inTotoSubject{
-			{
-				Name:   "linux/arm64",
-				Digest: map[string]string{"sha256": "not-a-valid-hex-that-matches"},
-			},
-		}
-		got := resolveAttestationSubject(desc, siblings, subjects)
-		assert.Equal(t, arm64Digest, got)
-	})
-
-	t.Run("no siblings returns empty", func(t *testing.T) {
-		got := resolveAttestationSubject(attestation, []v1.Descriptor{attestation}, nil)
-		assert.Empty(t, got)
-	})
-
-	t.Run("nil subjects with annotation not matching returns empty", func(t *testing.T) {
-		desc := v1.Descriptor{
-			MediaType: v1.MediaTypeImageManifest,
-			Annotations: map[string]string{
-				referenceTypeAnnotation:   attestationManifestType,
-				referenceDigestAnnotation: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-			},
-		}
-		got := resolveAttestationSubject(desc, siblings, nil)
-		assert.Empty(t, got)
-	})
-
-	t.Run("no annotation digest falls back to subject", func(t *testing.T) {
-		desc := v1.Descriptor{
-			MediaType: v1.MediaTypeImageManifest,
-			Annotations: map[string]string{
-				referenceTypeAnnotation: attestationManifestType,
-			},
-		}
-		subjects := []inTotoSubject{
-			{
-				Name:   "arm64",
-				Digest: map[string]string{"sha256": "480b518ed0138eacf2d070de80cb8eb019fb0b3565e2598ed654a541c31061a0"},
-			},
-		}
-		got := resolveAttestationSubject(desc, siblings, subjects)
-		assert.Equal(t, arm64Digest, got)
-	})
-}
-
-// Resolution must not depend on the digest map's iteration order.
-func TestResolveAttestationSubjectAmbiguousDigests(t *testing.T) {
+func TestResolveSubjectFromStatement(t *testing.T) {
 	amd64Encoded := "cad250bb95ea402adf4f687cc7d6747ecf0de875e6d6117f74437893964903df"
-	sha256Ref := "sha256:" + amd64Encoded
-	sha512Encoded := strings.Repeat("ab", 64)
+	arm64Encoded := "480b518ed0138eacf2d070de80cb8eb019fb0b3565e2598ed654a541c31061a0"
+	amd64Ref := "sha256:" + amd64Encoded
+	arm64Ref := "sha256:" + arm64Encoded
 
-	siblings := []v1.Descriptor{
-		{
-			Digest:   digest.Digest(sha256Ref),
-			Platform: &v1.Platform{OS: "linux", Architecture: "amd64"},
-		},
-		{
-			Digest:   digest.Digest("sha512:" + sha512Encoded),
-			Platform: &v1.Platform{OS: "linux", Architecture: "arm64"},
-		},
-	}
-	attestation := v1.Descriptor{
-		MediaType:   v1.MediaTypeImageManifest,
-		Annotations: map[string]string{referenceTypeAnnotation: attestationManifestType},
+	children := []v1.Descriptor{
+		{Digest: digest.Digest(amd64Ref), Platform: &v1.Platform{OS: "linux", Architecture: "amd64"}},
+		{Digest: digest.Digest(arm64Ref), Platform: &v1.Platform{OS: "linux", Architecture: "arm64"}},
 	}
 
-	t.Run("digests matching different siblings resolve to nothing", func(t *testing.T) {
-		// name is empty so the name fallback cannot mask the ambiguity
-		subjects := []inTotoSubject{{
-			Digest: map[string]string{"sha256": amd64Encoded, "sha512": sha512Encoded},
-		}}
-		for range 50 {
-			assert.Empty(t, resolveAttestationSubject(attestation, append(siblings, attestation), subjects))
-		}
+	t.Run("subject digest matches a child", func(t *testing.T) {
+		subjects := []inTotoSubject{{Name: "amd64", Digest: map[string]string{"sha256": amd64Encoded}}}
+		assert.Equal(t, amd64Ref, resolveSubjectFromStatement(children, subjects))
 	})
 
-	t.Run("a single matching algorithm resolves deterministically", func(t *testing.T) {
-		subjects := []inTotoSubject{{
-			Digest: map[string]string{"sha256": amd64Encoded, "sha512": strings.Repeat("cd", 64)},
-		}}
+	t.Run("falls back to the subject name", func(t *testing.T) {
+		subjects := []inTotoSubject{{Name: "linux/arm64", Digest: map[string]string{"sha256": "not-a-digest"}}}
+		assert.Equal(t, arm64Ref, resolveSubjectFromStatement(children, subjects))
+	})
+
+	t.Run("no subjects resolves to nothing", func(t *testing.T) {
+		assert.Empty(t, resolveSubjectFromStatement(children, nil))
+	})
+
+	t.Run("unknown subject resolves to nothing", func(t *testing.T) {
+		subjects := []inTotoSubject{{Name: "s390x"}}
+		assert.Empty(t, resolveSubjectFromStatement(children, subjects))
+	})
+
+	// A statement naming two different children does not identify a single
+	// target, so nothing is attached rather than taking whichever came first.
+	t.Run("two subjects matching different children is ambiguous", func(t *testing.T) {
+		subjects := []inTotoSubject{
+			{Name: "amd64", Digest: map[string]string{"sha256": amd64Encoded}},
+			{Name: "arm64", Digest: map[string]string{"sha256": arm64Encoded}},
+		}
+		assert.Empty(t, resolveSubjectFromStatement(children, subjects))
+	})
+
+	t.Run("ambiguous names resolve to nothing", func(t *testing.T) {
+		subjects := []inTotoSubject{{Name: "amd64"}, {Name: "arm64"}}
+		assert.Empty(t, resolveSubjectFromStatement(children, subjects))
+	})
+
+	// The digest map iterates in unspecified order, so the same subject naming
+	// two children must not resolve differently between runs.
+	t.Run("ambiguous digests within one subject are order independent", func(t *testing.T) {
+		sha512Encoded := strings.Repeat("ab", 64)
+		withSha512 := append(children, v1.Descriptor{ //nolint:gocritic // intentional copy
+			Digest:   digest.Digest("sha512:" + sha512Encoded),
+			Platform: &v1.Platform{OS: "linux", Architecture: "s390x"},
+		})
+		subjects := []inTotoSubject{{Digest: map[string]string{"sha256": amd64Encoded, "sha512": sha512Encoded}}}
 		for range 50 {
-			assert.Equal(t, sha256Ref, resolveAttestationSubject(attestation, append(siblings, attestation), subjects))
+			assert.Empty(t, resolveSubjectFromStatement(withSha512, subjects))
 		}
 	})
 }
