@@ -35,6 +35,7 @@ enum LightColors {
     selector: 'app-donut-chart',
     templateUrl: './donut-chart.component.html',
     styleUrls: ['./donut-chart.component.scss'],
+    standalone: false,
 })
 export class DonutChartComponent {
     @Input()

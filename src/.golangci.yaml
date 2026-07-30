@@ -6,6 +6,7 @@ linters:
     - dupl
     - errcheck
     - goheader
+    - gosec
     - govet
     - ineffassign
     - misspell
@@ -18,6 +19,16 @@ linters:
       template-path: copyright.tmpl
     dupl:
       threshold: 300
+    gosec:
+      excludes:
+        - G101
+        - G110
+        - G112
+        - G114
+        - G115
+        - G306
+        - G402
+        - G404
     misspell:
       locale: US,UK
     staticcheck:
@@ -34,7 +45,7 @@ linters:
       - linters:
           - revive
         text: "var-naming: avoid meaningless package names"
-        path: "(common/|core/utils/|core/api/|jobservice/api/|registryctl/api/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/|controller/event/handler/util/)"
+        path: "(common/|core/utils/|core/api/|jobservice/api/|jobservice/common/utils/|registryctl/api/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/|controller/event/handler/util/)"
       # TODO: Fix package naming - these packages conflict with Go stdlib
       - linters:
           - revive

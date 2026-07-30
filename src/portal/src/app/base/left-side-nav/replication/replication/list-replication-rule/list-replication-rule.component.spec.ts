@@ -130,12 +130,11 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         action.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const disable: HTMLElement =
-            fixture.nativeElement.querySelector('#rule-disable');
+        const disable = document.querySelector<HTMLElement>('#rule-disable');
         disable.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const button: HTMLElement = fixture.nativeElement.querySelector(
+        const button = document.querySelector<HTMLElement>(
             '#dialog-action-disable'
         );
         button.click();
@@ -157,12 +156,11 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         action.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const enable: HTMLElement =
-            fixture.nativeElement.querySelector('#rule-enable');
+        const enable = document.querySelector<HTMLElement>('#rule-enable');
         enable.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const button: HTMLElement = fixture.nativeElement.querySelector(
+        const button = document.querySelector<HTMLElement>(
             '#dialog-action-enable'
         );
         button.click();

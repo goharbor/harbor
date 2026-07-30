@@ -18,7 +18,7 @@ import { map, Observable } from 'rxjs';
 import { All, ScheduleListResponse } from './job-service-dashboard.interface';
 import { Worker } from 'ng-swagger-gen/models';
 import { ScheduleService } from '../../../../../ng-swagger-gen/services/schedule.service';
-import { ClrDatagridStateInterface } from '@clr/angular/data/datagrid/interfaces/state.interface';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { doSorting } from '../../../shared/units/utils';
 
 @Injectable()

@@ -19,7 +19,7 @@ import "fmt"
 const (
 	baseURL             = "https://hub.docker.com"
 	registryURL         = "https://registry-1.docker.io"
-	loginPath           = "/v2/users/login/"
+	loginPath           = "/v2/auth/token"
 	listNamespacePath   = "/v2/repositories/namespaces"
 	createNamespacePath = "/v2/orgs/"
 

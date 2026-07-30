@@ -18,6 +18,7 @@ import { ConfigService } from './config.service';
     selector: 'config',
     templateUrl: 'config.component.html',
     styleUrls: ['config.component.scss'],
+    standalone: false,
 })
 export class ConfigurationComponent implements OnInit {
     get inProgress(): boolean {

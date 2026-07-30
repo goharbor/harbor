@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
     selector: 'artifact-list-page',
     templateUrl: 'artifact-list-page.component.html',
     styleUrls: ['./artifact-list-page.component.scss'],
+    standalone: false,
 })
 export class ArtifactListPageComponent implements OnDestroy {
     projectId: string;

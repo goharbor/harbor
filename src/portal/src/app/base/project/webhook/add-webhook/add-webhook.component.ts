@@ -26,6 +26,7 @@ import { SupportedWebhookEventTypes } from '../../../../../../ng-swagger-gen/mod
     selector: 'add-webhook',
     templateUrl: './add-webhook.component.html',
     styleUrls: ['./add-webhook.component.scss'],
+    standalone: false,
 })
 export class AddWebhookComponent {
     isEdit: boolean;

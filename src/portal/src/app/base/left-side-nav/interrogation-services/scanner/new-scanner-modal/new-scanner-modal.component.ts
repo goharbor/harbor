@@ -27,6 +27,7 @@ import { clone } from '../../../../../shared/units/utils';
     selector: 'new-scanner-modal',
     templateUrl: 'new-scanner-modal.component.html',
     styleUrls: ['../../../../../common.scss'],
+    standalone: false,
 })
 export class NewScannerModalComponent {
     testMap: any = {};

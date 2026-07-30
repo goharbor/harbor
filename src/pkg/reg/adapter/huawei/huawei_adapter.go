@@ -24,6 +24,7 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -278,11 +279,13 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			modifiers...,
 		),
 		oriClient: &http.Client{
 			Transport: transport,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}, nil
 }

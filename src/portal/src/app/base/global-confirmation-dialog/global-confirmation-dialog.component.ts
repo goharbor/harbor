@@ -27,6 +27,7 @@ import { ConfirmationAcknowledgement } from './confirmation-state-message';
     selector: 'global-confirmation-dialog',
     templateUrl: 'global-confirmation-dialog.component.html',
     styleUrls: ['global-confirmation-dialog.component.scss'],
+    standalone: false,
 })
 export class GlobalConfirmationDialogComponent implements OnDestroy {
     opened: boolean = false;

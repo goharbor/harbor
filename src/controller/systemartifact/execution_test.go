@@ -2,9 +2,9 @@ package systemartifact
 
 import (
 	"context"
+	"errors"
 	"testing"
 
-	"github.com/pkg/errors"
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 

@@ -43,6 +43,7 @@ Test Case - Project Quota Sorting
     Close Browser
 
 Test Case - Garbage Collection
+    [Tags]  garbage_collection
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -53,10 +54,11 @@ Test Case - Garbage Collection
     GC Now  workers=5
     ${latest_job_id}=  Get Text  ${latest_job_id_xpath}
     Retry GC Should Be Successful  ${latest_job_id}  7 blobs and 1 manifests eligible for deletion
-    Retry GC Should Be Successful  ${latest_job_id}  The GC job actual frees up 34 MB space
+    Retry GC Should Be Successful  ${latest_job_id}  The GC job actual frees up 34.14 MiB space
     Close Browser
 
 Test Case - GC Untagged Images
+    [Tags]  gc_untagged_images
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -86,6 +88,7 @@ Test Case - GC Untagged Images
 
 # Make sure image logstash was pushed to harbor for the 1st time, so GC will delete it.
 Test Case - Project Quotas Control Under GC
+    [Tags]  project_quotas_control_under_gc
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  200

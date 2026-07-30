@@ -18,7 +18,6 @@ import (
 	"context"
 
 	commonthttp "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -179,40 +178,6 @@ func getLocalRegistry() *model.Registry {
 	}
 }
 
-// decrypt checks whether access secret is set in the registry, if so, decrypt it.
-func decrypt(secret string) (string, error) {
-	if len(secret) == 0 {
-		return "", nil
-	}
-	secretKey, err := config.SecretKey()
-	if err != nil {
-		return "", nil
-	}
-	decrypted, err := utils.ReversibleDecrypt(secret, secretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return decrypted, nil
-}
-
-// encrypt checks whether access secret is set in the registry, if so, encrypt it.
-func encrypt(secret string) (string, error) {
-	if len(secret) == 0 {
-		return secret, nil
-	}
-	secretKey, err := config.SecretKey()
-	if err != nil {
-		return "", nil
-	}
-	encrypted, err := utils.ReversibleEncrypt(secret, secretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return encrypted, nil
-}
-
 // FromDaoModel converts DAO layer registry model to replication model.
 // Also, if access secret is provided, decrypt it.
 func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
@@ -235,7 +200,7 @@ func fromDaoModel(registry *dao.Registry) (*model.Registry, error) {
 		if len(credentialType) == 0 {
 			credentialType = model.CredentialTypeBasic
 		}
-		decrypted, err := decrypt(registry.AccessSecret)
+		decrypted, err := config.DecryptSecret(registry.AccessSecret)
 		if err != nil {
 			return nil, err
 		}
@@ -270,7 +235,7 @@ func toDaoModel(registry *model.Registry) (*dao.Registry, error) {
 		if len(credentialType) == 0 {
 			credentialType = model.CredentialTypeBasic
 		}
-		encrypted, err := encrypt(registry.Credential.AccessSecret)
+		encrypted, err := config.EncryptSecret(registry.Credential.AccessSecret)
 		if err != nil {
 			return nil, err
 		}

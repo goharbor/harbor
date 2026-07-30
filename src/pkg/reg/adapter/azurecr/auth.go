@@ -25,6 +25,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/registry/auth"
@@ -61,10 +62,13 @@ func newAuthorizer(registry *model.Registry) *authorizer {
 	return &authorizer{
 		registry:        registry,
 		innerAuthorizer: auth.NewAuthorizer(username, password, registry.Insecure),
-		client: &http.Client{Transport: commonhttp.GetHTTPTransport(
-			commonhttp.WithInsecure(registry.Insecure),
-			commonhttp.WithCACert(registry.CACertificate),
-		)},
+		client: &http.Client{
+			Transport: commonhttp.GetHTTPTransport(
+				commonhttp.WithInsecure(registry.Insecure),
+				commonhttp.WithCACert(registry.CACertificate),
+			),
+			Timeout: config.RegistryHTTPClientTimeout(),
+		},
 	}
 }
 

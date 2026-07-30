@@ -40,7 +40,8 @@ const SEARCH_KEY: string = 'globalSearch';
 @Component({
     selector: 'global-search',
     templateUrl: 'global-search.component.html',
-    styleUrls: ['search.component.scss'],
+    styleUrls: ['search.component.scss', 'global-search.component.scss'],
+    standalone: false,
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Keep search term as Subject
@@ -49,6 +50,7 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     // Keep subscription for future use
     searchSub: Subscription;
     closeSub: Subscription;
+    placeholderSub: Subscription;
 
     // To indicate if the result panel is opened
     isResPanelOpened: boolean = false;
@@ -72,8 +74,8 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
             customSkinObj.product &&
             customSkinObj.product.name
         ) {
-            this.translate
-                .get('GLOBAL_SEARCH.PLACEHOLDER', {
+            this.placeholderSub = this.translate
+                .stream('GLOBAL_SEARCH.PLACEHOLDER', {
                     param: customSkinObj.product.name,
                 })
                 .subscribe(res => {
@@ -81,8 +83,8 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
                     this.placeholderText = res;
                 });
         } else {
-            this.translate
-                .get('GLOBAL_SEARCH.PLACEHOLDER', { param: 'Harbor' })
+            this.placeholderSub = this.translate
+                .stream('GLOBAL_SEARCH.PLACEHOLDER', { param: 'Harbor' })
                 .subscribe(res => {
                     // Placeholder text
                     this.placeholderText = res;
@@ -111,6 +113,10 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
 
         if (this.closeSub) {
             this.closeSub.unsubscribe();
+        }
+
+        if (this.placeholderSub) {
+            this.placeholderSub.unsubscribe();
         }
     }
 

@@ -17,6 +17,7 @@ import { Component } from '@angular/core';
     selector: 'app-clearing-job',
     templateUrl: './clearing-job.component.html',
     styleUrls: ['./clearing-job.component.scss'],
+    standalone: false,
 })
 export class ClearingJobComponent {
     inProgress: boolean = true;

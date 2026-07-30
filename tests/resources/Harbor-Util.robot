@@ -99,7 +99,11 @@ Get Harbor CA
     ...  AND  Return From Keyword
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log All  ${rc}
-    ${rc}  ${output}=  Run And Return Rc and Output  curl -o ${cert} -s -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
+    Wait Until Keyword Succeeds  10x  30s  Execute Curl And Verify  ${ip}  ${cert}
+
+Execute Curl And Verify
+    [Arguments]  ${ip}  ${cert}
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -v --fail -o ${cert} -k -X GET -u 'admin:Harbor12345' 'https://${ip}/api/v2.0/systeminfo/getcert'
     Log All  ${output}
     Should Be Equal As Integers  ${rc}  0
 

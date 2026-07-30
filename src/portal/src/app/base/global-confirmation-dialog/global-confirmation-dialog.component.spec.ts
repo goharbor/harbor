@@ -22,9 +22,13 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ConfirmationDialogService } from './confirmation-dialog.service';
 import { GlobalConfirmationDialogComponent } from './global-confirmation-dialog.component';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ConfirmationDialogComponent', () => {
     let component: GlobalConfirmationDialogComponent;
@@ -41,6 +45,7 @@ describe('ConfirmationDialogComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            declarations: [GlobalConfirmationDialogComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -48,15 +53,15 @@ describe('ConfirmationDialogComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [GlobalConfirmationDialogComponent],
             providers: [
                 TranslateService,
                 {
                     provide: ConfirmationDialogService,
                     useValue: mockConfirmationDialogService,
                 },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });

@@ -17,21 +17,21 @@ package dao
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/gtask"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	libredis "github.com/goharbor/harbor/src/lib/redis"
 
 	// init the db config
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
@@ -52,10 +52,16 @@ var (
 	// ExecDAO is the global execution dao
 	ExecDAO                               = NewExecutionDAO()
 	executionStatusChangePostFuncRegistry = map[string]ExecutionStatusChangePostFunc{}
-	// execStatusOutdateKeyRegex is the regex for the execution status outdate key,
-	// the regex used to parse exec id and vendor type from the key.
-	// e.g. execution:id:100:vendor:REPLICATION:status_outdate
-	execStatusOutdateKeyRegex = regexp.MustCompile(`execution:id:(\d+):vendor:([A-Z0-9_]+):status_outdate`)
+)
+
+const (
+	// execStatusOutdateSetKey is the redis SET key that aggregates all executions
+	// whose status is outdated and needs to be refreshed asynchronously. Each set
+	// member encodes "<execution_id>:<vendor_type>".
+	execStatusOutdateSetKey = "execution:status_outdate"
+	// execStatusOutdateBatchSize is the max number of members consumed from the
+	// set in a single SPOP call.
+	execStatusOutdateBatchSize = 100
 )
 
 // ExecutionStatusChangePostFunc is the function called after the execution status changed
@@ -450,100 +456,125 @@ func buildInClauseSQLForExtraAttrs(jsonbStrus []jsonbStru) (string, []any) {
 	return fmt.Sprintf("%s %s", sql, cond.String()), args
 }
 
-func buildExecStatusOutdateKey(id int64, vendor string) string {
-	return fmt.Sprintf("execution:id:%d:vendor:%s:status_outdate", id, vendor)
+// buildExecStatusOutdateMember builds the redis SET member for the given
+// execution id and vendor type. Format: "<id>:<vendor>".
+func buildExecStatusOutdateMember(id int64, vendor string) string {
+	return fmt.Sprintf("%d:%s", id, vendor)
 }
 
-func extractExecIDVendorFromKey(key string) (int64, string, error) {
-	// input: execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate
-	// output: [execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate 100 GARBAGE_COLLECTION]
-	matches := execStatusOutdateKeyRegex.FindStringSubmatch(key)
-	if len(matches) < 3 {
-		return 0, "", errors.Errorf("invalid format: %s", key)
+// parseExecStatusOutdateMember parses a member produced by
+// buildExecStatusOutdateMember back into (id, vendor).
+func parseExecStatusOutdateMember(member string) (int64, string, error) {
+	parts := strings.SplitN(member, ":", 2)
+	if len(parts) != 2 || parts[1] == "" {
+		return 0, "", errors.Errorf("invalid execution status outdate member: %s", member)
 	}
 
-	id, err := strconv.ParseInt(matches[1], 10, 64)
+	id, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return 0, matches[2], err
+		return 0, "", errors.Errorf("invalid execution id in member %s: %v", member, err)
 	}
 
-	return id, matches[2], nil
+	return id, parts[1], nil
 }
 
-func (e *executionDAO) AsyncRefreshStatus(ctx context.Context, id int64, vendor string) (err error) {
-	key := buildExecStatusOutdateKey(id, vendor)
-	if cache.Default().Contains(ctx, key) {
-		// return earlier if already have the key
-		return nil
+// requeueOutdateMembers puts members back to the set so that they can be
+// retried in next round. Errors are only logged because the next producer
+// (AsyncRefreshStatus) will eventually re-add the member when the task
+// state changes again.
+func requeueOutdateMembers(ctx context.Context, client *redis.Client, members []string) {
+	if len(members) == 0 {
+		return
 	}
-	// save the key to redis, the value is useless so set it to empty
-	return cache.Default().Save(ctx, key, "")
+	args := make([]any, 0, len(members))
+	for _, m := range members {
+		args = append(args, m)
+	}
+	if err := client.SAdd(ctx, execStatusOutdateSetKey, args...).Err(); err != nil {
+		log.Errorf("failed to requeue %d outdate execution members, error: %v", len(members), err)
+	}
 }
 
-// scanAndRefreshOutdateStatus scans the outdate execution status from redis and then refresh the status to db,
-// do not want to expose to external use so keep it as private.
+func (e *executionDAO) AsyncRefreshStatus(ctx context.Context, id int64, vendor string) error {
+	client, err := libredis.GetHarborClient()
+	if err != nil {
+		return errors.Wrap(err, "failed to get harbor redis client for async refresh status")
+	}
+	// SADD is idempotent and O(1), no need to do an extra existence check.
+	if err := client.SAdd(ctx, execStatusOutdateSetKey, buildExecStatusOutdateMember(id, vendor)).Err(); err != nil {
+		return errors.Wrap(err, "failed to add outdate execution to redis set")
+	}
+	return nil
+}
+
+// scanAndRefreshOutdateStatus pops a batch of outdate execution members from
+// the redis set and refreshes their status to db. SPOP is atomic, so when
+// multiple core instances run this task concurrently, each member is consumed
+// by exactly one instance, which avoids duplicated refresh work.
+//
+// Kept private because it is only intended to be triggered by the periodic
+// task registered in init().
 func scanAndRefreshOutdateStatus(ctx context.Context) {
-	iter, err := cache.Default().Scan(ctx, "execution:id:*vendor:*status_outdate")
+	client, err := libredis.GetHarborClient()
 	if err != nil {
-		log.Errorf("failed to scan the outdate executions, error: %v", err)
+		log.Errorf("failed to get harbor redis client for scan outdate execution status, error: %v", err)
 		return
 	}
 
-	var keys []string
-	for iter.Next(ctx) {
-		keys = append(keys, iter.Val())
-	}
-	// return earlier if no keys found which represents no outdate execution
-	if len(keys) == 0 {
-		log.Debug("skip to refresh, no outdate execution status found")
-		return
-	}
-	// TODO: refactor
-	// shuffle the keys to avoid the conflict and improve efficiency when multiple core instance existed,
-	// but currently if multiple instances get the same set of keys at the same time, then eventually everyone
-	// will still need to repeat the same work(refresh same execution), which needs to be optimized later.
-	lib.ShuffleStringSlice(keys)
-
-	log.Infof("scanned out %d executions with outdate status, refresh status to db", len(keys))
 	var succeed, failed int64
-	// update the execution status execution to db
-	for _, key := range keys {
-		execID, vendor, err := extractExecIDVendorFromKey(key)
-		if err != nil {
-			log.Errorf("failed to extract execution id from key %s, error: %v", key, err)
-			failed++
-			continue
+	for {
+		members, err := client.SPopN(ctx, execStatusOutdateSetKey, int64(execStatusOutdateBatchSize)).Result()
+		if err != nil && err != redis.Nil {
+			log.Errorf("failed to SPOP outdate executions from set %s, error: %v", execStatusOutdateSetKey, err)
+			return
+		}
+		if len(members) == 0 {
+			break
 		}
 
-		statusChanged, currentStatus, err := ExecDAO.RefreshStatus(ctx, execID)
-		if err != nil {
-			// no need to refresh and should clean cache if the execution is not found
-			if errors.IsNotFoundErr(err) {
-				if err = cache.Default().Delete(ctx, key); err != nil {
-					log.Errorf("failed to delete the key %s in cache, error: %v", key, err)
-				}
-				succeed++
+		var toRequeue []string
+		for _, member := range members {
+			execID, vendor, err := parseExecStatusOutdateMember(member)
+			if err != nil {
+				// drop invalid members, do not requeue
+				log.Errorf("failed to parse outdate member %s, error: %v", member, err)
+				failed++
 				continue
 			}
-			log.Errorf("failed to refresh the status of execution %d, error: %v", execID, err)
-			failed++
-			continue
-		}
 
-		succeed++
-		log.Debugf("refresh the status of execution %d successfully, new status: %s", execID, currentStatus)
-		// run the status change post function
-		// just print error log, not return error for post action
-		if fc, exist := executionStatusChangePostFuncRegistry[vendor]; exist && statusChanged {
-			if err = fc(ctx, execID, currentStatus); err != nil {
-				logger.Errorf("failed to run the execution status change post function for execution %d, error: %v", execID, err)
+			statusChanged, currentStatus, err := ExecDAO.RefreshStatus(ctx, execID)
+			if err != nil {
+				if errors.IsNotFoundErr(err) {
+					// execution has been deleted, drop the member silently
+					succeed++
+					continue
+				}
+				log.Errorf("failed to refresh the status of execution %d, error: %v", execID, err)
+				// transient failure, put it back so that another round can retry
+				toRequeue = append(toRequeue, member)
+				failed++
+				continue
+			}
+
+			succeed++
+			log.Debugf("refresh the status of execution %d successfully, new status: %s", execID, currentStatus)
+			// run the status change post function; only log errors, do not requeue
+			if fc, exist := executionStatusChangePostFuncRegistry[vendor]; exist && statusChanged {
+				if err := fc(ctx, execID, currentStatus); err != nil {
+					logger.Errorf("failed to run the execution status change post function for execution %d, error: %v", execID, err)
+				}
 			}
 		}
-		// delete the key from redis, it does not matter if the deletion fails, wait for the next round.
-		if err = cache.Default().Delete(ctx, key); err != nil {
-			log.Errorf("failed to delete the key %s in cache, error: %v", key, err)
+
+		requeueOutdateMembers(ctx, client, toRequeue)
+
+		// fewer members than the batch size means the set has been drained
+		if len(members) < execStatusOutdateBatchSize {
+			break
 		}
 	}
 
-	log.Infof("refresh outdate execution status done, %d succeed, %d failed", succeed, failed)
+	if succeed+failed > 0 {
+		log.Infof("refresh outdate execution status done, %d succeed, %d failed", succeed, failed)
+	}
 }

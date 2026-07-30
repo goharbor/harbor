@@ -43,6 +43,7 @@ import { ScannerRegistrationReq } from '../../../../../../ng-swagger-gen/models/
         './config-scanner.component.scss',
         '../../config/config.component.scss',
     ],
+    standalone: false,
 })
 export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

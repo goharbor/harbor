@@ -40,6 +40,7 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
     selector: 'add-group',
     templateUrl: './add-group.component.html',
     styleUrls: ['./add-group.component.scss'],
+    standalone: false,
 })
 export class AddGroupComponent implements OnInit, OnDestroy {
     projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;

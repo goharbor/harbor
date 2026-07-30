@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -29,6 +30,7 @@ import (
 
 	cronlib "github.com/robfig/cron/v3"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -196,6 +198,11 @@ func SafeCastBool(value any) bool {
 		return result
 	}
 	return false
+}
+
+// SetUserAgentHeader sets the User-Agent header on an HTTP request
+func SetUserAgentHeader(req *http.Request) {
+	req.Header.Set(common.UserAgentHeaderName, common.UserAgent)
 }
 
 // SafeCastFloat64 --

@@ -281,7 +281,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 				err = gocsv.MarshalWithoutHeaders(data, csvFile)
 			}
 			if err != nil {
-				return nil
+				return err
 			}
 
 			exportParams.PageNumber = exportParams.PageNumber + 1

@@ -22,7 +22,9 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/server/web/session"
+	goredis "github.com/redis/go-redis/v9"
 
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/redis"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -95,15 +97,23 @@ func (rs *Store) releaseSession(ctx context.Context, _ http.ResponseWriter, requ
 	if ctx == nil {
 		ctx = context.TODO()
 	}
-	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
+
+	// When skipSessionRenewal is true, save the session data but preserve
+	// the existing TTL in Redis (KeepTTL). This prevents background polling
+	// requests from keeping the session alive indefinitely.
+	exp := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
+	if lib.GetSkipSessionRenewal(ctx) {
+		exp = goredis.KeepTTL
+	}
+
 	if rdb, ok := rs.c.(*redis.Cache); ok {
 		if requirePresent {
-			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), maxlifetime)
+			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
 		} else {
-			cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
+			cmd := rdb.Client.Set(ctx, rs.sid, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
@@ -183,7 +193,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
 			kv := make(map[any]any)
-			err := rp.c.Fetch(ctx, sid, &kv)
+			err := rp.c.Fetch(ctx, oldsid, &kv)
 			if err != nil && !errors.Is(err, cache.ErrNotFound) {
 				return nil, err
 			}

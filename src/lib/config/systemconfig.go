@@ -19,13 +19,52 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
 )
+
+const (
+	// defaultRegistryHTTPClientTimeoutMinutes is the default timeout (in minutes)
+	// for the registry related http clients (backend registry client, registry
+	// auth challenge/token client and reg adapters).
+	defaultRegistryHTTPClientTimeoutMinutes = 30
+)
+
+var (
+	registryHTTPClientTimeoutOnce  sync.Once
+	registryHTTPClientTimeoutValue time.Duration
+)
+
+// RegistryHTTPClientTimeout returns the timeout for registry related HTTP clients.
+// It reads the env variable REGISTRY_HTTP_CLIENT_TIMEOUT (in minutes). When the env
+// is empty, invalid or non-positive, the default value (30 minutes) is used.
+// The value is read once and cached for the lifetime of the process.
+func RegistryHTTPClientTimeout() time.Duration {
+	registryHTTPClientTimeoutOnce.Do(func() {
+		minutes := int64(defaultRegistryHTTPClientTimeoutMinutes)
+		if env := os.Getenv("REGISTRY_HTTP_CLIENT_TIMEOUT"); len(env) > 0 {
+			v, err := strconv.ParseInt(env, 10, 64)
+			if err != nil {
+				log.Errorf("failed to parse REGISTRY_HTTP_CLIENT_TIMEOUT=%q, use default value: %d minutes, error: %v",
+					env, defaultRegistryHTTPClientTimeoutMinutes, err)
+			} else if v <= 0 {
+				log.Errorf("invalid REGISTRY_HTTP_CLIENT_TIMEOUT=%q (must be > 0), use default value: %d minutes",
+					env, defaultRegistryHTTPClientTimeoutMinutes)
+			} else {
+				minutes = v
+			}
+		}
+		registryHTTPClientTimeoutValue = time.Duration(minutes) * time.Minute
+	})
+	return registryHTTPClientTimeoutValue
+}
 
 var (
 	// SecretStore manages secrets
@@ -168,6 +207,42 @@ func ExtURL() (string, error) {
 // SecretKey returns the secret key to encrypt the password of target
 func SecretKey() (string, error) {
 	return keyProvider.Get(nil)
+}
+
+// EncryptSecret encrypts a plaintext secret for persistence using ReversibleEncrypt and SecretKey.
+// If plaintext is empty or already prefixed with the v1 encryption header, it is returned unchanged.
+// If SecretKey cannot be loaded, returns an error.
+func EncryptSecret(plaintext string) (string, error) {
+	if len(plaintext) == 0 {
+		return plaintext, nil
+	}
+	if strings.HasPrefix(plaintext, utils.EncryptHeaderV1) {
+		return plaintext, nil
+	}
+	secretKey, err := SecretKey()
+	if err != nil {
+		log.Errorf("failed to get secret key, error: %v", err)
+		return "", err
+	}
+	return utils.ReversibleEncrypt(plaintext, secretKey)
+}
+
+// DecryptSecret decrypts a ciphertext secret after loading from storage using ReversibleDecrypt and SecretKey.
+// Values without the v1 encryption header prefix are returned unchanged for legacy plaintext.
+// If ciphertext is empty or SecretKey cannot be loaded, return an error
+func DecryptSecret(ciphertext string) (string, error) {
+	if len(ciphertext) == 0 {
+		return "", nil
+	}
+	if !strings.HasPrefix(ciphertext, utils.EncryptHeaderV1) {
+		return ciphertext, nil
+	}
+	secretKey, err := SecretKey()
+	if err != nil {
+		log.Errorf("failed to get secret key, error: %v", err)
+		return "", err
+	}
+	return utils.ReversibleDecrypt(ciphertext, secretKey)
 }
 
 func initKeyProvider() {

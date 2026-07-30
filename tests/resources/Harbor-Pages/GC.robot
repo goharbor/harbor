@@ -25,7 +25,7 @@ Switch To Garbage Collection
 GC Now
     [Arguments]  ${untag}=${false}  ${dry_run}=${false}  ${workers}=${null}
     Switch To Garbage Collection
-    Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}
+    Run Keyword If  '${untag}' == '${true}'  Retry Element Click  xpath=${checkbox_delete_untagged_artifacts}    
     ${button}=  Run Keyword If  ${dry_run}==${false}  Set Variable  ${gc_now_button}  ELSE  Set Variable  ${dry_run_button}
     Run Keyword If  '${workers}' != '${null}'  Select From List By Value  ${gc_workers_select}  ${workers}
     Retry Double Keywords When Error  Retry Element Click  ${button}  Retry Wait Until Page Contains  Running

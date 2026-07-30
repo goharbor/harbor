@@ -1,21 +1,33 @@
-<div class="row content-wrapper" *ngIf="!loading">
-    <div class="col-md-8 md-container pl-1" *ngIf="readme">
-        <div class="md-div" [innerHTML]="readme | markdown"></div>
+@if (!loading) {
+<div class="row content-wrapper">
+    @if (readme) {
+    <div class="col-md-8 md-container pl-1">
+        <div class="md-div" [innerHTML]="readme | markdown | async"></div>
     </div>
-    <div *ngIf="!readme">
-        <div *ngIf="type === 'CNAI'">
-            <div class="col-md-8 md-container pl-1" *ngIf="fileTooLargeStatus">
+    } @if (!readme) {
+    <div>
+        @if (type === 'CNAI') {
+        <div>
+            @if (fileTooLargeStatus) {
+            <div class="col-md-8 md-container pl-1">
                 {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
             </div>
-            <div class="col-md-8 md-container pl-1" *ngIf="noReadmeStatus">
+            } @if (noReadmeStatus) {
+            <div class="col-md-8 md-container pl-1">
                 {{ 'ARTIFACT.MODEL_NO_README' | translate }}
             </div>
+            }
         </div>
-        <div *ngIf="type !== 'CNAI'" class="col-md-8 md-container pl-1">
+        } @if (type !== 'CNAI') {
+        <div class="col-md-8 md-container pl-1">
             {{ 'ARTIFACT.NO_README' | translate }}
         </div>
+        }
     </div>
+    }
 </div>
-<div *ngIf="loading" class="clr-row mt-3 center">
+} @if (loading) {
+<div class="clr-row mt-3 center">
     <span class="spinner spinner-md"></span>
 </div>
+}

@@ -17,6 +17,8 @@ package gc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"math"
 	"net/url"
 	"os"
 	"sync/atomic"
@@ -278,7 +280,7 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		}
 	}
 	gc.logger.Infof("%d blobs and %d manifests eligible for deletion", blobCt, mfCt)
-	gc.logger.Infof("The GC could free up %d MB space, the size is a rough estimation.", makeSize/1024/1024)
+	gc.logger.Infof("The GC could free up %s space, the size is a rough estimation.", formatSize(makeSize))
 
 	if gc.dryRun {
 		if err := saveGCRes(ctx, makeSize, int64(blobCt), int64(mfCt)); err != nil {
@@ -485,7 +487,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 	}
 
 	gc.logger.Infof("%d blobs and %d manifests are actually deleted", blobCnt, mfCnt)
-	gc.logger.Infof("The GC job actual frees up %d MB space.", sweepSize/1024/1024)
+	gc.logger.Infof("The GC job actual frees up %s space.", formatSize(sweepSize))
 
 	if err := saveGCRes(ctx, sweepSize, blobCnt, mfCnt); err != nil {
 		gc.logger.Errorf("failed to save the garbage collection results, errMsg=%v", err)
@@ -749,4 +751,22 @@ func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
 	}
 	_ = ctx.Checkin(string(c))
 	return nil
+}
+
+// formatSize formats the size in bytes to a human-readable string with IEC units,
+// keeping exactly 2 decimal places (truncated, not rounded), aligned with the frontend display.
+func formatSize(size int64) string {
+	v := float64(size)
+	switch {
+	case v >= 1024*1024*1024*1024:
+		return fmt.Sprintf("%.2f TiB", math.Trunc(v/(1024*1024*1024*1024)*100)/100)
+	case v >= 1024*1024*1024:
+		return fmt.Sprintf("%.2f GiB", math.Trunc(v/(1024*1024*1024)*100)/100)
+	case v >= 1024*1024:
+		return fmt.Sprintf("%.2f MiB", math.Trunc(v/(1024*1024)*100)/100)
+	case v >= 1024:
+		return fmt.Sprintf("%.2f KiB", math.Trunc(v/1024*100)/100)
+	default:
+		return fmt.Sprintf("%d B", size)
+	}
 }

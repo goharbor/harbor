@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log
+package log // nolint:revive
 
 // Formatter formats records in different ways: text, json, etc.
 type Formatter interface {

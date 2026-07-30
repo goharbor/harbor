@@ -57,6 +57,7 @@ import { FilterComponent } from '../../../shared/components/filter/filter.compon
     selector: 'app-group',
     templateUrl: './group.component.html',
     styleUrls: ['./group.component.scss'],
+    standalone: false,
 })
 export class GroupComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

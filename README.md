@@ -9,13 +9,13 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
 [![Helm Chart on Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor)](https://artifacthub.io/packages/helm/harbor/harbor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/goharbor/harbor/badge)](https://scorecard.dev/viewer/?uri=github.com/goharbor/harbor)
-</br>
+<br>
 
 |![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
-</br> </br>
+<br><br>
 
 **Note**: The `main` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
@@ -24,7 +24,7 @@ Please use [releases](https://github.com/goharbor/harbor/releases) instead of th
 
 Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
 
-Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about whose involved and how Harbor plays a role, read the CNCF
+Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about who is involved and how Harbor plays a role, read the CNCF
 [announcement](https://www.cncf.io/blog/2018/07/31/cncf-to-host-harbor-in-the-sandbox/).
 
 ## Features
@@ -35,7 +35,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Vulnerability Scanning**: Harbor scans images regularly for vulnerabilities and has policy checks to prevent vulnerable images from being deployed.
 * **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management, and supports importing LDAP groups into Harbor that can then be given permissions to specific projects.
 * **OIDC support**: Harbor leverages OpenID Connect (OIDC) to verify the identity of users authenticated by an external authorization server or identity provider. Single sign-on can be enabled to log into the Harbor portal.
-* **Image deletion & garbage collection**: System admin can run garbage collection jobs so that images(dangling manifests and unreferenced blobs) can be deleted and their space can be freed up periodically.
+* **Image deletion & garbage collection**: System administrators can run garbage collection jobs so that images (dangling manifests and unreferenced blobs) can be deleted and their space can be freed up periodically.
 * **Notary**: Support signing container images using Docker Content Trust (leveraging Notary) for guaranteeing authenticity and provenance.  In addition, policies that prevent unsigned images from being deployed can also be activated.
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
@@ -54,7 +54,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 ## Install & Run
 **System requirements:**
 
-**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
+**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+.
 
 Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 

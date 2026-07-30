@@ -239,13 +239,18 @@
         "QUOTA_UNLIMIT_TIP": "The maximum logical space that can be used by the project. Para  não ter limite, utilize -1.",
         "TYPE": "Tipo",
         "PROXY_CACHE": "Cache do Proxy",
-        "PROXY_CACHE_TOOLTIP": "Habilite esta opção para permitir que este projeto atue como cache proxy para uma instância de registro de destino específica. O Harbor pode atuar como proxy apenas para os registros DockerHub, Docker Registry, Harbor, Aws ECR, Azure ACR, Alibaba Cloud ACR, Quay, Google GCR, Github GHCR e JFrog Artifactory.",
+        "PROXY_CACHE_TOOLTIP": "Habilite esta opção para permitir que este projeto atue como cache proxy para uma instância de registro de destino específica.",
         "ENDPOINT": "Endereço",
         "PROXY_CACHE_ENDPOINT": "Endereço do Proxy Cache",
         "CONNECTION_LIMIT": "Conexão máxima ao repositório remoto",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "A conexão máxima ao repositório remoto para este projeto de cache proxy, se -1, então não há limite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, insira -1 ou um número inteiro maior que 0.",
-        "NO_PROJECT": "Não encontramos nenhum projeto"
+        "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Por favor, insira -1 ou um número inteiro maior que 0.",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir conteúdo em cache quando o registro upstream estiver indisponível",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opção para permitir que este projeto continue servindo conteúdo em cache mesmo se o artefato não for encontrado no registro upstream ou se o registro upstream estiver indisponível. Isso pode resultar em conteúdo desatualizado sendo servido se o registro upstream estiver indisponível.",
+        "NO_PROJECT": "Não encontramos nenhum projeto",
+        "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",

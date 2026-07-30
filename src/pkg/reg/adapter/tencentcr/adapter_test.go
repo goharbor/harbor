@@ -22,7 +22,10 @@ import (
 var (
 	mockAccessKey    = "AKIDxxxx"
 	mockAccessSecret = "xxxxx"
-	tcrClient        *tcr.Client
+
+	mockIntlAccessKey    = "IKIDxxxx"
+	mockIntlAccessSecret = "xxxxx"
+	tcrClient            *tcr.Client
 )
 
 func setup() {
@@ -141,6 +144,27 @@ func TestAdapter_NewAdapter_Ok(t *testing.T) {
 		Credential: &model.Credential{
 			AccessKey:    mockAccessKey,
 			AccessSecret: mockAccessSecret,
+		},
+		URL: server.URL,
+	})
+	if sdkerr, ok := err.(*errors.TencentCloudSDKError); ok {
+		log.Infof("sdk error, error=%v", sdkerr)
+		return
+	}
+	assert.NotNil(t, adapter)
+	assert.Nil(t, err)
+
+}
+
+func TestAdapter_NewIntlAdapter_Ok(t *testing.T) {
+	server := getTestServer()
+	defer server.Close()
+
+	adapter, err := newAdapter(&model.Registry{
+		Type: model.RegistryTypeTencentTcr,
+		Credential: &model.Credential{
+			AccessKey:    mockIntlAccessKey,
+			AccessSecret: mockIntlAccessSecret,
 		},
 		URL: server.URL,
 	})

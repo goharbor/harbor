@@ -23,6 +23,7 @@ import { formatSize } from 'src/app/shared/units/utils';
     selector: 'hbr-artifact-files',
     templateUrl: './files.component.html',
     styleUrls: ['./files.component.scss'],
+    standalone: false,
 })
 export class ArtifactFilesComponent implements OnInit {
     @Input() filesLink: AdditionLink;

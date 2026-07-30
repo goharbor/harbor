@@ -38,11 +38,16 @@ import {
 import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'task-list',
     templateUrl: './task-list.component.html',
     styleUrls: ['./task-list.component.scss'],
+    standalone: false,
 })
 export class TaskListComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
@@ -76,7 +81,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
         private messageHandlerService: MessageHandlerService,
         private preheatService: PreheatService,
         private p2pProviderService: P2pProviderService,
-        private userPermissionService: UserPermissionService
+        private userPermissionService: UserPermissionService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -117,6 +123,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
                                 pageSize: this.pageSize,
                                 q: params,
                             })
+                            .pipe(
+                                skipSessionRenewal(
+                                    this.skipSessionRenewalService
+                                )
+                            )
                             .pipe(finalize(() => (this.loading = false)));
                     })
                 )
@@ -178,6 +189,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
                     preheatPolicyName: this.preheatPolicyName,
                     executionId: +this.executionId,
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.inProgress = false)))
                 .subscribe(
                     res => {
@@ -322,6 +334,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
                 pageSize: this.pageSize,
                 q: params,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;

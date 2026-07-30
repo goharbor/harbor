@@ -16,6 +16,7 @@ package scan
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
@@ -41,12 +42,18 @@ func RemoteOptions() []remote.Option {
 
 // GenAccessoryArt composes the accessory oci object and push it back to harbor core as an accessory of the scanned artifact.
 func GenAccessoryArt(sq v1sq.ScanRequest, accData []byte, accAnnotations map[string]string, mediaType string, robot *model.Robot) (string, error) {
+	createdTime := v1.Time{}
+	if created, ok := accAnnotations["created"]; ok {
+		if t, err := time.Parse(time.RFC3339, created); err == nil {
+			createdTime = v1.Time{Time: t}
+		}
+	}
 	accArt, err := mutate.Append(empty.Image, mutate.Addendum{
 		Layer: static.NewLayer(accData, ocispec.MediaTypeImageLayer),
 		History: v1.History{
 			Author:    "harbor",
 			CreatedBy: "harbor",
-			Created:   v1.Time{}, // static
+			Created:   createdTime,
 		},
 	})
 	if err != nil {

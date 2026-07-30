@@ -13,31 +13,33 @@
                         'CLEARANCES.LAST_COMPLETED' | translate
                     }}</span>
                     <span class="mr-3">
+                        @if (loadingLastCompletedTime) {
+                        <span class="spinner spinner-inline"></span>
+                        } @if (!loadingLastCompletedTime) { @if
+                        (!lastCompletedTime) {
+                        <span>{{ 'SCHEDULE.NONE' | translate }}</span>
+                        } @if (lastCompletedTime) {
                         <span
-                            *ngIf="loadingLastCompletedTime"
-                            class="spinner spinner-inline"></span>
-                        <ng-container *ngIf="!loadingLastCompletedTime">
-                            <span *ngIf="!lastCompletedTime">{{
-                                'SCHEDULE.NONE' | translate
-                            }}</span>
-                            <span *ngIf="lastCompletedTime"
-                                >{{ lastCompletedTime | harborDatetime
-                                }}<span *ngIf="isDryRun"
-                                    >({{
-                                        'TAG_RETENTION.DRY_RUN' | translate
-                                    }})</span
-                                ></span
+                            >{{ lastCompletedTime | harborDatetime }}@if
+                            (isDryRun) {
+                            <span
+                                >({{
+                                    'TAG_RETENTION.DRY_RUN' | translate
+                                }})</span
                             >
-                        </ng-container>
+                            }</span
+                        >
+                        } }
                     </span>
                 </div>
                 <div class="p-06">
-                    <span class="mr-1 font-style" *ngIf="nextScheduledTime">{{
+                    @if (nextScheduledTime) {
+                    <span class="mr-1 font-style">{{
                         'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
                     }}</span>
-                    <span *ngIf="nextScheduledTime">{{
-                        nextScheduledTime | harborDatetime
-                    }}</span>
+                    } @if (nextScheduledTime) {
+                    <span>{{ nextScheduledTime | harborDatetime }}</span>
+                    }
                 </div>
             </div>
         </div>
@@ -95,16 +97,14 @@
                         <clr-icon
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
-                        <clr-control-error
-                            class="max-width-2rem"
-                            *ngIf="
-                                (retentionTimeNgModel.dirty ||
-                                    retentionTimeNgModel.touched) &&
-                                (retentionTimeNgModel.invalid ||
-                                    !isRetentionTimeValid())
-                            ">
+                        @if ( (retentionTimeNgModel.dirty ||
+                        retentionTimeNgModel.touched) &&
+                        (retentionTimeNgModel.invalid ||
+                        !isRetentionTimeValid()) ) {
+                        <clr-control-error class="max-width-2rem">
                             {{ 'CLEARANCES.KEEP_IN_ERROR' | translate }}
                         </clr-control-error>
+                        }
                     </div>
                     <div
                         class="clr-select-wrapper unit-select"
@@ -158,9 +158,8 @@
                 </clr-tooltip></span
             >
             <div class="clr-control-container">
-                <div
-                    class="clr-checkbox-wrapper float-left"
-                    *ngFor="let item of eventTypes">
+                @for (item of eventTypes; track item) {
+                <div class="clr-checkbox-wrapper float-left">
                     <input
                         type="checkbox"
                         id="{{ item.id }}"
@@ -173,9 +172,8 @@
                         item.label
                     }}</label>
                 </div>
-                <div
-                    class="clr-subtext-wrapper"
-                    *ngIf="!(selectedEventTypes?.length > 0)">
+                } @if (!(selectedEventTypes?.length > 0)) {
+                <div class="clr-subtext-wrapper">
                     <clr-icon
                         class="clr-validate-icon"
                         shape="exclamation-circle"></clr-icon>
@@ -183,6 +181,7 @@
                         'CLEARANCES.INCLUDED_EVENT_TYPE_ERROR' | translate
                     }}</span>
                 </div>
+                }
             </div>
         </div>
     </form>

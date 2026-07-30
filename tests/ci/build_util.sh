@@ -36,11 +36,18 @@ function publishImage {
     if [[ $1 == "release-"* ]]; then
       image_tag=$2-dev
     fi
+    # if arch is provided (5th arg), append it as suffix for multi-arch support
+    local arch_suffix=""
+    if [ -n "${5:-}" ]; then
+      arch_suffix="-$5"
+    fi
     # rename the images with tag "dev" and push to Docker Hub
     docker images
-    docker login -u $3 -p $4
+    set +x
+    printf '%s\n' "$4" | docker login --username "$3" --password-stdin
+    set -x
     # format the output to be compatible with both old and new Docker versions.
-    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}"| grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
+    docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}"| grep goharbor | grep -v "\-base" | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$2\).*|docker tag \1:\2 \1:${image_tag}${arch_suffix};docker push \1:${image_tag}${arch_suffix}|p" | bash
     echo "Images are published successfully"
     docker images
 }

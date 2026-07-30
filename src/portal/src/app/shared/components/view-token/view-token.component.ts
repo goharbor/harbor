@@ -34,6 +34,7 @@ import { CopyInputComponent } from '../push-image/copy-input.component';
     selector: 'view-token',
     templateUrl: './view-token.component.html',
     styleUrls: ['./view-token.component.scss'],
+    standalone: false,
 })
 export class ViewTokenComponent {
     showNewPwd: boolean = false;

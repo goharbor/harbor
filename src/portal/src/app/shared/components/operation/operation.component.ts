@@ -46,6 +46,7 @@ const RETRY_TIMES: number = 50;
     templateUrl: './operation.component.html',
     styleUrls: ['./operation.component.css'],
     animations: [SlideInOutAnimation],
+    standalone: false,
 })
 export class OperationComponent implements OnInit, OnDestroy {
     batchInfoSubscription: Subscription;

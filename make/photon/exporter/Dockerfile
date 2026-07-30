@@ -8,10 +8,11 @@ FROM ${build_image} AS build
 
 ARG harbor_version
 ARG git_commit
+ARG TARGETARCH=amd64
 
 ENV CGO_ENABLED=0
 ENV GOOS=linux
-ENV GOARCH=amd64
+ENV GOARCH=${TARGETARCH}
 
 COPY src /harbor/src
 WORKDIR /harbor/src/cmd/exporter
@@ -30,5 +31,8 @@ RUN chown -R harbor:harbor /etc/pki/tls/certs \
 
 WORKDIR /harbor
 USER harbor
+# Default port 8001 matches helm chart; docker-compose sets HARBOR_EXPORTER_PORT=8080 via env template
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD sh -c 'curl -fs http://127.0.0.1:${HARBOR_EXPORTER_PORT:-8001}/metrics || exit 1'
 
 ENTRYPOINT ["/harbor/entrypoint.sh"]

@@ -1,14 +1,16 @@
+@if (!alertClose) {
 <clr-alert
-    *ngIf="!alertClose"
     [(clrAlertClosed)]="alertClose"
     [clrAlertType]="inlineAlertType"
     [clrAlertClosable]="inlineAlertClosable"
     [clrAlertAppLevel]="useAppLevelStyle">
-    <div class="alert-item" *ngIf="!alertClose">
+    @if (!alertClose) {
+    <div class="alert-item">
         <span class="alert-text" [class.alert-text-blink]="blinking">
             {{ errorMessage }}
         </span>
-        <div class="alert-actions" *ngIf="showCancelAction">
+        @if (showCancelAction) {
+        <div class="alert-actions">
             <button class="btn btn-link alert-btn-link" (click)="close()">
                 {{ 'BUTTON.NO' | translate }}
             </button>
@@ -18,5 +20,8 @@
                 {{ 'BUTTON.YES' | translate }}
             </button>
         </div>
+        }
     </div>
+    }
 </clr-alert>
+}

@@ -24,6 +24,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Create An New User
+    [Tags]  create_new_user
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -37,6 +38,7 @@ Test Case - Create An New User
     Close Browser
 
 Test Case - Update User Comment
+    [Tags]  update_user_comment
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
@@ -44,6 +46,7 @@ Test Case - Update User Comment
     Logout Harbor
 
 Test Case - Update Password
+    [Tags]  update_password
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@harbortest.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
@@ -53,6 +56,7 @@ Test Case - Update Password
     Close Browser
 
 Test Case - Delete Multi User
+    [Tags]  delete_multi_user
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Create An New User  ${HARBOR_URL}  deletea${d}  testa${d}@harbortest.com  test${d}  Test1@34  harbor
@@ -71,6 +75,7 @@ Test Case - Delete Multi User
     Close Browser
 
 Test Case - Edit Self-Registration
+    [Tags]  edit_self_registration
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Disable Self Reg
@@ -88,6 +93,7 @@ Test Case - Edit Self-Registration
     Close Browser
 
 Test Case - Admin Add New Users
+    [Tags]  admin_add_new_users
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

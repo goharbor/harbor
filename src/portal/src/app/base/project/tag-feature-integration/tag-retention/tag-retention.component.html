@@ -8,17 +8,17 @@
                 retention?.rules?.length ? retention?.rules?.length : 0
             }}/15</span
         >
-        <span *ngIf="loadingRule" class="spinner spinner-inline ml-2"
-            >Loading...</span
-        >
+        @if (loadingRule) {
+        <span class="spinner spinner-inline ml-2">Loading...</span>
+        }
     </div>
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col">
-        <ul *ngIf="retention?.rules?.length > 0" class="list-unstyled">
-            <li
-                class="rule"
-                *ngFor="let rule of retention?.rules; let i = index">
+        @if (retention?.rules?.length > 0) {
+        <ul class="list-unstyled">
+            @for (rule of retention?.rules; track rule; let i = $index) {
+            <li class="rule">
                 <div class="clr-row">
                     <div class="clr-col-2 flex-150">
                         <div
@@ -28,23 +28,26 @@
                                 (click)="openEditor(i)"
                                 class="padding-left-0 dropdown-toggle btn btn-sm btn-link">
                                 {{ 'TAG_RETENTION.ACTION' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
+                                <clr-icon
+                                    shape="caret"
+                                    direction="down"></clr-icon>
                             </button>
                             <div class="dropdown-menu">
+                                @if (!rule?.disabled) {
                                 <button
-                                    *ngIf="!rule?.disabled"
                                     type="button"
                                     class="dropdown-item"
                                     (click)="toggleDisable(i, true)">
                                     {{ 'TAG_RETENTION.DISABLE' | translate }}
                                 </button>
+                                } @if (rule?.disabled) {
                                 <button
-                                    *ngIf="rule?.disabled"
                                     type="button"
                                     class="dropdown-item"
                                     (click)="toggleDisable(i, false)">
                                     {{ 'TAG_RETENTION.ENABLE' | translate }}
                                 </button>
+                                }
                                 <button
                                     type="button"
                                     class="dropdown-item"
@@ -62,14 +65,15 @@
                     </div>
                     <div class="clr-col">
                         <span>
+                            @if (!rule?.disabled) {
                             <clr-icon
-                                *ngIf="!rule?.disabled"
                                 class="color-green"
                                 shape="success-standard"></clr-icon>
+                            } @if (rule?.disabled) {
                             <clr-icon
-                                *ngIf="rule?.disabled"
                                 class="ml-0 color-red"
                                 shape="error-standard"></clr-icon>
+                            }
                         </span>
                         <span class="rule-name ml-5">
                             <span>{{
@@ -124,32 +128,27 @@
                                     ? ('TAG_RETENTION.UNTAGGED' | translate)
                                     : ''
                             }}</span>
-
-                            <ng-container
-                                *ngIf="
-                                    rule?.tag_selectors[1]?.pattern &&
-                                    rule?.tag_selectors[1]?.pattern
-                                ">
-                                <span class="color-97">{{
-                                    'TAG_RETENTION.AND' | translate
-                                }}</span>
-                                <span>{{
-                                    'TAG_RETENTION.LOWER_LABELS' | translate
-                                }}</span>
-                                <span>{{
-                                    getI18nKey(
-                                        rule?.tag_selectors[1]?.decoration
-                                    ) | translate
-                                }}</span>
-                                <span>{{
-                                    rule?.tag_selectors[1]?.pattern
-                                }}</span>
-                            </ng-container>
+                            @if ( rule?.tag_selectors[1]?.pattern &&
+                            rule?.tag_selectors[1]?.pattern ) {
+                            <span class="color-97">{{
+                                'TAG_RETENTION.AND' | translate
+                            }}</span>
+                            <span>{{
+                                'TAG_RETENTION.LOWER_LABELS' | translate
+                            }}</span>
+                            <span>{{
+                                getI18nKey(rule?.tag_selectors[1]?.decoration)
+                                    | translate
+                            }}</span>
+                            <span>{{ rule?.tag_selectors[1]?.pattern }}</span>
+                            }
                         </span>
                     </div>
                 </div>
             </li>
+            }
         </ul>
+        }
         <div
             class="v-center clr-row"
             [ngClass]="{ 'pt-1': retention?.rules?.length > 0 }">
@@ -175,14 +174,14 @@
         [labelEdit]="label"
         [originCron]="originCron()"
         (inputvalue)="openConfirm($event)"></cron-selection>
-    <ng-container *ngIf="retention?.trigger?.settings?.next_scheduled_time">
-        <span class="ml-1 mr-1 font-style">{{
-            'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
-        }}</span>
-        <span>{{
-            retention?.trigger?.settings?.next_scheduled_time | harborDatetime
-        }}</span>
-    </ng-container>
+    @if (retention?.trigger?.settings?.next_scheduled_time) {
+    <span class="ml-1 mr-1 font-style">{{
+        'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
+    }}</span>
+    <span>{{
+        retention?.trigger?.settings?.next_scheduled_time | harborDatetime
+    }}</span>
+    }
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col-2 pt-2 flex-150">
@@ -233,8 +232,10 @@
         </clr-dg-action-bar>
         <clr-datagrid
             (clrDgRefresh)="clrLoad($event)"
+            clrDgSelectionType="single"
             [clrDgLoading]="loadingExecutions"
-            [(clrDgSingleSelected)]="selectedItem">
+            [clrDgSelected]="selectedItem ? [selectedItem] : []"
+            (clrDgSelectedChange)="selectedItem = $event?.[0]">
             <clr-dg-column>
                 {{ 'TAG_RETENTION.SERIAL' | translate }}
             </clr-dg-column>
@@ -256,9 +257,8 @@
             <clr-dg-placeholder>
                 {{ 'TAG_RETENTION.NO_EXECUTION' | translate }}
             </clr-dg-placeholder>
-            <clr-dg-row
-                *ngFor="let execution of executionList"
-                [clrDgItem]="execution">
+            @for (execution of executionList; track execution) {
+            <clr-dg-row [clrDgItem]="execution">
                 <clr-dg-cell>
                     <span>{{ execution.id }}</span>
                 </clr-dg-cell>
@@ -285,6 +285,7 @@
                     [retentionId]="retentionId"
                     ngProjectAs="clr-dg-row-detail"></app-tag-retention-tasks>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     [clrDgTotalItems]="totalCount"
@@ -297,12 +298,14 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="totalCount"
+                    @if (totalCount) {
+                    <span
                         >{{ pagination?.firstItem + 1 }}
                         -
                         {{ pagination?.lastItem + 1 }}
                         {{ 'ROBOT_ACCOUNT.OF' | translate }}
                     </span>
+                    }
                     {{ totalCount }} {{ 'ROBOT_ACCOUNT.ITEMS' | translate }}
                 </clr-dg-pagination>
             </clr-dg-footer>
@@ -403,7 +406,6 @@
         </button>
     </div>
 </clr-modal>
-<div
-    class="backdrop-transparent"
-    (click)="ruleIndex = -1"
-    *ngIf="ruleIndex !== -1"></div>
+@if (ruleIndex !== -1) {
+<div class="backdrop-transparent" (click)="ruleIndex = -1"></div>
+}

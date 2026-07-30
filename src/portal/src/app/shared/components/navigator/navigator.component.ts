@@ -41,7 +41,7 @@ import {
     StyleMode,
 } from '../../../services/theme';
 import { getDatetimeRendering } from '../../units/shared.utils';
-import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
+import { ClrCommonStrings } from '@clr/angular';
 import { map } from 'rxjs/operators';
 import { forkJoin, Observable } from 'rxjs';
 import { ClrCommonStringsService } from '@clr/angular';
@@ -51,6 +51,7 @@ import { signInStatusError } from '../../../account/sign-in/sign-in.component';
     selector: 'navigator',
     templateUrl: 'navigator.component.html',
     styleUrls: ['navigator.component.scss'],
+    standalone: false,
 })
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();

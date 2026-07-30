@@ -31,11 +31,16 @@ import {
 } from '../../p2p-provider/p2p-provider.service';
 import { ProjectWebhookService, VendorType } from '../webhook.service';
 import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-executions',
     templateUrl: './executions.component.html',
     styleUrls: ['./executions.component.scss'],
+    standalone: false,
 })
 export class ExecutionsComponent implements OnDestroy {
     @Input()
@@ -54,7 +59,8 @@ export class ExecutionsComponent implements OnDestroy {
         private webhookService: WebhookService,
         private messageHandlerService: MessageHandlerService,
         private router: Router,
-        private projectWebhookService: ProjectWebhookService
+        private projectWebhookService: ProjectWebhookService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnDestroy(): void {
@@ -100,6 +106,7 @@ export class ExecutionsComponent implements OnDestroy {
                 sort: sort,
                 q: q,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;

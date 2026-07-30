@@ -58,6 +58,7 @@ const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
     selector: 'add-robot',
     templateUrl: './add-robot.component.html',
     styleUrls: ['./add-robot.component.scss'],
+    standalone: false,
 })
 export class AddRobotComponent implements OnInit, OnDestroy {
     @Input() projectId: number;

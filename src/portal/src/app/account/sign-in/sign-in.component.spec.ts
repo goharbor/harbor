@@ -103,9 +103,31 @@ describe('SignInComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('should apply the theme color to the default login background', () => {
+        component.customLoginBgImg = '';
+        fixture.detectChanges();
+
+        const loginWrapper: HTMLDivElement =
+            fixture.nativeElement.querySelector('.login-wrapper');
+        expect(loginWrapper.style.backgroundColor).toBe(
+            'var(--clr-login-background-color)'
+        );
+        expect(loginWrapper.style.backgroundBlendMode).toBe('multiply');
+    });
+
+    it('should not apply theme blending to a custom login background', () => {
+        const loginWrapper: HTMLDivElement =
+            fixture.nativeElement.querySelector('.login-wrapper');
+        expect(loginWrapper.style.backgroundImage).toContain(
+            'url("/images/abc")'
+        );
+        expect(loginWrapper.style.backgroundColor).toBe('');
+        expect(loginWrapper.style.backgroundBlendMode).toBe('');
+    });
+
     it('should show core service is not available', async () => {
         expect(component).toBeTruthy();
-        const sessionService = TestBed.get<SessionService>(SessionService);
+        const sessionService = TestBed.inject<SessionService>(SessionService);
         const spy: jasmine.Spy = spyOn(
             sessionService,
             'signIn'
@@ -129,7 +151,7 @@ describe('SignInComponent', () => {
     });
     it('should show invalid username or password', async () => {
         expect(component).toBeTruthy();
-        const sessionService = TestBed.get<SessionService>(SessionService);
+        const sessionService = TestBed.inject<SessionService>(SessionService);
         const spy: jasmine.Spy = spyOn(
             sessionService,
             'signIn'

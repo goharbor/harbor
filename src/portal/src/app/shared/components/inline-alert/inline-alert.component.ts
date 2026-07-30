@@ -21,6 +21,7 @@ import { errorHandler } from '../../units/shared.utils';
     selector: 'inline-alert',
     templateUrl: './inline-alert.component.html',
     styleUrls: ['./inline-alert.component.scss'],
+    standalone: false,
 })
 export class InlineAlertComponent {
     inlineAlertType: string = 'danger';

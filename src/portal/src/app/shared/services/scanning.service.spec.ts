@@ -17,18 +17,24 @@ import {
     ScanningResultDefaultService,
 } from './scanning.service';
 import { SharedTestingModule } from '../shared.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ScanningResultService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [SharedTestingModule, HttpClientTestingModule],
+            imports: [SharedTestingModule],
             providers: [
                 ScanningResultDefaultService,
                 {
                     provide: ScanningResultService,
                     useClass: ScanningResultDefaultService,
                 },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         });
     });

@@ -1,14 +1,15 @@
 <h4>{{ 'REPOSITORY.TAGS' | translate }}</h4>
 
 <clr-datagrid
+    clrDgSelectionType="multi"
     [clrDgLoading]="loading"
     (clrDgRefresh)="getCurrentArtifactTags($event)"
     [(clrDgSelected)]="selectedRow">
     <clr-dg-action-bar>
         <div class="action-bar">
             <div>
+                @if (!isProxyCacheProject) {
                 <button
-                    *ngIf="!isProxyCacheProject"
                     id="new-tag"
                     type="button"
                     [disabled]="!hasCreateTagPermission"
@@ -18,6 +19,7 @@
                         'TAG.ADD_TAG' | translate
                     }}
                 </button>
+                }
                 <button
                     id="delete-tag"
                     type="button"
@@ -44,16 +46,15 @@
 
         <form
             #tagForm="ngForm"
+            clrForm
             [hidden]="!newTagformShow"
-            class="label-form stack-block-label">
-            <section>
-                <label>
-                    <label for="name">{{ 'TAG.NAME' | translate }}</label>
-                    <label
-                        class="clr-control-container"
-                        [class.clr-error]="
-                            isTagNameExist || name.hasError('pattern')
-                        ">
+            clrLabelSize="3"
+            class="label-form">
+            <div class="clr-row">
+                <!-- Left column -->
+                <div class="clr-col-lg-4 clr-col-md-6">
+                    <clr-input-container class="form-field full-width">
+                        <label for="name">{{ 'TAG.NAME' | translate }}</label>
                         <input
                             clrInput
                             type="text"
@@ -66,23 +67,19 @@
                             #name="ngModel"
                             pattern="^[\w][\w.-]{0,127}$"
                             (keyup)="existValid(newTagName.name)" />
-                        <span
-                            class="spinner spinner-inline spinner-tag"
-                            [hidden]="!tagNameCheckOnGoing"></span>
-
-                        <clr-control-error
-                            class="position-ab white-space-nowrap"
-                            *ngIf="isTagNameExist">
+                        @if (isTagNameExist) {
+                        <clr-control-error class="white-space-nowrap">
                             {{ 'TAG.NAME_ALREADY_EXISTS' | translate }}
                         </clr-control-error>
-                        <clr-control-error
-                            class="position-ab white-space-nowrap"
-                            *ngIf="name.hasError('pattern')">
+                        } @if (name.hasError('pattern')) {
+                        <clr-control-error class="white-space-nowrap">
                             {{ 'RETAG.TIP_TAG' | translate }}
                         </clr-control-error>
-                    </label>
-                </label>
-                <label class="ml-1">
+                        }
+                    </clr-input-container>
+                </div>
+                <!-- Right column -->
+                <div class="clr-col-lg-4 clr-col-md-6">
                     <button
                         type="button"
                         class="btn btn-sm btn-outline"
@@ -102,8 +99,8 @@
                         ">
                         {{ 'BUTTON.OK' | translate }}
                     </button>
-                </label>
-            </section>
+                </div>
+            </div>
         </form>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{
@@ -118,7 +115,8 @@
     <clr-dg-placeholder>
         <span>{{ 'TAG.PLACEHOLDER' | translate }}</span>
     </clr-dg-placeholder>
-    <clr-dg-row *ngFor="let tag of currentTags" [clrDgItem]="tag">
+    @for (tag of currentTags; track tag) {
+    <clr-dg-row [clrDgItem]="tag">
         <clr-dg-cell>
             <div class="pull" [class.immutable]="tag.immutable">
                 <span
@@ -128,11 +126,12 @@
                     >{{ tag.name }}</span
                 >
                 <div class="pull-label">
-                    <span *ngIf="tag.immutable" class="label label-info ml-8">{{
+                    @if (tag.immutable) {
+                    <span class="label label-info ml-8">{{
                         'REPOSITORY.IMMUTABLE' | translate
                     }}</span>
+                    }
                     <app-pull-command
-                        class="pull-btn"
                         [isTagMode]="true"
                         [artifact]="artifactDetails"
                         [accessoryType]="accessoryType"
@@ -152,6 +151,7 @@
             tag.push_time | harborDatetime : 'short'
         }}</clr-dg-cell>
     </clr-dg-row>
+    }
 
     <clr-dg-footer>
         <clr-dg-pagination
@@ -162,11 +162,13 @@
             <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
-            <span *ngIf="totalCount"
+            @if (totalCount) {
+            <span
                 >{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}
                 {{ 'TAG.OF' | translate }} {{ totalCount }}
                 {{ 'TAG.ITEMS' | translate }}</span
             >
+            }
         </clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>

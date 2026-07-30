@@ -14,14 +14,15 @@ fi
 
 go env -w GO111MODULE=auto
 pwd
-go install golang.org/x/tools/cmd/cover@latest
-go install github.com/mattn/goveralls@latest
-go install github.com/client9/misspell/cmd/misspell@latest
+GOBIN_DIR="$(go env GOPATH | cut -d: -f1)/bin"
+command -v misspell >/dev/null 2>&1 || go install github.com/client9/misspell/cmd/misspell@v0.3.4
 set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0
+if ! "${GOBIN_DIR}/golangci-lint" --version 2>/dev/null | grep -q ' 2\.9\.0 '; then
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "${GOBIN_DIR}" v2.9.0
+fi
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
@@ -29,7 +30,7 @@ sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make build -e BUILDTARGET="_build_db _build_registry _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
+sudo make build -e BUILDTARGET="_build_db _build_registry _build_valkey _build_prepare" -e PULL_BASE_FROM_DOCKERHUB=false -e BUILDREG=true -e BUILDTRIVYADP=true
 docker run --rm -v /:/hostfs:z goharbor/prepare:dev gencert -p /etc/harbor/tls/internal
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"

@@ -66,6 +66,7 @@ export class SearchOption {
     selector: 'project-audit-log',
     templateUrl: './audit-log.component.html',
     styleUrls: ['./audit-log.component.scss'],
+    standalone: false,
 })
 export class ProjectAuditLogComponent implements OnInit {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

@@ -15,7 +15,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { SystemRobotAccountsComponent } from './system-robot-accounts.component';
 import { RobotService } from '../../../../../ng-swagger-gen/services/robot.service';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import {
+    HttpHeaders,
+    HttpResponse,
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 import { of, Subscription } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Robot } from '../../../../../ng-swagger-gen/models/robot';
@@ -28,7 +33,7 @@ import { ConfirmationDialogService } from '../../global-confirmation-dialog/conf
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ClarityModule } from '@clr/angular';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HarborDatetimePipe } from '../../../shared/pipes/harbor-datetime.pipe';
@@ -139,15 +144,15 @@ describe('SystemRobotAccountsComponent', () => {
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
+            declarations: [SystemRobotAccountsComponent, HarborDatetimePipe],
+            schemas: [NO_ERRORS_SCHEMA],
             imports: [
                 TranslateModule.forRoot(),
                 CommonModule,
                 ClarityModule,
-                HttpClientTestingModule,
                 RouterTestingModule,
                 BrowserAnimationsModule,
             ],
-            declarations: [SystemRobotAccountsComponent, HarborDatetimePipe],
             providers: [
                 TranslateService,
                 {
@@ -158,8 +163,9 @@ describe('SystemRobotAccountsComponent', () => {
                 OperationService,
                 { provide: RobotService, useValue: fakedRobotService },
                 { provide: ProjectService, useValue: mockProjectService },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
-            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 

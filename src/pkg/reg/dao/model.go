@@ -41,7 +41,7 @@ type Registry struct {
 	UpdateTime     time.Time `orm:"column(update_time);auto_now"`
 }
 
-// TableName is required by by beego orm to map Registry to table registry
+// TableName is required by beego orm to map Registry to table registry
 func (r *Registry) TableName() string {
 	return "registry"
 }
