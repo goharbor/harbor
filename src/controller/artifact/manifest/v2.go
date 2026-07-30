@@ -36,7 +36,6 @@ func init() {
 // v2Abstractor abstracts artifacts enveloped by OCI manifest or docker manifest v2.
 type v2Abstractor struct{}
 
-// NewV2 returns an abstractor for OCI image manifests and docker manifest v2.
 func NewV2() Abstractor {
 	return &v2Abstractor{}
 }

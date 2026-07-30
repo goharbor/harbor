@@ -38,7 +38,6 @@ type indexAbstractor struct {
 	artMgr artifact.Manager
 }
 
-// NewIndex returns an abstractor for OCI indexes and docker manifest lists.
 func NewIndex(artMgr artifact.Manager) Abstractor {
 	return &indexAbstractor{artMgr: artMgr}
 }

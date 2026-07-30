@@ -22,25 +22,18 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
-// Registry holds the registered manifest abstractors, keyed by manifest media
-// type. Exported so that tests can replace it, the same way processor.Registry
-// is replaced today.
+// Registry holds the registered manifest abstractors, keyed by manifest media type.
 var Registry = map[string]Abstractor{}
 
 // Abstractor abstracts the metadata carried by one manifest format into the
 // artifact model.
 type Abstractor interface {
-	// Abstract reads the manifest content and populates the artifact model.
 	Abstract(ctx context.Context, art *artifact.Artifact, content []byte) error
 }
 
-// Register an abstractor for one or more manifest media types. One abstractor
-// can serve multiple media types that share a wire format.
-//
-// The whole batch is validated before anything is written, so a rejected call
-// leaves the registry untouched. Callers only log registration errors, and a
-// half-applied batch would otherwise make dispatch depend on the order the
-// media types happened to be listed in.
+// Register an abstractor for one or more manifest media types. Callers only log
+// registration errors, so the batch is validated before anything is written: a
+// half-applied batch would make dispatch depend on the order of the media types.
 func Register(abstractor Abstractor, mediaTypes ...string) error {
 	seen := make(map[string]struct{}, len(mediaTypes))
 	for _, mediaType := range mediaTypes {
@@ -61,8 +54,7 @@ func Register(abstractor Abstractor, mediaTypes ...string) error {
 }
 
 // Get the abstractor for the manifest media type. Unlike processor.Get there is
-// no default fallback: an unknown manifest media type cannot be abstracted, and
-// silently guessing a format would corrupt the artifact model.
+// no default fallback: guessing at an unknown format would corrupt the artifact model.
 func Get(mediaType string) (Abstractor, error) {
 	abstractor, exist := Registry[mediaType]
 	if !exist {

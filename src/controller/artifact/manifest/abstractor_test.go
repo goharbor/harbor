@@ -30,9 +30,7 @@ import (
 	tblob "github.com/goharbor/harbor/src/testing/pkg/blob"
 )
 
-// These tests exercise each abstractor directly with injected mocks, which is
-// what the exported constructors are for. Registration wires the same types up
-// from the package-level managers.
+// Driving each abstractor directly with mocks is what the exported constructors are for.
 
 const (
 	v1ManifestContent = `{
@@ -125,8 +123,7 @@ func TestIndexAbstractorPropagatesChildLookupError(t *testing.T) {
 	assert.Error(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(indexContent)))
 }
 
-// CNAB carries its media type in an index annotation rather than in the
-// descriptor.
+// CNAB carries its media type in an index annotation, not in the descriptor.
 func TestIndexAbstractorReadsMediaTypeFromAnnotations(t *testing.T) {
 	artMgr := &tart.Manager{}
 	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}

@@ -38,7 +38,6 @@ type v1Abstractor struct {
 	blobMgr blob.Manager
 }
 
-// NewV1 returns an abstractor for docker manifest v1 / schema1.
 func NewV1(blobMgr blob.Manager) Abstractor {
 	return &v1Abstractor{blobMgr: blobMgr}
 }

@@ -35,7 +35,6 @@ func (stubAbstractor) Abstract(_ context.Context, _ *artifact.Artifact, _ []byte
 	return nil
 }
 
-// withRegistry swaps the package registry for the duration of a test.
 func withRegistry(t *testing.T, registry map[string]Abstractor) {
 	t.Helper()
 	original := Registry
@@ -43,9 +42,7 @@ func withRegistry(t *testing.T, registry map[string]Abstractor) {
 	t.Cleanup(func() { Registry = original })
 }
 
-// TestDefaultRegistrations pins the bootstrap. An empty registry means no
-// artifact can be abstracted at all, so it is worth a test rather than a
-// convention.
+// An empty registry means no artifact can be abstracted at all, so pin the bootstrap.
 func TestDefaultRegistrations(t *testing.T) {
 	for _, mediaType := range []string{
 		"",
@@ -93,8 +90,7 @@ func TestRegisterDuplicate(t *testing.T) {
 	assert.Error(t, Register(stubAbstractor{}, "a"))
 }
 
-// A rejected batch must not leave part of itself registered, otherwise dispatch
-// would depend on the order the media types were listed in.
+// A partly applied batch would make dispatch depend on the order of the media types.
 func TestRegisterRejectedBatchIsNotApplied(t *testing.T) {
 	withRegistry(t, map[string]Abstractor{})
 
