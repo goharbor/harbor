@@ -23,22 +23,27 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/registry"
 )
 
 func init() {
 	mediaTypes := []string{v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList}
-	if err := Register(NewIndex(pkg.ArtifactMgr), mediaTypes...); err != nil {
+	if err := Register(NewIndex(pkg.ArtifactMgr, registry.Cli), mediaTypes...); err != nil {
 		panic(err)
 	}
 }
 
 // indexAbstractor abstracts artifacts enveloped by OCI index or docker manifest list.
 type indexAbstractor struct {
-	artMgr artifact.Manager
+	artMgr      artifact.Manager
+	attestation *InTotoAttestationClassifier
 }
 
-func NewIndex(artMgr artifact.Manager) Abstractor {
-	return &indexAbstractor{artMgr: artMgr}
+func NewIndex(artMgr artifact.Manager, regCli registry.Client) Abstractor {
+	return &indexAbstractor{
+		artMgr:      artMgr,
+		attestation: NewInTotoAttestationClassifier(artMgr, regCli),
+	}
 }
 
 func (a *indexAbstractor) Abstract(ctx context.Context, art *artifact.Artifact, content []byte) error {
@@ -67,7 +72,7 @@ func (a *indexAbstractor) Abstract(ctx context.Context, art *artifact.Artifact, 
 	art.Size += int64(len(content))
 	// populate the referenced artifacts
 	for _, mani := range index.Manifests {
-		candidate, err := ClassifyChild(ctx, art.RepositoryName, mani, index.Manifests)
+		candidate, err := a.attestation.Classify(ctx, art.RepositoryName, mani, index.Manifests)
 		if err != nil {
 			return err
 		}

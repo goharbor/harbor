@@ -242,6 +242,9 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	created := false
 	pendingAccessories := artifact.AccessoryCandidates
+	// A conflict raised while linking accessories is not the parent-artifact race
+	// the recovery below handles, and must not be retried as one.
+	var accessoryErr error
 	if err = orm.WithTransaction(func(ctx context.Context) error {
 		id, err := c.artMgr.Create(ctx, artifact)
 		if err != nil {
@@ -250,12 +253,16 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 		artifact.ID = id
 		for _, candidate := range pendingAccessories {
 			if err := c.accessoryMgr.Ensure(ctx, candidate.SubArtifactDigest, candidate.SubArtifactRepo, candidate.SubArtifactID, candidate.ArtifactID, candidate.Size, candidate.Digest, candidate.Type); err != nil {
+				accessoryErr = err
 				return err
 			}
 		}
 		created = true
 		return nil
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-ensure-artifact")); err != nil {
+		if accessoryErr != nil {
+			return false, nil, accessoryErr
+		}
 		// got error that isn't conflict error, return directly
 		if !errors.IsConflictErr(err) {
 			return false, nil, err

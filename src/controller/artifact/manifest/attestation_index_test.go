@@ -126,7 +126,6 @@ func attestationIndexMocks(t *testing.T) (*tart.Manager, *tregistry.Client) {
 		Return(&artifact.Artifact{ID: 2, Digest: amd64Digest, Size: 10}, nil)
 	artMgr.On("GetByDigest", mock.Anything, mock.Anything, attestationDigest).
 		Return(&artifact.Artifact{ID: 3, Digest: attestationDigest, Size: 3}, nil)
-	withClassifiers(t, NewInTotoAttestationClassifier(artMgr, regCli))
 	return artMgr, regCli
 }
 
@@ -145,7 +144,7 @@ func TestIndexAbstractorClassifiesAttestationAsAccessory(t *testing.T) {
 	).Once()
 
 	art := &artifact.Artifact{ID: 1, RepositoryName: "library/test", ManifestMediaType: v1.MediaTypeImageIndex}
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(attestationIndex)))
+	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(attestationIndex)))
 
 	require.Len(t, art.References, 1, "the attestation must not be listed as a child of the index")
 	require.Len(t, art.AccessoryCandidates, 1)
@@ -163,7 +162,7 @@ func TestIndexAbstractorFallsBackToAnnotation(t *testing.T) {
 	regCli.On("PullManifest", mock.Anything, attestationDigest).Return(nil, "", fmt.Errorf("no in-toto payload")).Once()
 
 	art := &artifact.Artifact{ID: 1, RepositoryName: "library/test", ManifestMediaType: v1.MediaTypeImageIndex}
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(attestationIndexAnnotationOnly)))
+	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(attestationIndexAnnotationOnly)))
 
 	require.Len(t, art.References, 1)
 	require.Len(t, art.AccessoryCandidates, 1)
@@ -195,7 +194,7 @@ func TestIndexAbstractorKeepsUnresolvableAttestationAsChild(t *testing.T) {
   ]
 }`
 	art := &artifact.Artifact{ID: 1, RepositoryName: "library/test", ManifestMediaType: v1.MediaTypeImageIndex}
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(index)))
+	require.NoError(t, NewIndex(artMgr, regCli).Abstract(context.Background(), art, []byte(index)))
 
 	assert.Empty(t, art.AccessoryCandidates)
 	assert.Len(t, art.References, 1)

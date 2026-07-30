@@ -26,7 +26,6 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/pkg"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/registry"
@@ -42,10 +41,6 @@ const (
 	inTotoLayerMediaType            = "application/vnd.in-toto+json"
 	maxStatementBytes         int64 = 4 << 20 // 4 MiB
 )
-
-func init() {
-	RegisterChildClassifier(NewInTotoAttestationClassifier(pkg.ArtifactMgr, registry.Cli))
-}
 
 type inTotoStatement struct {
 	Subject []inTotoSubject `json:"subject"`
@@ -78,12 +73,22 @@ func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository s
 		return nil, nil
 	}
 
-	subjects, err := c.loadSubjects(repository, descriptor.Digest.String())
-	if err != nil {
-		log.G(ctx).Debugf("could not load attestation subjects for %s@%s, falling back to annotation-based resolution: %v", repository, descriptor.Digest.String(), err)
+	children := platformChildren(siblings)
+	if len(children) == 0 {
+		//nolint:nilnil // nothing in the index for the attestation to describe
+		return nil, nil
 	}
 
-	targetDigest := resolveAttestationSubject(descriptor, siblings, subjects)
+	// The annotation names the subject in the common case. Only when it points
+	// outside the index is the in-toto payload worth two registry round trips.
+	targetDigest := descriptor.Annotations[referenceDigestAnnotation]
+	if !digestInIndex(children, targetDigest) {
+		subjects, err := c.loadSubjects(repository, descriptor.Digest.String())
+		if err != nil {
+			log.G(ctx).Debugf("could not load attestation subjects for %s@%s, falling back to annotation-based resolution: %v", repository, descriptor.Digest.String(), err)
+		}
+		targetDigest = resolveSubjectFromStatement(children, subjects)
+	}
 	if targetDigest == "" {
 		//nolint:nilnil // no target artifact could be resolved
 		return nil, nil
@@ -171,29 +176,25 @@ func isAttestationDescriptor(descriptor v1.Descriptor) bool {
 	return descriptor.Annotations[referenceTypeAnnotation] == attestationManifestType
 }
 
-func resolveAttestationSubject(descriptor v1.Descriptor, siblings []v1.Descriptor, subjects []inTotoSubject) string {
-	children := platformChildren(siblings)
-	if len(children) == 0 {
-		return ""
+// A statement may carry several subjects. Matching more than one child means the
+// payload does not identify a single target, so nothing is attached rather than
+// picking whichever the array happened to list first.
+func resolveSubjectFromStatement(children []v1.Descriptor, subjects []inTotoSubject) string {
+	byDigest := make([]string, 0, len(subjects))
+	for _, subject := range subjects {
+		byDigest = append(byDigest, subjectDigests(subject)...)
 	}
-
-	if digestRef := descriptor.Annotations[referenceDigestAnnotation]; digestInIndex(children, digestRef) {
+	if digestRef := uniqueDigestInIndex(children, byDigest); digestRef != "" {
 		return digestRef
 	}
 
-	for _, subject := range subjects {
-		if digestRef := uniqueDigestInIndex(children, subjectDigests(subject)); digestRef != "" {
-			return digestRef
-		}
-	}
-
+	byName := make([]string, 0, len(subjects))
 	for _, subject := range subjects {
 		if digestRef := digestBySubjectName(children, subject.Name); digestRef != "" {
-			return digestRef
+			byName = append(byName, digestRef)
 		}
 	}
-
-	return ""
+	return uniqueDigestInIndex(children, byName)
 }
 
 func platformChildren(siblings []v1.Descriptor) []v1.Descriptor {
