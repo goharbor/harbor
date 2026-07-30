@@ -124,3 +124,60 @@ func TestIndexAbstractorPropagatesChildLookupError(t *testing.T) {
 	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}
 	assert.Error(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(indexContent)))
 }
+
+// CNAB carries its media type in an index annotation rather than in the
+// descriptor.
+func TestIndexAbstractorReadsMediaTypeFromAnnotations(t *testing.T) {
+	artMgr := &tart.Manager{}
+	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}
+	content := `{
+   "schemaVersion": 2,
+   "mediaType": "application/vnd.oci.image.index.v1+json",
+   "manifests": [],
+   "annotations": {"org.opencontainers.artifactType": "application/vnd.cnab.manifest.v1"}
+}`
+	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(content)))
+	assert.Equal(t, "application/vnd.cnab.manifest.v1", art.MediaType)
+}
+
+func TestIndexAbstractorReadsArtifactType(t *testing.T) {
+	artMgr := &tart.Manager{}
+	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}
+	content := `{
+   "schemaVersion": 2,
+   "mediaType": "application/vnd.oci.image.index.v1+json",
+   "artifactType": "application/vnd.example.sbom",
+   "manifests": []
+}`
+	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(content)))
+	assert.Equal(t, "application/vnd.example.sbom", art.ArtifactType)
+}
+
+func TestV2AbstractorReadsArtifactType(t *testing.T) {
+	art := &artifact.Artifact{ID: 1}
+	content := `{
+   "schemaVersion": 2,
+   "mediaType": "application/vnd.oci.image.manifest.v1+json",
+   "artifactType": "application/vnd.example.sbom",
+   "config": {"mediaType": "application/vnd.oci.image.config.v1+json", "size": 1, "digest": "sha256:b5b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7"},
+   "layers": []
+}`
+	require.NoError(t, NewV2().Abstract(context.Background(), art, []byte(content)))
+	assert.Equal(t, "application/vnd.example.sbom", art.ArtifactType)
+}
+
+func TestV1AbstractorPropagatesBlobListError(t *testing.T) {
+	blobMgr := &tblob.Manager{}
+	mock.OnAnything(blobMgr, "List").Return(nil, assert.AnError)
+
+	art := &artifact.Artifact{ID: 1}
+	assert.Error(t, NewV1(blobMgr).Abstract(context.Background(), art, []byte(v1ManifestContent)))
+}
+
+func TestAbstractorsRejectMalformedContent(t *testing.T) {
+	malformed := []byte("{not json")
+
+	assert.Error(t, NewV1(&tblob.Manager{}).Abstract(context.Background(), &artifact.Artifact{}, malformed))
+	assert.Error(t, NewV2().Abstract(context.Background(), &artifact.Artifact{}, malformed))
+	assert.Error(t, NewIndex(&tart.Manager{}).Abstract(context.Background(), &artifact.Artifact{}, malformed))
+}

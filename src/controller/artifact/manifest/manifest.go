@@ -36,11 +36,24 @@ type Abstractor interface {
 
 // Register an abstractor for one or more manifest media types. One abstractor
 // can serve multiple media types that share a wire format.
+//
+// The whole batch is validated before anything is written, so a rejected call
+// leaves the registry untouched. Callers only log registration errors, and a
+// half-applied batch would otherwise make dispatch depend on the order the
+// media types happened to be listed in.
 func Register(abstractor Abstractor, mediaTypes ...string) error {
+	seen := make(map[string]struct{}, len(mediaTypes))
 	for _, mediaType := range mediaTypes {
 		if _, exist := Registry[mediaType]; exist {
 			return errors.Errorf("the abstractor for manifest media type %s already exists", mediaType)
 		}
+		if _, duplicate := seen[mediaType]; duplicate {
+			return errors.Errorf("the manifest media type %s is listed twice", mediaType)
+		}
+		seen[mediaType] = struct{}{}
+	}
+
+	for _, mediaType := range mediaTypes {
 		Registry[mediaType] = abstractor
 		log.Debugf("the abstractor for manifest media type %s registered", mediaType)
 	}

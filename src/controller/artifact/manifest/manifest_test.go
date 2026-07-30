@@ -92,3 +92,23 @@ func TestRegisterDuplicate(t *testing.T) {
 	require.NoError(t, Register(stubAbstractor{}, "a"))
 	assert.Error(t, Register(stubAbstractor{}, "a"))
 }
+
+// A rejected batch must not leave part of itself registered, otherwise dispatch
+// would depend on the order the media types were listed in.
+func TestRegisterRejectedBatchIsNotApplied(t *testing.T) {
+	withRegistry(t, map[string]Abstractor{})
+
+	require.NoError(t, Register(stubAbstractor{}, "existing"))
+	assert.Error(t, Register(stubAbstractor{}, "new", "existing"))
+
+	_, err := Get("new")
+	assert.Error(t, err, "the rest of the batch must not have been registered")
+	assert.Len(t, Registry, 1)
+}
+
+func TestRegisterDuplicateWithinBatch(t *testing.T) {
+	withRegistry(t, map[string]Abstractor{})
+
+	assert.Error(t, Register(stubAbstractor{}, "a", "a"))
+	assert.Empty(t, Registry)
+}
