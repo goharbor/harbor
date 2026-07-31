@@ -40,6 +40,13 @@ const (
 	attestationManifestType         = "attestation-manifest"
 	inTotoLayerMediaType            = "application/vnd.in-toto+json"
 	maxStatementBytes         int64 = 4 << 20 // 4 MiB
+
+	// A well-formed index carries at most one attestation per platform child, so
+	// the child count bounds legitimate payload lookups. This ceiling caps the
+	// rest: a 4 MiB index holds thousands of attestation descriptors, and each
+	// one whose annotation names no child would otherwise cost two registry round
+	// trips and up to maxStatementBytes of reads during a single push.
+	maxSubjectLookups = 32
 )
 
 type inTotoStatement struct {
@@ -67,30 +74,64 @@ func NewInTotoAttestationClassifier(artMgr artifact.Manager, regCli registry.Cli
 	}
 }
 
-func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository string, descriptor v1.Descriptor, siblings []v1.Descriptor) (*artifact.AccessoryCandidate, error) {
-	if !isAttestationDescriptor(descriptor) {
-		return nil, nil
+// Classify partitions the children of an index into the descriptors that stay
+// ordinary references and the accessory candidates for its in-toto attestations.
+// It is one call per index rather than per child so that the children are walked
+// once and the payload lookups share a single budget.
+func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository string, manifests []v1.Descriptor) ([]v1.Descriptor, []*artifact.AccessoryCandidate, error) {
+	children := platformChildren(manifests)
+	// Nothing to attach, or nothing to attach it to.
+	if len(children) == len(manifests) || len(children) == 0 {
+		return manifests, nil, nil
 	}
 
-	children := platformChildren(siblings)
-	if len(children) == 0 {
-		return nil, nil
-	}
+	lookups := min(len(children), maxSubjectLookups)
+	warned := false
 
-	// The annotation names the subject in the common case. Only when it points
-	// outside the index is the in-toto payload worth two registry round trips.
-	targetDigest := descriptor.Annotations[referenceDigestAnnotation]
-	if !digestInIndex(children, targetDigest) {
-		subjects, err := c.loadSubjects(repository, descriptor.Digest.String())
-		if err != nil {
-			log.G(ctx).Debugf("could not load attestation subjects for %s@%s, falling back to annotation-based resolution: %v", repository, descriptor.Digest.String(), err)
+	references := make([]v1.Descriptor, 0, len(manifests))
+	var candidates []*artifact.AccessoryCandidate
+	for _, descriptor := range manifests {
+		if !isAttestationDescriptor(descriptor) {
+			references = append(references, descriptor)
+			continue
 		}
-		targetDigest = resolveSubjectFromStatement(children, subjects)
-	}
-	if targetDigest == "" {
-		return nil, nil
+
+		// The annotation names the subject in the common case. Only when it points
+		// outside the index is the in-toto payload worth two registry round trips.
+		targetDigest := descriptor.Annotations[referenceDigestAnnotation]
+		if !digestInIndex(children, targetDigest) {
+			targetDigest = ""
+			switch {
+			case lookups > 0:
+				lookups--
+				subjects, err := c.loadSubjects(repository, descriptor.Digest.String())
+				if err != nil {
+					log.G(ctx).Debugf("could not load attestation subjects for %s@%s, falling back to annotation-based resolution: %v", repository, descriptor.Digest.String(), err)
+				}
+				targetDigest = resolveSubjectFromStatement(children, subjects)
+			case !warned:
+				warned = true
+				log.G(ctx).Warningf("index in %s exceeds %d unresolved attestations, the remainder are kept as children without reading their payloads", repository, maxSubjectLookups)
+			}
+		}
+		// An attestation nothing can be attached to stays a child of the index
+		// rather than being dropped from the artifact altogether.
+		if targetDigest == "" {
+			references = append(references, descriptor)
+			continue
+		}
+
+		candidate, err := c.candidate(ctx, repository, descriptor, targetDigest)
+		if err != nil {
+			return nil, nil, err
+		}
+		candidates = append(candidates, candidate)
 	}
 
+	return references, candidates, nil
+}
+
+func (c *InTotoAttestationClassifier) candidate(ctx context.Context, repository string, descriptor v1.Descriptor, targetDigest string) (*artifact.AccessoryCandidate, error) {
 	accessoryArt, err := c.artMgr.GetByDigest(ctx, repository, descriptor.Digest.String())
 	if err != nil {
 		return nil, err
