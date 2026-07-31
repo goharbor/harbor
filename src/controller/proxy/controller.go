@@ -42,10 +42,13 @@ const (
 	// wait more time than manifest (maxManifestWait) because manifest list depends on manifest ready
 	maxManifestListWait = 20
 	maxManifestWait     = 10
-	sleepIntervalSec    = 20
 	// keep manifest list in cache for one week
 	manifestListCacheInterval = 7 * 24 * 60 * 60 * time.Second
 )
+
+// sleepInterval is the delay between rounds while waiting for child manifests to
+// be cached locally. It is a var (not a const) so tests can shorten it.
+var sleepInterval = 20 * time.Second
 
 var (
 	// Ctl is a global proxy controller instance
@@ -182,7 +185,9 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 	remoteRepo := GetRemoteRepo(art)
 	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
-		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
+		// when the upstream check fails (rate limited, unreachable, ...), use local if it exists, otherwise return the error
+		if a != nil {
+			log.Warningf("Failed to check the manifest in the remote registry, serving from local cache, repo: %v, ref: %v, error: %v", art.Repository, getReference(art), err)
 			return true, nil, nil
 		}
 		return false, nil, err
