@@ -42,6 +42,11 @@ func Register(abstractor Abstractor, mediaTypes ...string) error {
 	if abstractor == nil {
 		return errors.New("refusing to register a nil manifest abstractor")
 	}
+	// Registering nothing would otherwise succeed and only surface as an
+	// unsupported media type at dispatch, far from the faulty call.
+	if len(mediaTypes) == 0 {
+		return errors.New("no manifest media types given to register")
+	}
 
 	seen := make(map[string]struct{}, len(mediaTypes))
 	for _, mediaType := range mediaTypes {
