@@ -25,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
+	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/controller/registry"
@@ -331,6 +332,20 @@ func isProxySession(ctx context.Context, projectName string) bool {
 	username := sc.GetUsername()
 	if username == proxycachesecret.ProxyCacheService {
 		return true
+	}
+	// Verify that security context is a robot security context.
+	rSc, ok := sc.(*robotSc.SecurityContext)
+	if !ok {
+		return false
+	}
+	r := rSc.User()
+	if r == nil {
+		return false
+	}
+	// Scanner robot accounts created by system must be invisible and have CreatorRef == 0.
+	// User-created robot accounts created via API have Visible == true and CreatorRef > 0.
+	if r.Visible || r.CreatorRef != 0 {
+		return false
 	}
 	// it should include the auto generate SBOM session, so that it could generate SBOM accessory in proxy cache project
 	robotPrefix := config.RobotPrefix(ctx)
