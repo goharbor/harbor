@@ -41,10 +41,8 @@ const (
 	inTotoLayerMediaType            = "application/vnd.in-toto+json"
 	maxStatementBytes         int64 = 4 << 20 // 4 MiB
 
-	// A well-formed index carries at most one attestation per platform child, so
-	// the child count bounds legitimate payload lookups. This ceiling caps the
-	// rest: a 4 MiB index holds thousands of attestation descriptors, and each
-	// one whose annotation names no child would otherwise cost two registry round
+	// A 4 MiB index holds thousands of attestation descriptors, and every one
+	// whose annotation names no child would otherwise cost two registry round
 	// trips and up to maxStatementBytes of reads during a single push.
 	maxSubjectLookups = 32
 )
@@ -85,8 +83,12 @@ func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository s
 		return manifests, nil, nil
 	}
 
-	lookups := min(len(children), maxSubjectLookups)
+	lookups := maxSubjectLookups
 	warned := false
+
+	// An index commonly attaches several attestations to the same image, so the
+	// subject is resolved once instead of once per attestation.
+	subjects := map[string]*artifact.Artifact{}
 
 	references := make([]v1.Descriptor, 0, len(manifests))
 	var candidates []*artifact.AccessoryCandidate
@@ -121,7 +123,7 @@ func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository s
 			continue
 		}
 
-		candidate, err := c.candidate(ctx, repository, descriptor, targetDigest)
+		candidate, err := c.candidate(ctx, repository, descriptor, targetDigest, subjects)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -131,14 +133,19 @@ func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository s
 	return references, candidates, nil
 }
 
-func (c *InTotoAttestationClassifier) candidate(ctx context.Context, repository string, descriptor v1.Descriptor, targetDigest string) (*artifact.AccessoryCandidate, error) {
+func (c *InTotoAttestationClassifier) candidate(ctx context.Context, repository string, descriptor v1.Descriptor, targetDigest string, subjects map[string]*artifact.Artifact) (*artifact.AccessoryCandidate, error) {
 	accessoryArt, err := c.artMgr.GetByDigest(ctx, repository, descriptor.Digest.String())
 	if err != nil {
 		return nil, err
 	}
-	targetArt, err := c.artMgr.GetByDigest(ctx, repository, targetDigest)
-	if err != nil {
-		return nil, err
+
+	targetArt, resolved := subjects[targetDigest]
+	if !resolved {
+		targetArt, err = c.artMgr.GetByDigest(ctx, repository, targetDigest)
+		if err != nil {
+			return nil, err
+		}
+		subjects[targetDigest] = targetArt
 	}
 
 	return &artifact.AccessoryCandidate{

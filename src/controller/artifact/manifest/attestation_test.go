@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/mock"
 	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	tregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
@@ -380,8 +381,8 @@ func TestClassifyBoundsSubjectLookups(t *testing.T) {
 		attestations    int
 		expectedLookups int
 	}{
-		{"budget follows the child count", 1, 40, 1},
-		{"budget stops at the ceiling", 64, 100, maxSubjectLookups},
+		{"an index under the ceiling resolves every attestation", 2, 8, 8},
+		{"a wide index stops at the ceiling", 1, 100, maxSubjectLookups},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			regCli := &tregistry.Client{}
@@ -399,4 +400,22 @@ func TestClassifyBoundsSubjectLookups(t *testing.T) {
 				"unresolved attestations stay children instead of being dropped")
 		})
 	}
+}
+
+// Several attestations naming the same image must not each re-read the subject.
+func TestClassifyResolvesEachSubjectOnce(t *testing.T) {
+	const attestations = 20
+
+	artMgr := &tart.Manager{}
+	artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).
+		Return(&artifact.Artifact{ID: 2, Size: 10}, nil)
+
+	manifests := syntheticManifests(1, attestations, true)
+	_, candidates, err := NewInTotoAttestationClassifier(artMgr, &tregistry.Client{}).
+		Classify(context.Background(), "library/test", manifests)
+
+	require.NoError(t, err)
+	require.Len(t, candidates, attestations)
+	// one per accessory, plus a single shared subject
+	artMgr.AssertNumberOfCalls(t, "GetByDigest", attestations+1)
 }
