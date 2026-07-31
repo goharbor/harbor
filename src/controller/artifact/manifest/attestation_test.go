@@ -15,6 +15,8 @@
 package manifest
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -22,6 +24,11 @@ import (
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/testing/mock"
+	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	tregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
 func TestIsAttestationDescriptor(t *testing.T) {
@@ -328,4 +335,68 @@ func TestResolveSubjectFromStatement(t *testing.T) {
 			assert.Empty(t, resolveSubjectFromStatement(withSha512, subjects))
 		}
 	})
+}
+
+// syntheticManifests builds index children of arbitrary width. Unresolvable
+// attestations name a subject outside the index, which is what forces the
+// payload lookup that the budget has to bound.
+func syntheticManifests(platforms, attestations int, resolvable bool) []v1.Descriptor {
+	digestOf := func(i int) digest.Digest { return digest.Digest(fmt.Sprintf("sha256:%064x", i)) }
+
+	manifests := make([]v1.Descriptor, 0, platforms+attestations)
+	for i := range platforms {
+		manifests = append(manifests, v1.Descriptor{
+			MediaType: v1.MediaTypeImageManifest,
+			Size:      7143,
+			Digest:    digestOf(i),
+			Platform:  &v1.Platform{OS: "linux", Architecture: fmt.Sprintf("arch%d", i)},
+		})
+	}
+	for i := range attestations {
+		subject := digestOf(-1 - i)
+		if resolvable {
+			subject = digestOf(i % platforms)
+		}
+		manifests = append(manifests, v1.Descriptor{
+			MediaType: v1.MediaTypeImageManifest,
+			Size:      1024,
+			Digest:    digestOf(platforms + i),
+			Annotations: map[string]string{
+				referenceTypeAnnotation:   attestationManifestType,
+				referenceDigestAnnotation: subject.String(),
+			},
+			Platform: &v1.Platform{OS: "unknown", Architecture: "unknown"},
+		})
+	}
+	return manifests
+}
+
+// An index whose attestations all name a subject outside it must not turn one
+// push into a registry round trip per descriptor.
+func TestClassifyBoundsSubjectLookups(t *testing.T) {
+	for _, tc := range []struct {
+		name            string
+		platforms       int
+		attestations    int
+		expectedLookups int
+	}{
+		{"budget follows the child count", 1, 40, 1},
+		{"budget stops at the ceiling", 64, 100, maxSubjectLookups},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			regCli := &tregistry.Client{}
+			regCli.On("PullManifest", mock.Anything, mock.Anything).Return(nil, "", fmt.Errorf("boom"))
+
+			manifests := syntheticManifests(tc.platforms, tc.attestations, false)
+			references, candidates, err := NewInTotoAttestationClassifier(&tart.Manager{}, regCli).
+				Classify(context.Background(), "library/test", manifests)
+
+			require.NoError(t, err)
+			regCli.AssertNumberOfCalls(t, "PullManifest", tc.expectedLookups)
+			regCli.AssertNotCalled(t, "PullBlob", mock.Anything, mock.Anything)
+			assert.Empty(t, candidates)
+			assert.Len(t, references, tc.platforms+tc.attestations,
+				"unresolved attestations stay children instead of being dropped")
+		})
+	}
 }

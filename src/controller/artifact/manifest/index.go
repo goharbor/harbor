@@ -70,18 +70,18 @@ func (a *indexAbstractor) Abstract(ctx context.Context, art *artifact.Artifact, 
 	art.Annotations = index.Annotations
 
 	art.Size += int64(len(content))
-	// populate the referenced artifacts
-	for _, mani := range index.Manifests {
-		candidate, err := a.attestation.Classify(ctx, art.RepositoryName, mani, index.Manifests)
-		if err != nil {
-			return err
-		}
-		if candidate != nil {
-			art.Size += candidate.Size
-			art.AccessoryCandidates = append(art.AccessoryCandidates, candidate)
-			continue
-		}
 
+	references, candidates, err := a.attestation.Classify(ctx, art.RepositoryName, index.Manifests)
+	if err != nil {
+		return err
+	}
+	for _, candidate := range candidates {
+		art.Size += candidate.Size
+		art.AccessoryCandidates = append(art.AccessoryCandidates, candidate)
+	}
+
+	// populate the referenced artifacts
+	for _, mani := range references {
 		digest := mani.Digest.String()
 		// make sure the child artifact exist
 		ar, err := a.artMgr.GetByDigest(ctx, art.RepositoryName, digest)
