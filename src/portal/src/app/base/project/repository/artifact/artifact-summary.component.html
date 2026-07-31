@@ -39,6 +39,16 @@
                 shape="folder"></clr-icon>
             }
         </h2>
+        @if (canSyncFromHuggingFace()) {
+        <button
+            type="button"
+            class="btn btn-secondary sync-hf-button"
+            [disabled]="syncingFromHuggingFace"
+            (click)="syncFromHuggingFace()">
+            <clr-icon shape="sync"></clr-icon>
+            {{ 'ARTIFACT.SYNC_HF' | translate }}
+        </button>
+        }
     </div>
 </div>
 @if (!loading) {

@@ -2566,6 +2566,356 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies:
+    post:
+      summary: Create a Hugging Face model import policy under a project
+      description: Create a Hugging Face model import policy under a project
+      tags:
+        - model_import
+      operationId: createModelImportPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: policy
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ModelImportPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List Hugging Face model import policies under a project
+      description: List Hugging Face model import policies under a project
+      tags:
+        - model_import
+      operationId: listModelImportPolicies
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ModelImportPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies/{model_import_policy_name}:
+    get:
+      summary: Get a Hugging Face model import policy
+      description: Get a Hugging Face model import policy
+      tags:
+        - model_import
+      operationId: getModelImportPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ModelImportPolicy'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a Hugging Face model import policy
+      description: Update a Hugging Face model import policy
+      tags:
+        - model_import
+      operationId: updateModelImportPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+        - name: policy
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ModelImportPolicy'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a Hugging Face model import policy
+      description: Delete a Hugging Face model import policy
+      tags:
+        - model_import
+      operationId: deleteModelImportPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies/{model_import_policy_name}/executions:
+    post:
+      summary: Run a Hugging Face model import policy
+      description: Run a Hugging Face model import policy
+      tags:
+        - model_import
+      operationId: runModelImportPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    get:
+      summary: List executions for a Hugging Face model import policy
+      description: List executions for a Hugging Face model import policy
+      tags:
+        - model_import
+      operationId: listModelImportExecutions
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Execution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/executions:
+    post:
+      summary: Run a one-time Hugging Face model import without saving a policy
+      description: Run a Hugging Face model import as a one-time execution without creating a model import policy.
+      tags:
+        - model_import
+      operationId: runModelImportExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: request
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ModelImportExecutionRequest'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies/{model_import_policy_name}/executions/{execution_id}:
+    get:
+      summary: Get a Hugging Face model import execution
+      description: Get a Hugging Face model import execution
+      tags:
+        - model_import
+      operationId: getModelImportExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Execution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies/{model_import_policy_name}/executions/{execution_id}/tasks:
+    get:
+      summary: List tasks for a Hugging Face model import execution
+      description: List tasks for a Hugging Face model import execution
+      tags:
+        - model_import
+      operationId: listModelImportTasks
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Task'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/policies/{model_import_policy_name}/executions/{execution_id}/tasks/{task_id}/logs:
+    get:
+      summary: Get the log of a Hugging Face model import task
+      description: Get the log of a Hugging Face model import task
+      tags:
+        - model_import
+      operationId: getModelImportLog
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: model_import_policy_name
+          in: path
+          type: string
+          required: true
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/model-import/validate:
+    post:
+      summary: Validate Hugging Face model import source
+      description: Validate Hugging Face model import source
+      tags:
+        - model_import
+      operationId: validateModelImportSource
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - name: source
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ModelImportValidationRequest'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ModelImportValidation'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/immutabletagrules':
     get:
       summary: List all immutable tag rules of current project
@@ -7279,6 +7629,119 @@ definitions:
         type: string
         format: date-time
         description: The Update Time of preheat policy
+  ModelImportPolicy:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the model import policy
+      name:
+        type: string
+        description: The name of the model import policy
+      description:
+        type: string
+        description: The description of the model import policy
+      project_id:
+        type: integer
+        format: int64
+        description: The project ID
+      target_repository:
+        type: string
+        description: The full Harbor repository name, including project namespace
+      target_tag:
+        type: string
+        description: The tag to create or update for the imported model
+      hf_repo_id:
+        type: string
+        description: The Hugging Face repository ID, such as org/model
+      hf_revision:
+        type: string
+        description: The Hugging Face branch, tag, or commit to import
+      hf_subpath:
+        type: string
+        description: Optional subpath within the Hugging Face repository
+      hf_token:
+        type: string
+        description: Optional Hugging Face token. It is accepted on create/update and omitted on read.
+      last_synced_commit:
+        type: string
+        description: The last imported Hugging Face commit SHA
+      last_artifact_digest:
+        type: string
+        description: The last imported Harbor artifact digest
+      creator:
+        type: string
+        description: The policy creator
+      enabled:
+        type: boolean
+        description: Whether the policy is enabled
+        x-omitempty: false
+      trigger:
+        type: string
+        description: JSON encoded trigger settings. Use type manual or scheduled.
+      extra_attrs:
+        type: string
+        description: JSON encoded extra attributes
+      creation_time:
+        type: string
+        format: date-time
+      update_time:
+        type: string
+        format: date-time
+  ModelImportValidationRequest:
+    type: object
+    properties:
+      hf_repo_id:
+        type: string
+      hf_revision:
+        type: string
+      hf_subpath:
+        type: string
+      hf_token:
+        type: string
+  ModelImportExecutionRequest:
+    type: object
+    properties:
+      target_repository:
+        type: string
+        description: The Harbor repository to import into. May omit the project prefix.
+      target_tag:
+        type: string
+        description: The tag to create or update for the imported model
+      hf_repo_id:
+        type: string
+        description: The Hugging Face repository ID, such as org/model
+      hf_revision:
+        type: string
+        description: The Hugging Face branch, tag, or commit to import
+      hf_subpath:
+        type: string
+        description: Optional subpath within the Hugging Face repository
+      hf_token:
+        type: string
+        description: Optional Hugging Face token used only for this execution
+      last_synced_commit:
+        type: string
+        description: Optional commit to compare for a no-op sync run
+      last_artifact_digest:
+        type: string
+        description: Optional previous Harbor artifact digest for execution context
+  ModelImportValidation:
+    type: object
+    properties:
+      hf_repo_id:
+        type: string
+      hf_revision:
+        type: string
+      commit_sha:
+        type: string
+      source_url:
+        type: string
+      file_count:
+        type: integer
+      card_data:
+        $ref: '#/definitions/ExtraAttrs'
   Metrics:
     type: object
     properties:

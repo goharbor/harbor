@@ -1054,6 +1054,8 @@
         "CHART": "차트",
         "CNAB": "CNAB",
         "WASM": "WASM",
+        "CNAI": "MODEL",
+        "SYNC_HF": "Sync from Hugging Face",
         "TAGGED": "태그 됨",
         "UNTAGGED": "태그가 지정되지 않음",
         "ALL": "모두",
@@ -1896,6 +1898,24 @@
         "WARNING": "경고",
         "DANGER": "위험",
         "ENTER_MESSAGE": "여기에 미시지를 임력하세요"
+    },
+    "MODEL_IMPORT": {
+        "TITLE": "Import Model from Hugging Face",
+        "IMPORT_MODEL": "Import Model",
+        "HF_REPO_ID": "Hugging Face repository",
+        "HF_REVISION": "Revision",
+        "HF_SUBPATH": "Subfolder",
+        "HF_TOKEN": "Access token",
+        "VALIDATE": "Validate",
+        "VALIDATION_RESULT": "Resolved commit {{commit}} with {{files}} files.",
+        "POLICY_NAME": "Policy name",
+        "TARGET_REPOSITORY": "Target repository",
+        "TARGET_TAG": "Target tag",
+        "DESCRIPTION": "Description",
+        "ENABLE_SCHEDULE": "Keep in sync on a schedule",
+        "RUN_NOW": "Run import now",
+        "CRON": "Cron schedule",
+        "CREATE": "Create Import"
     },
     "SECURITY_HUB": {
         "SECURITY_HUB": "보안 허브",

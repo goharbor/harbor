@@ -60,6 +60,10 @@ export const multipleFilter: Array<{
                 filterText: 'WASM',
                 showItem: 'ARTIFACT.WASM',
             },
+            {
+                filterText: 'CNAI',
+                showItem: 'ARTIFACT.CNAI',
+            },
         ],
     },
     {
@@ -99,6 +103,7 @@ export enum ArtifactType {
     CHART = 'CHART',
     CNAB = 'CNAB',
     OPENPOLICYAGENT = 'OPENPOLICYAGENT',
+    CNAI = 'CNAI',
 }
 
 export const artifactDefault = 'images/artifact-default.svg';

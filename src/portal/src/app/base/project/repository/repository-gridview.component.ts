@@ -117,6 +117,7 @@ export class RepositoryGridviewComponent
     isCardView: boolean;
     cardHover = false;
     listHover = false;
+    modelImportOpened = false;
 
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.REPOSITORY_GRIDVIEW_COMPONENT
@@ -174,6 +175,10 @@ export class RepositoryGridviewComponent
             'repositories',
             repoEvt.name.substr(this.projectName.length + 1),
         ];
+    }
+
+    openModelImport(): void {
+        this.modelImportOpened = true;
     }
 
     ngOnChanges(changes: SimpleChanges): void {

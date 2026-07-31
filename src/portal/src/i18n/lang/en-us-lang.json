@@ -1054,6 +1054,7 @@
         "CHART": "CHART",
         "CNAB": "CNAB",
         "WASM": "WASM",
+        "CNAI": "MODEL",
         "TAGGED": "Tagged",
         "UNTAGGED": "Untagged",
         "ALL": "All",
@@ -1076,7 +1077,8 @@
         "FILE_TOO_LARGE": "The file is too large to be processed.",
         "ITEMS": "items",
         "SHOW_KV": "Key Value Pairs",
-        "SHOW_YAML": "YAML File"
+        "SHOW_YAML": "YAML File",
+        "SYNC_HF": "Sync from Hugging Face"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
@@ -1896,6 +1898,24 @@
         "WARNING": "Warning",
         "DANGER": "Danger",
         "ENTER_MESSAGE": "Enter your message here"
+    },
+    "MODEL_IMPORT": {
+        "TITLE": "Import Model from Hugging Face",
+        "IMPORT_MODEL": "Import Model",
+        "HF_REPO_ID": "Hugging Face repository",
+        "HF_REVISION": "Revision",
+        "HF_SUBPATH": "Subfolder",
+        "HF_TOKEN": "Access token",
+        "VALIDATE": "Validate",
+        "VALIDATION_RESULT": "Resolved commit {{commit}} with {{files}} files.",
+        "POLICY_NAME": "Policy name",
+        "TARGET_REPOSITORY": "Target repository",
+        "TARGET_TAG": "Target tag",
+        "DESCRIPTION": "Description",
+        "ENABLE_SCHEDULE": "Keep in sync on a schedule",
+        "RUN_NOW": "Run import now",
+        "CRON": "Cron schedule",
+        "CREATE": "Create Import"
     },
     "SECURITY_HUB": {
         "SECURITY_HUB": "Security Hub",

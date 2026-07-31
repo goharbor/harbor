@@ -16,6 +16,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../../shared/shared.module';
 import { RepositoryGridviewComponent } from './repository-gridview.component';
 import { GridViewComponent } from './gridview/grid-view.component';
+import { ModelImportComponent } from './model-import/model-import.component';
+import { ModelImportService } from './model-import/model-import.service';
 
 const routes: Routes = [
     {
@@ -24,7 +26,12 @@ const routes: Routes = [
     },
 ];
 @NgModule({
-    declarations: [RepositoryGridviewComponent, GridViewComponent],
+    declarations: [
+        RepositoryGridviewComponent,
+        GridViewComponent,
+        ModelImportComponent,
+    ],
     imports: [RouterModule.forChild(routes), SharedModule],
+    providers: [ModelImportService],
 })
 export class RepositoryModule {}

@@ -23,6 +23,15 @@ import {
     EventService,
     HarborEvent,
 } from '../../../../services/event-service/event.service';
+import { ModelImportService } from '../model-import/model-import.service';
+import { ErrorHandler } from '../../../../shared/units/error-handler';
+import { finalize } from 'rxjs/operators';
+
+interface HuggingFaceArtifactAttrs {
+    repo_id: string;
+    revision?: string;
+    commit_sha?: string;
+}
 
 @Component({
     selector: 'artifact-summary',
@@ -47,12 +56,15 @@ export class ArtifactSummaryComponent implements OnInit {
     projectName: string;
     isProxyCacheProject: boolean = false;
     loading: boolean = false;
+    syncingFromHuggingFace = false;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private frontEndArtifactService: ArtifactService,
-        private event: EventService
+        private event: EventService,
+        private modelImportService: ModelImportService,
+        private errorHandler: ErrorHandler
     ) {}
 
     goBack(): void {
@@ -143,5 +155,53 @@ export class ArtifactSummaryComponent implements OnInit {
         if (this.artifact && this.artifact.icon) {
             this.frontEndArtifactService.getIconsFromBackEnd([this.artifact]);
         }
+    }
+
+    canSyncFromHuggingFace(): boolean {
+        const hf = this.huggingFaceAttrs();
+        return (
+            this.artifact?.type === 'CNAI' &&
+            !!hf?.repo_id
+        );
+    }
+
+    syncFromHuggingFace(): void {
+        const hf = this.huggingFaceAttrs();
+        if (!this.canSyncFromHuggingFace() || !hf) {
+            return;
+        }
+        const tag = this.firstTagName() || 'latest';
+        this.syncingFromHuggingFace = true;
+        this.modelImportService
+            .runImport(this.projectName, {
+                target_repository: `${this.projectName}/${this.repositoryName}`,
+                target_tag: tag,
+                hf_repo_id: hf.repo_id,
+                hf_revision: hf.revision || hf.commit_sha || 'main',
+                last_synced_commit: hf.commit_sha,
+            })
+            .pipe(
+                finalize(() => (this.syncingFromHuggingFace = false))
+            )
+            .subscribe({
+                next: () => this.event.publish(HarborEvent.SCROLL_TO_POSITION, 0),
+                error: err => this.errorHandler.error(err),
+            });
+    }
+
+    private firstTagName(): string {
+        const tags = (this.artifact as any)?.tags;
+        if (tags && tags.length) {
+            return tags[0].name;
+        }
+        return '';
+    }
+
+    private huggingFaceAttrs(): HuggingFaceArtifactAttrs | undefined {
+        return (
+            this.artifact?.extra_attrs as
+                | { huggingface?: HuggingFaceArtifactAttrs }
+                | undefined
+        )?.huggingface;
     }
 }

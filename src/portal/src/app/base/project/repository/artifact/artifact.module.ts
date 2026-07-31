@@ -43,6 +43,7 @@ import { CopyDigestComponent } from './artifact-list-page/artifact-list/artifact
 import { ArtifactFilterComponent } from './artifact-list-page/artifact-list/artifact-list-tab/artifact-filter/artifact-filter.component';
 import { PullCommandComponent } from './artifact-list-page/artifact-list/artifact-list-tab/pull-command/pull-command.component';
 import { SbomTipHistogramComponent } from './sbom-scanning/sbom-tip-histogram/sbom-tip-histogram.component';
+import { ModelImportService } from '../model-import/model-import.service';
 
 const routes: Routes = [
     {
@@ -117,6 +118,7 @@ const routes: Routes = [
     imports: [RouterModule.forChild(routes), SharedModule],
     providers: [
         ArtifactListPageService,
+        ModelImportService,
         { provide: ArtifactService, useClass: ArtifactDefaultService },
     ],
 })

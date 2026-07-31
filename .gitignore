@@ -7,6 +7,10 @@ make/common/config/*
 make/dev/adminserver/harbor_adminserver
 make/dev/core/harbor_core
 make/dev/jobservice/harbor_jobservice
+make/photon/core/harbor_core
+make/photon/jobservice/harbor_jobservice
+make/photon/registry/config.yml
+make/photon/registryctl/harbor_registryctl
 make/photon/*/binary/
 make/photon/prepare/versions
 
@@ -26,6 +30,7 @@ src/portal/app-swagger-ui/webpack.dev.js
 src/portal/typings/
 **/*npm-debug.log.*
 **/*yarn-error.log.*
+.local/
 .idea/
 *.iml
 .DS_Store

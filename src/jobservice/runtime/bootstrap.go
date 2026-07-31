@@ -38,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/legacy"
+	modelimportjob "github.com/goharbor/harbor/src/jobservice/job/impl/modelimport"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/purge"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
@@ -320,6 +321,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.PurgeAuditVendorType:        (*purge.Job)(nil),
 			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
 			job.ReplicationVendorType:       (*replication.Replication)(nil),
+			job.ModelImportVendorType:       (*modelimportjob.Job)(nil),
 			job.RetentionVendorType:         (*retention.Job)(nil),
 			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
 			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),

@@ -1,0 +1,126 @@
+<clr-modal
+    [(clrModalOpen)]="opened"
+    (clrModalOpenChange)="openedChange.emit($event)"
+    [clrModalSize]="'lg'">
+    <h3 class="modal-title">
+        {{ 'MODEL_IMPORT.TITLE' | translate }}
+    </h3>
+    <div class="modal-body">
+        <form clrForm>
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.HF_REPO_ID' | translate }}</label>
+                <input
+                    clrInput
+                    name="hfRepoId"
+                    [(ngModel)]="hfRepoId"
+                    placeholder="org/model" />
+            </clr-input-container>
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.HF_REVISION' | translate }}</label>
+                <input clrInput name="hfRevision" [(ngModel)]="hfRevision" />
+            </clr-input-container>
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.HF_SUBPATH' | translate }}</label>
+                <input clrInput name="hfSubpath" [(ngModel)]="hfSubpath" />
+            </clr-input-container>
+            <clr-password-container>
+                <label>{{ 'MODEL_IMPORT.HF_TOKEN' | translate }}</label>
+                <input
+                    clrPassword
+                    name="hfToken"
+                    [(ngModel)]="hfToken"
+                    autocomplete="off" />
+            </clr-password-container>
+            <button
+                type="button"
+                class="btn btn-outline"
+                [disabled]="!hfRepoId || validating"
+                (click)="validate()">
+                {{ 'MODEL_IMPORT.VALIDATE' | translate }}
+            </button>
+            @if (validation) {
+            <div class="alert alert-info mt-1" role="alert">
+                <div class="alert-items">
+                    <div class="alert-item static">
+                        <div class="alert-text">
+                            {{
+                                'MODEL_IMPORT.VALIDATION_RESULT'
+                                    | translate
+                                        : {
+                                              commit: validation.commit_sha,
+                                              files: validation.file_count
+                                          }
+                            }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            @if (scheduleEnabled) {
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.POLICY_NAME' | translate }}</label>
+                <input clrInput name="policyName" [(ngModel)]="policyName" />
+            </clr-input-container>
+            }
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.TARGET_REPOSITORY' | translate }}</label>
+                <input
+                    clrInput
+                    name="targetRepository"
+                    [(ngModel)]="targetRepository" />
+            </clr-input-container>
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.TARGET_TAG' | translate }}</label>
+                <input clrInput name="targetTag" [(ngModel)]="targetTag" />
+            </clr-input-container>
+            <clr-textarea-container>
+                <label>{{ 'MODEL_IMPORT.DESCRIPTION' | translate }}</label>
+                <textarea
+                    clrTextarea
+                    name="description"
+                    [(ngModel)]="description"></textarea>
+            </clr-textarea-container>
+            <clr-checkbox-container>
+                <clr-checkbox-wrapper>
+                    <input
+                        type="checkbox"
+                        clrCheckbox
+                        name="scheduleEnabled"
+                        [(ngModel)]="scheduleEnabled" />
+                    <label>{{ 'MODEL_IMPORT.ENABLE_SCHEDULE' | translate }}</label>
+                </clr-checkbox-wrapper>
+                <clr-checkbox-wrapper>
+                    <input
+                        type="checkbox"
+                        clrCheckbox
+                        name="runNow"
+                        [(ngModel)]="runNow" />
+                    <label>{{ 'MODEL_IMPORT.RUN_NOW' | translate }}</label>
+                </clr-checkbox-wrapper>
+            </clr-checkbox-container>
+            @if (scheduleEnabled) {
+            <clr-input-container>
+                <label>{{ 'MODEL_IMPORT.CRON' | translate }}</label>
+                <input clrInput name="cron" [(ngModel)]="cron" />
+            </clr-input-container>
+            }
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="close()">
+            {{ 'BUTTON.CANCEL' | translate }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="
+                (scheduleEnabled && !policyName) ||
+                !targetRepository ||
+                !hfRepoId ||
+                saving
+            "
+            (click)="create()">
+            {{ 'MODEL_IMPORT.CREATE' | translate }}
+        </button>
+    </div>
+</clr-modal>

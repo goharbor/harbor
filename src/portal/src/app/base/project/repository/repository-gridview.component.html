@@ -23,6 +23,17 @@
                         class="push-image-button"
                         [registryUrl]="registryUrl"
                         [projectName]="projectName"></hbr-push-image-button>
+                    <button
+                        type="button"
+                        class="btn btn-link"
+                        (click)="openModelImport()">
+                        <clr-icon shape="import"></clr-icon>
+                        {{
+                            'MODEL_IMPORT.IMPORT_MODEL'
+                                | translate
+                                | uppercase
+                        }}
+                    </button>
                     }
                     <hbr-filter
                         [withDivider]="true"
@@ -268,4 +279,8 @@
     <confirmation-dialog
         #confirmationDialog
         (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+    <hbr-model-import
+        [projectName]="projectName"
+        [(opened)]="modelImportOpened"
+        (imported)="refresh()"></hbr-model-import>
 </div>

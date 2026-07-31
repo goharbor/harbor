@@ -50,6 +50,8 @@ const (
 	ScanAllVendorType = "SCAN_ALL"
 	// AuditLogsGDPRCompliantVendorType : the name of the job which makes audit logs table GDPR-compliant
 	AuditLogsGDPRCompliantVendorType = "AUDIT_LOGS_GDPR_COMPLIANT"
+	// ModelImportVendorType is the name of the Hugging Face model import job.
+	ModelImportVendorType = "MODEL_IMPORT"
 )
 
 var (
@@ -68,6 +70,7 @@ var (
 		SystemArtifactCleanupVendorType: lib.GetEnvInt64("SYSTEM_ARTIFACT_CLEANUP_EXECUTION_RETENTION_COUNT", 50),
 		P2PPreheatVendorType:            lib.GetEnvInt64("P2P_PREHEAT_EXECUTION_RETENTION_COUNT", 50),
 		RetentionVendorType:             lib.GetEnvInt64("RETENTION_EXECUTION_RETENTION_COUNT", 50),
+		ModelImportVendorType:           lib.GetEnvInt64("MODEL_IMPORT_EXECUTION_RETENTION_COUNT", 50),
 	}
 )
 

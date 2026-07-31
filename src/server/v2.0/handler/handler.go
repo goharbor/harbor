@@ -42,6 +42,7 @@ func New() http.Handler {
 		ProjectAPI:            newProjectAPI(),
 		MemberAPI:             newMemberAPI(),
 		PreheatAPI:            newPreheatAPI(),
+		ModelImportAPI:        newModelImportAPI(),
 		IconAPI:               newIconAPI(),
 		RobotAPI:              newRobotAPI(),
 		ReplicationAPI:        newReplicationAPI(),

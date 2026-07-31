@@ -1056,6 +1056,8 @@
         "CHART": "CHART",
         "CNAB": "CNAB",
         "WASM": "WASM",
+        "CNAI": "MODEL",
+        "SYNC_HF": "Sync from Hugging Face",
         "TAGGED": "Tagué",
         "UNTAGGED": "Non tagué",
         "ALL": "Tous",
@@ -1898,6 +1900,24 @@
         "WARNING": "Avertissement",
         "DANGER": "Danger",
         "ENTER_MESSAGE": "Entrer votre message ici"
+    },
+    "MODEL_IMPORT": {
+        "TITLE": "Import Model from Hugging Face",
+        "IMPORT_MODEL": "Import Model",
+        "HF_REPO_ID": "Hugging Face repository",
+        "HF_REVISION": "Revision",
+        "HF_SUBPATH": "Subfolder",
+        "HF_TOKEN": "Access token",
+        "VALIDATE": "Validate",
+        "VALIDATION_RESULT": "Resolved commit {{commit}} with {{files}} files.",
+        "POLICY_NAME": "Policy name",
+        "TARGET_REPOSITORY": "Target repository",
+        "TARGET_TAG": "Target tag",
+        "DESCRIPTION": "Description",
+        "ENABLE_SCHEDULE": "Keep in sync on a schedule",
+        "RUN_NOW": "Run import now",
+        "CRON": "Cron schedule",
+        "CREATE": "Create Import"
     },
     "SECURITY_HUB": {
         "SECURITY_HUB": "Centre de sécurité",
