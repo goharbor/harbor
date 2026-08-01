@@ -164,16 +164,22 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 	var level string
 	// GET /api/v2.0/robots or GET /api/v2.0/robots?q=Level=system to get all of system level robots.
 	// GET /api/v2.0/robots?q=Level=project,ProjectID=1
-	if _, ok := query.Keywords["Level"]; ok {
-		if !isValidLevel(query.Keywords["Level"].(string)) {
+	if v, ok := query.Keywords["Level"]; ok {
+		levelStr, ok := v.(string)
+		if !ok || !isValidLevel(levelStr) {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("bad request error level input").WithCode(errors.BadRequestCode))
 		}
-		level = query.Keywords["Level"].(string)
+		level = levelStr
 		if level == robot.LEVELPROJECT {
-			if _, ok := query.Keywords["ProjectID"]; !ok {
+			pidVal, ok := query.Keywords["ProjectID"]
+			if !ok {
 				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project robots"))
 			}
-			pid, err := strconv.ParseInt(query.Keywords["ProjectID"].(string), 10, 64)
+			pidStr, ok := pidVal.(string)
+			if !ok {
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("ProjectID must be a string"))
+			}
+			pid, err := strconv.ParseInt(pidStr, 10, 64)
 			if err != nil || pid <= 0 {
 				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("ProjectID must be a positive integer"))
 			}
