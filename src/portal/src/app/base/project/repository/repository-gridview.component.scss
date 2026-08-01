@@ -124,6 +124,18 @@
     margin-right: 12px;
 }
 
+.repo-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.repo-type-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    vertical-align: middle;
+}
+
 .position-relative {
     position: relative;
 }

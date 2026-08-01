@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { RepositoryService as NewRepositoryService } from '../../../../../ng-swagger-gen/services/repository.service';
+import { IconService } from '../../../../../ng-swagger-gen/services/icon.service';
 import { RepositoryGridviewComponent } from './repository-gridview.component';
 import {
     ProjectDefaultService,
@@ -48,6 +50,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
             name: 'library/busybox',
             project_id: 1,
             description: 'asdfsadf',
+            type: 'IMAGE',
             pull_count: 0,
             artifact_count: 1,
         },
@@ -56,6 +59,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
             name: 'library/nginx',
             project_id: 1,
             description: 'asdf',
+            type: 'IMAGE',
             pull_count: 0,
             artifact_count: 1,
         },
@@ -66,6 +70,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
             name: 'library/nginx',
             project_id: 1,
             description: 'asdf',
+            type: 'IMAGE',
             pull_count: 0,
             artifact_count: 1,
         },
@@ -96,6 +101,11 @@ describe('RepositoryComponentGridview (inline template)', () => {
     const fakedUserPermissionService = {
         getPermission() {
             return of(true);
+        },
+    };
+    const fakedIconService = {
+        getIcon() {
+            return of({ 'content-type': 'image/png', content: '' });
         },
     };
     const fakedActivatedRoute = {
@@ -139,7 +149,9 @@ describe('RepositoryComponentGridview (inline template)', () => {
                     provide: UserPermissionService,
                     useValue: fakedUserPermissionService,
                 },
+                { provide: IconService, useValue: fakedIconService },
             ],
+            schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 

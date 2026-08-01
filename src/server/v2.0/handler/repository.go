@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/artifact"
+	"github.com/goharbor/harbor/src/controller/artifact/processor/cnai"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -39,6 +40,11 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
+)
+
+const (
+	repositoryTypeImage = "IMAGE"
+	repositoryTypeModel = "MODEL"
 )
 
 func newRepositoryAPI() *repositoryAPI {
@@ -222,6 +228,22 @@ func (r *repositoryAPI) assembleRepository(ctx context.Context, repository *mode
 			repo.Name, err)
 	}
 	repo.ArtifactCount = total
+
+	// Derive repository type from artifacts: any CNAI/model artifact makes the
+	// repository a MODEL repository; otherwise it is treated as IMAGE.
+	repo.Type = repositoryTypeImage
+	cnaiCount, err := r.artCtl.Count(ctx, &q.Query{
+		Keywords: map[string]any{
+			"RepositoryID": repo.ID,
+			"Type":         cnai.ArtifactTypeCNAI,
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to get the count of CNAI artifacts under the repository %s: %v",
+			repo.Name, err)
+	} else if cnaiCount > 0 {
+		repo.Type = repositoryTypeModel
+	}
 	return repo
 }
 

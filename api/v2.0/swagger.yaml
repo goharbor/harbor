@@ -7104,6 +7104,10 @@ definitions:
       description:
         type: string
         description: The description of the repository
+      type:
+        type: string
+        description: The type of the repository, e.g. IMAGE, MODEL
+        x-omitempty: false
       artifact_count:
         type: integer
         format: int64

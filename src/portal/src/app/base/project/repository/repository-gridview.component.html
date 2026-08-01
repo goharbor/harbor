@@ -98,6 +98,9 @@
                     'REPOSITORY.NAME' | translate
                 }}</clr-dg-column>
                 <clr-dg-column>{{
+                    'REPOSITORY.TYPE' | translate
+                }}</clr-dg-column>
+                <clr-dg-column>{{
                     'REPOSITORY.ARTIFACTS_COUNT' | translate
                 }}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="'pull_count'">{{
@@ -120,7 +123,17 @@
                             }{{ r.name }}</a
                         ></clr-dg-cell
                     >
-                    <!-- to do -->
+                    <clr-dg-cell>
+                        <span class="repo-type">
+                            @if (getRepoTypeIcon(r)) {
+                            <img
+                                class="repo-type-icon"
+                                [src]="getRepoTypeIcon(r)"
+                                alt="" />
+                            }
+                            {{ getRepoTypeLabelKey(r) | translate }}
+                        </span>
+                    </clr-dg-cell>
                     <clr-dg-cell>{{ r.artifact_count }}</clr-dg-cell>
                     <clr-dg-cell>{{ r.pull_count }}</clr-dg-cell>
                     <clr-dg-cell>{{

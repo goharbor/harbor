@@ -23,6 +23,7 @@ import {
     SimpleChanges,
     ViewChild,
 } from '@angular/core';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { forkJoin, Observable, of, Subscription } from 'rxjs';
 import {
     catchError,
@@ -30,11 +31,13 @@ import {
     distinctUntilChanged,
     finalize,
     map,
+    share,
     switchMap,
 } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { RepositoryService as NewRepositoryService } from '../../../../../ng-swagger-gen/services/repository.service';
+import { IconService } from '../../../../../ng-swagger-gen/services/icon.service';
 import {
     SystemInfo,
     SystemInfoService,
@@ -84,6 +87,13 @@ import {
     EventService,
     HarborEvent,
 } from '../../../services/event-service/event.service';
+
+// Digests match src/lib/icon/const.go DigestOfIconImage / DigestOfIconCNAI.
+const ICON_DIGEST_IMAGE =
+    'sha256:0048162a053eef4d4ce3fe7518615bef084403614f8bca43b40ae2e762e11e06';
+const ICON_DIGEST_MODEL =
+    'sha256:1e1e5c5fdaf0931ec8655e835d1182f723a0c322a6760211622e1270f0193717';
+const REPOSITORY_TYPE_MODEL = 'MODEL';
 
 @Component({
     selector: 'hbr-repository-gridview',
@@ -136,6 +146,7 @@ export class RepositoryGridviewComponent
     filterComponent: FilterComponent;
     searchSub: Subscription;
     isProxyCacheProject: boolean = false;
+    private typeIconMap: { [digest: string]: SafeUrl } = {};
 
     constructor(
         private errorHandlerService: ErrorHandler,
@@ -148,7 +159,9 @@ export class RepositoryGridviewComponent
         private session: SessionService,
         private router: Router,
         private event: EventService,
-        private cd: ChangeDetectorRef
+        private cd: ChangeDetectorRef,
+        private iconService: IconService,
+        private domSanitizer: DomSanitizer
     ) {
         if (localStorage) {
             this.isCardView =
@@ -181,6 +194,43 @@ export class RepositoryGridviewComponent
         this.modelImportOpened = true;
     }
 
+    isModelRepository(repo: NewRepository): boolean {
+        return repo?.type === REPOSITORY_TYPE_MODEL;
+    }
+
+    getRepoTypeLabelKey(repo: NewRepository): string {
+        return this.isModelRepository(repo)
+            ? 'REPOSITORY.TYPE_MODEL'
+            : 'REPOSITORY.TYPE_IMAGE';
+    }
+
+    getRepoTypeIcon(repo: NewRepository): SafeUrl {
+        const digest = this.isModelRepository(repo)
+            ? ICON_DIGEST_MODEL
+            : ICON_DIGEST_IMAGE;
+        return this.typeIconMap[digest];
+    }
+
+    private loadTypeIcons(): void {
+        [ICON_DIGEST_IMAGE, ICON_DIGEST_MODEL].forEach(digest => {
+            this.iconService
+                .getIcon({ digest })
+                .pipe(share())
+                .subscribe(
+                    res => {
+                        this.typeIconMap[digest] =
+                            this.domSanitizer.bypassSecurityTrustUrl(
+                                `data:${res['content-type']};charset=utf-8;base64,${res.content}`
+                            );
+                        this.cd.detectChanges();
+                    },
+                    () => {
+                        // Icons are decorative; leave the type label visible if fetch fails.
+                    }
+                );
+        });
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['projectId'] && changes['projectId'].currentValue) {
             this.refresh();
@@ -188,6 +238,7 @@ export class RepositoryGridviewComponent
     }
 
     ngOnInit(): void {
+        this.loadTypeIcons();
         this.projectId = this.route.snapshot.parent.parent.params['id'];
         let resolverData = this.route.snapshot.parent.parent.data;
         if (resolverData) {
