@@ -77,9 +77,15 @@ func NewInTotoAttestationClassifier(artMgr artifact.Manager, regCli registry.Cli
 // It is one call per index rather than per child so that the children are walked
 // once and the payload lookups share a single budget.
 func (c *InTotoAttestationClassifier) Classify(ctx context.Context, repository string, manifests []v1.Descriptor) ([]v1.Descriptor, []*artifact.AccessoryCandidate, error) {
+	// Most indexes carry no attestation at all, so rule that out before building
+	// the child list.
+	if !hasAttestation(manifests) {
+		return manifests, nil, nil
+	}
+
 	children := platformChildren(manifests)
-	// Nothing to attach, or nothing to attach it to.
-	if len(children) == len(manifests) || len(children) == 0 {
+	// Nothing to attach the attestations to.
+	if len(children) == 0 {
 		return manifests, nil, nil
 	}
 
@@ -240,6 +246,15 @@ func resolveSubjectFromStatement(children []v1.Descriptor, subjects []inTotoSubj
 		}
 	}
 	return uniqueDigestInIndex(children, byName)
+}
+
+func hasAttestation(manifests []v1.Descriptor) bool {
+	for _, descriptor := range manifests {
+		if isAttestationDescriptor(descriptor) {
+			return true
+		}
+	}
+	return false
 }
 
 func platformChildren(siblings []v1.Descriptor) []v1.Descriptor {
