@@ -419,3 +419,72 @@ func TestClassifyResolvesEachSubjectOnce(t *testing.T) {
 	// one per accessory, plus a single shared subject
 	artMgr.AssertNumberOfCalls(t, "GetByDigest", attestations+1)
 }
+
+// Degenerate layouts must stay ordinary children instead of looping, panicking
+// or attaching to the wrong artifact.
+func TestClassifyDegenerateLayouts(t *testing.T) {
+	platform := v1.Descriptor{
+		MediaType: v1.MediaTypeImageManifest,
+		Digest:    digest.FromString("platform"),
+		Platform:  &v1.Platform{OS: "linux", Architecture: "amd64"},
+	}
+	attestationOf := func(name, subject string) v1.Descriptor {
+		return v1.Descriptor{
+			MediaType: v1.MediaTypeImageManifest,
+			Digest:    digest.FromString(name),
+			Annotations: map[string]string{
+				referenceTypeAnnotation:   attestationManifestType,
+				referenceDigestAnnotation: subject,
+			},
+			Platform: &v1.Platform{OS: "unknown", Architecture: "unknown"},
+		}
+	}
+
+	t.Run("attestation naming itself stays a child", func(t *testing.T) {
+		self := attestationOf("self", digest.FromString("self").String())
+		regCli := &tregistry.Client{}
+		regCli.On("PullManifest", mock.Anything, mock.Anything).Return(nil, "", fmt.Errorf("boom"))
+
+		references, candidates, err := NewInTotoAttestationClassifier(&tart.Manager{}, regCli).
+			Classify(context.Background(), "library/test", []v1.Descriptor{platform, self})
+
+		require.NoError(t, err)
+		assert.Empty(t, candidates)
+		assert.Len(t, references, 2)
+	})
+
+	t.Run("attestation naming another attestation stays a child", func(t *testing.T) {
+		first := attestationOf("first", platform.Digest.String())
+		chained := attestationOf("chained", digest.FromString("first").String())
+		artMgr := &tart.Manager{}
+		artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).
+			Return(&artifact.Artifact{ID: 2, Size: 10}, nil)
+		regCli := &tregistry.Client{}
+		regCli.On("PullManifest", mock.Anything, mock.Anything).Return(nil, "", fmt.Errorf("boom"))
+
+		references, candidates, err := NewInTotoAttestationClassifier(artMgr, regCli).
+			Classify(context.Background(), "library/test", []v1.Descriptor{platform, first, chained})
+
+		require.NoError(t, err)
+		require.Len(t, candidates, 1, "only the attestation naming a platform child resolves")
+		assert.Equal(t, platform.Digest.String(), candidates[0].SubArtifactDigest)
+		assert.Len(t, references, 2, "the chained attestation stays a child")
+	})
+
+	t.Run("duplicate attestation descriptors emit duplicate candidates", func(t *testing.T) {
+		dup := attestationOf("dup", platform.Digest.String())
+		artMgr := &tart.Manager{}
+		artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).
+			Return(&artifact.Artifact{ID: 2, Size: 10}, nil)
+
+		_, candidates, err := NewInTotoAttestationClassifier(artMgr, &tregistry.Client{}).
+			Classify(context.Background(), "library/test", []v1.Descriptor{platform, dup, dup})
+
+		require.NoError(t, err)
+		// two identical candidates are safe: accessory Ensure dedupes on the
+		// accessory digest, so the second row is a no-op instead of the unique
+		// constraint violation duplicate references used to cause
+		require.Len(t, candidates, 2)
+		assert.Equal(t, candidates[0].SubArtifactDigest, candidates[1].SubArtifactDigest)
+	})
+}

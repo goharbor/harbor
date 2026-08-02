@@ -359,6 +359,24 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
+	// An in-toto attestation is listed as a child of a still-present OCI index,
+	// a link no artifact_reference row records anymore. Deleting it alone would
+	// leave the index pointing at a missing manifest after GC, so it goes away
+	// with its subject or the index, never on its own.
+	for _, acc := range accs {
+		if acc.GetData().Type != accessorymodel.TypeInTotoAttestation {
+			continue
+		}
+		if _, err := c.artMgr.Get(ctx, acc.GetData().SubArtifactID); err != nil {
+			// an orphaned accessory row must not make its artifact undeletable
+			if errors.IsErr(err, errors.NotFoundCode) {
+				continue
+			}
+			return err
+		}
+		return errors.New(nil).WithCode(errors.ViolateForeignKeyConstraintCode).
+			WithMessage("the artifact is an in-toto attestation referenced by an OCI index, delete its subject image or the index instead")
+	}
 	return orm.WithTransaction(func(ctx context.Context) error {
 		return c.deleteDeeply(ctx, id, true, len(accs) > 0)
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-delete-artifact-delete"))
