@@ -819,3 +819,43 @@ func (c *controllerTestSuite) TestEnsureReturnsAccessoryError() {
 	c.Require().NotNil(err)
 	c.Assert().ErrorIs(err, accErr, "the accessory error must not be swallowed by the parent-conflict retry")
 }
+
+// A deleted attestation would leave its still-present index pointing at a
+// missing manifest after GC, the dangling child its artifact_reference row
+// used to prevent.
+func (c *controllerTestSuite) TestDeleteBlockedForAttestationAccessory() {
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    10,
+			SubArtifactID: 2,
+			Type:          accessorymodel.TypeInTotoAttestation,
+		},
+	}
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{acc}, nil)
+	c.artMgr.On("Get", mock.Anything, int64(2)).Return(&artifact.Artifact{ID: 2}, nil)
+
+	err := c.ctl.Delete(context.TODO(), 10)
+	c.Require().NotNil(err)
+	c.Assert().True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
+	c.artMgr.AssertNotCalled(c.T(), "Delete", mock.Anything, mock.Anything)
+}
+
+// An orphaned accessory row must not make its artifact undeletable.
+func (c *controllerTestSuite) TestDeleteOrphanedAttestationAccessory() {
+	acc := &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:            1,
+			ArtifactID:    10,
+			SubArtifactID: 2,
+			Type:          accessorymodel.TypeInTotoAttestation,
+		},
+	}
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{acc}, nil)
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
+
+	err := c.ctl.Delete(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 10)
+	c.Require().NotNil(err)
+	c.Assert().True(errors.IsErr(err, errors.NotFoundCode),
+		"the guard must let an orphan through; deletion then fails on the missing artifact itself")
+}
