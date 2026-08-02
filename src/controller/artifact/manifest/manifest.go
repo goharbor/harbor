@@ -31,9 +31,11 @@ type Abstractor interface {
 	Abstract(ctx context.Context, art *artifact.Artifact, content []byte) error
 }
 
-// Register an abstractor for one or more manifest media types. Callers only log
-// registration errors, so the batch is validated before anything is written: a
-// half-applied batch would make dispatch depend on the order of the media types.
+// Register an abstractor for one or more manifest media types. Registration
+// failures are fatal at startup: an unregistered media type would fail every
+// push and pull of that manifest format at runtime, far from the actual cause.
+// The batch is validated before anything is written, since a half-applied batch
+// would make dispatch depend on the order of the media types.
 func Register(abstractor Abstractor, mediaTypes ...string) error {
 	seen := make(map[string]struct{}, len(mediaTypes))
 	for _, mediaType := range mediaTypes {

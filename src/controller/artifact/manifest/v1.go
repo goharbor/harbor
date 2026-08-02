@@ -29,7 +29,7 @@ import (
 func init() {
 	mediaTypes := []string{"", "application/json", schema1.MediaTypeSignedManifest}
 	if err := Register(NewV1(blob.Mgr), mediaTypes...); err != nil {
-		log.Errorf("failed to register the abstractor for manifest media types %v: %v", mediaTypes, err)
+		panic(err)
 	}
 }
 

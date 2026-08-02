@@ -22,14 +22,13 @@ import (
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
 func init() {
 	mediaTypes := []string{v1.MediaTypeImageManifest, schema2.MediaTypeManifest}
 	if err := Register(NewV2(), mediaTypes...); err != nil {
-		log.Errorf("failed to register the abstractor for manifest media types %v: %v", mediaTypes, err)
+		panic(err)
 	}
 }
 

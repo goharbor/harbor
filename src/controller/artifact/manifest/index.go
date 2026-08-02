@@ -21,7 +21,6 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
-	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
@@ -29,7 +28,7 @@ import (
 func init() {
 	mediaTypes := []string{v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList}
 	if err := Register(NewIndex(pkg.ArtifactMgr), mediaTypes...); err != nil {
-		log.Errorf("failed to register the abstractor for manifest media types %v: %v", mediaTypes, err)
+		panic(err)
 	}
 }
 
