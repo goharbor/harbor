@@ -76,7 +76,7 @@
         <clr-dg-cell>{{
             roleInfo[p.current_user_role_id]
                 ? (roleInfo[p.current_user_role_id] | translate)
-                : '-'
+                : p.current_user_role_ids
         }}</clr-dg-cell>
         <clr-dg-cell>{{
             projectTypeMap[p.registry_id ? 1 : 0] | translate

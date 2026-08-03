@@ -178,6 +178,7 @@ export class SystemRobotAccountsComponent implements OnInit, OnDestroy {
                 );
         }
     }
+
     ngOnDestroy() {
         if (this.searchSub) {
             this.searchSub.unsubscribe();

@@ -162,6 +162,34 @@ func (_m *Manager) GetTotalOfProjectMembers(ctx context.Context, projectID int64
 	return r0, r1
 }
 
+// GetTotalOfProjectMembersByRole provides a mock function with given fields: ctx, roleID
+func (_m *Manager) GetTotalOfProjectMembersByRole(ctx context.Context, roleID int) (int, error) {
+	ret := _m.Called(ctx, roleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTotalOfProjectMembersByRole")
+	}
+
+	var r0 int
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) (int, error)); ok {
+		return rf(ctx, roleID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int) int); ok {
+		r0 = rf(ctx, roleID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, roleID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // List provides a mock function with given fields: ctx, queryMember, query
 func (_m *Manager) List(ctx context.Context, queryMember models.Member, query *q.Query) ([]*models.Member, error) {
 	ret := _m.Called(ctx, queryMember, query)

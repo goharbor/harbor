@@ -235,7 +235,8 @@ func isValidRole(role int) bool {
 		common.RoleLimitedGuest:
 		return true
 	default:
-		return false
+		// Custom role IDs are assigned sequentially above the built-in range
+		return role > common.RoleLimitedGuest
 	}
 }
 

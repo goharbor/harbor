@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/controller/member"
+	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
@@ -32,11 +33,15 @@ import (
 
 type memberAPI struct {
 	BaseAPI
-	ctl member.Controller
+	ctl     member.Controller
+	roleCtl roleCtl.Controller
 }
 
 func newMemberAPI() *memberAPI {
-	return &memberAPI{ctl: member.NewController()}
+	return &memberAPI{
+		ctl:     member.NewController(),
+		roleCtl: roleCtl.Ctl,
+	}
 }
 
 func (m *memberAPI) CreateProjectMember(ctx context.Context, params operation.CreateProjectMemberParams) middleware.Responder {
@@ -46,6 +51,9 @@ func (m *memberAPI) CreateProjectMember(ctx context.Context, params operation.Cr
 	}
 	if params.ProjectMember == nil {
 		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the project member should provide"))
+	}
+	if err := m.checkNoEscalation(ctx, projectNameOrID, params.ProjectMember.RoleID); err != nil {
+		return m.SendError(ctx, err)
 	}
 	req, err := toMemberReq(params.ProjectMember)
 	if err != nil {
@@ -164,10 +172,34 @@ func (m *memberAPI) UpdateProjectMember(ctx context.Context, params operation.Up
 	if params.Mid == 0 {
 		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("member id can not be empty"))
 	}
+	if err := m.checkNoEscalation(ctx, projectNameOrID, params.Role.RoleID); err != nil {
+		return m.SendError(ctx, err)
+	}
 
 	err := m.ctl.UpdateRole(ctx, projectNameOrID, int(params.Mid), int(params.Role.RoleID))
 	if err != nil {
 		return m.SendError(ctx, err)
 	}
 	return operation.NewUpdateProjectMemberOK()
+}
+
+// checkNoEscalation rejects role assignments where the target role has permissions the caller lacks.
+func (m *memberAPI) checkNoEscalation(ctx context.Context, projectNameOrID any, roleID int64) error {
+	r, err := m.roleCtl.Get(ctx, roleID, &roleCtl.Option{WithPermission: true})
+	if err != nil {
+		return err
+	}
+	for _, perm := range r.Permissions {
+		for _, acc := range perm.Access {
+			has, err := m.HasProjectPermission(ctx, projectNameOrID, acc.Action, acc.Resource)
+			if err != nil {
+				return err
+			}
+			if !has {
+				return errors.ForbiddenError(nil).WithMessagef(
+					"escalation not allowed: you lack %s:%s", acc.Resource, acc.Action)
+			}
+		}
+	}
+	return nil
 }

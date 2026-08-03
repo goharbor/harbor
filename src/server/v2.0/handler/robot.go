@@ -84,6 +84,9 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 	switch s := sc.(type) {
 	case *local.SecurityContext:
 		creatorRef = int64(s.User().UserID)
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
 	case *robotSc.SecurityContext:
 		if s.User() == nil {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
@@ -391,6 +394,16 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
 
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if _, ok := sc.(*local.SecurityContext); ok {
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return err
+		}
+	}
+
 	if r.Duration != *params.Robot.Duration {
 		r.Duration = *params.Robot.Duration
 		if *params.Robot.Duration == -1 {
@@ -441,6 +454,37 @@ func containsAccess(policies []*types.Policy, item *models.Access) bool {
 		}
 	}
 	return false
+}
+
+// robotToHumanResourceMap maps ScopeProject resource names to their ScopeRole equivalents.
+// Needed because robots use "project" for the project entity while human roles use "" (ResourceSelf).
+var robotToHumanResourceMap = map[rbac.Resource]rbac.Resource{
+	rbac.ResourceProject: rbac.ResourceSelf,
+}
+
+func mapRobotToHumanResource(r rbac.Resource) rbac.Resource {
+	if mapped, ok := robotToHumanResourceMap[r]; ok {
+		return mapped
+	}
+	return r
+}
+
+// validateNoEscalation ensures that a human user cannot grant a robot more permissions than they hold.
+func (rAPI *robotAPI) validateNoEscalation(ctx context.Context, permissions []*models.RobotPermission) error {
+	for _, perm := range permissions {
+		for _, acc := range perm.Access {
+			resource := mapRobotToHumanResource(rbac.Resource(acc.Resource))
+			has, err := rAPI.HasProjectPermission(ctx, perm.Namespace, rbac.Action(acc.Action), resource)
+			if err != nil {
+				return err
+			}
+			if !has {
+				return errors.ForbiddenError(nil).WithMessagef(
+					"permission escalation not allowed: you do not have %s:%s", acc.Resource, acc.Action)
+			}
+		}
+	}
+	return nil
 }
 
 // isValidPermissionScope checks if permission slice A is a subset of permission slice B
