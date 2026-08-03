@@ -23,12 +23,12 @@ func (mjc *MockJobClient) GetJobServiceConfig() (*job.Config, error) {
 // GetJobLog ...
 func (mjc *MockJobClient) GetJobLog(uuid string) ([]byte, error) {
 	if uuid == "500" {
-		return nil, &http.Error{500, "server side error"}
+		return nil, &http.Error{Code: 500, Message: "server side error"}
 	}
 	if mjc.validUUID(uuid) {
 		return []byte("some log"), nil
 	}
-	return nil, &http.Error{404, "not Found"}
+	return nil, &http.Error{Code: 404, Message: "not Found"}
 }
 
 // SubmitJob ...
@@ -41,10 +41,10 @@ func (mjc *MockJobClient) SubmitJob(data *models.JobData) (string, error) {
 // PostAction ...
 func (mjc *MockJobClient) PostAction(uuid, action string) error {
 	if "500" == uuid {
-		return &http.Error{500, "server side error"}
+		return &http.Error{Code: 500, Message: "server side error"}
 	}
 	if !mjc.validUUID(uuid) {
-		return &http.Error{404, "not Found"}
+		return &http.Error{Code: 404, Message: "not Found"}
 	}
 	return nil
 }
