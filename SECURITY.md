@@ -28,7 +28,7 @@ Provide a descriptive title and in the description of the report include the fol
 ## When to report a vulnerability
 * When you think Harbor has a potential security vulnerability.
 * When you suspect a potential vulnerability, but you are unsure that it impacts Harbor.
-* When you know of or suspect a potential vulnerability on another project that is used by Harbor. For example Harbor has a dependency on Docker, PGSql, Redis, Notary, Trivy, etc.
+* When you know of or suspect a potential vulnerability on another project that is used by Harbor. For example Harbor has a dependency on Docker, PostgreSQL, Redis, Trivy, etc.
 
 ## Patch, Release, and Disclosure
 The Harbor Security Team will respond to vulnerability reports as follows:
