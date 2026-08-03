@@ -11,12 +11,16 @@ If you know of a publicly disclosed security vulnerability for Harbor, please **
 
 **IMPORTANT: Do not file public issues on GitHub for security vulnerabilities**
 
-To report a vulnerability or a security-related issue, use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new): open the [Security tab](https://github.com/goharbor/harbor/security) of the affected repository and click **Report a vulnerability**. The report is visible only to you and the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Reports will be addressed within 3 business days, including a detailed plan to investigate the issue and any potential workarounds to perform in the meantime. Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead. Note that filing a report requires a GitHub account.
+To report a vulnerability or a security-related issue, use GitHub private vulnerability reporting: open the **Security** tab of the affected repository and click **Report a vulnerability**. For the main Harbor repository, use [this form](https://github.com/goharbor/harbor/security/advisories/new). Filing a report requires a GitHub account; this is the only channel for vulnerability reports.
+
+The report is visible only to you and the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Reports will be acknowledged within 5 business days. The Harbor Security Team will then investigate and follow up with a plan to address the issue and any potential workarounds to perform in the meantime.
+
+Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead.
 
 ### Proposed Report Content
 Provide a descriptive title and in the description of the report include the following information:
 * Basic identity information, such as your name and your affiliation or company.
-* Detailed steps to reproduce the vulnerability  (POC scripts, screenshots, and compressed packet captures are all helpful to us).
+* Detailed steps to reproduce the vulnerability (POC scripts and screenshots are helpful to us; larger artifacts such as packet captures can be shared in the temporary private fork once the report is accepted).
 * Description of the effects of the vulnerability on Harbor and the related hardware and software configurations, so that the Harbor Security Team can reproduce it.
 * How the vulnerability affects Harbor usage and an estimation of the attack surface, if there is one.
 * List other projects or dependencies that were used in conjunction with Harbor to produce the vulnerability.
@@ -31,20 +35,21 @@ The Harbor Security Team will respond to vulnerability reports as follows:
 
 1.  The Security Team will investigate the vulnerability and determine its effects and criticality.
 2.  If the issue is not deemed to be a vulnerability, the Security Team will close the report with a detailed reason for rejection.
-3.  The Security Team will initiate a conversation with the reporter within 3 business days.
-4.  If a vulnerability is acknowledged, the Security Team will accept the report as a draft security advisory, and the reporter is added as a collaborator on it. The Security Team will then work on a plan to communicate with the appropriate community, including identifying mitigating steps that affected users can take to protect themselves until the fix is rolled out.
-5.  The Security Team will also assess the severity of the vulnerability with a [CVSS](https://www.first.org/cvss/specification-document) score, using the calculator built into the draft advisory. The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. A CVE will be requested from GitHub through the draft advisory; the CVE remains private until the advisory is published.
+3.  The Security Team will acknowledge the report and initiate a conversation with the reporter within 5 business days.
+4.  If the report is confirmed as a vulnerability, the Security Team will accept it as a draft security advisory, and the reporter is added as a collaborator on it. The Security Team will then work on a plan to communicate with the appropriate community, including identifying mitigating steps that affected users can take to protect themselves until the fix is rolled out.
+5.  The Security Team will also assess the severity of the vulnerability with a [CVSS](https://www.first.org/cvss/specification-document) score, using the calculator built into the draft advisory. The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Where GitHub is eligible to act as CNA, a CVE will be requested through the draft advisory and remains private until the advisory is published. If another CNA already covers the affected component, the Security Team coordinates with that CNA instead.
 6.  The Security Team will work on fixing the vulnerability in a temporary private fork associated with the advisory, keeping the patch embargoed, and perform internal testing before preparing to roll out the fix.
 7.  The Security Team will provide early disclosure of the vulnerability by emailing the cncf-harbor-distributors-announce@lists.cncf.io mailing list. Distributors can initially plan for the vulnerability patch ahead of the fix, and later can test the fix and provide feedback to the Harbor team. See the section **Early Disclosure to Harbor Distributors List** for details about how to join this mailing list.
 8. A public disclosure date is negotiated by the Harbor Security Team, the bug submitter, and the distributors list. We prefer to fully disclose the bug as soon as possible once a user mitigation or patch is available. It is reasonable to delay disclosure when the bug or the fix is not yet fully understood, the solution is not well-tested, or for distributor coordination. The timeframe for disclosure is from immediate (especially if it’s already publicly known) to a few weeks. For a critical vulnerability with a straightforward mitigation, we expect report date to public disclosure date to be on the order of 14 business days. The Harbor Security Team holds the final say when setting a public disclosure date.
 9.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. Upon release of the patched version of Harbor, we will follow the **Public Disclosure Process**.
 
 ### Public Disclosure Process
-The Security Team publishes the security [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub, which also publishes the associated CVE. In most cases, additional communication via Slack, Twitter, CNCF lists, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users.
+The Security Team publishes the security [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. Where GitHub issued the CVE, publishing the advisory also publishes the CVE. In most cases, additional communication via Slack, Twitter, CNCF lists, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users.
 
 The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances. Harbor distributors will handle creating and publishing their own security advisories.
 
 ## Mailing lists
+- Use cncf-harbor-security@lists.cncf.io to reach the Harbor Security Team about the distributors list, for example to request membership or to report a breach of the Embargo Policy. Do not use it to report vulnerabilities; use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new) instead.
 - Join cncf-harbor-distributors-announce@lists.cncf.io for early private information and vulnerability disclosure. Early disclosure may include mitigating steps and additional information on security patch releases. See below for information on how Harbor distributors or vendors can apply to join this list.
 
 ## Early Disclosure to Harbor Distributors List
