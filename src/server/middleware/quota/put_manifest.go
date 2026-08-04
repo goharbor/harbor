@@ -42,6 +42,10 @@ func putManifestResources(r *http.Request, _, referenceID string) (types.Resourc
 
 	manifest, descriptor, err := unmarshalManifest(r)
 	if err != nil {
+		// an over-limit body is a 413, not an invalid manifest; surface it as-is
+		if errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+			return nil, err
+		}
 		logger.Errorf("unmarshal manifest failed, error: %v", err)
 		return nil, errors.Wrap(err, "unmarshal manifest failed").WithCode(errors.MANIFESTINVALID)
 	}
