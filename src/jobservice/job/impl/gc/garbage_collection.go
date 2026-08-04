@@ -501,8 +501,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 func (gc *GarbageCollector) cleanCache(ctx context.Context) error {
 	u, err := url.Parse(gc.redisURL)
 	if err != nil {
-		gc.logger.Errorf("failed to parse redis url %s, error: %v", gc.redisURL, err)
-		return err
+		if urlErr, ok := err.(*url.Error); ok {
+			err = urlErr.Err
+		}
+		gc.logger.Errorf("failed to parse the redis url of the registry, error: %v", err)
+		return errors.Wrap(err, "failed to parse the redis url of the registry")
 	}
 
 	c, err := cache.New(u.Scheme, cache.Address(gc.redisURL))
