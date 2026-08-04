@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/redis"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -99,6 +100,9 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
+	if p.IsProxy() && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
@@ -119,20 +123,43 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
+	return serveBlob(w, reader, size, art.Digest)
+}
+
+// serveBlob sets the blob headers before streaming the body: the first write
+// commits the status line and headers, so setting Content-Length (and the
+// digest/ETag headers) afterwards is a no-op and truncated upstream reads
+// would be framed as complete chunked 200 responses that caches may store.
+func serveBlob(w http.ResponseWriter, reader io.Reader, size int64, dig string) error {
+	setHeaders(w, size, "", dig)
 	// Use io.CopyN to avoid out of memory when pulling big blob
 	written, err := io.CopyN(w, reader, size)
-	if err != nil {
+	if err == nil {
+		return nil
+	}
+	if written == 0 {
+		// Headers are not committed yet; drop the blob headers so the caller's
+		// error response is not framed with the blob's Content-Length.
+		h := w.Header()
+		h.Del(contentLength)
+		h.Del(dockerContentDigest)
+		h.Del(etag)
+
 		return err
 	}
-	if written != size {
-		return errors.Errorf("The size mismatch, actual:%d, expected: %d", written, size)
-	}
-	setHeaders(w, size, "", art.Digest)
+	// The 200 and Content-Length are committed. Returning an error would make the
+	// caller append an error body to the blob stream; returning nil instead leaves
+	// the response short of Content-Length so clients and caches reject it.
+	log.Errorf("failed to stream blob %s after %d of %d bytes: %v", dig, written, size, err)
+
 	return nil
 }
 
@@ -219,6 +246,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 
+	if p.IsProxy() && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	if !canProxy(r.Context(), p) {
 		next.ServeHTTP(w, r)
 		return nil
@@ -263,6 +293,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
 		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)

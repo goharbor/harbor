@@ -17,13 +17,13 @@ concurrency:
 
 jobs:
   BUILD_BASE_IMAGE:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: read
     outputs:
       build_base: ${{ steps.decide.outputs.build_base || 'false' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: jitterbit/get-changed-files@v1
         id: changed-files
         continue-on-error: true
@@ -42,7 +42,7 @@ jobs:
         run: echo "build_base=true" >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
           # has shipped broken releases that fail arm64 emulation with
@@ -71,28 +71,29 @@ jobs:
         BUILD_PACKAGE: true
         ARCH: ${{ matrix.arch }}
         BUILD_BASE: ${{ needs.BUILD_BASE_IMAGE.outputs.build_base }}
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'cncf-ubuntu-16-64-arm' || 'cncf-ubuntu-16-64-x86' }}
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.1.1
+        uses: aws-actions/configure-aws-credentials@v6.2.1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.26.3
-        id: go
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
         with:
           docker_version: 20.10
           docker_channel: stable
-      - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.26.4
+          cache-dependency-path: src/go.sum
+        id: go
       - name: Build Package
         run: |
           set -x
@@ -201,12 +202,12 @@ jobs:
 
   CREATE_MANIFEST:
     needs: [BUILD_BASE_IMAGE, BUILD_PACKAGE]
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: repos-*
           merge-multiple: true
