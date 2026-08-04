@@ -42,6 +42,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	httpLib "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/metric"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/redis"
@@ -121,6 +122,9 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
+	if p.IsProxy() && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	if !canProxy(r.Context(), p) || proxyCtl.UseLocalBlob(ctx, art) {
 		next.ServeHTTP(w, r)
 		return nil
@@ -141,6 +145,9 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
@@ -260,6 +267,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		return nil
 	}
 
+	if p.IsProxy() && config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	if !canProxy(r.Context(), p) {
 		next.ServeHTTP(w, r)
 		return nil
@@ -304,6 +314,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
 	}
 
+	if config.Metric().Enabled {
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
 	log.Debugf("the tag is %v, digest is %v", art.Tag, art.Digest)
 	if r.Method == http.MethodHead {
 		err = proxyManifestHead(ctx, w, proxyCtl, p, art, remote)
