@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	registry_token "github.com/docker/distribution/registry/auth/token"
+	registry_token "github.com/distribution/distribution/v3/registry/auth/token"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

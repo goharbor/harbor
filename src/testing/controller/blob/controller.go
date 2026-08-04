@@ -5,7 +5,7 @@ package blob
 import (
 	context "context"
 
-	distribution "github.com/docker/distribution"
+	distribution "github.com/distribution/distribution/v3"
 	blob "github.com/goharbor/harbor/src/controller/blob"
 	q "github.com/goharbor/harbor/src/lib/q"
 	models "github.com/goharbor/harbor/src/pkg/blob/models"

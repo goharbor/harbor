@@ -130,7 +130,7 @@ PKGVERSIONTAG=dev
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.8.3-patch-redis
+REGISTRYVERSION=v3.1.1
 TRIVYVERSION=v0.72.0
 TRIVYADAPTERVERSION=v0.38.0-rc1
 
@@ -141,9 +141,9 @@ VALKEYSHA256=e220f4b0143292ee6ea6d705aa40d45a0c8a77759b3e94c201cb5c25dbdca42f
 NODEBUILDIMAGE=node:22.22.3
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.1
+REGISTRY_SRC_TAG=v3.1.1
 # source of upstream distribution code
-DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
+DISTRIBUTION_SRC=https://github.com/distribution/distribution.git
 
 # dependency binaries
 REGISTRYURL=

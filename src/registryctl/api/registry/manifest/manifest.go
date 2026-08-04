@@ -17,8 +17,8 @@ package manifest
 import (
 	"net/http"
 
-	"github.com/docker/distribution/registry/storage"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/distribution/distribution/v3/registry/storage"
+	storagedriver "github.com/distribution/distribution/v3/registry/storage/driver"
 	"github.com/gorilla/mux"
 	"github.com/opencontainers/go-digest"
 	"go.opentelemetry.io/otel/attribute"

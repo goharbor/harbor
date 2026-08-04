@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/security"

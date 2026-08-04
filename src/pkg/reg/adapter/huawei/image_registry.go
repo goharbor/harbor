@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )

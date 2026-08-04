@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"

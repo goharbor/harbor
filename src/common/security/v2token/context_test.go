@@ -18,7 +18,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/docker/distribution/registry/auth/token"
+	"github.com/distribution/distribution/v3/registry/auth/token"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/rbac"

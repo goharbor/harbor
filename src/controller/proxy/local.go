@@ -19,7 +19,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/docker/distribution"
+	"github.com/distribution/distribution/v3"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"

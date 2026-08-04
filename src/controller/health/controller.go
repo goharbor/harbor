@@ -19,7 +19,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/docker/distribution/health"
+	"github.com/distribution/distribution/v3/health"
 )
 
 var (
@@ -68,7 +68,7 @@ func check(name string, checker health.Checker,
 	timeout time.Duration, c chan *ComponentHealthStatus) {
 	statusChan := make(chan *ComponentHealthStatus)
 	go func() {
-		err := checker.Check()
+		err := checker.Check(context.TODO())
 		var healthy healthy = err == nil
 		status := &ComponentHealthStatus{
 			Name:   name,

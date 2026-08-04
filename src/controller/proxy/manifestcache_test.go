@@ -19,10 +19,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest"
-	"github.com/docker/distribution/manifest/manifestlist"
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3"
+	"github.com/distribution/distribution/v3/manifest/manifestlist"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 
@@ -30,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/testing/mock"
 
+	"github.com/opencontainers/image-spec/specs-go"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -73,9 +73,9 @@ func (suite *CacheTestSuite) TestUpdateManifestList() {
 	amdDig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	armDig := "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
 	manifestList := manifestlist.ManifestList{
-		Versioned: manifest.Versioned{
+		MediaType: manifestlist.MediaTypeManifestList,
+		Versioned: specs.Versioned{
 			SchemaVersion: 2,
-			MediaType:     manifestlist.MediaTypeManifestList,
 		},
 		Manifests: []manifestlist.ManifestDescriptor{
 			{
@@ -123,9 +123,9 @@ func (suite *CacheTestSuite) TestPushManifestList() {
 	amdDig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
 	armDig := "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
 	manifestList := manifestlist.ManifestList{
-		Versioned: manifest.Versioned{
+		MediaType: manifestlist.MediaTypeManifestList,
+		Versioned: specs.Versioned{
 			SchemaVersion: 2,
-			MediaType:     manifestlist.MediaTypeManifestList,
 		},
 		Manifests: []manifestlist.ManifestDescriptor{
 			{

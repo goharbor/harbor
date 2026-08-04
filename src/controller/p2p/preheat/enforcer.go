@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	tk "github.com/docker/distribution/registry/auth/token"
+	tk "github.com/distribution/distribution/v3/registry/auth/token"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 

@@ -19,7 +19,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 

@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/docker/distribution/manifest/schema2"
+	"github.com/distribution/distribution/v3/manifest/schema2"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/utils/test"

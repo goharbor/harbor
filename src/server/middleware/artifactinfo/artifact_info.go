@@ -21,7 +21,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/opencontainers/go-digest"
 
 	"github.com/goharbor/harbor/src/lib"

@@ -48,6 +48,3 @@ notifications:
         - application/vnd.oci.image.layer.nondistributable.v1.tar+gzip
         - application/vnd.oci.image.layer.nondistributable.v1.tar+zstd
         - application/octet-stream
-compatibility:
-  schema1:
-    enabled: true
