@@ -15,6 +15,8 @@
 package task
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -227,6 +229,39 @@ func (e *executionManagerTestSuite) TestGet() {
 	e.Equal(int64(1), exec.Metrics.TaskCount)
 	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
+}
+
+func (e *executionManagerTestSuite) TestGet_LargeIDInExtraAttrs() {
+	// 2^53 + 1: beyond float64's exact-integer range, verifies UseNumber decoding is lossless
+	largeID := int64(9007199254740993)
+	extraAttrsJSON := fmt.Sprintf(`{"project_ids": [%d]}`, largeID)
+
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:         1,
+		Status:     job.SuccessStatus.String(),
+		ExtraAttrs: extraAttrsJSON,
+	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{}, nil)
+
+	exec, err := e.execMgr.Get(nil, 1)
+	e.Require().Nil(err)
+	e.Require().NotNil(exec.ExtraAttrs)
+
+	pids, ok := exec.ExtraAttrs["project_ids"]
+	e.Require().True(ok)
+	pidList, ok := pids.([]any)
+	e.Require().True(ok)
+	e.Require().Len(pidList, 1)
+
+	// verify that the ID is preserved as exact json.Number
+	num, ok := pidList[0].(json.Number)
+	e.Require().True(ok)
+	e.Equal("9007199254740993", num.String())
+
+	// verify conversion via Int64FromAny
+	id, ok := Int64FromAny(pidList[0])
+	e.Require().True(ok)
+	e.Equal(largeID, id)
 }
 
 func (e *executionManagerTestSuite) TestList() {

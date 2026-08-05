@@ -6523,6 +6523,7 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+    format: int64
   gcId:
     name: gc_id
     in: path
@@ -8057,6 +8058,7 @@ definitions:
         description: The type of the robot creator, like local(harbor_user) or robot.
       creator_ref:
         type: integer
+        format: int64
         description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
