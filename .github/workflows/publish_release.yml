@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     permissions:
       contents: write   # Required for creating GitHub releases and uploading assets
       id-token: write   # Required for Cosign keyless signing

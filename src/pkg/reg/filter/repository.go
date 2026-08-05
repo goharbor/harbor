@@ -15,6 +15,8 @@
 package filter
 
 import (
+	"fmt"
+
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
@@ -35,8 +37,12 @@ func BuildRepositoryFilters(filters []*model.Filter) (RepositoryFilters, error) 
 		var f RepositoryFilter
 		switch filter.Type {
 		case model.FilterTypeName:
-			f = &repositoryNameFilter{
-				pattern: filter.Value.(string),
+			if pattern, ok := filter.Value.(string); ok {
+				f = &repositoryNameFilter{
+					pattern: pattern,
+				}
+			} else {
+				return nil, fmt.Errorf("invalid filter value type for repository name filter, expecting string")
 			}
 		}
 		if f != nil {
