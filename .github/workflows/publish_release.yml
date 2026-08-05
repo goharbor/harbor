@@ -126,7 +126,7 @@ jobs:
           source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
           echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
       - name: RC Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: ${{ env.PRERELEASE == 'true' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
@@ -137,7 +137,7 @@ jobs:
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz.sigstore.json
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: ${{ env.PRERELEASE == 'false' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
