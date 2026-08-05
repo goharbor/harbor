@@ -52,6 +52,7 @@ import {
     GetIntegerAndUnit,
     validateLimit,
 } from '../../../../shared/units/utils';
+import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
 import { RegistryService } from '../../../../../../ng-swagger-gen/services/registry.service';
@@ -358,55 +359,15 @@ export class CreateProjectComponent
     validateRepositoryFilter(): void {
         const pattern = this.project.metadata.proxy_cache_filter_pattern;
         const kind = this.project.metadata.proxy_cache_filter_kind;
+        const errorKey = validateRepositoryFilterPattern(kind, pattern);
 
-        if (!pattern) {
-            this.repositoryFilterError = null;
-            return;
-        }
-
-        if (kind === 'regex') {
-            try {
-                new RegExp(pattern);
-                this.repositoryFilterError = null;
-            } catch (e) {
-                this.translateService
-                    .get('PROJECT.REPOSITORY_FILTER_REGEX_INVALID')
-                    .subscribe((res: string) => {
-                        this.repositoryFilterError = res;
-                    });
-            }
-        } else if (kind === 'doublestar') {
-            if (!this.checkBalancedChars(pattern)) {
-                this.translateService
-                    .get('PROJECT.REPOSITORY_FILTER_DOUBLESTAR_INVALID')
-                    .subscribe((res: string) => {
-                        this.repositoryFilterError = res;
-                    });
-            } else {
-                this.repositoryFilterError = null;
-            }
+        if (errorKey) {
+            this.translateService.get(errorKey).subscribe((res: string) => {
+                this.repositoryFilterError = res;
+            });
         } else {
             this.repositoryFilterError = null;
         }
-    }
-
-    checkBalancedChars(pattern: string): boolean {
-        const stack: string[] = [];
-        const openCloseMap = {
-            '[': ']',
-            '{': '}',
-        };
-        for (const char of pattern) {
-            if (char === '[' || char === '{') {
-                stack.push(char);
-            } else if (char === ']' || char === '}') {
-                const last = stack.pop();
-                if (!last || openCloseMap[last] !== char) {
-                    return false;
-                }
-            }
-        }
-        return stack.length === 0;
     }
 
     convertSpeedValue(realSpeed: number): number {

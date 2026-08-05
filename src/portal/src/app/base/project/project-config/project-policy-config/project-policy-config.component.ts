@@ -13,6 +13,7 @@
 // limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { compareValue, clone } from '../../../../shared/units/utils';
+import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
 import {
     ProjectCVEAllowlist,
     ProjectService,
@@ -253,55 +254,15 @@ export class ProjectPolicyConfigComponent implements OnInit {
     validateRepositoryFilter(): void {
         const pattern = this.projectPolicy.ProxyCacheFilterPattern;
         const kind = this.projectPolicy.ProxyCacheFilterKind;
+        const errorKey = validateRepositoryFilterPattern(kind, pattern);
 
-        if (!pattern) {
-            this.repositoryFilterError = null;
-            return;
-        }
-
-        if (kind === 'regex') {
-            try {
-                new RegExp(pattern);
-                this.repositoryFilterError = null;
-            } catch (e) {
-                this.translate
-                    .get('PROJECT.REPOSITORY_FILTER_REGEX_INVALID')
-                    .subscribe((res: string) => {
-                        this.repositoryFilterError = res;
-                    });
-            }
-        } else if (kind === 'doublestar') {
-            if (!this.checkBalancedChars(pattern)) {
-                this.translate
-                    .get('PROJECT.REPOSITORY_FILTER_DOUBLESTAR_INVALID')
-                    .subscribe((res: string) => {
-                        this.repositoryFilterError = res;
-                    });
-            } else {
-                this.repositoryFilterError = null;
-            }
+        if (errorKey) {
+            this.translate.get(errorKey).subscribe((res: string) => {
+                this.repositoryFilterError = res;
+            });
         } else {
             this.repositoryFilterError = null;
         }
-    }
-
-    checkBalancedChars(pattern: string): boolean {
-        const stack: string[] = [];
-        const openCloseMap = {
-            '[': ']',
-            '{': '}',
-        };
-        for (const char of pattern) {
-            if (char === '[' || char === '{') {
-                stack.push(char);
-            } else if (char === ']' || char === '}') {
-                const last = stack.pop();
-                if (!last || openCloseMap[last] !== char) {
-                    return false;
-                }
-            }
-        }
-        return stack.length === 0;
     }
 
     getRegistries() {
