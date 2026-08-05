@@ -42,7 +42,8 @@ export class Project {
     };
     cve_allowlist?: object;
     constructor() {
-        this.metadata.public = false;
+        this.metadata = <any>{};
+        this.metadata.public = 'false';
         this.metadata.enable_content_trust_cosign = false;
         this.metadata.prevent_vul = false;
         this.metadata.severity = 'low';

@@ -89,6 +89,8 @@ func constructQuotaPayload(event *event.QuotaEvent) (*notifyModel.Payload, error
 	repoType := proModels.ProjectPrivate
 	if event.Project.IsPublic() {
 		repoType = proModels.ProjectPublic
+	} else if event.Project.IsAuthOnly() {
+		repoType = proModels.ProjectAuthOnly
 	}
 
 	imageName := util.GetNameFromImgRepoFullName(repoName)

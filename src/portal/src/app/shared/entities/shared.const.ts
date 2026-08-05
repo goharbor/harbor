@@ -291,7 +291,8 @@ export const CookieKeyOfAdmiral = 'admiral.endpoint.latest';
 export const ProjectTypes = {
     0: 'PROJECT.ALL_PROJECTS',
     1: 'PROJECT.PRIVATE_PROJECTS',
-    2: 'PROJECT.PUBLIC_PROJECTS',
+    2: 'PROJECT.INTERNAL_PROJECTS',
+    3: 'PROJECT.PUBLIC_PROJECTS',
 };
 
 export const RoleInfo = {

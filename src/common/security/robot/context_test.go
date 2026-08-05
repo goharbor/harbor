@@ -39,6 +39,13 @@ var (
 		Name:      "testrobot",
 		OwnerID:   1,
 	}
+
+	authOnly = &proModels.Project{
+		ProjectID: 2,
+		Name:      "testrobot_authonly",
+		OwnerID:   1,
+		Metadata:  map[string]string{"public": "auth_only"},
+	}
 )
 
 func TestIsAuthenticated(t *testing.T) {
@@ -135,6 +142,45 @@ func TestHasPullPerm(t *testing.T) {
 	ctx.ctl = ctl
 	resource := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
+}
+
+// TestProjectRobotAutoAccessToUnrelatedAuthOnlyProject verifies that a
+// project-scoped robot, granted permissions ONLY for project 1 ("private"),
+// automatically gets read/pull access to a completely different, unrelated
+// project (project 2, "auth_only") that it was never granted permission to.
+func TestProjectRobotAutoAccessToUnrelatedAuthOnlyProject(t *testing.T) {
+	r := &robot.Robot{
+		Robot: model.Robot{
+			Name:        "test_robot_authonly_bleed",
+			Description: "scoped only to project 1",
+		},
+		Permissions: []*robot.Permission{
+			{
+				Kind:      "project",
+				Namespace: "library",
+				Access: []*types.Policy{
+					{
+						Resource: rbac.Resource(fmt.Sprintf("project/%d/repository", private.ProjectID)),
+						Action:   rbac.ActionPull,
+					},
+				},
+			},
+		},
+	}
+
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(authOnly, nil)
+
+	ctx := NewSecurityContext(r)
+	ctx.ctl = ctl
+
+	resource := project.NewNamespace(authOnly.ProjectID).Resource(rbac.ResourceRepository)
+	// Robot has zero explicit permissions on project 2, yet pull is granted
+	// because auth_only projects hand out publicProjectPolicies to any
+	// "isAuthenticated" rbacUser, and robots are hardcoded isAuthenticated=true.
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionPull, resource))
+	// Push is not part of publicProjectPolicies, so it stays denied.
+	assert.False(t, ctx.Can(context.TODO(), rbac.ActionPush, resource))
 }
 
 func TestHasPushPerm(t *testing.T) {

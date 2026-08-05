@@ -35,6 +35,7 @@ import (
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	projectmodels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -140,6 +141,67 @@ func (suite *ScanImagePreprocessHandlerSuite) TestHandle() {
 
 	err := handler.Handle(orm.Context(), suite.evt)
 	suite.NoError(err)
+}
+
+// TestConstructScanImagePayload_RepoType verifies that constructScanImagePayload
+// sets RepoType based on the project's access level, including the auth_only
+// case, mirroring the equivalent artifact/quota webhook payload builders.
+func TestConstructScanImagePayload_RepoType(t *testing.T) {
+	config.DefaultCfgManager = common.InMemoryCfgManager
+
+	originalArtifactCtl := artifact.Ctl
+	originalScanCtl := sc.DefaultController
+	defer func() {
+		artifact.Ctl = originalArtifactCtl
+		sc.DefaultController = originalScanCtl
+	}()
+
+	art := &artifact.Artifact{}
+	art.ProjectID = 1
+	art.RepositoryName = "library/redis"
+	art.Digest = "sha256:abc"
+
+	artifactCtl := &artifacttesting.Controller{}
+	mock.OnAnything(artifactCtl, "GetByReference").Return(art, nil)
+	artifact.Ctl = artifactCtl
+
+	scanCtl := &scantesting.Controller{}
+	mock.OnAnything(scanCtl, "GetReport").Return([]*scan.Report{{Report: "{}"}}, nil)
+	sc.DefaultController = scanCtl
+
+	cases := []struct {
+		name     string
+		metadata map[string]string
+		wantType string
+	}{
+		{"public", map[string]string{"public": "true"}, projectmodels.ProjectPublic},
+		{"private", map[string]string{"public": "false"}, projectmodels.ProjectPrivate},
+		{"auth_only", map[string]string{"public": "auth_only"}, projectmodels.ProjectAuthOnly},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			evt := &event.ScanImageEvent{
+				EventType: event.TopicScanningCompleted,
+				// leave ScanType unset so neither the vulnerability nor sbom
+				// summary branch runs, keeping this test focused on RepoType.
+				Artifact: &v1.Artifact{
+					NamespaceID: 1,
+					Repository:  "library/redis",
+					Digest:      "sha256:abc",
+				},
+			}
+			prj := &projectmodels.Project{
+				ProjectID: 1,
+				Name:      "library",
+				Metadata:  tc.metadata,
+			}
+
+			payload, err := constructScanImagePayload(context.Background(), evt, prj)
+			require.NoError(t, err)
+			require.Equal(t, tc.wantType, payload.EventData.Repository.RepoType)
+		})
+	}
 }
 
 // Mock things

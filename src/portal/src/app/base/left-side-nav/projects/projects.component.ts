@@ -92,10 +92,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
                         this.listProject.searchKeyword = projectName;
                         this.listProject.selectedRow = [];
                         this.listProject.loading = true;
-                        let passInFilteredType: number = undefined;
-                        if (this.listProject.filteredType > 0) {
-                            passInFilteredType =
-                                this.listProject.filteredType - 1;
+                        // filteredType: 0 = all, 1 = private, 2 = internal (auth_only), 3 = public
+                        let passInFilteredType: number | string = undefined;
+                        if (this.listProject.filteredType === 1) {
+                            passInFilteredType = 0;
+                        } else if (this.listProject.filteredType === 2) {
+                            passInFilteredType = 'auth_only';
+                        } else if (this.listProject.filteredType === 3) {
+                            passInFilteredType = 1;
                         }
                         return this.proService
                             .listProjects(

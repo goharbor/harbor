@@ -26,10 +26,11 @@ import { StatisticService } from '../../../../../../ng-swagger-gen/services/stat
 describe('StatisticsPanelComponent', () => {
     const mockedStatistic: Statistic = {
         private_project_count: 2,
+        auth_only_project_count: 1,
         private_repo_count: 0,
         public_project_count: 3,
         public_repo_count: 1,
-        total_project_count: 5,
+        total_project_count: 6,
         total_repo_count: 1,
         total_storage_consumption: 4564,
     };
@@ -97,5 +98,21 @@ describe('StatisticsPanelComponent', () => {
         const sizeHtml: HTMLSpanElement =
             fixture.nativeElement.querySelector('.size-number');
         expect(sizeHtml.innerText).toEqual('4.46');
+    });
+
+    it('should display auth_only project count', async () => {
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const labels: NodeListOf<HTMLElement> =
+            fixture.nativeElement.querySelectorAll('.stat-label');
+        const values: NodeListOf<HTMLElement> =
+            fixture.nativeElement.querySelectorAll('.stat-value');
+        const labelTexts = Array.from(labels).map(el => el.textContent.trim());
+        const valueTexts = Array.from(values).map(el => el.textContent.trim());
+        const idx = labelTexts.findIndex(t =>
+            t.includes('STATISTICS.INDEX_AUTH_ONLY')
+        );
+        expect(idx).toBeGreaterThanOrEqual(0);
+        expect(valueTexts[idx]).toBe('1');
     });
 });

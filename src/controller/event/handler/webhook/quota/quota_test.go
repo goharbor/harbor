@@ -118,3 +118,30 @@ func (m *MockHandler) Handle(ctx context.Context, value any) error {
 func (m *MockHandler) IsStateful() bool {
 	return false
 }
+
+func TestConstructQuotaPayload_RepoType(t *testing.T) {
+	cases := []struct {
+		name     string
+		metadata map[string]string
+		wantType string
+	}{
+		{"public", map[string]string{"public": "true"}, proModels.ProjectPublic},
+		{"private", map[string]string{"public": "false"}, proModels.ProjectPrivate},
+		{"auth_only", map[string]string{"public": "auth_only"}, proModels.ProjectAuthOnly},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			evt := &event.QuotaEvent{
+				EventType: event.TopicQuotaExceed,
+				RepoName:  "library/hello-world",
+				Project: &proModels.Project{
+					Name:     "library",
+					Metadata: tc.metadata,
+				},
+			}
+			payload, err := constructQuotaPayload(evt)
+			require.NoError(t, err)
+			require.Equal(t, tc.wantType, payload.EventData.Repository.RepoType)
+		})
+	}
+}

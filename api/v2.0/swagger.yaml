@@ -7482,7 +7482,7 @@ definitions:
     properties:
       public:
         type: string
-        description: 'The public status of the project. The valid values are "true", "false".'
+        description: 'The public status of the project. The valid values are "true", "false", "auth_only". "auth_only" allows any authenticated user to access the project with read-only permissions.'
       enable_content_trust:
         type: string
         description: 'Whether content trust is enabled or not. If it is enabled, user can''t pull unsigned images from this project. The valid values are "true", "false".'
@@ -9899,6 +9899,11 @@ definitions:
         type: integer
         format: int64
         description: The count of the private projects
+        x-omitempty: false
+      auth_only_project_count:
+        type: integer
+        format: int64
+        description: The count of the auth_only projects (accessible to authenticated users only)
         x-omitempty: false
       private_repo_count:
         type: integer

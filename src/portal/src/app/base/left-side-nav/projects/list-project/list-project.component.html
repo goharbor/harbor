@@ -70,6 +70,8 @@
         <clr-dg-cell>{{
             (p.metadata.public === 'true'
                 ? 'PROJECT.PUBLIC'
+                : p.metadata.public === 'auth_only'
+                ? 'PROJECT.AUTH_ONLY'
                 : 'PROJECT.PRIVATE'
             ) | translate
         }}</clr-dg-cell>

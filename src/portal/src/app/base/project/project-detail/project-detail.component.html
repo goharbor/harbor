@@ -51,6 +51,9 @@
                             {{
                                 (currentProject?.metadata?.public === 'true'
                                     ? 'PROJECT.PUBLIC'
+                                    : currentProject?.metadata?.public ===
+                                      'auth_only'
+                                    ? 'PROJECT.AUTH_ONLY'
                                     : 'PROJECT.PRIVATE'
                                 ) | translate
                             }}

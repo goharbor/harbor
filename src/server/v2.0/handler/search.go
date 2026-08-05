@@ -64,9 +64,10 @@ func (s *searchAPI) Search(ctx context.Context, params operation.SearchParams) m
 		if sc, ok := secCtx.(*local.SecurityContext); ok && sc.IsAuthenticated() {
 			user := sc.User()
 			kw["member"] = &project.MemberQuery{
-				UserID:     user.UserID,
-				GroupIDs:   user.GroupIDs,
-				WithPublic: true,
+				UserID:       user.UserID,
+				GroupIDs:     user.GroupIDs,
+				WithPublic:   true,
+				WithAuthOnly: true,
 			}
 		} else {
 			kw["public"] = true

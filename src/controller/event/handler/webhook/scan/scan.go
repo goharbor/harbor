@@ -91,6 +91,8 @@ func constructScanImagePayload(ctx context.Context, event *event.ScanImageEvent,
 	repoType := proModels.ProjectPrivate
 	if project.IsPublic() {
 		repoType = proModels.ProjectPublic
+	} else if project.IsAuthOnly() {
+		repoType = proModels.ProjectAuthOnly
 	}
 
 	repoName := util.GetNameFromImgRepoFullName(event.Artifact.Repository)

@@ -127,4 +127,88 @@ describe('CreateProjectComponent', () => {
             fixture.nativeElement.querySelector('#endpoint');
         expect(endpoint).toBeFalsy();
     });
+
+    it('should default access level to private', () => {
+        component.newProject();
+        expect(component.project.metadata.public).toBe('false');
+    });
+
+    it('should render Private, Auth Only, and Public radio buttons', async () => {
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const privateRadio: HTMLInputElement =
+            fixture.nativeElement.querySelector('#create_project_private');
+        const authOnlyRadio: HTMLInputElement =
+            fixture.nativeElement.querySelector('#create_project_auth_only');
+        const publicRadio: HTMLInputElement =
+            fixture.nativeElement.querySelector('#create_project_public');
+        expect(privateRadio).toBeTruthy();
+        expect(authOnlyRadio).toBeTruthy();
+        expect(publicRadio).toBeTruthy();
+        expect(privateRadio.type).toBe('radio');
+        expect(authOnlyRadio.type).toBe('radio');
+        expect(publicRadio.type).toBe('radio');
+    });
+
+    it('should update metadata.public to auth_only when Auth Only radio is clicked', async () => {
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const authOnlyRadio: HTMLInputElement =
+            fixture.nativeElement.querySelector('#create_project_auth_only');
+        authOnlyRadio.click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.project.metadata.public).toBe('auth_only');
+    });
+
+    it('should update metadata.public to true when Public radio is clicked', async () => {
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const publicRadio: HTMLInputElement =
+            fixture.nativeElement.querySelector('#create_project_public');
+        publicRadio.click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.project.metadata.public).toBe('true');
+    });
+
+    it('should pass auth_only string to API on submit', async () => {
+        let capturedArg: any;
+        spyOn(mockProjectService, 'createProject').and.callFake(((
+            params: any
+        ) => {
+            capturedArg = params;
+            return of(true);
+        }) as any);
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        component.project.name = 'myproject';
+        component.project.metadata.public = 'auth_only';
+        component.onSubmit();
+        await fixture.whenStable();
+        expect(capturedArg).toBeTruthy();
+        expect(capturedArg.project.metadata.public).toBe('auth_only');
+    });
+
+    it('should pass true string to API for public projects', async () => {
+        let capturedArg: any;
+        spyOn(mockProjectService, 'createProject').and.callFake(((
+            params: any
+        ) => {
+            capturedArg = params;
+            return of(true);
+        }) as any);
+        component.createProjectOpened = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        component.project.name = 'mypublicproject';
+        component.project.metadata.public = 'true';
+        component.onSubmit();
+        await fixture.whenStable();
+        expect(capturedArg.project.metadata.public).toBe('true');
+    });
 });

@@ -36,8 +36,9 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 		if user == nil {
 			// anonymous access
 			return &rbacUser{
-				project:  p,
-				username: "anonymous",
+				project:         p,
+				username:        "anonymous",
+				isAuthenticated: false,
 			}
 		}
 
@@ -48,9 +49,10 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 		}
 
 		return &rbacUser{
-			project:      p,
-			username:     user.Username,
-			projectRoles: roles,
+			project:         p,
+			username:        user.Username,
+			projectRoles:    roles,
+			isAuthenticated: true,
 		}
 	}
 }
@@ -64,9 +66,10 @@ func NewBuilderForPolicies(username string, policies []*types.Policy,
 		}
 
 		return &rbacUser{
-			project:  p,
-			username: username,
-			policies: policies,
+			project:         p,
+			username:        username,
+			policies:        policies,
+			isAuthenticated: true,
 		}
 	}
 }

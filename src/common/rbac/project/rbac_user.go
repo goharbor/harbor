@@ -20,10 +20,11 @@ import (
 )
 
 type rbacUser struct {
-	project      *models.Project
-	username     string
-	projectRoles []int
-	policies     []*types.Policy
+	project         *models.Project
+	username        string
+	projectRoles    []int
+	policies        []*types.Policy
+	isAuthenticated bool
 }
 
 // GetUserName returns username of the visitor
@@ -36,6 +37,8 @@ func (pru *rbacUser) GetPolicies() []*types.Policy {
 	policies := pru.policies
 
 	if pru.project.IsPublic() {
+		policies = append(policies, getPoliciesForPublicProject(pru.project.ProjectID)...)
+	} else if pru.project.IsAuthOnly() && pru.isAuthenticated {
 		policies = append(policies, getPoliciesForPublicProject(pru.project.ProjectID)...)
 	}
 

@@ -42,9 +42,9 @@
                     }
                 </div>
             </div>
-            <clr-checkbox-container>
-                <label class="form-group-label-override"
-                    >{{ 'PROJECT.ACCESS_LEVEL' | translate }}
+            <div class="clr-form-control">
+                <label class="form-group-label-override clr-control-label">
+                    {{ 'PROJECT.ACCESS_LEVEL' | translate }}
                     <clr-tooltip>
                         <clr-icon
                             clrTooltipTrigger
@@ -60,16 +60,45 @@
                         </clr-tooltip-content>
                     </clr-tooltip>
                 </label>
-                <clr-checkbox-wrapper>
-                    <input
-                        clrCheckbox
-                        type="checkbox"
-                        id="create_project_public"
-                        [(ngModel)]="project.metadata.public"
-                        name="public" />
-                    <label>{{ 'PROJECT.PUBLIC' | translate }}</label>
-                </clr-checkbox-wrapper>
-            </clr-checkbox-container>
+                <div class="clr-control-container">
+                    <clr-radio-wrapper>
+                        <input
+                            type="radio"
+                            clrRadio
+                            id="create_project_private"
+                            name="public"
+                            [value]="'false'"
+                            [(ngModel)]="project.metadata.public" />
+                        <label for="create_project_private">{{
+                            'PROJECT.PRIVATE' | translate
+                        }}</label>
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input
+                            type="radio"
+                            clrRadio
+                            id="create_project_auth_only"
+                            name="public"
+                            [value]="'auth_only'"
+                            [(ngModel)]="project.metadata.public" />
+                        <label for="create_project_auth_only">{{
+                            'PROJECT.AUTH_ONLY' | translate
+                        }}</label>
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input
+                            type="radio"
+                            clrRadio
+                            id="create_project_public"
+                            name="public"
+                            [value]="'true'"
+                            [(ngModel)]="project.metadata.public" />
+                        <label for="create_project_public">{{
+                            'PROJECT.PUBLIC' | translate
+                        }}</label>
+                    </clr-radio-wrapper>
+                </div>
+            </div>
             @if (isSystemAdmin) {
             <div class="clr-form-control">
                 <label
