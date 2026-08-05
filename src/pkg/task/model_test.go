@@ -26,9 +26,6 @@ import (
 )
 
 func TestTaskFrom_LargeIDInExtraAttrs(t *testing.T) {
-	// 2^53 + 1: intentionally larger than the robot ID sequence cap (2^53 - 1);
-	// this verifies the decoder itself is lossless for any int64 in extra_attrs
-	// (e.g. execution/artifact IDs of other vendors), not that robot IDs can reach this value
 	largeID := int64(9007199254740993)
 	daoTask := &dao.Task{
 		ExtraAttrs: fmt.Sprintf(`{"robot_id": %d, "artifact_id": %d}`, largeID, largeID),
@@ -51,10 +48,10 @@ func TestTaskFrom_LargeIDInExtraAttrs(t *testing.T) {
 
 func TestInt64FromAny(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    any
-		wantVal  int64
-		wantOk   bool
+		name    string
+		input   any
+		wantVal int64
+		wantOk  bool
 	}{
 		{"int64", int64(12345), 12345, true},
 		{"int", int(12345), 12345, true},

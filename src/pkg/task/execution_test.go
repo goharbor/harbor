@@ -232,10 +232,9 @@ func (e *executionManagerTestSuite) TestGet() {
 }
 
 func (e *executionManagerTestSuite) TestGet_LargeIDInExtraAttrs() {
-	// 2^53 + 1: beyond float64's exact-integer range, verifies UseNumber decoding is lossless
+
 	largeID := int64(9007199254740993)
 	extraAttrsJSON := fmt.Sprintf(`{"project_ids": [%d]}`, largeID)
-
 	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
 		ID:         1,
 		Status:     job.SuccessStatus.String(),

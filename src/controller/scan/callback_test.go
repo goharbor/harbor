@@ -182,9 +182,6 @@ func (suite *CallbackTestSuite) makeExtraAttrs(artifactID, robotID int64) map[st
 }
 
 func TestGetRobotID_LargeID(t *testing.T) {
-	// 2^53 + 1, cannot be represented exactly in float64.
-	// The robot ID sequence is capped at 2^53 - 1, so this value is intentionally
-	// out of range for real robots; it verifies the extraction path is lossless for any int64
 	largeID := int64(9007199254740993)
 
 	b, _ := json.Marshal(map[string]any{robotIDKey: largeID, artifactIDKey: largeID})
