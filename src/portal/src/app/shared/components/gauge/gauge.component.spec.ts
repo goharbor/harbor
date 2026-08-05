@@ -22,7 +22,11 @@ import {
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 describe('GaugeComponent', () => {
     let component: GaugeComponent;
     let fixture: ComponentFixture<GaugeComponent>;
@@ -30,6 +34,7 @@ describe('GaugeComponent', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
+            declarations: [GaugeComponent],
             imports: [
                 BrowserAnimationsModule,
                 ClarityModule,
@@ -37,10 +42,12 @@ describe('GaugeComponent', () => {
                 FormsModule,
                 RouterTestingModule,
                 NoopAnimationsModule,
-                HttpClientTestingModule,
             ],
-            declarations: [GaugeComponent],
-            providers: [TranslateService],
+            providers: [
+                TranslateService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         }).compileComponents();
     });
 

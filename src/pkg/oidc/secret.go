@@ -16,6 +16,7 @@ package oidc
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -100,7 +101,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt secret from DB: %v", err)
 	}
-	if secret != plainSecret {
+	if subtle.ConstantTimeCompare([]byte(secret), []byte(plainSecret)) != 1 {
 		return nil, verifyError(fmt.Errorf("secret mismatch, username: %s", username))
 	}
 	tokenStr, err := utils.ReversibleDecrypt(oidcUser.Token, key)

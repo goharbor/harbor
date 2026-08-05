@@ -27,7 +27,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Sign With Admin
-    [tags]  admin
+    [Tags]  admin
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
@@ -74,6 +74,7 @@ Test Case - Push CNAB Bundle and Display
     Close Browser
 
 Test Case - Create An New Project
+    [Tags]  create_new_project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -81,12 +82,14 @@ Test Case - Create An New Project
     Close Browser
 
 Test Case - Delete A Project
+    [Tags]  delete_project
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Delete A Project Without Sign In Harbor
     Close Browser
 
 Test Case - Repo Size
+    [Tags]  repo_size
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -96,6 +99,7 @@ Test Case - Repo Size
     Close Browser
 
 Test Case - Staticsinfo
+    [Tags]  staticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -137,6 +141,7 @@ Test Case - Staticsinfo
     Close Browser
 
 Test Case - Push Image
+    [Tags]  push_image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -148,6 +153,7 @@ Test Case - Push Image
     Close Browser
 
 Test Case - Project Level Policy Public
+    [Tags]  project_level_policy_public
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -165,6 +171,7 @@ Test Case - Project Level Policy Public
     Close Browser
 
 Test Case - Verify Download Ca Link
+    [Tags]  verify_download_ca_link
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
@@ -172,6 +179,7 @@ Test Case - Verify Download Ca Link
     Close Browser
 
 Test Case - Edit Token Expire
+    [Tags]  edit_token_expire
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
@@ -187,6 +195,7 @@ Test Case - Edit Token Expire
     Close Browser
 
 Test Case - Create A New Labels
+    [Tags]  create_new_labels
     Init Chrome Driver
     ${d}=    Get Current Date
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -195,6 +204,7 @@ Test Case - Create A New Labels
     Close Browser
 
 Test Case - Update Label
+    [Tags]  update_label
    Init Chrome Driver
    ${d}=    Get Current Date
 
@@ -206,6 +216,7 @@ Test Case - Update Label
    Close Browser
 
 Test Case - Delete Label
+    [Tags]  delete_label
     Init Chrome Driver
     ${d}=    Get Current Date
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -215,6 +226,7 @@ Test Case - Delete Label
     Close Browser
 
 Test Case - User View Projects
+    [Tags]  user_view_projects
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user001  Test1@34
@@ -228,7 +240,7 @@ Test Case - User View Projects
     Close Browser
 
 Test Case - User View Logs
-    [tags]  user_view_logs
+    [Tags]  user_view_logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     ${img}=    Set Variable    kong
@@ -263,6 +275,7 @@ Test Case - User View Logs
     Close Browser
 
 Test Case - Manage Project Member
+    [Tags]  manage_project_member
     Init Chrome Driver
     ${user}=    Set Variable    user004
     ${pwd}=    Set Variable    Test1@34
@@ -271,9 +284,11 @@ Test Case - Manage Project Member
     Close Browser
 
 Test Case - Manage project publicity
+    [Tags]  manage_project_publicity
     Body Of Manage project publicity
 
 Test Case - Assign Sys Admin
+    [Tags]  assign_sys_admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user009  Test1@34
@@ -287,6 +302,7 @@ Test Case - Assign Sys Admin
     Close Browser
 
 Test Case - Edit Project Creation
+    [Tags]  edit_project_creation
     # Create normal user and login
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -307,6 +323,7 @@ Test Case - Edit Project Creation
     Close browser
 
 Test Case - Edit Repo Info
+    [Tags]  edit_repo_info
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
 
@@ -318,6 +335,7 @@ Test Case - Edit Repo Info
     Close Browser
 
 Test Case - Delete Multi Project
+    [Tags]  delete_multi_project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
 
@@ -341,6 +359,7 @@ Test Case - Delete Multi Project
     Close Browser
 
 Test Case - Delete Multi Repo
+    [Tags]  delete_multi_repo
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 
@@ -356,6 +375,7 @@ Test Case - Delete Multi Repo
     Close Browser
 
 Test Case - Delete Multi Artifacts
+    [Tags]  delete_multi_artifacts
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user014  Test1@34
@@ -370,6 +390,7 @@ Test Case - Delete Multi Artifacts
     Close Browser
 
 Test Case - Delete Repo on CardView
+    [Tags]  delete_repo_cardview
     Init Chrome Driver
     ${d}=   Get Current Date  result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user015  Test1@34
@@ -384,6 +405,7 @@ Test Case - Delete Repo on CardView
     Close Browser
 
 Test Case - Delete Multi Member
+    [Tags]  delete_multi_member
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user016  Test1@34
@@ -396,6 +418,7 @@ Test Case - Delete Multi Member
     Close Browser
 
 Test Case - Project Admin Operate Labels
+    [Tags]  project_admin_operate_labels
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user019  Test1@34
@@ -408,6 +431,7 @@ Test Case - Project Admin Operate Labels
     Close Browser
 
 Test Case - Project Admin Add Labels To Repo
+    [Tags]  project_admin_add_labels_repo
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user020  Test1@34
@@ -426,6 +450,7 @@ Test Case - Project Admin Add Labels To Repo
     Close Browser
 
 Test Case - Developer Operate Labels
+    [Tags]  developer_operate_labels
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 
@@ -442,6 +467,7 @@ Test Case - Developer Operate Labels
     Close Browser
 
 Test Case - Copy A Image
+    [Tags]  copy_image
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
     ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
@@ -501,6 +527,7 @@ Test Case - Copy A Image And Accessory
     Close Browser
 
 Test Case - Create An New Project With Quotas Set
+    [Tags]  create_project_with_quotas
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  600
@@ -512,6 +539,7 @@ Test Case - Create An New Project With Quotas Set
     Close Browser
 
 Test Case - Project Storage Quotas Dispaly And Control
+    [Tags]  project_storage_quotas_control
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  350
@@ -541,6 +569,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     Close Browser
 
 Test Case - Project Quotas Control Under Copy
+    [Tags]  project_quotas_control_copy
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${image_a}=  Set Variable  redis
@@ -564,6 +593,7 @@ Test Case - Project Quotas Control Under Copy
     Close Browser
 
 Test Case - Tag CRUD
+    [Tags]  tag_crud
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
@@ -579,6 +609,7 @@ Test Case - Tag CRUD
     Close Browser
 
 Test Case - Tag Retention
+    [Tags]  tag_retention
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
@@ -600,6 +631,7 @@ Test Case - Tag Retention
     Close Browser
 
 Test Case - Tag Immutability
+    [Tags]  tag_immutability
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=    Get Current Date    result_format=%m%s
@@ -622,7 +654,7 @@ Test Case - Tag Immutability
     Close Browser
 
 Test Case - Project Level Robot Account
-    [tags]  project_robot
+    [Tags]  project_robot
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -645,6 +677,7 @@ Test Case - Project Level Robot Account
     Close Browser
 
 Test Case - Push Docker Manifest Index and Display
+    [Tags]  push_manifest_index_display
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image_a}=  Set Variable  hello-world
@@ -675,6 +708,7 @@ Test Case - Push Docker Manifest Index and Display
     Close Browser
 
 Test Case - Can Not Copy Image In ReadOnly Mode
+    [Tags]  cannot_copy_image_readonly
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
     ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
@@ -695,6 +729,7 @@ Test Case - Can Not Copy Image In ReadOnly Mode
     Close Browser
 
 Test Case - Read Only Mode
+    [Tags]  readonly_mode
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

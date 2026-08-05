@@ -34,6 +34,7 @@ import { Repository } from '../../../../../ng-swagger-gen/models/repository';
     selector: 'summary',
     templateUrl: './summary.component.html',
     styleUrls: ['./summary.component.scss'],
+    standalone: false,
 })
 export class SummaryComponent implements OnInit {
     showProjectMemberInfo: boolean = false;

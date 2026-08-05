@@ -1,5 +1,8 @@
 // Variables for dark theme should be defined here.
-@import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
+// Clarity 18: @cds/core was merged into @clr/ui/styles; dark tokens live at
+// @clr/ui/styles/core/theme.dark.scss and are applied via [cds-theme~='dark']
+// on the body (set by ThemeService).
+@use "@clr/ui/styles/core/theme.dark";
 
 $mode-background-color: rgb(27 42 50);
 $mode-background-color1: $mode-background-color !important;
@@ -26,8 +29,8 @@ $header-color: hsl(198deg 100% 15%)!important;
 $color-yaml:  #253c46;
 $filter-divider-bg-color: #495865;
 /* stylelint-disable */
-$selectBox-option-hover-bg-color-start: #4aaed9;
-$selectBox-option-hover-bg-color-end: #0077b8;
+$select-box-option-hover-bg-color-start: #4aaed9;
+$select-box-option-hover-bg-color-end: #0077b8;
 $hbr-result-tip-histogram-inner-bg-color: #21333b;
 $harbor-icon-translate-x: 0;
 $harbor-icon-drop-shadow-x: 58px;
@@ -48,4 +51,50 @@ $normal-border-color: #acbac3;
 $text-color-job-service-dashboard: #49aeda;
 $datagrid-numeric-filter-input-bg-color: #21333b;
 $alert-info-bg-color: none;
-@import "./common.scss";
+@use "./common" with (
+  $mode-background-color: $mode-background-color,
+  $mode-background-color1: $mode-background-color1,
+  $mode-background-color2: $mode-background-color2,
+  $mode-background-color3: $mode-background-color3,
+  $mode-font-color1: $mode-font-color1,
+  $mode-font-color2: $mode-font-color2,
+  $mode-font-color3: $mode-font-color3,
+  $mode-font-color4: $mode-font-color4,
+  $mode-font-color5: $mode-font-color5,
+  $mode-link-color1: $mode-link-color1,
+  $mode-link-color2: $mode-link-color2,
+  $select-option-color: $select-option-color,
+  $select-back-color: $select-back-color,
+  $label-form-color: $label-form-color,
+  $fill-color1: $fill-color1,
+  $right-status-fill-color: $right-status-fill-color,
+  $light-color-green: $light-color-green,
+  $color-ddd: $color-ddd,
+  $color-f2: $color-f2,
+  $color-657b83: $color-657b83,
+  $color-fdf6e3: $color-fdf6e3,
+  $header-color: $header-color,
+  $color-yaml: $color-yaml,
+  $filter-divider-bg-color: $filter-divider-bg-color,
+  $select-box-option-hover-bg-color-start: $select-box-option-hover-bg-color-start,
+  $select-box-option-hover-bg-color-end: $select-box-option-hover-bg-color-end,
+  $hbr-result-tip-histogram-inner-bg-color: $hbr-result-tip-histogram-inner-bg-color,
+  $harbor-icon-translate-x: $harbor-icon-translate-x,
+  $harbor-icon-drop-shadow-x: $harbor-icon-drop-shadow-x,
+  $command-input-color: $command-input-color,
+  $command-input-bg-color: $command-input-bg-color,
+  $label-hover-bg-color: $label-hover-bg-color,
+  $nav-divider-bg-color: $nav-divider-bg-color,
+  $label-color-input: $label-color-input,
+  $central-block-loading-bg-color: $central-block-loading-bg-color,
+  $back-link-color: $back-link-color,
+  $radio-button-checked: $radio-button-checked,
+  $input-autofill-bg-color: $input-autofill-bg-color,
+  $input-autofill-color: $input-autofill-color,
+  $pull-command-icon-color: $pull-command-icon-color,
+  $pull-command-icon-hover-color: $pull-command-icon-hover-color,
+  $select-all-for-dropdown-color: $select-all-for-dropdown-color,
+  $normal-border-color: $normal-border-color,
+  $text-color-job-service-dashboard: $text-color-job-service-dashboard,
+  $datagrid-numeric-filter-input-bg-color: $datagrid-numeric-filter-input-bg-color
+);

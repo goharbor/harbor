@@ -105,9 +105,12 @@ func (p *providerHelper) create(ctx context.Context) error {
 
 var provider = &providerHelper{}
 
+// Used only when an admin disables OIDC certificate verification.
+// The default path verifies certificates; this fallback still requires TLS 1.2+.
 var insecureTransport = &http.Transport{
 	TLSClientConfig: &tls.Config{
-		InsecureSkipVerify: true,
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true, // nolint:gosec // G402: gated by admin-controlled OIDCSetting.VerifyCert
 	},
 	Proxy: http.ProxyFromEnvironment,
 }

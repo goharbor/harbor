@@ -29,6 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
     selector: 'app-pull-command',
     templateUrl: './pull-command.component.html',
     styleUrls: ['./pull-command.component.scss'],
+    standalone: false,
 })
 export class PullCommandComponent {
     @Input()

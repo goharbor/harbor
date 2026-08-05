@@ -1,10 +1,13 @@
 <div class="row flex-items-xs-between values-header">
-    <div *ngIf="valueMode" class="title-container">
+    @if (valueMode) {
+    <div class="title-container">
         <label>{{ 'ARTIFACT.SHOW_KV' | translate }}</label>
     </div>
-    <div *ngIf="!valueMode" class="title-container">
+    } @if (!valueMode) {
+    <div class="title-container">
         <label>{{ 'ARTIFACT.SHOW_YAML' | translate }}</label>
     </div>
+    }
     <div class="switch-container">
         <span
             class="card-btn"
@@ -35,23 +38,31 @@
     </div>
 </div>
 
-<div class="row value-container" *ngIf="!loading">
-    <div class="col-xs-8" *ngIf="valueMode">
+@if (!loading) {
+<div class="row value-container">
+    @if (valueMode) {
+    <div class="col-xs-8">
         <table class="table">
             <tbody>
-                <tr *ngFor="let item of valuesObj | keyvalue">
+                @for (item of valuesObj | keyvalue; track item) {
+                <tr>
                     <td class="left">{{ item?.key }}</td>
                     <td class="left">{{ item?.value }}</td>
                 </tr>
+                }
             </tbody>
         </table>
     </div>
-    <div class="col-xs-8" *ngIf="!valueMode">
+    } @if (!valueMode) {
+    <div class="col-xs-8">
         <div
             class="yaml-container"
-            [innerHTML]="values | language : 'yaml' | markdown"></div>
+            [innerHTML]="values | language : 'yaml' | markdown | async"></div>
     </div>
+    }
 </div>
-<div *ngIf="loading" class="clr-row mt-1 center">
+} @if (loading) {
+<div class="clr-row mt-1 center">
     <span class="spinner spinner-md"></span>
 </div>
+}

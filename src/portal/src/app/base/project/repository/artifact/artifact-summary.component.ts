@@ -28,8 +28,8 @@ import {
     selector: 'artifact-summary',
     templateUrl: './artifact-summary.component.html',
     styleUrls: ['./artifact-summary.component.scss'],
-
     providers: [],
+    standalone: false,
 })
 export class ArtifactSummaryComponent implements OnInit {
     tagId: string;

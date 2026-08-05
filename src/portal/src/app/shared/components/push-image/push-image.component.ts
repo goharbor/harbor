@@ -19,8 +19,8 @@ import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
     selector: 'hbr-push-image-button',
     templateUrl: './push-image.component.html',
     styleUrls: ['./push-image.scss'],
-
     providers: [],
+    standalone: false,
 })
 export class PushImageButtonComponent {
     @Input() registryUrl: string = 'unknown';

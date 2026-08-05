@@ -44,6 +44,7 @@ const MAX_RETENTION_DAYS: number = 10000;
     selector: 'app-set-job',
     templateUrl: './set-job.component.html',
     styleUrls: ['./set-job.component.scss'],
+    standalone: false,
 })
 export class SetJobComponent implements OnInit, OnDestroy {
     originCron: OriginCron;

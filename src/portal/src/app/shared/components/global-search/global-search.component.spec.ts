@@ -82,7 +82,8 @@ describe('GlobalSearchComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should trigger search', fakeAsync(async () => {
-        const service: SearchTriggerService = TestBed.get(SearchTriggerService);
+        const service: SearchTriggerService =
+            TestBed.inject(SearchTriggerService);
         const spy: jasmine.Spy = spyOn(
             service,
             'triggerSearch'

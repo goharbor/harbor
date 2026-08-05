@@ -19,9 +19,8 @@
     <div class="clr-control-label">
         {{ 'SCANNER.CAPABILITIES' | translate }}
     </div>
-    <div
-        class="ml-1"
-        *ngFor="let item of scannerMetadata?.capabilities; let i = index">
+    @for (item of scannerMetadata?.capabilities; track item; let i = $index) {
+    <div class="ml-1">
         {{ i }}:
         <div class="ml-1">
             <span>{{ 'SCANNER.CONSUMES_MIME_TYPES_COLON' | translate }}</span>
@@ -43,7 +42,8 @@
                     )
                 "></span>
         </div>
-        <div class="ml-1" *ngIf="scannerMetadata?.capabilities[i]?.type">
+        @if (scannerMetadata?.capabilities[i]?.type) {
+        <div class="ml-1">
             <span>{{ 'SCANNER.CAPABILITIES_TYPE' | translate }}</span>
             <span class="ml-1">
                 {{
@@ -57,12 +57,14 @@
                 }}
             </span>
         </div>
+        }
     </div>
+    }
     <div class="clr-control-label">{{ 'SCANNER.PROPERTIES' | translate }}</div>
-    <div
-        class="ml-1"
-        *ngFor="let item of scannerMetadata?.properties | keyvalue">
+    @for (item of scannerMetadata?.properties | keyvalue; track item) {
+    <div class="ml-1">
         <span>{{ item?.key }}:</span>
         <span class="ml-1">{{ parseDate(item) }}</span>
     </div>
+    }
 </div>

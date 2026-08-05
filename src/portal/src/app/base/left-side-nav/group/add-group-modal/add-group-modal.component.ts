@@ -31,6 +31,7 @@ import { UsergroupService } from '../../../../../../ng-swagger-gen/services/user
     selector: 'hbr-add-group-modal',
     templateUrl: './add-group-modal.component.html',
     styleUrls: ['./add-group-modal.component.scss'],
+    standalone: false,
 })
 export class AddGroupModalComponent implements OnInit {
     opened = false;

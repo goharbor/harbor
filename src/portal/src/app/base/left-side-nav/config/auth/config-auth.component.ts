@@ -31,6 +31,7 @@ import { ConfigService } from '../config.service';
     selector: 'config-auth',
     templateUrl: 'config-auth.component.html',
     styleUrls: ['./config-auth.component.scss', '../config.component.scss'],
+    standalone: false,
 })
 export class ConfigurationAuthComponent implements OnInit {
     testingOnGoing = false;

@@ -239,14 +239,17 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 		if params.Registry.Type != nil {
 			registry.Type = *params.Registry.Type
 		}
-		if params.Registry.URL != nil {
+		// for an existing registry (referenced by id) its saved connection settings are
+		// authoritative; ignore url/insecure/ca overrides so the ping (and the saved
+		// credentials it sends) can't be redirected to or MITM'd via an untrusted endpoint
+		if params.Registry.URL != nil && params.Registry.ID == nil {
 			url, err := lib.ValidateHTTPURL(*params.Registry.URL)
 			if err != nil {
 				return r.SendError(ctx, err)
 			}
 			registry.URL = url
 		}
-		if params.Registry.Insecure != nil {
+		if params.Registry.Insecure != nil && params.Registry.ID == nil {
 			registry.Insecure = *params.Registry.Insecure
 		}
 		if params.Registry.CredentialType != nil {
@@ -267,7 +270,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 			}
 			registry.Credential.AccessSecret = *params.Registry.AccessSecret
 		}
-		if params.Registry.CaCertificate != nil {
+		if params.Registry.CaCertificate != nil && params.Registry.ID == nil {
 			if err := commonhttp.ValidateCACertificate(*params.Registry.CaCertificate); err != nil {
 				return r.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error()))
 			}

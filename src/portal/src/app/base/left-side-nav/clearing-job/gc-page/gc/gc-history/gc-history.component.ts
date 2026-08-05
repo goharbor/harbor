@@ -48,6 +48,7 @@ import {
     selector: 'gc-history',
     templateUrl: './gc-history.component.html',
     styleUrls: ['./gc-history.component.scss'],
+    standalone: false,
 })
 export class GcHistoryComponent implements OnInit, OnDestroy {
     jobs: Array<GCHistory> = [];

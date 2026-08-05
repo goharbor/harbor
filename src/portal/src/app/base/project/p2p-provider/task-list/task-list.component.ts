@@ -47,6 +47,7 @@ import {
     selector: 'task-list',
     templateUrl: './task-list.component.html',
     styleUrls: ['./task-list.component.scss'],
+    standalone: false,
 })
 export class TaskListComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

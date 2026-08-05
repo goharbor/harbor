@@ -13,7 +13,14 @@
 // limitations under the License.
 import { debounceTime, finalize, switchMap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { Project } from '../../project';
@@ -72,6 +79,8 @@ const URL_TO_DISPLAY: RegExp =
 @Component({
     templateUrl: './policy.component.html',
     styleUrls: ['./policy.component.scss'],
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PolicyComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
@@ -130,7 +139,8 @@ export class PolicyComponent implements OnInit, OnDestroy {
         private preheatService: PreheatService,
         private event: EventService,
         private scheduleService: ScheduleService,
-        private skipSessionRenewalService: SkipSessionRenewalService
+        private skipSessionRenewalService: SkipSessionRenewalService,
+        private cdr: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -140,6 +150,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
             })
             .subscribe(res => {
                 this.paused = res?.paused;
+                this.cdr.markForCheck();
             });
         if (!this.scrollSub) {
             this.scrollSub = this.event.subscribe(HarborEvent.SCROLL, v => {
@@ -224,6 +235,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     this.hasDeletePermission,
                 ] = Rules;
                 this.addBtnState = ClrLoadingState.SUCCESS;
+                this.cdr.markForCheck();
                 if (this.hasCreatPermission) {
                     this.getProviders();
                 }
@@ -231,6 +243,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
             error => {
                 this.messageHandlerService.error(error);
                 this.addBtnState = ClrLoadingState.ERROR;
+                this.cdr.markForCheck();
             }
         );
     }
@@ -244,6 +257,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                         return provider.enabled;
                     });
                 }
+                this.cdr.markForCheck();
             });
     }
 
@@ -287,7 +301,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 page: this.policyPage,
                 pageSize: this.policyPageSize,
             })
-            .pipe(finalize(() => (this.loading = false)))
+            .pipe(
+                finalize(() => {
+                    this.loading = false;
+                    this.cdr.markForCheck();
+                })
+            )
             .subscribe(
                 response => {
                     // Get total count
@@ -349,7 +368,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     executionId: this.selectedExecutionRow.id,
                     execution: execution,
                 })
-                .pipe(finalize(() => (this.executing = false)))
+                .pipe(
+                    finalize(() => {
+                        this.executing = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.messageHandlerService.showSuccess(
@@ -373,7 +397,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     preheatPolicyName: this.selectedRow.name,
                     policy: this.selectedRow,
                 })
-                .pipe(finalize(() => (this.executing = false)))
+                .pipe(
+                    finalize(() => {
+                        this.executing = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.messageHandlerService.showSuccess(
@@ -411,6 +440,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                         },
                         error => {
                             this.messageHandlerService.handleError(error);
+                            this.cdr.markForCheck();
                         }
                     );
             }
@@ -436,6 +466,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 },
                 error => {
                     this.messageHandlerService.handleError(error);
+                    this.cdr.markForCheck();
                 }
             );
         }
@@ -594,6 +625,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                 // if datagrid is under control of *ngIf, should add timeout in case of ng changes checking error
                 setTimeout(() => {
                     this.jobsLoading = true;
+                    this.cdr.markForCheck();
                 });
             }
             let params: string;
@@ -613,7 +645,12 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     q: params,
                 })
                 .pipe(skipSessionRenewal(this.skipSessionRenewalService))
-                .pipe(finalize(() => (this.jobsLoading = false)))
+                .pipe(
+                    finalize(() => {
+                        this.jobsLoading = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         if (response.headers) {
@@ -639,6 +676,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
         this.totalExecutionCount = 0;
         this.filterKey = 'id';
         this.searchString = null;
+        this.cdr.markForCheck();
         this.clrLoadJobs(chosenPolicy, true);
     }
 
@@ -777,6 +815,7 @@ export class PolicyComponent implements OnInit, OnDestroy {
                     }
                     this.executionList = response.body;
                     this.setLoop();
+                    this.cdr.markForCheck();
                 });
         }
     }

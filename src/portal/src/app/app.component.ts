@@ -40,6 +40,7 @@ import { SessionService } from './shared/services/session.service';
 @Component({
     selector: 'harbor-app',
     templateUrl: 'app.component.html',
+    standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);

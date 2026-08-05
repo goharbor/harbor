@@ -11,18 +11,17 @@
         }"
         [style.max-width.px]="labelWidth">
         <span>
-            <clr-icon
-                *ngIf="hasIcon && label.scope === 'p'"
-                shape="organization"></clr-icon>
-            <clr-icon
-                *ngIf="hasIcon && label.scope === 'g'"
-                shape="administrator"></clr-icon>
+            @if (hasIcon && label.scope === 'p') {
+            <clr-icon shape="organization"></clr-icon>
+            } @if (hasIcon && label.scope === 'g') {
+            <clr-icon shape="administrator"></clr-icon>
+            }
         </span>
         <span class="label-name">{{ label.name }}</span>
     </label>
-    <clr-tooltip-content
-        [clrPosition]="'right'"
-        *ngIf="withTooltip && label.description">
+    @if (withTooltip && label.description) {
+    <clr-tooltip-content [clrPosition]="'right'">
         <span>{{ label.description }}</span>
     </clr-tooltip-content>
+    }
 </clr-tooltip>

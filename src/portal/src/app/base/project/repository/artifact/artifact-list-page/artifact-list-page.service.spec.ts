@@ -86,6 +86,19 @@ describe('ArtifactListPageService', () => {
             expect(service.hasScannerSupportSBOM()).toBeTruthy();
         }
     ));
+    it('Test ArtifactListPageService SBOM permission denied', inject(
+        [ArtifactListPageService, UserPermissionService],
+        (
+            service: ArtifactListPageService,
+            permissionService: UserPermissionService
+        ) => {
+            spyOn(permissionService, 'hasProjectPermissions').and.returnValue(
+                of([true, true, true, true, false])
+            );
+            service.init(3);
+            expect(service.hasSbomPermission()).toBeFalsy();
+        }
+    ));
     it('Test ArtifactListPageService updateStates', inject(
         [ArtifactListPageService],
         (service: ArtifactListPageService) => {

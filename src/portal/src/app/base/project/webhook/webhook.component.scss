@@ -4,11 +4,14 @@
 
 .icon-wrap {
     height: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .webhook-form-wrap {
     width: 19rem;
-    margin: 0 ;
+    margin: 0;
 }
 
 .create-text {
@@ -61,7 +64,7 @@
 }
 
 .min-width-340 {
-    min-width: 340px!important;
+    min-width: 340px !important;
 }
 
 .margin-left-10 {
@@ -70,10 +73,6 @@
 
 .event-types {
     padding-right: 14px;
-}
-
-.bar-state {
-    width: 100%;
 }
 
 .label-flex {
@@ -85,7 +84,7 @@
     overflow: hidden;
     border: 1px solid;
     border-radius: 9px;
-    padding: 0 7px 0 10px;
+    padding: 0 1rem;
     text-align: center;
 }
 
@@ -96,8 +95,8 @@
     margin-top: -0.4rem;
 }
 
-.width-120 {
-    width: 120px;
+.width-140 {
+    width: 140px;
 }
 
 .refresh-btn {
@@ -105,5 +104,5 @@
 }
 
 .refresh-btn:hover {
-    color: #007CBB;
+    color: #007cbb;
 }

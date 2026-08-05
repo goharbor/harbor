@@ -48,6 +48,7 @@ import { AuditLogEventType } from 'ng-swagger-gen/models';
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
     styleUrls: ['./system-settings.component.scss'],
+    standalone: false,
 })
 export class SystemSettingsComponent
     implements OnInit, OnDestroy, AfterViewChecked

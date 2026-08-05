@@ -183,22 +183,30 @@ describe('PolicyComponent', () => {
     beforeEach(async () => {
         fixture = TestBed.createComponent(PolicyComponent);
         component = fixture.componentInstance;
-        fixture.autoDetectChanges(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
+    });
+
+    afterEach(() => {
+        fixture.destroy();
     });
 
     it('should create', async () => {
         expect(component).toBeTruthy();
     });
     it('should get policy list', async () => {
+        fixture.detectChanges();
         await fixture.whenStable();
         const rows = fixture.nativeElement.getElementsByTagName('clr-dg-row');
         expect(rows.length).toEqual(2);
     });
     it('should open modal and is add model', async () => {
+        fixture.detectChanges();
         await fixture.whenStable();
         const addButton: HTMLButtonElement =
             fixture.nativeElement.querySelector('#new-policy');
         addButton.click();
+        fixture.detectChanges();
         await fixture.whenStable();
         const modalBody: HTMLDivElement =
             fixture.nativeElement.querySelector('.modal-body');
@@ -214,15 +222,13 @@ describe('PolicyComponent', () => {
             fixture.nativeElement.querySelector('#action-policy');
         action.click();
         await fixture.whenStable();
-        const edit: HTMLSpanElement =
-            fixture.nativeElement.querySelector('#edit-policy');
+        const edit = document.querySelector<HTMLElement>('#edit-policy');
         edit.click();
+        fixture.detectChanges();
         await fixture.whenStable();
-        const modalBody: HTMLDivElement =
-            fixture.nativeElement.querySelector('.modal-body');
+        const modalBody = document.querySelector<HTMLDivElement>('.modal-body');
         expect(modalBody).toBeTruthy();
-        const nameInput: HTMLInputElement =
-            fixture.nativeElement.querySelector('#name');
+        const nameInput = document.querySelector<HTMLInputElement>('#name');
         expect(nameInput.value).toEqual('policy1');
     });
 });

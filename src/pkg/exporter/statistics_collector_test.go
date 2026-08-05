@@ -14,13 +14,13 @@ type StatisticsCollectorTestSuite struct {
 func (c *StatisticsCollectorTestSuite) TestStatisticsCollector() {
 	metrics := c.collector.getStatistics()
 	c.Equalf(7, len(metrics), "statistics collector should return %d metrics", 7)
-	c.testGaugeMetric(metrics[0], 2, "total repo amount mismatch")     // total repo amount
-	c.testGaugeMetric(metrics[1], 1, "public repo amount mismatch")    // only one project is public so its single repo is public too
-	c.testGaugeMetric(metrics[2], 1, "primate repo amount mismatch")   //
-	c.testGaugeMetric(metrics[3], 3, "total project amount mismatch")  // including library, project by default
-	c.testGaugeMetric(metrics[4], 2, "public project amount mismatch") // including library, project by default
-	c.testGaugeMetric(metrics[5], 1, "private project amount mismatch")
-	c.testGaugeMetric(metrics[6], 0, "total storage usage mismatch") // still zero
+	c.testGaugeMetric(metrics[0], 2, "total repo amount mismatch")      // total repo amount (test3 has no repos)
+	c.testGaugeMetric(metrics[1], 1, "public repo amount mismatch")     // only one project is public so its single repo is public too
+	c.testGaugeMetric(metrics[2], 1, "primate repo amount mismatch")    //
+	c.testGaugeMetric(metrics[3], 4, "total project amount mismatch")   // library + test1 (public) + test2/test3 (private)
+	c.testGaugeMetric(metrics[4], 2, "public project amount mismatch")  // library + test1
+	c.testGaugeMetric(metrics[5], 2, "private project amount mismatch") // test2 + test3
+	c.testGaugeMetric(metrics[6], 0, "total storage usage mismatch")    // still zero
 }
 
 func (c *StatisticsCollectorTestSuite) getMetricDTO(m prometheus.Metric) *dto.Metric {

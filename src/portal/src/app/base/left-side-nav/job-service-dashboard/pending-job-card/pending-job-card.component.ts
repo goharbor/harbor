@@ -44,6 +44,7 @@ import {
     selector: 'app-pending-job-card',
     templateUrl: './pending-job-card.component.html',
     styleUrls: ['./pending-job-card.component.scss'],
+    standalone: false,
 })
 export class PendingCardComponent implements OnInit, OnDestroy {
     loading: boolean = false;

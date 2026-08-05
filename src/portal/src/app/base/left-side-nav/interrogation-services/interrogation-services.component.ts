@@ -17,6 +17,7 @@ import { Component } from '@angular/core';
     selector: 'app-interrogation-services',
     templateUrl: './interrogation-services.component.html',
     styleUrls: ['./interrogation-services.component.scss'],
+    standalone: false,
 })
 export class InterrogationServicesComponent {
     constructor() {}

@@ -2,6 +2,7 @@
     {{ 'GC.JOB_HISTORY' | translate }}
 </h5>
 <clr-datagrid
+    clrDgSelectionType="multi"
     [(clrDgSelected)]="selectedRow"
     [clrDgLoading]="loading"
     (clrDgRefresh)="getJobs(true, $event)">
@@ -37,7 +38,8 @@
     <clr-dg-placeholder>{{
         'CLEARANCES.NO_GC_RECORDS' | translate
     }}</clr-dg-placeholder>
-    <clr-dg-row *ngFor="let job of jobs" [clrDgItem]="job">
+    @for (job of jobs; track job) {
+    <clr-dg-row [clrDgItem]="job">
         <clr-dg-cell>{{ job.id }}</clr-dg-cell>
         <clr-dg-cell>{{
             (job.schedule?.type
@@ -52,26 +54,28 @@
             job.job_status.toUpperCase() | translate
         }}</clr-dg-cell>
         <clr-dg-cell>
-            <ng-container *ngIf="shouldShowDetails(job?.job_status)">
-                <span *ngIf="isDryRun(job?.job_parameters) === NO">{{
-                    'GC.DELETE_DETAIL'
-                        | translate
-                            : {
-                                  blob: getBlobs(job?.job_parameters),
-                                  manifest: getManifest(job?.job_parameters),
-                                  size: getSize(job?.job_parameters)
-                              }
-                }}</span>
-                <span *ngIf="isDryRun(job?.job_parameters) === YES">{{
-                    'GC.DELETE_DETAIL_DRY_RUN'
-                        | translate
-                            : {
-                                  blob: getBlobs(job?.job_parameters),
-                                  manifest: getManifest(job?.job_parameters),
-                                  size: getSize(job?.job_parameters)
-                              }
-                }}</span>
-            </ng-container>
+            @if (shouldShowDetails(job?.job_status)) { @if
+            (isDryRun(job?.job_parameters) === NO) {
+            <span>{{
+                'GC.DELETE_DETAIL'
+                    | translate
+                        : {
+                              blob: getBlobs(job?.job_parameters),
+                              manifest: getManifest(job?.job_parameters),
+                              size: getSize(job?.job_parameters)
+                          }
+            }}</span>
+            } @if (isDryRun(job?.job_parameters) === YES) {
+            <span>{{
+                'GC.DELETE_DETAIL_DRY_RUN'
+                    | translate
+                        : {
+                              blob: getBlobs(job?.job_parameters),
+                              manifest: getManifest(job?.job_parameters),
+                              size: getSize(job?.job_parameters)
+                          }
+            }}</span>
+            } }
         </clr-dg-cell>
         <clr-dg-cell>{{
             job.creation_time | harborDatetime : 'medium'
@@ -88,6 +92,7 @@
             </a>
         </clr-dg-cell>
     </clr-dg-row>
+    }
     <clr-dg-footer>
         <clr-dg-pagination
             #pagination
@@ -97,10 +102,12 @@
             <clr-dg-page-size [clrPageSizeOptions]="[5, 25, 50]">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
-            <span *ngIf="total"
+            @if (total) {
+            <span
                 >{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}
                 {{ 'DESTINATION.OF' | translate }}</span
             >
+            }
             {{ total }} {{ 'DESTINATION.ITEMS' | translate }}
         </clr-dg-pagination>
     </clr-dg-footer>

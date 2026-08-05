@@ -28,6 +28,7 @@ import { Project } from 'ng-swagger-gen/models/project';
     selector: 'hbr-image-name-input',
     templateUrl: './image-name-input.component.html',
     styleUrls: ['./image-name-input.component.scss'],
+    standalone: false,
 })
 export class ImageNameInputComponent implements OnInit, OnDestroy {
     selectedProjectList: Project[] = [];

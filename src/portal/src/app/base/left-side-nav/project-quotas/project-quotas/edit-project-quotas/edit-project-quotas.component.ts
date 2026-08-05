@@ -37,6 +37,7 @@ import { distinctUntilChanged } from 'rxjs/operators';
     selector: 'edit-project-quotas',
     templateUrl: './edit-project-quotas.component.html',
     styleUrls: ['./edit-project-quotas.component.scss'],
+    standalone: false,
 })
 export class EditProjectQuotasComponent {
     openEditQuota: boolean;

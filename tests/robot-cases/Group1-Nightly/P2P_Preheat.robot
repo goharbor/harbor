@@ -23,6 +23,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Distribution CRUD
+    [Tags]  p2p_preheat_distribution_crud  need_distribution_endpoint
     ${d}=    Get Current Date    result_format=%m%s
     ${name}=  Set Variable  distribution${d}
     ${endpoint}=  Set Variable  https://32.1.1.2
@@ -35,6 +36,7 @@ Test Case - Distribution CRUD
     Close Browser
 
 Test Case - P2P Preheat Policy CRUD
+    [Tags]  p2p_preheat_policy_crud  need_distribution_endpoint
     ${d}=    Get Current Date    result_format=%m%s
     ${project_name}=  Set Variable  project_p2p${d}
     ${dist_name}=  Set Variable  distribution${d}
