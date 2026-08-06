@@ -172,6 +172,7 @@ func OIDCSetting(ctx context.Context) (*cfgModels.OIDCSetting, error) {
 		ClientSecret:       mgr.Get(ctx, common.OIDCClientSecret).GetString(),
 		GroupsClaim:        mgr.Get(ctx, common.OIDCGroupsClaim).GetString(),
 		GroupFilter:        mgr.Get(ctx, common.OIDCGroupFilter).GetString(),
+		LoginGroups:        mgr.Get(ctx, common.OIDCLoginGroups).GetString(),
 		AdminGroup:         mgr.Get(ctx, common.OIDCAdminGroup).GetString(),
 		RedirectURL:        extEndpoint + common.OIDCCallbackPath,
 		Scope:              scope,
