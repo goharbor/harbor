@@ -7229,6 +7229,10 @@ definitions:
         type: boolean
         description: deprecated, reserved for project creation in replication
         x-nullable: true
+      visibility:
+        type: string
+        enum: [public, internal, private]
+        description: 'The visibility of the project: public (anyone can pull), internal (any authenticated user can pull) or private (members only). Convenience alias for metadata.public ("true"/"auth_only"/"false"); when both are supplied they must agree.'
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'

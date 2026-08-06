@@ -146,6 +146,12 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata = &models.ProjectMetadata{}
 	}
 
+	// the request-level visibility is an alias for metadata.public; resolve it
+	// first so the legacy handling below applies only when neither was given
+	if err := resolveVisibility(req.Visibility, req.Metadata); err != nil {
+		return a.SendError(ctx, err)
+	}
+
 	// accept the "public" property to make replication work well with old versions(<=1.2.0)
 	if req.Public != nil && req.Metadata.Public == "" {
 		req.Metadata.Public = strconv.FormatBool(*req.Public)
@@ -621,6 +627,33 @@ func normalizeVisibilityKeyword(query *q.Query) error {
 	return nil
 }
 
+// resolveVisibility translates the request-level visibility value (public,
+// internal or private) into the stored metadata.public encoding ("true",
+// "auth_only", "false"). It rejects unknown values and an explicitly
+// provided metadata.public that contradicts the requested visibility; a
+// consistent duplicate is accepted silently.
+func resolveVisibility(visibility string, md *models.ProjectMetadata) error {
+	if visibility == "" {
+		return nil
+	}
+	var public string
+	switch visibility {
+	case pkgModels.ProjectPublic:
+		public = "true"
+	case pkgModels.ProjectVisibilityInternal:
+		public = pkgModels.ProjectAuthOnly
+	case pkgModels.ProjectPrivate:
+		public = "false"
+	default:
+		return errors.BadRequestError(nil).WithMessagef("visibility should be one of 'public', 'internal' or 'private', but got: '%s'", visibility)
+	}
+	if md.Public != "" && md.Public != public {
+		return errors.BadRequestError(nil).WithMessagef("conflicting 'visibility' and 'metadata.public' values: '%s' vs '%s'", visibility, md.Public)
+	}
+	md.Public = public
+	return nil
+}
+
 func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateProjectParams) middleware.Responder {
 	projectNameOrID := parseProjectNameOrID(params.ProjectNameOrID, params.XIsResourceName)
 	if err := a.RequireProjectAccess(ctx, projectNameOrID, rbac.ActionUpdate); err != nil {
@@ -656,6 +689,16 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
+	}
+
+	// the request-level visibility is an alias for metadata.public
+	if params.Project.Visibility != "" {
+		if params.Project.Metadata == nil {
+			params.Project.Metadata = &models.ProjectMetadata{}
+		}
+		if err := resolveVisibility(params.Project.Visibility, params.Project.Metadata); err != nil {
+			return a.SendError(ctx, err)
+		}
 	}
 
 	// validate metadata.public value when provided

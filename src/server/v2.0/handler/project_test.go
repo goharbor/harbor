@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	svrmodels "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
@@ -210,4 +211,43 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 
 func TestProjectTestSuite(t *testing.T) {
 	suite.Run(t, &ProjectTestSuite{})
+}
+
+// TestResolveVisibility covers the translation of the request-level
+// visibility alias into the stored metadata.public encoding.
+func TestResolveVisibility(t *testing.T) {
+	cases := []struct {
+		name       string
+		visibility string
+		public     string
+		wantPublic string
+		wantErr    bool
+	}{
+		{"empty visibility is a no-op", "", "auth_only", "auth_only", false},
+		{"public translates", "public", "", "true", false},
+		{"internal translates", "internal", "", "auth_only", false},
+		{"private translates", "private", "", "false", false},
+		{"consistent duplicate accepted", "internal", "auth_only", "auth_only", false},
+		{"contradiction rejected", "public", "false", "", true},
+		{"unknown value rejected", "auth_only", "", "", true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			md := &svrmodels.ProjectMetadata{Public: tc.public}
+			err := resolveVisibility(tc.visibility, md)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("expected an error, got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if md.Public != tc.wantPublic {
+				t.Fatalf("metadata.public = %q, want %q", md.Public, tc.wantPublic)
+			}
+		})
+	}
 }
