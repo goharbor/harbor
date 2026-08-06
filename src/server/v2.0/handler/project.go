@@ -517,8 +517,12 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 			}
 		}
 	} else {
-		if params.Public != nil && !*params.Public {
-			// anonymous want to query private projects return empty projects directly
+		// anonymous can only ever see strictly public projects, so any other
+		// visibility filter (public=false via the typed param or the q string,
+		// q=public=auth_only) has an empty visible intersection. The typed
+		// params.Public is already copied into the keywords above, so a single
+		// keyword check covers both paths.
+		if public, ok := query.Keywords["public"]; ok && !lib.ToBool(public) {
 			return operation.NewListProjectsOK().WithXTotalCount(0).WithPayload([]*models.Project{})
 		}
 		// force to return public projects for anonymous

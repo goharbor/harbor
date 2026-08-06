@@ -253,6 +253,28 @@ func TestListProjects_Anonymous(t *testing.T) {
 		mockCtl.AssertNotCalled(t, "List", mock.Anything, mock.Anything)
 	})
 
+	t.Run("q=public=false returns empty without querying", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		resp := a.ListProjects(context.Background(), operation.ListProjectsParams{Q: strPtr("public=false")})
+		require.NotNil(t, resp)
+
+		mockCtl.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
+		mockCtl.AssertNotCalled(t, "List", mock.Anything, mock.Anything)
+	})
+
+	t.Run("q=public=auth_only returns empty without querying", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		resp := a.ListProjects(context.Background(), operation.ListProjectsParams{Q: strPtr("public=auth_only")})
+		require.NotNil(t, resp)
+
+		mockCtl.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
+		mockCtl.AssertNotCalled(t, "List", mock.Anything, mock.Anything)
+	})
+
 	t.Run("no filter forces public=true", func(t *testing.T) {
 		mockCtl := &projecttesting.Controller{}
 		a := &projectAPI{projectCtl: mockCtl}
