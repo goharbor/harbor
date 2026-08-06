@@ -7293,6 +7293,10 @@ definitions:
       cve_allowlist:
         description: The CVE allowlist of this project.
         $ref: '#/definitions/CVEAllowlist'
+      visibility:
+        type: string
+        enum: [public, internal, private]
+        description: 'The visibility of the project, computed from metadata.public: "true" maps to public, "auth_only" to internal, "false" to private. Read-only; use the visibility field of the request body or metadata.public to change it.'
   ProjectDeletable:
     type: object
     properties:

@@ -73,6 +73,7 @@ func (p *Project) ToSwagger() *models.Project {
 		RegistryID:         p.RegistryID,
 		RepoCount:          p.RepoCount,
 		UpdateTime:         strfmt.DateTime(p.UpdateTime),
+		Visibility:         p.Visibility(),
 	}
 }
 

@@ -35,6 +35,8 @@ const (
 	ProjectPrivate = "private"
 	// ProjectAuthOnly means project is accessible to any authenticated user
 	ProjectAuthOnly = "auth_only"
+	// ProjectVisibilityInternal is the visibility name of an auth_only project
+	ProjectVisibilityInternal = "internal"
 )
 
 func init() {
@@ -99,6 +101,25 @@ func (p *Project) IsAuthOnly() bool {
 		return false
 	}
 	return public == ProjectAuthOnly
+}
+
+// Visibility returns the project visibility name derived from the "public"
+// metadata: "public", "internal" (auth_only) or "private". It returns ""
+// when the metadata is not loaded, so callers can distinguish "unknown"
+// from "private".
+func (p *Project) Visibility() string {
+	public, exist := p.GetMetadata(ProMetaPublic)
+	if !exist {
+		return ""
+	}
+	switch {
+	case isTrue(public):
+		return ProjectPublic
+	case public == ProjectAuthOnly:
+		return ProjectVisibilityInternal
+	default:
+		return ProjectPrivate
+	}
 }
 
 // IsProxy returns true when the project type is proxy cache

@@ -45,6 +45,29 @@ func TestIsAuthOnly(t *testing.T) {
 	assert.False(t, p.IsAuthOnly())
 }
 
+func TestVisibility(t *testing.T) {
+	cases := []struct {
+		name     string
+		metadata map[string]string
+		want     string
+	}{
+		{"public", map[string]string{"public": "true"}, ProjectPublic},
+		{"public numeric true", map[string]string{"public": "1"}, ProjectPublic},
+		{"internal", map[string]string{"public": "auth_only"}, ProjectVisibilityInternal},
+		{"private", map[string]string{"public": "false"}, ProjectPrivate},
+		{"unknown string is private", map[string]string{"public": "banana"}, ProjectPrivate},
+		{"metadata without public key", map[string]string{"auto_scan": "true"}, ""},
+		{"metadata not loaded", nil, ""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &Project{Metadata: tc.metadata}
+			assert.Equal(t, tc.want, p.Visibility())
+		})
+	}
+}
+
 // captureQS captures the SQL expression passed to FilterRaw so we can assert
 // that FilterByPublic generates the correct subquery for each access level.
 type captureQS struct {
