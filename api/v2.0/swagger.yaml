@@ -7495,6 +7495,10 @@ definitions:
         type: string
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
         x-nullable: true
+      prevent_unscanned:
+        type: string
+        description: 'Whether prevent unscanned images from running. The valid values are "true", "false".'
+        x-nullable: true
       severity:
         type: string
         description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "none", "low", "medium", "high", "critical".'

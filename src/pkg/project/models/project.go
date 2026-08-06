@@ -121,6 +121,15 @@ func (p *Project) VulPrevented() bool {
 	return isTrue(prevent)
 }
 
+// UnscannedPrevented ...
+func (p *Project) UnscannedPrevented() bool {
+	prevent, exist := p.GetMetadata(ProMetaPreventUnscanned)
+	if !exist {
+		return false
+	}
+	return isTrue(prevent)
+}
+
 // ReuseSysCVEAllowlist ...
 func (p *Project) ReuseSysCVEAllowlist() bool {
 	r, ok := p.GetMetadata(ProMetaReuseSysCVEAllowlist)

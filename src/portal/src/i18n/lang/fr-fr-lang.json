@@ -273,6 +273,7 @@
         "PUBLIC_POLICY": "Rendre public un registre de projets rendra tous les dépôts accessibles à tous.",
         "SECURITY": "Sécurité de déploiement",
         "CONTENT_TRUST_POLCIY": "Autoriser uniquement le déploiement d'images vérifiées.",
+        "PREVENT_UNSCANNED_TOGGLE": "Empêcher l'exécution des images non analysées.",
         "PREVENT_VULNERABLE_TOGGLE": "Empêche les images vulnérables de fonctionner.",
         "PREVENT_VULNERABLE_1": "Empêcher les images présentant une vulnérabilité grave de",
         "PREVENT_VULNERABLE_2": "et au-dessus d'être déployées.",

@@ -218,6 +218,17 @@
                 <input
                     type="checkbox"
                     clrCheckbox
+                    [(ngModel)]="projectPolicy.PreventUnscannedImages"
+                    [disabled]="!hasChangeConfigRole"
+                    name="prevent-unscanned-images" />
+                <label>{{
+                    'PROJECT_CONFIG.PREVENT_UNSCANNED_TOGGLE' | translate
+                }}</label>
+            </clr-checkbox-wrapper>
+            <clr-checkbox-wrapper>
+                <input
+                    type="checkbox"
+                    clrCheckbox
                     [(ngModel)]="projectPolicy.PreventVulImg"
                     name="prevent-vulenrability-image-input"
                     [disabled]="!hasChangeConfigRole" />

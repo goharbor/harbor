@@ -168,6 +168,9 @@ export class ProjectDefaultService extends ProjectService {
                         prevent_vul: projectPolicy.PreventVulImg
                             ? 'true'
                             : 'false',
+                        prevent_unscanned: projectPolicy.PreventUnscannedImages
+                            ? 'true'
+                            : 'false',
                         severity: projectPolicy.PreventVulImgSeverity,
                         auto_scan: projectPolicy.ScanImgOnPush
                             ? 'true'
