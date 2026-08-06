@@ -1048,6 +1048,7 @@
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "派生自父索引的签名。此制品未直接签名。",
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "其他",
         "ANNOTATION": "注解",

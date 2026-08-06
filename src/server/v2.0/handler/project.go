@@ -707,7 +707,7 @@ func (a *projectAPI) ListArtifactsOfProject(ctx context.Context, params operatio
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithAccessory, params.LatestInRepository)
+		params.WithLabel, params.WithAccessory, params.LatestInRepository, params.WithInheritedAccessory)
 
 	var total int64
 	// list artifacts according to the query and option

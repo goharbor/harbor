@@ -1046,6 +1046,7 @@
         "COPY_ERROR": "Copy failed, please try to manually copy the command references."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Derived from the signature on the parent index. This artifact is not signed directly.",
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "Additions",
         "ANNOTATION": "Annotations",

@@ -1046,6 +1046,7 @@
         "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Abgeleitet von der Signatur des übergeordneten Index. Dieses Artefakt ist nicht direkt signiert.",
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",
         "ADDITIONS": "Hinzufügungen",
         "ANNOTATION": "Annotationen",
