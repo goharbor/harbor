@@ -208,10 +208,9 @@ export class ProjectDefaultService extends ProjectService {
             params = params.set('name', name);
         }
         if (isPublic === 'auth_only') {
-            // the "public" query param only accepts a boolean, so filtering
-            // for internal (auth_only) projects goes through the generic
-            // advanced query string instead
-            params = params.set('q', 'public=auth_only');
+            // the "public" query param only accepts a boolean; internal
+            // (auth_only) projects are filtered via the visibility param
+            params = params.set('visibility', 'internal');
         } else if (isPublic !== undefined) {
             params = params.set('public', '' + isPublic);
         }
