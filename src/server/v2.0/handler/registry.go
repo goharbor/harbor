@@ -206,6 +206,11 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 		in.SupportedCopyByChunk = &info.SupportedCopyByChunk
 	}
 
+	// whether support the create-repo-if-not-exist toggle
+	if info.SupportedCreateRepoConfig {
+		in.SupportedCreateRepoConfig = &info.SupportedCreateRepoConfig
+	}
+
 	return operation.NewGetRegistryInfoOK().WithPayload(in)
 }
 
