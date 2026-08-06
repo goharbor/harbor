@@ -476,21 +476,16 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 				if public, ok := query.Keywords["public"]; !ok || lib.ToBool(public) {
 					member.WithPublic = true
 				}
-				// include auth_only projects when not filtering for strictly public-only results
-				if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
+				// include auth_only projects only when there is no explicit public
+				// filter (the default listing) or the caller explicitly asked for
+				// auth_only projects. An explicit public=false must keep its strict
+				// "private member projects" semantics, so the union is not widened
+				// and the keyword is never dropped.
+				if _, ok := query.Keywords["public"]; !ok || isExplicitAuthOnly {
 					member.WithAuthOnly = true
 				}
 
 				query.Keywords["member"] = member
-				// FilterByPublic(false) only matches value='false' and would exclude auth_only
-				// projects. The member query already encodes the auth_only inclusion via
-				// WithAuthOnly, so drop the conflicting 'public' keyword here — unless the
-				// caller explicitly asked for auth_only projects, in which case ANDing with
-				// FilterByPublic(auth_only) is exactly what narrows the member/public/auth_only
-				// union down to the strict auth_only set.
-				if member.WithAuthOnly && !isExplicitAuthOnly {
-					delete(query.Keywords, "public")
-				}
 			} else if r, ok := secCtx.(*robotSec.SecurityContext); ok {
 				// for the system level robot that covers all the project, see it as the system admin.
 				var coverAll bool
@@ -509,12 +504,10 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 					if public, ok := query.Keywords["public"]; !ok || lib.ToBool(public) {
 						namesQuery.WithPublic = true
 					}
-					// include auth_only projects when not filtering for strictly public-only results
-					if public, ok := query.Keywords["public"]; !ok || !lib.ToBool(public) {
+					// same rule as the member query above: widen with auth_only only
+					// for the default listing or an explicit auth_only filter
+					if _, ok := query.Keywords["public"]; !ok || isExplicitAuthOnly {
 						namesQuery.WithAuthOnly = true
-					}
-					if namesQuery.WithAuthOnly && !isExplicitAuthOnly {
-						delete(query.Keywords, "public")
 					}
 					query.Keywords["names"] = namesQuery
 				}

@@ -35,10 +35,11 @@ import (
 // TestListProjects_MemberQueryAuthOnly verifies that ListProjects builds the
 // member subquery keywords correctly for an authenticated, non-admin local
 // user under the three relevant "public" filter states: unset, explicit
-// true and explicit false. It also verifies the "public" keyword is dropped
-// from the query whenever the member query already encodes the auth_only
-// inclusion, since keeping both would incorrectly AND-restrict the results
-// (see FilterByPublic strict private semantics).
+// true and explicit false. The auth_only union is only added for the
+// unfiltered default listing; an explicit boolean filter keeps its strict
+// semantics ("public=false" means the caller's private member projects,
+// exactly as before auth_only existed) and the "public" keyword is always
+// kept so FilterByPublic applies.
 func TestListProjects_MemberQueryAuthOnly(t *testing.T) {
 	cases := []struct {
 		name           string
@@ -49,7 +50,7 @@ func TestListProjects_MemberQueryAuthOnly(t *testing.T) {
 	}{
 		{"no filter", nil, true, true, false},
 		{"public=true", boolPtr(true), true, false, true},
-		{"public=false", boolPtr(false), false, true, false},
+		{"public=false", boolPtr(false), false, false, true},
 	}
 
 	for _, tc := range cases {
@@ -79,6 +80,37 @@ func TestListProjects_MemberQueryAuthOnly(t *testing.T) {
 			mockCtl.AssertExpectations(t)
 		})
 	}
+}
+
+// TestListProjects_MemberQueryStringPublicFalse verifies the q-string variant
+// of the strict private filter: q=public=false arrives as the string "false"
+// rather than a typed bool, and must behave identically — no auth_only or
+// public widening, keyword kept for FilterByPublic.
+func TestListProjects_MemberQueryStringPublicFalse(t *testing.T) {
+	mockCtl := &projecttesting.Controller{}
+	a := &projectAPI{projectCtl: mockCtl}
+
+	mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+		member, ok := query.Keywords["member"].(*pkgModels.MemberQuery)
+		if !ok || member.WithPublic || member.WithAuthOnly {
+			return false
+		}
+		public, publicKept := query.Keywords["public"]
+		if !publicKept {
+			return false
+		}
+		s, isStr := public.(string)
+		return isStr && s == "false"
+	})).Return(int64(0), nil).Once()
+
+	user := &commonmodels.User{UserID: 1, Username: "member-user"}
+	secCtx := local.NewSecurityContext(user)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	resp := a.ListProjects(ctx, operation.ListProjectsParams{Q: strPtr("public=false")})
+	require.NotNil(t, resp)
+
+	mockCtl.AssertExpectations(t)
 }
 
 func boolPtr(b bool) *bool {
@@ -169,7 +201,7 @@ func TestListProjects_RobotNamesQueryAuthOnly(t *testing.T) {
 	}{
 		{"no filter", nil, true, true, false},
 		{"public=true", boolPtr(true), true, false, true},
-		{"public=false", boolPtr(false), false, true, false},
+		{"public=false", boolPtr(false), false, false, true},
 	}
 
 	for _, tc := range cases {
