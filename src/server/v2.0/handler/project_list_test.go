@@ -113,6 +113,138 @@ func TestListProjects_MemberQueryStringPublicFalse(t *testing.T) {
 	mockCtl.AssertExpectations(t)
 }
 
+// TestListProjects_VisibilityFilter verifies that the visibility filter
+// (typed parameter and q keyword) is folded into the canonical public
+// keyword before the security branches run, that it matches the equivalent
+// public filter exactly, and that contradictions and unknown values are
+// rejected with a 400.
+func TestListProjects_VisibilityFilter(t *testing.T) {
+	user := &commonmodels.User{UserID: 1, Username: "member-user"}
+
+	newCtx := func() context.Context {
+		return security.NewContext(context.Background(), local.NewSecurityContext(user))
+	}
+
+	t.Run("visibility=internal equals q=public=auth_only", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+			member, ok := query.Keywords["member"].(*pkgModels.MemberQuery)
+			if !ok || member.WithPublic || !member.WithAuthOnly {
+				return false
+			}
+			if _, leaked := query.Keywords["visibility"]; leaked {
+				return false
+			}
+			s, isStr := query.Keywords["public"].(string)
+			return isStr && s == pkgModels.ProjectAuthOnly
+		})).Return(int64(0), nil).Once()
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{Visibility: strPtr("internal")})
+		require.NotNil(t, resp)
+		mockCtl.AssertExpectations(t)
+	})
+
+	t.Run("q=visibility=internal equals typed param", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+			s, isStr := query.Keywords["public"].(string)
+			_, leaked := query.Keywords["visibility"]
+			return isStr && s == pkgModels.ProjectAuthOnly && !leaked
+		})).Return(int64(0), nil).Once()
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{Q: strPtr("visibility=internal")})
+		require.NotNil(t, resp)
+		mockCtl.AssertExpectations(t)
+	})
+
+	t.Run("visibility=private equals public=false", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+			member, ok := query.Keywords["member"].(*pkgModels.MemberQuery)
+			if !ok || member.WithPublic || member.WithAuthOnly {
+				return false
+			}
+			public, ok := query.Keywords["public"].(bool)
+			return ok && !public
+		})).Return(int64(0), nil).Once()
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{Visibility: strPtr("private")})
+		require.NotNil(t, resp)
+		mockCtl.AssertExpectations(t)
+	})
+
+	t.Run("visibility=public equals public=true", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+			member, ok := query.Keywords["member"].(*pkgModels.MemberQuery)
+			if !ok || !member.WithPublic || member.WithAuthOnly {
+				return false
+			}
+			public, ok := query.Keywords["public"].(bool)
+			return ok && public
+		})).Return(int64(0), nil).Once()
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{Visibility: strPtr("public")})
+		require.NotNil(t, resp)
+		mockCtl.AssertExpectations(t)
+	})
+
+	t.Run("agreeing visibility and public filters are deduped", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		mockCtl.On("Count", mock.Anything, mock.MatchedBy(func(query *q.Query) bool {
+			public, ok := query.Keywords["public"].(bool)
+			return ok && public
+		})).Return(int64(0), nil).Once()
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{
+			Visibility: strPtr("public"),
+			Public:     boolPtr(true),
+		})
+		require.NotNil(t, resp)
+		mockCtl.AssertExpectations(t)
+	})
+
+	t.Run("conflicting visibility and public filters return 400", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{
+			Visibility: strPtr("public"),
+			Public:     boolPtr(false),
+		})
+		require.NotNil(t, resp)
+		mockCtl.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
+	})
+
+	t.Run("unknown visibility value returns 400", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		resp := a.ListProjects(newCtx(), operation.ListProjectsParams{Q: strPtr("visibility=bogus")})
+		require.NotNil(t, resp)
+		mockCtl.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
+	})
+
+	t.Run("anonymous visibility=internal returns empty without querying", func(t *testing.T) {
+		mockCtl := &projecttesting.Controller{}
+		a := &projectAPI{projectCtl: mockCtl}
+
+		resp := a.ListProjects(context.Background(), operation.ListProjectsParams{Visibility: strPtr("internal")})
+		require.NotNil(t, resp)
+		mockCtl.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
+	})
+}
+
 func boolPtr(b bool) *bool {
 	return &b
 }

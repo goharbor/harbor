@@ -449,6 +449,15 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 	if params.Public != nil {
 		query.Keywords["public"] = lib.BoolValue(params.Public)
 	}
+	if v := lib.StringValue(params.Visibility); v != "" {
+		query.Keywords["visibility"] = v
+	}
+	// the visibility keyword (typed param or q string) is only a friendlier
+	// spelling of the public filter; fold it into the canonical public keyword
+	// before any security branch reasons about the query.
+	if err := normalizeVisibilityKeyword(query); err != nil {
+		return a.SendError(ctx, err)
+	}
 	// an explicit request for strictly auth_only projects (via q=public=auth_only,
 	// since the dedicated "public" param above only accepts a boolean) must not be
 	// collapsed into the "not strictly public" member/robot union below.
@@ -566,6 +575,50 @@ func (a *projectAPI) ListProjects(ctx context.Context, params operation.ListProj
 		WithXTotalCount(total).
 		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
 		WithPayload(payload)
+}
+
+// normalizeVisibilityKeyword folds the "visibility" keyword (public, internal
+// or private, from the typed parameter or the q string) into the canonical
+// "public" keyword the security branches and FilterByPublic reason about:
+// bool true, the auth_only string, or bool false. It rejects unknown values
+// and a "public" filter that contradicts the requested visibility.
+func normalizeVisibilityKeyword(query *q.Query) error {
+	raw, ok := query.Keywords["visibility"]
+	if !ok {
+		return nil
+	}
+	delete(query.Keywords, "visibility")
+
+	v, ok := raw.(string)
+	if !ok {
+		return errors.BadRequestError(nil).WithMessagef("invalid visibility filter: %v", raw)
+	}
+
+	var canonical any
+	switch v {
+	case pkgModels.ProjectPublic:
+		canonical = true
+	case pkgModels.ProjectVisibilityInternal:
+		canonical = pkgModels.ProjectAuthOnly
+	case pkgModels.ProjectPrivate:
+		canonical = false
+	default:
+		return errors.BadRequestError(nil).WithMessagef("visibility should be one of 'public', 'internal' or 'private', but got: '%s'", v)
+	}
+
+	if public, ok := query.Keywords["public"]; ok {
+		// the existing keyword may be a typed bool or a q string
+		// ("true"/"false"/"auth_only"); canonicalize before comparing
+		existing := any(lib.ToBool(public))
+		if s, isStr := public.(string); isStr && s == pkgModels.ProjectAuthOnly {
+			existing = pkgModels.ProjectAuthOnly
+		}
+		if existing != canonical {
+			return errors.BadRequestError(nil).WithMessage("conflicting 'visibility' and 'public' filters")
+		}
+	}
+	query.Keywords["public"] = canonical
+	return nil
 }
 
 func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateProjectParams) middleware.Responder {

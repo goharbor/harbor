@@ -291,6 +291,12 @@ paths:
           description: The project is public or private.
           required: false
           type: boolean
+        - name: visibility
+          in: query
+          description: 'Filter projects by visibility: public (anyone can pull), internal (any authenticated user can pull) or private (members only). Supersedes the boolean "public" parameter, which cannot express internal; when both are supplied they must agree.'
+          required: false
+          type: string
+          enum: [public, internal, private]
         - name: owner
           in: query
           description: The name of project owner.
