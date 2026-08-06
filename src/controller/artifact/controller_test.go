@@ -158,7 +158,137 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	c.Contains(artifact.Tags, tg)
 	c.Contains(artifact.Labels, lb)
 	c.Contains(artifact.Accessories, acc)
+	c.Empty(artifact.InheritedAccessories)
+	// the inherited accessories are opt-in, so no parent lookup may happen for this option
+	c.artMgr.AssertNotCalled(c.T(), "ListReferences", mock.Anything, mock.Anything)
 	// TODO check other fields of option
+}
+
+// cosignAcc builds a cosign signature accessory whose subject is subDigest
+func cosignAcc(id, artID int64, subDigest string) accessorymodel.Accessory {
+	return &basemodel.Default{
+		Data: accessorymodel.AccessoryData{
+			ID:                id,
+			ArtifactID:        artID,
+			SubArtifactDigest: subDigest,
+			Type:              accessorymodel.TypeCosignSignature,
+		},
+	}
+}
+
+// subjectArtifactID matches an accessory query listing the accessories of the given artifact
+func subjectArtifactID(id int64) any {
+	return mock.MatchedBy(func(query *q.Query) bool {
+		return query != nil && query.Keywords["SubjectArtifactID"] == id
+	})
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesNoParent() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Empty(art.InheritedAccessories)
+	// an artifact that no index references must cost nothing beyond the reference lookup
+	c.accMgr.AssertNotCalled(c.T(), "List", mock.Anything, mock.Anything)
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesFromParent() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+	parentSig := cosignAcc(1, 100, "sha256:parent")
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{parentSig}, nil)
+
+	// Accessories is set but empty: the artifact carries no signature of its own
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}, Accessories: []accessorymodel.Accessory{}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Require().Len(art.InheritedAccessories, 1)
+	c.Equal(parentSig, art.InheritedAccessories[0])
+	// the inherited entry keeps the parent as its subject, so it stays distinguishable
+	c.Equal("sha256:parent", art.InheritedAccessories[0].GetData().SubArtifactDigest)
+	// and it is never merged into the artifact's own accessories
+	c.Empty(art.Accessories)
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesOwnSignature() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+
+	// the artifact is signed in its own right, so there is nothing to inherit
+	art := &Artifact{
+		Artifact:    artifact.Artifact{ID: 1},
+		Accessories: []accessorymodel.Accessory{cosignAcc(1, 100, "sha256:child")},
+	}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Empty(art.InheritedAccessories)
+	c.accMgr.AssertNotCalled(c.T(), "List", mock.Anything, subjectArtifactID(int64(10)))
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesMultipleParents() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+		{ParentID: 20, ChildID: 1},
+	}, nil)
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{cosignAcc(1, 100, "sha256:parent1")}, nil)
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(20))).
+		Return([]accessorymodel.Accessory{cosignAcc(2, 200, "sha256:parent2")}, nil)
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}, Accessories: []accessorymodel.Accessory{}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	// a child can sit in more than one index, and every signing index counts
+	c.Require().Len(art.InheritedAccessories, 2)
+	c.Equal("sha256:parent1", art.InheritedAccessories[0].GetData().SubArtifactDigest)
+	c.Equal("sha256:parent2", art.InheritedAccessories[1].GetData().SubArtifactDigest)
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesUnsignedParent() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{}, nil)
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}, Accessories: []accessorymodel.Accessory{}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Empty(art.InheritedAccessories)
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesWithoutOwnAccessories() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+	// Accessories is nil because the caller did not ask for them, so the artifact's own
+	// accessories have to be resolved before deciding whether anything is inherited
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(1))).
+		Return([]accessorymodel.Accessory{}, nil)
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{cosignAcc(1, 100, "sha256:parent")}, nil)
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Require().Len(art.InheritedAccessories, 1)
+	c.accMgr.AssertCalled(c.T(), "List", mock.Anything, subjectArtifactID(int64(1)))
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesListReferencesError() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).
+		Return(nil, errors.New("failed to list references"))
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	// a failed lookup degrades to "nothing inherited" rather than failing the request
+	c.Empty(art.InheritedAccessories)
 }
 
 func (c *controllerTestSuite) TestPopulateIcon() {
@@ -324,7 +454,6 @@ func (c *controllerTestSuite) TestList() {
 		{RepositoryID: 1, Name: "library/hello-world"},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
-	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)
 	c.Require().Len(artifacts, 1)
@@ -363,7 +492,6 @@ func (c *controllerTestSuite) TestListWithLatest() {
 		{RepositoryID: 1, Name: "library/hello-world"},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
-	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	artifacts, err := c.ctl.ListWithLatest(nil, query, option)
 	c.Require().Nil(err)
 	c.Require().Len(artifacts, 1)
@@ -530,7 +658,6 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{}, nil)
 	c.artrashMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
-	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 	c.labelMgr.On("ListByArtifact", mock.Anything, mock.Anything).Return([]*model.Label{}, nil)
 	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false, false)
 	c.Require().Nil(err)
@@ -709,7 +836,6 @@ func (c *controllerTestSuite) TestWalk() {
 		{Digest: "d2", ManifestMediaType: v1.MediaTypeImageManifest},
 	}, nil)
 	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
-	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{}, nil)
 
 	{
 		root := &Artifact{}

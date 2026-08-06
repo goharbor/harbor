@@ -753,6 +753,9 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	if option.WithAccessory {
 		c.populateAccessories(ctx, artifact)
 	}
+	if option.WithInheritedAccessory {
+		c.populateInheritedAccessories(ctx, artifact)
+	}
 	return artifact
 }
 
@@ -805,35 +808,57 @@ func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
 		return
 	}
 	art.Accessories = accs
+}
 
-	// check for cosign signatures inherited from a parent OCI index:
-	// if the artifact has no direct cosign signature, look up its parents
-	// and expose their signatures via InheritedAccessories (display only)
-	hasCosign := false
-	for _, acc := range accs {
-		if acc.GetData().Type == accessorymodel.TypeCosignSignature {
-			hasCosign = true
-			break
-		}
+// populateInheritedAccessories populates the cosign signatures of the parent OCI indexes
+// that reference the artifact. A signature on an index covers the whole index, so a child
+// manifest of a signed index is covered by that signature even though it carries none of
+// its own. These accessories describe the parent, not the artifact: their subject digest is
+// the index digest, so "cosign verify" against the child digest still fails and Harbor's
+// referrers API still does not list them. They are exposed separately from Accessories for
+// exactly that reason and must never be used for copy/delete/walk.
+//
+// Artifacts that already carry their own cosign signature are skipped, as are artifacts
+// that no index references.
+func (c *controller) populateInheritedAccessories(ctx context.Context, art *Artifact) {
+	// resolve the parents first: most artifacts in a registry are referenced by no index at
+	// all, so this single lookup short-circuits the common case before any further query.
+	parents, err := c.artMgr.ListReferences(ctx, &q.Query{
+		Keywords: map[string]any{"ChildID": art.ID},
+	})
+	if err != nil {
+		log.Errorf("failed to list parent references of artifact %d: %v", art.ID, err)
+		return
 	}
-	if !hasCosign {
-		parents, err := c.artMgr.ListReferences(ctx, &q.Query{
-			Keywords: map[string]any{"ChildID": art.ID},
-		})
+	if len(parents) == 0 {
+		return
+	}
+
+	// nothing to inherit if the artifact is signed in its own right. Accessories is only
+	// filled in when the caller asked for it, so fall back to a direct lookup when it is not.
+	ownAccs := art.Accessories
+	if ownAccs == nil {
+		ownAccs, err = c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": art.ID}))
 		if err != nil {
-			log.Errorf("failed to list parent references of artifact %d: %v", art.ID, err)
+			log.Errorf("failed to list accessories of artifact %d: %v", art.ID, err)
 			return
 		}
-		for _, p := range parents {
-			parentAccs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": p.ParentID}))
-			if err != nil {
-				continue
-			}
-			for _, pAcc := range parentAccs {
-				if pAcc.GetData().Type == accessorymodel.TypeCosignSignature {
-					art.InheritedAccessories = append(art.InheritedAccessories, pAcc)
-					return
-				}
+	}
+	for _, acc := range ownAccs {
+		if acc.GetData().Type == accessorymodel.TypeCosignSignature {
+			return
+		}
+	}
+
+	for _, p := range parents {
+		parentAccs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"SubjectArtifactID": p.ParentID}))
+		if err != nil {
+			log.Errorf("failed to list accessories of parent artifact %d: %v", p.ParentID, err)
+			continue
+		}
+		for _, pAcc := range parentAccs {
+			if pAcc.GetData().Type == accessorymodel.TypeCosignSignature {
+				art.InheritedAccessories = append(art.InheritedAccessories, pAcc)
 			}
 		}
 	}

@@ -174,6 +174,12 @@
   color: #00d40f;
 }
 
+// deliberately not the green of a direct signature: the artifact carries no signature of
+// its own and is only covered by the one on the index that references it
+.signed-inherited {
+  color: #8c8c8c;
+}
+
 .mb-05 {
   margin-bottom: 0.5rem;
 }
