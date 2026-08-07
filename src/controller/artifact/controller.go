@@ -810,16 +810,18 @@ func (c *controller) populateAccessories(ctx context.Context, art *Artifact) {
 	art.Accessories = accs
 }
 
-// populateInheritedAccessories populates the cosign signatures of the parent OCI indexes
-// that reference the artifact. A signature on an index covers the whole index, so a child
+// populateInheritedAccessories populates the signatures of the parent OCI indexes that
+// reference the artifact. A signature on an index covers the whole index, so a child
 // manifest of a signed index is covered by that signature even though it carries none of
-// its own. These accessories describe the parent, not the artifact: their subject digest is
-// the index digest, so "cosign verify" against the child digest still fails and Harbor's
-// referrers API still does not list them. They are exposed separately from Accessories for
-// exactly that reason and must never be used for copy/delete/walk.
+// its own. Both signing tools Harbor supports behave this way: neither "cosign sign" nor
+// "notation sign" descends into the children of an index by default. These accessories
+// describe the parent, not the artifact: their subject digest is the index digest, so
+// verification against the child digest still fails and Harbor's referrers API still does
+// not list them. They are exposed separately from Accessories for exactly that reason and
+// must never be used for copy/delete/walk.
 //
-// Artifacts that already carry their own cosign signature are skipped, as are artifacts
-// that no index references.
+// Artifacts that already carry a signature of their own are skipped, as are artifacts that
+// no index references.
 func (c *controller) populateInheritedAccessories(ctx context.Context, art *Artifact) {
 	// resolve the parents first: most artifacts in a registry are referenced by no index at
 	// all, so this single lookup short-circuits the common case before any further query.
@@ -845,7 +847,7 @@ func (c *controller) populateInheritedAccessories(ctx context.Context, art *Arti
 		}
 	}
 	for _, acc := range ownAccs {
-		if acc.GetData().Type == accessorymodel.TypeCosignSignature {
+		if isSignature(acc) {
 			return
 		}
 	}
@@ -857,10 +859,23 @@ func (c *controller) populateInheritedAccessories(ctx context.Context, art *Arti
 			continue
 		}
 		for _, pAcc := range parentAccs {
-			if pAcc.GetData().Type == accessorymodel.TypeCosignSignature {
+			if isSignature(pAcc) {
 				art.InheritedAccessories = append(art.InheritedAccessories, pAcc)
 			}
 		}
+	}
+}
+
+// isSignature reports whether the accessory is a signature over its subject, regardless of
+// the tool that produced it. Only signatures are inherited from a parent index: the other
+// accessory kinds either describe a single manifest (an SBOM) or are not a claim about it
+// at all (a nydus accelerator), so they say nothing about the children of an index.
+func isSignature(acc accessorymodel.Accessory) bool {
+	switch acc.GetData().Type {
+	case accessorymodel.TypeCosignSignature, accessorymodel.TypeNotationSignature:
+		return true
+	default:
+		return false
 	}
 }
 

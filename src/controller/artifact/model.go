@@ -33,7 +33,7 @@ type Artifact struct {
 	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
 	Labels        []*model.Label             `json:"labels"`
 	Accessories   []accessoryModel.Accessory `json:"-"`
-	// accessories of the parent OCI index that also cover this artifact, informational only,
+	// signatures of the parent OCI index that also cover this artifact, informational only,
 	// never use in copy/delete/walk. Untagged like Accessories: the accessory interface
 	// cannot be unmarshalled directly, the API view is built by the handler instead.
 	InheritedAccessories []accessoryModel.Accessory `json:"-"`

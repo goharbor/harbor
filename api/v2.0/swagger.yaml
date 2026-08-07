@@ -6876,13 +6876,14 @@ definitions:
         # inherited accessories stay exactly as they are today
         x-omitempty: true
         description: |
-          The accessories of the parent OCI index(es) that reference this artifact. A cosign
-          signature on an index covers the whole index, so a child manifest of a signed index
-          is covered by that signature even though it carries none of its own. These entries
-          describe the parent, not this artifact: their subject_artifact_digest is the index
-          digest, so verifying them against this artifact's digest fails and they are not
-          listed by the referrers API for this digest. Only returned when the
-          with_inherited_accessory query parameter is set to true.
+          The signatures of the parent OCI index(es) that reference this artifact, both
+          cosign and notation. A signature on an index covers the whole index, so a child
+          manifest of a signed index is covered by that signature even though it carries
+          none of its own. These entries describe the parent, not this artifact: their
+          subject_artifact_digest is the index digest, so verifying them against this
+          artifact's digest fails and they are not listed by the referrers API for this
+          digest. Only returned when the with_inherited_accessory query parameter is set
+          to true.
         items:
           $ref: '#/definitions/Accessory'
           description: The accessory inherited from the parent OCI index.

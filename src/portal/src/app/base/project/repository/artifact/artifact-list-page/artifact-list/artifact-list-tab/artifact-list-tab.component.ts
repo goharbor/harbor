@@ -1201,7 +1201,9 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     // own state rather than being folded into either "signed" or "not signed".
     inheritedSignedState(item: ArtifactFront): string {
         return item?.inherited_accessories?.some(
-            acc => acc.type === AccessoryType.COSIGN
+            acc =>
+                acc.type === AccessoryType.COSIGN ||
+                acc.type === AccessoryType.NOTATION
         )
             ? INHERITED
             : FALSE;
