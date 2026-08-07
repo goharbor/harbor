@@ -5,7 +5,7 @@ on:
 
 jobs:
   stale:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     steps:
       - uses: actions/stale@v10.0.0
         with:
