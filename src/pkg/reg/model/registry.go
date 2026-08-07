@@ -38,6 +38,7 @@ const (
 
 	RegistryTypeHelmHub     = "helm-hub"
 	RegistryTypeArtifactHub = "artifact-hub"
+	RegistryHarborSatellite = "harbor-satellite"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
