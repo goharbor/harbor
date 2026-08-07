@@ -55,6 +55,9 @@ func (g *gcAPI) CreateGCSchedule(ctx context.Context, params operation.CreateGCS
 	if err := g.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceGarbageCollection); err != nil {
 		return g.SendError(ctx, err)
 	}
+	if params.Schedule.Schedule == nil {
+		return g.SendError(ctx, errors.BadRequestError(fmt.Errorf("schedule cann't be empty")))
+	}
 	id, err := g.kick(ctx, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
 		return g.SendError(ctx, err)
@@ -71,6 +74,9 @@ func (g *gcAPI) CreateGCSchedule(ctx context.Context, params operation.CreateGCS
 func (g *gcAPI) UpdateGCSchedule(ctx context.Context, params operation.UpdateGCScheduleParams) middleware.Responder {
 	if err := g.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceGarbageCollection); err != nil {
 		return g.SendError(ctx, err)
+	}
+	if params.Schedule.Schedule == nil {
+		return g.SendError(ctx, errors.BadRequestError(fmt.Errorf("schedule cann't be empty")))
 	}
 	_, err := g.kick(ctx, params.Schedule.Schedule.Type, params.Schedule.Schedule.Cron, params.Schedule.Parameters)
 	if err != nil {
