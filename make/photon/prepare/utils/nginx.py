@@ -26,17 +26,13 @@ def prepare_nginx(config_dict):
 def prepare_nginx_certs(cert_key_path, cert_path):
     """
     Prepare the certs file with proper ownership
-    1. Remove nginx cert files in secret dir
-    2. Copy cert files on host filesystem to secret dir
-    3. Change the permission to 644 and ownership to 10000:10000
+    1. Copy cert files on host filesystem to secret dir
+    2. Change the permission to 644 and ownership to 10000:10000
     """
     host_ngx_cert_key_path = Path(os.path.join(host_root_dir, cert_key_path.lstrip('/')))
     host_ngx_cert_path = Path(os.path.join(host_root_dir, cert_path.lstrip('/')))
 
-    if host_ngx_real_cert_dir.exists() and host_ngx_real_cert_dir.is_dir():
-        shutil.rmtree(host_ngx_real_cert_dir)
-
-    os.makedirs(host_ngx_real_cert_dir, mode=0o755)
+    os.makedirs(host_ngx_real_cert_dir, mode=0o755, exist_ok=True)
     real_key_path = os.path.join(host_ngx_real_cert_dir, 'server.key')
     real_crt_path = os.path.join(host_ngx_real_cert_dir, 'server.crt')
     shutil.copy2(host_ngx_cert_key_path, real_key_path)
