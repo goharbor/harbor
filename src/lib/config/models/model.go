@@ -43,6 +43,7 @@ type OIDCSetting struct {
 	RedirectURL        string            `json:"redirect_url"`
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
+	RealNameClaim      string            `json:"realname_claim"`
 	ExtraRedirectParms map[string]string `json:"extra_redirect_parms"`
 	Logout             bool              `json:"logout"`
 }
