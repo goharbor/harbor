@@ -42,7 +42,6 @@ func init() {
 const (
 	opLogout       = "logout"
 	opLogin        = "login"
-	logoutSuffix   = "log_out"
 	payloadPattern = `principal=(.*?)&password`
 )
 

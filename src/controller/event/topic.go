@@ -33,6 +33,7 @@ import (
 const (
 	TopicCreateProject     = "CREATE_PROJECT"
 	TopicDeleteProject     = "DELETE_PROJECT"
+	TopicUpdateProject     = "UPDATE_PROJECT"
 	TopicPushArtifact      = "PUSH_ARTIFACT"
 	TopicPullArtifact      = "PULL_ARTIFACT"
 	TopicDeleteArtifact    = "DELETE_ARTIFACT"
@@ -112,6 +113,41 @@ func (d *DeleteProjectEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
 func (d *DeleteProjectEvent) String() string {
 	return fmt.Sprintf("ID-%d Name-%s Operator-%s OccurAt-%s",
 		d.ProjectID, d.Project, d.Operator, d.OccurAt.Format("2006-01-02 15:04:05"))
+}
+
+// UpdateProjectEvent is the updating project public/private visibility event
+type UpdateProjectEvent struct {
+	EventType string
+	ProjectID int64
+	Project   string
+	Operator  string
+	OccurAt   time.Time
+	IsPublic  bool
+}
+
+// ResolveToAuditLog ...
+func (u *UpdateProjectEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	visibility := "private"
+	if u.IsPublic {
+		visibility = "public"
+	}
+
+	auditLog := &model.AuditLogExt{
+		ProjectID:            u.ProjectID,
+		OpTime:               u.OccurAt,
+		Operation:            rbac.ActionUpdate.String(),
+		Username:             u.Operator,
+		ResourceType:         ResourceTypeProject,
+		IsSuccessful:         true,
+		OperationDescription: fmt.Sprintf("update project %s: set access level to %s", u.Project, visibility),
+		Resource:             u.Project,
+	}
+	return auditLog, nil
+}
+
+func (u *UpdateProjectEvent) String() string {
+	return fmt.Sprintf("ID-%d Name-%s Operator-%s OccurAt-%s",
+		u.ProjectID, u.Project, u.Operator, u.OccurAt.Format("2006-01-02 15:04:05"))
 }
 
 // DeleteRepositoryEvent is the deleting repository event

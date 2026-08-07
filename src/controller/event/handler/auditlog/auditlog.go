@@ -45,7 +45,8 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 	var addAuditLog bool
 	switch v := value.(type) {
 	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
-		*event.DeleteRepositoryEvent, *event.CreateProjectEvent, *event.DeleteProjectEvent,
+		*event.DeleteRepositoryEvent,
+		*event.CreateProjectEvent, *event.DeleteProjectEvent, *event.UpdateProjectEvent,
 		*event.DeleteTagEvent, *event.CreateTagEvent,
 		*event.CreateRobotEvent, *event.DeleteRobotEvent, *evtModel.CommonEvent:
 		addAuditLog = true

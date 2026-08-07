@@ -207,6 +207,7 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 	// the SQL executed in the allowlist manager will not be in the transaction with metadata manager,
 	// we will update the metadata of the project first so that we can be rollback the operations for the metadata
 	// when set allowlist for the project failed
+	var oldPublic string
 	if len(p.Metadata) > 0 {
 		meta, err := c.metaMgr.Get(ctx, p.ProjectID)
 		if err != nil {
@@ -215,6 +216,7 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 		if meta == nil {
 			meta = map[string]string{}
 		}
+		oldPublic = meta[models.ProMetaPublic]
 
 		metaNeedUpdated := map[string]string{}
 		metaNeedCreated := map[string]string{}
@@ -238,6 +240,16 @@ func (c *controller) Update(ctx context.Context, p *models.Project) error {
 		if err := c.allowlistMgr.Set(ctx, p.ProjectID, p.CVEAllowlist); err != nil {
 			return err
 		}
+	}
+
+	// fire event when public/private visibility changed
+	if newPublic, ok := p.Metadata[models.ProMetaPublic]; ok && newPublic != oldPublic {
+		notification.AddEvent(ctx, &event.UpdateProjectEventMetadata{
+			ProjectID: p.ProjectID,
+			Project:   p.Name,
+			Operator:  operator.FromContext(ctx),
+			IsPublic:  newPublic == "true",
+		})
 	}
 
 	return nil
