@@ -30,13 +30,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
+	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/controller/project"
 	registryCtl "github.com/goharbor/harbor/src/controller/registry"
+	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory"
@@ -44,8 +44,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	pkgRobot "github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	proxytesting "github.com/goharbor/harbor/src/testing/controller/proxy"
+	registrytesting "github.com/goharbor/harbor/src/testing/controller/registry"
 	testingcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	testingmock "github.com/goharbor/harbor/src/testing/mock"
 )
@@ -57,16 +59,37 @@ func TestIsProxySession(t *testing.T) {
 	sc2 := proxycachesecret.NewSecurityContext("library/hello-world")
 	proxyCtx := security.NewContext(context.Background(), sc2)
 
-	user := &models.User{
-		Username: "robot$library+scanner-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	// Valid system scanner robot account (invisible, CreatorRef == 0)
+	sysScannerRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+scanner-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+			Visible:    false,
+			CreatorRef: 0,
+		},
 	}
-	userSc := local.NewSecurityContext(user)
-	scannerCtx := security.NewContext(context.Background(), userSc)
+	sysScannerSc := robotSc.NewSecurityContext(sysScannerRobot)
+	scannerCtx := security.NewContext(context.Background(), sysScannerSc)
 
-	otherRobot := &models.User{
-		Username: "robot$library+test-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	// User-created robot account attempting proxy cache poisoning (Visible == true, CreatorRef > 0)
+	poisoningRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+scanner-attacker",
+			Visible:    true,
+			CreatorRef: 1,
+		},
 	}
-	userSc2 := local.NewSecurityContext(otherRobot)
+	poisoningSc := robotSc.NewSecurityContext(poisoningRobot)
+	poisoningCtx := security.NewContext(context.Background(), poisoningSc)
+
+	// Non scanner robot account
+	otherRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+test-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+			Visible:    true,
+			CreatorRef: 1,
+		},
+	}
+	userSc2 := robotSc.NewSecurityContext(otherRobot)
 	nonScannerCtx := security.NewContext(context.Background(), userSc2)
 
 	cases := []struct {
@@ -85,9 +108,14 @@ func TestIsProxySession(t *testing.T) {
 			want: true,
 		},
 		{
-			name: `robot account`,
+			name: `system scanner robot account`,
 			in:   scannerCtx,
 			want: true,
+		},
+		{
+			name: `user-created robot prefixed with scanner (poisoning attempt)`,
+			in:   poisoningCtx,
+			want: false,
 		},
 		{
 			name: `non scanner robot`,
@@ -339,6 +367,26 @@ func (s *ProxyReferrerMiddlewareSuite) TestProxyReferrerAPIDisabled() {
 	ProxyReferrerMiddleware()(s.next).ServeHTTP(w, s.makeRequest())
 
 	s.True(s.nextCalled, "next handler should be called when proxy referrer API is disabled")
+}
+
+func (s *ProxyReferrerMiddlewareSuite) TestProxyReferrerAPIBlockedByFilter() {
+	proj := &proModels.Project{
+		ProjectID:  3,
+		Name:       "testproject",
+		RegistryID: 1,
+		Metadata: map[string]string{
+			proModels.ProMetaProxyReferrerAPI:        "true",
+			proModels.ProMetaProxyCacheFilterPattern: "allow-*",
+			proModels.ProMetaProxyCacheFilterKind:    "doublestar",
+		},
+	}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+
+	w := httptest.NewRecorder()
+	ProxyReferrerMiddleware()(s.next).ServeHTTP(w, s.makeRequest())
+
+	s.False(s.nextCalled, "next handler should not be called when repository is blocked by filter")
+	s.Equal(http.StatusNotFound, w.Code)
 }
 
 func TestProxyReferrerMiddlewareSuite(t *testing.T) {
@@ -633,5 +681,277 @@ func TestWriteProxyHeaders(t *testing.T) {
 				require.Empty(t, actualValue, fmt.Sprintf("header %s should not be present", header))
 			}
 		})
+	}
+}
+
+func TestMatchRepositoryFilter(t *testing.T) {
+	cases := []struct {
+		name          string
+		repository    string
+		filterPattern string
+		filterKind    string
+		want          bool
+	}{
+		{
+			name:          "empty pattern matches all",
+			repository:    "library/nginx",
+			filterPattern: "",
+			filterKind:    "",
+			want:          true,
+		},
+		{
+			name:          "regex exact match",
+			repository:    "library/nginx",
+			filterPattern: "^library/nginx$",
+			filterKind:    "regex",
+			want:          true,
+		},
+		{
+			name:          "regex partial match is anchored",
+			repository:    "library/nginx",
+			filterPattern: "nginx",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex prefix match is anchored",
+			repository:    "library/nginx",
+			filterPattern: "^library/",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex wildcard match",
+			repository:    "library/nginx",
+			filterPattern: "^library/.*",
+			filterKind:    "regex",
+			want:          true,
+		},
+		{
+			name:          "regex no match",
+			repository:    "library/nginx",
+			filterPattern: "^other/",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "regex invalid pattern treated as no match",
+			repository:    "library/nginx",
+			filterPattern: "[invalid",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
+			name:          "doublestar exact match",
+			repository:    "library/nginx",
+			filterPattern: "library/nginx",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar single star",
+			repository:    "library/nginx",
+			filterPattern: "library/*",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar double star",
+			repository:    "org/team/repo",
+			filterPattern: "org/**",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar match all",
+			repository:    "library/nginx",
+			filterPattern: "**",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "doublestar no match",
+			repository:    "library/nginx",
+			filterPattern: "other/*",
+			filterKind:    "doublestar",
+			want:          false,
+		},
+		{
+			name:          "doublestar alternation",
+			repository:    "library/nginx",
+			filterPattern: "library/{nginx,alpine}",
+			filterKind:    "doublestar",
+			want:          true,
+		},
+		{
+			name:          "empty kind defaults to doublestar",
+			repository:    "library/nginx",
+			filterPattern: "library/**",
+			filterKind:    "",
+			want:          true,
+		},
+		{
+			name:          "empty pattern with kind set matches all",
+			repository:    "library/nginx",
+			filterPattern: "",
+			filterKind:    "regex",
+			want:          true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := matchRepositoryFilter(tt.repository, tt.filterPattern, tt.filterKind)
+			if got != tt.want {
+				t.Errorf("matchRepositoryFilter(%q, %q, %q) = %v; want %v",
+					tt.repository, tt.filterPattern, tt.filterKind, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestCheckRepositoryFilterAppliesToBlobAndManifest ensures the repository filter
+// is enforced regardless of whether the request is for a manifest or a blob, so
+// a blob digest known out-of-band can't be used to bypass the project's filter.
+func TestCheckRepositoryFilterAppliesToBlobAndManifest(t *testing.T) {
+	art := lib.ArtifactInfo{ProjectName: "proxy_project", Repository: "proxy_project/other/nginx"}
+
+	cases := []struct {
+		name      string
+		metadata  map[string]string
+		wantBlock bool
+	}{
+		{
+			name:      "no filter configured",
+			metadata:  map[string]string{},
+			wantBlock: false,
+		},
+		{
+			name:      "matching filter allows",
+			metadata:  map[string]string{proModels.ProMetaProxyCacheFilterPattern: "other/**"},
+			wantBlock: false,
+		},
+		{
+			name:      "non-matching filter blocks",
+			metadata:  map[string]string{proModels.ProMetaProxyCacheFilterPattern: "library/**"},
+			wantBlock: true,
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &proModels.Project{Name: art.ProjectName, Metadata: tt.metadata}
+			err := checkRepositoryFilter(p, art)
+			if tt.wantBlock {
+				if err == nil || !liberrors.IsNotFoundErr(err) {
+					t.Errorf("checkRepositoryFilter() = %v; want NotFoundError", err)
+				}
+			} else if err != nil {
+				t.Errorf("checkRepositoryFilter() = %v; want nil", err)
+			}
+		})
+	}
+}
+
+func TestTagsListMiddlewareRepositoryFilter(t *testing.T) {
+	// Mock project.Ctl
+	originalProjectController := project.Ctl
+	projectController := &projecttesting.Controller{}
+	project.Ctl = projectController
+	defer func() {
+		project.Ctl = originalProjectController
+	}()
+
+	art := lib.ArtifactInfo{
+		ProjectName: "proxy_project",
+		Repository:  "proxy_project/other/nginx",
+	}
+
+	p := &proModels.Project{
+		Name: art.ProjectName,
+		Metadata: map[string]string{
+			proModels.ProMetaProxyCacheFilterPattern: "library/**",
+		},
+	}
+
+	testingmock.OnAnything(projectController, "GetByName").Return(p, nil)
+
+	req := httptest.NewRequest("GET", "/v2/proxy_project/other/nginx/tags/list", nil)
+	req = req.WithContext(lib.WithArtifactInfo(req.Context(), art))
+	rec := httptest.NewRecorder()
+
+	nextCalled := false
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+	})
+
+	TagsListMiddleware()(next).ServeHTTP(rec, req)
+
+	if nextCalled {
+		t.Error("expected next handler not to be called, but it was")
+	}
+
+	if rec.Code != http.StatusNotFound {
+		t.Errorf("expected status code %d, got %d", http.StatusNotFound, rec.Code)
+	}
+}
+
+func TestTagsListMiddlewareDefaultLibrary(t *testing.T) {
+	// Mock project.Ctl
+	originalProjectController := project.Ctl
+	projectController := &projecttesting.Controller{}
+	project.Ctl = projectController
+	defer func() {
+		project.Ctl = originalProjectController
+	}()
+
+	// Mock registry.Ctl
+	originalRegistryController := registryCtl.Ctl
+	registryController := &registrytesting.Controller{}
+	registryCtl.Ctl = registryController
+	defer func() {
+		registryCtl.Ctl = originalRegistryController
+	}()
+
+	art := lib.ArtifactInfo{
+		ProjectName: "proxy_project",
+		Repository:  "proxy_project/nginx",
+	}
+
+	p := &proModels.Project{
+		Name:       art.ProjectName,
+		RegistryID: 1,
+	}
+
+	reg := &model.Registry{
+		ID:   1,
+		Type: model.RegistryTypeDockerHub,
+	}
+
+	testingmock.OnAnything(projectController, "GetByName").Return(p, nil)
+	testingmock.OnAnything(registryController, "Get").Return(reg, nil)
+
+	req := httptest.NewRequest("GET", "/v2/proxy_project/nginx/tags/list", nil)
+	req = req.WithContext(lib.WithArtifactInfo(req.Context(), art))
+	rec := httptest.NewRecorder()
+
+	nextCalled := false
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+	})
+
+	TagsListMiddleware()(next).ServeHTTP(rec, req)
+
+	if nextCalled {
+		t.Error("expected next handler not to be called, but it was")
+	}
+
+	if rec.Code != http.StatusMovedPermanently {
+		t.Errorf("expected status code %d, got %d", http.StatusMovedPermanently, rec.Code)
+	}
+
+	expectedLocation := "/v2/proxy_project/library/nginx/tags/list"
+	if location := rec.Header().Get("Location"); location != expectedLocation {
+		t.Errorf("expected Location header %q, got %q", expectedLocation, location)
 	}
 }
