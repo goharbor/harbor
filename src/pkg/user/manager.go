@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/user/dao"
 	"github.com/goharbor/harbor/src/pkg/user/models"
@@ -32,6 +33,15 @@ import (
 var (
 	// Mgr is the global project manager
 	Mgr = New()
+)
+
+const (
+	// sysAdminFlagSourceManual marks sysadmin_flag as set by an explicit operator action;
+	// auth sync must never override a manually set flag.
+	sysAdminFlagSourceManual = "manual"
+	// sysAdminFlagSourceSync marks sysadmin_flag as set by the LDAP/OIDC admin-group sync;
+	// auth sync remains free to update it again on a later login.
+	sysAdminFlagSourceSync = "sync"
 )
 
 // Manager is used for user management
@@ -50,8 +60,17 @@ type Manager interface {
 	Delete(ctx context.Context, id int) error
 	// DeleteGDPR deletes the user by updating user's delete flag and replace identifiable data with its crc
 	DeleteGDPR(ctx context.Context, id int) error
-	// SetSysAdminFlag sets the system admin flag of the user in local DB
+	// SetSysAdminFlag sets the system admin flag of the user in local DB. This is an explicit
+	// operator action: it marks the flag as manually-owned, so SyncSysAdminFlagFromAuth will
+	// never override it on a later login.
 	SetSysAdminFlag(ctx context.Context, id int, admin bool) error
+	// SyncSysAdminFlagFromAuth reconciles the persisted sysadmin_flag (used for reporting, e.g.
+	// the Users list) with the admin role granted by the LDAP/OIDC admin group at login time
+	// (adminRoleInAuth). Real admin authorization is unaffected either way - it already checks
+	// the live admin role independently of this flag. This is a no-op if the flag was last set
+	// manually by an operator, so it only ever updates the stored flag for users whose admin
+	// status has never been explicitly decided by a human.
+	SyncSysAdminFlagFromAuth(ctx context.Context, id int, adminRoleInAuth bool) error
 	// UpdateProfile updates the user's profile
 	UpdateProfile(ctx context.Context, user *commonmodels.User, col ...string) error
 	// UpdatePassword updates user's password
@@ -161,10 +180,45 @@ func (m *manager) UpdatePassword(ctx context.Context, id int, newPassword string
 
 func (m *manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) error {
 	u := &commonmodels.User{
-		UserID:       id,
-		SysAdminFlag: admin,
+		UserID:             id,
+		SysAdminFlag:       admin,
+		SysAdminFlagSource: sysAdminFlagSourceManual,
 	}
-	return m.dao.Update(ctx, u, "sysadmin_flag")
+	return m.dao.Update(ctx, u, "sysadmin_flag", "sysadmin_flag_source")
+}
+
+func (m *manager) SyncSysAdminFlagFromAuth(ctx context.Context, id int, adminRoleInAuth bool) error {
+	cur, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	// an operator has explicitly set this user's flag, auth sync must not overwrite it
+	if cur.SysAdminFlagSource == sysAdminFlagSourceManual {
+		return nil
+	}
+	// already confirmed in sync with the current auth-provider role, nothing to do. Note this
+	// only skips when the source is already "sync" - a matching value with an empty source
+	// (never yet confirmed live, e.g. an ordinary non-admin user) still needs the write below so
+	// the source gets stamped, letting the Users list report "No" instead of "Unknown" for them.
+	if cur.SysAdminFlag == adminRoleInAuth && cur.SysAdminFlagSource == sysAdminFlagSourceSync {
+		return nil
+	}
+	u := &commonmodels.User{
+		UserID:             id,
+		SysAdminFlag:       adminRoleInAuth,
+		SysAdminFlagSource: sysAdminFlagSourceSync,
+	}
+	if err := m.dao.Update(ctx, u, "sysadmin_flag", "sysadmin_flag_source"); err != nil {
+		if cur.SysAdminFlag && !adminRoleInAuth {
+			// demotion write failed: sysadmin_flag alone still grants real admin access
+			// (see IsSysAdmin), so this user may keep it via any already-active session or
+			// token until the next successful sync - unlike a failed promotion, this is worth
+			// surfacing as an error, not just a warning
+			log.Errorf("failed to revoke stale sysadmin flag for user %d after IdP admin group removal: %v", id, err)
+		}
+		return err
+	}
+	return nil
 }
 
 func (m *manager) Create(ctx context.Context, user *commonmodels.User) (int, error) {
