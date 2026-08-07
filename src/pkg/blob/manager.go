@@ -88,7 +88,30 @@ func (m *manager) AssociateWithArtifact(ctx context.Context, blobDigest, artifac
 }
 
 func (m *manager) AssociateWithProject(ctx context.Context, blobID, projectID int64) (int64, error) {
-	return m.dao.CreateProjectBlob(ctx, projectID, blobID)
+	id, err := m.dao.CreateProjectBlob(ctx, projectID, blobID)
+	if err != nil {
+		return id, err
+	}
+
+	blobs, err := m.List(ctx, q.New(q.KeyWords{"ID": blobID}))
+	if err != nil {
+		return id, err
+	}
+	if len(blobs) == 0 {
+		return id, errors.NotFoundError(nil).WithMessagef("blob %d not found", blobID)
+	}
+
+	blob := blobs[0]
+	blob.Status = models.StatusNone
+	count, err := m.dao.UpdateBlobStatus(ctx, blob)
+	if err != nil {
+		return id, err
+	}
+	if count == 0 {
+		return id, errors.New(nil).WithMessagef("no blob item is updated to StatusNone, id:%d, digest:%s", blob.ID, blob.Digest).WithCode(errors.NotFoundCode)
+	}
+
+	return id, nil
 }
 
 func (m *manager) CalculateTotalSizeByProject(ctx context.Context, projectID int64, excludeForeignLayer bool) (int64, error) {
