@@ -11,7 +11,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 
 * [Bi-weekly public community meetings][community-meetings]
   * Catch up with [past meetings on YouTube][past-meetings]
-* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack] )
+* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack])
   * [#harbor][users-slack] for end-user discussions
   * [#harbor-dev][dev-slack] for development of Harbor
 * Want long-form communication instead of Slack? We have two distribution lists:
@@ -169,8 +169,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 | 2.12   | 1.23.2      |
 | 2.13   | 1.23.8      |
 | 2.14   | 1.24.6      |
-| 2.15   | 1.26.3      |
-| 2.16   | 1.26.3      |
+| 2.15   | 1.26.4      |
+| 2.16   | 1.26.4      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
@@ -421,8 +421,6 @@ Documents are written with Markdown. See [Writing on GitHub](https://help.github
 - Once implemented or during the implementation, the PRs are reviewed by maintainers and contributors, following the best practices and methods.
 - After merging the new PRs, the proposal must be moved to [community/proposals](https://github.com/goharbor/community/tree/main/proposals) and marked as done!
 - You have made Harbor even better, congratulations. Thank you!
-
-
 
 [community-meetings]: https://github.com/goharbor/community/blob/main/MEETING_SCHEDULE.md
 [past-meetings]: https://www.youtube.com/playlist?list=PLgInP-D86bCwTC0DYAa1pgupsQIAWPomv
