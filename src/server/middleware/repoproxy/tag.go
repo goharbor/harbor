@@ -35,8 +35,25 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		ctx := r.Context()
 
-		art, p, _, err := preCheck(ctx, false)
+		art, p, _, err := preCheck(ctx, true)
 		if err != nil {
+			libhttp.SendError(w, err)
+			return
+		}
+
+		// Handle dockerhub request without library prefix
+		isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+		if err != nil {
+			libhttp.SendError(w, err)
+			return
+		}
+		if isDefault {
+			http.Redirect(w, r, defaultTagURL(p.Name, name), http.StatusMovedPermanently)
+			return
+		}
+
+		// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+		if err := checkRepositoryFilter(p, art); err != nil {
 			libhttp.SendError(w, err)
 			return
 		}
