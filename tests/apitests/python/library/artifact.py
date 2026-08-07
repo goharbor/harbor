@@ -113,7 +113,7 @@ class Artifact(base.Base, object):
         return self._get_client(**kwargs).list_accessories(project_name, repo_name, reference)
 
     def check_image_scan_result(self, project_name, repo_name, reference, expected_scan_status = "Success", **kwargs):
-        timeout_count = 30
+        timeout_count = 60
         scan_status=""
         while True:
             time.sleep(5)
@@ -123,7 +123,7 @@ class Artifact(base.Base, object):
             artifact = self.get_reference_info(project_name, repo_name, reference, **kwargs)
             if expected_scan_status in ["Not Scanned", "No Scan Overview"]:
                 if artifact.scan_overview is None:
-                    if (timeout_count > 24):
+                    if (timeout_count > 54):
                         continue
                     print("artifact is not scanned.")
                     return
@@ -131,10 +131,11 @@ class Artifact(base.Base, object):
                     raise Exception("Artifact should not be scanned {}.".format(artifact.scan_overview))
 
             scan_status = ''
-            for mime_type in report_mime_types:
-                overview = artifact.scan_overview.get(mime_type)
-                if overview:
-                    scan_status = overview.scan_status
+            if artifact and artifact.scan_overview:
+                for mime_type in report_mime_types:
+                    overview = artifact.scan_overview.get(mime_type)
+                    if overview:
+                        scan_status = overview.scan_status
 
             if scan_status == expected_scan_status:
                 return
