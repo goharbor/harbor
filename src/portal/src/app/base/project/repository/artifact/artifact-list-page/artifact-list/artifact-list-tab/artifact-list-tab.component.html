@@ -328,14 +328,14 @@
                         <clr-tooltip class="width-p-100">
                             <div clrTooltipTrigger class="center">
                                 <div class="center width-p-100">
-                                    <span
-                                        #tagsSpan
-                                        class="truncated width-p-75"
-                                        >{{ tagsString(artifact?.tags) }}</span
+                                    <span #tagsSpan class="tag-text">{{
+                                        tagsString(artifact?.tags)
+                                    }}</span>
+                                    @if (artifact?.tags?.length > 1 &&
+                                    isEllipsisActive(tagsSpan)) {
+                                    <span class="tag-count"
+                                        >({{ artifact?.tagNumber }})</span
                                     >
-                                    @if ( artifact?.tags?.length > 1 &&
-                                    isEllipsisActive(tagsSpan) ) {
-                                    <span>({{ artifact?.tagNumber }} )</span>
                                     }
                                 </div>
                             </div>
