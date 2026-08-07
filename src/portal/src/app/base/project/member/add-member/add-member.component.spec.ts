@@ -33,6 +33,9 @@ describe('AddMemberComponent', () => {
         searchUsers: () => {
             return of([[], []]);
         },
+        searchUsersResponse: () => {
+            return of({ body: [], headers: { get: () => '0' } });
+        },
     };
 
     const mockMessageHandlerService = {
