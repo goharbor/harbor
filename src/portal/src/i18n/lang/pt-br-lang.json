@@ -1056,6 +1056,7 @@
         "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Derivada da assinatura do índice pai. Este artefato não está assinado diretamente.",
         "FILTER_FOR_ARTIFACTS": "Filtrar",
         "ADDITIONS": "Informações Complementares",
         "ANNOTATION": "Anotações",

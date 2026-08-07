@@ -1055,6 +1055,7 @@
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Dérivée de la signature de l'index parent. Cet artefact n'est pas signé directement.",
         "FILTER_FOR_ARTIFACTS": "Filtrer les artefacts",
         "ADDITIONS": "Ajouts",
         "ANNOTATION": "Annotations",

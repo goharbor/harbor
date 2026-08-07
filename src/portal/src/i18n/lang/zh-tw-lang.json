@@ -1054,6 +1054,7 @@
         "COPY_ERROR": "複製失敗，請嘗試手動複製指令。"
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "衍生自父索引的簽章。此成品未直接簽署。",
         "FILTER_FOR_ARTIFACTS": "篩選 Artifact",
         "ADDITIONS": "附加物",
         "ANNOTATION": "註解",
