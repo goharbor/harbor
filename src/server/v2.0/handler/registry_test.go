@@ -95,6 +95,72 @@ func (suite *RegistryTestSuite) TestPingRegistryInlineUsesSuppliedURL() {
 	suite.Equal("https://inline.example.com", pinged.URL)
 }
 
+// TestUpdateRegistryID0ReturnsNotFound guards against updating synthetic local registry ID 0,
+// asserting the NotFound response and that controller's Get and Update methods are not called.
+func (suite *RegistryTestSuite) TestUpdateRegistryID0ReturnsNotFound() {
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+
+	res, err := suite.PutJSON("/registries/0", &models.RegistryUpdate{
+		URL: suite.ptrStr("https://attacker.example.com"),
+	})
+	suite.NoError(err)
+	suite.Equal(404, res.StatusCode)
+
+	suite.regCtl.AssertNotCalled(suite.T(), "Get", testifymock.Anything, testifymock.Anything)
+	suite.regCtl.AssertNotCalled(suite.T(), "Update", testifymock.Anything, testifymock.Anything)
+}
+
+// TestUpdateRegistryClearsAccessSecretOnURLChange tests that updating an existing registry's
+// URL without providing a new AccessSecret clears the stored AccessSecret.
+func (suite *RegistryTestSuite) TestUpdateRegistryClearsAccessSecretOnURLChange() {
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+
+	saved := &model.Registry{
+		ID:         1,
+		Type:       "harbor",
+		URL:        "https://registry.example.com",
+		Credential: &model.Credential{Type: "basic", AccessKey: "admin", AccessSecret: "secret123"},
+	}
+	mock.OnAnything(suite.regCtl, "Get").Return(saved, nil).Once()
+
+	var updated *model.Registry
+	suite.regCtl.On("Update", mock.Anything, mock.Anything).Return(nil).Once().
+		Run(func(args testifymock.Arguments) { updated = args.Get(1).(*model.Registry) })
+
+	res, err := suite.PutJSON("/registries/1", &models.RegistryUpdate{
+		URL: suite.ptrStr("https://new.example.com"),
+	})
+	suite.NoError(err)
+	suite.Equal(200, res.StatusCode)
+	suite.Require().NotNil(updated)
+	suite.Equal("https://new.example.com", updated.URL)
+	suite.Empty(updated.Credential.AccessSecret)
+}
+
+// TestUpdateRegistryInvalidURLReturnsError tests that updating a registry with an invalid
+// URL returns BadRequest error and does not update the registry.
+func (suite *RegistryTestSuite) TestUpdateRegistryInvalidURLReturnsError() {
+	suite.Security.On("IsAuthenticated").Return(true).Once()
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+
+	saved := &model.Registry{
+		ID:         1,
+		Type:       "harbor",
+		URL:        "https://registry.example.com",
+		Credential: &model.Credential{Type: "basic", AccessKey: "admin", AccessSecret: "secret123"},
+	}
+	mock.OnAnything(suite.regCtl, "Get").Return(saved, nil).Once()
+
+	res, err := suite.PutJSON("/registries/1", &models.RegistryUpdate{
+		URL: suite.ptrStr("ftp://invalid.example.com"),
+	})
+	suite.NoError(err)
+	suite.Equal(400, res.StatusCode)
+	suite.regCtl.AssertNotCalled(suite.T(), "Update", testifymock.Anything, testifymock.Anything)
+}
+
 func TestRegistryTestSuite(t *testing.T) {
 	suite.Run(t, &RegistryTestSuite{})
 }
