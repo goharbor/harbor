@@ -54,7 +54,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	reference := router.Param(req.Context(), ":reference")
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		lib_http.SendError(w, err)
+		lib_http.SendError(w, errors.AsManifestUnknownError(err))
 		return
 	}
 
@@ -155,7 +155,7 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	}
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		lib_http.SendError(w, err)
+		lib_http.SendError(w, errors.AsManifestUnknownError(err))
 		return
 	}
 	if err = artifact.Ctl.Delete(req.Context(), art.ID); err != nil {
