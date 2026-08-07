@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
 
@@ -137,7 +138,39 @@ func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, erro
 		return nil, err
 	}
 
+	for i := range exportData {
+		exportData[i].sanitizeForCSV()
+	}
+
 	return exportData, nil
+}
+
+// csvFormulaTriggers lists the leading characters a spreadsheet may interpret as
+// the start of a formula when opening an exported CSV.
+const csvFormulaTriggers = "=+-@\t\r"
+
+// sanitizeCSVCell prefixes a single quote to any value that would otherwise be
+// evaluated as a formula, neutralizing CSV formula injection.
+func sanitizeCSVCell(value string) string {
+	if len(value) > 0 && strings.IndexByte(csvFormulaTriggers, value[0]) >= 0 {
+		return "'" + value
+	}
+	return value
+}
+
+// sanitizeForCSV neutralizes every exported (untrusted, scanner-derived) string
+// field of a row before it is marshaled to CSV.
+func (d *Data) sanitizeForCSV() {
+	d.Repository = sanitizeCSVCell(d.Repository)
+	d.ArtifactDigest = sanitizeCSVCell(d.ArtifactDigest)
+	d.CVEId = sanitizeCSVCell(d.CVEId)
+	d.Package = sanitizeCSVCell(d.Package)
+	d.Version = sanitizeCSVCell(d.Version)
+	d.FixVersion = sanitizeCSVCell(d.FixVersion)
+	d.Severity = sanitizeCSVCell(d.Severity)
+	d.CWEIds = sanitizeCSVCell(d.CWEIds)
+	d.AdditionalData = sanitizeCSVCell(d.AdditionalData)
+	d.ScannerName = sanitizeCSVCell(d.ScannerName)
 }
 
 func (em *exportManager) buildQuery(ctx context.Context, params Params) (beego_orm.RawSeter, error) {
