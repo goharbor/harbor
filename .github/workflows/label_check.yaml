@@ -1,4 +1,6 @@
 name: Release Note Label Check
+permissions:
+  contents: read
 
 # Trigger the workflow on pull requests only
 on:
