@@ -73,7 +73,7 @@ func (p *purgeAPI) CreatePurgeSchedule(ctx context.Context, params purge.CreateP
 
 func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 	if params.Schedule == nil || params.Schedule.Schedule == nil {
-		return errors.BadRequestError(fmt.Errorf("schedule cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
 		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
@@ -301,7 +301,7 @@ func (p *purgeAPI) UpdatePurgeSchedule(ctx context.Context, params purge.UpdateP
 
 func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 	if params.Schedule == nil || params.Schedule.Schedule == nil {
-		return errors.BadRequestError(fmt.Errorf("schedule cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
 		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
