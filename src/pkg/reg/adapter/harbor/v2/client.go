@@ -125,7 +125,7 @@ func (c *client) getAccessoryArts(project, repo string, art *artifact.Artifact, 
 			accArt.Tags = append(accArt.Tags, tag.Name)
 		}
 		*accArts = append(*accArts, accArt)
-		if err != c.getAccessoryArts(project, repo, art, labels, tags, accArts) {
+		if err := c.getAccessoryArts(project, repo, art, labels, tags, accArts); err != nil {
 			return err
 		}
 	}
