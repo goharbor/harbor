@@ -165,15 +165,23 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 }
 
 // cosignAcc builds a cosign signature accessory whose subject is subDigest
-func cosignAcc(id, artID int64, subDigest string) accessorymodel.Accessory {
+func accOfType(id, artID int64, subDigest, accType string) accessorymodel.Accessory {
 	return &basemodel.Default{
 		Data: accessorymodel.AccessoryData{
 			ID:                id,
 			ArtifactID:        artID,
 			SubArtifactDigest: subDigest,
-			Type:              accessorymodel.TypeCosignSignature,
+			Type:              accType,
 		},
 	}
+}
+
+func cosignAcc(id, artID int64, subDigest string) accessorymodel.Accessory {
+	return accOfType(id, artID, subDigest, accessorymodel.TypeCosignSignature)
+}
+
+func notationAcc(id, artID int64, subDigest string) accessorymodel.Accessory {
+	return accOfType(id, artID, subDigest, accessorymodel.TypeNotationSignature)
 }
 
 // subjectArtifactID matches an accessory query listing the accessories of the given artifact
@@ -228,6 +236,58 @@ func (c *controllerTestSuite) TestPopulateInheritedAccessoriesOwnSignature() {
 
 	c.Empty(art.InheritedAccessories)
 	c.accMgr.AssertNotCalled(c.T(), "List", mock.Anything, subjectArtifactID(int64(10)))
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesNotationFromParent() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+	parentSig := notationAcc(1, 100, "sha256:parent")
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{parentSig}, nil)
+
+	// notation signs a single digest just as cosign does, so an index signed with it leaves
+	// its children unsigned in exactly the same way
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}, Accessories: []accessorymodel.Accessory{}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Require().Len(art.InheritedAccessories, 1)
+	c.Equal(parentSig, art.InheritedAccessories[0])
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesOwnNotationSignature() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+
+	// a signature of either kind makes the artifact signed in its own right: inheriting the
+	// parent's cosign signature on top of it would attach an inherited entry to an artifact
+	// that is directly signed
+	art := &Artifact{
+		Artifact:    artifact.Artifact{ID: 1},
+		Accessories: []accessorymodel.Accessory{notationAcc(1, 100, "sha256:child")},
+	}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Empty(art.InheritedAccessories)
+	c.accMgr.AssertNotCalled(c.T(), "List", mock.Anything, subjectArtifactID(int64(10)))
+}
+
+func (c *controllerTestSuite) TestPopulateInheritedAccessoriesNonSignatureParent() {
+	c.artMgr.On("ListReferences", mock.Anything, mock.Anything).Return([]*artifact.Reference{
+		{ParentID: 10, ChildID: 1},
+	}, nil)
+	// an SBOM on the index describes the index alone and says nothing about its children,
+	// so only signatures are inherited
+	c.accMgr.On("List", mock.Anything, subjectArtifactID(int64(10))).
+		Return([]accessorymodel.Accessory{
+			accOfType(1, 100, "sha256:parent", accessorymodel.TypeHarborSBOM),
+		}, nil)
+
+	art := &Artifact{Artifact: artifact.Artifact{ID: 1}, Accessories: []accessorymodel.Accessory{}}
+	c.ctl.populateInheritedAccessories(nil, art)
+
+	c.Empty(art.InheritedAccessories)
 }
 
 func (c *controllerTestSuite) TestPopulateInheritedAccessoriesMultipleParents() {
