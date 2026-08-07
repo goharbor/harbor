@@ -30,13 +30,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
+	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/controller/project"
 	registryCtl "github.com/goharbor/harbor/src/controller/registry"
+	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	_ "github.com/goharbor/harbor/src/lib/cache/memory"
@@ -44,6 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	pkgRobot "github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	proxytesting "github.com/goharbor/harbor/src/testing/controller/proxy"
 	registrytesting "github.com/goharbor/harbor/src/testing/controller/registry"
@@ -58,16 +59,37 @@ func TestIsProxySession(t *testing.T) {
 	sc2 := proxycachesecret.NewSecurityContext("library/hello-world")
 	proxyCtx := security.NewContext(context.Background(), sc2)
 
-	user := &models.User{
-		Username: "robot$library+scanner-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	// Valid system scanner robot account (invisible, CreatorRef == 0)
+	sysScannerRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+scanner-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+			Visible:    false,
+			CreatorRef: 0,
+		},
 	}
-	userSc := local.NewSecurityContext(user)
-	scannerCtx := security.NewContext(context.Background(), userSc)
+	sysScannerSc := robotSc.NewSecurityContext(sysScannerRobot)
+	scannerCtx := security.NewContext(context.Background(), sysScannerSc)
 
-	otherRobot := &models.User{
-		Username: "robot$library+test-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+	// User-created robot account attempting proxy cache poisoning (Visible == true, CreatorRef > 0)
+	poisoningRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+scanner-attacker",
+			Visible:    true,
+			CreatorRef: 1,
+		},
 	}
-	userSc2 := local.NewSecurityContext(otherRobot)
+	poisoningSc := robotSc.NewSecurityContext(poisoningRobot)
+	poisoningCtx := security.NewContext(context.Background(), poisoningSc)
+
+	// Non scanner robot account
+	otherRobot := &robot.Robot{
+		Robot: pkgRobot.Robot{
+			Name:       "robot$library+test-8ec3b47a-fd29-11ee-9681-0242c0a87009",
+			Visible:    true,
+			CreatorRef: 1,
+		},
+	}
+	userSc2 := robotSc.NewSecurityContext(otherRobot)
 	nonScannerCtx := security.NewContext(context.Background(), userSc2)
 
 	cases := []struct {
@@ -86,9 +108,14 @@ func TestIsProxySession(t *testing.T) {
 			want: true,
 		},
 		{
-			name: `robot account`,
+			name: `system scanner robot account`,
 			in:   scannerCtx,
 			want: true,
+		},
+		{
+			name: `user-created robot prefixed with scanner (poisoning attempt)`,
+			in:   poisoningCtx,
+			want: false,
 		},
 		{
 			name: `non scanner robot`,
