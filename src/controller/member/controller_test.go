@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	comModels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -94,6 +95,16 @@ func (suite *MemberControllerTestSuite) TestAddProjectMemberWithUserGroup() {
 	mock.OnAnything(suite.memberManager, "AddProjectMember").Return(0, nil)
 	_, err = suite.controller.Create(nil, 1, Request{MemberGroup: UserGroup{ID: 2}, Role: 1})
 	suite.NoError(err)
+}
+
+func (suite *MemberControllerTestSuite) TestAddProjectMemberWithEmptyRequest() {
+	_, err := suite.controller.Create(context.Background(), 1, Request{})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
+
+	_, err = suite.controller.Create(context.Background(), 1, Request{Role: 1, MemberUser: User{UserID: -1}})
+	suite.Error(err)
+	suite.True(errors.IsErr(err, errors.BadRequestCode))
 }
 
 func (suite *MemberControllerTestSuite) TestIsProjectAdmin() {
