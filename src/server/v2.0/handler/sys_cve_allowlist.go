@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/allowlist"
 	"github.com/goharbor/harbor/src/pkg/allowlist/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -42,9 +43,14 @@ func (s systemCVEAllowListAPI) PutSystemCVEAllowlist(ctx context.Context, params
 		return s.SendError(ctx, err)
 	}
 	l := models.CVEAllowlist{}
-	l.ExpiresAt = params.Allowlist.ExpiresAt
-	for _, it := range params.Allowlist.Items {
-		l.Items = append(l.Items, models.CVEAllowlistItem{CVEID: it.CVEID})
+	if params.Allowlist != nil {
+		l.ExpiresAt = params.Allowlist.ExpiresAt
+		for _, it := range params.Allowlist.Items {
+			if it == nil {
+				return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("allowlist item cann't be nil"))
+			}
+			l.Items = append(l.Items, models.CVEAllowlistItem{CVEID: it.CVEID})
+		}
 	}
 	if err := s.mgr.SetSys(ctx, l); err != nil {
 		return s.SendError(ctx, err)
