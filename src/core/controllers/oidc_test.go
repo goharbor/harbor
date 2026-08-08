@@ -155,6 +155,36 @@ func TestOIDCCLILoginFailureFlow(t *testing.T) {
 	assert.Contains(t, failed.Error, "access_denied")
 }
 
+func TestOIDCBrowserLoginFlowRemainsSessionBacked(t *testing.T) {
+	cacheSetup(t)
+	provider := sharedFakeOIDCProvider(t)
+	configureOIDCTest(t, provider.server.URL, true)
+	handler := newOIDCTestHandler()
+
+	loginReq := httptest.NewRequest(http.MethodGet, common.OIDCLoginPath+"?redirect_url=%2Fprojects", nil)
+	loginRec := httptest.NewRecorder()
+	handler.ServeHTTP(loginRec, loginReq)
+
+	require.Equal(t, http.StatusFound, loginRec.Code)
+	loginLocation := loginRec.Header().Get("Location")
+	require.NotEmpty(t, loginLocation)
+	assert.Contains(t, loginLocation, provider.server.URL+"/authorize")
+
+	state := stateFromRedirectURL(t, loginLocation)
+	cookies := loginRec.Result().Cookies()
+	require.NotEmpty(t, cookies)
+
+	callbackReq := httptest.NewRequest(http.MethodGet, fmt.Sprintf("%s?code=test-code&state=%s", common.OIDCCallbackPath, url.QueryEscape(state)), nil)
+	for _, cookie := range cookies {
+		callbackReq.AddCookie(cookie)
+	}
+	callbackRec := httptest.NewRecorder()
+	handler.ServeHTTP(callbackRec, callbackReq)
+
+	require.Equal(t, http.StatusFound, callbackRec.Code)
+	assert.Equal(t, "/projects", callbackRec.Header().Get("Location"))
+}
+
 func newOIDCTestHandler() http.Handler {
 	handler := http.Handler(web.BeeApp.Handlers)
 	mws := middlewares.MiddleWares()
