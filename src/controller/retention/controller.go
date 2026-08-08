@@ -166,7 +166,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 					needSch = true
 				}
 			}
-		case "":
+		case "", policy.TriggerKindManual:
 
 		default:
 			return fmt.Errorf("not support Trigger %s", p.Trigger.Kind)
