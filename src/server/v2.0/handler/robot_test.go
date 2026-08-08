@@ -143,6 +143,23 @@ func TestValidateName(t *testing.T) {
 	}
 }
 
+func TestValidateNilPermissionElement(t *testing.T) {
+	rAPI := &robotAPI{}
+	err := rAPI.validate(-1, robot.LEVELSYSTEM, []*models.RobotPermission{nil})
+	assert.Error(t, err)
+}
+
+func TestValidateNilAccessElement(t *testing.T) {
+	rAPI := &robotAPI{}
+	err := rAPI.validate(-1, robot.LEVELSYSTEM, []*models.RobotPermission{
+		{
+			Kind:   robot.LEVELSYSTEM,
+			Access: []*models.Access{nil},
+		},
+	})
+	assert.Error(t, err)
+}
+
 func TestContainsAccess(t *testing.T) {
 	system := rbac.PoliciesMap["System"]
 	systests := []struct {
