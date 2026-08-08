@@ -332,8 +332,16 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	}
 
 	for _, perm := range permissions {
+		if perm == nil {
+			return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+		}
 		if len(perm.Access) == 0 {
 			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+		}
+		for _, acc := range perm.Access {
+			if acc == nil {
+				return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+			}
 		}
 	}
 
