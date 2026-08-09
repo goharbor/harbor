@@ -94,7 +94,15 @@ func (gc *GarbageCollector) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (gc *GarbageCollector) Validate(_ job.Parameters) error {
+func (gc *GarbageCollector) Validate(params job.Parameters) error {
+	// Reject a missing, empty, or non-string redis URL here rather than
+	// letting init/parseParams silently coerce it to "": otherwise a
+	// non-dry-run job can complete its destructive mark/sweep phases before
+	// cleanCache finally fails on the empty value.
+	redisURL, ok := params["redis_url_reg"].(string)
+	if !ok || redisURL == "" {
+		return errors.New("missing or invalid job parameter 'redis_url_reg'")
+	}
 	return nil
 }
 

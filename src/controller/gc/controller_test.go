@@ -72,6 +72,27 @@ func (g *gcCtrTestSuite) TestStartUsesCurrentRedisURL() {
 	g.Equal("current-redis-url", gotParams["redis_url_reg"])
 }
 
+// TestStartFallsBackToPersistedRedisURL verifies that Start falls back to the
+// persisted value in policy.ExtraAttrs when _REDIS_URL_REG isn't set in the
+// current environment, instead of persisting an empty redis URL.
+func (g *gcCtrTestSuite) TestStartFallsBackToPersistedRedisURL() {
+	g.T().Setenv("_REDIS_URL_REG", "")
+
+	var gotParams map[string]any
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, testifymock.MatchedBy(func(m map[string]any) bool {
+		gotParams = m
+		return true
+	})).Return(int64(1), nil)
+	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	p := Policy{
+		ExtraAttrs: map[string]any{"redis_url_reg": "stale-persisted-url"},
+	}
+	_, err := g.ctl.Start(nil, p, task.ExecutionTriggerSchedule)
+	g.Nil(err)
+	g.Equal("stale-persisted-url", gotParams["redis_url_reg"])
+}
+
 func (g *gcCtrTestSuite) TestStop() {
 	g.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	g.Nil(g.ctl.Stop(nil, 1))
