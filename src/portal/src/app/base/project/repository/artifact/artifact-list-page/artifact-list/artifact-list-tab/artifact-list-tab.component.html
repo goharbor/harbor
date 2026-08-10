@@ -415,6 +415,22 @@
                         shape="check-circle"
                         size="20"
                         class="signed"></clr-icon>
+                    } @if (artifact.signed === 'inherited') {
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="check-circle"
+                            size="20"
+                            class="signed-inherited"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="top-right"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'ARTIFACT.INHERITED_SIGNATURE' | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
                     } @if (artifact.signed === 'false') {
                     <clr-icon
                         shape="times-circle"

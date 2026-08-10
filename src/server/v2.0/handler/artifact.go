@@ -95,7 +95,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithAccessory, nil)
+		params.WithLabel, params.WithAccessory, nil, params.WithInheritedAccessory)
 
 	// get the total count of artifacts
 	total, err := a.artCtl.Count(ctx, query)
@@ -129,7 +129,7 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	}
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithAccessory, nil)
+		params.WithLabel, params.WithAccessory, nil, params.WithInheritedAccessory)
 
 	// get the artifact
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
@@ -505,12 +505,15 @@ func (a *artifactAPI) RequireLabelInProject(ctx context.Context, projectID, labe
 	return nil
 }
 
-func option(withTag, withImmutableStatus, withLabel, withAccessory *bool, latestInRepository *bool) *artifact.Option {
+func option(withTag, withImmutableStatus, withLabel, withAccessory *bool, latestInRepository *bool, withInheritedAccessory *bool) *artifact.Option {
 	option := &artifact.Option{
-		WithTag:            true, // return the tag by default
-		WithLabel:          lib.BoolValue(withLabel),
-		WithAccessory:      true, // return the accessory by default
-		LatestInRepository: lib.BoolValue(latestInRepository),
+		WithTag:       true, // return the tag by default
+		WithLabel:     lib.BoolValue(withLabel),
+		WithAccessory: true, // return the accessory by default
+		// the inherited accessories cost an extra reference lookup per artifact, so unlike
+		// the accessories they are opt-in rather than returned by default
+		WithInheritedAccessory: lib.BoolValue(withInheritedAccessory),
+		LatestInRepository:     lib.BoolValue(latestInRepository),
 	}
 
 	if withTag != nil {
