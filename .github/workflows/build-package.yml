@@ -63,6 +63,8 @@ jobs:
 
   BUILD_PACKAGE:
     needs: [BUILD_BASE_IMAGE]
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -79,11 +81,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master
-        with:
-          docker_version: 20.10
-          docker_channel: stable
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:

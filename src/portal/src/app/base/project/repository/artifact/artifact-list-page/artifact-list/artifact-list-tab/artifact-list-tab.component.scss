@@ -174,6 +174,14 @@
   color: #00d40f;
 }
 
+// deliberately not the green of a direct signature: the artifact carries no signature of
+// its own and is only covered by the one on the index that references it. The Clarity
+// neutral-status token rather than a literal, so the icon tracks the light/dark theme
+// instead of staying darker than the text beside it in dark mode.
+.signed-inherited {
+  color: var(--cds-alias-status-neutral);
+}
+
 .mb-05 {
   margin-bottom: 0.5rem;
 }
