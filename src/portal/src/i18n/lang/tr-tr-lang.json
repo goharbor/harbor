@@ -1054,6 +1054,7 @@
         "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Üst dizinin imzasından türetilmiştir. Bu yapıt doğrudan imzalanmamış.",
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "Additions",
         "ANNOTATION": "Annotations",

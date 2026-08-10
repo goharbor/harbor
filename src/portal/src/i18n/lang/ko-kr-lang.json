@@ -1053,6 +1053,7 @@
         "COPY_ERROR": "복사에 실패했습니다. 명령 참조를 수동으로 복사해 보세요."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "상위 인덱스의 서명에서 파생되었습니다. 이 아티팩트는 직접 서명되지 않았습니다.",
         "FILTER_FOR_ARTIFACTS": "아티팩트 필터",
         "ADDITIONS": "추가사항",
         "ANNOTATION": "주석",
