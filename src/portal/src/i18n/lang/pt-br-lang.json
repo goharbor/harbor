@@ -248,9 +248,16 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Por favor, insira -1 ou um número inteiro maior que 0.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir conteúdo em cache quando o registro upstream estiver indisponível",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opção para permitir que este projeto continue servindo conteúdo em cache mesmo se o artefato não for encontrado no registro upstream ou se o registro upstream estiver indisponível. Isso pode resultar em conteúdo desatualizado sendo servido se o registro upstream estiver indisponível.",
-        "NO_PROJECT": "Não encontramos nenhum projeto",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Filtro de repositório",
+        "REPOSITORY_FILTER_TOOLTIP": "Filtro opcional para limitar quais repositórios são armazenados em cache do registro upstream. 'Doublestar' (padrão) usa padrões glob com suporte a ** (ex.: library/**). 'Regex' usa expressões regulares, o padrão deve corresponder ao caminho completo do repositório (ex.: ^library/.*). Aplica-se apenas a projetos de cache proxy atuais.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "ex.: library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "REPOSITORY_FILTER_REGEX_INVALID": "O padrão de expressão regular é inválido.",
+        "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "O padrão doublestar tem colchetes ou chaves não balanceados.",
+        "NO_PROJECT": "Não encontramos nenhum projeto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",
@@ -1049,6 +1056,7 @@
         "COPY_ERROR": "Cópia falhou, por favor tente copiar o comando de referência manualmente."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Derivada da assinatura do índice pai. Este artefato não está assinado diretamente.",
         "FILTER_FOR_ARTIFACTS": "Filtrar",
         "ADDITIONS": "Informações Complementares",
         "ANNOTATION": "Anotações",

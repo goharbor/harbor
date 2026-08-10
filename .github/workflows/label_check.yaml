@@ -5,6 +5,10 @@ on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
 
+permissions:
+  pull-requests: read
+  contents: read
+
 env:
   GOPROXY: https://proxy.golang.org/
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -14,7 +18,7 @@ jobs:
   # - At most one two the main category labels
   check-label:
     name: Check release-note label set
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     steps:
       - uses: mheap/github-action-required-labels@v5
         with:

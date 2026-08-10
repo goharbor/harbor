@@ -99,8 +99,10 @@ func (d *DefaultManager) GetPolicy(ctx context.Context, id int64) (*policy.Metad
 	p.ID = id
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
-		if ok && len(cron.(string)) > 0 {
-			p.Trigger.Settings[policy.TriggerSettingNextScheduledTime] = strfmt.DateTime(utils.NextSchedule(cron.(string), time.Now()))
+		if ok {
+			if cronStr, isStr := cron.(string); isStr && len(cronStr) > 0 {
+				p.Trigger.Settings[policy.TriggerSettingNextScheduledTime] = strfmt.DateTime(utils.NextSchedule(cronStr, time.Now()))
+			}
 		}
 	}
 	return p, nil

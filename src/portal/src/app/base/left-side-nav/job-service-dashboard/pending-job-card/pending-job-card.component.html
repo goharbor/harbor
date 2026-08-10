@@ -7,31 +7,31 @@
             {{ 'REPLICATION.TOTAL' | translate }}: {{ total() }}
         </div>
         @if (!loading) { @if (jobQueue?.length) {
-        <div class="clr-row">
-            <div class="clr-col center">
+        <div class="clr-row queue-row">
+            <div class="clr-col-6 center">
                 <label class="clr-control-label text-truncate">
                     {{ jobQueue[0]?.job_type }}
                 </label>
             </div>
-            <div class="clr-col">{{ jobQueue[0]?.count || 0 }}</div>
+            <div class="clr-col-6 count">{{ jobQueue[0]?.count || 0 }}</div>
         </div>
         } @if (jobQueue?.length > 1) {
-        <div class="clr-row">
-            <div class="clr-col center">
+        <div class="clr-row queue-row">
+            <div class="clr-col-6 center">
                 <label class="clr-control-label text-truncate">
                     {{ jobQueue[1]?.job_type }}
                 </label>
             </div>
-            <div class="clr-col">{{ jobQueue[1]?.count || 0 }}</div>
+            <div class="clr-col-6 count">{{ jobQueue[1]?.count || 0 }}</div>
         </div>
         } @if (jobQueue?.length > 2) {
-        <div class="clr-row">
-            <div class="clr-col center">
+        <div class="clr-row queue-row">
+            <div class="clr-col-6 center">
                 <label class="clr-control-label text-truncate">{{
                     'JOB_SERVICE_DASHBOARD.OTHERS' | translate
                 }}</label>
             </div>
-            <div class="clr-col">{{ otherCount() }}</div>
+            <div class="clr-col-6 count">{{ otherCount() }}</div>
         </div>
         } } @if (loading) {
         <div class="loading">

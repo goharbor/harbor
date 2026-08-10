@@ -248,9 +248,16 @@
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Please enter -1 or an integer greater than 0.",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Serve stale content when upstream is unavailable",
         "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Enable this to allow this project to keep serving cached content even if the artifact is not found in the upstream registry or the upstream registry is unavailable. This can lead to stale content being served if the upstream registry is unavailable.",
-        "NO_PROJECT": "We couldn't find any projects",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Repository filter",
+        "REPOSITORY_FILTER_TOOLTIP": "Optional filter to limit which repositories are cached from the upstream registry. 'Doublestar' (default) uses glob-style patterns with ** support (e.g. library/**). 'Regex' uses regular expression patterns, the pattern must match the full repository path (e.g. ^library/.*). Only applies to the current proxy cache projects.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "e.g. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "REPOSITORY_FILTER_REGEX_INVALID": "The regular expression pattern is invalid.",
+        "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "The doublestar pattern has unbalanced brackets or braces.",
+        "NO_PROJECT": "We couldn't find any projects"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",
@@ -1046,6 +1053,7 @@
         "COPY_ERROR": "Copy failed, please try to manually copy the command references."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Derived from the signature on the parent index. This artifact is not signed directly.",
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "Additions",
         "ANNOTATION": "Annotations",

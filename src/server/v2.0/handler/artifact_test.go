@@ -18,11 +18,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
+	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -31,6 +35,27 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
 )
+
+func TestOption(t *testing.T) {
+	boolPtr := func(b bool) *bool { return &b }
+
+	// the accessories are returned by default, the inherited ones are not: resolving them
+	// costs a reference lookup per artifact, so a caller has to ask for them explicitly
+	opt := option(nil, nil, nil, nil, nil, nil)
+	assert.True(t, opt.WithAccessory)
+	assert.False(t, opt.WithInheritedAccessory)
+
+	opt = option(nil, nil, nil, nil, nil, boolPtr(false))
+	assert.False(t, opt.WithInheritedAccessory)
+
+	opt = option(nil, nil, nil, nil, nil, boolPtr(true))
+	assert.True(t, opt.WithInheritedAccessory)
+
+	// the two flags are independent of each other
+	opt = option(nil, nil, nil, boolPtr(false), nil, boolPtr(true))
+	assert.False(t, opt.WithAccessory)
+	assert.True(t, opt.WithInheritedAccessory)
+}
 
 func TestParse(t *testing.T) {
 	// with tag
@@ -187,6 +212,80 @@ func (suite *ArtifactTestSuite) TestGetVulnerabilitiesAddition() {
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.Empty(body)
+	}
+}
+
+// A child manifest of a signed index is covered by the signature on that index, but carries
+// no accessory of its own. The inherited accessories are reported in their own field so that
+// the accessories field keeps describing only what is really attached to this digest.
+func (suite *ArtifactTestSuite) TestGetArtifactInheritedAccessories() {
+	times := 2
+	suite.Security.On("IsAuthenticated").Return(true).Times(times)
+	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	mock.OnAnything(suite.Security, "Can").Return(true).Times(times)
+
+	child := "sha256:9572f7cdcee8591948c2963463447a53466950b3fc15a247fcad1917ca215a2f"
+	url := "/projects/library/repositories/photon/artifacts/" + child
+
+	// the artifact as the controller returns it when the inherited accessories were asked for
+	inherited := &artifact.Artifact{
+		Artifact: pkg_art.Artifact{ID: 1, Digest: child},
+		InheritedAccessories: []accessorymodel.Accessory{
+			&basemodel.Default{
+				Data: accessorymodel.AccessoryData{
+					ID:                1,
+					ArtifactID:        2,
+					SubArtifactDigest: "sha256:parent",
+					Type:              accessorymodel.TypeCosignSignature,
+				},
+			},
+		},
+	}
+
+	{
+		// default request: the option is off and the response is shaped exactly as before
+		var opt *artifact.Option
+		suite.artCtl.On("GetByReference", mock.Anything, mock.Anything, mock.Anything,
+			testifymock.MatchedBy(func(o *artifact.Option) bool { opt = o; return true })).
+			Return(&artifact.Artifact{Artifact: pkg_art.Artifact{ID: 1, Digest: child}}, nil).Once()
+
+		var body map[string]any
+		res, err := suite.GetJSON(url, &body)
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+
+		suite.Require().NotNil(opt)
+		suite.False(opt.WithInheritedAccessory, "the parent lookup must not run unless asked for")
+		suite.NotContains(body, "inherited_accessories", "the default response must not grow a new field")
+	}
+
+	{
+		// opted in: the inherited signature is reported, and only in its own field
+		var opt *artifact.Option
+		suite.artCtl.On("GetByReference", mock.Anything, mock.Anything, mock.Anything,
+			testifymock.MatchedBy(func(o *artifact.Option) bool { opt = o; return true })).
+			Return(inherited, nil).Once()
+
+		var body map[string]any
+		res, err := suite.GetJSON(url+"?with_inherited_accessory=true", &body)
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+
+		suite.Require().NotNil(opt)
+		suite.True(opt.WithInheritedAccessory)
+
+		// the artifact's own accessory list stays empty: it really is unsigned
+		suite.Empty(body["accessories"])
+
+		accs, ok := body["inherited_accessories"].([]any)
+		suite.Require().True(ok, "inherited_accessories must be present when opted in")
+		suite.Require().Len(accs, 1)
+		acc := accs[0].(map[string]any)
+		suite.Equal("signature.cosign", acc["type"])
+		// the subject is the parent index, which is what makes the entry self-describing:
+		// a consumer can see this signature does not verify against the requested digest
+		suite.Equal("sha256:parent", acc["subject_artifact_digest"])
+		suite.NotEqual(child, acc["subject_artifact_digest"])
 	}
 }
 
