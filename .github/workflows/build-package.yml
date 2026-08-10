@@ -63,6 +63,8 @@ jobs:
 
   BUILD_PACKAGE:
     needs: [BUILD_BASE_IMAGE]
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
