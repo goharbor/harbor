@@ -1,0 +1,13 @@
+# zizmor configuration — https://docs.zizmor.sh/configuration/
+#
+# CI gates on High severity only (see .github/workflows/zizmor.yml).
+# Everything listed here is a High finding that is either accepted or
+# tracked separately; nothing below silences a fixable issue.
+
+rules:
+  dangerous-triggers:
+    ignore:
+      # auto_assign_prs.yml needs pull_request_target to get a write token for
+      # PRs from forks. It never checks out or executes PR head content, so the
+      # usual pull_request_target escalation path does not apply.
+      - auto_assign_prs.yml
