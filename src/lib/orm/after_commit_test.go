@@ -58,7 +58,7 @@ func TestAfterCommit_QueuesWhenHooksPresent(t *testing.T) {
 
 	assert.False(t, ran, "hooks must not fire before commit")
 
-	cbs := h.drain()
+	cbs := h.close()
 	assert.Len(t, cbs, 1)
 
 	cbs[0]()
@@ -78,14 +78,14 @@ func TestTxHooks_AdoptKeepsRegistrationOrder(t *testing.T) {
 	queue(outer, "outer-before")
 	queue(inner, "inner-1")
 	queue(inner, "inner-2")
-	outer.adopt(inner.drain()) // savepoint released
+	outer.adopt(inner.close()) // savepoint released
 	queue(outer, "outer-after")
 
-	for _, fn := range outer.drain() {
+	for _, fn := range outer.close() {
 		fn()
 	}
 	assert.Equal(t, []string{"outer-before", "inner-1", "inner-2", "outer-after"}, fired)
-	assert.Empty(t, inner.afterCommit, "a drained sink must not keep its callbacks")
+	assert.Empty(t, inner.afterCommit, "a closed sink must not keep its callbacks")
 }
 
 // TestTxHooks_DroppedScopeLeavesParentIntact asserts that dropping a
@@ -98,7 +98,7 @@ func TestTxHooks_DroppedScopeLeavesParentIntact(t *testing.T) {
 	inner.add(func() {})
 	outer.add(func() {}) // registered while the nested scope was still open
 
-	inner.drain() // savepoint rolled back: sink discarded, never adopted
+	inner.close() // savepoint rolled back: sink discarded, never adopted
 
 	assert.Len(t, outer.afterCommit, 2)
 }
@@ -110,7 +110,47 @@ func TestTxHooks_AdoptEmpty(t *testing.T) {
 	outer.add(func() {})
 
 	outer.adopt(nil)
-	outer.adopt((&txHooks{}).drain())
+	outer.adopt((&txHooks{}).close())
 
 	assert.Len(t, outer.afterCommit, 1)
+}
+
+// TestTxHooks_ClosedScopeForwardsToParent asserts that registering through a
+// context whose scope has already ended is not silently lost: it lands on the
+// nearest enclosing scope that is still open, however deep the chain.
+func TestTxHooks_ClosedScopeForwardsToParent(t *testing.T) {
+	outer := &txHooks{}
+	middle := &txHooks{parent: outer}
+	inner := &txHooks{parent: middle}
+
+	middle.adopt(inner.close()) // savepoints released, both scopes ended
+	outer.adopt(middle.close())
+
+	ran := false
+	inner.add(func() { ran = true })
+
+	assert.False(t, ran, "forwarded callback must wait for the still-open scope")
+	assert.Len(t, outer.afterCommit, 1)
+
+	for _, fn := range outer.close() {
+		fn()
+	}
+	assert.True(t, ran)
+}
+
+// TestTxHooks_ClosedOutermostRunsInline asserts that once the outermost scope
+// is done there is no commit left to wait for, so a late registration runs
+// straight away rather than being queued into a sink nobody will fire.
+func TestTxHooks_ClosedOutermostRunsInline(t *testing.T) {
+	outer := &txHooks{}
+	inner := &txHooks{parent: outer}
+
+	outer.adopt(inner.close())
+	outer.close()
+
+	ran := false
+	inner.add(func() { ran = true })
+
+	assert.True(t, ran)
+	assert.Empty(t, outer.afterCommit)
 }

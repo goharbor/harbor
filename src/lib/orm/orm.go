@@ -139,36 +139,55 @@ type hooksKey struct{}
 type txHooks struct {
 	mu          sync.Mutex
 	afterCommit []func()
+	parent      *txHooks // enclosing scope, nil for the outermost one
+	closed      bool     // scope ended: registrations forward instead of queueing
 }
 
+// add queues fn for this scope. A caller that kept hold of a context whose
+// scope has already ended registers against the enclosing scope instead, so
+// the callback is still tied to a live transaction rather than lost; once the
+// outermost scope is done there is nothing left to wait for and fn runs now.
 func (h *txHooks) add(fn func()) {
 	h.mu.Lock()
-	h.afterCommit = append(h.afterCommit, fn)
+	if !h.closed {
+		h.afterCommit = append(h.afterCommit, fn)
+		h.mu.Unlock()
+		return
+	}
+	parent := h.parent
 	h.mu.Unlock()
+
+	if parent != nil {
+		parent.add(fn)
+		return
+	}
+	safeInvoke(fn)
 }
 
 // adopt takes over the callbacks of a nested scope that released its savepoint,
 // so they fire together with this scope's own once the outermost tx commits.
 func (h *txHooks) adopt(cbs []func()) {
-	if len(cbs) == 0 {
-		return
+	for _, fn := range cbs {
+		h.add(fn)
 	}
-	h.mu.Lock()
-	h.afterCommit = append(h.afterCommit, cbs...)
-	h.mu.Unlock()
 }
 
-func (h *txHooks) drain() []func() {
+// close ends this scope and hands back the callbacks it queued. What happens
+// to them is the caller's decision: fired, adopted by the enclosing scope, or
+// dropped on rollback.
+func (h *txHooks) close() []func() {
 	h.mu.Lock()
 	cbs := h.afterCommit
 	h.afterCommit = nil
+	h.closed = true
 	h.mu.Unlock()
 	return cbs
 }
 
 // AfterCommit registers fn to run after the enclosing WithTransaction commits
-// successfully. If the ctx is not inside a WithTransaction scope, fn runs
-// immediately on the caller's goroutine.
+// successfully. If the ctx is not inside a WithTransaction scope, or its scope
+// and every enclosing one have already ended, fn runs immediately on the
+// caller's goroutine — there is no commit left to wait for.
 //
 // This is the idiomatic way to schedule side effects that must not extend the
 // lifetime of a Postgres transaction — cache invalidation, metrics, events —
@@ -227,7 +246,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		// scope when it releases; the outermost scope, which has no enclosing
 		// sink to hand to, is the one that fires them.
 		parentHooks, _ := cx.Value(hooksKey{}).(*txHooks)
-		hooks := &txHooks{}
+		hooks := &txHooks{parent: parentHooks}
 		cx = context.WithValue(cx, hooksKey{}, hooks)
 
 		// When set multiple times, context.WithValue returns only the last ormer.
@@ -235,7 +254,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		cx = NewContext(cx, tx.TxOrmer)
 		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
-			hooks.drain() // discard this scope's unfired callbacks
+			hooks.close() // discard this scope's unfired callbacks
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
 				log.Errorf("rollback transaction failed: %v", e)
@@ -246,16 +265,16 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		}
 		span.AddEvent("commit transaction")
 		if err := tx.Commit(); err != nil {
-			hooks.drain() // commit failed, do not run this scope's hooks
+			hooks.close() // commit failed, do not run this scope's hooks
 			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
 			return err
 		}
 
-		if parentHooks != nil {
-			parentHooks.adopt(hooks.drain())
+		if cbs := hooks.close(); parentHooks != nil {
+			parentHooks.adopt(cbs)
 		} else {
-			for _, fn := range hooks.drain() {
+			for _, fn := range cbs {
 				safeInvoke(fn)
 			}
 		}

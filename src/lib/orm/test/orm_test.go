@@ -510,6 +510,55 @@ func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() 
 	suite.True(ranOuter, "hook registered against the outer scope must survive a nested rollback")
 }
 
+// TestAfterCommit_RegistrationAfterNestedReleaseStillFires asserts that a
+// caller holding on to a nested scope's context past that scope's release does
+// not lose its callback: the enclosing scope is still open, so the hook is
+// registered there and fires after the outermost commit.
+func (suite *OrmSuite) TestAfterCommit_RegistrationAfterNestedReleaseStillFires() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var retainedCtx context.Context
+	var ran, ranBeforeCommit bool
+
+	err := WithTransaction(func(outerCtx context.Context) error {
+		if err := WithTransaction(func(innerCtx context.Context) error {
+			retainedCtx = innerCtx
+			return nil
+		})(outerCtx); err != nil {
+			return err
+		}
+
+		// The savepoint is released, but the outer transaction is still open.
+		AfterCommit(retainedCtx, func() { ran = true })
+		ranBeforeCommit = ran
+
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.False(ranBeforeCommit, "hook must not fire before the outermost commit")
+	suite.True(ran, "hook registered through a released nested scope must not be lost")
+}
+
+// TestAfterCommit_RegistrationAfterOutermostCommitRunsInline asserts that once
+// the whole transaction is done, a late registration through one of its
+// contexts runs immediately rather than being dropped: there is no commit left
+// to wait for.
+func (suite *OrmSuite) TestAfterCommit_RegistrationAfterOutermostCommitRunsInline() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var retainedCtx context.Context
+	err := WithTransaction(func(txCtx context.Context) error {
+		retainedCtx = txCtx
+		return nil
+	})(ctx)
+	suite.NoError(err)
+
+	ran := false
+	AfterCommit(retainedCtx, func() { ran = true })
+	suite.True(ran, "hook registered after the transaction ended must run immediately")
+}
+
 func (suite *OrmSuite) TestReadOrCreate() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
