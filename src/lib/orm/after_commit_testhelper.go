@@ -18,12 +18,16 @@ import "context"
 
 // ContextWithAfterCommitHooksForTest returns a context that carries an
 // AfterCommit hooks sink without a real database transaction, plus a
-// function that runs all queued callbacks (simulating a commit).
+// drain function that runs all queued callbacks (simulating a commit).
 // It is intended only for unit tests that want to exercise code paths
 // registering AfterCommit callbacks in-transaction, without needing a
 // live ORM / Postgres harness.
 func ContextWithAfterCommitHooksForTest(ctx context.Context) (context.Context, func()) {
 	h := &txHooks{}
 	ctx = context.WithValue(ctx, hooksKey{}, h)
-	return ctx, h.fire
+	return ctx, func() {
+		for _, fn := range h.drain() {
+			safeInvoke(fn)
+		}
+	}
 }

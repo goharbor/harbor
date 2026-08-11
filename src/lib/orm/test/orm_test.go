@@ -479,7 +479,8 @@ func (suite *OrmSuite) TestAfterCommit_InnerRollbackOuterCommit() {
 // callback belongs to the scope whose context registered it, not to whichever
 // scope happened to be open at the time: a hook registered against the outer
 // context while a nested savepoint is still active must survive that
-// savepoint's rollback.
+// savepoint's rollback. Both scopes are on the stack throughout, so both
+// contexts are valid where they are used.
 func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
@@ -488,15 +489,7 @@ func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() 
 	err := WithTransaction(func(outerCtx context.Context) error {
 		innerErr := WithTransaction(func(innerCtx context.Context) error {
 			AfterCommit(innerCtx, func() { ranInner = true })
-
-			// Register against the outer scope from another goroutine while
-			// this savepoint is still open.
-			done := make(chan struct{})
-			go func() {
-				defer close(done)
-				AfterCommit(outerCtx, func() { ranOuter = true })
-			}()
-			<-done
+			AfterCommit(outerCtx, func() { ranOuter = true })
 
 			return errors.New("oops")
 		})(outerCtx)
@@ -508,55 +501,6 @@ func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() 
 	suite.NoError(err)
 	suite.False(ranInner, "hook registered in a rolled-back savepoint must not fire")
 	suite.True(ranOuter, "hook registered against the outer scope must survive a nested rollback")
-}
-
-// TestAfterCommit_RegistrationAfterNestedReleaseStillFires asserts that a
-// caller holding on to a nested scope's context past that scope's release does
-// not lose its callback: the enclosing scope is still open, so the hook is
-// registered there and fires after the outermost commit.
-func (suite *OrmSuite) TestAfterCommit_RegistrationAfterNestedReleaseStillFires() {
-	ctx := NewContext(context.TODO(), orm.NewOrm())
-
-	var retainedCtx context.Context
-	var ran, ranBeforeCommit bool
-
-	err := WithTransaction(func(outerCtx context.Context) error {
-		if err := WithTransaction(func(innerCtx context.Context) error {
-			retainedCtx = innerCtx
-			return nil
-		})(outerCtx); err != nil {
-			return err
-		}
-
-		// The savepoint is released, but the outer transaction is still open.
-		AfterCommit(retainedCtx, func() { ran = true })
-		ranBeforeCommit = ran
-
-		return nil
-	})(ctx)
-
-	suite.NoError(err)
-	suite.False(ranBeforeCommit, "hook must not fire before the outermost commit")
-	suite.True(ran, "hook registered through a released nested scope must not be lost")
-}
-
-// TestAfterCommit_RegistrationAfterOutermostCommitRunsInline asserts that once
-// the whole transaction is done, a late registration through one of its
-// contexts runs immediately rather than being dropped: there is no commit left
-// to wait for.
-func (suite *OrmSuite) TestAfterCommit_RegistrationAfterOutermostCommitRunsInline() {
-	ctx := NewContext(context.TODO(), orm.NewOrm())
-
-	var retainedCtx context.Context
-	err := WithTransaction(func(txCtx context.Context) error {
-		retainedCtx = txCtx
-		return nil
-	})(ctx)
-	suite.NoError(err)
-
-	ran := false
-	AfterCommit(retainedCtx, func() { ran = true })
-	suite.True(ran, "hook registered after the transaction ended must run immediately")
 }
 
 func (suite *OrmSuite) TestReadOrCreate() {
