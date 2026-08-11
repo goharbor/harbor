@@ -7,7 +7,6 @@ on:
 
 permissions:
   pull-requests: read
-  contents: read
 
 env:
   GOPROXY: https://proxy.golang.org/
