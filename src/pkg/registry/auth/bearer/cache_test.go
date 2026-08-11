@@ -144,8 +144,9 @@ func (c *cacheTestSuite) TestSet() {
 	c.Require().NotNil(c.cache.get(scope2))
 	c.Require().NotNil(c.cache.get(scope3))
 
-	// sleep 5 seconds to make sure all tokens expire
-	time.Sleep(5 * time.Second)
+	// dynamically expire tokens to avoid time.Sleep
+	token2.ExpiresIn = 0
+	token3.ExpiresIn = 0
 	// set the fourth token
 	// as the capacity is 2 and both token2 and token3 are expired, token2 and token3 should be removed
 	scope4 := []*scope{
