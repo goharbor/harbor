@@ -296,6 +296,18 @@
                 {{ 'PROJECT_CONFIG.AUTOSBOM_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
+        <clr-checkbox-container>
+            <label>Webhook</label>
+            <clr-checkbox-wrapper id="webhook-allow-private-ip-wrapper">
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    [(ngModel)]="projectPolicy.WebhookAllowPrivateIP"
+                    [disabled]="!hasChangeConfigRole"
+                    name="webhook-allow-private-ip" />
+                <label>Allow webhook send to private address</label>
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
         @if (systemInfo) {
         <div
             class="clr-form-control"

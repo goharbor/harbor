@@ -7533,6 +7533,10 @@ definitions:
         type: string
         description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
         x-nullable: true
+      webhook_allow_private_ip:
+        type: string
+        description: 'Whether to allow webhooks to send requests to individual private IPs. The valid values are "true", "false".'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:

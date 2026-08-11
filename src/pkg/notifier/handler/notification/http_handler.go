@@ -19,11 +19,13 @@ import (
 	"encoding/json"
 
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/formats"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 // HTTPHandler preprocess http event data and start the hook processing
@@ -84,11 +86,20 @@ func (h *HTTPHandler) process(ctx context.Context, event *model.HookEvent) error
 		return errors.Wrap(err, "error to marshal header")
 	}
 
+	allowPrivate := false
+	meta, err := metadata.Ctl.Get(ctx, event.ProjectID, proModels.ProMetaWebhookAllowPrivateIP)
+	if err == nil {
+		if meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
+			allowPrivate = true
+		}
+	}
+
 	j.Parameters = map[string]any{
-		"payload":          string(payload),
-		"address":          event.Target.Address,
-		"header":           string(headerBytes),
-		"skip_cert_verify": event.Target.SkipCertVerify,
+		"payload":                  string(payload),
+		"address":                  event.Target.Address,
+		"header":                   string(headerBytes),
+		"skip_cert_verify":         event.Target.SkipCertVerify,
+		"webhook_allow_private_ip": allowPrivate,
 	}
 	return notification.HookManager.StartHook(ctx, event, j)
 }

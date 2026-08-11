@@ -39,6 +39,7 @@ export class Project {
         max_upstream_conn: number;
         proxy_cache_local_on_not_found?: string | boolean;
         proxy_referrer_api: string | boolean;
+        webhook_allow_private_ip?: string | boolean;
     };
     constructor() {
         this.metadata = <any>{};

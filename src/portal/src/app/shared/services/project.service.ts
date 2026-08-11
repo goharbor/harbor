@@ -175,6 +175,10 @@ export class ProjectDefaultService extends ProjectService {
                         auto_sbom_generation: projectPolicy.GenerateSbomOnPush
                             ? 'true'
                             : 'false',
+                        webhook_allow_private_ip:
+                            projectPolicy.WebhookAllowPrivateIP
+                                ? 'true'
+                                : 'false',
                         reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
                         proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
                         proxy_cache_local_on_not_found:

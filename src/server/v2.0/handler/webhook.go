@@ -24,6 +24,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/controller/task"
 	webhook_ctl "github.com/goharbor/harbor/src/controller/webhook"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -33,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
@@ -143,20 +145,21 @@ func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params we
 		return n.SendError(ctx, err)
 	}
 
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
+		return n.SendError(ctx, err)
+	}
+
 	policy := &policy_model.Policy{}
 	if err := lib.JSONCopy(policy, params.Policy); err != nil {
 		log.Warningf("failed to call JSONCopy on notification policy when CreateWebhookPolicyOfProject, error: %v", err)
 	}
+	policy.ProjectID = projectID
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.validateTargets(policy); !ok {
-		return n.SendError(ctx, err)
-	}
-
-	projectID, err := getProjectID(ctx, projectNameOrID)
-	if err != nil {
+	if ok, err := n.validateTargets(ctx, policy); !ok {
 		return n.SendError(ctx, err)
 	}
 	policy.ProjectID = projectID
@@ -186,11 +189,12 @@ func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params we
 	if err := lib.JSONCopy(policy, params.Policy); err != nil {
 		log.Warningf("failed to call JSONCopy on notification policy when UpdateWebhookPolicyOfProject, error: %v", err)
 	}
+	policy.ProjectID = projectID
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.validateTargets(policy); !ok {
+	if ok, err := n.validateTargets(ctx, policy); !ok {
 		return n.SendError(ctx, err)
 	}
 
@@ -402,10 +406,31 @@ func (n *webhookAPI) GetSupportedEventTypes(ctx context.Context, params webhook.
 	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
 
-func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) {
+func (n *webhookAPI) validateTargets(ctx context.Context, policy *policy_model.Policy) (bool, error) {
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessagef("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
+
+	allowPrivate := false
+	if policy.ProjectID > 0 {
+		meta, err := metadata.Ctl.Get(ctx, policy.ProjectID, proModels.ProMetaWebhookAllowPrivateIP)
+		if err == nil && meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
+			allowPrivate = true
+		}
+	} else if projectNameOrID, ok := ctx.Value("projectNameOrID").(string); ok {
+		// Try to parse ProjectID from context if it's not set in policy yet
+		if pid, err := getProjectID(ctx, projectNameOrID); err == nil && pid > 0 {
+			meta, err := metadata.Ctl.Get(ctx, pid, proModels.ProMetaWebhookAllowPrivateIP)
+			if err == nil && meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
+				allowPrivate = true
+			}
+		}
+	}
+
+	if allowPrivate {
+		ctx = context.WithValue(ctx, lib.AllowPrivateIPKey, true)
+	}
+
 	for i, target := range policy.Targets {
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
@@ -413,6 +438,11 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		}
 		// Prevent SSRF security issue #3755
 		target.Address = url.Scheme + "://" + url.Host + url.Path
+		address, err := lib.ValidatePublicHTTPURL(ctx, target.Address, false)
+		if err != nil {
+			return false, err
+		}
+		target.Address = address
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)

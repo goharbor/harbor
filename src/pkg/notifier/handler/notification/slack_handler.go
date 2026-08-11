@@ -24,9 +24,11 @@ import (
 	"text/template"
 
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
 const (
@@ -118,10 +120,19 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 		return fmt.Errorf("convert payload to slack body failed: %v", err)
 	}
 
+	allowPrivate := false
+	meta, err := metadata.Ctl.Get(ctx, event.ProjectID, proModels.ProMetaWebhookAllowPrivateIP)
+	if err == nil {
+		if meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
+			allowPrivate = true
+		}
+	}
+
 	j.Parameters = map[string]any{
-		"payload":          payload,
-		"address":          event.Target.Address,
-		"skip_cert_verify": event.Target.SkipCertVerify,
+		"payload":                  payload,
+		"address":                  event.Target.Address,
+		"skip_cert_verify":         event.Target.SkipCertVerify,
+		"webhook_allow_private_ip": allowPrivate,
 	}
 	return notification.HookManager.StartHook(ctx, event, j)
 }
