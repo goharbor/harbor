@@ -25,9 +25,5 @@ import "context"
 func ContextWithAfterCommitHooksForTest(ctx context.Context) (context.Context, func()) {
 	h := &txHooks{}
 	ctx = context.WithValue(ctx, hooksKey{}, h)
-	return ctx, func() {
-		for _, fn := range h.close() {
-			safeInvoke(fn)
-		}
-	}
+	return ctx, h.fire
 }

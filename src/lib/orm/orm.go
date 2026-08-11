@@ -173,8 +173,8 @@ func (h *txHooks) adopt(cbs []func()) {
 }
 
 // close ends this scope and hands back the callbacks it queued. What happens
-// to them is the caller's decision: fired, adopted by the enclosing scope, or
-// dropped on rollback.
+// to them is the caller's decision: adopted by the enclosing scope, or dropped
+// on rollback. The outermost scope uses fire instead.
 func (h *txHooks) close() []func() {
 	h.mu.Lock()
 	cbs := h.afterCommit
@@ -184,10 +184,35 @@ func (h *txHooks) close() []func() {
 	return cbs
 }
 
+// fire runs the queued callbacks in registration order, and keeps going until
+// the queue is empty: a callback that registers another one, or a goroutine
+// registering through a retained context while the loop runs, is picked up
+// here in order rather than racing it. The scope closes only once nothing is
+// left, so from then on a late registration has no commit to wait for and the
+// inline path in add cannot reorder anything.
+func (h *txHooks) fire() {
+	for {
+		h.mu.Lock()
+		cbs := h.afterCommit
+		h.afterCommit = nil
+		if len(cbs) == 0 {
+			h.closed = true
+			h.mu.Unlock()
+			return
+		}
+		h.mu.Unlock()
+
+		for _, fn := range cbs {
+			safeInvoke(fn)
+		}
+	}
+}
+
 // AfterCommit registers fn to run after the enclosing WithTransaction commits
-// successfully. If the ctx is not inside a WithTransaction scope, or its scope
-// and every enclosing one have already ended, fn runs immediately on the
-// caller's goroutine — there is no commit left to wait for.
+// successfully, in registration order, on the goroutine that commits the
+// outermost transaction. If the ctx is not inside a WithTransaction scope, or
+// its scope and every enclosing one have already ended, fn runs immediately on
+// the caller's goroutine — there is no commit left to wait for.
 //
 // This is the idiomatic way to schedule side effects that must not extend the
 // lifetime of a Postgres transaction — cache invalidation, metrics, events —
@@ -271,12 +296,10 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 
-		if cbs := hooks.close(); parentHooks != nil {
-			parentHooks.adopt(cbs)
+		if parentHooks != nil {
+			parentHooks.adopt(hooks.close())
 		} else {
-			for _, fn := range cbs {
-				safeInvoke(fn)
-			}
+			hooks.fire()
 		}
 
 		return nil

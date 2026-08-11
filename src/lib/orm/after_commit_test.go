@@ -146,11 +146,33 @@ func TestTxHooks_ClosedOutermostRunsInline(t *testing.T) {
 	inner := &txHooks{parent: outer}
 
 	outer.adopt(inner.close())
-	outer.close()
+	outer.fire()
 
 	ran := false
 	inner.add(func() { ran = true })
 
 	assert.True(t, ran)
 	assert.Empty(t, outer.afterCommit)
+}
+
+// TestTxHooks_FireKeepsOrderOfLateRegistrations asserts that the firing loop
+// picks up callbacks registered while it runs instead of letting them execute
+// inline out of order, and only then closes the scope.
+func TestTxHooks_FireKeepsOrderOfLateRegistrations(t *testing.T) {
+	h := &txHooks{}
+
+	var fired []string
+	h.add(func() {
+		fired = append(fired, "first")
+		h.add(func() { fired = append(fired, "registered-while-firing") })
+	})
+	h.add(func() { fired = append(fired, "second") })
+
+	h.fire()
+
+	assert.Equal(t, []string{"first", "second", "registered-while-firing"}, fired)
+	assert.True(t, h.closed, "the scope must close once the queue is empty")
+
+	h.add(func() { fired = append(fired, "after-fire") })
+	assert.Equal(t, []string{"first", "second", "registered-while-firing", "after-fire"}, fired)
 }
