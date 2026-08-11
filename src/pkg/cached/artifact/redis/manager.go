@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/cached"
 )
@@ -176,8 +175,7 @@ func (m *Manager) cleanUp(ctx context.Context, art *artifact.Artifact) {
 	if err != nil {
 		log.Errorf("format artifact id key error: %v", err)
 	} else {
-		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, idIdx); err != nil {
 			log.Errorf("delete artifact cache key %s error: %v", idIdx, err)
 		}
 	}
@@ -187,7 +185,7 @@ func (m *Manager) cleanUp(ctx context.Context, art *artifact.Artifact) {
 	if err != nil {
 		log.Errorf("format artifact digest key error: %v", err)
 	} else {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, digestIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, digestIdx); err != nil {
 			log.Errorf("delete artifact cache key %s error: %v", digestIdx, err)
 		}
 	}

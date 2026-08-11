@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/lib/config"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
 )
 
@@ -90,5 +89,5 @@ func (m *Manager) Delete(ctx context.Context, digest string) error {
 		return err
 	}
 
-	return retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) })
+	return m.DeleteCache(ctx, key)
 }

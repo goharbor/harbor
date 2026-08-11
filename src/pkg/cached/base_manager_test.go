@@ -16,12 +16,14 @@ package cached
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/retry"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
@@ -84,6 +86,37 @@ func (m *baseManagerTestSuite) TestDeleteCache() {
 	m.cache.On("Delete", mock.Anything, "k1").Return(nil).Once()
 	err := m.mgr.DeleteCache(context.TODO(), "k1")
 	m.NoError(err)
+}
+
+func (m *baseManagerTestSuite) TestDeleteCacheAbortsOnCanceledContext() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := m.mgr.DeleteCache(ctx, "k1")
+	m.ErrorIs(err, context.Canceled)
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
+func (m *baseManagerTestSuite) TestDeleteCacheRetriesThenSucceeds() {
+	m.cache.On("Delete", mock.Anything, "k1").Return(errors.New("transient")).Once()
+	m.cache.On("Delete", mock.Anything, "k1").Return(nil).Once()
+
+	err := m.mgr.DeleteCache(context.TODO(), "k1")
+	m.NoError(err)
+	m.cache.AssertNumberOfCalls(m.T(), "Delete", 2)
+}
+
+func (m *baseManagerTestSuite) TestDeleteCacheBoundedTimeout() {
+	original := cacheDeleteRetryTimeout
+	cacheDeleteRetryTimeout = 50 * time.Millisecond
+	defer func() { cacheDeleteRetryTimeout = original }()
+
+	m.cache.On("Delete", mock.Anything, "k1").Return(errors.New("still down"))
+
+	start := time.Now()
+	err := m.mgr.DeleteCache(context.TODO(), "k1")
+	m.Less(time.Since(start), time.Second, "should give up around cacheDeleteRetryTimeout, not hang")
+	m.ErrorContains(err, retry.ErrRetryTimeout.Error())
 }
 
 func (m *baseManagerTestSuite) TestFlushAll() {
