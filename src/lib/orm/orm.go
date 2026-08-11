@@ -129,11 +129,13 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 // hooksKey holds the post-commit hooks sink of the innermost transaction scope.
 type hooksKey struct{}
 
-// txHooks is one WithTransaction scope's sink of AfterCommit callbacks. A
-// callback belongs to the scope whose context registered it, and only while
-// that scope's callback is active (see AfterCommit). A nested scope is a
-// savepoint: its sink is dropped on rollback, adopted by the enclosing scope
-// on release, and fired only by the outermost scope after commit.
+// txHooks collects AfterCommit callbacks for one WithTransaction scope.
+// The context passed to AfterCommit determines the scope; registration is
+// valid only while that scope's callback is active (see AfterCommit).
+//
+// A nested scope represents a savepoint. Its callbacks are discarded on
+// rollback or transferred to the enclosing scope on savepoint release. Only
+// the outermost scope executes callbacks, after its commit succeeds.
 type txHooks struct {
 	mu          sync.Mutex
 	afterCommit []func()
