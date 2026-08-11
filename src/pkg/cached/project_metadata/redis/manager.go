@@ -21,7 +21,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
@@ -125,7 +124,7 @@ func (m *Manager) Update(ctx context.Context, projectID int64, meta map[string]s
 	}
 
 	for iter.Next(ctx) {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, iter.Val()) }); err != nil {
+		if err = m.DeleteCache(ctx, iter.Val()); err != nil {
 			log.Errorf("delete project metadata cache key %s error: %v", iter.Val(), err)
 		}
 	}
@@ -139,8 +138,7 @@ func (m *Manager) cleanUp(ctx context.Context, projectID int64, meta ...string) 
 	if err != nil {
 		log.Errorf("format project metadata key error: %v", err)
 	} else {
-		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, key) }); err != nil {
+		if err = m.DeleteCache(ctx, key); err != nil {
 			log.Errorf("delete project metadata cache key %s error: %v", key, err)
 		}
 	}
