@@ -173,11 +173,11 @@ func (h *txHooks) drain() []func() {
 // so Go code cannot sit holding row locks while waiting on an external system.
 // Panics raised by fn are recovered and logged.
 //
-// The ctx must be the one the running WithTransaction callback was given, and
-// is valid only while that callback is on the stack; using it later has
-// undefined behavior. Callbacks run in registration order within a scope, a
-// nested scope's at the point its savepoint was released; any other ordering,
-// across scopes or goroutines, is unspecified.
+// ctx must derive from a context passed to an active WithTransaction callback.
+// Using it after that callback returns has undefined behavior. Within a scope,
+// callbacks run in registration order. Callbacks from a released nested scope
+// are inserted at the savepoint-release point. All other ordering, including
+// ordering across goroutines, is unspecified.
 func AfterCommit(ctx context.Context, fn func()) {
 	if fn == nil {
 		return
