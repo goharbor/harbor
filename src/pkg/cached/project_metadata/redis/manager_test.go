@@ -94,6 +94,31 @@ func (m *managerTestSuite) TestDelete() {
 	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
+func (m *managerTestSuite) TestDeleteContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	m.projectMetaMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	err := m.cachedManager.Delete(ctx, 100)
+	m.NoError(err, "delete itself still succeeds, cache cleanup is best-effort")
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
+func (m *managerTestSuite) TestUpdateContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	m.projectMetaMgr.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	m.iterator.On("Next", mock.Anything).Return(true).Once()
+	m.iterator.On("Next", mock.Anything).Return(false).Once()
+	m.iterator.On("Val").Return("project_metadata:projectID:100:meta:key")
+	m.cache.On("Scan", mock.Anything, mock.Anything).Return(m.iterator, nil).Once()
+	err := m.cachedManager.Update(ctx, 100, map[string]string{})
+	m.NoError(err)
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
 func (m *managerTestSuite) TestResourceType() {
 	t := m.cachedManager.ResourceType(m.ctx)
 	m.Equal("project_metadata", t)
