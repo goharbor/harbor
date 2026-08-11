@@ -101,9 +101,9 @@ func (suite *MiddlewareTestSuite) SetupTest() {
 		ProjectID: suite.artifact.ProjectID,
 		Name:      "library",
 		Metadata: map[string]string{
-			proModels.ProMetaPreventVul: "true",
+			proModels.ProMetaPreventVul:       "true",
 			proModels.ProMetaPreventUnscanned: "false",
-			proModels.ProMetaSeverity:   vuln.High.String(),
+			proModels.ProMetaSeverity:         vuln.High.String(),
 		},
 	}
 
@@ -306,6 +306,23 @@ func (suite *MiddlewareTestSuite) TestArtifactScanFailedPreventedByUnscannedPoli
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
 	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{ScanStatus: "Error"}, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusPreconditionFailed)
+}
+
+func (suite *MiddlewareTestSuite) TestArtifactNotScannedPreventedByUnscannedPolicyOnly() {
+	suite.project.Metadata[proModels.ProMetaPreventVul] = "false"
+	suite.project.Metadata[proModels.ProMetaPreventUnscanned] = "true"
+
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
