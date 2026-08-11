@@ -33,7 +33,9 @@ const (
 )
 
 // NormalizeLegacySeverityPolicy rewrites legacy severity=none to the equivalent
-// supported policy combination.
+// supported policy combination. It only fills in prevent_vul/prevent_unscanned
+// when the caller didn't already specify them explicitly in the same request,
+// so it never overrides a value the caller deliberately set.
 func NormalizeLegacySeverityPolicy(md *models.ProjectMetadata) {
 	if md == nil || md.Severity == nil {
 		return
@@ -44,8 +46,12 @@ func NormalizeLegacySeverityPolicy(md *models.ProjectMetadata) {
 	}
 
 	md.Severity = stringPtr(normalizedSeverity)
-	md.PreventVul = stringPtr(metadataTrue)
-	md.PreventUnscanned = stringPtr(metadataTrue)
+	if md.PreventVul == nil {
+		md.PreventVul = stringPtr(metadataTrue)
+	}
+	if md.PreventUnscanned == nil {
+		md.PreventUnscanned = stringPtr(metadataTrue)
+	}
 }
 
 func stringPtr(s string) *string {
