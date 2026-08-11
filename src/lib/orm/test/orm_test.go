@@ -445,6 +445,71 @@ func (suite *OrmSuite) TestAfterCommit_OuterRollbackDropsNested() {
 	suite.False(ran, "hooks registered in nested scope must be discarded when outer rolls back")
 }
 
+// TestAfterCommit_InnerRollbackOuterCommit asserts that a nested scope
+// rolling back to its savepoint discards its own callbacks even when the
+// caller swallows the error and the outermost transaction commits —
+// the pattern exercised by TestNestedTransaction and TestNestedSavepoint.
+// Callbacks registered before and after the failed scope must survive.
+func (suite *OrmSuite) TestAfterCommit_InnerRollbackOuterCommit() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var ranBefore, ranInner, ranAfter bool
+
+	err := WithTransaction(func(ctx context.Context) error {
+		AfterCommit(ctx, func() { ranBefore = true })
+
+		// The inner scope fails; the caller handles the error and carries on.
+		innerErr := WithTransaction(func(ctx context.Context) error {
+			AfterCommit(ctx, func() { ranInner = true })
+			return errors.New("oops")
+		})(ctx)
+		suite.Error(innerErr)
+
+		AfterCommit(ctx, func() { ranAfter = true })
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.False(ranInner, "hook registered in a rolled-back savepoint must not fire")
+	suite.True(ranBefore, "hooks registered before the failed scope must survive")
+	suite.True(ranAfter, "hooks registered after the failed scope must survive")
+}
+
+// TestAfterCommit_OuterRegistrationSurvivesInnerRollback asserts that a
+// callback belongs to the scope whose context registered it, not to whichever
+// scope happened to be open at the time: a hook registered against the outer
+// context while a nested savepoint is still active must survive that
+// savepoint's rollback.
+func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var ranOuter, ranInner bool
+
+	err := WithTransaction(func(outerCtx context.Context) error {
+		innerErr := WithTransaction(func(innerCtx context.Context) error {
+			AfterCommit(innerCtx, func() { ranInner = true })
+
+			// Register against the outer scope from another goroutine while
+			// this savepoint is still open.
+			done := make(chan struct{})
+			go func() {
+				defer close(done)
+				AfterCommit(outerCtx, func() { ranOuter = true })
+			}()
+			<-done
+
+			return errors.New("oops")
+		})(outerCtx)
+		suite.Error(innerErr)
+
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.False(ranInner, "hook registered in a rolled-back savepoint must not fire")
+	suite.True(ranOuter, "hook registered against the outer scope must survive a nested rollback")
+}
+
 func (suite *OrmSuite) TestReadOrCreate() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
