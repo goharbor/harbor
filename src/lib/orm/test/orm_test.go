@@ -503,6 +503,36 @@ func (suite *OrmSuite) TestAfterCommit_OuterRegistrationSurvivesInnerRollback() 
 	suite.True(ranOuter, "hook registered against the outer scope must survive a nested rollback")
 }
 
+// TestAfterCommit_OrderWithinAndAcrossScopes asserts the ordering AfterCommit
+// documents: registration order within a scope, and the callbacks of a
+// released nested scope inserted at the point its savepoint was released.
+func (suite *OrmSuite) TestAfterCommit_OrderWithinAndAcrossScopes() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var fired []string
+	record := func(ctx context.Context, name string) {
+		AfterCommit(ctx, func() { fired = append(fired, name) })
+	}
+
+	err := WithTransaction(func(outerCtx context.Context) error {
+		record(outerCtx, "outer-before")
+
+		if err := WithTransaction(func(innerCtx context.Context) error {
+			record(innerCtx, "inner-1")
+			record(innerCtx, "inner-2")
+			return nil
+		})(outerCtx); err != nil {
+			return err
+		}
+
+		record(outerCtx, "outer-after")
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.Equal([]string{"outer-before", "inner-1", "inner-2", "outer-after"}, fired)
+}
+
 func (suite *OrmSuite) TestReadOrCreate() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
