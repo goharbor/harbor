@@ -129,13 +129,11 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 // hooksKey holds the post-commit hooks sink of the innermost transaction scope.
 type hooksKey struct{}
 
-// txHooks collects the callbacks registered via AfterCommit within one
-// WithTransaction scope. Every scope gets its own sink on its own context, so
-// a callback belongs to the scope whose context the caller registered it with,
-// no matter when it was registered. A nested scope maps to a savepoint: on
-// rollback its sink is dropped, and on savepoint release its callbacks are
-// adopted by the enclosing scope. Only the outermost scope fires them, after
-// its commit succeeds.
+// txHooks is one WithTransaction scope's sink of AfterCommit callbacks. A
+// callback belongs to the scope whose context registered it, and only while
+// that scope's callback is active (see AfterCommit). A nested scope is a
+// savepoint: its sink is dropped on rollback, adopted by the enclosing scope
+// on release, and fired only by the outermost scope after commit.
 type txHooks struct {
 	mu          sync.Mutex
 	afterCommit []func()
@@ -175,14 +173,11 @@ func (h *txHooks) drain() []func() {
 // so Go code cannot sit holding row locks while waiting on an external system.
 // Panics raised by fn are recovered and logged.
 //
-// The ctx must be the one the currently running WithTransaction callback was
-// given, and it is only valid while that callback is on the stack: a context
-// that outlives its scope no longer denotes a transaction, and registering
-// through it has no defined behaviour. Within one scope, callbacks run in
-// registration order; a nested scope's callbacks run at the point its
-// savepoint was released. Any other ordering — between scopes, or between
-// goroutines — is unspecified, so a callback must not depend on another
-// having run.
+// The ctx must be the one the running WithTransaction callback was given, and
+// is valid only while that callback is on the stack; using it later has
+// undefined behavior. Callbacks run in registration order within a scope, a
+// nested scope's at the point its savepoint was released; any other ordering,
+// across scopes or goroutines, is unspecified.
 func AfterCommit(ctx context.Context, fn func()) {
 	if fn == nil {
 		return
