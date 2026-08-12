@@ -14,6 +14,10 @@ env:
    REDIS_HOST: localhost
    REG_VERSION: v2.7.1-patch-2819-2553
    UI_BUILDER_VERSION: 1.6.0
+   # Optional, only needed by the "P2P Preheat By Manual" spec. When they are not
+   # configured the spec is skipped, the rest of the suite still runs.
+   DISTRIBUTION_ENDPOINT: ${{ vars.DISTRIBUTION_ENDPOINT }}
+   DRAGONFLY_AUTH_TOKEN: ${{ secrets.DRAGONFLY_AUTH_TOKEN }}
 
 on:
   pull_request:
@@ -40,13 +44,13 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: Set up Go 1.23
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: 1.23.2
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: '18'
-      - uses: actions/checkout@v5
+          node-version: '22'
+      - uses: actions/checkout@v7
         with:
           path: src/github.com/goharbor/harbor
       - name: setup env
@@ -69,6 +73,15 @@ jobs:
           curl -L https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
           chmod +x docker-compose
           sudo mv docker-compose /usr/local/bin
+          # Trust the Harbor CA so that both the runner and the docker daemon can
+          # talk to the instance over its self-signed TLS certificate, the manual
+          # preheat spec pushes images with docker login/docker push.
+          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
+          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
+          sudo update-ca-certificates
+          sudo mkdir -p /etc/docker/certs.d/$IP
+          sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$IP/ca.crt
+          sudo service docker restart
       - name: Start Harbor for E2E
         run: |
           cd src/github.com/goharbor/harbor
@@ -83,7 +96,7 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor/src/portal
           npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report

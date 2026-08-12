@@ -2,27 +2,29 @@ import { test, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 
 // Environment variables
-const LOCAL_REGISTRY: string = process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
-const LOCAL_REGISTRY_NAMESPACE: string = process.env.LOCAL_REGISTRY_NAMESPACE || 'harbor-ci';
+const LOCAL_REGISTRY: string =
+    process.env.LOCAL_REGISTRY || 'registry.goharbor.io';
+const LOCAL_REGISTRY_NAMESPACE: string =
+    process.env.LOCAL_REGISTRY_NAMESPACE || 'harbor-ci';
 const ip: string = process.env.IP || 'localhost';
 const user: string = process.env.HARBOR_ADMIN || 'admin';
-const pwd: string = process.env.HARBOR_PASSWORD || 'Harbor12345';
+const pwd: string = process.env.HARBOR_ADMIN_PASSWD || 'Harbor12345';
 const dragonflyAuthToken: string = process.env.DRAGONFLY_AUTH_TOKEN || '';
-const distributionEndpoint: string = process.env.DISTRIBUTION_ENDPOINT || 'https://127.0.0.1';
+const distributionEndpoint: string =
+    process.env.DISTRIBUTION_ENDPOINT || 'https://127.0.0.1';
 
 /**
  * Executes a shell command and returns the output.
+ * The optional input is piped to the command's stdin, so that secrets never
+ * appear on the command line (which would be echoed in error messages).
  */
-function runCommand(command: string): string {
-    try {
-        const output = execSync(command, {
-            encoding: 'utf-8',
-            stdio: ['pipe', 'pipe', 'pipe'],
-        });
-        return output.trim();
-    } catch (error: any) {
-        throw error;
-    }
+function runCommand(command: string, input?: string): string {
+    const output = execSync(command, {
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        input,
+    });
+    return output.trim();
 }
 
 /**
@@ -41,7 +43,7 @@ function pushImageWithTag(
     const targetImage = `${ip}/${project}/${image}:${tag}`;
 
     runCommand(`docker pull ${sourceImage}`);
-    runCommand(`docker login -u ${user} -p ${pwd} ${ip}`);
+    runCommand(`docker login -u ${user} --password-stdin ${ip}`, pwd);
     runCommand(`docker tag ${sourceImage} ${targetImage}`);
     runCommand(`docker push ${targetImage}`);
     runCommand(`docker logout ${ip}`);
@@ -76,7 +78,10 @@ test('Distribution CRUD', async ({ page }) => {
     await expect(page.getByText(name)).toBeVisible();
 
     // Edit Distribution
-    await page.getByRole('row', { name: new RegExp(name) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(name) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Edit' }).click();
     await page.locator('#endpoint').fill(endpointNew);
@@ -85,7 +90,10 @@ test('Distribution CRUD', async ({ page }) => {
     await expect(page.getByText(endpointNew)).toBeVisible();
 
     // Delete Distribution
-    await page.getByRole('row', { name: new RegExp(name) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(name) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -149,7 +157,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
     await expect(page.getByText(policyName)).toBeVisible();
 
     // Edit P2P Preheat Policy
-    await page.getByRole('row', { name: new RegExp(policyName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(policyName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Edit' }).click();
     await page.locator('#repo').fill(repoNew);
@@ -159,7 +170,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
 
     // Try to delete distribution (should fail because policy is using it)
     await page.getByRole('link', { name: 'Distributions' }).click();
-    await page.getByRole('row', { name: new RegExp(distName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(distName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -171,7 +185,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
     await page.getByRole('link', { name: 'Projects' }).click();
     await page.getByRole('link', { name: projectName }).click();
     await page.getByRole('link', { name: 'P2P Preheat' }).click();
-    await page.getByRole('row', { name: new RegExp(policyName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(policyName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -180,7 +197,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
 
     // delete distribution
     await page.getByRole('link', { name: 'Distributions' }).click();
-    await page.getByRole('row', { name: new RegExp(distName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(distName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -189,7 +209,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
 
     // Cleanup: delete project
     await page.getByRole('link', { name: 'Projects' }).click();
-    await page.getByRole('row', { name: new RegExp(projectName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(projectName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -201,7 +224,10 @@ test('P2P Preheat Policy CRUD', async ({ page }) => {
 });
 
 test('P2P Preheat By Manual', async ({ page }) => {
-    test.skip(!process.env.DISTRIBUTION_ENDPOINT, 'Requires DISTRIBUTION_ENDPOINT env var (need_distribution_endpoint tag)');
+    test.skip(
+        !process.env.DISTRIBUTION_ENDPOINT,
+        'Requires DISTRIBUTION_ENDPOINT env var (need_distribution_endpoint tag)'
+    );
     test.setTimeout(30 * 60 * 1000); // 30 minutes
 
     const d = Date.now();
@@ -255,7 +281,10 @@ test('P2P Preheat By Manual', async ({ page }) => {
     await page.waitForTimeout(2000);
 
     // Execute P2P Preheat
-    await page.getByRole('row', { name: new RegExp(policyName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(policyName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Execute' }).click();
     await page.getByRole('button', { name: 'CONFIRM' }).click();
@@ -266,8 +295,11 @@ test('P2P Preheat By Manual', async ({ page }) => {
         await page.waitForTimeout(5000);
         await page.locator('.refresh-btn').click();
         await page.waitForTimeout(3000);
-        
-        const successVisible = await page.getByText('Success').isVisible().catch(() => false);
+
+        const successVisible = await page
+            .getByText('Success')
+            .isVisible()
+            .catch(() => false);
         if (successVisible) {
             verified = true;
             break;
@@ -276,15 +308,24 @@ test('P2P Preheat By Manual', async ({ page }) => {
     expect(verified).toBeTruthy();
 
     // Check that the correct image was preheated
-    await expect(page.getByText(`${projectName}/${image1}:${tag1}`)).toBeVisible();
+    await expect(
+        page.getByText(`${projectName}/${image1}:${tag1}`)
+    ).toBeVisible();
 
     // Verify: Check that other images were NOT preheated
-    await expect(page.getByText(`${projectName}/${image1}:${tag2}`)).not.toBeVisible();
-    await expect(page.getByText(`${projectName}/${image2}:${tag1}`)).not.toBeVisible();
+    await expect(
+        page.getByText(`${projectName}/${image1}:${tag2}`)
+    ).not.toBeVisible();
+    await expect(
+        page.getByText(`${projectName}/${image2}:${tag1}`)
+    ).not.toBeVisible();
 
     // Cleanup: delete policy
     await page.getByRole('link', { name: 'P2P Preheat' }).click();
-    await page.getByRole('row', { name: new RegExp(policyName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(policyName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -292,7 +333,10 @@ test('P2P Preheat By Manual', async ({ page }) => {
 
     // Cleanup: delete distribution
     await page.getByRole('link', { name: 'Distributions' }).click();
-    await page.getByRole('row', { name: new RegExp(distName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(distName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
@@ -300,7 +344,10 @@ test('P2P Preheat By Manual', async ({ page }) => {
 
     // Cleanup: delete project
     await page.getByRole('link', { name: 'Projects' }).click();
-    await page.getByRole('row', { name: new RegExp(projectName) }).locator('label').click();
+    await page
+        .getByRole('row', { name: new RegExp(projectName) })
+        .locator('label')
+        .click();
     await page.getByRole('button', { name: 'ACTION' }).click();
     await page.getByRole('button', { name: 'Delete' }).click();
     await page.getByRole('button', { name: 'DELETE' }).click();
