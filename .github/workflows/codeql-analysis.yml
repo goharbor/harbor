@@ -6,10 +6,6 @@ on:
   schedule:
     - cron: '0 16 * * 6'
 
-permissions:
-  security-events: write
-  contents: read
-
 jobs:
   CodeQL-Build:
 
