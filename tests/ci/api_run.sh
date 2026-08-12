@@ -19,6 +19,7 @@ set +e
 
 if [ -z "${DOCKER_USER}" ] || [ -z "${DOCKER_PWD}" ]; then
     echo "DOCKER_USER or DOCKER_PWD is not set"
+    exit 1
 fi
 
 docker ps
