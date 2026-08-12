@@ -9,6 +9,8 @@ on:
       - release-*
 jobs:
   BUILD_PACKAGE:
+    permissions:
+      contents: read
     env:
         BUILD_PACKAGE: true
     runs-on: ubuntu-latest
