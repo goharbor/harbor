@@ -405,6 +405,57 @@
                     }
                 </div>
             </div>
+            <div
+                class="clr-form-control mt-05"
+                [style.visibility]="
+                    isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'
+                ">
+                <label for="proxyCacheBasePath" class="clr-control-label">
+                    {{ 'PROJECT.PROXY_CACHE_BASE_PATH' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="bottom-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_BASE_PATH_TIP' | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="proxyCacheBasePathError">
+                    <input
+                        type="text"
+                        id="proxyCacheBasePath"
+                        [(ngModel)]="project.metadata.proxy_cache_base_path"
+                        name="proxyCacheBasePath"
+                        class="clr-input width-164 mr-10"
+                        [placeholder]="
+                            'PROJECT.PROXY_CACHE_BASE_PATH_PLACEHOLDER'
+                                | translate
+                        "
+                        autocomplete="off"
+                        (ngModelChange)="validateProxyCacheBasePath()" />
+                    @if (proxyCacheBasePathError) {
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    } @if (proxyCacheBasePathError) {
+                    <clr-control-error class="tooltip-content">
+                        {{
+                            'PROJECT.PROXY_CACHE_BASE_PATH_INPUT_TIP'
+                                | translate
+                        }}
+                    </clr-control-error>
+                    }
+                </div>
+            </div>
             <clr-checkbox-container
                 [style.visibility]="
                     isSystemAdmin && enableProxyCache ? 'visible' : 'hidden'

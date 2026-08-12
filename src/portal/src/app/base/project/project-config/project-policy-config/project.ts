@@ -40,6 +40,7 @@ export class Project {
         proxy_cache_filter_pattern?: string | null;
         proxy_cache_filter_kind?: string | null;
         proxy_cache_local_on_not_found?: string | boolean;
+        proxy_cache_base_path?: string;
         proxy_referrer_api?: string | boolean;
     };
     cve_allowlist?: object;

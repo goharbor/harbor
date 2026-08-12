@@ -258,7 +258,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "Düzenli ifade deseni geçersiz.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "Doublestar deseni dengesiz parantez veya süslü parantez içeriyor.",
-        "NO_PROJECT": "Herhangi bir proje bulunamadı"
+        "NO_PROJECT": "Herhangi bir proje bulunamadı",
+        "PROXY_CACHE_BASE_PATH": "Temel yol",
+        "PROXY_CACHE_BASE_PATH_TIP": "Üst kaynak kayıt defterinden çekilirken depo adının başına eklenen temel yol. Örneğin, 'dev' temel yolu ile 'proxy/image' çekildiğinde üst kaynaktan 'dev/image' alınır. Depo adını değiştirmemek için boş bırakın. Daha sonra değiştirilmesi yalnızca yeni çekmeler için geçerlidir: zaten önbelleğe alınmış imajlar adlarını korur ve bu adlar artık farklı bir üst kaynak deposunu gösterir.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "örn. dev veya dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Lütfen 'dev' veya 'dev/team' gibi geçerli bir küçük harfli depo yolu girin veya boş bırakın."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Özet",

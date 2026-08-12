@@ -115,7 +115,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	}()
 
 	// Handle dockerhub request without library prefix
-	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+	isDefault, name, err := defaultLibrary(ctx, p, art)
 	if err != nil {
 		return err
 	}
@@ -220,11 +220,14 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func defaultLibrary(ctx context.Context, registryID int64, a lib.ArtifactInfo) (bool, string, error) {
-	if registryID <= 0 {
+func defaultLibrary(ctx context.Context, p *proModels.Project, a lib.ArtifactInfo) (bool, string, error) {
+	if p.RegistryID <= 0 {
 		return false, "", nil
 	}
-	reg, err := registry.Ctl.Get(ctx, registryID)
+	if p.ProxyCacheBasePath() != "" {
+		return false, "", nil
+	}
+	reg, err := registry.Ctl.Get(ctx, p.RegistryID)
 	if err != nil {
 		return false, "", err
 	}
@@ -303,7 +306,7 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	}
 
 	// Handle dockerhub request without library prefix
-	defaultProj, name, err := defaultLibrary(ctx, p.RegistryID, art)
+	defaultProj, name, err := defaultLibrary(ctx, p, art)
 	if err != nil {
 		return err
 	}
@@ -384,8 +387,8 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	return nil
 }
 
-func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, _ *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
-	man, err := ctl.ProxyManifest(ctx, art, remote)
+func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	man, err := ctl.ProxyManifest(ctx, p, art, remote)
 	if err != nil {
 		return err
 	}
@@ -477,8 +480,8 @@ func DisableBlobAndManifestUploadMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, _ *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
-	exist, desc, err := ctl.HeadManifest(ctx, art, remote)
+func proxyManifestHead(ctx context.Context, w http.ResponseWriter, ctl proxy.Controller, p *proModels.Project, art lib.ArtifactInfo, remote proxy.RemoteInterface) error {
+	exist, desc, err := ctl.HeadManifest(ctx, p, art, remote)
 	if err != nil {
 		return err
 	}
@@ -542,7 +545,7 @@ func ProxyReferrerMiddleware() func(http.Handler) http.Handler {
 			return
 		}
 		// for any error, fallback to local registry
-		if proxyErr := proxyReferrerGet(r, w, art, remote, p.RegistryID); proxyErr != nil {
+		if proxyErr := proxyReferrerGet(r, w, art, remote, p); proxyErr != nil {
 			log.Errorf("failed to proxy the referrer API to upstream, error %v, fallback to local registry", proxyErr)
 			next.ServeHTTP(w, r)
 		}
@@ -590,13 +593,13 @@ func hasNextLink(headerMap map[string][]string) bool {
 }
 
 // rewritePaginationLinks rewrites any Link pagination headers to reference the local Harbor proxy-cache path instead of the upstream remote path.
-func rewritePaginationLinks(headerMap map[string][]string, art lib.ArtifactInfo) {
+func rewritePaginationLinks(headerMap map[string][]string, art lib.ArtifactInfo, p *proModels.Project) {
 	linkValues, ok := headerMap[link]
 	if !ok || len(linkValues) == 0 {
 		return
 	}
 
-	remoteRepo := proxy.GetRemoteRepo(art)
+	remoteRepo := proxy.GetRemoteRepo(art, p)
 	localRepo := art.Repository
 
 	remotePathPrefix := "/v2/" + remoteRepo + "/referrers/"
@@ -691,14 +694,14 @@ func serveCachedReferrers(ctx context.Context, w http.ResponseWriter, key string
 	return nil
 }
 
-func proxyReferrerGet(r *http.Request, w http.ResponseWriter, art lib.ArtifactInfo, remote proxy.RemoteInterface, registryID int64) error {
+func proxyReferrerGet(r *http.Request, w http.ResponseWriter, art lib.ArtifactInfo, remote proxy.RemoteInterface, p *proModels.Project) error {
 	c := libCache.Default()
 	if c == nil {
 		return fmt.Errorf("the global cache is not initialized")
 	}
 	ctx := r.Context()
 	// get registry status
-	reg, err := registry.Ctl.Get(ctx, registryID)
+	reg, err := registry.Ctl.Get(ctx, p.RegistryID)
 	if err != nil {
 		return err
 	}
@@ -708,7 +711,7 @@ func proxyReferrerGet(r *http.Request, w http.ResponseWriter, art lib.ArtifactIn
 		return serveCachedReferrers(ctx, w, key)
 	}
 
-	index, headerMap, err := remote.ListReferrers(proxy.GetRemoteRepo(art), art.Reference, r.URL.RawQuery)
+	index, headerMap, err := remote.ListReferrers(proxy.GetRemoteRepo(art, p), art.Reference, r.URL.RawQuery)
 	// if upstream return 404, return not found error
 	if errors.IsNotFoundErr(err) {
 		httpLib.SendError(w, err)
@@ -720,7 +723,7 @@ func proxyReferrerGet(r *http.Request, w http.ResponseWriter, art lib.ArtifactIn
 	}
 
 	// Rewrite upstream pagination links before caching or writing headers
-	rewritePaginationLinks(headerMap, art)
+	rewritePaginationLinks(headerMap, art, p)
 
 	// append local referrers (source=local) only on the last page of remote results
 	isLastPage := !hasNextLink(headerMap)

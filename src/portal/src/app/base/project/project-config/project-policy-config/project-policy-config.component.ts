@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { compareValue, clone } from '../../../../shared/units/utils';
+import {
+    compareValue,
+    clone,
+    isValidProxyCacheBasePath,
+} from '../../../../shared/units/utils';
 import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
 import {
     ProjectCVEAllowlist,
@@ -64,6 +68,7 @@ export class ProjectPolicy {
     ProxyReferrerAPI?: boolean;
     ProxyCacheFilterPattern?: string | null;
     ProxyCacheFilterKind?: string | null;
+    ProxyCacheBasePath?: string;
 
     constructor() {
         this.Public = false;
@@ -81,6 +86,7 @@ export class ProjectPolicy {
         this.ProxyReferrerAPI = false;
         this.ProxyCacheFilterPattern = null;
         this.ProxyCacheFilterKind = 'doublestar';
+        this.ProxyCacheBasePath = '';
     }
 
     initByProject(pro: Project) {
@@ -110,6 +116,7 @@ export class ProjectPolicy {
             pro.metadata.proxy_cache_filter_pattern || null;
         this.ProxyCacheFilterKind =
             pro.metadata.proxy_cache_filter_kind || 'doublestar';
+        this.ProxyCacheBasePath = pro.metadata.proxy_cache_base_path ?? '';
     }
 }
 const PAGE_SIZE: number = 100;
@@ -173,6 +180,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     bandwidthError: string | null = null;
     maxUpstreamConnError: string | null = null;
     repositoryFilterError: string | null = null;
+    proxyCacheBasePathError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
@@ -263,6 +271,18 @@ export class ProjectPolicyConfigComponent implements OnInit {
         } else {
             this.repositoryFilterError = null;
         }
+    }
+
+    validateProxyCacheBasePath(): void {
+        if (isValidProxyCacheBasePath(this.projectPolicy.ProxyCacheBasePath)) {
+            this.proxyCacheBasePathError = null;
+            return;
+        }
+        this.translate
+            .get('PROJECT.PROXY_CACHE_BASE_PATH_INPUT_TIP')
+            .subscribe((res: string) => {
+                this.proxyCacheBasePathError = res;
+            });
     }
 
     getRegistries() {
@@ -360,6 +380,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
             response => {
                 this.orgProjectPolicy.initByProject(response);
                 this.projectPolicy.initByProject(response);
+                this.proxyCacheBasePathError = null;
                 // get projectAllowlist
                 if (!response.cve_allowlist) {
                     response.cve_allowlist = {
@@ -419,6 +440,11 @@ export class ProjectPolicyConfigComponent implements OnInit {
         if (!this.hasChanges() && !this.hasAllowlistChanged) {
             return;
         }
+        this.validateProxyCacheBasePath();
+        if (this.proxyCacheBasePathError) {
+            this.errorHandler.error(this.proxyCacheBasePathError);
+            return;
+        }
         this.onGoing = true;
         this.projectService
             .updateProjectPolicy(
@@ -460,6 +486,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.bandwidthError = null;
         this.maxUpstreamConnError = null;
         this.repositoryFilterError = null;
+        this.proxyCacheBasePathError = null;
     }
 
     confirmCancel(ack: ConfirmationAcknowledgement): void {
