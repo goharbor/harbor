@@ -86,7 +86,7 @@ jobs:
         with:
           path: src/github.com/goharbor/harbor
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: 1.26.4
           cache-dependency-path: src/go.sum
