@@ -13,6 +13,10 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { JobserviceService } from '../../../../../ng-swagger-gen/services/jobservice.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../services/skip-session-renewal.service';
 
 export const HEALTHY_TIME: number = 24; //  unit hours
 export const CHECK_HEALTH_INTERVAL: number = 15 * 60 * 1000; //15 minutes, unit ms
@@ -24,7 +28,10 @@ export class JobServiceDashboardHealthCheckService {
     private _hasUnhealthyQueue: boolean = false;
     private _hasManuallyClosed: boolean = false;
 
-    constructor(private jobServiceService: JobserviceService) {}
+    constructor(
+        private jobServiceService: JobserviceService,
+        private skipSessionRenewalService: SkipSessionRenewalService
+    ) {}
 
     hasUnhealthyQueue(): boolean {
         return this._hasUnhealthyQueue;
@@ -42,10 +49,13 @@ export class JobServiceDashboardHealthCheckService {
     }
 
     checkHealth(): void {
-        this.jobServiceService.listJobQueues().subscribe(res => {
-            this._hasUnhealthyQueue = res?.some(
-                item => item.latency >= HEALTHY_TIME * 60 * 60
-            );
-        });
+        this.jobServiceService
+            .listJobQueues()
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
+            .subscribe(res => {
+                this._hasUnhealthyQueue = res?.some(
+                    item => item.latency >= HEALTHY_TIME * 60 * 60
+                );
+            });
     }
 }

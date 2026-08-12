@@ -24,6 +24,7 @@ import { getSizeNumber, getSizeUnit } from '../../../../shared/units/utils';
     selector: 'statistics-panel',
     templateUrl: 'statistics-panel.component.html',
     styleUrls: ['statistics-panel.component.scss'],
+    standalone: false,
 })
 export class StatisticsPanelComponent implements OnInit, OnDestroy {
     originalCopy: Statistic;

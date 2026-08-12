@@ -31,6 +31,7 @@ import { debounceTime } from 'rxjs/operators';
     selector: 'app-artifact-filter',
     templateUrl: './artifact-filter.component.html',
     styleUrls: ['./artifact-filter.component.scss'],
+    standalone: false,
 })
 export class ArtifactFilterComponent implements OnInit, OnDestroy {
     @Input()

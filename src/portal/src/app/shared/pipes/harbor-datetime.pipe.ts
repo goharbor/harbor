@@ -36,6 +36,7 @@ const formatTransformers: Record<
 @Pipe({
     name: 'harborDatetime',
     pure: true,
+    standalone: false,
 })
 export class HarborDatetimePipe implements PipeTransform {
     transform(value: any, format?: string): string {

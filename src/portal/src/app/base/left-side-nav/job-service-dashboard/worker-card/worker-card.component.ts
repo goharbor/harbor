@@ -31,11 +31,16 @@ import {
 } from '../../../../shared/components/operation/operate';
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-shared-data.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-worker-card',
     templateUrl: './worker-card.component.html',
     styleUrls: ['./worker-card.component.scss'],
+    standalone: false,
 })
 export class WorkerCardComponent implements OnInit, OnDestroy {
     denominator: number = 0;
@@ -49,7 +54,8 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
         private jobServiceService: JobserviceService,
         private messageHandlerService: MessageHandlerService,
         private operationService: OperationService,
-        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService
+        private jobServiceDashboardSharedDataService: JobServiceDashboardSharedDataService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
 
     ngOnInit(): void {
@@ -91,6 +97,7 @@ export class WorkerCardComponent implements OnInit, OnDestroy {
     loopWorkerStatus(isAutoRefresh?: boolean) {
         this.jobServiceDashboardSharedDataService
             .retrieveAllWorkers(isAutoRefresh)
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(res => {
                 if (res) {
                     this.denominator = res.length;

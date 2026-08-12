@@ -31,27 +31,9 @@
                             }}</span>
                         </clr-tooltip-content>
                     </clr-tooltip>
-                    <div class="clr-select-wrapper">
-                        <select
-                            id="select-error"
-                            class="clr-select"
-                            name="storageUnit"
-                            [(ngModel)]="quotaHardLimitValue.storageUnit">
-                            <ng-template
-                                ngFor
-                                let-quotaUnit
-                                [ngForOf]="quotaUnits"
-                                let-i="index">
-                                <option *ngIf="i > 1" [value]="quotaUnit.UNIT">
-                                    {{ quotaUnit?.UNIT }}
-                                </option>
-                            </ng-template>
-                        </select>
-                    </div>
 
-                    <div
-                        class="progress-block progress-min-width progress-div"
-                        *ngIf="!defaultTextsObj.isSystemDefaultQuota">
+                    @if (!defaultTextsObj.isSystemDefaultQuota) {
+                    <div class="progress-block progress-min-width progress-div">
                         <div
                             class="progress success"
                             [class.danger]="
@@ -86,8 +68,8 @@
                                 data-displayval="100%"></progress>
                         </div>
                         <label class="progress-label">
-                            <!-- the comments of progress , when storageLimit !=-1  get integer and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage 
-                    the other : get suitable number and unit-->
+                            <!-- the comments of progress , when storageLimit !=-1  get integer and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage
+                the other : get suitable number and unit-->
                             {{
                                 +quotaHardLimitValue.storageLimit !== -1
                                     ? getIntegerAndUnit(
@@ -123,6 +105,7 @@
                             }}
                         </label>
                     </div>
+                    }
                 </label>
                 <input
                     clrInput
@@ -133,6 +116,20 @@
                     [(ngModel)]="quotaHardLimitValue.storageLimit"
                     id="storage"
                     size="40" />
+                <div clrInputSuffix class="clr-select-wrapper">
+                    <select
+                        id="select-error"
+                        class="clr-select"
+                        name="storageUnit"
+                        [(ngModel)]="quotaHardLimitValue.storageUnit">
+                        @for (quotaUnit of quotaUnits; track quotaUnit; let i =
+                        $index) { @if (i > 1) {
+                        <option [value]="quotaUnit.UNIT">
+                            {{ quotaUnit?.UNIT }}
+                        </option>
+                        } }
+                    </select>
+                </div>
                 <clr-control-error>{{
                     'PROJECT.STORAGE_QUOTA_TIP' | translate
                 }}</clr-control-error>

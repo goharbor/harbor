@@ -1,6 +1,8 @@
-<div class="row content-wrapper" *ngIf="!loading">
+@if (!loading) {
+<div class="row content-wrapper">
     <div class="col-md-8 md-container">
-        <div *ngIf="filesList && filesList.length > 0" class="md-div">
+        @if (filesList && filesList.length > 0) {
+        <div class="md-div">
             <clr-tree>
                 <clr-tree-node
                     *clrRecursiveFor="
@@ -22,18 +24,24 @@
                                 "></clr-icon>
                             {{ file.name }}
                         </div>
-                        <div *ngIf="file.size === 0 || file.size">
+                        @if (file.size === 0 || file.size) {
+                        <div>
                             {{ sizeTransform(file.size + '') }}
                         </div>
+                        }
                     </div>
                 </clr-tree-node>
             </clr-tree>
         </div>
-        <div class="pl-1" *ngIf="filesList && filesList.length === 0">
+        } @if (filesList && filesList.length === 0) {
+        <div class="pl-1">
             {{ 'ARTIFACT.NO_FILES' | translate }}
         </div>
+        }
     </div>
 </div>
-<div *ngIf="loading" class="clr-row mt-3 center">
+} @if (loading) {
+<div class="clr-row mt-3 center">
     <span class="spinner spinner-md"></span>
 </div>
+}

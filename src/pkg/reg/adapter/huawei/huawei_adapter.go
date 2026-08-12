@@ -24,6 +24,7 @@ import (
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -99,7 +100,7 @@ func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespac
 
 	urls := fmt.Sprintf("%s/dockyard/v2/visible/namespaces", a.registry.URL)
 
-	r, err := http.NewRequest("GET", urls, nil)
+	r, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return namespaces, err
 	}
@@ -185,7 +186,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			return err
 		}
 
-		r, err := http.NewRequest("POST", url, strings.NewReader(string(namespacebyte)))
+		r, err := http.NewRequest(http.MethodPost, url, strings.NewReader(string(namespacebyte)))
 		if err != nil {
 			return err
 		}
@@ -216,7 +217,7 @@ func (a *adapter) GetNamespace(namespaceStr string) (*model.Namespace, error) {
 	}
 
 	urls := fmt.Sprintf("%s/dockyard/v2/namespaces/%s", a.registry.URL, namespaceStr)
-	r, err := http.NewRequest("GET", urls, nil)
+	r, err := http.NewRequest(http.MethodGet, urls, nil)
 	if err != nil {
 		return namespace, err
 	}
@@ -268,18 +269,23 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		modifiers = append(modifiers, authorizer)
 	}
 
-	transport := common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure))
+	transport := common_http.GetHTTPTransport(
+		common_http.WithInsecure(registry.Insecure),
+		common_http.WithCACert(registry.CACertificate),
+	)
 	return &adapter{
 		Adapter:  native.NewAdapter(registry),
 		registry: registry,
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			modifiers...,
 		),
 		oriClient: &http.Client{
 			Transport: transport,
+			Timeout:   config.RegistryHTTPClientTimeout(),
 		},
 	}, nil
 }

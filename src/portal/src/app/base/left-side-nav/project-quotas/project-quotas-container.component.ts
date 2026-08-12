@@ -22,6 +22,7 @@ import { Configuration } from '../config/config';
     selector: 'app-project-quotas',
     templateUrl: './project-quotas-container.component.html',
     styleUrls: ['./project-quotas-container.component.scss'],
+    standalone: false,
 })
 export class ProjectQuotasContainerComponent implements OnInit {
     allConfig: Configuration = new Configuration();

@@ -88,13 +88,13 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	client := volcCR.New(sess)
 
 	// Get AuthorizationToken for docker login
-	bearRealm, bearService, err := getRealmService(registry.URL, registry.Insecure)
+	bearRealm, bearService, err := getRealmService(registry.URL, registry.Insecure, registry.CACertificate)
 	if err != nil {
 		log.Error("fail to ping the registry", "url", registry.URL)
 		return nil, err
 	}
 	cred := NewAuth(client, registryName)
-	var transport = util.GetHTTPTransport(registry.Insecure)
+	var transport = util.GetHTTPTransport(registry.Insecure, registry.CACertificate)
 	authorizer := bearer.NewAuthorizer(bearRealm, bearService, cred, transport)
 
 	return &adapter{

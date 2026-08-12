@@ -49,6 +49,8 @@ type Controller interface {
 	List(ctx context.Context, q *q.Query) ([]*model.UserGroup, error)
 	// Count user group count
 	Count(ctx context.Context, q *q.Query) (int64, error)
+	// SearchByName user groups by names with fuzzy search
+	SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error)
 }
 
 type controller struct {
@@ -89,10 +91,10 @@ func (c *controller) Update(ctx context.Context, id int, groupName string) error
 func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, error) {
 	if group.GroupType == common.LDAPGroupType {
 		ldapGroup, err := auth.SearchGroup(ctx, group.LdapGroupDN)
-		if err == ldap.ErrNotFound || ldapGroup == nil {
+		if errors.Is(err, ldap.ErrNotFound) || ldapGroup == nil {
 			return 0, errors.BadRequestError(nil).WithMessagef("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
 		}
-		if err == ldap.ErrDNSyntax {
+		if errors.Is(err, ldap.ErrDNSyntax) {
 			return 0, errors.BadRequestError(nil).WithMessagef("invalid DN syntax. DN: %v", group.LdapGroupDN)
 		}
 		if err != nil {
@@ -100,7 +102,7 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 		}
 	}
 	id, err := c.mgr.Create(ctx, group)
-	if err != nil && err == usergroup.ErrDupUserGroup {
+	if errors.Is(err, usergroup.ErrDupUserGroup) {
 		return 0, errors.ConflictError(nil).
 			WithMessagef("duplicate user group, group name:%v, group type: %v, ldap group DN: %v",
 				group.GroupName, group.GroupType, group.LdapGroupDN)
@@ -115,4 +117,8 @@ func (c *controller) Get(ctx context.Context, id int) (*model.UserGroup, error) 
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return c.mgr.Count(ctx, query)
+}
+
+func (c *controller) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
+	return c.mgr.SearchByName(ctx, name, limitSize)
 }

@@ -33,25 +33,29 @@
                     <option value="uaa_auth">
                         {{ 'CONFIG.AUTH_MODE_UAA' | translate }}
                     </option>
-                    <option *ngIf="showHttpAuth" value="http_auth">
+                    @if (showHttpAuth) {
+                    <option value="http_auth">
                         {{ 'CONFIG.AUTH_MODE_HTTP' | translate }}
                     </option>
+                    }
                     <option value="oidc_auth">
                         {{ 'CONFIG.AUTH_MODE_OIDC' | translate }}
                     </option>
                 </select>
             </div>
+            @if (currentConfig?.auth_mode?.value === 'oidc_auth') {
             <a
                 rel="noopener noreferrer"
                 href="https://openid.net/connect/"
-                *ngIf="currentConfig?.auth_mode?.value === 'oidc_auth'"
                 target="_blank"
                 class="more-info-link"
                 >{{ 'BUTTON.MORE_INFO' | translate }}</a
             >
+            }
         </div>
     </div>
-    <section *ngIf="currentConfig?.auth_mode?.value !== 'db_auth'">
+    @if (currentConfig?.auth_mode?.value !== 'db_auth') {
+    <section>
         <clr-checkbox-container>
             <label for="primaryAuthMode"
                 >{{ 'CONFIG.PRIMARY_AUTH_MODE' | translate }}
@@ -81,8 +85,8 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-
-    <section *ngIf="showUAA">
+    } @if (showUAA) {
+    <section>
         <clr-input-container>
             <label for="uaa-endpoint" class="required">{{
                 'CONFIG.UAA.ENDPOINT' | translate
@@ -137,8 +141,8 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-
-    <section *ngIf="showLdap">
+    } @if (showLdap) {
+    <section>
         <clr-input-container>
             <label for="ldapUrl" class="required"
                 >{{ 'CONFIG.LDAP.URL' | translate }}
@@ -232,7 +236,6 @@
                 'TOOLTIP.ITEM_REQUIRED' | translate
             }}</clr-control-error>
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapFilter">{{
                 'CONFIG.LDAP.FILTER' | translate
@@ -247,7 +250,6 @@
                 size="40"
                 [disabled]="disabled(currentConfig.ldap_filter)" />
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapUid" class="required"
                 >{{ 'CONFIG.LDAP.UID' | translate }}
@@ -278,7 +280,6 @@
                 'TOOLTIP.ITEM_REQUIRED' | translate
             }}</clr-control-error>
         </clr-input-container>
-
         <clr-select-container>
             <label for="ldapScope"
                 >{{ 'CONFIG.LDAP.SCOPE' | translate }}
@@ -312,7 +313,6 @@
                 </option>
             </select>
         </clr-select-container>
-
         <clr-input-container>
             <label for="ldapGroupBaseDN"
                 >{{ 'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate }}
@@ -341,7 +341,6 @@
                 size="40"
                 [disabled]="disabled(currentConfig.ldap_group_base_dn)" />
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapGroupFilter"
                 >{{ 'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate }}
@@ -370,7 +369,6 @@
                 size="40"
                 [disabled]="disabled(currentConfig.ldap_group_search_filter)" />
         </clr-input-container>
-
         <clr-input-container>
             <label for="ldapGroupGID"
                 >{{ 'CONFIG.LDAP.LDAP_GROUP_GID' | translate }}
@@ -401,7 +399,6 @@
                     disabled(currentConfig.ldap_group_attribute_name)
                 " />
         </clr-input-container>
-
         <!-- This is for ldap group admin dn -->
         <clr-input-container>
             <label for="ldapGroupAdminDN"
@@ -431,7 +428,6 @@
                 size="40"
                 [disabled]="disabled(currentConfig.ldap_group_admin_dn)" />
         </clr-input-container>
-
         <!-- End of ldap group admin dn -->
         <clr-input-container>
             <label for="ldapGroupAdminDN"
@@ -530,7 +526,8 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    <clr-checkbox-container *ngIf="showSelfReg">
+    } @if (showSelfReg) {
+    <clr-checkbox-container>
         <label for="selfReg"
             >{{ 'CONFIG.SELF_REGISTRATION' | translate }}
             <clr-tooltip>
@@ -542,20 +539,15 @@
                     clrPosition="top-right"
                     clrSize="lg"
                     *clrIfOpen>
-                    <span
-                        *ngIf="checkable; else elseBlock"
-                        class="tooltip-content"
-                        >{{
-                            'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE'
-                                | translate
-                        }}</span
-                    >
-                    <ng-template #elseBlock>
-                        <span class="tooltip-content">{{
-                            'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE'
-                                | translate
-                        }}</span>
-                    </ng-template>
+                    @if (checkable) {
+                    <span class="tooltip-content">{{
+                        'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE' | translate
+                    }}</span>
+                    } @else {
+                    <span class="tooltip-content">{{
+                        'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate
+                    }}</span>
+                    }
                 </clr-tooltip-content>
             </clr-tooltip>
         </label>
@@ -569,8 +561,8 @@
                 [disabled]="disabled(currentConfig.self_registration)" />
         </clr-checkbox-wrapper>
     </clr-checkbox-container>
-
-    <section *ngIf="showLdap">
+    } @if (showLdap) {
+    <section>
         <clr-checkbox-container>
             <label for="ldapVerifyCert"
                 >{{ 'CONFIG.LDAP.VERIFY_CERT' | translate }}
@@ -601,7 +593,8 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-    <section *ngIf="showHttpAuth">
+    } @if (showHttpAuth) {
+    <section>
         <clr-input-container>
             <label for="http_authproxy_endpoint" class="required">{{
                 'CONFIG.HTTP_AUTH.ENDPOINT' | translate
@@ -697,8 +690,8 @@
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
     </section>
-
-    <section *ngIf="showOIDC">
+    } @if (showOIDC) {
+    <section>
         <clr-input-container>
             <label class="required" for="oidcName"
                 >{{ 'CONFIG.OIDC.OIDC_PROVIDER' | translate }}
@@ -1027,6 +1020,7 @@
             <span>{{ redirectUrl }}/c/oidc/callback</span>
         </div>
     </section>
+    }
 </form>
 <div>
     <button
@@ -1044,15 +1038,16 @@
         [disabled]="!isValid() || !hasChanges() || inProcess()">
         {{ 'BUTTON.CANCEL' | translate }}
     </button>
+    @if (showTestingServerBtn) {
     <button
         type="button"
         id="ping-test"
         class="btn btn-outline"
         (click)="pingTestServer()"
-        *ngIf="showTestingServerBtn"
         [disabled]="!isConfigValidForTesting()">
         {{ (showLdap ? 'BUTTON.TEST_LDAP' : 'BUTTON.TEST_OIDC') | translate }}
     </button>
+    }
     <span
         id="forTestingLDAP"
         class="spinner spinner-inline"

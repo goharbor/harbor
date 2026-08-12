@@ -253,7 +253,7 @@ Test Case - Log Rotation Schedule Job
     Close Browser
 
 Test Case - Job Service Dashboard Schedules
-    [Tags]  job_service_schedules
+    [Tags]  job_service_dashboard_schedules
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${schedule_type}=  Set Variable  Custom

@@ -83,6 +83,7 @@ const fakeAppConfigService = {
     getConfig: function () {
         return {
             with_trivy: true,
+            harbor_version: 'v2.15.0',
         };
     },
 };

@@ -2,12 +2,15 @@
     [(clrModalOpen)]="isOpen"
     [clrModalStaticBackdrop]="staticBackdrop"
     [clrModalClosable]="closable">
-    <h3 *ngIf="isEdit" class="modal-title">
+    @if (isEdit) {
+    <h3 class="modal-title">
         {{ 'P2P_PROVIDER.EDIT_POLICY' | translate }}
     </h3>
-    <h3 *ngIf="!isEdit" class="modal-title">
+    } @if (!isEdit) {
+    <h3 class="modal-title">
         {{ 'P2P_PROVIDER.ADD_POLICY' | translate }}
     </h3>
+    }
     <div class="modal-body">
         <div class="align-center">
             <inline-alert class="modal-title"></inline-alert>
@@ -33,53 +36,47 @@
                             [(ngModel)]="policy.provider_id"
                             required>
                             <option class="display-none" value=""></option>
+                            @for (provider of providers; track provider) {
                             <option
                                 [selected]="policy.provider_id === provider.id"
-                                *ngFor="let provider of providers"
                                 value="{{ provider.id }}">
                                 {{ provider.provider }}
                             </option>
+                            }
                         </select>
-                        <clr-control-error
-                            *ngIf="
-                                provider.errors &&
-                                provider.errors.required &&
-                                (provider.dirty || provider.touched)
-                            ">
+                        @if ( provider.errors && provider.errors.required &&
+                        (provider.dirty || provider.touched) ) {
+                        <clr-control-error>
                             {{ 'P2P_PROVIDER.PROVIDER_REQUIRED' | translate }}
                         </clr-control-error>
+                        }
                     </clr-select-container>
-                    <div
-                        class="clr-form-control mt-0"
-                        *ngIf="!(providers && providers.length)">
+                    @if (!(providers && providers.length)) {
+                    <div class="clr-form-control mt-0">
                         <label class="clr-control-label width-6rem"></label>
                         <div class="clr-control-container width-380">
                             <div class="space-between">
-                                <span
-                                    class="alert-label"
-                                    *ngIf="isSystemAdmin()"
-                                    >{{
-                                        'P2P_PROVIDER.NO_PROVIDER' | translate
-                                    }}</span
-                                >
-                                <span
-                                    class="alert-label"
-                                    *ngIf="!isSystemAdmin()"
-                                    >{{
-                                        'P2P_PROVIDER.NEED_HELP' | translate
-                                    }}</span
-                                >
+                                @if (isSystemAdmin()) {
+                                <span class="alert-label">{{
+                                    'P2P_PROVIDER.NO_PROVIDER' | translate
+                                }}</span>
+                                } @if (!isSystemAdmin()) {
+                                <span class="alert-label">{{
+                                    'P2P_PROVIDER.NEED_HELP' | translate
+                                }}</span>
+                                } @if (isSystemAdmin()) {
                                 <a
-                                    *ngIf="isSystemAdmin()"
                                     class="go-link"
                                     routerLink="/harbor/distribution/instances"
                                     >{{
                                         'P2P_PROVIDER.PROVIDER' | translate
                                     }}</a
                                 >
+                                }
                             </div>
                         </div>
                     </div>
+                    }
 
                     <!-- name -->
                     <div class="clr-form-control">
@@ -116,33 +113,22 @@
                                     class="spinner spinner-inline"
                                     [hidden]="!checkNameOnGoing"></span>
                             </div>
-                            <clr-control-error
-                                *ngIf="
-                                    ((name.dirty || name.touched) &&
-                                        name.invalid) ||
-                                    isNameExisting
-                                ">
-                                <span
-                                    *ngIf="
-                                        !(
-                                            (name.dirty || name.touched) &&
-                                            name.invalid
-                                        ) && isNameExisting
-                                    "
-                                    >{{
-                                        'SCANNER.NAME_EXISTS' | translate
-                                    }}</span
-                                >
-                                <span
-                                    *ngIf="
-                                        (name.dirty || name.touched) &&
-                                        name.invalid
-                                    "
-                                    >{{
-                                        'P2P_PROVIDER.NAME_TOOLTIP' | translate
-                                    }}</span
-                                >
+                            @if ( ((name.dirty || name.touched) && name.invalid)
+                            || isNameExisting ) {
+                            <clr-control-error>
+                                @if ( !( (name.dirty || name.touched) &&
+                                name.invalid ) && isNameExisting ) {
+                                <span>{{
+                                    'SCANNER.NAME_EXISTS' | translate
+                                }}</span>
+                                } @if ( (name.dirty || name.touched) &&
+                                name.invalid ) {
+                                <span>{{
+                                    'P2P_PROVIDER.NAME_TOOLTIP' | translate
+                                }}</span>
+                                }
                             </clr-control-error>
+                            }
                         </div>
                     </div>
                     <!-- description -->
@@ -204,15 +190,12 @@
                                     'TAG_RETENTION.REP_SEPARATOR' | translate
                                 }}</clr-control-helper
                             >
-                            <clr-control-error
-                                class="margin-left-90px"
-                                *ngIf="
-                                    repo.errors &&
-                                    repo.errors.required &&
-                                    (repo.dirty || repo.touched)
-                                ">
+                            @if ( repo.errors && repo.errors.required &&
+                            (repo.dirty || repo.touched) ) {
+                            <clr-control-error class="margin-left-90px">
                                 {{ 'P2P_PROVIDER.REPO_REQUIRED' | translate }}
                             </clr-control-error>
+                            }
                         </div>
                     </div>
                     <!-- filters-tag -->
@@ -251,15 +234,12 @@
                                     'P2P_PROVIDER.TAG_SEPARATOR' | translate
                                 }}</clr-control-helper
                             >
-                            <clr-control-error
-                                class="margin-left-90px"
-                                *ngIf="
-                                    tag.errors &&
-                                    tag.errors.required &&
-                                    (tag.dirty || tag.touched)
-                                ">
+                            @if ( tag.errors && tag.errors.required &&
+                            (tag.dirty || tag.touched) ) {
+                            <clr-control-error class="margin-left-90px">
                                 {{ 'P2P_PROVIDER.TAG_REQUIRED' | translate }}
                             </clr-control-error>
+                            }
                         </div>
                     </div>
                     <div class="clr-form-control margin-top-06">
@@ -286,9 +266,8 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="clr-form-control margin-top-06"
-                        *ngIf="enableContentTrust">
+                    @if (enableContentTrust) {
+                    <div class="clr-form-control margin-top-06">
                         <label class="clr-control-label width-6rem">
                             <span>{{
                                 'P2P_PROVIDER.CRITERIA' | translate
@@ -329,31 +308,30 @@
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="clr-form-control margin-top-06 mt-1"
-                        *ngIf="preventVul">
+                    } @if (preventVul) {
+                    <div class="clr-form-control margin-top-06 mt-1">
                         <label for="repo" class="clr-control-label width-6rem">
-                            <ng-container *ngIf="!enableContentTrust">
-                                <span>{{
-                                    'P2P_PROVIDER.CRITERIA' | translate
-                                }}</span>
-                                <clr-tooltip>
-                                    <clr-icon
-                                        class="tooltip"
-                                        clrTooltipTrigger
-                                        shape="info-circle"
-                                        size="24"></clr-icon>
-                                    <clr-tooltip-content
-                                        clrPosition="top-left"
-                                        clrSize="lg"
-                                        *clrIfOpen>
-                                        {{
-                                            'P2P_PROVIDER.CRITERIA_EXPLAIN'
-                                                | translate
-                                        }}
-                                    </clr-tooltip-content>
-                                </clr-tooltip>
-                            </ng-container>
+                            @if (!enableContentTrust) {
+                            <span>{{
+                                'P2P_PROVIDER.CRITERIA' | translate
+                            }}</span>
+                            <clr-tooltip>
+                                <clr-icon
+                                    class="tooltip"
+                                    clrTooltipTrigger
+                                    shape="info-circle"
+                                    size="24"></clr-icon>
+                                <clr-tooltip-content
+                                    clrPosition="top-left"
+                                    clrSize="lg"
+                                    *clrIfOpen>
+                                    {{
+                                        'P2P_PROVIDER.CRITERIA_EXPLAIN'
+                                            | translate
+                                    }}
+                                </clr-tooltip-content>
+                            </clr-tooltip>
+                            }
                         </label>
                         <div class="clr-control-container flex">
                             <label class="sub-text opacity-054"
@@ -370,12 +348,13 @@
                                     #ngSeverity="ngModel"
                                     [(ngModel)]="severity">
                                     <option>--</option>
+                                    @for (s of severityOptions; track s) {
                                     <option
                                         [selected]="severity === s.severity"
-                                        *ngFor="let s of severityOptions"
                                         value="{{ s.severity }}">
                                         {{ s.severityLevel | translate }}
                                     </option>
+                                    }
                                 </select>
                             </div>
                             <label class="sub-text opacity-054"
@@ -385,6 +364,7 @@
                             >
                         </div>
                     </div>
+                    }
                     <div class="flex baseline">
                         <clr-select-container>
                             <label class="clr-control-label width-6rem">{{
@@ -399,15 +379,17 @@
                                 #ngTriggerType="ngModel"
                                 [(ngModel)]="triggerType">
                                 <option class="display-none" value=""></option>
+                                @for (item of triggers; track item) {
                                 <option
                                     [selected]="triggerType === item"
-                                    *ngFor="let item of triggers"
                                     value="{{ item }}">
                                     {{ getTriggerTypeI18n(item) | translate }}
                                 </option>
+                                }
                             </select>
                         </clr-select-container>
-                        <clr-tooltip *ngIf="showExplainForEventBased()">
+                        @if (showExplainForEventBased()) {
+                        <clr-tooltip>
                             <clr-icon
                                 clrTooltipTrigger
                                 shape="info-circle"
@@ -442,10 +424,10 @@
                                 </div>
                             </clr-tooltip-content>
                         </clr-tooltip>
+                        }
                     </div>
-                    <div
-                        class="clr-form-control margin-top-06"
-                        *ngIf="showCron()">
+                    @if (showCron()) {
+                    <div class="clr-form-control margin-top-06">
                         <label
                             for="repo"
                             class="clr-control-label width-6rem"></label>
@@ -457,8 +439,10 @@
                                 (inputvalue)="setCron($event)"></cron-selection>
                         </div>
                     </div>
+                    }
                     <!-- dragonfly provider customization -->
-                    <div *ngIf="isDragonflyProvider(policy.provider_id)">
+                    @if (isDragonflyProvider(policy.provider_id)) {
+                    <div>
                         <!-- scope -->
                         <div class="clr-form-control">
                             <clr-select-container>
@@ -479,12 +463,13 @@
                                     <option
                                         class="display-none"
                                         value=""></option>
+                                    @for (item of scopes; track item) {
                                     <option
                                         [selected]="policy.scope === item"
-                                        *ngFor="let item of scopes"
                                         value="{{ item }}">
                                         {{ getScopeI18n(item) | translate }}
                                     </option>
+                                    }
                                 </select>
                             </clr-select-container>
                         </div>
@@ -518,9 +503,11 @@
                             </div>
                         </div>
                     </div>
+                    }
                 </section>
             </form>
-            <div class="mt-1 bottom-btn" *ngIf="!isEdit">
+            @if (!isEdit) {
+            <div class="mt-1 bottom-btn">
                 <button
                     type="button"
                     class="btn btn-outline"
@@ -543,7 +530,8 @@
                     {{ 'BUTTON.ADD' | translate }}
                 </button>
             </div>
-            <div class="mt-1 bottom-btn" *ngIf="isEdit">
+            } @if (isEdit) {
+            <div class="mt-1 bottom-btn">
                 <button
                     type="button"
                     class="btn btn-outline"
@@ -567,6 +555,7 @@
                     {{ 'BUTTON.SAVE' | translate }}
                 </button>
             </div>
+            }
         </div>
     </div>
 </clr-modal>

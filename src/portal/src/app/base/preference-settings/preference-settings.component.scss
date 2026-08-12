@@ -30,3 +30,23 @@
     align-items: flex-start;
     gap: 20px;
 }
+
+.custom-runtime-footer {
+    margin-top: 12px;
+    display: flex;
+
+    .ok-item-wrapper {
+        width: auto;
+        padding: 0;
+        background: var(--clr-btn-primary-bg-color);
+        color: var(--clr-btn-primary-color);
+        border: var(--clr-btn-primary-border-color);
+        border-radius: var(--clr-btn-border-radius);
+
+        > .btn.btn-primary {
+            background: var(--clr-btn-primary-bg-color);
+            color: var(--clr-btn-primary-color);
+            border: var(--clr-btn-primary-border-color);
+        }
+    }
+}

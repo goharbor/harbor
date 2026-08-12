@@ -43,6 +43,7 @@ export interface Endpoint extends Base {
     };
     description: string;
     insecure: boolean;
+    ca_certificate?: string;
     name: string;
     type: string;
     url: string;
@@ -54,6 +55,7 @@ export interface PingEndpoint extends Base {
     access_secret?: string;
     description: string;
     insecure: boolean;
+    ca_certificate?: string;
     name: string;
     type: string;
     url: string;

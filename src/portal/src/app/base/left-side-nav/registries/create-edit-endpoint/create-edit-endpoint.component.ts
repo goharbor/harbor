@@ -46,6 +46,7 @@ const FIXED_PATTERN_TYPE: string = 'EndpointPatternTypeFix';
     selector: 'hbr-create-edit-endpoint',
     templateUrl: './create-edit-endpoint.component.html',
     styleUrls: ['./create-edit-endpoint.component.scss'],
+    standalone: false,
 })
 export class CreateEditEndpointComponent
     implements AfterViewChecked, OnDestroy, OnInit
@@ -146,6 +147,10 @@ export class CreateEditEndpointComponent
 
     public get inProgress(): boolean {
         return this.onGoing || this.testOngoing;
+    }
+
+    public get isEndpointInvalid(): boolean {
+        return !!this.targetForm?.controls?.['endpointUrl']?.errors;
     }
 
     setInsecureValue($event: any) {
@@ -303,6 +308,7 @@ export class CreateEditEndpointComponent
             payload.access_key = this.target.credential.access_key;
             payload.access_secret = this.target.credential.access_secret;
             payload.insecure = this.target.insecure;
+            payload.ca_certificate = this.target.ca_certificate;
         } else {
             let changes: { [key: string]: any } = this.getChanges();
             for (let prop of Object.keys(payload)) {

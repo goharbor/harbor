@@ -22,11 +22,12 @@ type contextKey string
 
 // define all context key here to avoid conflict
 const (
-	contextKeyAPIVersion   contextKey = "apiVersion"
-	contextKeyArtifactInfo contextKey = "artifactInfo"
-	contextKeyAuthMode     contextKey = "authMode"
-	contextKeyCarrySession contextKey = "carrySession"
-	contextKeyRequestID    contextKey = "X-Request-ID"
+	contextKeyAPIVersion         contextKey = "apiVersion"
+	contextKeyArtifactInfo       contextKey = "artifactInfo"
+	contextKeyAuthMode           contextKey = "authMode"
+	contextKeyCarrySession       contextKey = "carrySession"
+	contextKeySkipSessionRenewal contextKey = "skipSessionRenewal"
+	contextKeyRequestID          contextKey = "X-Request-ID"
 )
 
 // ArtifactInfo wraps the artifact info extracted from the request to "/v2/"
@@ -127,4 +128,22 @@ func GetXRequestID(ctx context.Context) string {
 		id, _ = value.(string)
 	}
 	return id
+}
+
+// WithSkipSessionRenewal returns a context with "skip session renewal" flag.
+// When set, the session data will be saved but the TTL will not be reset,
+// allowing the session to expire naturally based on the configured timeout.
+func WithSkipSessionRenewal(ctx context.Context, skip bool) context.Context {
+	return setToContext(ctx, contextKeySkipSessionRenewal, skip)
+}
+
+// GetSkipSessionRenewal gets the "skip session renewal" flag from the context.
+// When true, the session TTL should not be renewed for this request.
+func GetSkipSessionRenewal(ctx context.Context) bool {
+	skip := false
+	value := getFromContext(ctx, contextKeySkipSessionRenewal)
+	if value != nil {
+		skip, _ = value.(bool)
+	}
+	return skip
 }

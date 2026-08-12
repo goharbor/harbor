@@ -30,19 +30,12 @@ import (
 )
 
 func init() {
-	var configureEventResolver = &resolver{
-		SensitiveAttributes: []string{"ldap_password", "oidc_client_secret"}, // all user config items with PasswordType defined in the metadatalist.go should be defined in SensitiveAttributes
-	}
+	var configureEventResolver = &resolver{}
 	commonevent.RegisterResolver(`/api/v2.0/configurations`, configureEventResolver)
 }
 
-// payloadSizeLimit max size allowed in the op_desc
-// the size of audit_log_ext's op_desc - 50
-const payloadSizeLimit = 950
-
 // resolver used to resolve the configuration event
 type resolver struct {
-	SensitiveAttributes []string
 }
 
 func (c *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
@@ -51,12 +44,8 @@ func (c *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 	e.Operator = ce.Username
 	e.ResourceType = rbac.ResourceConfiguration.String()
 	e.ResourceName = rbac.ResourceConfiguration.String()
-	e.Payload = ext.Redact(ce.RequestPayload, c.SensitiveAttributes)
 	e.OcurrAt = time.Now()
-	if len(ce.RequestPayload) > payloadSizeLimit {
-		ce.RequestPayload = fmt.Sprintf("%v...", ce.RequestPayload[:payloadSizeLimit])
-	}
-	e.OperationDescription = fmt.Sprintf("update configuration: %v", ce.RequestPayload)
+	e.OperationDescription = "update configuration"
 	if ce.ResponseCode == http.StatusOK {
 		e.IsSuccessful = true
 	}

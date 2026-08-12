@@ -39,11 +39,16 @@ import {
 } from '../../../clearing-job-interfact';
 import { ConfirmationMessage } from '../../../../../global-confirmation-dialog/confirmation-message';
 import { ConfirmationDialogService } from '../../../../../global-confirmation-dialog/confirmation-dialog.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'gc-history',
     templateUrl: './gc-history.component.html',
     styleUrls: ['./gc-history.component.scss'],
+    standalone: false,
 })
 export class GcHistoryComponent implements OnInit, OnDestroy {
     jobs: Array<GCHistory> = [];
@@ -64,7 +69,8 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
     constructor(
         private gcService: GcService,
         private errorHandler: ErrorHandler,
-        private confirmationDialogService: ConfirmationDialogService
+        private confirmationDialogService: ConfirmationDialogService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     ngOnInit() {
         if (!this.subscription) {
@@ -151,6 +157,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                 q: q,
                 sort: sort,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(finalize(() => (this.loading = false)))
             .subscribe(
                 res => {

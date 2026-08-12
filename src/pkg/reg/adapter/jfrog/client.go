@@ -22,6 +22,7 @@ import (
 	"net/http"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 )
@@ -47,7 +48,11 @@ func newClient(reg *model.Registry) *client {
 	return &client{
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(reg.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(reg.Insecure),
+					common_http.WithCACert(reg.CACertificate),
+				),
+				Timeout: config.RegistryHTTPClientTimeout(),
 			},
 			basic.NewAuthorizer(username, password),
 		),
@@ -58,10 +63,9 @@ func newClient(reg *model.Registry) *client {
 	}
 }
 
-// getDockerRepositories gets docker repositories from jfrog
-func (c *client) getDockerRepositories() ([]*repository, error) {
+func (c *client) getAllRepositories() ([]*repository, error) {
 	var repositories []*repository
-	url := fmt.Sprintf("%s/artifactory/api/repositories?packageType=docker", c.url)
+	url := fmt.Sprintf("%s/artifactory/api/repositories", c.url)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return repositories, err

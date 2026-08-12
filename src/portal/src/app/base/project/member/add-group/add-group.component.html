@@ -42,23 +42,20 @@
                                 searchedGroups.length ? 'block' : 'none'
                             ">
                             <ul>
-                                <li
-                                    *ngFor="let group of searchedGroups"
-                                    (click)="selectGroup(group.group_name)">
+                                @for (group of searchedGroups; track group) {
+                                <li (click)="selectGroup(group.group_name)">
                                     {{ group.group_name }}
                                 </li>
+                                }
                             </ul>
                         </div>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            (groupName.invalid &&
-                                (groupName.touched || groupName.dirty)) ||
-                            !isGroupNameValid
-                        "
-                        class="tooltip-content">
+                    @if ( (groupName.invalid && (groupName.touched ||
+                    groupName.dirty)) || !isGroupNameValid ) {
+                    <clr-control-error class="tooltip-content">
                         {{ groupTooltip | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <div class="clr-form-control">
@@ -66,7 +63,8 @@
                     'GROUP.ROLE' | translate
                 }}</label>
                 <div class="clr-control-container">
-                    <clr-radio-wrapper *ngFor="let projectRoot of projectRoots">
+                    @for (projectRoot of projectRoots; track projectRoot) {
+                    <clr-radio-wrapper>
                         <input
                             clrRadio
                             type="radio"
@@ -79,6 +77,7 @@
                             >{{ projectRoot.LABEL | translate }}</label
                         >
                     </clr-radio-wrapper>
+                    }
                 </div>
             </div>
         </form>

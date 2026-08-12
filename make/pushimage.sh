@@ -117,7 +117,7 @@ fi
 
 if [ "$PULL_BASE_FROM_DOCKERHUB" == "true" ];then
   h2 "Remove local goharbor images"
-  DOCKER_RMI="docker rmi -f $(docker images | grep "${IMAGE%:*}" | awk '{print $3}') -f"
+  DOCKER_RMI="docker rmi -f $(docker images -q --filter reference="${IMAGE%:*}")"
   info "$DOCKER_RMI"
   DOCKER_RMI_OUTPUT=$($DOCKER_RMI)
   if [ $? -ne 0 ];then

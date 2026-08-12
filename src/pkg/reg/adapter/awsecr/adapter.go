@@ -15,12 +15,15 @@
 package awsecr
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsecrapi "github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/ecr/types"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
@@ -29,7 +32,7 @@ import (
 )
 
 const (
-	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr(\\-fips)?\\.([\\w\\-]+)\\.(amazonaws\\.com(\\.cn)?|sc2s\\.sgov\\.gov|c2s\\.ic\\.gov)"
+	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr(?:-public|-fips)?\\.([\\w\\-]+)\\.(amazonaws\\.com(\\.cn)?|sc2s\\.sgov\\.gov|c2s\\.ic\\.gov)"
 )
 
 var (
@@ -50,7 +53,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	svc, err := getAwsSvc(
-		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, nil)
+		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, registry.CACertificate, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +67,10 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 func parseAccountRegion(url string) (string, string, error) {
 	rs := ecrRegexp.FindStringSubmatch(url)
-	if rs == nil || len(rs) < 4 {
+	if rs == nil || len(rs) < 3 {
 		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], rs[3], nil
+	return rs[1], rs[2], nil
 }
 
 type factory struct {
@@ -91,7 +94,7 @@ var (
 type adapter struct {
 	*native.Adapter
 	registry *model.Registry
-	cacheSvc *awsecrapi.ECR
+	cacheSvc *awsecrapi.Client
 }
 
 func (*adapter) Info() (info *model.RegistryInfo, err error) {
@@ -127,27 +130,47 @@ func getAdapterInfo() *model.AdapterPattern {
 		"us-west-2",
 		"af-south-1",
 		"ap-east-1",
+		"ap-east-2",
 		"ap-south-1",
+		"ap-south-2",
 		"ap-northeast-3",
 		"ap-northeast-2",
 		"ap-southeast-1",
 		"ap-southeast-2",
+		"ap-southeast-3",
+		"ap-southeast-4",
+		"ap-southeast-5",
+		"ap-southeast-6",
+		"ap-southeast-7",
 		"ap-northeast-1",
 		"ca-central-1",
+		"ca-west-1",
 		"cn-north-1",
 		"cn-northwest-1",
 		"eu-central-1",
+		"eu-central-2",
 		"eu-west-1",
 		"eu-west-2",
 		"eu-south-1",
+		"eu-south-2",
 		"eu-west-3",
 		"eu-north-1",
+		"il-central-1",
 		"me-south-1",
+		"me-central-1",
+		"mx-central-1",
 		"sa-east-1",
+		"us-gov-east-1",
+		"us-gov-west-1",
 	} {
+		// AWS China regions (aws-cn partition) use amazonaws.com.cn.
+		domain := "amazonaws.com"
+		if strings.HasPrefix(e, "cn-") {
+			domain = "amazonaws.com.cn"
+		}
 		endpoints = append(endpoints, &model.Endpoint{
 			Key:   e,
-			Value: fmt.Sprintf("https://api.ecr.%s.amazonaws.com", e),
+			Value: fmt.Sprintf("https://api.ecr.%s.%s", e, domain),
 		})
 	}
 	info := &model.AdapterPattern{
@@ -201,14 +224,13 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 }
 
 func (a *adapter) checkRepository(repository string) (exists bool, err error) {
-	out, err := a.cacheSvc.DescribeRepositories(&awsecrapi.DescribeRepositoriesInput{
-		RepositoryNames: []*string{&repository},
+	out, err := a.cacheSvc.DescribeRepositories(context.TODO(), &awsecrapi.DescribeRepositoriesInput{
+		RepositoryNames: []string{repository},
 	})
 	if err != nil {
-		if e, ok := err.(awserr.Error); ok {
-			if e.Code() == awsecrapi.ErrCodeRepositoryNotFoundException {
-				return false, nil
-			}
+		var notFound *types.RepositoryNotFoundException
+		if errors.As(err, &notFound) {
+			return false, nil
 		}
 		return false, err
 	}
@@ -216,14 +238,13 @@ func (a *adapter) checkRepository(repository string) (exists bool, err error) {
 }
 
 func (a *adapter) createRepository(repository string) error {
-	_, err := a.cacheSvc.CreateRepository(&awsecrapi.CreateRepositoryInput{
+	_, err := a.cacheSvc.CreateRepository(context.TODO(), &awsecrapi.CreateRepositoryInput{
 		RepositoryName: &repository,
 	})
 	if err != nil {
-		if e, ok := err.(awserr.Error); ok {
-			if e.Code() == awsecrapi.ErrCodeRepositoryAlreadyExistsException {
-				return nil
-			}
+		var alreadyExists *types.RepositoryAlreadyExistsException
+		if errors.As(err, &alreadyExists) {
+			return nil
 		}
 		return err
 	}
@@ -232,9 +253,17 @@ func (a *adapter) createRepository(repository string) error {
 
 // DeleteManifest ...
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	_, err := a.cacheSvc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+	_, err := a.cacheSvc.BatchDeleteImage(context.TODO(), &awsecrapi.BatchDeleteImageInput{
 		RepositoryName: &repository,
-		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &reference}},
+		ImageIds:       []types.ImageIdentifier{{ImageTag: aws.String(reference)}},
+	})
+	return err
+}
+
+func (a *adapter) DeleteTag(repository, tag string) error {
+	_, err := a.cacheSvc.BatchDeleteImage(context.TODO(), &awsecrapi.BatchDeleteImageInput{
+		RepositoryName: &repository,
+		ImageIds:       []types.ImageIdentifier{{ImageTag: aws.String(tag)}},
 	})
 	return err
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scanner
+package scanner // nolint:revive
 
 // Options keep the settings/configurations for scanner.
 type Options struct {

@@ -47,6 +47,7 @@ import { ClrDatagridStateInterface } from '@clr/angular';
     selector: 'hbr-label',
     templateUrl: './label.component.html',
     styleUrls: ['./label.component.scss'],
+    standalone: false,
 })
 export class LabelComponent {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

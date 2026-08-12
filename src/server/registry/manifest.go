@@ -23,6 +23,7 @@ import (
 
 	"github.com/opencontainers/go-digest"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
@@ -34,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/server/router"
 )
 
@@ -124,7 +124,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// fire event, ignore the HEAD request and pulling request from replication service
-	if req.Method == http.MethodHead || req.UserAgent() == registry.UserAgent {
+	if req.Method == http.MethodHead || req.UserAgent() == common.UserAgent {
 		return
 	}
 
@@ -190,8 +190,9 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	// before proxying to the backend. This prevents tags from being stored in the
 	// backend registry storage, while Harbor maintains the tag-to-digest mapping in the database.
 	if _, err := digest.Parse(reference); err != nil {
-		// reference is a tag, not a digest
-		data, err := io.ReadAll(req.Body)
+		// reference is a tag, not a digest; bound the buffered body so an
+		// over-limit manifest is rejected with 413 instead of buffered whole
+		data, err := lib.ReadRequestBody(req, common.MaxManifestBodySize)
 		if err != nil {
 			lib_http.SendError(w, err)
 			return

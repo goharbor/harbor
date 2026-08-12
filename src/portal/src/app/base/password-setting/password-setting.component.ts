@@ -23,6 +23,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
     selector: 'password-setting',
     templateUrl: 'password-setting.component.html',
     styleUrls: ['./password-setting.component.scss', '../../common.scss'],
+    standalone: false,
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     showOldPwd: boolean = false;

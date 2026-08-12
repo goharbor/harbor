@@ -15,9 +15,12 @@
 package gc
 
 import (
+	"bytes"
+	"context"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
@@ -25,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/lib/log"
 	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
@@ -404,6 +408,52 @@ func (suite *gcTestSuite) TestSaveRes() {
 	ctx.On("GetLogger").Return(logger)
 	mock.OnAnything(ctx, "Checkin").Return(nil)
 	suite.Nil(saveGCRes(ctx, 123456, 100, 100))
+}
+
+func (suite *gcTestSuite) TestFormatSize() {
+	tests := []struct {
+		name     string
+		size     int64
+		expected string
+	}{
+		{name: "zero bytes", size: 0, expected: "0 B"},
+		{name: "500 bytes", size: 500, expected: "500 B"},
+		{name: "1 KiB", size: 1024, expected: "1.00 KiB"},
+		{name: "1.5 KiB", size: 1536, expected: "1.50 KiB"},
+		{name: "1 MiB", size: 1048576, expected: "1.00 MiB"},
+		{name: "2.5 MiB", size: 2621440, expected: "2.50 MiB"},
+		{name: "1 GiB", size: 1073741824, expected: "1.00 GiB"},
+		{name: "3.5 GiB", size: 3758096384, expected: "3.50 GiB"},
+		{name: "1 TiB", size: 1099511627776, expected: "1.00 TiB"},
+		{name: "2 TiB", size: 2199023255552, expected: "2.00 TiB"},
+		// truncation: 1615981465 / 1024^3 = 1.5049... → should be "1.50 GiB", not "1.51 GiB"
+		{name: "truncation GiB", size: 1615981465, expected: "1.50 GiB"},
+		// truncation: 1579520 / 1024^2 = 1.50625 → should be "1.50 MiB", not "1.51 MiB"
+		{name: "truncation MiB", size: 1579520, expected: "1.50 MiB"},
+	}
+
+	for _, tc := range tests {
+		suite.Equal(tc.expected, formatSize(tc.size), tc.name)
+	}
+}
+
+func TestCleanCacheDoesNotLeakRedisPassword(t *testing.T) {
+	var logBuf bytes.Buffer
+	const password = "super-secret-redis-password"
+	redisURL := "redis://user:" + password + "@localhost:6379/0\x7f"
+
+	gc := &GarbageCollector{
+		logger:   log.New(&logBuf, log.NewTextFormatter(), log.DebugLevel),
+		redisURL: redisURL,
+	}
+
+	err := gc.cleanCache(context.TODO())
+	assert.Error(t, err)
+	assert.ErrorContains(t, err, "failed to parse the redis url")
+	assert.NotContains(t, err.Error(), password)
+	assert.NotContains(t, err.Error(), redisURL)
+	assert.NotContains(t, logBuf.String(), password)
+	assert.NotContains(t, logBuf.String(), redisURL)
 }
 
 func TestGCTestSuite(t *testing.T) {

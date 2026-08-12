@@ -26,6 +26,7 @@ import { ErrorHandler } from '../../../shared/units/error-handler';
     selector: 'app-project-config',
     templateUrl: './project-label.component.html',
     styleUrls: ['./project-label.component.scss'],
+    standalone: false,
 })
 export class ProjectLabelComponent implements OnInit {
     projectId: number;

@@ -65,6 +65,7 @@ const KRAKEN: string = 'kraken';
     selector: 'dist-instances',
     templateUrl: './distribution-instances.component.html',
     styleUrls: ['./distribution-instances.component.scss'],
+    standalone: false,
 })
 export class DistributionInstancesComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

@@ -151,3 +151,59 @@ func (suite *GetItemFromDriverTestSuite) TestGetItemFromDriverEmptyKey() {
 func TestGetItemFromDriverTestSuite(t *testing.T) {
 	suite.Run(t, new(GetItemFromDriverTestSuite))
 }
+
+// ValidateCfgTestSuite tests the ValidateCfg method
+type ValidateCfgTestSuite struct {
+	suite.Suite
+	ctx     context.Context
+	manager *CfgManager
+	driver  *MockDriver
+}
+
+func (suite *ValidateCfgTestSuite) SetupTest() {
+	suite.ctx = context.Background()
+	suite.driver = &MockDriver{}
+	suite.manager = &CfgManager{
+		Store: store.NewConfigStore(suite.driver),
+	}
+}
+
+func (suite *ValidateCfgTestSuite) TestValidateCfgRobotNamePrefixEmpty() {
+	cfgs := map[string]any{
+		common.RobotNamePrefix: "",
+	}
+	err := suite.manager.ValidateCfg(suite.ctx, cfgs)
+	suite.Require().Error(err)
+	suite.Contains(err.Error(), "empty")
+}
+
+func (suite *ValidateCfgTestSuite) TestValidateCfgRobotNamePrefixSpaceOnly() {
+	cfgs := map[string]any{
+		common.RobotNamePrefix: "      ",
+	}
+	err := suite.manager.ValidateCfg(suite.ctx, cfgs)
+	suite.Require().Error(err)
+	suite.Contains(err.Error(), "empty")
+}
+
+func (suite *ValidateCfgTestSuite) TestValidateCfgRobotNamePrefixTrimsSpaces() {
+	cfgs := map[string]any{
+		common.RobotNamePrefix: " robot$ ",
+	}
+	err := suite.manager.ValidateCfg(suite.ctx, cfgs)
+	suite.Require().NoError(err)
+	suite.Equal("robot$", cfgs[common.RobotNamePrefix])
+}
+
+func (suite *ValidateCfgTestSuite) TestValidateCfgRobotNamePrefixValid() {
+	cfgs := map[string]any{
+		common.RobotNamePrefix: "robot$",
+	}
+	err := suite.manager.ValidateCfg(suite.ctx, cfgs)
+	suite.Require().NoError(err)
+	suite.Equal("robot$", cfgs[common.RobotNamePrefix])
+}
+
+func TestValidateCfgTestSuite(t *testing.T) {
+	suite.Run(t, new(ValidateCfgTestSuite))
+}

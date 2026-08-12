@@ -144,7 +144,7 @@ class TestSecurityHub(unittest.TestCase):
         # Check the dangerous cves is correct
         dangerous_cves = security_summary.dangerous_cves
         self.assertTrue(0 < len(dangerous_cves) <= 5)
-        cve_sorted_list = sorted(dangerous_cves, key=lambda cve: cve.cvss_score_v3)
+        cve_sorted_list = sorted(dangerous_cves, key=lambda cve: float(cve.cvss_score_v3), reverse=True)
         self.assertListEqual(dangerous_cves, cve_sorted_list)
 
 

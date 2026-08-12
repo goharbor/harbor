@@ -13,31 +13,33 @@
                         'CLEARANCES.LAST_COMPLETED' | translate
                     }}</span>
                     <span class="mr-3">
+                        @if (loadingLastCompletedTime) {
+                        <span class="spinner spinner-inline"></span>
+                        } @if (!loadingLastCompletedTime) { @if
+                        (!lastCompletedTime) {
+                        <span>{{ 'SCHEDULE.NONE' | translate }}</span>
+                        } @if (lastCompletedTime) {
                         <span
-                            *ngIf="loadingLastCompletedTime"
-                            class="spinner spinner-inline"></span>
-                        <ng-container *ngIf="!loadingLastCompletedTime">
-                            <span *ngIf="!lastCompletedTime">{{
-                                'SCHEDULE.NONE' | translate
-                            }}</span>
-                            <span *ngIf="lastCompletedTime"
-                                >{{ lastCompletedTime | harborDatetime
-                                }}<span *ngIf="isDryRun"
-                                    >({{
-                                        'TAG_RETENTION.DRY_RUN' | translate
-                                    }})</span
-                                ></span
+                            >{{ lastCompletedTime | harborDatetime }}@if
+                            (isDryRun) {
+                            <span
+                                >({{
+                                    'TAG_RETENTION.DRY_RUN' | translate
+                                }})</span
                             >
-                        </ng-container>
+                            }</span
+                        >
+                        } }
                     </span>
                 </div>
                 <div class="p-06">
-                    <span class="mr-1 font-style" *ngIf="nextScheduledTime">{{
+                    @if (nextScheduledTime) {
+                    <span class="mr-1 font-style">{{
                         'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
                     }}</span>
-                    <span *ngIf="nextScheduledTime">{{
-                        nextScheduledTime | harborDatetime
-                    }}</span>
+                    } @if (nextScheduledTime) {
+                    <span>{{ nextScheduledTime | harborDatetime }}</span>
+                    }
                 </div>
             </div>
         </div>
@@ -72,11 +74,11 @@
                     id="workers"
                     class="clr-select worker-select"
                     [(ngModel)]="workerNum">
-                    <option
-                        *ngFor="let item of workerOptions"
-                        value="{{ item }}">
+                    @for (item of workerOptions; track item) {
+                    <option value="{{ item }}">
                         {{ item }}
                     </option>
+                    }
                 </select>
             </div>
         </div>

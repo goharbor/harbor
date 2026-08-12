@@ -13,6 +13,7 @@
 // limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { compareValue, clone } from '../../../../shared/units/utils';
+import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
 import {
     ProjectCVEAllowlist,
     ProjectService,
@@ -59,6 +60,10 @@ export class ProjectPolicy {
     RegistryId?: number | null;
     ProxySpeedKb?: number | null;
     MaxUpstreamConn?: number | null;
+    ProxyCacheLocalOnNotFound?: boolean;
+    ProxyReferrerAPI?: boolean;
+    ProxyCacheFilterPattern?: string | null;
+    ProxyCacheFilterKind?: string | null;
 
     constructor() {
         this.Public = false;
@@ -72,6 +77,10 @@ export class ProjectPolicy {
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
         this.MaxUpstreamConn = -1;
+        this.ProxyCacheLocalOnNotFound = false;
+        this.ProxyReferrerAPI = false;
+        this.ProxyCacheFilterPattern = null;
+        this.ProxyCacheFilterKind = 'doublestar';
     }
 
     initByProject(pro: Project) {
@@ -93,6 +102,14 @@ export class ProjectPolicy {
         this.MaxUpstreamConn = pro.metadata.max_upstream_conn
             ? pro.metadata.max_upstream_conn
             : -1;
+        this.ProxyCacheLocalOnNotFound =
+            pro.metadata.proxy_cache_local_on_not_found === 'true';
+        this.ProxyReferrerAPI =
+            pro.metadata.proxy_referrer_api === 'true' ? true : false;
+        this.ProxyCacheFilterPattern =
+            pro.metadata.proxy_cache_filter_pattern || null;
+        this.ProxyCacheFilterKind =
+            pro.metadata.proxy_cache_filter_kind || 'doublestar';
     }
 }
 const PAGE_SIZE: number = 100;
@@ -101,10 +118,10 @@ const PAGE_SIZE: number = 100;
     selector: 'hbr-project-policy-config',
     templateUrl: './project-policy-config.component.html',
     styleUrls: ['./project-policy-config.component.scss'],
+    standalone: false,
 })
 export class ProjectPolicyConfigComponent implements OnInit {
     onGoing = false;
-    allowUpdateProxyCacheConfiguration = false;
     @Input() projectId: number;
     @Input() projectName = 'unknown';
     @Input() isProxyCacheProject: boolean = false;
@@ -155,6 +172,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
     maxUpstreamConnError: string | null = null;
+    repositoryFilterError: string | null = null;
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
         'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
@@ -213,6 +231,37 @@ export class ProjectPolicyConfigComponent implements OnInit {
                 });
         } else {
             this.bandwidthError = null;
+        }
+    }
+
+    validateMaxUpstreamConnections(): void {
+        const value = Number(this.projectPolicy.MaxUpstreamConn);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translate
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.maxUpstreamConnError = res;
+                });
+        } else {
+            this.maxUpstreamConnError = null;
+        }
+    }
+
+    validateRepositoryFilter(): void {
+        const pattern = this.projectPolicy.ProxyCacheFilterPattern;
+        const kind = this.projectPolicy.ProxyCacheFilterKind;
+        const errorKey = validateRepositoryFilterPattern(kind, pattern);
+
+        if (errorKey) {
+            this.translate.get(errorKey).subscribe((res: string) => {
+                this.repositoryFilterError = res;
+            });
+        } else {
+            this.repositoryFilterError = null;
         }
     }
 
@@ -349,10 +398,13 @@ export class ProjectPolicyConfigComponent implements OnInit {
     isValid() {
         let flag = false;
         if (
-            !this.projectPolicy.PreventVulImg ||
-            this.severityOptions.some(
-                x => x.severity === this.projectPolicy.PreventVulImgSeverity
-            )
+            (!this.projectPolicy.PreventVulImg ||
+                this.severityOptions.some(
+                    x => x.severity === this.projectPolicy.PreventVulImgSeverity
+                )) &&
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError &&
+            !this.repositoryFilterError
         ) {
             flag = true;
         }
@@ -405,6 +457,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     reset(): void {
         this.projectPolicy = clone(this.orgProjectPolicy);
+        this.bandwidthError = null;
+        this.maxUpstreamConnError = null;
+        this.repositoryFilterError = null;
     }
 
     confirmCancel(ack: ConfirmationAcknowledgement): void {

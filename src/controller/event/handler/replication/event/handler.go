@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/replication"
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/reg/filter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -67,27 +68,20 @@ func Handle(ctx context.Context, event *Event) error {
 }
 
 func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repctlmodel.Policy, error) {
-	policies, err := replication.Ctl.ListPolicies(ctx, nil)
+	// Only query enabled event-based replication policies here, so the loop below
+	// doesn't need to check policy.Enabled or policy.Trigger.Type again.
+	policies, err := replication.Ctl.ListPolicies(ctx, q.New(q.KeyWords{
+		"Enabled":            true,
+		"Trigger__icontains": fmt.Sprintf("\"type\":\"%s\"", model.TriggerTypeEventBased),
+	}))
 	if err != nil {
 		return nil, err
 	}
 	result := []*repctlmodel.Policy{}
 	for _, policy := range policies {
-		// disabled
-		if !policy.Enabled {
-			continue
-		}
 		// currently, the events are produced only by local Harbor,
 		// so they should only apply to the policies whose source registry is local Harbor
 		if !(policy.SrcRegistry == nil || policy.SrcRegistry.ID == 0) {
-			continue
-		}
-		// has no trigger
-		if policy.Trigger == nil {
-			continue
-		}
-		// trigger type isn't event based
-		if policy.Trigger.Type != model.TriggerTypeEventBased {
 			continue
 		}
 		// doesn't replicate deletion

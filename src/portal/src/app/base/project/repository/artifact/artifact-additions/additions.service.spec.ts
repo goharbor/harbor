@@ -14,17 +14,25 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { AdditionsService } from './additions.service';
 import {
-    HttpClientTestingModule,
     HttpTestingController,
+    provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('TagRetentionService', () => {
     const testLink: string = '/test';
     const data: string = 'testData';
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
-            providers: [AdditionsService],
+            imports: [],
+            providers: [
+                AdditionsService,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
+            ],
         });
     });
 
@@ -35,7 +43,7 @@ describe('TagRetentionService', () => {
             service.getDetailByLink(testLink, false, false).subscribe(res => {
                 expect(res).toEqual(data);
             });
-            const httpTestingController = TestBed.get(HttpTestingController);
+            const httpTestingController = TestBed.inject(HttpTestingController);
             const req = httpTestingController.expectOne(testLink);
             expect(req.request.method).toEqual('GET');
             req.flush(data);

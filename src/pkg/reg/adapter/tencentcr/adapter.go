@@ -31,6 +31,7 @@ import (
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -160,7 +161,10 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		WithHttpTransport(rateLimiterTransport)
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
-	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
+	var transport = commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(registry.Insecure),
+		commonhttp.WithCACert(registry.CACertificate),
+	)
 	var authorizer = bearer.NewAuthorizer(realm, service, credential, transport)
 
 	return &adapter{
@@ -172,6 +176,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		client: commonhttp.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			credential,
 		),

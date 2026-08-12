@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -187,14 +187,13 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 	o.PoolFIFO = q.bool("pool_fifo")
 	o.PoolSize = q.int("pool_size")
 	o.MinIdleConns = q.int("min_idle_conns")
-	o.MaxConnAge = q.duration("max_conn_age")
+	o.ConnMaxLifetime = q.duration("max_conn_age")
 	o.PoolTimeout = q.duration("pool_timeout")
-	o.IdleTimeout = q.duration("idle_timeout")
+	o.ConnMaxIdleTime = q.duration("idle_timeout")
 	// For compatibility
 	if t := q.duration("idle_timeout_seconds"); t != 0 {
-		o.IdleTimeout = t
+		o.ConnMaxIdleTime = t
 	}
-	o.IdleCheckFrequency = q.duration("idle_check_frequency")
 	if q.err != nil {
 		return nil, q.err
 	}

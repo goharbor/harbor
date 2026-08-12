@@ -9,3 +9,7 @@
 .padding-top-3 {
   padding-top: 3px;
 }
+
+:host ::ng-deep .clr-checkbox-wrapper {
+  align-items: center;
+}

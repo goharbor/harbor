@@ -1,6 +1,6 @@
 <clr-alerts>
+    @if (hasValidBannerMessage()) {
     <clr-alert
-        *ngIf="hasValidBannerMessage()"
         [clrAlertType]="getBannerMessageType()"
         [clrAlertAppLevel]="true"
         [(clrAlertClosed)]="bannerMessageClosed"
@@ -11,8 +11,8 @@
             }}</span>
         </clr-alert-item>
     </clr-alert>
+    } @if (showReadOnly && isLogin()) {
     <clr-alert
-        *ngIf="showReadOnly && isLogin()"
         [clrAlertType]="'warning'"
         [clrAlertAppLevel]="true"
         [clrAlertClosable]="false">
@@ -20,10 +20,8 @@
             <span class="alert-text">{{ 'REPO_READ_ONLY' | translate }}</span>
         </clr-alert-item>
     </clr-alert>
-    <clr-alert
-        *ngIf="showLogin"
-        [clrAlertType]="message?.type"
-        [clrAlertAppLevel]="true">
+    } @if (showLogin) {
+    <clr-alert [clrAlertType]="message?.type" [clrAlertAppLevel]="true">
         <clr-alert-item>
             <span class="alert-text">{{ message?.message | translate }}</span>
             <div class="alert-actions">
@@ -35,9 +33,10 @@
             </div>
         </clr-alert-item>
     </clr-alert>
+    } @if ( showJobServiceDashboardHealthCheck() && isLogin() && hasAdminRole()
+    ) {
     <clr-alert
         (clrAlertClosedChange)="closeHealthWarning()"
-        *ngIf="showJobServiceDashboardHealthCheck() && isLogin()"
         [clrAlertType]="'warning'"
         [clrAlertAppLevel]="true">
         <clr-alert-item>
@@ -64,11 +63,11 @@
             </div>
         </clr-alert-item>
     </clr-alert>
+    } @if (shouldShowScannerInfo() && isLogin() && hasAdminRole()) {
     <clr-alert
         [clrAlertType]="'info'"
         [clrAlertAppLevel]="true"
-        (clrAlertClosedChange)="closeInfo()"
-        *ngIf="shouldShowScannerInfo() && isLogin()">
+        (clrAlertClosedChange)="closeInfo()">
         <clr-alert-item>
             <span class="alert-text">
                 {{ 'SCANNER.HELP_INFO_1' | translate }}
@@ -90,4 +89,5 @@
             </div>
         </clr-alert-item>
     </clr-alert>
+    }
 </clr-alerts>

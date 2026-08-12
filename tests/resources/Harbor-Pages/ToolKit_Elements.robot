@@ -17,4 +17,5 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Variables ***
 ${member_action_xpath}  //*[@id="member-action"]
-${delete_action_xpath}  //clr-dropdown/clr-dropdown-menu/button[contains(.,'Remove')]
+${delete_action_xpath}  (//button[normalize-space()='Remove'])[1]
+${group_select_all_checkbox_xpath}  //input[@type='checkbox' and @aria-label='Select All']

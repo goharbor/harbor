@@ -17,6 +17,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
     selector: 'app-copy-digest',
     templateUrl: './copy-digest.component.html',
     styleUrls: ['./copy-digest.component.scss'],
+    standalone: false,
 })
 export class CopyDigestComponent {
     showTagManifestOpened: boolean = false;

@@ -22,6 +22,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -91,7 +92,10 @@ func newAdapter(registry *model.Registry) *adapter {
 			registry.Credential.AccessSecret)
 	}
 
-	var transport = common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure))
+	var transport = common_http.GetHTTPTransport(
+		common_http.WithInsecure(registry.Insecure),
+		common_http.WithCACert(registry.CACertificate),
+	)
 
 	return &adapter{
 		Adapter:  native.NewAdapter(registry),
@@ -99,6 +103,7 @@ func newAdapter(registry *model.Registry) *adapter {
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			authorizer,
 		),

@@ -24,6 +24,7 @@ import (
 	"reflect"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -57,7 +58,11 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		token:    registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(registry.Insecure),
+					common_http.WithCACert(registry.CACertificate),
+				),
+				Timeout: config.RegistryHTTPClientTimeout(),
 			}),
 	}
 	return client, nil

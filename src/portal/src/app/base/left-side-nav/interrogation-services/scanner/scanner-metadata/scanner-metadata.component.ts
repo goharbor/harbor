@@ -26,6 +26,7 @@ import { ScannerAdapterMetadata } from '../../../../../../../ng-swagger-gen/mode
     selector: 'scanner-metadata',
     templateUrl: 'scanner-metadata.html',
     styleUrls: ['./scanner-metadata.scss'],
+    standalone: false,
 })
 export class ScannerMetadataComponent implements OnInit {
     @Input() uid: string;

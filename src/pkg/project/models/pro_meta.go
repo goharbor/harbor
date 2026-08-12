@@ -16,14 +16,18 @@ package models
 
 // keys of project metadata and severity values
 const (
-	ProMetaPublic                   = "public"
-	ProMetaEnableContentTrust       = "enable_content_trust"
-	ProMetaEnableContentTrustCosign = "enable_content_trust_cosign"
-	ProMetaPreventVul               = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity                 = "severity"
-	ProMetaAutoScan                 = "auto_scan"
-	ProMetaReuseSysCVEAllowlist     = "reuse_sys_cve_allowlist"
-	ProMetaAutoSBOMGen              = "auto_sbom_generation"
-	ProMetaProxySpeed               = "proxy_speed_kb"
-	ProMetaMaxUpstreamConn          = "max_upstream_conn"
+	ProMetaPublic                    = "public"
+	ProMetaEnableContentTrust        = "enable_content_trust"
+	ProMetaEnableContentTrustCosign  = "enable_content_trust_cosign"
+	ProMetaPreventVul                = "prevent_vul" // prevent vulnerable images from being pulled
+	ProMetaSeverity                  = "severity"
+	ProMetaAutoScan                  = "auto_scan"
+	ProMetaReuseSysCVEAllowlist      = "reuse_sys_cve_allowlist"
+	ProMetaAutoSBOMGen               = "auto_sbom_generation"
+	ProMetaProxySpeed                = "proxy_speed_kb"
+	ProMetaMaxUpstreamConn           = "max_upstream_conn"
+	ProMetaProxyCacheFilterPattern   = "proxy_cache_filter_pattern" // plain string pattern for proxy cache repository filter
+	ProMetaProxyCacheFilterKind      = "proxy_cache_filter_kind"    // "doublestar" (default) or "regex"
+	ProMetaProxyReferrerAPI          = "proxy_referrer_api"
+	ProMetaProxyCacheLocalOnNotFound = "proxy_cache_local_on_not_found"
 )

@@ -3,12 +3,15 @@
     [clrModalStaticBackdrop]="true"
     [clrModalClosable]="true"
     [clrModalSize]="'lg'">
-    <h3 class="modal-title" *ngIf="isAdd">
+    @if (isAdd) {
+    <h3 class="modal-title">
         {{ 'TAG_RETENTION.ADD_TITLE' | translate }}
     </h3>
-    <h3 class="modal-title" *ngIf="!isAdd">
+    } @if (!isAdd) {
+    <h3 class="modal-title">
         {{ 'TAG_RETENTION.EDIT_TITLE' | translate }}
     </h3>
+    }
     <div class="modal-body no-scrolling">
         <inline-alert class="modal-title"></inline-alert>
         <p class="color-97">{{ 'TAG_RETENTION.ADD_SUBTITLE' | translate }}</p>
@@ -24,14 +27,12 @@
                         <select
                             [(ngModel)]="repoSelect"
                             class="clr-select w-100">
-                            <option
-                                *ngFor="
-                                    let d of metadata?.scope_selectors[0]
-                                        ?.decorations
-                                "
-                                value="{{ d }}">
+                            @for ( d of metadata?.scope_selectors[0]
+                            ?.decorations ; track d) {
+                            <option value="{{ d }}">
                                 {{ getI18nKey(d) | translate }}
                             </option>
+                            }
                         </select>
                     </div>
                 </div>
@@ -68,27 +69,28 @@
                             [(ngModel)]="template"
                             class="clr-select w-100">
                             <option class="display-none" value=""></option>
-                            <option
-                                *ngFor="let t of metadata?.templates"
-                                value="{{ t?.rule_template }}">
+                            @for (t of metadata?.templates; track t) {
+                            <option value="{{ t?.rule_template }}">
                                 {{ getI18nKey(t?.action) | translate
                                 }}{{ getI18nKey(t?.display_text) | translate }}
                             </option>
+                            }
                         </select>
                     </div>
                 </div>
                 <div class="clr-col-3">
                     <div class="over-line">
-                        <span *ngIf="hasParam()">{{
-                            getI18nKey(unit) | translate
-                        }}</span>
+                        @if (hasParam()) {
+                        <span>{{ getI18nKey(unit) | translate }}</span>
+                        }
                     </div>
                     <div class="w-100 disabled">
+                        @if (hasParam()) {
                         <input
                             id="param"
-                            *ngIf="hasParam()"
                             [(ngModel)]="num"
                             class="clr-input w-100" />
+                        }
                     </div>
                 </div>
             </div>
@@ -103,14 +105,12 @@
                         <select
                             [(ngModel)]="tagsSelect"
                             class="clr-select w-100">
-                            <option
-                                *ngFor="
-                                    let d of metadata?.tag_selectors[0]
-                                        ?.decorations
-                                "
-                                value="{{ d }}">
+                            @for ( d of metadata?.tag_selectors[0] ?.decorations
+                            ; track d) {
+                            <option value="{{ d }}">
                                 {{ getI18nKey(d) | translate }}
                             </option>
+                            }
                         </select>
                     </div>
                 </div>
@@ -133,7 +133,7 @@
                             [(ngModel)]="untagged"
                             name="untagged"
                             id="untagged"
-                            class="clr-input w-100"
+                            class="w-100"
                             clrCheckbox />
                     </div>
                 </div>
@@ -158,8 +158,11 @@
             type="button"
             class="btn btn-primary"
             (click)="add()">
-            <span *ngIf="isAdd">{{ 'BUTTON.ADD' | translate }}</span>
-            <span *ngIf="!isAdd">{{ 'BUTTON.SAVE' | translate }}</span>
+            @if (isAdd) {
+            <span>{{ 'BUTTON.ADD' | translate }}</span>
+            } @if (!isAdd) {
+            <span>{{ 'BUTTON.SAVE' | translate }}</span>
+            }
         </button>
     </div>
 </clr-modal>

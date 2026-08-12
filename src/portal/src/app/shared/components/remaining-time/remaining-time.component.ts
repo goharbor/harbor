@@ -29,6 +29,7 @@ const WARNING_DAYS = 7;
     selector: 'app-remaining-time',
     templateUrl: 'remaining-time.component.html',
     styleUrls: ['./remaining-time.component.scss'],
+    standalone: false,
 })
 export class RemainingTimeComponent implements OnInit, OnDestroy, OnChanges {
     color: string;

@@ -69,7 +69,7 @@ func (s *scanAPI) StopScanArtifact(ctx context.Context, params operation.StopSca
 		return s.SendError(ctx, err)
 	}
 
-	if err := s.scanCtl.Stop(ctx, curArtifact, params.ScanType.ScanType); err != nil {
+	if err := s.scanCtl.Stop(ctx, curArtifact, scanType); err != nil {
 		return s.SendError(ctx, err)
 	}
 

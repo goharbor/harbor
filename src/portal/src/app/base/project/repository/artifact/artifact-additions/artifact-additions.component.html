@@ -1,147 +1,160 @@
-<ng-container *ngIf="additionLinks">
-    <h4 class="margin-bottom-025">{{ 'ARTIFACT.ADDITIONS' | translate }}</h4>
-    <div class="min-15">
-        <clr-tabs #additionsTab>
-            <clr-tab *ngIf="getVulnerability()">
-                <button
-                    clrTabLink
-                    id="vulnerability"
-                    (click)="actionTab('vulnerability')">
-                    {{ 'REPOSITORY.VULNERABILITY' | translate }}
-                </button>
-                <ng-template
-                    [clrIfActive]="currentTabLinkId === 'vulnerability'">
-                    <clr-tab-content id="vulnerability-content">
-                        <hbr-artifact-vulnerabilities
-                            *ngIf="currentTabLinkId === 'vulnerability'"
-                            [artifact]="artifact"
-                            [projectName]="projectName"
-                            [projectId]="projectId"
-                            [repoName]="repoName"
-                            [scanBtnState]="getScanBtnState()"
-                            [hasEnabledScanner]="hasEnabledScanner()"
-                            [digest]="digest"
-                            [vulnerabilitiesLink]="
-                                getVulnerability()
-                            "></hbr-artifact-vulnerabilities>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="hasScannerSupportSBOM()">
-                <button clrTabLink id="sbom" (click)="actionTab('sbom')">
-                    {{ 'REPOSITORY.SBOM' | translate }}
-                </button>
-                <ng-template [clrIfActive]="currentTabLinkId === 'sbom'">
-                    <clr-tab-content id="sbom-content">
-                        <hbr-artifact-sbom
-                            *ngIf="currentTabLinkId === 'sbom'"
-                            [artifact]="artifact"
-                            [projectName]="projectName"
-                            [projectId]="projectId"
-                            [hasScannerSupportSBOM]="hasScannerSupportSBOM()"
-                            [repoName]="repoName"
-                            [sbomDigest]="sbomDigest"></hbr-artifact-sbom>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getBuildHistory()">
-                <button
-                    clrTabLink
-                    id="build-history"
-                    (click)="actionTab('build-history')">
-                    {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
-                </button>
-                <ng-template
-                    [clrIfActive]="currentTabLinkId === 'build-history'">
-                    <clr-tab-content>
-                        <hbr-artifact-build-history
-                            *ngIf="currentTabLinkId === 'build-history'"
-                            [buildHistoryLink]="
-                                getBuildHistory()
-                            "></hbr-artifact-build-history>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getSummary()">
-                <button
-                    clrTabLink
-                    id="summary-link"
-                    (click)="actionTab('summary-link')">
-                    {{ 'ARTIFACT.SUMMARY' | translate }}
-                </button>
-                <ng-template
-                    [clrIfActive]="currentTabLinkId === 'summary-link'">
-                    <clr-tab-content id="summary-content">
-                        <hbr-artifact-summary
-                            *ngIf="currentTabLinkId === 'summary-link'"
-                            [summaryLink]="getSummary()"
-                            [artifactDetails]="artifact"></hbr-artifact-summary>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getLicense()">
-                <button
-                    clrTabLink
-                    id="license-link"
-                    (click)="actionTab('license-link')">
-                    {{ 'ARTIFACT.LICENSE' | translate }}
-                </button>
-                <ng-template
-                    [clrIfActive]="currentTabLinkId === 'license-link'">
-                    <clr-tab-content id="license-content">
-                        <hbr-artifact-license
-                            *ngIf="currentTabLinkId === 'license-link'"
-                            [licenseLink]="getLicense()"></hbr-artifact-license>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getFile()">
-                <button
-                    clrTabLink
-                    id="files-link"
-                    (click)="actionTab('files-link')">
-                    {{ 'ARTIFACT.FILES' | translate }}
-                </button>
-                <ng-template [clrIfActive]="currentTabLinkId === 'files-link'">
-                    <clr-tab-content id="files-content">
-                        <hbr-artifact-files
-                            *ngIf="currentTabLinkId === 'files-link'"
-                            [filesLink]="getFile()"></hbr-artifact-files>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getDependencies()">
-                <button
-                    clrTabLink
-                    id="depend-link"
-                    (click)="actionTab('depend-link')">
-                    {{ 'ARTIFACT.DEPENDENCIES' | translate }}
-                </button>
-                <ng-template [clrIfActive]="currentTabLinkId === 'depend-link'">
-                    <clr-tab-content id="depend-content">
-                        <hbr-artifact-dependencies
-                            *ngIf="currentTabLinkId === 'depend-link'"
-                            [dependenciesLink]="
-                                getDependencies()
-                            "></hbr-artifact-dependencies>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-            <clr-tab *ngIf="getValues()">
-                <button
-                    clrTabLink
-                    id="value-link"
-                    (click)="actionTab('value-link')">
-                    {{ 'ARTIFACT.VALUES' | translate }}
-                </button>
-                <ng-template [clrIfActive]="currentTabLinkId === 'value-link'">
-                    <clr-tab-content id="value-content">
-                        <hbr-artifact-values
-                            *ngIf="currentTabLinkId === 'value-link'"
-                            [valuesLink]="getValues()"></hbr-artifact-values>
-                    </clr-tab-content>
-                </ng-template>
-            </clr-tab>
-        </clr-tabs>
-    </div>
-</ng-container>
+@if (additionLinks) {
+<h4 class="margin-bottom-025">{{ 'ARTIFACT.ADDITIONS' | translate }}</h4>
+<div class="min-15">
+    <clr-tabs #additionsTab>
+        @if (getVulnerability()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="vulnerability"
+                (click)="actionTab('vulnerability')">
+                {{ 'REPOSITORY.VULNERABILITY' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'vulnerability'">
+                <clr-tab-content id="vulnerability-content">
+                    @if (currentTabLinkId === 'vulnerability') {
+                    <hbr-artifact-vulnerabilities
+                        [artifact]="artifact"
+                        [projectName]="projectName"
+                        [projectId]="projectId"
+                        [repoName]="repoName"
+                        [scanBtnState]="getScanBtnState()"
+                        [hasEnabledScanner]="hasEnabledScanner()"
+                        [digest]="digest"
+                        [vulnerabilitiesLink]="
+                            getVulnerability()
+                        "></hbr-artifact-vulnerabilities>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (hasScannerSupportSBOM()) {
+        <clr-tab>
+            <button clrTabLink id="sbom" (click)="actionTab('sbom')">
+                {{ 'REPOSITORY.SBOM' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'sbom'">
+                <clr-tab-content id="sbom-content">
+                    @if (currentTabLinkId === 'sbom') {
+                    <hbr-artifact-sbom
+                        [artifact]="artifact"
+                        [projectName]="projectName"
+                        [projectId]="projectId"
+                        [hasScannerSupportSBOM]="hasScannerSupportSBOM()"
+                        [repoName]="repoName"
+                        [sbomDigest]="sbomDigest"></hbr-artifact-sbom>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getBuildHistory()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="build-history"
+                (click)="actionTab('build-history')">
+                {{ 'REPOSITORY.BUILD_HISTORY' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'build-history'">
+                <clr-tab-content>
+                    @if (currentTabLinkId === 'build-history') {
+                    <hbr-artifact-build-history
+                        [buildHistoryLink]="
+                            getBuildHistory()
+                        "></hbr-artifact-build-history>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getSummary()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="summary-link"
+                (click)="actionTab('summary-link')">
+                {{ 'ARTIFACT.SUMMARY' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'summary-link'">
+                <clr-tab-content id="summary-content">
+                    @if (currentTabLinkId === 'summary-link') {
+                    <hbr-artifact-summary
+                        [summaryLink]="getSummary()"
+                        [artifactDetails]="artifact"></hbr-artifact-summary>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getLicense()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="license-link"
+                (click)="actionTab('license-link')">
+                {{ 'ARTIFACT.LICENSE' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'license-link'">
+                <clr-tab-content id="license-content">
+                    @if (currentTabLinkId === 'license-link') {
+                    <hbr-artifact-license
+                        [licenseLink]="getLicense()"></hbr-artifact-license>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getFile()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="files-link"
+                (click)="actionTab('files-link')">
+                {{ 'ARTIFACT.FILES' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'files-link'">
+                <clr-tab-content id="files-content">
+                    @if (currentTabLinkId === 'files-link') {
+                    <hbr-artifact-files
+                        [filesLink]="getFile()"></hbr-artifact-files>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getDependencies()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="depend-link"
+                (click)="actionTab('depend-link')">
+                {{ 'ARTIFACT.DEPENDENCIES' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'depend-link'">
+                <clr-tab-content id="depend-content">
+                    @if (currentTabLinkId === 'depend-link') {
+                    <hbr-artifact-dependencies
+                        [dependenciesLink]="
+                            getDependencies()
+                        "></hbr-artifact-dependencies>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        } @if (getValues()) {
+        <clr-tab>
+            <button
+                clrTabLink
+                id="value-link"
+                (click)="actionTab('value-link')">
+                {{ 'ARTIFACT.VALUES' | translate }}
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'value-link'">
+                <clr-tab-content id="value-content">
+                    @if (currentTabLinkId === 'value-link') {
+                    <hbr-artifact-values
+                        [valuesLink]="getValues()"></hbr-artifact-values>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
+        }
+    </clr-tabs>
+</div>
+}

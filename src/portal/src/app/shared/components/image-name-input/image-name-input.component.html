@@ -33,28 +33,24 @@
                         selectedProjectList.length ? 'block' : 'none'
                     ">
                     <ul>
-                        <li
-                            *ngFor="let project of selectedProjectList"
-                            (click)="selectedProjectName(project?.name)">
+                        @for (project of selectedProjectList; track project) {
+                        <li (click)="selectedProjectName(project?.name)">
                             {{ project?.name }}
                         </li>
+                        }
                     </ul>
                 </div>
             </div>
-            <clr-control-error
-                *ngIf="
-                    (projectName.invalid &&
-                        (projectName.dirty || projectName.touched)) ||
-                    notExist
-                "
-                class="tooltip-content">
-                <ng-container *ngIf="projectName.invalid">
-                    {{ 'PROJECT.NAME_TOOLTIP' | translate }}
-                </ng-container>
-                <ng-container *ngIf="notExist">
-                    {{ 'REPLICATION.NO_PROJECT_INFO' | translate }}
-                </ng-container>
+            @if ( (projectName.invalid && (projectName.dirty ||
+            projectName.touched)) || notExist ) {
+            <clr-control-error class="tooltip-content">
+                @if (projectName.invalid) {
+                {{ 'PROJECT.NAME_TOOLTIP' | translate }}
+                } @if (notExist) {
+                {{ 'REPLICATION.NO_PROJECT_INFO' | translate }}
+                }
             </clr-control-error>
+            }
         </div>
     </div>
     <div class="clr-form-control">
@@ -77,11 +73,11 @@
                     class="clr-validate-icon"
                     shape="exclamation-circle"></clr-icon>
             </div>
-            <clr-control-error
-                *ngIf="repoName.invalid && (repoName.dirty || repoName.touched)"
-                class="tooltip-content">
+            @if (repoName.invalid && (repoName.dirty || repoName.touched)) {
+            <clr-control-error class="tooltip-content">
                 {{ 'RETAG.TIP_REPO' | translate }}
             </clr-control-error>
+            }
         </div>
     </div>
 </form>

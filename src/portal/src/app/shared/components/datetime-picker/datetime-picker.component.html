@@ -12,7 +12,9 @@
         placeholder="mm/dd/yyyy"
         dateValidator
         (ngModelChange)="doSearch()" />
-    <span *ngIf="dateInvalid" class="tooltip-content">
+    @if (dateInvalid) {
+    <span class="tooltip-content">
         {{ 'AUDIT_LOG.INVALID_DATE' | translate }}
     </span>
+    }
 </div>

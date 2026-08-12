@@ -34,6 +34,7 @@ import { ScrollPosition } from '../../../../shared/services';
     templateUrl: './grid-view.component.html',
     styleUrls: ['./grid-view.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false,
 })
 /**
  * Grid view general component.

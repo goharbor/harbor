@@ -8,9 +8,9 @@ ${webhook_endpoint_id_xpath}    xpath=//*[@id='edit_endpoint_url']
 ${webhook_payload_format_xpath}  xpath=//*[@id='payload-format']
 ${webhook_auth_header_xpath}    xpath=//*[@id='auth_header']
 ${action_webhook_xpath}         xpath=//*[@id='action-webhook']
-${action_webhook_edit_button}    xpath=//*[@id='edit-webhook']
-${action_webhook_disable_or_enable_button}   xpath=//*[@id='toggle-webhook']
-${action_webhook_delete_button}  xpath=//*[@id='delete-webhook']
+${action_webhook_edit_button}    xpath=//button[.//span[@id='edit-webhook']]
+${action_webhook_disable_or_enable_button}    xpath=//button[.//span[@id='toggle-webhook']]
+${action_webhook_delete_button}    xpath=//button[.//span[@id='delete-webhook']]
 ${dialog_delete_button}    xpath=//clr-modal//button[contains(.,'DELETE')]
 
 

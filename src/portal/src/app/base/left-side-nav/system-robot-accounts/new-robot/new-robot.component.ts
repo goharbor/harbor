@@ -68,6 +68,7 @@ const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
     selector: 'new-robot',
     templateUrl: './new-robot.component.html',
     styleUrls: ['./new-robot.component.scss'],
+    standalone: false,
 })
 export class NewRobotComponent implements OnInit, OnDestroy {
     isEditMode: boolean = false;

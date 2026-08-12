@@ -13,9 +13,7 @@
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ElementRef } from '@angular/core';
-import { Message } from './message';
 import { MessageComponent } from './message.component';
-import { AlertType } from '../../entities/shared.const';
 import { SharedTestingModule } from '../../shared.module';
 
 describe('MessageComponent', () => {
@@ -39,5 +37,17 @@ describe('MessageComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('onAlertClosedChange should close message when closed is true', () => {
+        component.globalMessageOpened = true;
+        component.onAlertClosedChange(true);
+        expect(component.globalMessageOpened).toBeFalse();
+    });
+
+    it('onAlertClosedChange should not close message when closed is false', () => {
+        component.globalMessageOpened = true;
+        component.onAlertClosedChange(false);
+        expect(component.globalMessageOpened).toBeTrue();
     });
 });

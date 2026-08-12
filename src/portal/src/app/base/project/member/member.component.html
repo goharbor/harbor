@@ -42,12 +42,12 @@
                 >
             </button>
             <clr-dropdown
-                [clrCloseMenuOnItemClick]="false"
+                [clrCloseMenuOnItemClick]="true"
                 class="btn btn-link"
                 clrDropdownTrigger>
                 <span id="member-action"
                     >{{ 'MEMBER.ACTION' | translate
-                    }}<clr-icon shape="caret down"></clr-icon
+                    }}<clr-icon shape="caret" direction="down"></clr-icon
                 ></span>
                 <clr-dropdown-menu *clrIfOpen>
                     <label class="dropdown-header">{{
@@ -118,6 +118,7 @@
             </clr-dropdown>
         </clr-dg-action-bar>
         <clr-datagrid
+            clrDgSelectionType="multi"
             (clrDgRefresh)="clrDgRefresh($event)"
             [(clrDgSelected)]="selectedRow"
             [clrDgLoading]="loading"
@@ -127,20 +128,21 @@
                 'MEMBER.MEMBER_TYPE' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{ 'MEMBER.ROLE' | translate }}</clr-dg-column>
-            <clr-dg-row *ngFor="let m of members" [clrDgItem]="m">
+            @for (m of members; track m) {
+            <clr-dg-row [clrDgItem]="m">
                 <clr-dg-cell>{{ m.entity_name }}</clr-dg-cell>
                 <clr-dg-cell>{{
                     member_type_toString(m.entity_type) | translate
                 }}</clr-dg-cell>
                 <clr-dg-cell>
-                    <span
-                        *ngIf="ChangeRoleOngoing(m.id)"
-                        class="spinner spinner-inline"></span>
-                    <span *ngIf="!ChangeRoleOngoing(m.id)">{{
-                        roleInfo[m.role_id] | translate
-                    }}</span>
+                    @if (ChangeRoleOngoing(m.id)) {
+                    <span class="spinner spinner-inline"></span>
+                    } @if (!ChangeRoleOngoing(m.id)) {
+                    <span>{{ roleInfo[m.role_id] | translate }}</span>
+                    }
                 </clr-dg-cell>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
@@ -153,11 +155,13 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="total"
+                    @if (total) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'MEMBER.OF' | translate }}
                     </span>
+                    }
                     {{ total }} {{ 'MEMBER.ITEMS' | translate }}
                 </clr-dg-pagination>
             </clr-dg-footer>

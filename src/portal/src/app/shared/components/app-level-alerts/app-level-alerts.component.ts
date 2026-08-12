@@ -34,6 +34,7 @@ const YES: string = 'yes';
     selector: 'app-app-level-alerts',
     templateUrl: './app-level-alerts.component.html',
     styleUrls: ['./app-level-alerts.component.scss'],
+    standalone: false,
 })
 export class AppLevelAlertsComponent implements OnInit, OnDestroy {
     showScannerInfo: boolean = false;
@@ -277,5 +278,12 @@ export class AppLevelAlertsComponent implements OnInit, OnDestroy {
             )?.closable;
         }
         return true;
+    }
+
+    hasAdminRole(): boolean {
+        return (
+            this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role
+        );
     }
 }

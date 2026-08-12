@@ -398,7 +398,7 @@ Check Harbor Api Page
     Retry Link Click  //a[contains(.,'Harbor API V2.0')]
     Switch Window  locator=NEW
     Title Should Be  Harbor Swagger
-    Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+    Retry Wait Element  xpath=//h1[contains(normalize-space(.), 'Harbor API')]
 
 Body Of Stop Scan And Stop Scan All
     Init Chrome Driver

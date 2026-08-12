@@ -11,7 +11,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 
 * [Bi-weekly public community meetings][community-meetings]
   * Catch up with [past meetings on YouTube][past-meetings]
-* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack] )
+* Chat with us on the CNCF Slack ([get an invitation here][cncf-slack])
   * [#harbor][users-slack] for end-user discussions
   * [#harbor-dev][dev-slack] for development of Harbor
 * Want long-form communication instead of Slack? We have two distribution lists:
@@ -31,8 +31,8 @@ export GOPATH=$HOME/go
 mkdir -p $GOPATH/src/github.com/goharbor
 
 #Get code
-git clone git@github.com:goharbor/harbor.git
 cd $GOPATH/src/github.com/goharbor/harbor
+git clone git@github.com:goharbor/harbor.git
 
 #Track repository under your personal account
 git config push.default nothing # Anything to avoid pushing to goharbor/harbor by default
@@ -169,6 +169,8 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 | 2.12   | 1.23.2      |
 | 2.13   | 1.23.8      |
 | 2.14   | 1.24.6      |
+| 2.15   | 1.26.4      |
+| 2.16   | 1.26.4      |
 
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
@@ -261,8 +263,48 @@ go list ./... | grep -v -E 'tests' | xargs -L1 fgt golint
 
 ```
 
-Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
+## Recommended Make Commands
 
+Harbor provides a Makefile-driven developer workflow. Use these commands during development and testing.
+
+### Testing & Validation
+```sh
+make go_check      # Run tests, API generation, lint, vet, race, spell checks
+```
+
+### Build Specific Services
+```sh
+make compile_core        # Build the core Harbor service binary
+make compile_jobservice  # Build the jobservice binary (for background jobs)
+make compile_registryctl # Build the registryctl binary (for registry management)
+```
+
+### TLS / Cert Generation
+```sh
+make gen_tls                     # Only generate TLS certificates
+```
+
+### Cleanup & Reset
+```sh
+make cleanall       # Remove all binaries, images, and generated configs
+make cleanbinary    # Remove only compiled binaries
+make cleanimage     # Remove only built Docker images
+make cleanconfig    # Remove only generated configuration files
+```
+
+---
+
+### Running Tests
+
+Before submitting a pull request, you should ensure that your changes are well-tested.  
+Harbor uses separate testing frameworks for backend services and the web UI:
+
+- **Backend (Go) services**: Use the built-in `go testing` framework.  
+- **Web UI (Angular/Clarity)**: Use [Jasmine](https://jasmine.github.io/) and [Karma](https://karma-runner.github.io/1.0/index.html).
+
+It is recommended to run all tests locally to catch issues early before creating a PR.
+
+Unit test cases should be added to cover the new code. 
 Run go test cases:
 ```sh
 #cd #working_dir/src/[package]
@@ -379,8 +421,6 @@ Documents are written with Markdown. See [Writing on GitHub](https://help.github
 - Once implemented or during the implementation, the PRs are reviewed by maintainers and contributors, following the best practices and methods.
 - After merging the new PRs, the proposal must be moved to [community/proposals](https://github.com/goharbor/community/tree/main/proposals) and marked as done!
 - You have made Harbor even better, congratulations. Thank you!
-
-
 
 [community-meetings]: https://github.com/goharbor/community/blob/main/MEETING_SCHEDULE.md
 [past-meetings]: https://www.youtube.com/playlist?list=PLgInP-D86bCwTC0DYAa1pgupsQIAWPomv

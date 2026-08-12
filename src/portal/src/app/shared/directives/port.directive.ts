@@ -50,6 +50,7 @@ export function portValidator(): ValidatorFn {
             multi: true,
         },
     ],
+    standalone: false,
 })
 export class PortValidatorDirective implements Validator {
     valFn = portValidator();

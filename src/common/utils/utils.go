@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -29,6 +30,7 @@ import (
 
 	cronlib "github.com/robfig/cron/v3"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -60,9 +62,7 @@ func ParseRepository(repository string) (project, rest string) {
 		rest = repository
 		return
 	}
-	index := strings.Index(repository, "/")
-	project = repository[0:index]
-	rest = repository[index+1:]
+	project, rest, _ = strings.Cut(repository, "/")
 	return
 }
 
@@ -200,6 +200,11 @@ func SafeCastBool(value any) bool {
 	return false
 }
 
+// SetUserAgentHeader sets the User-Agent header on an HTTP request
+func SetUserAgentHeader(req *http.Request) {
+	req.Header.Set(common.UserAgentHeaderName, common.UserAgent)
+}
+
 // SafeCastFloat64 --
 func SafeCastFloat64(value any) float64 {
 	if result, ok := value.(float64); ok {
@@ -305,32 +310,6 @@ func ValidateCronString(cron string) error {
 		return fmt.Errorf("the 1st field (indicating Seconds of time) of the cron setting must be 0")
 	}
 	return nil
-}
-
-// MostMatchSorter is a sorter for the most match, usually invoked in sort Less function
-// usage:
-//
-//	sort.Slice(input, func(i, j int) bool {
-//		return MostMatchSorter(input[i].GroupName, input[j].GroupName, matchWord)
-//	})
-//
-// a is the field to be used for sorting, b is the other field, matchWord is the word to be matched
-// the return value is true if a is less than b
-// for example, search with "user",  input is {"harbor_user", "user", "users, "admin_user"}
-// it returns with this order {"user", "users", "admin_user", "harbor_user"}
-func MostMatchSorter(a, b string, matchWord string) bool {
-	// exact match always first
-	if a == matchWord {
-		return true
-	}
-	if b == matchWord {
-		return false
-	}
-	// sort by length, then sort by alphabet
-	if len(a) == len(b) {
-		return a < b
-	}
-	return len(a) < len(b)
 }
 
 // IsLocalPath checks if path is local, includes the empty path

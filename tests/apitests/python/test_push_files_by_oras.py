@@ -53,7 +53,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_id, TestProjects.project_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_CLIENT)
 
         #3. ORAS CLI push artifacts;
-        md5_list_push = library.oras.oras_push(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
+        sha256_list_push = library.oras.oras_push(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
 
         #4. Get repository from Harbor successfully, and verfiy repository name is repo pushed by ORAS CLI;
         repo_data = self.repo.get_repository(TestProjects.project_name, self.repo_name, **TestProjects.USER_CLIENT)
@@ -64,11 +64,11 @@ class TestProjects(unittest.TestCase):
         self.assertEqual(artifact.tags[0].name, self.tag)
 
         #6. ORAS CLI pull artifacts index by tag;
-        md5_list_pull = library.oras.oras_pull(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
+        sha256_list_pull = library.oras.oras_pull(harbor_server, user_name, user_001_password, TestProjects.project_name, self.repo_name, self.tag)
 
-        #7. Verfiy MD5 between artifacts pushed by ORAS and artifacts pulled by ORAS;
-        if set(md5_list_push) != set(md5_list_pull):
-            raise Exception(r"MD5 check failed with {} and {}.".format(str(md5_list_push), str(md5_list_pull)))
+        #7. Verfiy SHA256 between artifacts pushed by ORAS and artifacts pulled by ORAS;
+        if set(sha256_list_push) != set(sha256_list_pull):
+            raise Exception(r"SHA256 check failed with {} and {}.".format(str(sha256_list_push), str(sha256_list_pull)))
 
 if __name__ == '__main__':
     unittest.main()

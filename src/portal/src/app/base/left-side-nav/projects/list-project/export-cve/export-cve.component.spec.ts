@@ -14,6 +14,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ExportCveComponent } from './export-cve.component';
 import { SharedTestingModule } from '../../../../../shared/shared.module';
+import { Router } from '@angular/router';
 
 describe('ExportCveComponent', () => {
     let component: ExportCveComponent;
@@ -34,5 +35,18 @@ describe('ExportCveComponent', () => {
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('goToLabels should close the modal and navigate to /harbor/labels', () => {
+        const router = TestBed.inject(Router);
+        const navigateSpy = spyOn(router, 'navigate');
+        const closeSpy = spyOn(component, 'close').and.callThrough();
+
+        component.opened = true;
+        component.goToLabels();
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(component.opened).toBeFalse();
+        expect(navigateSpy).toHaveBeenCalledOnceWith(['/harbor/labels']);
     });
 });
