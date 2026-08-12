@@ -113,6 +113,8 @@ jobs:
   APITEST_DB:
     env:
       APITEST_DB: true
+      DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_PWD: ${{ secrets.DOCKER_HUB_PASSWORD }}
     runs-on:
       #- self-hosted
       - cncf-ubuntu-16-64-x86
@@ -175,6 +177,8 @@ jobs:
   APITEST_DB_PROXY_CACHE:
     env:
       APITEST_DB: true
+      DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_PWD: ${{ secrets.DOCKER_HUB_PASSWORD }}
     if: ${{ github.event.repository.custom_properties.SKIP_PROXY_CACHE != 'true' }}
     runs-on:
       #- self-hosted
