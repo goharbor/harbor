@@ -63,7 +63,7 @@ jobs:
            cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
       - name: Cache CI Go tools
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/go/bin
           key: ci-gotools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('src/github.com/goharbor/harbor/tests/ci/ut_install.sh') }}
