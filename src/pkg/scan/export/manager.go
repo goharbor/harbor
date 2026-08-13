@@ -147,7 +147,7 @@ func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, erro
 
 // csvFormulaTriggers lists the leading characters a spreadsheet may interpret as
 // the start of a formula when opening an exported CSV.
-const csvFormulaTriggers = "=+-@\t\r"
+const csvFormulaTriggers = "=+-@\t\r\n"
 
 // sanitizeCSVCell prefixes a single quote to any value that would otherwise be
 // evaluated as a formula, neutralizing CSV formula injection.
