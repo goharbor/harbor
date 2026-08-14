@@ -34,7 +34,7 @@
     "@angular/compiler": "21.2.13",
     "@angular/core": "21.2.13",
     "@angular/forms": "21.2.13",
-    "@angular/localize": "21.2.13",
+    "@angular/localize": "22.1.1",
     "@angular/platform-browser": "21.2.13",
     "@angular/platform-browser-dynamic": "21.2.13",
     "@angular/router": "21.2.13",
