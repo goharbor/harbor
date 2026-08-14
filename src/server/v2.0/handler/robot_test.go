@@ -1,15 +1,21 @@
 package handler
 
 import (
+	"context"
 	"math"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 )
 
 func TestValidLevel(t *testing.T) {
@@ -135,6 +141,23 @@ func TestValidateName(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidateNilPermissionElement(t *testing.T) {
+	rAPI := &robotAPI{}
+	err := rAPI.validate(-1, robot.LEVELSYSTEM, []*models.RobotPermission{nil})
+	assert.Error(t, err)
+}
+
+func TestValidateNilAccessElement(t *testing.T) {
+	rAPI := &robotAPI{}
+	err := rAPI.validate(-1, robot.LEVELSYSTEM, []*models.RobotPermission{
+		{
+			Kind:   robot.LEVELSYSTEM,
+			Access: []*models.Access{nil},
+		},
+	})
+	assert.Error(t, err)
 }
 
 func TestContainsAccess(t *testing.T) {
@@ -477,6 +500,31 @@ func TestValidPermissionScope(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := isValidPermissionScope(tt.creatingPerms, tt.creatorPerms)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestListRobotNonStringQueryValue(t *testing.T) {
+	queries := []string{
+		"Level=~system",
+		"Level=[1~2]",
+		"Level={a b}",
+		"Level=(a b)",
+		"Level=project,ProjectID=~1",
+		"Level=project,ProjectID=[1~2]",
+	}
+
+	secCtx := &securitytesting.Context{}
+	secCtx.On("IsAuthenticated").Return(true)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	for _, q := range queries {
+		t.Run(q, func(t *testing.T) {
+			responder := (&robotAPI{}).ListRobot(ctx, operation.ListRobotParams{Q: &q})
+
+			rec := httptest.NewRecorder()
+			responder.WriteResponse(rec, nil)
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
 		})
 	}
 }

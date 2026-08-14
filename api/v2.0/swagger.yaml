@@ -1072,6 +1072,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
+          type: boolean
+          required: false
+          default: false
       responses:
         '200':
           description: Success
@@ -1182,6 +1188,12 @@ paths:
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts.
+          type: boolean
+          required: false
+          default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
           type: boolean
           required: false
           default: false
@@ -1713,6 +1725,12 @@ paths:
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
           type: boolean
           required: false
           default: false
@@ -6523,6 +6541,7 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+    format: int64
   gcId:
     name: gc_id
     in: path
@@ -6851,6 +6870,23 @@ definitions:
         items:
           $ref: '#/definitions/Accessory'
           description: The accessory of the artifact.
+      inherited_accessories:
+        type: array
+        # omitted rather than sent as null, so that responses which did not ask for the
+        # inherited accessories stay exactly as they are today
+        x-omitempty: true
+        description: |
+          The signatures of the parent OCI index(es) that reference this artifact, both
+          cosign and notation. A signature on an index covers the whole index, so a child
+          manifest of a signed index is covered by that signature even though it carries
+          none of its own. These entries describe the parent, not this artifact: their
+          subject_artifact_digest is the index digest, so verifying them against this
+          artifact's digest fails and they are not listed by the referrers API for this
+          digest. Only returned when the with_inherited_accessory query parameter is set
+          to true.
+        items:
+          $ref: '#/definitions/Accessory'
+          description: The accessory inherited from the parent OCI index.
   Tag:
     type: object
     properties:
@@ -7533,6 +7569,14 @@ definitions:
         type: string
         description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
         x-nullable: true
+      proxy_cache_filter_pattern:
+        type: string
+        description: 'Repository filter pattern for proxy cache project. Only repositories matching the pattern will be proxied. Empty means allow all. Only has value when the current project is a proxy cache project.'
+        x-nullable: true
+      proxy_cache_filter_kind:
+        type: string
+        description: 'Matching mode for proxy_cache_filter_pattern: "doublestar" (default, glob-style with ** support) or "regex". Only has value when the current project is a proxy cache project.'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -8057,6 +8101,7 @@ definitions:
         description: The type of the robot creator, like local(harbor_user) or robot.
       creator_ref:
         type: integer
+        format: int64
         description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
