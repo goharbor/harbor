@@ -17,30 +17,69 @@ updates:
       - "OrlinVasilev"
     reviewers:
       - "OrlinVasilev"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
 
   - package-ecosystem: "gomod"
     directory: "/src"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
-      - "branch/main"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
 
   - package-ecosystem: "gomod"
     directory: "/src"
     schedule:
       interval: "weekly"
-    target-branch: "release-2.14.0"
+    target-branch: "release-2.15.0"
+    open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
-      - "branch/release-2.14.0"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/src/portal"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/src/portal"
+    schedule:
+      interval: "weekly"
+    target-branch: "release-2.15.0"
+    open-pull-requests-limit: 10
+    labels:
+      - "release-note/bump-version"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
 
   # More will be needed
