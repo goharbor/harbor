@@ -3,7 +3,10 @@ name: Bug report
 about: Create a report to help us improve
 ---
 
-**⚠️ If this is a security vulnerability, do NOT file a public issue.** Report it privately via [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new). See [SECURITY.md](https://github.com/goharbor/harbor/blob/main/SECURITY.md) for the full disclosure policy.
+> [!IMPORTANT]
+> If this is a security vulnerability, **do NOT** file a public issue.\
+> Report it privately via [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new).\ 
+> See [SECURITY.md](https://github.com/goharbor/harbor/blob/main/SECURITY.md) for the full disclosure policy.
 
 If you are reporting a problem, please make sure the following information is provided:
 
