@@ -9,13 +9,14 @@ Security is of the highest importance and all security vulnerabilities or suspec
 
 If you know of a publicly disclosed security vulnerability for Harbor, please **IMMEDIATELY** report it via [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new) to inform the Harbor Security Team.
 
-**IMPORTANT: Do not file public issues on GitHub for security vulnerabilities**
+> [!IMPORTANT]
+> **Do not file public issues on GitHub for security vulnerabilities**
 
-To report a vulnerability or a security-related issue, use GitHub private vulnerability reporting: open the **Security** tab of the affected repository and click **Report a vulnerability**. For the main Harbor repository, use [this form](https://github.com/goharbor/harbor/security/advisories/new). Filing a report requires a GitHub account; this is the only channel for vulnerability reports.
+The report is visible only to you and the Harbor maintainers. Reports will be acknowledged within 5 business days. The Harbor Team will then investigate and follow up with a plan to address the issue and any potential workarounds to perform in the meantime. Filing a report requires a GitHub account; this is the only channel for vulnerability reports.
 
-The report is visible only to you and the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Reports will be acknowledged within 5 business days. The Harbor Security Team will then investigate and follow up with a plan to address the issue and any potential workarounds to perform in the meantime.
+> [!NOTE]
+> Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead.
 
-Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead.
 
 ### Proposed Report Content
 Provide a descriptive title and in the description of the report include the following information:
@@ -49,8 +50,7 @@ The Security Team publishes the security [advisory](https://github.com/goharbor/
 The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances. Harbor distributors will handle creating and publishing their own security advisories.
 
 ## Mailing lists
-- Use cncf-harbor-security@lists.cncf.io to reach the Harbor Security Team about the distributors list, for example to request membership or to report a breach of the Embargo Policy. Do not use it to report vulnerabilities; use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new) instead.
-- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information and vulnerability disclosure. Early disclosure may include mitigating steps and additional information on security patch releases. See below for information on how Harbor distributors or vendors can apply to join this list.
+- Use cncf-harbor-security@lists.cncf.io to reach the Harbor Security Team. Do not use it to report vulnerabilities; use [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new) instead.
 
 ## Early Disclosure to Harbor Distributors List
 This private list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
