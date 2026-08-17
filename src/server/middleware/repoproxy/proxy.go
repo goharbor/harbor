@@ -37,6 +37,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/controller/registry"
+	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -92,6 +93,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
+	}
+
+	// ensure repository exists before proxy or cache resolution
+	if _, _, err := repository.Ctl.Ensure(ctx, art.Repository); err != nil {
+		log.Errorf("failed to ensure repository %v in proxy cache, error: %v", art.Repository, err)
 	}
 
 	// go will panic if the network connection is ever interrupted, despite recovering successfully
@@ -300,6 +306,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 	art, p, proxyCtl, err := preCheck(ctx, true)
 	if err != nil {
 		return err
+	}
+
+	// ensure repository exists before proxy or cache resolution
+	if _, _, err := repository.Ctl.Ensure(ctx, art.Repository); err != nil {
+		log.Errorf("failed to ensure repository %v in proxy cache, error: %v", art.Repository, err)
 	}
 
 	// Handle dockerhub request without library prefix
