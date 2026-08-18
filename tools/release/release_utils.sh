@@ -48,6 +48,60 @@ function generateReleaseNotes {
     echo -e $release > $releaseNotesPath
 }
 
+function generateImageSBOMs {
+    local curTag=$1
+    local baseTag=$2
+    local sbomsPath=$3
+    local syft=$4
+    local images=("${@:5}")
+    local arch=${ARCH:?ARCH must be set before generating image SBOMs}
+    local image
+    local imageRef
+    local sbom
+
+    mkdir -p "$sbomsPath"
+    for image in "${images[@]}"
+    do
+        imageRef="$image:${curTag}-${arch}"
+        sbom="$sbomsPath/${image##*/}-${arch}.spdx.json"
+        docker tag "$image:$baseTag" "$imageRef"
+        echo "generate SBOM: $imageRef"
+        "$syft" "$imageRef" --output "spdx-json=$sbom"
+    done
+}
+
+function attestImageSBOMs {
+    local curTag=$1
+    local registry=$2
+    local registryUser=$3
+    local registryPassword=$4
+    local sbomsPath=$5
+    local images=("${@:6}")
+    local arch=${ARCH:?ARCH must be set before attesting image SBOMs}
+    local registryPrefix=""
+    local image
+    local imageRef
+    local sbom
+
+    if [ -n "$registry" ]; then
+        registryPrefix="$registry/"
+        printf '%s\n' "$registryPassword" | docker login "$registry" --username "$registryUser" --password-stdin
+    else
+        printf '%s\n' "$registryPassword" | docker login --username "$registryUser" --password-stdin
+    fi
+
+    for image in "${images[@]}"
+    do
+        imageRef="${registryPrefix}${image}:${curTag}-${arch}"
+        sbom="$sbomsPath/${image##*/}-${arch}.spdx.json"
+        echo "attest SBOM: $imageRef"
+        retry 5 cosign attest --yes \
+            --type https://spdx.dev/Document \
+            --predicate "$sbom" \
+            "$imageRef"
+    done
+}
+
 function publishImages {
     # Create curTag and push it to the goharbor namespace of dockerhub
     local curTag=$1
