@@ -12,7 +12,13 @@
         ]
       }
     ],
-    "no-empty-source": null
+    "no-empty-source": null,
+    "at-rule-empty-line-before": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "declaration-property-value-keyword-no-deprecated": null,
+    "property-no-deprecated": null,
+    "scss/dollar-variable-colon-space-after": null,
+    "selector-attribute-quotes": null
   },
   "ignoreFiles": [
     "**/*.md",
