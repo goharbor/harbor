@@ -88,10 +88,8 @@
     "ng-swagger-gen": "1.8.1",
     "prettier": "2.8.8",
     "stylelint": "17.14.1",
-    "stylelint-config-prettier": "9.0.5",
-    "stylelint-config-prettier-scss": "0.0.1",
-    "stylelint-config-standard": "29.0.0",
-    "stylelint-config-standard-scss": "6.1.0",
+    "stylelint-config-standard": "40.0.0",
+    "stylelint-config-standard-scss": "17.0.0",
     "typescript": "5.9.3"
   },
   "overrides": {
