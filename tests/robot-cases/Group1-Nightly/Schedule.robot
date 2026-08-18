@@ -65,6 +65,27 @@ Test Case - Proxy Cache
     Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
     Close Browser
 
+Test Case - Proxy Cache Filter
+    [Tags]  proxy_cache_filter
+    ${d}=  Get Current Date    result_format=%m%s
+    ${registry}=  Set Variable  https://registry.goharbor.io
+    ${user_namespace}=  Set Variable  nightly
+    ${allowed_image}=  Set Variable  for_proxy
+    ${allowed_tag}=  Set Variable  1.0
+    ${blocked_image}=  Set Variable  redis
+    ${blocked_tag}=  Set Variable  latest
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint  harbor  e_filter${d}  ${registry}  ${null}  ${null}
+    Create An New Project With Proxy Cache Filter  proj_filter${d}  e_filter${d}  ${user_namespace}/${allowed_image}  doublestar
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${allowed_image}  tag=${allowed_tag}
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
+    Go Into Project  proj_filter${d}
+    Update Project Proxy Cache Filter  ^${user_namespace}/(for_proxy|redis)$  regex
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
+    Close Browser
+
 Test Case - GC Schedule Job
     [tags]  GC_schedule
     Init Chrome Driver
