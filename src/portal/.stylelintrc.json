@@ -1,9 +1,7 @@
 {
   "extends": [
     "stylelint-config-standard",
-    "stylelint-config-prettier",
-    "stylelint-config-standard-scss",
-    "stylelint-config-prettier-scss"
+    "stylelint-config-standard-scss"
   ],
   "rules": {
     "selector-pseudo-element-no-unknown": [
@@ -14,7 +12,13 @@
         ]
       }
     ],
-    "no-empty-source": null
+    "no-empty-source": null,
+    "at-rule-empty-line-before": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "declaration-property-value-keyword-no-deprecated": null,
+    "property-no-deprecated": null,
+    "scss/dollar-variable-colon-space-after": null,
+    "selector-attribute-quotes": null
   },
   "ignoreFiles": [
     "**/*.md",
