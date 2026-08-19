@@ -116,7 +116,7 @@ func AcquireLock(conn redis.Conn, lockerKey string, lockerID string, expireTime 
 	if err != nil {
 		return err
 	}
-	// Existing, the value cannot be overridden
+	// Existing, the value can not be override
 	if res == nil {
 		return fmt.Errorf("key %s is already set with value %v", lockerKey, lockerID)
 	}

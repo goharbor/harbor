@@ -211,7 +211,11 @@ func ExchangeToken(ctx context.Context, code string, pkceCode pkce.Code) (*Token
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: *oauthToken, RawIDToken: oauthToken.Extra("id_token").(string)}, nil
+	idToken, ok := oauthToken.Extra("id_token").(string)
+	if !ok {
+		return nil, fmt.Errorf("id_token is missing or not a string in the oauth token")
+	}
+	return &Token{Token: *oauthToken, RawIDToken: idToken}, nil
 }
 
 func parseIDToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error) {

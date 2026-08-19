@@ -11,11 +11,11 @@ permissions:
 
 jobs:
   check:
-    runs-on: cncf-ubuntu-16-64-x86
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: delimit-ai/delimit-action@00900a3b45d9278400854f38ec0262bc07a62373 # v1.11.6
+      - uses: delimit-ai/delimit-action@v1
         with:
           spec: api/v2.0/swagger.yaml
