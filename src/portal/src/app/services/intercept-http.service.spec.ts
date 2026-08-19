@@ -77,7 +77,7 @@ describe('InterceptHttpService', () => {
         [InterceptHttpService],
         (service: InterceptHttpService) => {
             const failingHandle = {
-                handle: () => throwError({ status: 504 }),
+                handle: () => throwError(() => ({ status: 504 })),
             };
             let caught: any = null;
             service.intercept(mockRequest, failingHandle).subscribe({
@@ -86,6 +86,23 @@ describe('InterceptHttpService', () => {
             expect(caught).toBeTruthy();
             expect(caught.status).toEqual(504);
             expect(caught.error).toEqual('504 gateway timeout');
+        }
+    ));
+
+    it('should rethrow non-504 errors unchanged', inject(
+        [InterceptHttpService],
+        (service: InterceptHttpService) => {
+            const failingHandle = {
+                handle: () =>
+                    throwError(() => ({ status: 500, error: 'server error' })),
+            };
+            let caught: any = null;
+            service.intercept(mockRequest, failingHandle).subscribe({
+                error: error => (caught = error),
+            });
+            expect(caught).toBeTruthy();
+            expect(caught.status).toEqual(500);
+            expect(caught.error).toEqual('server error');
         }
     ));
 });
