@@ -13,43 +13,33 @@
 // limitations under the License.
 import { TestBed, inject } from '@angular/core/testing';
 import { InterceptHttpService } from './intercept-http.service';
+import {
+    HEADER_NO_SESSION_RENEWAL,
+    SkipSessionRenewalService,
+} from './skip-session-renewal.service';
 import { HttpRequest, HttpResponse } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 
 describe('InterceptHttpService', () => {
-    const mockedCSRFToken: string = 'test';
-    const mockRequest = new HttpRequest('PUT', '', {
-        headers: new Map(),
-    });
+    const mockRequest = new HttpRequest('PUT', '', null);
+    // captures the request the interceptor forwards, so the assertions can
+    // inspect the headers it added
+    let forwardedRequest: HttpRequest<any>;
     const mockHandle = {
         handle: request => {
-            if (request.headers.has('X-Harbor-CSRF-Token')) {
-                return of(new HttpResponse({ status: 200 }));
-            } else {
-                return throwError(
-                    new HttpResponse({
-                        status: 403,
-                    })
-                );
-            }
+            forwardedRequest = request;
+            return of(new HttpResponse({ status: 200 }));
         },
     };
+
     beforeEach(() => {
-        let store = {};
-        spyOn(localStorage, 'getItem').and.callFake(key => {
-            return store[key];
-        });
-        spyOn(localStorage, 'setItem').and.callFake((key, value) => {
-            return (store[key] = value + '');
-        });
-        spyOn(localStorage, 'clear').and.callFake(() => {
-            store = {};
-        });
+        forwardedRequest = null;
         TestBed.configureTestingModule({
             imports: [],
-            providers: [InterceptHttpService],
+            providers: [InterceptHttpService, SkipSessionRenewalService],
         });
     });
+
     it('should be initialized', inject(
         [InterceptHttpService],
         (service: InterceptHttpService) => {
@@ -57,19 +47,45 @@ describe('InterceptHttpService', () => {
         }
     ));
 
-    it('should be get right token and send right request when the cookie not exists', inject(
+    it('should not set the no-session-renewal header by default', inject(
         [InterceptHttpService],
         (service: InterceptHttpService) => {
-            localStorage.setItem('__csrf', mockedCSRFToken);
-            service.intercept(mockRequest, mockHandle).subscribe(res => {
-                if (res.status === 403) {
-                    expect(
-                        mockRequest.headers.get('X-Harbor-CSRF-Token')
-                    ).toEqual(mockedCSRFToken);
-                } else {
-                    expect(res.status).toEqual(200);
-                }
+            service.intercept(mockRequest, mockHandle).subscribe();
+            expect(
+                forwardedRequest.headers.has(HEADER_NO_SESSION_RENEWAL)
+            ).toBe(false);
+        }
+    ));
+
+    it('should set the no-session-renewal header when the request is flagged', inject(
+        [InterceptHttpService, SkipSessionRenewalService],
+        (
+            service: InterceptHttpService,
+            skipSessionRenewalService: SkipSessionRenewalService
+        ) => {
+            skipSessionRenewalService.begin();
+            service.intercept(mockRequest, mockHandle).subscribe();
+            expect(
+                forwardedRequest.headers.get(HEADER_NO_SESSION_RENEWAL)
+            ).toEqual('true');
+            // the flag is consumed by the interceptor, so it must not leak to the next request
+            expect(skipSessionRenewalService.shouldSkip).toBe(false);
+        }
+    ));
+
+    it('should convert a 504 error into json format', inject(
+        [InterceptHttpService],
+        (service: InterceptHttpService) => {
+            const failingHandle = {
+                handle: () => throwError({ status: 504 }),
+            };
+            let caught: any = null;
+            service.intercept(mockRequest, failingHandle).subscribe({
+                error: error => (caught = error),
             });
+            expect(caught).toBeTruthy();
+            expect(caught.status).toEqual(504);
+            expect(caught.error).toEqual('504 gateway timeout');
         }
     ));
 });
