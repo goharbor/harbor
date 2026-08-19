@@ -31,7 +31,7 @@
     "@angular/animations": "21.2.20",
     "@angular/cdk": "21.2.11",
     "@angular/common": "21.2.20",
-    "@angular/compiler": "22.1.1",
+    "@angular/compiler": "21.2.20",
     "@angular/core": "21.2.20",
     "@angular/forms": "21.2.20",
     "@angular/localize": "21.2.20",
