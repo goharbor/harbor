@@ -314,5 +314,11 @@ func ValidateCronString(cron string) error {
 
 // IsLocalPath checks if path is local, includes the empty path
 func IsLocalPath(path string) bool {
-	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
+	if len(path) == 0 {
+		return true
+	}
+	if strings.ContainsAny(path, "\\\r\n\t") {
+		return false
+	}
+	return strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//")
 }
