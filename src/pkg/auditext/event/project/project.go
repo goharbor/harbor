@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"time"
@@ -32,17 +33,25 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
 
+// Each URL shape is declared once and used for both resolver registration and
+// project-name extraction, so the two can never drift apart.
+const (
+	projectPattern        = `^/api/v2\.0/projects/([^/?]+)(?:\?.*)?$`
+	projectMetaPattern    = `^/api/v2\.0/projects/([^/?]+)/metadatas/(?:\?.*)?$`
+	projectMetaKeyPattern = `^/api/v2\.0/projects/([^/?]+)/metadatas/([^/?]+)(?:\?.*)?$`
+)
+
 var (
-	projectReg        = regexp.MustCompile(`^/api/v2.0/projects/([^/?]+)(?:\?.*)?$`)
-	projectMetaReg    = regexp.MustCompile(`^/api/v2.0/projects/([^/?]+)/metadatas/(?:\?.*)?$`)
-	projectMetaKeyReg = regexp.MustCompile(`^/api/v2.0/projects/([^/?]+)/metadatas/([^/?]+)(?:\?.*)?$`)
+	projectReg        = regexp.MustCompile(projectPattern)
+	projectMetaReg    = regexp.MustCompile(projectMetaPattern)
+	projectMetaKeyReg = regexp.MustCompile(projectMetaKeyPattern)
 )
 
 func init() {
 	var projectEventResolver = &resolver{}
-	commonevent.RegisterResolver(`^/api/v2.0/projects/[^/?]+(?:\?.*)?$`, projectEventResolver)
-	commonevent.RegisterResolver(`^/api/v2.0/projects/[^/?]+/metadatas/(?:\?.*)?$`, projectEventResolver)
-	commonevent.RegisterResolver(`^/api/v2.0/projects/[^/?]+/metadatas/[^/?]+(?:\?.*)?$`, projectEventResolver)
+	commonevent.RegisterResolver(projectPattern, projectEventResolver)
+	commonevent.RegisterResolver(projectMetaPattern, projectEventResolver)
+	commonevent.RegisterResolver(projectMetaKeyPattern, projectEventResolver)
 }
 
 type resolver struct {
@@ -59,7 +68,7 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 		ctx = orm.Clone(ctx)
 	}
 
-	proj, err := getProject(ctx, projStr)
+	proj, err := getProject(ctx, projStr, isResourceName(ce.RequestURL))
 	if err != nil {
 		return fmt.Errorf("failed to get project: %v", err)
 	}
@@ -106,13 +115,23 @@ func getProjectNameOrID(url string) string {
 	return ""
 }
 
-func getProject(ctx context.Context, str string) (*models.Project, error) {
-	var projectNameOrID any
-	v, err := strconv.ParseInt(str, 10, 64)
+// isResourceName reports whether the request URL carries x_is_resource_name=true,
+// which forces the path segment to be treated as a project name even when it is
+// all digits — mirroring parseProjectNameOrID in the API handlers.
+func isResourceName(requestURL string) bool {
+	u, err := url.Parse(requestURL)
 	if err != nil {
-		projectNameOrID = str
-	} else {
-		projectNameOrID = v
+		return false
+	}
+	return u.Query().Get("x_is_resource_name") == "true"
+}
+
+func getProject(ctx context.Context, str string, isName bool) (*models.Project, error) {
+	var projectNameOrID any = str
+	if !isName {
+		if v, err := strconv.ParseInt(str, 10, 64); err == nil {
+			projectNameOrID = v
+		}
 	}
 	return project.Ctl.Get(ctx, projectNameOrID)
 }

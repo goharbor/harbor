@@ -31,7 +31,7 @@ import (
 
 type fakeMetadataController struct {
 	metadata.Controller
-	getFunc func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
+	getFunc    func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
 	deleteFunc func(ctx context.Context, projectID int64, meta ...string) error
 }
 

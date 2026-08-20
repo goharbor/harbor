@@ -863,9 +863,8 @@ func validateProxyCacheRepositoryFilter(metadata *models.ProjectMetadata) error 
 		return nil
 	}
 
-	if filterKind != pattern.KindRegex && filterKind != pattern.KindDoublestar {
-		return errors.BadRequestError(nil).
-			WithMessagef("metadata.proxy_cache_filter_kind should be %q or %q, but got: %q", pattern.KindDoublestar, pattern.KindRegex, filterKind)
+	if err := pattern.ValidateKind(filterKind); err != nil {
+		return errors.BadRequestError(nil).WithMessagef("metadata.proxy_cache_filter_kind: %v", err)
 	}
 
 	if err := pattern.ValidateRepositoryFilter(filterPattern, filterKind); err != nil {

@@ -90,16 +90,14 @@ func (p *projectMetadataAPI) DeleteProjectMetadata(ctx context.Context, params o
 		return p.SendError(ctx, err)
 	}
 	if params.MetaName == proModels.ProMetaProxyCacheFilterKind {
-		if p.ctl != nil {
-			existing, err := p.ctl.Get(ctx, project.ProjectID, proModels.ProMetaProxyCacheFilterPattern)
-			if err != nil {
-				return p.SendError(ctx, err)
-			}
-			if patVal, ok := existing[proModels.ProMetaProxyCacheFilterPattern]; ok && patVal != "" {
-				return p.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("cannot delete %s when %s is not empty, please clear the pattern first",
-						proModels.ProMetaProxyCacheFilterKind, proModels.ProMetaProxyCacheFilterPattern))
-			}
+		existing, err := p.ctl.Get(ctx, project.ProjectID, proModels.ProMetaProxyCacheFilterPattern)
+		if err != nil {
+			return p.SendError(ctx, err)
+		}
+		if patVal, ok := existing[proModels.ProMetaProxyCacheFilterPattern]; ok && patVal != "" {
+			return p.SendError(ctx, errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("cannot delete %s when %s is not empty, please clear the pattern first",
+					proModels.ProMetaProxyCacheFilterKind, proModels.ProMetaProxyCacheFilterPattern))
 		}
 	}
 	if err = p.ctl.Delete(ctx, project.ProjectID, params.MetaName); err != nil {
@@ -191,27 +189,18 @@ func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, meta
 		}
 		metas[proModels.ProMetaMaxUpstreamConn] = strconv.FormatInt(v, 10)
 	case proModels.ProMetaProxyCacheFilterPattern:
-		if p.proCtl != nil {
-			pro, err := p.proCtl.Get(ctx, projectID)
-			if err != nil {
-				return nil, err
-			}
-			if !pro.IsProxy() {
-				return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("can not update the normal project with proxy cache filter metadata")
-			}
+		if err := p.requireProxyProject(ctx, projectID); err != nil {
+			return nil, err
 		}
-		// plain pattern string; empty means match all — no further validation needed at metadata level
-		kind := pattern.KindDoublestar
-		if k, ok := metas[proModels.ProMetaProxyCacheFilterKind]; ok && k != "" {
+		// The API accepts one key per request, so the effective kind is
+		// whatever is already stored; empty means the doublestar default.
+		var kind string
+		existing, err := p.ctl.Get(ctx, projectID, proModels.ProMetaProxyCacheFilterKind)
+		if err != nil {
+			return nil, err
+		}
+		if k, ok := existing[proModels.ProMetaProxyCacheFilterKind]; ok {
 			kind = k
-		} else if p.ctl != nil {
-			existing, err := p.ctl.Get(ctx, projectID, proModels.ProMetaProxyCacheFilterKind)
-			if err != nil {
-				return nil, err
-			}
-			if k, ok := existing[proModels.ProMetaProxyCacheFilterKind]; ok && k != "" {
-				kind = k
-			}
 		}
 		if err := pattern.ValidateRepositoryFilter(value, kind); err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
@@ -219,41 +208,23 @@ func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, meta
 		}
 		metas[proModels.ProMetaProxyCacheFilterPattern] = value
 	case proModels.ProMetaProxyCacheFilterKind:
-		if p.proCtl != nil {
-			pro, err := p.proCtl.Get(ctx, projectID)
-			if err != nil {
-				return nil, err
-			}
-			if !pro.IsProxy() {
-				return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("can not update the normal project with proxy cache filter metadata")
-			}
+		if err := p.requireProxyProject(ctx, projectID); err != nil {
+			return nil, err
 		}
-		// must be "doublestar" or "regex" when specified
-		if value != "" && value != pattern.KindRegex && value != pattern.KindDoublestar {
+		if err := pattern.ValidateKind(value); err != nil {
 			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-				WithMessagef("invalid proxy_cache_filter_kind: %q, must be %q or %q", value, pattern.KindDoublestar, pattern.KindRegex)
+				WithMessagef("invalid proxy_cache_filter_kind: %v", err)
 		}
-		var pat string
-		hasPat := false
-		if patVal, ok := metas[proModels.ProMetaProxyCacheFilterPattern]; ok {
-			pat = patVal
-			hasPat = true
-		} else if p.ctl != nil {
-			if existing, err := p.ctl.Get(ctx, projectID, proModels.ProMetaProxyCacheFilterPattern); err == nil {
-				if patVal, ok := existing[proModels.ProMetaProxyCacheFilterPattern]; ok {
-					pat = patVal
-					hasPat = true
-				}
-			}
+		// The new kind must keep the stored pattern (the only possible source,
+		// since the API accepts one key per request) compilable.
+		existing, err := p.ctl.Get(ctx, projectID, proModels.ProMetaProxyCacheFilterPattern)
+		if err != nil {
+			return nil, err
 		}
-		if hasPat && pat != "" {
-			kind := value
-			if kind == "" {
-				kind = pattern.KindDoublestar
-			}
-			if err := pattern.ValidateRepositoryFilter(pat, kind); err != nil {
+		if pat, ok := existing[proModels.ProMetaProxyCacheFilterPattern]; ok && pat != "" {
+			if err := pattern.ValidateRepositoryFilter(pat, value); err != nil {
 				return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("existing proxy_cache_filter_pattern %q is invalid for new kind %q: %v", pat, kind, err)
+					WithMessagef("existing proxy_cache_filter_pattern %q is invalid for new kind %q: %v", pat, value, err)
 			}
 		}
 		metas[proModels.ProMetaProxyCacheFilterKind] = value
@@ -261,4 +232,17 @@ func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, meta
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid key: %s", key)
 	}
 	return metas, nil
+}
+
+// requireProxyProject rejects proxy-cache-filter metadata changes on projects
+// that are not proxy cache projects.
+func (p *projectMetadataAPI) requireProxyProject(ctx context.Context, projectID int64) error {
+	pro, err := p.proCtl.Get(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if !pro.IsProxy() {
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("can not update the normal project with proxy cache filter metadata")
+	}
+	return nil
 }
