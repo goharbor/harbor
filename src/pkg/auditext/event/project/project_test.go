@@ -138,13 +138,14 @@ func TestProjectEventResolver_Resolve(t *testing.T) {
 		assert.True(t, data.IsSuccessful)
 	})
 
-	t.Run("Resolve all-digit project name with x_is_resource_name", func(t *testing.T) {
+	t.Run("Resolve all-digit project name with X-Is-Resource-Name", func(t *testing.T) {
 		ce := &commonevent.Metadata{
-			Ctx:           context.Background(),
-			Username:      "admin",
-			RequestURL:    "/api/v2.0/projects/123?x_is_resource_name=true",
-			RequestMethod: "PUT",
-			ResponseCode:  http.StatusOK,
+			Ctx:            context.Background(),
+			Username:       "admin",
+			RequestURL:     "/api/v2.0/projects/123",
+			RequestMethod:  "PUT",
+			ResponseCode:   http.StatusOK,
+			IsResourceName: true,
 		}
 		evt := &event.Event{}
 		err := r.Resolve(ce, evt)
