@@ -756,6 +756,13 @@ func TestMatchRepositoryFilter(t *testing.T) {
 			want:          false,
 		},
 		{
+			name:          "group-imbalanced regex treated as no match, not unanchored",
+			repository:    "library/foobar",
+			filterPattern: "foo)|(bar",
+			filterKind:    "regex",
+			want:          false,
+		},
+		{
 			name:          "doublestar exact match",
 			repository:    "library/nginx",
 			filterPattern: "library/nginx",
