@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strconv"
 	"time"
@@ -68,7 +67,7 @@ func (r *resolver) Resolve(ce *commonevent.Metadata, evt *event.Event) error {
 		ctx = orm.Clone(ctx)
 	}
 
-	proj, err := getProject(ctx, projStr, isResourceName(ce.RequestURL))
+	proj, err := getProject(ctx, projStr, ce.IsResourceName)
 	if err != nil {
 		return fmt.Errorf("failed to get project: %v", err)
 	}
@@ -115,17 +114,10 @@ func getProjectNameOrID(url string) string {
 	return ""
 }
 
-// isResourceName reports whether the request URL carries x_is_resource_name=true,
-// which forces the path segment to be treated as a project name even when it is
-// all digits — mirroring parseProjectNameOrID in the API handlers.
-func isResourceName(requestURL string) bool {
-	u, err := url.Parse(requestURL)
-	if err != nil {
-		return false
-	}
-	return u.Query().Get("x_is_resource_name") == "true"
-}
-
+// getProject resolves the path segment to a project. isName comes from the
+// X-Is-Resource-Name header and forces the segment to be treated as a project
+// name even when it is all digits — mirroring parseProjectNameOrID in the API
+// handlers.
 func getProject(ctx context.Context, str string, isName bool) (*models.Project, error) {
 	var projectNameOrID any = str
 	if !isName {

@@ -44,7 +44,7 @@ func ValidateKind(kind string) error {
 	case "", KindRegex, KindDoublestar:
 		return nil
 	default:
-		return errors.Errorf("unsupported repository filter kind %q, must be %q or %q", kind, KindDoublestar, KindRegex)
+		return errors.Errorf("unsupported repository filter kind %q, must be %q, %q, or empty (defaults to %q)", kind, KindDoublestar, KindRegex, KindDoublestar)
 	}
 }
 
