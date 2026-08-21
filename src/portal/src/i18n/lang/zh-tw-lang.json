@@ -257,7 +257,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "正則表達式模式無效。",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "Doublestar 模式中的中括號 [] 或大括號 {} 不匹配。",
-        "NO_PROJECT": "找不到任何專案"
+        "NO_PROJECT": "找不到任何專案",
+        "PROXY_CACHE_BASE_PATH": "基礎路徑",
+        "PROXY_CACHE_BASE_PATH_TIP": "從上游倉庫拉取時加在鏡像倉庫名稱前的基礎路徑。例如，基礎路徑為 'dev' 時，拉取 'proxy/image' 將從上游倉庫取得 'dev/image'。留空則保持鏡像倉庫名稱不變。 之後修改僅對新的拉取生效：已快取的鏡像保留原有名稱，而該名稱此時指向另一個上游倉庫。",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "例如 dev 或 dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "請輸入有效的小寫鏡像倉庫路徑，例如 'dev' 或 'dev/team'，或留空。"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "摘要",

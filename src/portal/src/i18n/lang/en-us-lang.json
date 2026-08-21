@@ -257,7 +257,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "The regular expression pattern is invalid.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "The doublestar pattern has unbalanced brackets or braces.",
-        "NO_PROJECT": "We couldn't find any projects"
+        "NO_PROJECT": "We couldn't find any projects",
+        "PROXY_CACHE_BASE_PATH": "Base path",
+        "PROXY_CACHE_BASE_PATH_TIP": "The base path prepended to the repository name when pulling from the upstream registry. For example, with the base path 'dev', pulling 'proxy/image' fetches 'dev/image' from the upstream registry. Leave it empty to keep the repository name unchanged. Changing it later applies to new pulls only: images that are already cached keep their name, which then points to a different upstream repository.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "e.g. dev or dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Please enter a valid lowercase repository path, such as 'dev' or 'dev/team', or leave it empty."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

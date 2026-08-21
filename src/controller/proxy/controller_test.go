@@ -207,9 +207,15 @@ func TestProxyControllerTestSuite(t *testing.T) {
 }
 
 func TestProxyCacheRemoteRepo(t *testing.T) {
+	withBasePath := func(basePath string) *proModels.Project {
+		return &proModels.Project{
+			Metadata: map[string]string{proModels.ProMetaProxyCacheBasePath: basePath},
+		}
+	}
 	cases := []struct {
 		name string
 		in   lib.ArtifactInfo
+		pro  *proModels.Project
 		want string
 	}{
 		{
@@ -217,10 +223,52 @@ func TestProxyCacheRemoteRepo(t *testing.T) {
 			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/firstfloor/hello-world"},
 			want: "firstfloor/hello-world",
 		},
+		{
+			name: `nil project`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/firstfloor/hello-world"},
+			pro:  nil,
+			want: "firstfloor/hello-world",
+		},
+		{
+			name: `project without base path`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/firstfloor/hello-world"},
+			pro:  &proModels.Project{},
+			want: "firstfloor/hello-world",
+		},
+		{
+			name: `empty base path`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/firstfloor/hello-world"},
+			pro:  withBasePath(""),
+			want: "firstfloor/hello-world",
+		},
+		{
+			name: `single segment base path`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/hello-world"},
+			pro:  withBasePath("firstfloor"),
+			want: "firstfloor/hello-world",
+		},
+		{
+			name: `multi segment base path`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/hello-world"},
+			pro:  withBasePath("firstfloor/team"),
+			want: "firstfloor/team/hello-world",
+		},
+		{
+			name: `base path with surrounding slashes`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/hello-world"},
+			pro:  withBasePath("/firstfloor/"),
+			want: "firstfloor/hello-world",
+		},
+		{
+			name: `base path with nested repository`,
+			in:   lib.ArtifactInfo{ProjectName: "dockerhub_proxy", Repository: "dockerhub_proxy/team/hello-world"},
+			pro:  withBasePath("firstfloor"),
+			want: "firstfloor/team/hello-world",
+		},
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetRemoteRepo(tt.in)
+			got := GetRemoteRepo(tt.in, tt.pro)
 			if got != tt.want {
 				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}

@@ -64,9 +64,9 @@ type Controller interface {
 	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
-	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
-	// HeadManifest send manifest head request to the remote server
-	HeadManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error)
+	ProxyManifest(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
+	// HeadManifest send manifest head request to the remote server, p is the proxy project
+	HeadManifest(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error)
 	// EnsureTag ensure tag for digest
 	EnsureTag(ctx context.Context, art lib.ArtifactInfo, tagName string) error
 }
@@ -179,7 +179,7 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return true, nil, nil
 	}
 
-	remoteRepo := GetRemoteRepo(art)
+	remoteRepo := GetRemoteRepo(art, p)
 	exist, desc, err := remote.ManifestExist(remoteRepo, getReference(art)) // HEAD
 	if err != nil {
 		if errors.IsRateLimitError(err) && a != nil { // if rate limit, use local if it exists, otherwise return error
@@ -232,9 +232,9 @@ func manifestListContentTypeKey(rep string, art lib.ArtifactInfo) string {
 	return manifestListKey(rep, art) + ":contenttype"
 }
 
-func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
+func (c *controller) ProxyManifest(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error) {
 	var man distribution.Manifest
-	remoteRepo := GetRemoteRepo(art)
+	remoteRepo := GetRemoteRepo(art, p)
 	ref := getReference(art)
 	man, dig, err := remote.Manifest(remoteRepo, ref)
 	if err != nil {
@@ -276,14 +276,14 @@ func (c *controller) ProxyManifest(ctx context.Context, art lib.ArtifactInfo, re
 	return man, nil
 }
 
-func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
-	remoteRepo := GetRemoteRepo(art)
+func (c *controller) HeadManifest(_ context.Context, p *proModels.Project, art lib.ArtifactInfo, remote RemoteInterface) (bool, *distribution.Descriptor, error) {
+	remoteRepo := GetRemoteRepo(art, p)
 	ref := getReference(art)
 	return remote.ManifestExist(remoteRepo, ref)
 }
 
 func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
-	remoteRepo := GetRemoteRepo(art)
+	remoteRepo := GetRemoteRepo(art, p)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
 	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
@@ -328,9 +328,17 @@ func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string,
 	h.CacheContent(ctx, remoteRepo, man, art, r, contType)
 }
 
-// GetRemoteRepo get the remote repository name, used in proxy cache
-func GetRemoteRepo(art lib.ArtifactInfo) string {
-	return strings.TrimPrefix(art.Repository, art.ProjectName+"/")
+// GetRemoteRepo get the remote repository name, used in proxy cache.
+func GetRemoteRepo(art lib.ArtifactInfo, p *proModels.Project) string {
+	repo := strings.TrimPrefix(art.Repository, art.ProjectName+"/")
+	if p == nil {
+		return repo
+	}
+	basePath := p.ProxyCacheBasePath()
+	if basePath == "" {
+		return repo
+	}
+	return basePath + "/" + repo
 }
 
 func getReference(art lib.ArtifactInfo) string {

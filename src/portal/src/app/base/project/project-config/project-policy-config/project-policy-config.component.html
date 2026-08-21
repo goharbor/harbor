@@ -210,6 +210,38 @@
             </div>
         </div>
         } @if (isSystemAdmin && projectPolicy.ProxyCacheEnabled) {
+        <div class="clr-form-control mt-0">
+            <label for="proxy-cache-base-path" class="clr-control-label">
+                {{ 'PROJECT.PROXY_CACHE_BASE_PATH' | translate }}
+            </label>
+            <div
+                class="clr-control-container"
+                [class.clr-error]="proxyCacheBasePathError">
+                <input
+                    type="text"
+                    id="proxy-cache-base-path"
+                    [(ngModel)]="projectPolicy.ProxyCacheBasePath"
+                    name="proxy-cache-base-path"
+                    [disabled]="!hasChangeConfigRole"
+                    class="clr-input width-164 clr-input-underline"
+                    [placeholder]="
+                        'PROJECT.PROXY_CACHE_BASE_PATH_PLACEHOLDER' | translate
+                    "
+                    autocomplete="off"
+                    (ngModelChange)="validateProxyCacheBasePath()" />
+                @if (proxyCacheBasePathError) {
+                <clr-icon
+                    class="clr-validate-icon"
+                    shape="exclamation-circle"></clr-icon>
+                <clr-control-error class="tooltip-content">
+                    {{ 'PROJECT.PROXY_CACHE_BASE_PATH_INPUT_TIP' | translate }}
+                </clr-control-error>
+                }
+                <clr-control-helper class="config-subtext">
+                    {{ 'PROJECT.PROXY_CACHE_BASE_PATH_TIP' | translate }}
+                </clr-control-helper>
+            </div>
+        </div>
         <clr-checkbox-container>
             <label class="clr-control-label"></label>
             <clr-checkbox-wrapper id="proxy-cache-local-on-not-found">

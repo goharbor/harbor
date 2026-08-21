@@ -257,7 +257,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "O padrão de expressão regular é inválido.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "O padrão doublestar tem colchetes ou chaves não balanceados.",
-        "NO_PROJECT": "Não encontramos nenhum projeto"
+        "NO_PROJECT": "Não encontramos nenhum projeto",
+        "PROXY_CACHE_BASE_PATH": "Caminho base",
+        "PROXY_CACHE_BASE_PATH_TIP": "O caminho base adicionado antes do nome do repositório ao baixar do registro upstream. Por exemplo, com o caminho base 'dev', baixar 'proxy/image' obtém 'dev/image' do registro upstream. Deixe vazio para manter o nome do repositório inalterado. Alterá-lo posteriormente vale apenas para novos downloads: as imagens já em cache mantêm o nome, que passa a apontar para outro repositório upstream.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "ex. dev ou dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Por favor, insira um caminho de repositório válido em letras minúsculas, como 'dev' ou 'dev/team', ou deixe vazio."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumo",

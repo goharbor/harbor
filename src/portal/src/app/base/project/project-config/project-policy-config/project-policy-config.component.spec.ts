@@ -84,6 +84,7 @@ const mockProjectPolicies: Project[] | any[] = [
             prevent_vul: 'true',
             public: 'true',
             severity: 'low',
+            proxy_cache_base_path: 'dev',
         },
     },
 ];
@@ -168,6 +169,24 @@ describe('ProjectPolicyConfigComponent', () => {
             component.projectPolicyConfigComponent.projectPolicy
                 .GenerateSbomOnPush
         ).toBeTruthy();
+    });
+    it('should get the proxy cache base path', () => {
+        expect(
+            component.projectPolicyConfigComponent.projectPolicy
+                .ProxyCacheBasePath
+        ).toEqual('dev');
+    });
+    it('should flag an invalid proxy cache base path without blocking cancel', () => {
+        const cmp = component.projectPolicyConfigComponent;
+        cmp.projectPolicy.ProxyCacheBasePath = 'Dev/../team';
+        cmp.validateProxyCacheBasePath();
+        expect(cmp.proxyCacheBasePathError).toBeTruthy();
+        // isValid() gates the Cancel button as well as Save, so an invalid edit has to
+        // stay discardable
+        expect(cmp.isValid()).toBeTruthy();
+        cmp.projectPolicy.ProxyCacheBasePath = 'dev/team';
+        cmp.validateProxyCacheBasePath();
+        expect(cmp.proxyCacheBasePathError).toBeNull();
     });
     it('should not allow empty and whitespace CVEs', async () => {
         // set cveIds with mix of empty and whitespace

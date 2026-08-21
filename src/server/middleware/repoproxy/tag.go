@@ -17,7 +17,6 @@ package repoproxy
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -35,6 +34,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		ctx := r.Context()
 
+		// the project metadata is required to resolve the proxy cache settings, e.g. the base path
 		art, p, _, err := preCheck(ctx, true)
 		if err != nil {
 			libhttp.SendError(w, err)
@@ -42,7 +42,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 		}
 
 		// Handle dockerhub request without library prefix
-		isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+		isDefault, name, err := defaultLibrary(ctx, p, art)
 		if err != nil {
 			libhttp.SendError(w, err)
 			return
@@ -92,8 +92,7 @@ func TagsListMiddleware() func(http.Handler) http.Handler {
 			return
 		}
 
-		remoteRepository := strings.TrimPrefix(art.Repository, art.ProjectName+"/")
-		remoteTags, err := remote.ListTags(remoteRepository)
+		remoteTags, err := remote.ListTags(proxy.GetRemoteRepo(art, p))
 		if err != nil {
 			logger.Warningf("failed to get remote tags, error: %v, fallback to local tags", err)
 			return

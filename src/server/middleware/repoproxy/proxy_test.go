@@ -445,7 +445,7 @@ func (s *ProxyReferrerGetSuite) TestUpstreamNotFound() {
 	testingmock.OnAnything(s.mockRemote, "ListReferrers").Return(nil, nil, liberrors.NotFoundError(nil))
 
 	w := httptest.NewRecorder()
-	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, 1)
+	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.NoError(err)
 	s.Equal(http.StatusNotFound, w.Code)
@@ -467,7 +467,7 @@ func (s *ProxyReferrerGetSuite) TestUpstreamSuccessWritesResponse() {
 	testingmock.OnAnything(s.mockRemote, "ListReferrers").Return(upstreamIndex, headers, nil)
 
 	w := httptest.NewRecorder()
-	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, 1)
+	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, w.Code)
@@ -495,7 +495,7 @@ func (s *ProxyReferrerGetSuite) TestUpstreamSuccessRewritesPaginationLinks() {
 	testingmock.OnAnything(s.mockRemote, "ListReferrers").Return(upstreamIndex, headers, nil)
 
 	w := httptest.NewRecorder()
-	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, 1)
+	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, w.Code)
@@ -526,7 +526,7 @@ func (s *ProxyReferrerGetSuite) TestUpstreamSuccessPreservesTotalCount() {
 	testingmock.OnAnything(s.mockRemote, "ListReferrers").Return(upstreamIndex, headers, nil)
 
 	w := httptest.NewRecorder()
-	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, 1)
+	err := proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, w.Code)
@@ -553,7 +553,7 @@ func (s *ProxyReferrerGetSuite) TestUnhealthyRegistryCacheHit() {
 	s.Require().NoError(libCache.Default().Save(context.Background(), cacheKey, cached))
 
 	w := httptest.NewRecorder()
-	err = proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, 1)
+	err = proxyReferrerGet(s.makeRequest(""), w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, w.Code)
@@ -572,7 +572,7 @@ func (s *ProxyReferrerGetSuite) TestUnhealthyRegistryCacheMiss() {
 	req = req.WithContext(lib.WithArtifactInfo(req.Context(), s.art))
 
 	w := httptest.NewRecorder()
-	err := proxyReferrerGet(req, w, s.art, s.mockRemote, 1)
+	err := proxyReferrerGet(req, w, s.art, s.mockRemote, &proModels.Project{RegistryID: 1})
 
 	s.Error(err, "should return error when registry is unhealthy and cache is empty")
 }
