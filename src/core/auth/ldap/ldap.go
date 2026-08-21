@@ -346,6 +346,7 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 				if err = l.userMgr.UpdateProfile(ctx, u, "Email"); err != nil {
 					u.Email = dbUser.Email
 					log.Errorf("failed to sync user email: %v", err)
+					return err
 				}
 			}
 		}
