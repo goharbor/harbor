@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/attestation"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/cosign"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/notation"

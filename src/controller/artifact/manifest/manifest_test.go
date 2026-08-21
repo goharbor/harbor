@@ -102,6 +102,20 @@ func TestRegisterRejectedBatchIsNotApplied(t *testing.T) {
 	assert.Len(t, Registry, 1)
 }
 
+func TestRegisterRequiresMediaTypes(t *testing.T) {
+	withRegistry(t, map[string]Abstractor{})
+
+	assert.Error(t, Register(stubAbstractor{}), "registering nothing must not silently succeed")
+	assert.Empty(t, Registry)
+}
+
+func TestRegisterRejectsNil(t *testing.T) {
+	withRegistry(t, map[string]Abstractor{})
+
+	assert.Error(t, Register(nil, "a"))
+	assert.Empty(t, Registry)
+}
+
 func TestRegisterDuplicateWithinBatch(t *testing.T) {
 	withRegistry(t, map[string]Abstractor{})
 
