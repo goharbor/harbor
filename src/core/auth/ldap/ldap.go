@@ -350,6 +350,7 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 			}
 		}
 
+		l.syncSysAdminFlag(ctx, u)
 		return nil
 	}
 
@@ -360,7 +361,18 @@ func (l *Auth) PostAuthenticate(ctx context.Context, u *models.User) error {
 	if u.UserID <= 0 {
 		return fmt.Errorf("cannot OnBoardUser %v", u)
 	}
+	l.syncSysAdminFlag(ctx, u)
 	return nil
+}
+
+// syncSysAdminFlag persists the admin role granted by the LDAP admin group at this login, so
+// the Users list can report it accurately. It never overrides a flag an operator set manually,
+// and any failure is only logged - this is a best-effort reporting improvement, not something
+// that should ever fail a login.
+func (l *Auth) syncSysAdminFlag(ctx context.Context, u *models.User) {
+	if err := l.userMgr.SyncSysAdminFlagFromAuth(ctx, u.UserID, u.AdminRoleInAuth); err != nil {
+		log.Warningf("failed to sync sysadmin flag from LDAP group for user %s: %v", u.Username, err)
+	}
 }
 
 func init() {
