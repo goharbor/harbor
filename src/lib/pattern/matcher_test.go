@@ -81,6 +81,12 @@ func TestValidateRepositoryFilter(t *testing.T) {
 			kind:          "invalid_kind",
 			expectErr:     true,
 		},
+		{
+			name:          "group-imbalanced regex that only compiles when wrapped",
+			filterPattern: "foo)|(bar",
+			kind:          KindRegex,
+			expectErr:     true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -93,6 +99,13 @@ func TestValidateRepositoryFilter(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidateKind(t *testing.T) {
+	for _, kind := range []string{"", KindRegex, KindDoublestar} {
+		assert.NoError(t, ValidateKind(kind), "kind %q should be valid", kind)
+	}
+	assert.Error(t, ValidateKind("glob"))
 }
 
 func TestMatch(t *testing.T) {
@@ -207,6 +220,13 @@ func TestMatch(t *testing.T) {
 			value:         "library/nginx",
 			filterPattern: "library/**",
 			kind:          "invalid_kind",
+			expectErr:     true,
+		},
+		{
+			name:          "group-imbalanced regex does not break anchoring",
+			value:         "library/foobar",
+			filterPattern: "foo)|(bar",
+			kind:          KindRegex,
 			expectErr:     true,
 		},
 	}

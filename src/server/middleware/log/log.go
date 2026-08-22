@@ -16,6 +16,7 @@ package log // nolint:revive
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
@@ -46,11 +47,13 @@ func Middleware() func(http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
+		isResourceName, _ := strconv.ParseBool(r.Header.Get("X-Is-Resource-Name"))
 		e := &commonevent.Metadata{
-			Ctx:           r.Context(),
-			Username:      "unknown",
-			RequestMethod: r.Method,
-			RequestURL:    r.URL.String(),
+			Ctx:            r.Context(),
+			Username:       "unknown",
+			RequestMethod:  r.Method,
+			RequestURL:     r.URL.String(),
+			IsResourceName: isResourceName,
 		}
 		if matched, resName := e.PreCheckMetadata(); matched {
 			body, err := lib.ReadRequestBody(r, common.MaxAuditLogPayloadSize)

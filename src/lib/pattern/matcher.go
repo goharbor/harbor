@@ -37,6 +37,17 @@ func ValidateRepositoryFilter(filterPattern, kind string) error {
 	return err
 }
 
+// ValidateKind validates the repository filter kind. Empty kind is valid and
+// means the doublestar default.
+func ValidateKind(kind string) error {
+	switch kind {
+	case "", KindRegex, KindDoublestar:
+		return nil
+	default:
+		return errors.Errorf("unsupported repository filter kind %q, must be %q, %q, or empty (defaults to %q)", kind, KindDoublestar, KindRegex, KindDoublestar)
+	}
+}
+
 // Match returns true if the value matches the pattern according to the kind.
 // Empty pattern matches all (returns true).
 func Match(value, filterPattern, kind string) (bool, error) {
@@ -46,6 +57,12 @@ func Match(value, filterPattern, kind string) (bool, error) {
 	}
 	switch kind {
 	case KindRegex:
+		// Compile the bare pattern first: a group-imbalanced pattern such as
+		// `foo)|(bar` fails alone but compiles inside the ^(?:...)$ wrapper,
+		// where the top-level alternation silently destroys the anchoring.
+		if _, err := regexp.Compile(filterPattern); err != nil {
+			return false, err
+		}
 		re, err := regexp.Compile("^(?:" + filterPattern + ")$")
 		if err != nil {
 			return false, err
@@ -61,6 +78,10 @@ func Match(value, filterPattern, kind string) (bool, error) {
 	}
 }
 
+// validateDoublestarPattern is a port of doValidatePattern from
+// github.com/bmatcuk/doublestar/v4; the v1 dependency in go.mod has no
+// ValidatePattern. Keep it in sync with the library's grammar if the
+// dependency is ever bumped.
 func validateDoublestarPattern(s string) bool {
 	altDepth := 0
 	l := len(s)
