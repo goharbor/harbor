@@ -551,7 +551,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
+	p, err := a.projectCtl.Get(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -582,7 +582,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
-		if err := validateProxyCacheRepositoryFilter(params.Project.Metadata); err != nil {
+		if err := validateProxyCacheRepositoryFilterUpdate(params.Project.Metadata, p.Metadata); err != nil {
 			return a.SendError(ctx, err)
 		}
 	}
@@ -872,6 +872,26 @@ func validateProxyCacheRepositoryFilter(metadata *models.ProjectMetadata) error 
 			WithMessagef("metadata.proxy_cache_filter_pattern is invalid for kind %q: %v", filterKind, err)
 	}
 	return nil
+}
+
+func validateProxyCacheRepositoryFilterUpdate(metadata *models.ProjectMetadata, stored map[string]string) error {
+	if metadata == nil {
+		return nil
+	}
+
+	filterPattern := stored[pkgModels.ProMetaProxyCacheFilterPattern]
+	if metadata.ProxyCacheFilterPattern != nil {
+		filterPattern = *metadata.ProxyCacheFilterPattern
+	}
+	filterKind := stored[pkgModels.ProMetaProxyCacheFilterKind]
+	if metadata.ProxyCacheFilterKind != nil {
+		filterKind = *metadata.ProxyCacheFilterKind
+	}
+
+	return validateProxyCacheRepositoryFilter(&models.ProjectMetadata{
+		ProxyCacheFilterPattern: &filterPattern,
+		ProxyCacheFilterKind:    &filterKind,
+	})
 }
 
 func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project) error {
