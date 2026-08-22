@@ -59,7 +59,10 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 
 	u, err := url.Parse(rawurl)
 	if err != nil {
-		return nil, fmt.Errorf("bad redis url: %s, %s, %s", name, rawurl, err)
+		if ue, ok := err.(*url.Error); ok {
+			err = ue.Err
+		}
+		return nil, fmt.Errorf("bad redis url: %s, %s", name, err)
 	}
 
 	if param == nil {
@@ -78,7 +81,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 		}
 	}
 
-	log.Debug("get redis pool:", name, rawurl)
+	log.Debug("get redis pool:", name, u.Redacted())
 	if u.Scheme == "redis" || u.Scheme == "rediss" {
 		pool := &redis.Pool{
 			Dial: func() (redis.Conn, error) {
@@ -110,10 +113,10 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 func getSentinelPool(u *url.URL, param *PoolParam, name string) (*redis.Pool, error) {
 	ps := strings.Split(u.Path, "/")
 	if len(ps) < 2 {
-		return nil, fmt.Errorf("bad redis sentinel url: no master name, %s %s", name, u)
+		return nil, fmt.Errorf("bad redis sentinel url: no master name, %s %s", name, u.Redacted())
 	}
 
-	log.Debug("getSentinelPool:", u)
+	log.Debug("getSentinelPool:", u.Redacted())
 	var sentinelOptions []redis.DialOption
 	if param.DialConnectionTimeout > 0 {
 		log.Debug(name, "sentinel DialConnectionTimeout:", param.DialConnectionTimeout)
