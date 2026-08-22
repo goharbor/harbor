@@ -90,6 +90,10 @@ func (s *scanAllAPI) CreateScanAllSchedule(ctx context.Context, params operation
 
 	req := params.Schedule
 
+	if req.Schedule == nil {
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("schedule cann't be empty"))
+	}
+
 	if req.Schedule.Type == ScheduleNone {
 		return operation.NewCreateScanAllScheduleCreated()
 	}
@@ -132,6 +136,10 @@ func (s *scanAllAPI) UpdateScanAllSchedule(ctx context.Context, params operation
 		return s.SendError(ctx, err)
 	}
 	req := params.Schedule
+
+	if req.Schedule == nil {
+		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage("schedule cann't be empty"))
+	}
 
 	if req.Schedule.Type == ScheduleManual {
 		return s.SendError(ctx, errors.BadRequestError(nil).WithMessagef("fail to update scan all schedule as wrong schedule type: %s", req.Schedule.Type))
