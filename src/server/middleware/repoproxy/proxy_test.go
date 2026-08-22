@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -131,6 +132,29 @@ func TestIsProxySession(t *testing.T) {
 				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestManifestMiddlewareNotFound(t *testing.T) {
+	// A manifest that is missing in a proxy cache project must be reported with the
+	// MANIFEST_UNKNOWN code defined by the OCI distribution spec. Harbor's general
+	// purpose NOT_FOUND code is not one of the codes the spec allows, so clients
+	// fall back to treating the response as an unknown server side failure.
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		t.Error("a not found error must not fall through to the local repository")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// without artifact info in the context handleManifest fails with a not found error
+	req := httptest.NewRequest(http.MethodGet, "/v2/proxy/library/debian/manifests/badtag", nil)
+	rec := httptest.NewRecorder()
+	ManifestMiddleware()(next).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
+	if got := rec.Body.String(); !strings.Contains(got, `"code":"MANIFEST_UNKNOWN"`) {
+		t.Errorf("body = %s, want the MANIFEST_UNKNOWN error code", got)
 	}
 }
 
