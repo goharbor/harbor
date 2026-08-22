@@ -17,6 +17,7 @@ package scanner // nolint:revive
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"slices"
 	"sync"
 	"time"
@@ -308,6 +309,13 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 		return nil, errors.New("nil registration to ping")
 	}
 
+	if registration.URL != "" {
+		_, err := url.ParseRequestURI(registration.URL)
+		if err != nil {
+			return nil, errors.BadRequestError(err).WithMessage("invalid scanner URL")
+		}
+	}
+
 	var (
 		err  error
 		meta *v1.ScannerAdapterMetadata
@@ -322,7 +330,7 @@ func (bc *basicController) Ping(ctx context.Context, registration *scanner.Regis
 	if err != nil {
 		log.G(ctx).WithField("error", err).Error("failed to ping scanner")
 
-		return nil, errors.Wrap(err, "scanner controller: ping")
+		return nil, errors.BadRequestError(err).WithMessage("scanner controller: ping failed")
 	}
 
 	if err := meta.Validate(); err != nil {
