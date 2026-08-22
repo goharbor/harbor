@@ -16,6 +16,7 @@ package scan
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -99,6 +100,14 @@ func (d *dao) UpdateReportData(ctx context.Context, uuid string, report string) 
 	data := make(orm.Params)
 	data["report"] = report
 
+	// Extract sbom_digest from the JSON report and keep the indexed column in sync.
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(report), &parsed); err == nil {
+		if dgst, ok := parsed["sbom_digest"].(string); ok && dgst != "" {
+			data["sbom_digest"] = dgst
+		}
+	}
+
 	_, err = qt.Filter("uuid", uuid).Update(data)
 	return err
 }
@@ -119,8 +128,7 @@ func (d *dao) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrVal
 	if err != nil {
 		return err
 	}
-	delReportSQL := "delete from scan_report where mime_type = ? and report::jsonb @> ?"
-	dgstJSONStr := fmt.Sprintf(`{"%s":"%s"}`, attrName, attrValue)
-	_, err = o.Raw(delReportSQL, mimeType, dgstJSONStr).Exec()
+	delReportSQL := fmt.Sprintf("delete from scan_report where mime_type = ? and %s = ?", attrName)
+	_, err = o.Raw(delReportSQL, mimeType, attrValue).Exec()
 	return err
 }
