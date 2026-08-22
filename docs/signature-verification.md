@@ -17,8 +17,8 @@ Harbor release artifacts (installers) are cryptographically signed using [Cosign
 
 ## Why Verify
 
-* Confirms the file came from Harbor's official build  
-* Detects any modifications or tampering  
+* Confirms the file came from Harbor's official build
+* Detects any modifications or tampering
 * Protects against malicious downloads
 
 ## Prerequisites
@@ -78,25 +78,25 @@ cosign verify-blob \
 ## Troubleshooting
 
 ### Certificate identity doesn't match
-**Cause:** Incorrect repository name in verification command  
+**Cause:** Incorrect repository name in verification command
 **Solution:** Ensure you're using `goharbor/harbor` in the `--certificate-identity-regexp` parameter
 
 ### Unable to find signature
-**Cause:** Signature file not in the same directory as the installer  
+**Cause:** Signature file not in the same directory as the installer
 **Solution:** Ensure both `.tgz` and `.tgz.sigstore.json` files are in the current working directory
 
 ### Bad signature
-**Cause:** Downloaded files are corrupted or incomplete  
+**Cause:** Downloaded files are corrupted or incomplete
 **Solution:** Re-download both the installer and signature files from the official [Harbor releases page](https://github.com/goharbor/harbor/releases)
 
 ### Version not supported
-**Cause:** Attempting to verify releases prior to v2.15.0  
+**Cause:** Attempting to verify releases prior to v2.15.0
 **Solution:** Signature verification is only available for Harbor v2.15.0 and later
 
 ## What Gets Verified
 
-- **File authenticity** - Signed by official Harbor CI/CD workflow  
-- **File integrity** - No modifications since signing  
+- **File authenticity** - Signed by official Harbor CI/CD workflow
+- **File integrity** - No modifications since signing
 - **Build provenance** - Logged in public Sigstore transparency log
 
 ## Resources
