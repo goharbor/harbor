@@ -60,6 +60,7 @@
 @if (selectedPool) {
 <h2>{{ 'JOB_SERVICE_DASHBOARD.WORKERS' | translate }}</h2>
 <clr-datagrid
+    clrDgSelectionType="multi"
     [clrDgLoading]="loadingWorkers"
     (clrDgRefresh)="clrLoadWorker($event)"
     [(clrDgSelected)]="selected">

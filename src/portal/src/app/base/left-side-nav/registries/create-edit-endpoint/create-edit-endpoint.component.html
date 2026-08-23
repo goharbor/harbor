@@ -15,7 +15,7 @@
                 </span>
             </div>
         </div>
-        }
+        } @if (createEditDestinationOpened) {
         <form #targetForm="ngForm" class="clr-form clr-form-horizontal">
             <!-- provider -->
             <clr-select-container>
@@ -267,6 +267,7 @@
                 </clr-control-helper>
             </clr-textarea-container>
         </form>
+        }
     </div>
     <div class="modal-footer">
         <button
@@ -274,7 +275,7 @@
             type="button"
             class="btn btn-outline"
             (click)="testConnection()"
-            [disabled]="inProgress || targetEndpoint?.errors">
+            [disabled]="inProgress || isEndpointInvalid">
             {{ 'DESTINATION.TEST_CONNECTION' | translate }}
         </button>
         <button

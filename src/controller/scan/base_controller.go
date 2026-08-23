@@ -757,7 +757,7 @@ func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]any) bool {
 	if task == nil {
 		return false
 	}
-	artifactID := int64(task.GetNumFromExtraAttrs(artifactIDKey))
+	artifactID := task.GetInt64FromExtraAttrs(artifactIDKey)
 	if artifactID == 0 {
 		return false
 	}
@@ -1113,14 +1113,7 @@ func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (b
 }
 
 func getArtifactID(extraAttrs map[string]any) int64 {
-	var artifactID float64
-	if extraAttrs != nil {
-		if v, ok := extraAttrs[artifactIDKey]; ok {
-			artifactID, _ = v.(float64) // int64 Unmarshal to float64
-		}
-	}
-
-	return int64(artifactID)
+	return int64FromExtraAttrs(extraAttrs, artifactIDKey)
 }
 
 func getArtifactTag(extraAttrs map[string]any) string {
@@ -1154,14 +1147,20 @@ func GetReportUUIDs(extraAttrs map[string]any) []string {
 }
 
 func getRobotID(extraAttrs map[string]any) int64 {
-	var trackID float64
-	if extraAttrs != nil {
-		if v, ok := extraAttrs[robotIDKey]; ok {
-			trackID, _ = v.(float64) // int64 Unmarshal to float64
-		}
-	}
+	return int64FromExtraAttrs(extraAttrs, robotIDKey)
+}
 
-	return int64(trackID)
+// int64FromExtraAttrs gets the int64 value specified by key from the extra attributes
+func int64FromExtraAttrs(extraAttrs map[string]any, key string) int64 {
+	if extraAttrs == nil {
+		return 0
+	}
+	v, ok := extraAttrs[key]
+	if !ok || v == nil {
+		return 0
+	}
+	id, _ := task.Int64FromAny(v)
+	return id
 }
 
 func parseOptions(options ...Option) (*Options, error) {

@@ -4,11 +4,13 @@
     <search-result></search-result>
     <div
         class="login-wrapper"
-        [ngStyle]="{
-            'background-image': customLoginBgImg
-                ? 'url(/images/' + customLoginBgImg + ')'
-                : ''
-        }">
+        [style.background-image]="
+            customLoginBgImg ? 'url(/images/' + customLoginBgImg + ')' : null
+        "
+        [style.background-color]="
+            customLoginBgImg ? null : 'var(--clr-login-background-color)'
+        "
+        [style.background-blend-mode]="customLoginBgImg ? null : 'multiply'">
         <form #signInForm="ngForm" class="login">
             @if (isOidcLoginMode && steps === 2) {
             <span (click)="steps = 1" class="back-icon">
@@ -64,23 +66,40 @@
                     </a>
                     } @if ( (!isOidcLoginMode && steps === 1) ||
                     (isOidcLoginMode && steps === 2) ) {
-                    <clr-input-container class="mt-3">
-                        <input
-                            clrInput
-                            class="username"
-                            type="text"
-                            required
-                            [(ngModel)]="signInCredential.principal"
-                            name="login_username"
-                            id="login_username"
-                            placeholder="{{
-                                'PLACEHOLDER.SIGN_IN_NAME' | translate
-                            }}"
-                            #userNameInput="ngModel" />
-                        <clr-control-error>{{
-                            'TOOLTIP.SIGN_IN_USERNAME' | translate
-                        }}</clr-control-error>
-                    </clr-input-container>
+                    <div class="clr-form-control mt-3">
+                        <div
+                            class="clr-control-container"
+                            [class.clr-error]="
+                                userNameInput.invalid &&
+                                (userNameInput.dirty || userNameInput.touched)
+                            ">
+                            <div class="clr-input-wrapper">
+                                <div class="clr-input-group">
+                                    <input
+                                        class="clr-input username"
+                                        type="text"
+                                        required
+                                        [(ngModel)]="signInCredential.principal"
+                                        name="login_username"
+                                        id="login_username"
+                                        placeholder="{{
+                                            'PLACEHOLDER.SIGN_IN_NAME'
+                                                | translate
+                                        }}"
+                                        #userNameInput="ngModel" />
+                                    <clr-icon
+                                        class="clr-validate-icon"
+                                        shape="exclamation-circle"></clr-icon>
+                                </div>
+                            </div>
+                            @if ( userNameInput.invalid && (userNameInput.dirty
+                            || userNameInput.touched) ) {
+                            <clr-control-error>
+                                {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
+                            </clr-control-error>
+                            }
+                        </div>
+                    </div>
                     <div class="clr-form-control">
                         <div
                             class="clr-control-container"
@@ -89,31 +108,34 @@
                                 (passwordInput.dirty || passwordInput.touched)
                             ">
                             <div class="clr-input-wrapper">
-                                <input
-                                    class="clr-input pwd-input"
-                                    [type]="showPwd ? 'text' : 'password'"
-                                    required
-                                    [(ngModel)]="signInCredential.password"
-                                    name="login_password"
-                                    id="login_password"
-                                    placeholder="{{
-                                        'PLACEHOLDER.SIGN_IN_PWD' | translate
-                                    }}"
-                                    #passwordInput="ngModel" />
-                                @if (!showPwd) {
-                                <clr-icon
-                                    shape="eye"
-                                    class="pw-eye"
-                                    (click)="showPwd = !showPwd"></clr-icon>
-                                } @if (showPwd) {
-                                <clr-icon
-                                    shape="eye-hide"
-                                    class="pw-eye"
-                                    (click)="showPwd = !showPwd"></clr-icon>
-                                }
-                                <clr-icon
-                                    class="clr-validate-icon"
-                                    shape="exclamation-circle"></clr-icon>
+                                <div class="clr-input-group">
+                                    <input
+                                        class="clr-input pwd-input"
+                                        [type]="showPwd ? 'text' : 'password'"
+                                        required
+                                        [(ngModel)]="signInCredential.password"
+                                        name="login_password"
+                                        id="login_password"
+                                        placeholder="{{
+                                            'PLACEHOLDER.SIGN_IN_PWD'
+                                                | translate
+                                        }}"
+                                        #passwordInput="ngModel" />
+                                    @if (!showPwd) {
+                                    <clr-icon
+                                        shape="eye"
+                                        class="pw-eye"
+                                        (click)="showPwd = !showPwd"></clr-icon>
+                                    } @if (showPwd) {
+                                    <clr-icon
+                                        shape="eye-hide"
+                                        class="pw-eye"
+                                        (click)="showPwd = !showPwd"></clr-icon>
+                                    }
+                                    <clr-icon
+                                        class="clr-validate-icon"
+                                        shape="exclamation-circle"></clr-icon>
+                                </div>
                             </div>
                             @if ( passwordInput.invalid && (passwordInput.dirty
                             || passwordInput.touched) ) {

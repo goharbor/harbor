@@ -31,6 +31,22 @@ func TestUnmarshalJSONWithACC(t *testing.T) {
 	assert.True(t, ok)
 }
 
+// InheritedAccessories must stay out of the JSON view of the artifact: the accessory type
+// is an interface, so a payload carrying that field would fail to unmarshal here. The API
+// exposes the inherited accessories through the handler's swagger model instead.
+func TestUnmarshalJSONWithInheritedACC(t *testing.T) {
+	data := []byte(`[{"accessories":[{"artifact_id":9,"type":"signature.cosign"}],
+	"inherited_accessories":[{"artifact_id":10,"subject_artifact_digest":"sha256:parent","type":"signature.cosign"}],
+	"digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c","type":"IMAGE"}]`)
+
+	var artifact []Artifact
+	err := json.Unmarshal(data, &artifact)
+	assert.Nil(t, err)
+
+	assert.Equal(t, int64(9), artifact[0].Accessories[0].GetData().ArtifactID)
+	assert.Empty(t, artifact[0].InheritedAccessories)
+}
+
 func TestUnmarshalJSONWithACCPartial(t *testing.T) {
 	data := []byte(`[{"accessories":[{"artifact_id":9,"creation_time":"2022-01-20T09:18:50.993Z","digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","icon":"","id":4,"size":501,"subject_artifact_digest":"sha256:a7caa2636af890178a0b8c4cdbc47ced4dbdf29a1680e9e50823e85ce35b28d3","type":"signature.cosign"}, {"artifact_id":2, "type":"signature.cosign"}],
 	"digest":"sha256:e4b315ad03a1d1d9ff0c111e648a1a91066c09ead8352d3d6a48fa971a82922c","tags":[{"artifact_id":8,"id":6,"immutable":false,"name":"latest","pull_time":"2022-01-20T09:18:50.783Z","push_time":"2022-01-20T09:18:50.303Z","repository_id":5,"signed":false}],"type":"IMAGE"}]`)

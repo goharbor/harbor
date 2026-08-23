@@ -367,3 +367,7 @@ clr-modal {
 .event-label {
     width: unset;
 }
+
+:host ::ng-deep .clr-checkbox-wrapper {
+    align-items: center;
+}

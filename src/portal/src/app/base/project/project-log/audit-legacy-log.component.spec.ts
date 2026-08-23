@@ -165,11 +165,12 @@ describe('ProjectAuditLegacyLogComponent', () => {
     });
     it('should support pagination', async () => {
         fixture.autoDetectChanges(true);
-        await fixture.whenStable();
-        fixture.detectChanges();
-        await fixture.whenStable();
-        const el: HTMLButtonElement =
-            fixture.nativeElement.querySelector('.pagination-next');
+        let el: HTMLButtonElement = null;
+        for (let i = 0; i < 20 && !el; i++) {
+            fixture.detectChanges();
+            await fixture.whenStable();
+            el = fixture.nativeElement.querySelector('.pagination-next');
+        }
         expect(el).toBeTruthy();
         el.click();
         fixture.detectChanges();

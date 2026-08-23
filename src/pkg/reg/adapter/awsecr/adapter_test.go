@@ -388,7 +388,7 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	require.Nil(t, err)
 	err = a.Modify(req)
 	require.Nil(t, err)
-	time.Sleep(time.Second)
+	time.Sleep(150 * time.Millisecond)
 	err = a.Modify(req)
 	require.Nil(t, err)
 }
