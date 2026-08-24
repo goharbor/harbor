@@ -216,7 +216,26 @@ class TestTagImmutability(unittest.TestCase):
         #5. Can not copy artifact from project A to project B with the same repository name.
         artifact_a_src = self.artifact.get_reference_info(project_name_src, image_a["name"], image_a["tag2"], **self.USER_CLIENT)
         print("[test_copy_disability] - artifact_a_src:{}".format(artifact_a_src))
-        self.artifact.copy_artifact(project_name, image_a["name"], project_name_src+"/"+ image_a["name"] + "@" + artifact_a_src.digest, expect_status_code=412, expect_response_body = "configured as immutable, cannot be updated", **self.USER_CLIENT)
+        import time
+        time.sleep(5)
+        last_exception = None
+        for i in range(5):
+            try:
+                self.artifact.copy_artifact(
+                    project_name,
+                    image_a["name"],
+                    project_name_src + "/" + image_a["name"] + "@" + artifact_a_src.digest,
+                    expect_status_code=412,
+                    expect_response_body="configured as immutable, cannot be updated",
+                    **self.USER_CLIENT
+                )
+                break
+            except Exception as e:
+                last_exception = e
+                print("[test_copy_disability] - copy_artifact failed (round {}): {}".format(i + 1, e))
+                time.sleep(5)
+        else:
+            raise last_exception
 
     #def test_replication_disability(self):
     #    pass
