@@ -48,6 +48,7 @@ import (
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	proxytesting "github.com/goharbor/harbor/src/testing/controller/proxy"
 	registrytesting "github.com/goharbor/harbor/src/testing/controller/registry"
+	robotmock "github.com/goharbor/harbor/src/testing/controller/robot"
 	testingcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	testingmock "github.com/goharbor/harbor/src/testing/mock"
 )
@@ -126,6 +127,19 @@ func TestIsProxySession(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
+			robotController := &robotmock.Controller{}
+			originalRobotController := robot.Ctl
+			robot.Ctl = robotController
+			defer func() {
+				robot.Ctl = originalRobotController
+			}()
+
+			if tt.name == `system scanner robot account` {
+				testingmock.OnAnything(robotController, "List").Return([]*robot.Robot{sysScannerRobot}, nil)
+			} else if tt.name == `user-created robot prefixed with scanner (poisoning attempt)` {
+				testingmock.OnAnything(robotController, "List").Return([]*robot.Robot{poisoningRobot}, nil)
+			}
+
 			got := isProxySession(tt.in, "library")
 			if got != tt.want {
 				t.Errorf(`(%v) = %v; want "%v"`, tt.in, got, tt.want)
