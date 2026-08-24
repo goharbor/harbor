@@ -488,9 +488,7 @@ func (d *daoTestSuite) TestListWithLatest() {
 	}
 	id, err := d.dao.Create(d.ctx, art)
 	d.Require().Nil(err)
-
-	time.Sleep(1 * time.Second)
-	now = time.Now()
+	now = now.Add(1 * time.Second)
 
 	art2 := &Artifact{
 		Type:              "IMAGE",
@@ -506,9 +504,7 @@ func (d *daoTestSuite) TestListWithLatest() {
 	}
 	id1, err := d.dao.Create(d.ctx, art2)
 	d.Require().Nil(err)
-
-	time.Sleep(1 * time.Second)
-	now = time.Now()
+	now = now.Add(1 * time.Second)
 
 	art3 := &Artifact{
 		Type:              "IMAGE",

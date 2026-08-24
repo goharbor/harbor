@@ -66,7 +66,6 @@ func TestHTTPStatusCodeHealthChecker(t *testing.T) {
 func TestPeriodicHealthChecker(t *testing.T) {
 	firstCheck := true
 	checkFunc := func() error {
-		time.Sleep(2 * time.Second)
 		if firstCheck {
 			firstCheck = false
 			return nil
@@ -74,12 +73,15 @@ func TestPeriodicHealthChecker(t *testing.T) {
 		return errors.New("unhealthy")
 	}
 
-	checker := PeriodicHealthChecker(health.CheckFunc(checkFunc), 1*time.Second)
+	checker := PeriodicHealthChecker(health.CheckFunc(checkFunc), 10*time.Millisecond)
 	assert.Equal(t, "unknown status", checker.Check().Error())
-	time.Sleep(3 * time.Second)
-	assert.Equal(t, nil, checker.Check())
-	time.Sleep(3 * time.Second)
-	assert.Equal(t, "unhealthy", checker.Check().Error())
+	assert.Eventually(t, func() bool {
+		return checker.Check() == nil
+	}, 2*time.Second, 10*time.Millisecond)
+	assert.Eventually(t, func() bool {
+		err := checker.Check()
+		return err != nil && err.Error() == "unhealthy"
+	}, 2*time.Second, 10*time.Millisecond)
 }
 
 func TestCoreHealthChecker(t *testing.T) {
