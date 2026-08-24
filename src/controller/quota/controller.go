@@ -389,6 +389,31 @@ func (c *controller) Request(ctx context.Context, reference, referenceID string,
 		return f()
 	}
 
+	// When every requested resource is unlimited, the reservation cannot
+	// deny anything: IsSafe always passes for UNLIMITED hard limits, so the
+	// reserve/rollback pair degenerates into contended writes on the single
+	// quota_usage row per project with no enforcement effect. When the
+	// deferred refresh is enabled (opt-in via QUOTA_ASYNC_REFRESH_DURATION),
+	// skip the reservation and let the coalesced flush keep the usage
+	// figure current. Without the env var, behavior is unchanged: the
+	// reservation still runs and the usage stays synchronously visible.
+	// If a real limit is set concurrently, enforcement starts with the
+	// next request and the refresh reconciles the usage.
+	if AsyncRefreshEnabled() {
+		if unlimited, err := c.isUnlimited(ctx, reference, referenceID, resources); err == nil && unlimited {
+			err := f()
+			if err == nil {
+				// the skipped reservation was also the only usage writer
+				// on this path - keep the usage figure current via the
+				// deferred coalesced refresh
+				MarkRefresh(reference, referenceID)
+			}
+			return err
+		} else if err != nil {
+			log.G(ctx).Warningf("failed to check hard limits for %s %s, falling back to reservation, error: %v", reference, referenceID, err)
+		}
+	}
+
 	provider := updateQuotaProviderType(config.GetQuotaUpdateProvider())
 	if err := c.updateUsageWithRetry(ctx, reference, referenceID, reserveResources(resources), provider); err != nil {
 		log.G(ctx).Errorf("reserve resources %s for %s %s failed, error: %v", resources.String(), reference, referenceID, err)
@@ -405,6 +430,30 @@ func (c *controller) Request(ctx context.Context, reference, referenceID string,
 	}
 
 	return err
+}
+
+// isUnlimited reports whether every resource in the request has an
+// UNLIMITED hard limit for the reference, in which case a reservation can
+// never deny the request.
+func (c *controller) isUnlimited(ctx context.Context, reference, referenceID string, resources types.ResourceList) (bool, error) {
+	q, err := c.quotaMgr.GetByRef(ctx, reference, referenceID)
+	if err != nil {
+		return false, err
+	}
+
+	hardLimits, err := q.GetHard()
+	if err != nil {
+		return false, err
+	}
+
+	for resource := range resources {
+		hardLimit, found := hardLimits[resource]
+		if !found || hardLimit != types.UNLIMITED {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 // calcQuota calculates the quota and usage in real time.
