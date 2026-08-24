@@ -58,6 +58,9 @@ func (p *projectMetadataAPI) AddProjectMetadatas(ctx context.Context, params ope
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
+	if err = p.requireSysAdminToChangeProxyCacheBasePath(ctx, project, metadata); err != nil {
+		return p.SendError(ctx, err)
+	}
 	if err = p.ctl.Add(ctx, project.ProjectID, metadata); err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -102,6 +105,9 @@ func (p *projectMetadataAPI) DeleteProjectMetadata(ctx context.Context, params o
 			}
 		}
 	}
+	if err = p.requireSysAdminToChangeProxyCacheBasePath(ctx, project, map[string]string{params.MetaName: ""}); err != nil {
+		return p.SendError(ctx, err)
+	}
 	if err = p.ctl.Delete(ctx, project.ProjectID, params.MetaName); err != nil {
 		return p.SendError(ctx, err)
 	}
@@ -140,10 +146,25 @@ func (p *projectMetadataAPI) UpdateProjectMetadata(ctx context.Context, params o
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
+	if err = p.requireSysAdminToChangeProxyCacheBasePath(ctx, project, metadata); err != nil {
+		return p.SendError(ctx, err)
+	}
 	if err = p.ctl.Update(ctx, project.ProjectID, metadata); err != nil {
 		return p.SendError(ctx, err)
 	}
 	return operation.NewUpdateProjectMetadataOK()
+}
+
+func (p *projectMetadataAPI) requireSysAdminToChangeProxyCacheBasePath(ctx context.Context, pro *project.Project, metas map[string]string) error {
+	basePath, exist := metas[proModels.ProMetaProxyCacheBasePath]
+	if !exist || basePath == pro.ProxyCacheBasePath() {
+		return nil
+	}
+	if err := p.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceProject); err != nil {
+		return errors.ForbiddenError(nil).
+			WithMessagef("only system admin can change %s", proModels.ProMetaProxyCacheBasePath)
+	}
+	return nil
 }
 
 func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, metas map[string]string) (map[string]string, error) {
@@ -257,6 +278,12 @@ func (p *projectMetadataAPI) validate(ctx context.Context, projectID int64, meta
 			}
 		}
 		metas[proModels.ProMetaProxyCacheFilterKind] = value
+	case proModels.ProMetaProxyCacheBasePath:
+		basePath, err := proModels.NormalizeProxyCacheBasePath(value)
+		if err != nil {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessage(err.Error())
+		}
+		metas[proModels.ProMetaProxyCacheBasePath] = basePath
 	default:
 		return nil, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid key: %s", key)
 	}

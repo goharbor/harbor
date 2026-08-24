@@ -7577,6 +7577,10 @@ definitions:
         type: string
         description: 'Matching mode for proxy_cache_filter_pattern: "doublestar" (default, glob-style with ** support) or "regex". Only has value when the current project is a proxy cache project.'
         x-nullable: true
+      proxy_cache_base_path:
+        type: string
+        description: 'The base path prepended to the repository name when pulling from the upstream registry of a proxy cache project. For example, with the base path "dev", pulling "proxy/image" fetches "dev/image" from the upstream registry. It should be a valid repository path such as "dev" or "dev/team", an empty value leaves the upstream repository name unchanged. Changing it applies to subsequent pulls only: artifacts cached under the previous mapping keep their local repository names, which then resolve to a different upstream repository.'
+        x-nullable: true
   ProjectSummary:
     type: object
     properties:

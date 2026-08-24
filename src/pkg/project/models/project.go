@@ -17,6 +17,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -191,6 +192,37 @@ func (p *Project) ProxyReferrerAPI() bool {
 		return false
 	}
 	return isTrue(enable)
+}
+
+// proxyCacheBasePathRegexp matches one or more repository path components separated by a slash
+var proxyCacheBasePathRegexp = regexp.MustCompile(`^[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*)*$`)
+
+// maxProxyCacheBasePathLength is the length of the value column of the project_metadata table
+const maxProxyCacheBasePathLength = 255
+
+// NormalizeProxyCacheBasePath strips the surrounding slashes from the given proxy cache base path
+func NormalizeProxyCacheBasePath(basePath string) (string, error) {
+	basePath = strings.Trim(basePath, "/")
+	if basePath == "" {
+		return "", nil
+	}
+	if len(basePath) > maxProxyCacheBasePathLength {
+		return "", fmt.Errorf("the proxy cache base path should be no longer than %d characters, but got %d", maxProxyCacheBasePathLength, len(basePath))
+	}
+	if !proxyCacheBasePathRegexp.MatchString(basePath) {
+		return "", fmt.Errorf("invalid proxy cache base path %q, it should be a valid repository path such as 'dev' or 'dev/team'", basePath)
+	}
+	return basePath, nil
+}
+
+// ProxyCacheBasePath returns the base path prepended to the repository name when pulling
+// from the upstream registry of a proxy cache project.
+func (p *Project) ProxyCacheBasePath() string {
+	basePath, exist := p.GetMetadata(ProMetaProxyCacheBasePath)
+	if !exist {
+		return ""
+	}
+	return strings.Trim(basePath, "/")
 }
 
 // ProxyCacheLocalOnNotFound returns true if images should be served from local cache when removed from upstream

@@ -127,4 +127,28 @@ describe('CreateProjectComponent', () => {
             fixture.nativeElement.querySelector('#endpoint');
         expect(endpoint).toBeFalsy();
     });
+
+    it('should validate the proxy cache base path', () => {
+        component.enableProxyCache = true;
+        component.project.metadata.proxy_cache_base_path = 'Dev/../team';
+        component.validateProxyCacheBasePath();
+        expect(component.proxyCacheBasePathError).toBeTruthy();
+
+        component.project.metadata.proxy_cache_base_path = 'dev/team';
+        component.validateProxyCacheBasePath();
+        expect(component.proxyCacheBasePathError).toBeNull();
+    });
+
+    it('should not block submitting when proxy cache is switched off', () => {
+        component.enableProxyCache = true;
+        component.project.metadata.proxy_cache_base_path = 'Dev/../team';
+        component.validateProxyCacheBasePath();
+        expect(component.proxyCacheBasePathError).toBeTruthy();
+
+        // the input is hidden and its value is not submitted once proxy cache is off, so
+        // the leftover error must not keep the dialog un-submittable
+        component.enableProxyCache = false;
+        component.validateProxyCacheBasePath();
+        expect(component.proxyCacheBasePathError).toBeNull();
+    });
 });

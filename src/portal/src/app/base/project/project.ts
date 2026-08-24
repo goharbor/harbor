@@ -41,6 +41,7 @@ export class Project {
         proxy_referrer_api?: string | boolean;
         proxy_cache_filter_pattern?: string;
         proxy_cache_filter_kind?: string;
+        proxy_cache_base_path?: string;
     };
     constructor() {
         this.metadata = <any>{};
@@ -51,6 +52,7 @@ export class Project {
         this.metadata.proxy_cache_filter_pattern = '';
         this.metadata.proxy_cache_filter_kind =
             REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        this.metadata.proxy_cache_base_path = '';
     }
 }
 

@@ -23,6 +23,7 @@ import {
     getSortingString,
     isSameArrayValue,
     isSameObject,
+    isValidProxyCacheBasePath,
     setHiddenArrayToLocalStorage,
     setPageSizeToLocalStorage,
 } from './utils';
@@ -30,6 +31,31 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { QuotaUnit } from '../entities/shared.const';
 
 describe('functions in utils.ts should work', () => {
+    it('function isValidProxyCacheBasePath() should work', () => {
+        expect(isValidProxyCacheBasePath('')).toBeTruthy();
+        expect(isValidProxyCacheBasePath(null)).toBeTruthy();
+        expect(isValidProxyCacheBasePath('/')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('dev')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('dev/team')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('/dev/team/')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('a__b')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('a---b')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('dev.1/team_2')).toBeTruthy();
+        expect(isValidProxyCacheBasePath('Dev')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('dev//team')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('dev/../team')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('-dev')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('de v')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('localhost:5000/dev')).toBeFalsy();
+        expect(isValidProxyCacheBasePath('a'.repeat(256))).toBeFalsy();
+        expect(isValidProxyCacheBasePath('a'.repeat(255))).toBeTruthy();
+        // a long invalid value has to be rejected without backtracking over every way to
+        // split it, which took seconds per keystroke while the pattern was ambiguous
+        expect(isValidProxyCacheBasePath('a'.repeat(40) + '!')).toBeFalsy();
+        expect(
+            isValidProxyCacheBasePath('library/' + 'a'.repeat(40) + '/N')
+        ).toBeFalsy();
+    });
     it('function isSameArrayValue() should work', () => {
         expect(isSameArrayValue).toBeTruthy();
         expect(isSameArrayValue(null, null)).toBeFalsy();

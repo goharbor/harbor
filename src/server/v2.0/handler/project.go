@@ -170,6 +170,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.MaxUpstreamConn = nil
 		req.Metadata.ProxyCacheFilterPattern = nil
 		req.Metadata.ProxyCacheFilterKind = nil
+		req.Metadata.ProxyCacheBasePath = nil
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -576,6 +577,24 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		params.Project.Metadata.MaxUpstreamConn = nil
 		params.Project.Metadata.ProxyCacheFilterPattern = nil
 		params.Project.Metadata.ProxyCacheFilterKind = nil
+		params.Project.Metadata.ProxyCacheBasePath = nil
+	}
+
+	if params.Project.Metadata != nil && params.Project.Metadata.ProxyCacheBasePath != nil {
+		basePath, err := pkgModels.NormalizeProxyCacheBasePath(*params.Project.Metadata.ProxyCacheBasePath)
+		if err != nil {
+			return a.SendError(ctx, errors.BadRequestError(nil).WithMessagef("metadata.proxy_cache_base_path is invalid: %s", err))
+		}
+		md, err := a.metadataMgr.Get(ctx, p.ProjectID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		stored := &pkgModels.Project{Metadata: md}
+		if basePath != stored.ProxyCacheBasePath() && !a.isSysAdmin(ctx, rbac.ActionUpdate) {
+			return a.SendError(ctx, errors.ForbiddenError(nil).
+				WithMessage("only system admin can change metadata.proxy_cache_base_path"))
+		}
+		params.Project.Metadata.ProxyCacheBasePath = &basePath
 	}
 
 	// ignore enable_content_trust metadata for proxy cache project
@@ -837,6 +856,14 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 
 		if err := validateProxyCacheRepositoryFilter(req.Metadata); err != nil {
 			return err
+		}
+
+		if bp := req.Metadata.ProxyCacheBasePath; bp != nil {
+			basePath, err := pkgModels.NormalizeProxyCacheBasePath(*bp)
+			if err != nil {
+				return errors.BadRequestError(nil).WithMessagef("metadata.proxy_cache_base_path is invalid: %s", err)
+			}
+			req.Metadata.ProxyCacheBasePath = &basePath
 		}
 	}
 

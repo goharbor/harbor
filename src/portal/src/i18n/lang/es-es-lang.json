@@ -258,7 +258,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "El patrón de expresión regular no es válido.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "El patrón doublestar tiene corchetes o llaves no balanceados.",
-        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto",
+        "PROXY_CACHE_BASE_PATH": "Ruta base",
+        "PROXY_CACHE_BASE_PATH_TIP": "La ruta base que se antepone al nombre del repositorio al descargar desde el registro de origen. Por ejemplo, con la ruta base 'dev', descargar 'proxy/image' obtiene 'dev/image' del registro de origen. Déjelo vacío para mantener el nombre del repositorio sin cambios. Cambiarla más adelante solo se aplica a las nuevas descargas: las imágenes ya en caché conservan su nombre, que entonces apunta a otro repositorio de origen.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "p. ej. dev o dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Por favor, ingrese una ruta de repositorio válida en minúsculas, como 'dev' o 'dev/team', o déjela vacía."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",

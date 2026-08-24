@@ -258,7 +258,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "Le motif d'expression régulière n'est pas valide.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "Le motif doublestar a des crochets ou des accolades non équilibrés.",
-        "NO_PROJECT": "Nous n'avons trouvé aucun projet"
+        "NO_PROJECT": "Nous n'avons trouvé aucun projet",
+        "PROXY_CACHE_BASE_PATH": "Chemin de base",
+        "PROXY_CACHE_BASE_PATH_TIP": "Le chemin de base ajouté devant le nom du dépôt lors de la récupération depuis le registre amont. Par exemple, avec le chemin de base 'dev', récupérer 'proxy/image' télécharge 'dev/image' depuis le registre amont. Laissez vide pour conserver le nom du dépôt inchangé. Le modifier ultérieurement ne s'applique qu'aux nouvelles récupérations : les images déjà mises en cache conservent leur nom, qui pointe alors vers un autre dépôt amont.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "ex. dev ou dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Veuillez saisir un chemin de dépôt valide en minuscules, tel que 'dev' ou 'dev/team', ou laissez le champ vide."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Résumé",

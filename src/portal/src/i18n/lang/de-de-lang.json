@@ -257,7 +257,11 @@
         "FILTER_KIND_DOUBLESTAR": "Doublestar",
         "REPOSITORY_FILTER_REGEX_INVALID": "Das reguläre Ausdrucksmuster ist ungültig.",
         "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "Das Doublestar-Muster hat unausgeglichene Klammern oder geschweifte Klammern.",
-        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden",
+        "PROXY_CACHE_BASE_PATH": "Basispfad",
+        "PROXY_CACHE_BASE_PATH_TIP": "Der Basispfad, der dem Repository-Namen beim Abrufen aus der Upstream-Registry vorangestellt wird. Mit dem Basispfad „dev“ ruft das Pullen von „proxy/image“ beispielsweise „dev/image“ aus der Upstream-Registry ab. Leer lassen, um den Repository-Namen unverändert zu lassen. Eine spätere Änderung gilt nur für neue Pulls: bereits zwischengespeicherte Images behalten ihren Namen, der dann auf ein anderes Upstream-Repository verweist.",
+        "PROXY_CACHE_BASE_PATH_PLACEHOLDER": "z. B. dev oder dev/team",
+        "PROXY_CACHE_BASE_PATH_INPUT_TIP": "Bitte geben Sie einen gültigen Repository-Pfad in Kleinbuchstaben ein, z. B. „dev“ oder „dev/team“, oder lassen Sie das Feld leer."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",

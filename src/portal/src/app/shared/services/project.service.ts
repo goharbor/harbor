@@ -177,6 +177,7 @@ export class ProjectDefaultService extends ProjectService {
             proxy_referrer_api: projectPolicy.ProxyReferrerAPI
                 ? 'true'
                 : 'false',
+            proxy_cache_base_path: projectPolicy.ProxyCacheBasePath ?? '',
         };
         if (
             projectPolicy.ProxyCacheFilterPattern !== undefined &&

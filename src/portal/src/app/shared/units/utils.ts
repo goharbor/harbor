@@ -1057,6 +1057,21 @@ export function durationStr(distance: number): string {
     return result ? result : '0';
 }
 
+const PROXY_CACHE_BASE_PATH_PATTERN =
+    /^[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*(?:\/[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*)*$/;
+const PROXY_CACHE_BASE_PATH_MAX_LENGTH = 255;
+
+export function isValidProxyCacheBasePath(basePath: string): boolean {
+    const trimmed = (basePath ?? '').replace(/^\/+|\/+$/g, '');
+    if (!trimmed) {
+        return true;
+    }
+    return (
+        trimmed.length <= PROXY_CACHE_BASE_PATH_MAX_LENGTH &&
+        PROXY_CACHE_BASE_PATH_PATTERN.test(trimmed)
+    );
+}
+
 export enum PageSizeMapKeys {
     LIST_PROJECT_COMPONENT = 'ListProjectComponent',
     REPOSITORY_GRIDVIEW_COMPONENT = 'RepositoryGridviewComponent',

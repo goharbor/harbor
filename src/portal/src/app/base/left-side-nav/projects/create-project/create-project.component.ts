@@ -50,6 +50,7 @@ import {
     clone,
     getByte,
     GetIntegerAndUnit,
+    isValidProxyCacheBasePath,
     validateLimit,
 } from '../../../../shared/units/utils';
 import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
@@ -120,6 +121,8 @@ export class CreateProjectComponent
     maxUpstreamConnError: string | null = null;
 
     repositoryFilterError: string | null = null;
+
+    proxyCacheBasePathError: string | null = null;
 
     constructor(
         private projectService: ProjectService,
@@ -370,6 +373,23 @@ export class CreateProjectComponent
         }
     }
 
+    validateProxyCacheBasePath(): void {
+        if (
+            !this.enableProxyCache ||
+            isValidProxyCacheBasePath(
+                this.project.metadata.proxy_cache_base_path
+            )
+        ) {
+            this.proxyCacheBasePathError = null;
+            return;
+        }
+        this.translateService
+            .get('PROJECT.PROXY_CACHE_BASE_PATH_INPUT_TIP')
+            .subscribe((res: string) => {
+                this.proxyCacheBasePathError = res;
+            });
+    }
+
     convertSpeedValue(realSpeed: number): number {
         if (this.selectedSpeedLimitUnit == BandwidthUnit.MB) {
             return realSpeed * KB_TO_MB;
@@ -395,6 +415,12 @@ export class CreateProjectComponent
         this.validateRepositoryFilter();
         if (this.repositoryFilterError) {
             this.inlineAlert.showInlineError(this.repositoryFilterError);
+            return;
+        }
+
+        this.validateProxyCacheBasePath();
+        if (this.proxyCacheBasePathError) {
+            this.inlineAlert.showInlineError(this.proxyCacheBasePathError);
             return;
         }
 
@@ -424,6 +450,8 @@ export class CreateProjectComponent
             proxy_referrer_api: this.project.metadata.proxy_referrer_api
                 ? 'true'
                 : 'false',
+            proxy_cache_base_path:
+                this.project.metadata.proxy_cache_base_path ?? '',
         };
         if (
             this.enableProxyCache &&
@@ -490,6 +518,8 @@ export class CreateProjectComponent
         this.project.metadata.proxy_cache_filter_kind =
             REPOSITORY_FILTER_KIND_DOUBLESTAR;
         this.repositoryFilterError = null;
+        this.project.metadata.proxy_cache_base_path = '';
+        this.proxyCacheBasePathError = null;
     }
 
     public get isValid(): boolean {
@@ -501,7 +531,8 @@ export class CreateProjectComponent
             !this.checkOnGoing &&
             !this.bandwidthError &&
             !this.maxUpstreamConnError &&
-            !this.repositoryFilterError
+            !this.repositoryFilterError &&
+            (!this.enableProxyCache || !this.proxyCacheBasePathError)
         );
     }
 
