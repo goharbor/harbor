@@ -46,6 +46,8 @@ func (suite *ReportTestSuite) SetupTest() {
 func (suite *ReportTestSuite) TearDownTest() {
 	_, err := suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid"}})
 	require.NoError(suite.T(), err)
+	_, err = suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid-indexed"}})
+	require.NoError(suite.T(), err)
 }
 
 func (suite *ReportTestSuite) TestDeleteReportBySBOMDigest() {
@@ -57,6 +59,54 @@ func (suite *ReportTestSuite) TestDeleteReportBySBOMDigest() {
 	l2, err := suite.dao.List(orm.Context(), nil)
 	suite.Require().NoError(err)
 	suite.Equal(0, len(l2))
+}
+
+// TestDeleteBySBOMDigestUsesIndexedColumn verifies deletion works via the
+// indexed sbom_digest column (not the old JSONB containment predicate).
+func (suite *ReportTestSuite) TestDeleteBySBOMDigestUsesIndexedColumn() {
+	// First, update the report data to populate the sbom_digest column.
+	err := suite.dao.UpdateReportData(orm.Context(), "uuid", `{"sbom_digest": "sha256:indexed"}`)
+	suite.Require().NoError(err)
+
+	// Verify the sbom_digest column was populated.
+	l, err := suite.dao.List(orm.Context(), nil)
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(l))
+	suite.Equal("sha256:indexed", l[0].SBOMDigest)
+
+	// Delete by the new column.
+	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:indexed")
+	suite.Require().NoError(err)
+
+	// Verify deletion.
+	l2, err := suite.dao.List(orm.Context(), nil)
+	suite.Require().NoError(err)
+	suite.Equal(0, len(l2))
+}
+
+// TestDeleteBySBOMDigestNoMatch ensures delete is a no-op when digest doesn't match.
+func (suite *ReportTestSuite) TestDeleteBySBOMDigestNoMatch() {
+	err := suite.dao.UpdateReportData(orm.Context(), "uuid", `{"sbom_digest": "sha256:abc"}`)
+	suite.Require().NoError(err)
+
+	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:nonexistent")
+	suite.Require().NoError(err)
+
+	l, err := suite.dao.List(orm.Context(), nil)
+	suite.Require().NoError(err)
+	suite.Equal(1, len(l))
+}
+
+// TestUpdateReportDataPopulatesSBOMDigest ensures that UpdateReportData
+// extracts sbom_digest from the JSON and stores it in the indexed column.
+func (suite *ReportTestSuite) TestUpdateReportDataPopulatesSBOMDigest() {
+	err := suite.dao.UpdateReportData(orm.Context(), "uuid", `{"sbom_digest": "sha256:newdigest", "scan_status": "Success"}`)
+	suite.Require().NoError(err)
+
+	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid"}))
+	suite.Require().NoError(err)
+	suite.Require().Equal(1, len(l))
+	suite.Equal("sha256:newdigest", l[0].SBOMDigest)
 }
 
 func (suite *ReportTestSuite) create(r *model.Report) {

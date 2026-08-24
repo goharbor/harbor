@@ -28,6 +28,7 @@ type Report struct {
 	RegistrationUUID string    `orm:"column(registration_uuid)"`
 	MimeType         string    `orm:"column(mime_type)"`
 	Report           string    `orm:"column(report);type(json)"`
+	SBOMDigest       string    `orm:"column(sbom_digest);null"`
 	CriticalCnt      int64     `orm:"column(critical_cnt)"`
 	HighCnt          int64     `orm:"column(high_cnt)"`
 	MediumCnt        int64     `orm:"column(medium_cnt)"`
