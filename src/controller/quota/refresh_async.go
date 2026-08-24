@@ -48,6 +48,8 @@ import (
 // relies on it - is opt-in: it activates only when the
 // QUOTA_ASYNC_REFRESH_DURATION env var is set to a positive number of
 // seconds (the flush interval). Without it, quota behavior is unchanged.
+// Setting the env var also switches RefreshMiddleware to the coalesced
+// path (see AsyncRefreshEnabled).
 const defaultDeferredRefreshInterval = 10 * time.Second
 
 const asyncRefreshDurationEnv = "QUOTA_ASYNC_REFRESH_DURATION"
@@ -94,7 +96,8 @@ func parseRefreshInterval(env string) (time.Duration, bool) {
 
 // AsyncRefreshEnabled returns true when QUOTA_ASYNC_REFRESH_DURATION is set
 // to a positive number of seconds; only then does Request() skip the
-// reservation for unlimited quotas and rely on the deferred flush.
+// reservation for unlimited quotas, and RefreshMiddleware coalesces its
+// per-request full recomputes through the deferred flush as well.
 func AsyncRefreshEnabled() bool {
 	return asyncRefreshConfigured
 }
