@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -100,13 +99,7 @@ func (d *dao) UpdateReportData(ctx context.Context, uuid string, report string) 
 	data := make(orm.Params)
 	data["report"] = report
 
-	// Extract sbom_digest from the JSON report and keep the indexed column in sync.
-	var parsed map[string]any
-	if err := json.Unmarshal([]byte(report), &parsed); err == nil {
-		if dgst, ok := parsed["sbom_digest"].(string); ok && dgst != "" {
-			data["sbom_digest"] = dgst
-		}
-	}
+
 
 	_, err = qt.Filter("uuid", uuid).Update(data)
 	return err
@@ -124,6 +117,9 @@ func (d *dao) Update(ctx context.Context, r *model.Report, cols ...string) error
 }
 
 func (d *dao) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrValue string) error {
+	if attrName != "sbom_digest" {
+		return errors.Errorf("unsupported attribute: %s", attrName)
+	}
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
