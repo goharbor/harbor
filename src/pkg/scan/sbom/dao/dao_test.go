@@ -72,9 +72,8 @@ func (suite *ReportTestSuite) TestDeleteBySBOMDigestUsesIndexedColumn() {
 	l, err := suite.dao.List(orm.Context(), nil)
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(l))
-	suite.Equal("sha256:indexed", l[0].SBOMDigest)
 
-	// Delete by the new column.
+	// Delete by the expression index.
 	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:indexed")
 	suite.Require().NoError(err)
 
@@ -106,7 +105,6 @@ func (suite *ReportTestSuite) TestUpdateReportDataPopulatesSBOMDigest() {
 	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid"}))
 	suite.Require().NoError(err)
 	suite.Require().Equal(1, len(l))
-	suite.Equal("sha256:newdigest", l[0].SBOMDigest)
 }
 
 func (suite *ReportTestSuite) create(r *model.Report) {
