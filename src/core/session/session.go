@@ -181,23 +181,22 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 		ctx = context.TODO()
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
-	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
-		err := rp.c.Save(ctx, sid, map[any]any{}, maxlifetime)
-		if err != nil {
-			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
+	if rdb, ok := rp.c.(*redis.Cache); ok {
+		// RENAME is atomic and reports "no such key" when oldsid is already gone,
+		// so it both moves the session and detects the miss in a single round trip.
+		if err := rdb.Rename(ctx, oldsid, sid).Err(); err != nil {
+			log.Debugf("failed to rename oldsid=%s to sid=%s, error: %s", oldsid, sid, err)
+		} else if err := rdb.Expire(ctx, sid, maxlifetime).Err(); err != nil {
+			log.Debugf("failed to set the expiration of sid=%s, error: %s", sid, err)
 		}
 	} else {
-		if rdb, ok := rp.c.(*redis.Cache); ok {
-			// redis has rename command
-			rdb.Rename(ctx, oldsid, sid)
-			rdb.Expire(ctx, sid, maxlifetime)
-		} else {
-			kv := make(map[any]any)
-			err := rp.c.Fetch(ctx, oldsid, &kv)
-			if err != nil && !errors.Is(err, cache.ErrNotFound) {
-				return nil, err
-			}
+		kv := make(map[any]any)
+		err := rp.c.Fetch(ctx, oldsid, &kv)
+		if err != nil && !errors.Is(err, cache.ErrNotFound) {
+			return nil, err
+		}
 
+		if len(kv) > 0 {
 			err = rp.c.Delete(ctx, oldsid)
 			if err != nil {
 				log.Debugf("failed to delete oldsid=%s, error: %s", oldsid, err)
@@ -209,6 +208,12 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 		}
 	}
 
+	// Nothing is persisted when oldsid is missing. beego hands the new sid to the
+	// browser through Set-Cookie either way, so persisting an empty session here
+	// would leave the client holding a valid cookie for a session that carries no
+	// user, and every following request would be anonymous. SessionRead still
+	// returns a usable in-memory store, and beego writes it out on SessionRelease
+	// once the caller has populated it.
 	return rp.SessionRead(ctx, sid)
 }
 
