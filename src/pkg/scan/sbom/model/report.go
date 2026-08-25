@@ -26,7 +26,6 @@ type Report struct {
 	MimeType         string `orm:"column(mime_type)"`
 	MediaType        string `orm:"column(media_type)"`
 	ReportSummary    string `orm:"column(report);type(json)"`
-	SBOMDigest       string `orm:"column(sbom_digest);null"`
 }
 
 // TableName for sbom report
