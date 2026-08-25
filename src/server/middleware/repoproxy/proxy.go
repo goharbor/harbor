@@ -33,10 +33,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/proxycachesecret"
-	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/proxy"
 	"github.com/goharbor/harbor/src/controller/registry"
+	robotCtl "github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -436,25 +436,38 @@ func isProxySession(ctx context.Context, projectName string) bool {
 	if username == proxycachesecret.ProxyCacheService {
 		return true
 	}
-	// Verify that security context is a robot security context.
-	rSc, ok := sc.(*robotSc.SecurityContext)
-	if !ok {
-		return false
-	}
-	r := rSc.User()
-	if r == nil {
-		return false
-	}
-	// Scanner robot accounts created by system must be invisible and have CreatorRef == 0.
-	// User-created robot accounts created via API have Visible == true and CreatorRef > 0.
-	if r.Visible || r.CreatorRef != 0 {
-		return false
-	}
-	// it should include the auto generate SBOM session, so that it could generate SBOM accessory in proxy cache project
+
 	robotPrefix := config.RobotPrefix(ctx)
 	scannerPrefix := config.ScannerRobotPrefix(ctx)
 	prefix := fmt.Sprintf("%s%s+%s", robotPrefix, projectName, scannerPrefix)
-	return strings.HasPrefix(username, prefix)
+	if !strings.HasPrefix(username, prefix) {
+		return false
+	}
+
+	// Since we cannot rely on getting robot.SecurityContext directly under proxy cache sbom generation,
+	// its security context is v2_token when pushing sbom, not robot SecurityContext
+	// we verify by fetching the robot account by username from database / controller.
+	// The robot name used to query is the username without the robot prefix.
+	robotName := strings.TrimPrefix(username, robotPrefix)
+	robots, err := robotCtl.Ctl.List(ctx, q.New(q.KeyWords{
+		"name": robotName,
+	}), nil)
+	if err != nil {
+		log.Errorf("failed to list robots for validation: %v", err)
+		return false
+	}
+	if len(robots) == 0 {
+		log.Infof("no robot found with name: %s", robotName)
+		return false
+	}
+	r := robots[0]
+	// Scanner robot accounts created by system must be invisible and have CreatorRef == 0.
+	// User-created robot accounts created via API have Visible == true and CreatorRef > 0.
+	if r.Visible || r.CreatorRef != 0 {
+		log.Warningf("current robot is not a scanner robot, visible: %v, creatorRef: %v", r.Visible, r.CreatorRef)
+		return false
+	}
+	return true
 }
 
 // DisableBlobAndManifestUploadMiddleware disable push artifact to a proxy project with a non-proxy session
