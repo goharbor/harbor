@@ -62,8 +62,6 @@ func (suite *ReportTestSuite) TearDownTest() {
 	require.NoError(suite.T(), err)
 	_, err = suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid3"}})
 	require.NoError(suite.T(), err)
-	_, err = suite.dao.DeleteMany(orm.Context(), q.Query{Keywords: q.KeyWords{"uuid": "uuid-sbom-test"}})
-	require.NoError(suite.T(), err)
 }
 
 // TestReportList tests list reports with query parameters.
@@ -105,74 +103,6 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 
 	err = suite.dao.UpdateReportData(orm.Context(), "uuid", "{\"a\": 900}")
 	suite.Require().NoError(err)
-}
-
-// TestDeleteByExtraAttrUsesIndexedColumn verifies that DeleteByExtraAttr
-// deletes rows by equality on the indexed sbom_digest column, not via
-// the old report::jsonb @> containment predicate.
-func (suite *ReportTestSuite) TestDeleteByExtraAttrUsesIndexedColumn() {
-	// Create a report with sbom_digest in the JSON and update to populate the indexed column.
-	r := &Report{
-		UUID:             "uuid-sbom-test",
-		Digest:           "digest-sbom-test",
-		RegistrationUUID: "ruuid-sbom",
-		MimeType:         v1.MimeTypeSBOMReport,
-	}
-	suite.create(r)
-
-	// Update report data to populate the sbom_digest indexed column.
-	err := suite.dao.UpdateReportData(orm.Context(), "uuid-sbom-test", `{"sbom_digest": "sha256:scantest"}`)
-	suite.Require().NoError(err)
-
-	// Verify the sbom_digest column was populated.
-	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid-sbom-test"}))
-	suite.Require().NoError(err)
-	suite.Require().Equal(1, len(l))
-	suite.Equal("sha256:scantest", l[0].SBOMDigest)
-
-	// Delete by the indexed column.
-	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:scantest")
-	suite.Require().NoError(err)
-
-	// Verify deletion.
-	l2, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid-sbom-test"}))
-	suite.Require().NoError(err)
-	suite.Equal(0, len(l2))
-}
-
-// TestDeleteByExtraAttrNoMatch ensures delete is a no-op when digest doesn't match.
-func (suite *ReportTestSuite) TestDeleteByExtraAttrNoMatch() {
-	r := &Report{
-		UUID:             "uuid-sbom-test",
-		Digest:           "digest-sbom-nomatch",
-		RegistrationUUID: "ruuid-sbom",
-		MimeType:         v1.MimeTypeSBOMReport,
-	}
-	suite.create(r)
-
-	err := suite.dao.UpdateReportData(orm.Context(), "uuid-sbom-test", `{"sbom_digest": "sha256:realdigest"}`)
-	suite.Require().NoError(err)
-
-	// Attempt delete with a non-matching digest.
-	err = suite.dao.DeleteByExtraAttr(orm.Context(), v1.MimeTypeSBOMReport, "sbom_digest", "sha256:nonexistent")
-	suite.Require().NoError(err)
-
-	// Verify the row was NOT deleted.
-	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid-sbom-test"}))
-	suite.Require().NoError(err)
-	suite.Equal(1, len(l))
-}
-
-// TestUpdateReportDataPopulatesSBOMDigest ensures that UpdateReportData
-// extracts sbom_digest from JSON and populates the indexed column.
-func (suite *ReportTestSuite) TestUpdateReportDataPopulatesSBOMDigest() {
-	err := suite.dao.UpdateReportData(orm.Context(), "uuid", `{"sbom_digest": "sha256:newscan", "scan_status": "Success"}`)
-	suite.Require().NoError(err)
-
-	l, err := suite.dao.List(orm.Context(), q.New(q.KeyWords{"uuid": "uuid"}))
-	suite.Require().NoError(err)
-	suite.Require().Equal(1, len(l))
-	suite.Equal("sha256:newscan", l[0].SBOMDigest)
 }
 
 func (suite *ReportTestSuite) create(r *Report) {

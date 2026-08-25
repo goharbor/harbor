@@ -99,8 +99,6 @@ func (d *dao) UpdateReportData(ctx context.Context, uuid string, report string) 
 	data := make(orm.Params)
 	data["report"] = report
 
-
-
 	_, err = qt.Filter("uuid", uuid).Update(data)
 	return err
 }
@@ -117,14 +115,12 @@ func (d *dao) Update(ctx context.Context, r *Report, cols ...string) error {
 }
 
 func (d *dao) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrValue string) error {
-	if attrName != "sbom_digest" {
-		return errors.Errorf("unsupported attribute: %s", attrName)
-	}
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	delReportSQL := fmt.Sprintf("delete from scan_report where mime_type = ? and %s = ?", attrName)
-	_, err = o.Raw(delReportSQL, mimeType, attrValue).Exec()
+	delReportSQL := "delete from scan_report where mime_type = ? and report::jsonb @> ?"
+	dgstJSONStr := fmt.Sprintf(`{"%s":"%s"}`, attrName, attrValue)
+	_, err = o.Raw(delReportSQL, mimeType, dgstJSONStr).Exec()
 	return err
 }

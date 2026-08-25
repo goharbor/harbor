@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -99,8 +98,6 @@ func (d *dao) UpdateReportData(ctx context.Context, uuid string, report string) 
 	data := make(orm.Params)
 	data["report"] = report
 
-
-
 	_, err = qt.Filter("uuid", uuid).Update(data)
 	return err
 }
@@ -124,7 +121,6 @@ func (d *dao) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrVal
 	if err != nil {
 		return err
 	}
-	delReportSQL := fmt.Sprintf("delete from sbom_report where mime_type = ? and %s = ?", attrName)
-	_, err = o.Raw(delReportSQL, mimeType, attrValue).Exec()
+	_, err = o.Raw("delete from sbom_report where mime_type = ? and report::jsonb ->> 'sbom_digest' = ?", mimeType, attrValue).Exec()
 	return err
 }
