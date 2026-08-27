@@ -19,10 +19,13 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/beego/beego/v2/server/web/session"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/cache/redis"
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -162,6 +165,22 @@ func (s *sessionTestSuite) TestSessionRegenerateConcurrent() {
 		s.Equal("alice", regenerated.Get(ctx, "user"), "the regenerated session should keep its data")
 	}
 	s.Equal(1, persisted, "exactly one regenerated session should be persisted")
+}
+
+func (s *sessionTestSuite) TestSessionRegenerateTransportError() {
+	ctx := context.Background()
+
+	// Nothing is listening on this port, so every command fails at the transport
+	// level. That must not be reported as a missing session: beego only skips
+	// Set-Cookie when regenerate returns an error, and handing the client a sid
+	// we could not populate is what logs the user out.
+	c, err := redis.New(cache.Options{Address: "redis://127.0.0.1:16379/0", Codec: codec})
+	s.NoError(err, "cache should be created")
+
+	provider := &Provider{c: c, maxlifetime: int64(time.Hour)}
+	store, err := provider.SessionRegenerate(ctx, "session-001", "session-006")
+	s.Error(err, "a transport failure should be propagated")
+	s.Nil(store, "no store should be returned when the backend is unreachable")
 }
 
 func (s *sessionTestSuite) TestSessionDestroy() {
