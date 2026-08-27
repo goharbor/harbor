@@ -17,6 +17,7 @@ package notification
 import (
 	"context"
 	"crypto/tls"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -203,6 +204,7 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 				InsecureSkipVerify: s.insecure,
 			},
 			MaxIdleConns:          100,
+			MaxIdleConnsPerHost:   200,
 			IdleConnTimeout:       90 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
@@ -267,14 +269,32 @@ func (s *ssrfProxyRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		}
 
 		resp, err := tr.RoundTrip(clonedReq)
-		cancel()
-
-		if err == nil {
-			return resp, nil
+		if err != nil {
+			cancel()
+			lastErr = err
+			continue
 		}
-		lastErr = err
+
+		// The attempt context governs the full request lifetime, including reading
+		// the response body, so it must stay alive until the caller is done with the
+		// body rather than being canceled here.
+		resp.Body = &cancelOnCloseBody{ReadCloser: resp.Body, cancel: cancel}
+		return resp, nil
 	}
 	return nil, lastErr
+}
+
+// cancelOnCloseBody defers canceling the per-attempt context until the response
+// body is closed, since the context also controls reading the response body.
+type cancelOnCloseBody struct {
+	io.ReadCloser
+	cancel context.CancelFunc
+}
+
+func (b *cancelOnCloseBody) Close() error {
+	err := b.ReadCloser.Close()
+	b.cancel()
+	return err
 }
 
 func noRedirect(_ *http.Request, _ []*http.Request) error {
