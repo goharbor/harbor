@@ -146,6 +146,9 @@ spec:
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
+        {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolumeMount" . | indent 8 }}
+        {{- end }}
       volumes:
       - name: jobservice-config
         configMap:
@@ -164,6 +167,9 @@ spec:
       {{- end }}
       {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+      {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolume" . | indent 6 }}
       {{- end }}
     {{- with .Values.jobservice.nodeSelector }}
       nodeSelector:

@@ -150,6 +150,9 @@ spec:
           {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 10 }}
           {{- end }}
+          {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolumeMount" . | indent 10 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               scheme: {{ include "harbor.component.scheme" . | upper }}

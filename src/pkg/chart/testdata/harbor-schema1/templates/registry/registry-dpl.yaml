@@ -210,6 +210,9 @@ spec:
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
+        {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolumeMount" . | indent 8 }}
+        {{- end }}
       - name: registryctl
         image: {{ .Values.registry.controller.image.repository }}:{{ .Values.registry.controller.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -358,6 +361,9 @@ spec:
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
+        {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolumeMount" . | indent 8 }}
+        {{- end }}
       volumes:
       - name: registry-htpasswd
         secret:
@@ -413,6 +419,9 @@ spec:
       {{- end }}
       {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+      {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolume" . | indent 6 }}
       {{- end }}
     {{- with .Values.registry.nodeSelector }}
       nodeSelector:

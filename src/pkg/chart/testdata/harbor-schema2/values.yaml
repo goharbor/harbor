@@ -1020,8 +1020,16 @@ redis:
     # username field can be an empty string, and it will be authenticated against the default user
     username: ""
     password: ""
-    # If using existingSecret, the key must be REDIS_PASSWORD
+    # If using existingSecret, the key must be REDIS_PASSWORD and optionally REDIS_USERNAME
     existingSecret: ""
+    # TLS configuration for external Redis connection
+    # When enabled, the scheme will be `rediss://` (or `rediss+sentinel://` for sentinel mode)
+    # mTLS for Redis connection is not supported
+    tlsOptions:
+      enable: false
+      # The secret containing the CA certificate (key: ca.crt)
+      # If not set, the system CA bundle will be used
+      caSecret: ""
   ## Additional deployment annotations
   podAnnotations: {}
   ## Additional deployment labels

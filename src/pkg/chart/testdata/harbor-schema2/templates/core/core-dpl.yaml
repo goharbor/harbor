@@ -183,6 +183,9 @@ spec:
         {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolumeMount" . | indent 8 }}
         {{- end }}
+        {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolumeMount" . | indent 8 }}
+        {{- end }}
 {{- if .Values.core.resources }}
         resources:
 {{ toYaml .Values.core.resources | indent 10 }}
@@ -239,6 +242,9 @@ spec:
         emptyDir: {}
       {{- if .Values.caBundleSecretName }}
 {{ include "harbor.caBundleVolume" . | indent 6 }}
+      {{- end }}
+      {{- if and (eq .Values.redis.type "external") (.Values.redis.external.tlsOptions.enable) (.Values.redis.external.tlsOptions.caSecret) }}
+{{ include "harbor.redis.tlsCABundleVolume" . | indent 6 }}
       {{- end }}
     {{- with .Values.core.nodeSelector }}
       nodeSelector:
