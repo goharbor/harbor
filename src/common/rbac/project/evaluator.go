@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator"
 	"github.com/goharbor/harbor/src/pkg/permission/evaluator/namespace"
@@ -31,7 +32,7 @@ import (
 type RBACUserBuilder func(context.Context, *proModels.Project) types.RBACUser
 
 // NewBuilderForUser create a builder for the local user
-func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilder {
+func NewBuilderForUser(user *models.User, ctl project.Controller, ctlR role.Controller) RBACUserBuilder {
 	return func(ctx context.Context, p *proModels.Project) types.RBACUser {
 		if user == nil {
 			// anonymous access
@@ -41,10 +42,27 @@ func NewBuilderForUser(user *models.User, ctl project.Controller) RBACUserBuilde
 			}
 		}
 
-		roles, err := ctl.ListRoles(ctx, p.ProjectID, user)
+		roleIDs, err := ctl.ListRoles(ctx, p.ProjectID, user)
 		if err != nil {
 			log.Errorf("failed to list roles: %v", err)
 			return nil
+		}
+
+		var roles []*projectRBACRole
+		for _, roleID := range roleIDs {
+			// Built-in roles resolve their policies from the compile-time map
+			// (rolePoliciesMap) — no database lookup, matching pre-feature behavior.
+			if isBuiltinProjectRole(roleID) {
+				roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID})
+				continue
+			}
+			// Custom roles load their permissions from the database.
+			r, err := ctlR.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
+			if err != nil {
+				log.Errorf("failed to get role %d: %v", roleID, err)
+				return nil
+			}
+			roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID, custom: r})
 		}
 
 		return &rbacUser{

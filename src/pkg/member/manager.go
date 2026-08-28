@@ -48,6 +48,8 @@ type Manager interface {
 	DeleteMemberByProjectID(ctx context.Context, projectID int64) error
 	// GetTotalOfProjectMembers get the total amount of project members
 	GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error)
+	// GetTotalOfProjectMembersByRole returns the number of project members (across all projects) assigned the given role
+	GetTotalOfProjectMembersByRole(ctx context.Context, roleID int) (int, error)
 	// ListRoles list project roles
 	ListRoles(ctx context.Context, user *models.User, projectID int64) ([]int, error)
 }
@@ -86,6 +88,10 @@ func (m *manager) SearchMemberByName(ctx context.Context, projectID int64, entit
 
 func (m *manager) GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error) {
 	return m.dao.GetTotalOfProjectMembers(ctx, projectID, query, roles...)
+}
+
+func (m *manager) GetTotalOfProjectMembersByRole(ctx context.Context, roleID int) (int, error) {
+	return m.dao.GetTotalOfProjectMembersByRole(ctx, roleID)
 }
 
 func (m *manager) ListRoles(ctx context.Context, user *models.User, projectID int64) ([]int, error) {

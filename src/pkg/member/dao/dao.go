@@ -36,6 +36,8 @@ type DAO interface {
 	GetProjectMember(ctx context.Context, queryMember models.Member, query *q.Query) ([]*models.Member, error)
 	// GetTotalOfProjectMembers returns total of project members
 	GetTotalOfProjectMembers(ctx context.Context, projectID int64, query *q.Query, roles ...int) (int, error)
+	// GetTotalOfProjectMembersByRole returns the total number of project members (across all projects) assigned the given role
+	GetTotalOfProjectMembersByRole(ctx context.Context, roleID int) (int, error)
 	// AddProjectMember inserts a record to table project_member
 	AddProjectMember(ctx context.Context, member models.Member) (int, error)
 	// UpdateProjectMemberRole updates the record in table project_member, only role can be changed
@@ -136,6 +138,18 @@ func (d *dao) GetTotalOfProjectMembers(ctx context.Context, projectID int64, _ *
 		return 0, err
 	}
 	return count, err
+}
+
+func (d *dao) GetTotalOfProjectMembersByRole(ctx context.Context, roleID int) (int, error) {
+	var count int
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	if err := o.Raw("SELECT COUNT(1) FROM project_member WHERE role = ?", roleID).QueryRow(&count); err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (d *dao) AddProjectMember(ctx context.Context, member models.Member) (int, error) {
