@@ -70,6 +70,10 @@ func init() {
 	httpHelper = &HTTPHelper{
 		clients: map[string]*http.Client{},
 	}
+	// Redirects are not followed automatically: doing so would hand a remote target
+	// a way to steer a validated request at a new, unvalidated URL after the fact.
+	// The 3xx response is returned to the caller as-is instead, which callers treat
+	// as an abnormal response rather than a redirect to chase.
 	httpHelper.clients[secure] = &http.Client{
 		Transport:     webhookTransport(false),
 		Timeout:       timeout,
