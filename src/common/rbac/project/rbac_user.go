@@ -22,7 +22,7 @@ import (
 type rbacUser struct {
 	project      *models.Project
 	username     string
-	projectRoles []int
+	projectRoles []*projectRBACRole
 	policies     []*types.Policy
 }
 
@@ -45,8 +45,8 @@ func (pru *rbacUser) GetPolicies() []*types.Policy {
 // GetRoles returns roles of the visitor
 func (pru *rbacUser) GetRoles() []types.RBACRole {
 	roles := []types.RBACRole{}
-	for _, roleID := range pru.projectRoles {
-		roles = append(roles, &projectRBACRole{projectID: pru.project.ProjectID, roleID: roleID})
+	for _, r := range pru.projectRoles {
+		roles = append(roles, r)
 	}
 
 	return roles

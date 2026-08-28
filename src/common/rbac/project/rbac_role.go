@@ -17,6 +17,7 @@ package project
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	rolectl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -308,10 +309,17 @@ var (
 type projectRBACRole struct {
 	projectID int64
 	roleID    int
+	// custom is set only for custom (non-built-in) roles; its permissions are
+	// loaded from the database. Built-in roles leave it nil and resolve their
+	// policies from rolePoliciesMap, exactly as before the custom-roles feature.
+	custom *rolectl.Role
 }
 
 // GetRoleName returns role name for the visitor role
 func (role *projectRBACRole) GetRoleName() string {
+	if role.custom != nil {
+		return role.custom.Name
+	}
 	switch role.roleID {
 	case common.RoleProjectAdmin:
 		return "projectAdmin"
@@ -332,6 +340,21 @@ func (role *projectRBACRole) GetRoleName() string {
 func (role *projectRBACRole) GetPolicies() []*types.Policy {
 	policies := []*types.Policy{}
 
+	// Custom role: permissions are loaded from the database.
+	if role.custom != nil {
+		namespace := NewNamespace(role.projectID)
+		for _, permission := range role.custom.Permissions {
+			for _, policy := range permission.Access {
+				policies = append(policies, &types.Policy{
+					Resource: namespace.Resource(policy.Resource),
+					Action:   policy.Action,
+					Effect:   policy.Effect,
+				})
+			}
+		}
+		return policies
+	}
+
 	roleName := role.GetRoleName()
 	if roleName == "" {
 		return policies
@@ -347,4 +370,17 @@ func (role *projectRBACRole) GetPolicies() []*types.Policy {
 	}
 
 	return policies
+}
+
+// isBuiltinProjectRole reports whether roleID is one of the fixed built-in
+// project roles, whose policies are resolved from rolePoliciesMap without a
+// database lookup. Any other role ID denotes a custom role stored in the DB.
+func isBuiltinProjectRole(roleID int) bool {
+	switch roleID {
+	case common.RoleProjectAdmin, common.RoleMaintainer, common.RoleDeveloper,
+		common.RoleGuest, common.RoleLimitedGuest:
+		return true
+	default:
+		return false
+	}
 }
