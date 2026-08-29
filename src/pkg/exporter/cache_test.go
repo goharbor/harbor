@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
@@ -35,4 +36,35 @@ func (c *CacheTestSuite) TestCacheFunction() {
 	time.Sleep(2 * time.Second)
 	_, ok = CacheGet("key2")
 	c.False(ok)
+}
+
+func TestCleanExpired(t *testing.T) {
+	CacheInit(&Opt{
+		CacheDuration: 60,
+	})
+
+	now := time.Now().Unix()
+	c.Lock()
+	c.store["valid"] = cachedValue{
+		Value:      "valid",
+		Expiration: now + 60,
+	}
+	c.store["expired"] = cachedValue{
+		Value:      "expired",
+		Expiration: now - 1,
+	}
+	c.Unlock()
+
+	cleanExpired(now)
+
+	c.RLock()
+	_, validExists := c.store["valid"]
+	_, expiredExists := c.store["expired"]
+	c.RUnlock()
+	if !validExists {
+		t.Fatal("cleanExpired removed a valid cache entry")
+	}
+	if expiredExists {
+		t.Fatal("cleanExpired retained an expired cache entry")
+	}
 }
