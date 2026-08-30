@@ -52,32 +52,32 @@ var (
 )
 var (
 	projectTotal = typedDesc{
-		desc:      newDescWithLables("", "project_total", "Total projects number", "public"),
+		desc:      newDescWithLabels("", "project_total", "Total projects number", "public"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectUsage = typedDesc{
-		desc:      newDescWithLables("", "project_quota_usage_byte", "The used resource of a project", "project_name"),
+		desc:      newDescWithLabels("", "project_quota_usage_byte", "The used resource of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectQuote = typedDesc{
-		desc:      newDescWithLables("", "project_quota_byte", "The quota of a project", "project_name"),
+		desc:      newDescWithLabels("", "project_quota_byte", "The quota of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectRepoTotal = typedDesc{
-		desc:      newDescWithLables("", "project_repo_total", "Total project repos number", "project_name", "public"),
+		desc:      newDescWithLabels("", "project_repo_total", "Total project repos number", "project_name", "public"),
 		valueType: prometheus.GaugeValue,
 	}
 
 	projectMemberTotal = typedDesc{
-		desc:      newDescWithLables("", "project_member_total", "Total members number of a project", "project_name"),
+		desc:      newDescWithLabels("", "project_member_total", "Total members number of a project", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	artifactPullTotal = typedDesc{
-		desc:      newDescWithLables("", "artifact_pulled", "The pull number of an artifact", "project_name"),
+		desc:      newDescWithLabels("", "artifact_pulled", "The pull number of an artifact", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
 	projectArtifactTotal = typedDesc{
-		desc:      newDescWithLables("", "project_artifact_total", "Total project artifacts number", "project_name", "public", "artifact_type"),
+		desc:      newDescWithLabels("", "project_artifact_total", "Total project artifacts number", "project_name", "public", "artifact_type"),
 		valueType: prometheus.GaugeValue,
 	}
 )
