@@ -79,10 +79,13 @@ Test Case - Proxy Cache Filter
     Switch To Registries
     Create A New Endpoint  harbor  e_filter${d}  ${registry}  ${null}  ${null}
     Create An New Project With Proxy Cache Filter  proj_filter${d}  e_filter${d}  ${user_namespace}/${allowed_image}  doublestar
+    Clean All Local Images
     Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${allowed_image}  tag=${allowed_tag}
     Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
-    Go Into Project  proj_filter${d}
+    Go Into Project Without Check  proj_filter${d}
+    Wait Until Keyword Succeeds  10 min  15s  Refresh Repositories And Check Repo Exist  proj_filter${d}  ${user_namespace}/${allowed_image}
     Update Project Proxy Cache Filter  ^${user_namespace}/(for_proxy|redis)$  regex
+    Clean All Local Images
     Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
     Close Browser
 
@@ -358,3 +361,28 @@ Test Case - Job Service Dashboard Schedules
     Switch To Job Schedules
     Resume All Schedules
     Close Browser
+
+*** Keywords ***
+Go Into Project Without Check
+    [Arguments]  ${project}
+    FOR  ${n}  IN RANGE  1  4
+        ${out}  Run Keyword And Ignore Error  Retry Go Into Project Without Check  ${project}
+        Run Keyword If  '${out[0]}'=='PASS'  Exit For Loop
+        Reload Page
+        Sleep  2
+    END
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Go Into Project Without Check
+    [Arguments]  ${project}
+    Retry Text Input  ${search_input}  ${project}
+    Wait Until Page Contains Element  //list-project-ro//a[contains(., '${project}')]
+    Retry Link Click  //list-project-ro//a[contains(., '${project}')]
+    Wait Until Page Contains Element  //project-detail//h1[contains(., '${project}')]
+
+Refresh Repositories And Check Repo Exist
+    [Arguments]  ${pro_name}  ${repo_name}
+    Reload Page
+    Sleep  5
+    Page Should Contain Element  //clr-dg-row[contains(.,'${pro_name}/${repo_name}')]
