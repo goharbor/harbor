@@ -249,9 +249,9 @@ func getTLSConfig(setting *cfgModels.HTTPAuthProxy) (*tls.Config, error) {
 			logger.Errorf("Failed to pin server certificate, please double check if it's valid, certificate: %s", c)
 			return nil, fmt.Errorf("failed to pin server certificate for authproxy")
 		}
-		return &tls.Config{RootCAs: certs}, nil
+		return &tls.Config{RootCAs: certs, MinVersion: tls.VersionTLS12}, nil
 	}
-	return &tls.Config{InsecureSkipVerify: !setting.VerifyCert}, nil
+	return &tls.Config{InsecureSkipVerify: !setting.VerifyCert, MinVersion: tls.VersionTLS12}, nil
 }
 
 func init() {
