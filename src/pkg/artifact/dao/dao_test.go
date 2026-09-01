@@ -489,9 +489,7 @@ func (d *daoTestSuite) TestListWithLatest() {
 	id, err := d.dao.Create(d.ctx, art)
 	d.Require().Nil(err)
 
-	time.Sleep(1 * time.Second)
-	now = time.Now()
-
+	now1 := now.Add(1 * time.Second)
 	art2 := &Artifact{
 		Type:              "IMAGE",
 		MediaType:         v1.MediaTypeImageConfig,
@@ -500,16 +498,14 @@ func (d *daoTestSuite) TestListWithLatest() {
 		RepositoryID:      1235,
 		RepositoryName:    "library2/hello-world2",
 		Digest:            "digest",
-		PushTime:          now,
-		PullTime:          now,
+		PushTime:          now1,
+		PullTime:          now1,
 		Annotations:       `{"anno1":"value1"}`,
 	}
 	id1, err := d.dao.Create(d.ctx, art2)
 	d.Require().Nil(err)
 
-	time.Sleep(1 * time.Second)
-	now = time.Now()
-
+	now2 := now.Add(2 * time.Second)
 	art3 := &Artifact{
 		Type:              "IMAGE",
 		MediaType:         v1.MediaTypeImageConfig,
@@ -518,8 +514,8 @@ func (d *daoTestSuite) TestListWithLatest() {
 		RepositoryID:      1235,
 		RepositoryName:    "library2/hello-world2",
 		Digest:            "digest2",
-		PushTime:          now,
-		PullTime:          now,
+		PushTime:          now2,
+		PullTime:          now2,
 		Annotations:       `{"anno1":"value1"}`,
 	}
 	id2, err := d.dao.Create(d.ctx, art3)

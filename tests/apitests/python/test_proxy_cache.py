@@ -57,7 +57,7 @@ class TestProxyCache(unittest.TestCase):
             2. Delete user(UA).
         """
         subprocess.run(["docker", "image", "prune", "-a", "-f"], check=False)
-        subprocess.run(["ctr", "image", "prune", "--all"], check=False)
+        subprocess.run(["ctr", "images", "prune", "--all"], check=False)
 
         user_id, user_name = self.user.create_user(user_password = self.user_password, **ADMIN_CLIENT)
         USER_CLIENT=dict(endpoint = self.url, username = user_name, password = self.user_password)
@@ -156,18 +156,171 @@ class TestProxyCache(unittest.TestCase):
         print("Index's reference by ctr CLI:", ret_index_by_c.references)
         self.assertTrue(len(ret_index_by_c.references) == 1)
 
+    def do_validate_proxy_cache_filter(self, registry_type="harbor"):
+        """
+        Test case:
+            Proxy Cache Repository Filter
+        Test steps:
+            1. Create a registry endpoint;
+            2. Verify API pattern validation (400 Bad Request for
+               invalid regex when kind='regex');
+            3. Create a Proxy Cache Project with doublestar filter pattern;
+            4. Pull matching image -> Should succeed and be cached;
+            5. Pull non-matching image -> Should fail (filtered before proxy);
+            6. Update project metadata to regex filter pattern;
+            7. Pull image matching regex -> Should succeed;
+            8. Pull image not matching regex -> Should fail.
+        """
+        subprocess.run(["docker", "image", "prune", "-a", "-f"], check=False)
+        subprocess.run(["ctr", "images", "prune", "--all"], check=False)
+
+        user_id, user_name = self.user.create_user(
+            user_password=self.user_password, **ADMIN_CLIENT
+        )
+        USER_CLIENT = dict(
+            endpoint=self.url,
+            username=user_name,
+            password=self.user_password
+        )
+
+        if registry_type == "docker-hub":
+            user_namespace = DOCKER_USER
+            access_key = DOCKER_USER
+            access_secret = DOCKER_PWD
+            registry = "https://hub.docker.com"
+        else:
+            user_namespace = "nightly"
+            registry = "https://registry.goharbor.io"
+            access_key = ""
+            access_secret = ""
+
+        registry_payload = {
+            "url": registry,
+            "name": _random_name(registry_type + "_filter"),
+            "registry_type": registry_type,
+            "access_key": access_key,
+            "access_secret": access_secret,
+            "insecure": True,
+        }
+        registry_id, _ = self.registry.create_registry(
+            registry_payload["url"],
+            name=registry_payload["name"],
+            registry_type=registry_payload["registry_type"],
+            access_key=registry_payload["access_key"],
+            access_secret=registry_payload["access_secret"],
+            insecure=registry_payload["insecure"],
+            **ADMIN_CLIENT
+        )
+
+        # 1. Test pattern validation API error (400 Bad Request)
+        invalid_metadata = {
+            "public": "false",
+            "proxy_cache_filter_pattern": "nightly/(*",
+            "proxy_cache_filter_kind": "regex",
+        }
+        self.project.create_project(
+            registry_id=registry_id,
+            metadata=invalid_metadata,
+            expect_status_code=400,
+            **ADMIN_CLIENT
+        )
+
+        # 2. Create Proxy Cache Project with doublestar filter pattern
+        allowed_image = "for_proxy"
+        blocked_image = "redis"
+        doublestar_pattern = user_namespace + "/" + allowed_image
+        valid_metadata = {
+            "public": "false",
+            "proxy_cache_filter_pattern": doublestar_pattern,
+            "proxy_cache_filter_kind": "doublestar",
+        }
+        project_id, project_name = self.project.create_project(
+            registry_id=registry_id,
+            metadata=valid_metadata,
+            **ADMIN_CLIENT
+        )
+        self.project.add_project_members(
+            project_id, user_id=user_id, **ADMIN_CLIENT
+        )
+
+        # 3. Pull matching image -> Should succeed
+        pull_harbor_image(
+            harbor_server,
+            USER_CLIENT["username"],
+            USER_CLIENT["password"],
+            project_name + "/" + user_namespace + "/" + allowed_image,
+            "1.0"
+        )
+        self.artifact.waiting_for_reference_exist(
+            project_name,
+            urllib.parse.quote(user_namespace + "/" + allowed_image, 'utf-8'),
+            "1.0",
+            **USER_CLIENT
+        )
+
+        # 4. Pull non-matching image -> Should fail (404 / manifest unknown)
+        pull_harbor_image(
+            harbor_server,
+            USER_CLIENT["username"],
+            USER_CLIENT["password"],
+            project_name + "/" + user_namespace + "/" + blocked_image,
+            "latest",
+            expected_error_message="repository filter"
+        )
+
+        # 5. Update project metadata to regex filter pattern
+        regex_pattern = r"^" + user_namespace + r"/(for_proxy|redis)$"
+        updated_metadata = {
+            "proxy_cache_filter_pattern": regex_pattern,
+            "proxy_cache_filter_kind": "regex",
+        }
+        self.project.update_project(
+            project_id, metadata=updated_metadata, **ADMIN_CLIENT
+        )
+
+        # 6. Pull newly allowed image -> Should succeed now
+        pull_harbor_image(
+            harbor_server,
+            USER_CLIENT["username"],
+            USER_CLIENT["password"],
+            project_name + "/" + user_namespace + "/" + blocked_image,
+            "latest"
+        )
+        self.artifact.waiting_for_reference_exist(
+            project_name,
+            urllib.parse.quote(
+                user_namespace + "/" + blocked_image, 'utf-8'
+            ),
+            "latest",
+            **USER_CLIENT
+        )
+
+        # 7. Pull image not matching regex -> Should fail
+        pull_harbor_image(
+            harbor_server,
+            USER_CLIENT["username"],
+            USER_CLIENT["password"],
+            project_name + "/" + user_namespace + "/busybox",
+            "latest",
+            expected_error_message="repository filter"
+        )
+
     def test_proxy_cache(self):
         proxy_upstream_list = os.getenv("PROXY_UPSTREAM_LIST", "").lower()
         if not proxy_upstream_list or "harbor" in proxy_upstream_list:
             self.do_validate("harbor")
+            self.do_validate_proxy_cache_filter("harbor")
         if "docker-hub" in proxy_upstream_list:
             self.do_validate("docker-hub")
+            self.do_validate_proxy_cache_filter("docker-hub")
         if "jfrog" in proxy_upstream_list:
             self.do_validate("jfrog-artifactory")
 
+
 if __name__ == '__main__':
     suite = unittest.TestSuite(unittest.makeSuite(TestProxyCache))
-    result = unittest.TextTestRunner(sys.stdout, verbosity=2, failfast=True).run(suite)
+    result = unittest.TextTestRunner(
+        sys.stdout, verbosity=2, failfast=True
+    ).run(suite)
     if not result.wasSuccessful():
         raise Exception("Proxy cache test failed: {}".format(result))
-

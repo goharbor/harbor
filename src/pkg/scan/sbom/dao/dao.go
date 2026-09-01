@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -115,12 +114,13 @@ func (d *dao) Update(ctx context.Context, r *model.Report, cols ...string) error
 }
 
 func (d *dao) DeleteByExtraAttr(ctx context.Context, mimeType, attrName, attrValue string) error {
+	if attrName != "sbom_digest" {
+		return errors.Errorf("unsupported attribute: %s", attrName)
+	}
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-	delReportSQL := "delete from sbom_report where mime_type = ? and report::jsonb @> ?"
-	dgstJSONStr := fmt.Sprintf(`{"%s":"%s"}`, attrName, attrValue)
-	_, err = o.Raw(delReportSQL, mimeType, dgstJSONStr).Exec()
+	_, err = o.Raw("delete from sbom_report where mime_type = ? and report::jsonb ->> 'sbom_digest' = ?", mimeType, attrValue).Exec()
 	return err
 }
