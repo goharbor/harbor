@@ -31,6 +31,9 @@ const (
 	// TriggerKindSchedule Schedule
 	TriggerKindSchedule = "Schedule"
 
+	// TriggerKindManual Manual
+	TriggerKindManual = "Manual"
+
 	// TriggerSettingsCron cron
 	TriggerSettingsCron = "cron"
 
