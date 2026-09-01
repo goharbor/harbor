@@ -127,7 +127,7 @@ func New(typ string, data AccessoryData) (Accessory, error) {
 
 	factory, ok := factories[typ]
 	if !ok {
-		return nil, fmt.Errorf("accessory type %s not support", typ)
+		return nil, fmt.Errorf("unsupported accessory type %q", typ)
 	}
 
 	data.Type = typ
@@ -142,7 +142,7 @@ func ToAccessory(acc []byte) (Accessory, error) {
 	}
 	factory, ok := factories[data.Type]
 	if !ok {
-		return nil, errors.Errorf("accessory type %s not support", data.Type)
+		return nil, errors.Errorf("unsupported accessory type %q", data.Type)
 	}
 	return factory(data), nil
 }
