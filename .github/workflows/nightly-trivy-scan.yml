@@ -17,14 +17,14 @@ jobs:
         images: [harbor-core, harbor-db, harbor-exporter, harbor-jobservice, harbor-log, harbor-portal, harbor-registryctl, prepare, registry-photon, nginx-photon, valkey-photon, trivy-adapter-photon]
     permissions:
       security-events: write  # for github/codeql-action/upload-sarif to upload SARIF results
+      contents: read
 
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run Trivy vulnerability scanner
-        # tag 0.35.0, get the commit hash from https://github.com/aquasecurity/trivy-action.git
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: 'docker.io/goharbor/${{ matrix.images }}:${{ matrix.tags }}'
           severity: 'CRITICAL,HIGH'
@@ -37,6 +37,6 @@ jobs:
           # Ref: https://github.com/aquasecurity/trivy-action/issues/389
           TRIVY_DB_REPOSITORY: 'public.ecr.aws/aquasecurity/trivy-db:2'
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
         with:
           sarif_file: 'trivy-results.sarif'

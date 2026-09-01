@@ -19,6 +19,8 @@ class Artifact(base.Base, object):
         params = {}
         if "with_accessory" in kwargs:
             params["with_accessory"] = kwargs["with_accessory"]
+        if "with_inherited_accessory" in kwargs:
+            params["with_inherited_accessory"] = kwargs["with_inherited_accessory"]
         return self._get_client(**kwargs).list_artifacts(project_name, repo_name, **params)
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
@@ -34,6 +36,8 @@ class Artifact(base.Base, object):
             params["with_immutable_status"] = kwargs["with_immutable_status"]
         if "with_accessory" in kwargs:
             params["with_accessory"] = kwargs["with_accessory"]
+        if "with_inherited_accessory" in kwargs:
+            params["with_inherited_accessory"] = kwargs["with_inherited_accessory"]
 
         try:
             data, status_code, _ = self._get_client(**kwargs).get_artifact_with_http_info(project_name, repo_name, reference, **params)
