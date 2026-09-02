@@ -355,7 +355,7 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecution() {
 	url := "/export/cve/execution/100"
 	endTime := time.Now()
 	startTime := endTime.Add(-10 * time.Minute)
-	defaultStatusMessage := "Please contact the system administrator to check the logs of jobservice."
+	defaultStatusMessage := defaultScanDataExportErrorStatusText
 	customizeStatusMessage := "No vulnerabilities found or matched"
 
 	execution := &export.Execution{
@@ -587,7 +587,7 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionList() {
 	url.RawQuery = params.Encode()
 	endTime := time.Now()
 	startTime := endTime.Add(-10 * time.Minute)
-	defaultStatusMessage := "Please contact the system administrator to check the logs of jobservice."
+	defaultStatusMessage := defaultScanDataExportErrorStatusText
 	customizeStatusMessage := "No vulnerabilities found or matched"
 
 	execution := &export.Execution{
