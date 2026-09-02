@@ -145,17 +145,32 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return errors.New("no orm found in the context")
 		}
 
-		if err := tx.Begin(); err != nil {
+		if err := tx.Begin(ctx); err != nil {
 			tracelib.RecordError(span, err, "begin transaction failed")
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
+
+		// closed guards the deferred rollback below: it is set right before the
+		// explicit Rollback/Commit calls on every normal return path, so the
+		// deferred call is a no-op then. If f panics, neither of those lines run,
+		// closed stays false, and the deferred call rolls back the transaction
+		// instead of leaking it while the panic unwinds the stack.
+		closed := false
+		defer func() {
+			if !closed {
+				if e := tx.Rollback(); e != nil {
+					log.Errorf("rollback transaction failed: %v", e)
+				}
+			}
+		}()
 
 		// When set multiple times, context.WithValue returns only the last ormer.
 		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
 		cx = NewContext(cx, tx.TxOrmer)
 		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
+			closed = true
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
 				log.Errorf("rollback transaction failed: %v", e)
@@ -165,6 +180,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return err
 		}
 		span.AddEvent("commit transaction")
+		closed = true
 		if err := tx.Commit(); err != nil {
 			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
