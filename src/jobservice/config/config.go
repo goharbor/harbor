@@ -330,11 +330,11 @@ func (c *Configuration) validate() error {
 	}
 
 	if c.PoolConfig == nil {
-		return errors.New("no worker worker is configured")
+		return errors.New("no worker is configured")
 	}
 
 	if c.PoolConfig.Backend != JobServicePoolBackendRedis {
-		return fmt.Errorf("worker worker backend %s does not support", c.PoolConfig.Backend)
+		return fmt.Errorf("worker backend %s is not supported", c.PoolConfig.Backend)
 	}
 
 	// When backend is redis
