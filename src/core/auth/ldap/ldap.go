@@ -127,7 +127,7 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		l.attachGroupParallel(ctx, ldapUsers, u)
 		return
 	}
-	// Attach LDAP group sequencially
+	// Attach LDAP group sequentially
 	for _, dn := range ldapUsers[0].GroupDNList {
 		if lgroup, exist := verifyGroupInLDAP(dn, sess); exist {
 			userGroups = append(userGroups, ugModel.UserGroup{GroupName: lgroup.Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
@@ -292,7 +292,7 @@ func (l *Auth) SearchGroup(ctx context.Context, groupKey string) (*ugModel.UserG
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessagef("failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, errors.NotFoundError(nil).WithMessagef("failed to search ldap group with groupDN:%v", groupKey)
 	}
 	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,

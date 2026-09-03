@@ -146,7 +146,7 @@ type repositoryFilter struct {
 
 func (rep repositoryFilter) filter(ctx context.Context, ctl project.Controller,
 	a *token.ResourceActions) error {
-	// clear action list to assign to new acess element after perm check.
+	// clear action list to assign to new access element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
 		return err
