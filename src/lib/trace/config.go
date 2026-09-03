@@ -53,8 +53,12 @@ type JaegerConfig struct {
 }
 
 func (c *JaegerConfig) String() string {
+	password := c.Password
+	if len(password) > 0 {
+		password = "******"
+	}
 	return fmt.Sprintf("endpoint: %s, username: %s, password: %s, agent_host: %s, agent_port: %s",
-		c.Endpoint, c.Username, c.Password, c.AgentHost, c.AgentPort)
+		c.Endpoint, c.Username, password, c.AgentHost, c.AgentPort)
 }
 
 // Config is the configuration for trace

@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/uaa"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -69,7 +70,7 @@ func (u *Auth) OnBoardUser(ctx context.Context, user *models.User) error {
 		return fmt.Errorf("the Username is empty")
 	}
 	if len(user.Password) == 0 {
-		user.Password = "1234567ab"
+		user.Password = utils.GenerateRandomString()
 	}
 	fillEmailRealName(user)
 	user.Comment = "From UAA"
