@@ -68,3 +68,28 @@ func TestCleanExpired(t *testing.T) {
 		t.Fatal("cleanExpired retained an expired cache entry")
 	}
 }
+
+func TestStartCacheCleaner(t *testing.T) {
+	CacheInit(&Opt{CacheDuration: 60})
+	CachePut("fresh", "v")
+
+	c.Lock()
+	c.store["stale"] = cachedValue{
+		Value:      "v",
+		Expiration: time.Now().Unix() - 1,
+	}
+	c.Unlock()
+
+	StartCacheCleaner()
+
+	if _, ok := CacheGet("fresh"); !ok {
+		t.Fatal("StartCacheCleaner removed a fresh entry")
+	}
+
+	c.RLock()
+	_, ok := c.store["stale"]
+	c.RUnlock()
+	if ok {
+		t.Fatal("StartCacheCleaner retained an expired entry")
+	}
+}
