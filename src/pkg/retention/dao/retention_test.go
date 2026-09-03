@@ -3,13 +3,13 @@ package dao
 import (
 	"encoding/json"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
@@ -99,5 +99,5 @@ func TestPolicy(t *testing.T) {
 
 	p1, err = GetPolicy(ctx, id)
 	assert.NotNil(t, err)
-	assert.True(t, strings.Contains(err.Error(), "no row found"))
+	assert.True(t, errors.IsNotFoundErr(err))
 }
