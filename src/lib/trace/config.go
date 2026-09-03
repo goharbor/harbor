@@ -38,7 +38,7 @@ type OtelConfig struct {
 	Timeout     int    `mapstructure:"otel_trace_timeout"`
 }
 
-func (c *OtelConfig) String() string {
+func (c OtelConfig) String() string {
 	return fmt.Sprintf("endpoint: %s, url_path: %s, compression: %t, insecure: %t, timeout: %d",
 		c.Endpoint, c.URLPath, c.Compression, c.Insecure, c.Timeout)
 }
@@ -52,7 +52,7 @@ type JaegerConfig struct {
 	AgentPort string `mapstructure:"jaeger_agent_port"`
 }
 
-func (c *JaegerConfig) String() string {
+func (c JaegerConfig) String() string {
 	password := c.Password
 	if len(password) > 0 {
 		password = "******"
@@ -72,7 +72,7 @@ type Config struct {
 	Attributes  map[string]string
 }
 
-func (c *Config) String() string {
+func (c Config) String() string {
 	return fmt.Sprintf("{Enabled: %v, ServiceName: %v,  SampleRate: %v, Namespace: %v, ServiceName: %v, Jaeger: %v, Otel: %v}", c.Enabled, c.ServiceName, c.SampleRate, c.Namespace, c.ServiceName, c.Jaeger, c.Otel)
 }
 

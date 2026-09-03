@@ -70,7 +70,11 @@ func (u *Auth) OnBoardUser(ctx context.Context, user *models.User) error {
 		return fmt.Errorf("the Username is empty")
 	}
 	if len(user.Password) == 0 {
-		user.Password = utils.GenerateRandomString()
+		pwd, err := utils.GenerateRandomStringOrError()
+		if err != nil {
+			return fmt.Errorf("failed to generate random password: %w", err)
+		}
+		user.Password = pwd
 	}
 	fillEmailRealName(user)
 	user.Comment = "From UAA"

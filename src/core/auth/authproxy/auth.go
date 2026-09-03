@@ -210,7 +210,11 @@ func (a *Auth) fillInModel(u *models.User) error {
 		return fmt.Errorf("username cannot be empty")
 	}
 	u.Realname = u.Username
-	u.Password = utils.GenerateRandomString()
+	pwd, err := utils.GenerateRandomStringOrError()
+	if err != nil {
+		return fmt.Errorf("failed to generate random password: %w", err)
+	}
+	u.Password = pwd
 	u.Comment = userEntryComment
 	if strings.Contains(u.Username, "@") {
 		u.Email = u.Username
