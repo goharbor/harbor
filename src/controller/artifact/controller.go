@@ -588,6 +588,14 @@ ensureArt:
 	for _, tag := range srcArt.Tags {
 		tags = append(tags, tag.Name)
 	}
+	// when the root copy reference is a tag name, only include that
+	// specific tag so the push event fires with the correct tag instead
+	// of the most recently pushed one on the same digest
+	if isRoot && !isAcc {
+		if _, err := digest.Parse(reference); err != nil {
+			tags = []string{reference}
+		}
+	}
 	// ensure the parent artifact exist in the database
 	artopt := &ArtOption{
 		Tags: tags,
