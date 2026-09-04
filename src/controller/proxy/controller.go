@@ -295,6 +295,14 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 		log.Errorf("failed to pull blob, error %v", err)
 		return 0, nil, err
 	}
+	// Resume the fetch from the last read byte offset if the upstream
+	// connection breaks mid-stream, instead of failing the pull outright.
+	// Bound retries to the request context so a disconnected pulling client
+	// stops this from waiting out backoffs and opening further upstream
+	// requests.
+	bReader = newResumingBlobReader(ctx, bReader, size, func(offset int64) (io.ReadCloser, error) {
+		return rHelper.BlobReaderAt(remoteRepo, art.Digest, size, offset)
+	})
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
 	go func() {
 		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
@@ -312,6 +320,17 @@ func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc di
 		log.Errorf("failed to create blob reader, error %v", err)
 		return err
 	}
+	// Resume on a dropped upstream connection, same as the client-facing
+	// fetch above, and verify the assembled content against the expected
+	// digest so a corrupted/truncated blob that still parses as a valid HTTP
+	// response is never pushed to local storage as if it were complete. This
+	// runs in a background goroutine detached from the pulling client's
+	// request, so it uses its own context rather than inheriting one that
+	// would be canceled the moment that client disconnects.
+	bReader = newResumingBlobReader(context.Background(), bReader, desc.Size, func(offset int64) (io.ReadCloser, error) {
+		return r.BlobReaderAt(remoteRepo, string(desc.Digest), desc.Size, offset)
+	})
+	bReader = newVerifyingReadCloser(bReader, desc.Digest, desc.Size)
 	defer bReader.Close()
 	err = c.local.PushBlob(localRepo, desc, bReader)
 	return err
