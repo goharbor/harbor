@@ -2,6 +2,11 @@
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+#
+# A dependency is assigned to the first group it matches, so the groups that
+# hold packages which have to move together are listed before "patch-updates".
+# A group only applies to the update kind named by "applies-to", which defaults
+# to version-updates, so every such group has a security-updates twin.
 
 version: 2
 updates:
@@ -32,6 +37,25 @@ updates:
     labels:
       - "release-note/bump-version"
     groups:
+      # The k8s.io and sigs.k8s.io modules are released as one set and only
+      # compile against each other at the same minor version.
+      kubernetes:
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      kubernetes-security:
+        applies-to: security-updates
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      # The OpenTelemetry modules are released as one set.
+      opentelemetry:
+        patterns:
+          - "go.opentelemetry.io/*"
+      opentelemetry-security:
+        applies-to: security-updates
+        patterns:
+          - "go.opentelemetry.io/*"
       patch-updates:
         patterns:
           - "*"
@@ -47,6 +71,22 @@ updates:
     labels:
       - "release-note/bump-version"
     groups:
+      kubernetes:
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      kubernetes-security:
+        applies-to: security-updates
+        patterns:
+          - "k8s.io/*"
+          - "sigs.k8s.io/*"
+      opentelemetry:
+        patterns:
+          - "go.opentelemetry.io/*"
+      opentelemetry-security:
+        applies-to: security-updates
+        patterns:
+          - "go.opentelemetry.io/*"
       patch-updates:
         patterns:
           - "*"
@@ -61,6 +101,24 @@ updates:
     labels:
       - "release-note/bump-version"
     groups:
+      # The Angular packages pin each other with exact peer dependencies, and
+      # @angular-devkit/build-angular and @angular/core pin typescript and
+      # zone.js as well, so a single-package bump always fails "npm ci".
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@angular-eslint/*"
+          - "typescript"
+          - "zone.js"
+      angular-security:
+        applies-to: security-updates
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@angular-eslint/*"
+          - "typescript"
+          - "zone.js"
       patch-updates:
         patterns:
           - "*"
@@ -73,6 +131,50 @@ updates:
       interval: "weekly"
     target-branch: "release-2.15.0"
     open-pull-requests-limit: 10
+    labels:
+      - "release-note/bump-version"
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@angular-eslint/*"
+          - "typescript"
+          - "zone.js"
+      angular-security:
+        applies-to: security-updates
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@angular-eslint/*"
+          - "typescript"
+          - "zone.js"
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/src/portal/app-swagger-ui"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "release-note/bump-version"
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/src/portal/app-swagger-ui"
+    schedule:
+      interval: "weekly"
+    target-branch: "release-2.15.0"
+    open-pull-requests-limit: 5
     labels:
       - "release-note/bump-version"
     groups:
