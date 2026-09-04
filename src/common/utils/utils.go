@@ -62,7 +62,7 @@ func EqualURL(rawURL1, rawURL2 string) bool {
 	u1, err1 := url.Parse(rawURL1)
 	u2, err2 := url.Parse(rawURL2)
 	if err1 != nil || err2 != nil {
-		return strings.EqualFold(rawURL1, rawURL2)
+		return false
 	}
 	u1.Host = strings.ToLower(u1.Host)
 	u2.Host = strings.ToLower(u2.Host)

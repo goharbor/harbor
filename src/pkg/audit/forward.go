@@ -38,16 +38,23 @@ type LoggerManager struct {
 // Init redirect the audit log to the forward endpoint
 func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 	var w io.Writer
-	w, err := syslog.Dial("tcp", logEndpoint,
-		syslog.LOG_INFO, "audit")
-	a.endpoint = logEndpoint
-	a.initialized = true
-	if err != nil {
-		if len(logEndpoint) > 0 {
-			log.Errorf("failed to create audit log, error %v", err)
-		}
+	if len(logEndpoint) == 0 {
 		w = os.Stdout
-		a.initialized = false
+		a.endpoint = ""
+		a.initialized = true
+	} else {
+		var err error
+		w, err = syslog.Dial("tcp", logEndpoint,
+			syslog.LOG_INFO, "audit")
+		if err != nil {
+			log.Errorf("failed to create audit log, error %v", err)
+			w = os.Stdout
+			a.endpoint = ""
+			a.initialized = false
+		} else {
+			a.endpoint = logEndpoint
+			a.initialized = true
+		}
 	}
 	a.remoteLogger = log.New(w, log.NewTextFormatter(), log.InfoLevel, 3)
 	a.remoteLogger.SetFallback(log.DefaultLogger())
@@ -56,7 +63,7 @@ func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 // DefaultLogger ...
 func (a *LoggerManager) DefaultLogger(ctx context.Context) *log.Logger {
 	endpoint := config.AuditLogForwardEndpoint(ctx)
-	if !strings.EqualFold(a.endpoint, endpoint) {
+	if !a.initialized || !strings.EqualFold(a.endpoint, endpoint) {
 		a.Init(ctx, endpoint)
 	}
 	return a.remoteLogger

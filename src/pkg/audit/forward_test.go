@@ -26,11 +26,39 @@ import (
 func TestLoggerManager_DefaultLogger(t *testing.T) {
 	config.Init()
 	mgr := &LoggerManager{
-		endpoint: "syslog.example.com:514",
+		endpoint:    "syslog.example.com:514",
+		initialized: true,
 	}
 
-	// Should not reinitialize if endpoint differs only in case
+	// Should not reinitialize if endpoint differs only in case and already initialized
 	ctx := context.Background()
 	_ = mgr.DefaultLogger(ctx)
 	assert.True(t, mgr.initialized || mgr.remoteLogger != nil)
+}
+
+func TestLoggerManager_FailedDialAllowsRetry(t *testing.T) {
+	mgr := &LoggerManager{}
+	ctx := context.Background()
+
+	// Initial dial failure with unreachable endpoint should not commit endpoint
+	mgr.Init(ctx, "127.0.0.1:65534")
+	assert.False(t, mgr.initialized)
+	assert.Empty(t, mgr.endpoint)
+	assert.NotNil(t, mgr.remoteLogger)
+
+	// If a failed endpoint is still set in config or passed, Init will fail and remain uninitialized
+	mgr.Init(ctx, "127.0.0.1:65534")
+	assert.False(t, mgr.initialized)
+	assert.Empty(t, mgr.endpoint)
+}
+
+func TestLoggerManager_EmptyEndpoint(t *testing.T) {
+	mgr := &LoggerManager{}
+	ctx := context.Background()
+
+	// Empty endpoint initializes with stdout without dial
+	mgr.Init(ctx, "")
+	assert.True(t, mgr.initialized)
+	assert.Empty(t, mgr.endpoint)
+	assert.NotNil(t, mgr.remoteLogger)
 }
