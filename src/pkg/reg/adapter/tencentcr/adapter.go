@@ -106,9 +106,14 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	var registryURL *url.URL
 	registryURL, _ = url.Parse(registry.URL)
 
-	// only validate registryURL.Host in non-UT scenario
+	var host string
+	if registryURL != nil {
+		host = strings.ToLower(registryURL.Hostname())
+	}
+
+	// only validate registryURL in non-UT scenario
 	if os.Getenv("UTTEST") != "true" {
-		if !strings.Contains(registryURL.Host, ".tencentcloudcr.com") {
+		if !strings.HasSuffix(host, ".tencentcloudcr.com") {
 			log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
 			return nil, errInvalidTcrEndpoint
 		}
@@ -136,7 +141,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	req.Filters = []*tcr.Filter{
 		{
 			Name:   common.StringPtr("RegistryName"),
-			Values: []*string{common.StringPtr(strings.ReplaceAll(registryURL.Host, ".tencentcloudcr.com", ""))},
+			Values: []*string{common.StringPtr(strings.TrimSuffix(host, ".tencentcloudcr.com"))},
 		},
 	}
 	var resp *tcr.DescribeInstancesResponse
