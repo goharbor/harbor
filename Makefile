@@ -332,9 +332,28 @@ SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --buil
 # $3 the name of the application
 define swagger_generate_server
 	@echo "generate all the files for API from $(1)"
-	@rm -rf $(2)/{models,restapi}
+	@# Drop the previously generated files but keep the committed
+	@# zz_generated_placeholder.go of each package (see .gitignore).
+	@find $(2)/models $(2)/restapi -type f ! -name 'zz_generated_placeholder.go' -delete
 	@mkdir -p $(2)
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
+	@missing=; orphaned=; \
+	for d in $$(find $(2)/models $(2)/restapi -type d); do \
+		if [ ! -f "$$d/zz_generated_placeholder.go" ]; then \
+			missing="$$missing $$d"; \
+		elif [ -z "$$(find $$d -maxdepth 1 -name '*.go' ! -name 'zz_generated_placeholder.go')" ]; then \
+			orphaned="$$orphaned $$d"; \
+		fi; \
+	done; \
+	if [ -n "$$missing" ]; then \
+		echo "error: generated package without a committed placeholder:$$missing"; \
+		echo "copy a zz_generated_placeholder.go into it, fix the package clause and commit it"; \
+	fi; \
+	if [ -n "$$orphaned" ]; then \
+		echo "error: placeholder for a package go-swagger no longer generates:$$orphaned"; \
+		echo "remove the orphaned placeholder"; \
+	fi; \
+	if [ -n "$$missing$$orphaned" ]; then exit 1; fi
 endef
 
 gen_apis:
@@ -490,7 +509,20 @@ package_offline: check_buildinstaller update_prepare_version compile build
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-go_check: gen_apis mocks_check misspell commentfmt lint
+go_check: tidy_check gen_apis mocks_check misspell commentfmt lint
+
+# Dependabot runs "go mod tidy" on a plain checkout, so it must be a no-op there.
+# This runs before gen_apis, on a tree that still has no generated code, so that a
+# change to the import set of the generated code cannot silently stale the blank
+# imports in src/server/v2.0/restapi/zz_generated_placeholder.go.
+tidy_check:
+	@echo checking go mod tidy on a checkout without generated code...
+	@cd ./src/; if ! go mod tidy -diff; then \
+		echo "go mod tidy is not a no-op here, so Dependabot cannot update any Go module."; \
+		echo "if the go-swagger import set changed, update the blank imports in"; \
+		echo "src/server/v2.0/restapi/zz_generated_placeholder.go to match."; \
+		exit 1; \
+	fi
 
 commentfmt:
 	@echo checking comment format...
