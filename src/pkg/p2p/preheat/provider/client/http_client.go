@@ -88,7 +88,7 @@ func (hc *HTTPClient) Get(url string, cred *auth.Credential, parmas map[string]s
 	if err != nil {
 		log.Errorf("%s: %s", logMsg, err)
 	} else {
-		log.Debugf("%s succeed: %s", logMsg, string(bytes))
+		log.Debugf("%s succeed: %d bytes", logMsg, len(bytes))
 	}
 
 	return bytes, err
@@ -149,11 +149,11 @@ func (hc *HTTPClient) get(url string, cred *auth.Credential, parmas map[string]s
 // Post content to the service specified by the url
 func (hc *HTTPClient) Post(url string, cred *auth.Credential, body any, options map[string]string) ([]byte, error) {
 	bytes, err := hc.post(url, cred, body, options)
-	logMsg := fmt.Sprintf("Post %s with cred=%v, options=%v", url, cred, options)
+	logMsg := fmt.Sprintf("Post %s", url)
 	if err != nil {
 		log.Errorf("%s: %s", logMsg, err)
 	} else {
-		log.Debugf("%s succeed: %s", logMsg, string(bytes))
+		log.Debugf("%s succeed: %d bytes", logMsg, len(bytes))
 	}
 
 	return bytes, err
@@ -173,7 +173,7 @@ func (hc *HTTPClient) post(url string, cred *auth.Credential, body any, options 
 		}
 
 		bodyContent = strings.NewReader(string(content))
-		log.Debugf("POST body: %s", string(content))
+		log.Debugf("POST body length: %d", len(content))
 	}
 	req, err := http.NewRequest(http.MethodPost, url, bodyContent)
 	if err != nil {
