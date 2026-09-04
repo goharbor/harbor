@@ -1085,6 +1085,7 @@ export enum PageSizeMapKeys {
     DISTRIBUTION_INSTANCE_COMPONENT = 'DistributionInstancesComponent',
     PROJECT_QUOTA_COMPONENT = 'ProjectQuotasComponent',
     SYSTEM_SCANNER_COMPONENT = 'ConfigurationScannerComponent',
+    SYSTEM_OPTIMIZER_COMPONENT = 'ConfigurationOptimizerComponent',
     GC_HISTORY_COMPONENT = 'GcHistoryComponent',
     SYSTEM_GROUP_COMPONENT = 'SystemGroupComponent',
     WORKER_LIST_COMPONENT_POOL = 'WorkerListComponentPool',
