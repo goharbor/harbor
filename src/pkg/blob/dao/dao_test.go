@@ -94,6 +94,45 @@ func (suite *DaoTestSuite) TestDeleteArtifactAndBlobByArtifact() {
 	suite.Len(digests, 0)
 }
 
+func (suite *DaoTestSuite) TestDeleteArtifactAndBlobByArtifactShared() {
+	ctx := suite.Context()
+
+	sharedDigest := suite.DigestString()
+	blobDigest := suite.DigestString()
+
+	suite.WithProject(func(projectID1 int64, _ string) {
+		suite.WithProject(func(projectID2 int64, _ string) {
+			sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
+			suite.ExecSQL(sql, sharedDigest, projectID1, 10)
+			suite.ExecSQL(sql, sharedDigest, projectID2, 10)
+			defer suite.ExecSQL(`DELETE FROM artifact WHERE digest = ?`, sharedDigest)
+
+			_, err := suite.dao.CreateArtifactAndBlob(ctx, sharedDigest, blobDigest)
+			suite.Nil(err)
+
+			// Should not be deleted while a live artifact with same digest exists in another project
+			suite.Nil(suite.dao.DeleteArtifactAndBlobByArtifact(ctx, sharedDigest))
+			digests, err := suite.dao.GetAssociatedBlobDigestsForArtifact(ctx, sharedDigest)
+			suite.Nil(err)
+			suite.Len(digests, 1)
+
+			// After removing one project's artifact, still should not delete
+			suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ? AND digest = ?`, projectID1, sharedDigest)
+			suite.Nil(suite.dao.DeleteArtifactAndBlobByArtifact(ctx, sharedDigest))
+			digests, err = suite.dao.GetAssociatedBlobDigestsForArtifact(ctx, sharedDigest)
+			suite.Nil(err)
+			suite.Len(digests, 1)
+
+			// After removing all artifacts, should be deleted
+			suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ? AND digest = ?`, projectID2, sharedDigest)
+			suite.Nil(suite.dao.DeleteArtifactAndBlobByArtifact(ctx, sharedDigest))
+			digests, err = suite.dao.GetAssociatedBlobDigestsForArtifact(ctx, sharedDigest)
+			suite.Nil(err)
+			suite.Len(digests, 0)
+		})
+	})
+}
+
 func (suite *DaoTestSuite) TestGetAssociatedBlobDigestsForArtifact() {
 
 }
