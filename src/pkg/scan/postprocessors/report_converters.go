@@ -58,6 +58,12 @@ func NewNativeToRelationalSchemaConverter() NativeScanReportConverter {
 func (c *nativeToRelationalSchemaConverter) ToRelationalSchema(ctx context.Context, reportUUID string, registrationUUID string, digest string, reportData string) (string, string, error) {
 	if len(reportData) == 0 {
 		log.G(ctx).Infof("There is no vulnerability report to toSchema for report UUID : %s", reportUUID)
+		// The scan_report row is now reused across re-scans (#23310), so an empty result must still
+		// clear any vulnerability associations left by a previous scan; reconcile to the empty set.
+		// (The structured "clean image" case is already handled by toSchema -> SyncForReport below.)
+		if err := c.dao.SyncForReport(ctx, reportUUID); err != nil {
+			return "", "", errors.Wrap(err, "Error when clearing vulnerability records for empty report")
+		}
 		return reportUUID, "", nil
 	}
 	// parse the raw report with the V1 schema of the report to the normalized structures
@@ -180,7 +186,11 @@ func (c *nativeToRelationalSchemaConverter) toSchema(ctx context.Context, report
 		recordIDs = append(recordIDs, recordID)
 	}
 
-	if err := c.dao.InsertForReport(ctx, reportUUID, recordIDs...); err != nil {
+	// Reconcile the report's vulnerability associations with a set-diff instead of a bulk insert so a
+	// re-scan of an unchanged artifact (the common ScanAll case) writes nothing. Combined with the
+	// stable report UUID kept by MakePlaceHolder, this stops report_vulnerability_record from growing
+	// on every scan. See #23310.
+	if err := c.dao.SyncForReport(ctx, reportUUID, recordIDs...); err != nil {
 		fields := log.Fields{
 			"error":  err,
 			"report": reportUUID,
