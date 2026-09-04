@@ -15,9 +15,13 @@ services:
       - type: bind
         source: ./common/config/log/logrotate.conf
         target: /etc/logrotate.d/logrotate.conf
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/log/rsyslog_docker.conf
         target: /etc/rsyslog.d/rsyslog_docker.conf
+        bind:
+          selinux: z
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -40,24 +44,36 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/registry/root.crt
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
         target: /etc/registry/gcs.key
+        bind:
+          selinux: z
 {% endif %}
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.core_crt_path}}
         target: /harbor_cust_cert/core.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.registry_crt_path}}
         target: /etc/harbor/tls/registry.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.registry_key_path}}
         target: /etc/harbor/tls/registry.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       - harbor
@@ -86,21 +102,31 @@ services:
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
         target: /etc/registry/gcs.key
+        bind:
+          selinux: z
 {% endif %}
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.registryctl_crt_path}}
         target: /etc/harbor/ssl/registryctl.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.registryctl_key_path}}
         target: /etc/harbor/ssl/registryctl.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       - harbor
@@ -156,27 +182,41 @@ services:
       - type: bind
         source: ./common/config/core/app.conf
         target: /etc/core/app.conf
+        bind:
+          selinux: z
       - type: bind
         source: {{data_volume}}/secret/core/private_key.pem
         target: /etc/core/private_key.pem
+        bind:
+          selinux: z
       - type: bind
         source: {{data_volume}}/secret/keys/secretkey
         target: /etc/core/key
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {% if uaa_ca_file %}
       - type: bind
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
+        bind:
+          selinux: z
 {% endif %}
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.core_crt_path}}
         target: /etc/harbor/ssl/core.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.core_key_path}}
         target: /etc/harbor/ssl/core.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       harbor:
@@ -209,13 +249,19 @@ services:
       - type: bind
         source: ./common/config/portal/nginx.conf
         target: /etc/nginx/nginx.conf
+        bind:
+          selinux: z
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.portal_crt_path}}
         target: /etc/harbor/tls/portal.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.portal_key_path}}
         target: /etc/harbor/tls/portal.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       - harbor
@@ -244,16 +290,24 @@ services:
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.job_service_crt_path}}
         target: /etc/harbor/ssl/job_service.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.job_service_key_path}}
         target: /etc/harbor/ssl/job_service.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       - harbor
@@ -306,13 +360,19 @@ services:
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.proxy_crt_path}}
         target: /etc/harbor/tls/proxy.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.proxy_key_path}}
         target: /etc/harbor/tls/proxy.key
+        bind:
+          selinux: z
 {% endif %}
     networks:
       - harbor
@@ -352,19 +412,29 @@ services:
       - type: bind
         source: {{data_volume}}/trivy-adapter/trivy
         target: /home/scanner/.cache/trivy
+        bind:
+          selinux: z
       - type: bind
         source: {{data_volume}}/trivy-adapter/reports
         target: /home/scanner/.cache/reports
+        bind:
+          selinux: z
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
 {% if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.trivy_adapter_crt_path}}
         target: /etc/harbor/ssl/trivy_adapter.crt
+        bind:
+          selinux: z
       - type: bind
         source: {{internal_tls.trivy_adapter_key_path}}
         target: /etc/harbor/ssl/trivy_adapter.key
+        bind:
+          selinux: z
 {% endif %}
     logging:
       driver: "syslog"
@@ -392,6 +462,8 @@ services:
       - type: bind
         source: ./common/config/shared/trust-certificates
         target: /harbor_cust_cert
+        bind:
+          selinux: z
     logging:
       driver: "syslog"
       options:
