@@ -40,6 +40,20 @@ linters:
           - revive
         text: "var-naming: avoid package names that conflict with Go standard library package names"
         path: "(common/http/|lib/errors/|lib/http/)"
+      # The packages under server/v2.0/restapi/operations are named after the
+      # swagger tags in api/v2.0/swagger.yaml, some of which contain underscores.
+      # The generated files are skipped as generated code, the committed
+      # zz_generated_placeholder.go files are not.
+      - linters:
+          - revive
+        text: "var-naming: don't use an underscore in package name"
+        path: "server/v2\\.0/restapi/operations/.*/zz_generated_placeholder\\.go$"
+      # Same placeholders: "scanner" and "user" are swagger tag names that
+      # happen to match standard library package names.
+      - linters:
+          - revive
+        text: "var-naming: avoid package names that conflict with Go standard library package names"
+        path: "server/v2\\.0/restapi/operations/.*/zz_generated_placeholder\\.go$"
     paths:
       - third_party$
       - builtin$
