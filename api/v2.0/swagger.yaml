@@ -5679,6 +5679,243 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  '/optimizers':
+    get:
+      summary: List optimizer registrations
+      description: |
+        Returns a list of currently configured optimizer registrations.
+      tags:
+        - optimizer
+      operationId: listOptimizers
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: A list of optimizer registrations.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OptimizerRegistration'
+          headers:
+            X-Total-Count:
+              description: The total count of available items
+              type: integer
+            Link:
+              description: Link to previous page and next page
+              type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a optimizer registration
+      description: |
+        Creats a new optimizer registration with the given data.
+      tags:
+        - optimizer
+      operationId: createOptimizer
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration
+          in: body
+          description: A optimizer registration to be created.
+          required: true
+          schema:
+            $ref: '#/definitions/OptimizerRegistrationReq'
+      responses:
+        '201':
+          description: Created successfully
+          headers:
+            Location:
+              type: string
+              description: The URL of the created resource
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/optimizers/ping':
+    post:
+      summary: Tests optimizer registration settings
+      description: |
+        Pings optimizer adapter to test endpoint URL and authorization settings.
+      tags:
+        - optimizer
+      operationId: pingOptimizer
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: settings
+          in: body
+          description: A optimizer registration settings to be tested.
+          required: true
+          schema:
+            $ref: '#/definitions/OptimizerRegistrationSettings'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/optimizers/{registration_id}':
+    get:
+      summary: Get a optimizer registration details
+      description: |
+        Retruns the details of the specified optimizer registration.
+      tags:
+        - optimizer
+      operationId: getOptimizer
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The optimizer registration identifer.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The details of the optimizer registration.
+          schema:
+            $ref: '#/definitions/OptimizerRegistration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a optimizer registration
+      description: |
+        Updates the specified optimizer registration.
+
+        If `access_credential` is omitted or empty in the request body and the registration still uses
+        an authentication type that requires a credential (Basic, Bearer, or APIKey), the existing stored
+        credential is left unchanged. Send a non-empty `access_credential` to set or rotate the secret.
+      tags:
+        - optimizer
+      operationId: updateOptimizer
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The optimizer registration identifier.
+          required: true
+          type: string
+        - name: registration
+          in: body
+          required: true
+          description: A optimizer registration to be updated.
+          schema:
+            $ref: '#/definitions/OptimizerRegistrationReq'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a optimizer registration
+      description: |
+        Deletes the specified optimizer registration.
+      tags:
+        - optimizer
+      operationId: deleteOptimizer
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The optimizer registration identifier.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Deleted successfully and return the deleted registration
+          schema:
+            $ref: '#/definitions/OptimizerRegistration'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    patch:
+      summary: Set system default optimizer registration
+      description: |
+        Set the specified optimizer registration as the system default one.
+      tags:
+        - optimizer
+      operationId: setOptimizerAsDefault
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          description: The optimizer registration identifier.
+          required: true
+          type: string
+        - name: payload
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/IsDefault'
+      responses:
+        '200':
+          description: Successfully set the specified optimizer registration as system default
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/optimizers/{registration_id}/metadata':
+    get:
+      summary: Get the metadata of the specified optimizer registration
+      description: |
+        Get the metadata of the specified optimizer registration, including the capabilities and customized properties.
+      tags:
+        - optimizer
+      operationId: getOptimizerMetadata
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: registration_id
+          in: path
+          required: true
+          description: The optimizer registration identifier.
+          type: string
+      responses:
+        '200':
+          description: The metadata of the specified optimizer adapter
+          schema:
+            $ref: '#/definitions/OptimizerAdapterMetadata'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /users:
     get:
       summary: List users
@@ -8917,6 +9154,222 @@ definitions:
           type: string
         example:
           'harbor.scanner-adapter/registry-authorization-type': 'Bearer'
+
+  Optimizer:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the optimizer
+        example: "Trivy"
+      vendor:
+        type: string
+        description: Name of the optimizer provider
+        example: "Aqua Security"
+      version:
+        type: string
+        description: Version of the optimizer adapter
+        example: "v0.9.1"
+  OptimizerRegistration:
+    type: object
+    description: |
+      Registration represents a named configuration for invoking a optimizer via its adapter.
+    properties:
+      uuid:
+        type: string
+        description: The unique identifier of this registration.
+      name:
+        type: string
+        example: Trivy
+        description: The name of this registration.
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+        x-omitempty: false
+      url:
+        type: string
+        format: uri
+        description: A base URL of the optimizer adapter
+        example: http://harbor-optimizer-trivy:8080
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+        x-omitempty: false
+      is_default:
+        type: boolean
+        default: false
+        description: Indicate if the registration is set as the system default one
+        x-omitempty: false
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+        x-omitempty: false
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Optimizer Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+        x-omitempty: false
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+        x-omitempty: false
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the optimizer to pull content or not
+        x-omitempty: false
+      create_time:
+        type: string
+        format: date-time
+        description: The creation time of this registration
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of this registration
+      adapter:
+        type: string
+        description: Optional property to describe the name of the optimizer registration
+        example: "Trivy"
+      vendor:
+        type: string
+        description: Optional property to describe the vendor of the optimizer registration
+        example: "CentOS"
+      version:
+        type: string
+        description: Optional property to describe the version of the optimizer registration
+        example: "1.0.1"
+      health:
+        type: string
+        default: ""
+        description: Indicate the healthy of the registration
+        example: "healthy"
+      capabilities:
+        type: object
+        description: Indicates the capabilities of the optimizer, e.g. support_vulnerability or support_sbom.
+        additionalProperties: True
+        example:  {"support_vulnerability": true, "support_sbom": true}
+
+  OptimizerRegistrationReq:
+    type: object
+    required:
+      - name
+      - url
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Trivy
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+      url:
+        type: string
+        format: uri
+        description: A base URL of the optimizer adapter.
+        example: http://harbor-optimizer-trivy:8080
+      auth:
+        type: string
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Optimizer Adapter API.
+
+          When updating a registration (PUT `/optimizers/{registration_id}`), if this field is omitted or empty
+          and `auth` is still one of Basic, Bearer, or APIKey, the previously stored credential is kept
+          unchanged. Provide a non-empty value to set or rotate the credential. Clearing `auth` removes the
+          need for a credential; in that case an empty `access_credential` does not restore the old secret.
+        example: "Bearer: JWTTOKENGOESHERE"
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the optimizer to pull content or not
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+
+  OptimizerRegistrationSettings:
+    type: object
+    required:
+      - name
+      - url
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Trivy
+      url:
+        type: string
+        format: uri
+        description: A base URL of the optimizer adapter.
+        example: http://harbor-optimizer-trivy:8080
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Optimizer Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+
+  OptimizerCapability:
+    type: object
+    properties:
+      type:
+        type: string
+        description: |
+          Specify the type of optimizer capability, like vulnerability or sbom
+        x-omitempty: false
+        example: "sbom"
+      consumes_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.docker.distribution.manifest.v2+json"
+      produces_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.optimizer.adapter.vuln.report.harbor+json; version=1.0"
+
+  OptimizerAdapterMetadata:
+    type: object
+    description: The metadata info of the optimizer adapter
+    properties:
+      optimizer:
+        $ref: '#/definitions/Optimizer'
+      capabilities:
+        type: array
+        items:
+          $ref: '#/definitions/OptimizerCapability'
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+        example:
+          'harbor.optimizer-adapter/registry-authorization-type': 'Bearer'
 
   ImmutableRule:
     type: object

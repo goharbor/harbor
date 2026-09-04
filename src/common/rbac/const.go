@@ -55,6 +55,7 @@ const (
 	ResourceScan               = Resource("scan")
 	ResourceSBOM               = Resource("sbom")
 	ResourceScanner            = Resource("scanner")
+	ResourceOptimizer          = Resource("optimizer")
 	ResourceArtifact           = Resource("artifact")
 	ResourceTag                = Resource("tag")
 	ResourceAccessory          = Resource("accessory")
@@ -219,6 +220,12 @@ var (
 			{Resource: ResourceScanner, Action: ActionDelete},
 			{Resource: ResourceScanner, Action: ActionList},
 			{Resource: ResourceScanner, Action: ActionUpdate},
+
+			{Resource: ResourceOptimizer, Action: ActionRead},
+			{Resource: ResourceOptimizer, Action: ActionCreate},
+			{Resource: ResourceOptimizer, Action: ActionDelete},
+			{Resource: ResourceOptimizer, Action: ActionList},
+			{Resource: ResourceOptimizer, Action: ActionUpdate},
 
 			{Resource: ResourceLabel, Action: ActionRead},
 			{Resource: ResourceLabel, Action: ActionCreate},

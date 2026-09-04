@@ -36,6 +36,7 @@ func New() http.Handler {
 		RepositoryAPI:         newRepositoryAPI(),
 		AuditlogAPI:           newAuditLogAPI(),
 		ScannerAPI:            newScannerAPI(),
+		OptimizerAPI:          newOptimizerAPI(),
 		ScanAPI:               newScanAPI(),
 		ScanAllAPI:            newScanAllAPI(),
 		SearchAPI:             newSearchAPI(),
