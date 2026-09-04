@@ -24,6 +24,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job/impl/audittagresolution"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gdpr"
 
 	"github.com/gomodule/redigo/redis"
@@ -335,6 +336,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SystemArtifactCleanupVendorType:  (*systemartifact.Cleanup)(nil),
 			job.ExecSweepVendorType:              (*task.SweepJob)(nil),
 			job.AuditLogsGDPRCompliantVendorType: (*gdpr.AuditLogsDataMasking)(nil),
+			job.AuditTagResolutionVendorType:     (*audittagresolution.Job)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
