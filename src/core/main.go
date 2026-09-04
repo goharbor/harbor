@@ -65,6 +65,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/nydus"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/sbom"
 	_ "github.com/goharbor/harbor/src/pkg/accessory/model/subject"
+	_ "github.com/goharbor/harbor/src/pkg/accessory/model/vex"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/config"
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/login"

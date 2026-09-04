@@ -1,0 +1,19 @@
+@if (loading) {
+<div class="clr-row mt-1 center">
+    <span class="spinner spinner-md"></span>
+</div>
+} @else if (content) {
+<div class="row flex-items-xs-right margin-bottom-05">
+    <button type="button" class="btn btn-secondary" (click)="download()">
+        <clr-icon shape="download" size="16"></clr-icon>
+        <span>Download</span>
+    </button>
+</div>
+<pre class="vex-content">{{ content }}</pre>
+} @else if (!error) {
+<div class="row content-wrapper">
+    <div class="col-md-8 md-container pl-1">
+        {{ 'ARTIFACT.NO_VEX' | translate }}
+    </div>
+</div>
+}

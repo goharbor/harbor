@@ -334,3 +334,9 @@ func (suite *MiddlewareTestSuite) TestIsNydusImage() {
 func TestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &MiddlewareTestSuite{})
 }
+
+func TestGetAccessoryTypeOpenVEX(t *testing.T) {
+	if actual := getAccessoryType(&ocispec.Manifest{ArtifactType: mediaTypeOpenVEX}); actual != accessorymodel.TypeOpenVEX {
+		t.Fatalf("expected %q, got %q", accessorymodel.TypeOpenVEX, actual)
+	}
+}
