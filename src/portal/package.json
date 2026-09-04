@@ -38,7 +38,7 @@
     "@angular/platform-browser": "21.2.20",
     "@angular/platform-browser-dynamic": "21.2.20",
     "@angular/router": "21.2.20",
-    "@clr/addons": "18.0.0",
+    "@clr/addons": "18.3.0",
     "@clr/angular": "18.0.0",
     "@clr/icons": "13.0.2",
     "@clr/ui": "18.0.0",
