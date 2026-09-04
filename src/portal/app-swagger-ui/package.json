@@ -16,7 +16,7 @@
     "copy-webpack-plugin": "^14.0.0",
     "html-webpack-plugin": "^5.6.0",
     "webpack": "^5.107.2",
-    "webpack-cli": "^4.10.0",
+    "webpack-cli": "^7.2.3",
     "webpack-dev-server": "^6.0.0"
   },
   "overrides": {
