@@ -46,15 +46,16 @@ func (u *User) ToUserProfile() *svrmodels.UserProfile {
 // ToUserResp ...
 func (u *User) ToUserResp() *svrmodels.UserResp {
 	res := &svrmodels.UserResp{
-		Email:           u.Email,
-		Realname:        u.Realname,
-		Comment:         u.Comment,
-		UserID:          int64(u.UserID),
-		Username:        u.Username,
-		SysadminFlag:    u.SysAdminFlag,
-		AdminRoleInAuth: u.AdminRoleInAuth,
-		CreationTime:    strfmt.DateTime(u.CreationTime),
-		UpdateTime:      strfmt.DateTime(u.UpdateTime),
+		Email:              u.Email,
+		Realname:           u.Realname,
+		Comment:            u.Comment,
+		UserID:             int64(u.UserID),
+		Username:           u.Username,
+		SysadminFlag:       u.SysAdminFlag,
+		SysadminFlagSource: u.SysAdminFlagSource,
+		AdminRoleInAuth:    u.AdminRoleInAuth,
+		CreationTime:       strfmt.DateTime(u.CreationTime),
+		UpdateTime:         strfmt.DateTime(u.UpdateTime),
 	}
 	if u.OIDCUserMeta != nil {
 		res.OIDCUserMeta = &svrmodels.OIDCUserInfo{
