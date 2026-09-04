@@ -286,3 +286,52 @@ func TestValidate(t *testing.T) {
 	err = policy.Validate()
 	assert.Nil(err)
 }
+
+func TestAdapterOption(t *testing.T) {
+	assert := assert.New(t)
+
+	// nil map: key not set
+	p := &Policy{}
+	v, ok := p.AdapterOption("skip_repo_creation")
+	assert.False(ok)
+	assert.Equal("", v)
+
+	// key present
+	p = &Policy{
+		AdapterOptions: map[string]string{
+			"skip_repo_creation": "true",
+		},
+	}
+	v, ok = p.AdapterOption("skip_repo_creation")
+	assert.True(ok)
+	assert.Equal("true", v)
+
+	// key absent from a non-nil map
+	v, ok = p.AdapterOption("some_other_key")
+	assert.False(ok)
+	assert.Equal("", v)
+}
+
+func TestPolicyAdapterOptionsRoundTrip(t *testing.T) {
+	assert := assert.New(t)
+
+	p := &Policy{
+		ID:          123,
+		Name:        "test-policy",
+		CopyByChunk: true,
+		AdapterOptions: map[string]string{
+			"skip_repo_creation": "true",
+		},
+	}
+
+	pkgModel, err := p.To()
+	assert.Nil(err)
+	assert.NotNil(pkgModel)
+	assert.NotEmpty(pkgModel.AdapterOptions)
+
+	p2 := &Policy{}
+	err = p2.From(pkgModel)
+	assert.Nil(err)
+	assert.Equal("true", p2.AdapterOptions["skip_repo_creation"])
+}
+

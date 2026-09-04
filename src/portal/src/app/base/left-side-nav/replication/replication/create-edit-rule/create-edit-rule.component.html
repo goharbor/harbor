@@ -792,6 +792,38 @@
                                 </clr-tooltip>
                             </label>
                         </div>
+                        <div
+                            class="clr-checkbox-wrapper"
+                            [hidden]="!showCreateRepoOption">
+                            <input
+                                type="checkbox"
+                                id="create-repo-if-not-exist"
+                                formControlName="create_repo_if_not_exist"
+                                class="clr-checkbox" />
+                            <label
+                                for="create-repo-if-not-exist"
+                                class="clr-control-label"
+                                >{{
+                                    'REPLICATION.CREATE_REPO_IF_NOT_EXIST'
+                                        | translate
+                                }}
+                                <clr-tooltip class="override-tooltip">
+                                    <clr-icon
+                                        clrTooltipTrigger
+                                        shape="info-circle"
+                                        size="24"></clr-icon>
+                                    <clr-tooltip-content
+                                        clrPosition="top-left"
+                                        clrSize="md"
+                                        *clrIfOpen>
+                                        <span>{{
+                                            'REPLICATION.CREATE_REPO_IF_NOT_EXIST_TIP'
+                                                | translate
+                                        }}</span>
+                                    </clr-tooltip-content>
+                                </clr-tooltip>
+                            </label>
+                        </div>
                     </div>
                     <div class="clr-control-inline" [hidden]="policyId < 0">
                         <div class="clr-checkbox-wrapper">
