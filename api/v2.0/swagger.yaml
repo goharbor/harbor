@@ -1370,6 +1370,110 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/dockerfile/optimize/availability:
+    get:
+      summary: Check whether Dockerfile optimization is available for an artifact
+      description: >-
+        Reports whether a usable optimizer adapter is currently configured for the system —
+        the same checks (configured, enabled, reachable, capable of this artifact's mime type)
+        that a POST to the optimize endpoint would perform, without starting an optimization.
+        Intended for the portal to decide whether to offer the Optimize action.
+      tags:
+        - dockerfile
+      operationId: getDockerfileOptimizeAvailability
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '200':
+          description: Availability check result
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/OptimizerAvailability'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/dockerfile/optimize:
+    get:
+      summary: Get cached Dockerfile optimization for an artifact
+      description: Returns the persisted optimization result if it has been previously computed, otherwise 404.
+      tags:
+        - dockerfile
+      operationId: getDockerfileOptimization
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '200':
+          description: Cached optimization found
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/DockerfileOptimization'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Optimize the Dockerfile for an artifact
+      description: Starts an asynchronous optimization through the registered optimizer adapter, which extracts the original Dockerfile embedded in the BuildKit provenance attestation (or, if the artifact carries no such attestation, reconstructs a best-effort Dockerfile from the image's config history) and produces an LLM-optimized version. Poll the GET endpoint until the returned status is terminal (Success or Error).
+      tags:
+        - dockerfile
+      operationId: optimizeDockerfile
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          description: The optimization was accepted and runs asynchronously; poll the GET endpoint for the result
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/DockerfileOptimization'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          description: Precondition Failed — no optimizer adapter is configured or the adapter is unreachable
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
     post:
       summary: Create tag
@@ -6946,6 +7050,61 @@ definitions:
         items:
           $ref: '#/definitions/Error'
           x-nullable: false
+  DockerfileOptimization:
+    description: >-
+      The original and LLM-optimized Dockerfiles for an artifact. `dockerfile` is either
+      extracted verbatim from a BuildKit provenance attestation, or, when no such
+      attestation exists (see `generated`), reconstructed from the image's config history.
+    type: object
+    properties:
+      dockerfile:
+        type: string
+        description: The original Dockerfile, extracted from BuildKit provenance or reconstructed from image history (see `generated`)
+      optimized_dockerfile:
+        type: string
+        description: The LLM-optimized version of the Dockerfile
+      attestation_manifest_digest:
+        type: string
+        description: The digest of the attestation manifest that contained the Dockerfile
+      statement_digest:
+        type: string
+        description: The digest of the in-toto statement blob that contained the Dockerfile source
+      generated:
+        type: boolean
+        description: >-
+          True when dockerfile was reconstructed from the image's config history because
+          no BuildKit provenance attestation was found on the artifact, rather than
+          extracted verbatim from one. Generated Dockerfiles are a best-effort
+          approximation and should be reviewed.
+      created_at:
+        type: string
+        format: date-time
+        description: Timestamp when the optimization was first computed and persisted
+      status:
+        type: string
+        description: The status of the optimization
+        enum:
+          - Pending
+          - Running
+          - Success
+          - Error
+      error:
+        type: string
+        description: The error message when the optimization failed
+      update_time:
+        type: string
+        format: date-time
+        description: Timestamp of the last status change of the optimization
+  OptimizerAvailability:
+    description: Whether Dockerfile optimization can currently be started for an artifact.
+    type: object
+    properties:
+      available:
+        type: boolean
+        description: True if a configured, enabled, reachable optimizer adapter supports this artifact's mime type
+      reason:
+        type: string
+        description: Human-readable explanation for why optimization is unavailable; empty when available is true
   Error:
     description: a model for all the error response coming from harbor
     type: object

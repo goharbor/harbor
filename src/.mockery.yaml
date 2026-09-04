@@ -367,6 +367,11 @@ packages:
     config:
       dir: testing/pkg/optimizer/rest/v1
       all: True
+  github.com/goharbor/harbor/src/pkg/dockerfileoptimization/dao:
+    interfaces:
+      DAO:
+        config:
+          dir: testing/pkg/dockerfileoptimization/dao
   github.com/goharbor/harbor/src/pkg/notification/policy:
     interfaces:
       Manager:
