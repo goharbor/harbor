@@ -67,7 +67,9 @@ func newDefaultTransport() *http.Transport {
 			KeepAlive: 30 * time.Second,
 			DualStack: true,
 		}).DialContext,
-		TLSClientConfig: &tls.Config{},
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
 		MaxIdleConns:    1000,
 		// The default value of MaxIdleConnsPerHost is 2, which is too small for
 		// high-concurrency scenarios (e.g. core/jobservice talking to the registry,
