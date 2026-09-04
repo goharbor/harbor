@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -125,6 +126,18 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 	return opName
 }
 
+// logRollbackErr logs a transaction rollback failure, except when the
+// transaction was already rolled back by database/sql itself because the
+// request context was canceled (e.g. the client disconnected) - that is
+// expected and would otherwise be noisy at Error level.
+func logRollbackErr(e error) {
+	if errors.Is(e, sql.ErrTxDone) {
+		log.Debugf("rollback transaction failed: %v", e)
+		return
+	}
+	log.Errorf("rollback transaction failed: %v", e)
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
@@ -160,7 +173,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		defer func() {
 			if !closed {
 				if e := tx.Rollback(); e != nil {
-					log.Errorf("rollback transaction failed: %v", e)
+					logRollbackErr(e)
 				}
 			}
 		}()
@@ -173,7 +186,7 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			closed = true
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
-				log.Errorf("rollback transaction failed: %v", e)
+				logRollbackErr(e)
 				return e
 			}
 
