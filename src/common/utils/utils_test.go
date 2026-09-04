@@ -64,6 +64,9 @@ func TestEqualURL(t *testing.T) {
 		{"http://example.com", "https://example.com", false},
 		{"http://example.com:8080", "http://example.com:8081", false},
 		{"http://example.com/foo", "http://example.com/bar", false},
+		{"://invalid-url-1", "http://example.com", false},
+		{"http://example.com", "://invalid-url-2", false},
+		{"http://example.com/A%", "http://example.com/a%", false},
 	}
 
 	for _, c := range cases {

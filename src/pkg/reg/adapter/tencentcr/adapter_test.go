@@ -124,6 +124,50 @@ func TestAdapter_NewAdapter_MixedCaseEndpoint(t *testing.T) {
 	assert.Nil(t, adapter)
 }
 
+func TestAdapter_NewAdapter_InvalidDomainSuffix(t *testing.T) {
+	res := os.Getenv("UTTEST")
+	os.Unsetenv("UTTEST")
+	defer os.Setenv("UTTEST", res)
+
+	// Domain suffix spoofing should fail with errInvalidTcrEndpoint
+	for _, invalidURL := range []string{
+		"https://registry.tencentcloudcr.com.attacker.example",
+		"https://attacker.example/.tencentcloudcr.com",
+		"https://not-tencentcloudcr.com",
+	} {
+		adapter, err := newAdapter(&model.Registry{
+			Type: model.RegistryTypeTencentTcr,
+			Credential: &model.Credential{
+				AccessKey:    mockAccessKey,
+				AccessSecret: mockAccessSecret,
+			},
+			URL: invalidURL,
+		})
+		assert.NotNil(t, err)
+		assert.Equal(t, errInvalidTcrEndpoint, err)
+		assert.Nil(t, adapter)
+	}
+}
+
+func TestAdapter_NewAdapter_EndpointWithPort(t *testing.T) {
+	res := os.Getenv("UTTEST")
+	os.Unsetenv("UTTEST")
+	defer os.Setenv("UTTEST", res)
+
+	// Endpoint with port should pass endpoint validation
+	adapter, err := newAdapter(&model.Registry{
+		Type: model.RegistryTypeTencentTcr,
+		Credential: &model.Credential{
+			AccessKey:    mockAccessKey,
+			AccessSecret: mockAccessSecret,
+		},
+		URL: "https://my-registry.tencentcloudcr.com:443",
+	})
+	assert.NotNil(t, err)
+	assert.NotEqual(t, errInvalidTcrEndpoint, err)
+	assert.Nil(t, adapter)
+}
+
 func TestAdapter_NewAdapter_InvalidAKSK(t *testing.T) {
 	// Error AK/SK
 	adapter, err := newAdapter(&model.Registry{
