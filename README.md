@@ -39,7 +39,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
-* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart, and a Harbor Operator was added recently as well.
+* **Easy deployment**: Harbor can be deployed via Docker Compose or Podman Compose, as well as with the Helm chart or Harbor Operator.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 ## Install & Run
 **System requirements:**
 
-**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+.
+**On a Linux host:** Docker 20.10.10-ce+ with Docker Compose 1.18.0+, or Podman with Podman Compose.
 
 Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
