@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -67,6 +68,20 @@ func TestWithTransaction_PanicRollsBackInsteadOfLeaking(t *testing.T) {
 	})
 
 	assert.Equal(t, 1, tx.rollbacks, "a panic inside the wrapped function must still roll back the transaction")
+	assert.Equal(t, 0, tx.commits)
+}
+
+func TestWithTransaction_ErrorRollsBackOnce(t *testing.T) {
+	tx := &fakeTxOrmer{}
+	ctx := NewContext(context.Background(), &fakeOrmer{tx: tx})
+
+	wrapped := WithTransaction(func(context.Context) error {
+		return errors.New("boom")
+	})
+
+	require.Error(t, wrapped(ctx))
+
+	assert.Equal(t, 1, tx.rollbacks, "the error path must roll back exactly once, not again via the deferred rollback")
 	assert.Equal(t, 0, tx.commits)
 }
 
