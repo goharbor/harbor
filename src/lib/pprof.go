@@ -15,6 +15,7 @@
 package lib
 
 import (
+	"errors"
 	"net/http"
 	// import pprof
 	_ "net/http/pprof" // nolint:gosec // pprof is only registered when PPROF_ENABLED=true.
@@ -38,7 +39,7 @@ func StartPprof() {
 			addr = ":6060"
 		}
 		log.Infof("Starting pprof at %s/debug/pprof/", addr)
-		if err := http.ListenAndServe(addr, http.DefaultServeMux); err != nil {
+		if err := http.ListenAndServe(addr, http.DefaultServeMux); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Errorf("pprof exited: %v", err)
 		}
 	}()
