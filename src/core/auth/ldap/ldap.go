@@ -230,7 +230,11 @@ func (l *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
 			u.Email = u.Username
 		}
 	}
-	u.Password = "12345678AbC" // Password is not kept in local db
+	pwd, err := utils.GenerateRandomStringOrError()
+	if err != nil {
+		return fmt.Errorf("failed to generate random password: %w", err)
+	}
+	u.Password = pwd // Password is not kept in local db
 	u.Comment = "from LDAP."   // Source is from LDAP
 
 	return l.userMgr.Onboard(ctx, u)

@@ -66,19 +66,33 @@ func ParseRepository(repository string) (project, rest string) {
 	return
 }
 
-// GenerateRandomStringWithLen generates a random string with length
-func GenerateRandomStringWithLen(length int) string {
+// GenerateRandomStringWithLenAndError generates a random string with length or returns an error if entropy cannot be read
+func GenerateRandomStringWithLenAndError(length int) (string, error) {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	l := len(chars)
 	result := make([]byte, length)
 	_, err := rand.Read(result)
 	if err != nil {
-		log.Warningf("Error reading random bytes: %v", err)
+		return "", fmt.Errorf("failed to read random bytes: %w", err)
 	}
 	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
-	return string(result)
+	return string(result), nil
+}
+
+// GenerateRandomStringOrError generates a random string with 32 byte length or returns an error if entropy cannot be read
+func GenerateRandomStringOrError() (string, error) {
+	return GenerateRandomStringWithLenAndError(32)
+}
+
+// GenerateRandomStringWithLen generates a random string with length
+func GenerateRandomStringWithLen(length int) string {
+	str, err := GenerateRandomStringWithLenAndError(length)
+	if err != nil {
+		log.Warningf("Error reading random bytes: %v", err)
+	}
+	return str
 }
 
 // GenerateRandomString generate a random string with 32 byte length
