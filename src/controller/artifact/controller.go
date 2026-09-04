@@ -197,8 +197,8 @@ func (c *controller) Ensure(ctx context.Context, repository, digest string, opti
 		Artifact: artifact,
 	}
 
-	if option != nil && len(option.Tags) > 0 {
-		e.Tag = option.Tags[0]
+	if option != nil {
+		e.Tags = option.Tags
 	}
 	notification.AddEvent(ctx, e)
 	return created, artifact.ID, nil
@@ -587,6 +587,12 @@ ensureArt:
 	var tags []string
 	for _, tag := range srcArt.Tags {
 		tags = append(tags, tag.Name)
+	}
+	for i, tag := range tags {
+		if tag == reference {
+			tags[0], tags[i] = tags[i], tags[0]
+			break
+		}
 	}
 	// ensure the parent artifact exist in the database
 	artopt := &ArtOption{
