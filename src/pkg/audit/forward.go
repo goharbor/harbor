@@ -19,6 +19,7 @@ import (
 	"io"
 	"log/syslog"
 	"os"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -39,6 +40,7 @@ func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 	var w io.Writer
 	w, err := syslog.Dial("tcp", logEndpoint,
 		syslog.LOG_INFO, "audit")
+	a.endpoint = logEndpoint
 	a.initialized = true
 	if err != nil {
 		if len(logEndpoint) > 0 {
@@ -54,9 +56,8 @@ func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 // DefaultLogger ...
 func (a *LoggerManager) DefaultLogger(ctx context.Context) *log.Logger {
 	endpoint := config.AuditLogForwardEndpoint(ctx)
-	if a.endpoint != endpoint {
+	if !strings.EqualFold(a.endpoint, endpoint) {
 		a.Init(ctx, endpoint)
-		a.initialized = true
 	}
 	return a.remoteLogger
 }
