@@ -191,7 +191,7 @@ func (suite *MiddlewareTestSuite) TestNonScannerPulling() {
 	rr := httptest.NewRecorder()
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusOK)
+	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 
 func (suite *MiddlewareTestSuite) TestScannerPulling() {
@@ -252,7 +252,7 @@ func (suite *MiddlewareTestSuite) TestArtifactIsNotScannableNotScanned() {
 	rr := httptest.NewRecorder()
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusOK)
+	suite.Equal(rr.Code, http.StatusPreconditionFailed)
 }
 
 func (suite *MiddlewareTestSuite) TestArtifactNotScanned() {
