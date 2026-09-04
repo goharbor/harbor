@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -125,6 +126,18 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 	return opName
 }
 
+// logRollbackErr logs a transaction rollback failure, except when the
+// transaction was already rolled back by database/sql itself because the
+// request context was canceled (e.g. the client disconnected) - that is
+// expected and would otherwise be noisy at Error level.
+func logRollbackErr(e error) {
+	if errors.Is(e, sql.ErrTxDone) {
+		log.Debugf("rollback transaction failed: %v", e)
+		return
+	}
+	log.Errorf("rollback transaction failed: %v", e)
+}
+
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
@@ -145,26 +158,42 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			return errors.New("no orm found in the context")
 		}
 
-		if err := tx.Begin(); err != nil {
+		if err := tx.Begin(ctx); err != nil {
 			tracelib.RecordError(span, err, "begin transaction failed")
 			log.Errorf("begin transaction failed: %v", err)
 			return err
 		}
+
+		// closed guards the deferred rollback below: it is set right before the
+		// explicit Rollback/Commit calls on every normal return path, so the
+		// deferred call is a no-op then. If f panics, neither of those lines run,
+		// closed stays false, and the deferred call rolls back the transaction
+		// instead of leaking it while the panic unwinds the stack.
+		closed := false
+		defer func() {
+			if !closed {
+				if e := tx.Rollback(); e != nil {
+					logRollbackErr(e)
+				}
+			}
+		}()
 
 		// When set multiple times, context.WithValue returns only the last ormer.
 		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
 		cx = NewContext(cx, tx.TxOrmer)
 		if err := f(cx); err != nil {
 			span.AddEvent("rollback transaction")
+			closed = true
 			if e := tx.Rollback(); e != nil {
 				tracelib.RecordError(span, e, "rollback transaction failed")
-				log.Errorf("rollback transaction failed: %v", e)
+				logRollbackErr(e)
 				return e
 			}
 
 			return err
 		}
 		span.AddEvent("commit transaction")
+		closed = true
 		if err := tx.Commit(); err != nil {
 			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
