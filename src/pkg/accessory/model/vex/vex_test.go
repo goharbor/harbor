@@ -11,28 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export class ArtifactBuildHistory {
-    created: Date;
-    created_by: string;
-}
-export interface ArtifactDependency {
-    name: string;
-    version: string;
-    repository: string;
-}
-export interface Addition {
-    type: string;
-    data?: object;
-}
 
-export enum ADDITIONS {
-    VULNERABILITIES = 'vulnerabilities',
-    BUILD_HISTORY = 'build_history',
-    SUMMARY = 'readme.md',
-    VALUES = 'values.yaml',
-    DEPENDENCIES = 'dependencies',
-    SBOMS = 'sboms',
-    VEX = 'vex',
-    LICENSE = 'license',
-    FILES = 'files',
+package vex
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/goharbor/harbor/src/pkg/accessory/model"
+)
+
+func TestOpenVEXAccessory(t *testing.T) {
+	accessory, err := model.New(model.TypeOpenVEX, model.AccessoryData{})
+	require.NoError(t, err)
+	require.Equal(t, model.TypeOpenVEX, accessory.GetData().Type)
+	require.Equal(t, model.RefHard, accessory.Kind())
+	require.True(t, accessory.IsHard())
 }

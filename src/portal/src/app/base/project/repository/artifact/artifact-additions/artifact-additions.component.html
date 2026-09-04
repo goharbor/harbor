@@ -118,6 +118,20 @@
                 </clr-tab-content>
             </ng-template>
         </clr-tab>
+        } @if (getVEX()) {
+        <clr-tab>
+            <button clrTabLink id="vex" (click)="actionTab('vex')">
+                VEX
+            </button>
+            <ng-template [clrIfActive]="currentTabLinkId === 'vex'">
+                <clr-tab-content id="vex-content">
+                    @if (currentTabLinkId === 'vex') {
+                    <hbr-artifact-vex
+                        [vexLink]="getVEX()"></hbr-artifact-vex>
+                    }
+                </clr-tab-content>
+            </ng-template>
+        </clr-tab>
         } @if (getDependencies()) {
         <clr-tab>
             <button
