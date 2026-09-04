@@ -315,3 +315,96 @@ func TestListProjects(t *testing.T) {
 	require.Equal(t, "p1", projects[0].Name)
 	require.Equal(t, "p2", projects[1].Name)
 }
+
+func TestIsLocalHarbor(t *testing.T) {
+	tests := []struct {
+		name     string
+		coreURL  string
+		rawURL   string
+		expected bool
+	}{
+		{
+			name:     "Identical URLs",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://core:8080",
+			expected: true,
+		},
+		{
+			name:     "Case insensitive host",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://CORE:8080",
+			expected: true,
+		},
+		{
+			name:     "Case sensitive path",
+			coreURL:  "http://core:8080/api",
+			rawURL:   "http://core:8080/API",
+			expected: false,
+		},
+		{
+			name:     "Different URLs",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://other:8080",
+			expected: false,
+		},
+		{
+			name:     "Invalid raw URL",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://\x7finvalid-url",
+			expected: false,
+		},
+		{
+			name:     "Invalid core URL",
+			coreURL:  "http://\x7finvalid-url",
+			rawURL:   "http://core:8080",
+			expected: false,
+		},
+		{
+			name:     "Empty core URL",
+			coreURL:  "",
+			rawURL:   "http://core:8080",
+			expected: false,
+		},
+		{
+			name:     "Empty raw URL",
+			coreURL:  "http://core:8080",
+			rawURL:   "",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("CORE_URL", tt.coreURL)
+			actual := isLocalHarbor(tt.rawURL)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestIsInCore(t *testing.T) {
+	tests := []struct {
+		name        string
+		extEndpoint string
+		expected    bool
+	}{
+		{
+			name:        "In Core with endpoint",
+			extEndpoint: "http://core:8080",
+			expected:    true,
+		},
+		{
+			name:        "Not in Core with empty endpoint",
+			extEndpoint: "",
+			expected:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("EXT_ENDPOINT", tt.extEndpoint)
+			actual := isInCore()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
