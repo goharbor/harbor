@@ -55,7 +55,15 @@ export class ValuesComponent implements OnInit {
                 .subscribe(
                     res => {
                         try {
-                            this.format(yaml.load(res));
+                            const values = yaml.load(res);
+                            if (
+                                typeof values !== 'object' ||
+                                values === null ||
+                                Array.isArray(values)
+                            ) {
+                                throw new Error('Invalid values YAML content');
+                            }
+                            this.format(values);
                             this.values = res;
                         } catch (e) {
                             this.errorHandler.error(e);
