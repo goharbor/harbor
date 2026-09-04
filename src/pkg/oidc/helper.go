@@ -146,7 +146,7 @@ func getOauthConf(ctx context.Context) (*oauth2.Config, error) {
 	}
 	scopes := make([]string, 0)
 	for _, sc := range setting.Scope {
-		if strings.HasPrefix(p.Endpoint().AuthURL, googleEndpoint) && sc == gooidc.ScopeOfflineAccess {
+		if strings.HasPrefix(strings.ToLower(p.Endpoint().AuthURL), googleEndpoint) && sc == gooidc.ScopeOfflineAccess {
 			log.Warningf("Dropped unsupported scope: %s ", sc)
 			continue
 		}
@@ -179,7 +179,7 @@ func AuthCodeURL(ctx context.Context, state string, pkceCode pkce.Code) (string,
 	for k, v := range setting.ExtraRedirectParms {
 		options = append(options, oauth2.SetAuthURLParam(k, v))
 	}
-	if strings.HasPrefix(conf.Endpoint.AuthURL, googleEndpoint) { // make sure the refresh token will be returned
+	if strings.HasPrefix(strings.ToLower(conf.Endpoint.AuthURL), googleEndpoint) { // make sure the refresh token will be returned
 		options = append(options, oauth2.AccessTypeOffline)
 		options = append(options, oauth2.SetAuthURLParam("prompt", "consent"))
 	}
