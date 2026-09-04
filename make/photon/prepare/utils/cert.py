@@ -4,7 +4,7 @@ from pathlib import Path
 from subprocess import DEVNULL
 import logging
 
-from g import DEFAULT_GID, DEFAULT_UID, shared_cert_dir, storage_ca_bundle_filename, internal_tls_dir, internal_ca_filename, redis_tls_ca_filename
+from g import DEFAULT_GID, DEFAULT_UID, shared_cert_dir, storage_ca_bundle_filename, internal_tls_dir, internal_ca_filename, redis_tls_ca_filename, config_dir
 from .misc import (
     mark_file,
     generate_random_string,
@@ -111,6 +111,13 @@ def prepare_registry_ca(
 
     if not check_permission(private_key_pem_path, uid=DEFAULT_UID, gid=DEFAULT_GID):
         os.chown(private_key_pem_path, DEFAULT_UID, DEFAULT_GID)
+
+    # Copy root.crt into the registry config dir so the directory bind-mount
+    # already contains it. This avoids a nested file bind-mount inside the
+    # directory mount, which fails under Docker Desktop VirtioFS on macOS.
+    registry_config_crt = config_dir / 'registry' / 'root.crt'
+    registry_config_crt.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(root_crt_path, registry_config_crt)
 
 
 def prepare_trust_ca(config_dict):
