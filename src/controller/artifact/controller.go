@@ -241,15 +241,28 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	// use orm.WithTransaction here to avoid the issue:
 	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
 	created := false
+	pendingAccessories := artifact.AccessoryCandidates
+	// A conflict raised while linking accessories is not the parent-artifact race
+	// the recovery below handles, and must not be retried as one.
+	var accessoryErr error
 	if err = orm.WithTransaction(func(ctx context.Context) error {
 		id, err := c.artMgr.Create(ctx, artifact)
 		if err != nil {
 			return err
 		}
-		created = true
 		artifact.ID = id
+		for _, candidate := range pendingAccessories {
+			if err := c.accessoryMgr.Ensure(ctx, candidate.SubArtifactDigest, candidate.SubArtifactRepo, candidate.SubArtifactID, candidate.ArtifactID, candidate.Size, candidate.Digest, candidate.Type); err != nil {
+				accessoryErr = err
+				return err
+			}
+		}
+		created = true
 		return nil
 	})(orm.SetTransactionOpNameToContext(ctx, "tx-ensure-artifact")); err != nil {
+		if accessoryErr != nil {
+			return false, nil, accessoryErr
+		}
 		// got error that isn't conflict error, return directly
 		if !errors.IsConflictErr(err) {
 			return false, nil, err
@@ -345,6 +358,24 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	accs, err := c.accessoryMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": id}))
 	if err != nil {
 		return err
+	}
+	// An in-toto attestation is listed as a child of a still-present OCI index,
+	// a link no artifact_reference row records anymore. Deleting it alone would
+	// leave the index pointing at a missing manifest after GC, so it goes away
+	// with its subject or the index, never on its own.
+	for _, acc := range accs {
+		if acc.GetData().Type != accessorymodel.TypeInTotoAttestation {
+			continue
+		}
+		if _, err := c.artMgr.Get(ctx, acc.GetData().SubArtifactID); err != nil {
+			// an orphaned accessory row must not make its artifact undeletable
+			if errors.IsErr(err, errors.NotFoundCode) {
+				continue
+			}
+			return err
+		}
+		return errors.New(nil).WithCode(errors.ViolateForeignKeyConstraintCode).
+			WithMessage("the artifact is an in-toto attestation referenced by an OCI index, delete its subject image or the index instead")
 	}
 	return orm.WithTransaction(func(ctx context.Context) error {
 		return c.deleteDeeply(ctx, id, true, len(accs) > 0)
