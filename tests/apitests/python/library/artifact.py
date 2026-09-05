@@ -162,7 +162,7 @@ class Artifact(base.Base, object):
                 else:
                     raise Exception("Artifact SBOM should not be generated {}.".format(artifact.sbom_overview))
 
-            scan_status = artifact.sbom_overview.scan_status
+            scan_status = artifact.sbom_overview.scan_status if artifact.sbom_overview else ""
             if scan_status == expected_scan_status:
                 return
         raise Exception("Generate image SBOM result is {}, not as expected {}.".format(scan_status, expected_scan_status))
