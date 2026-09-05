@@ -3,6 +3,7 @@ package gc
 import (
 	"testing"
 
+	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -47,6 +48,49 @@ func (g *gcCtrTestSuite) TestStart() {
 	id, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
 	g.Nil(err)
 	g.Equal(int64(1), id)
+}
+
+// TestStartUsesCurrentRedisURL verifies that Start reads the redis URL from
+// the current environment instead of the (possibly stale) persisted value in
+// policy.ExtraAttrs, which is what a scheduled GC trigger passes in after
+// unmarshaling the policy that was saved when the schedule was created.
+func (g *gcCtrTestSuite) TestStartUsesCurrentRedisURL() {
+	g.T().Setenv("_REDIS_URL_REG", "current-redis-url")
+
+	var gotParams map[string]any
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, testifymock.MatchedBy(func(m map[string]any) bool {
+		gotParams = m
+		return true
+	})).Return(int64(1), nil)
+	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	p := Policy{
+		ExtraAttrs: map[string]any{"redis_url_reg": "stale-persisted-url"},
+	}
+	_, err := g.ctl.Start(nil, p, task.ExecutionTriggerSchedule)
+	g.Nil(err)
+	g.Equal("current-redis-url", gotParams["redis_url_reg"])
+}
+
+// TestStartFallsBackToPersistedRedisURL verifies that Start falls back to the
+// persisted value in policy.ExtraAttrs when _REDIS_URL_REG isn't set in the
+// current environment, instead of persisting an empty redis URL.
+func (g *gcCtrTestSuite) TestStartFallsBackToPersistedRedisURL() {
+	g.T().Setenv("_REDIS_URL_REG", "")
+
+	var gotParams map[string]any
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, testifymock.MatchedBy(func(m map[string]any) bool {
+		gotParams = m
+		return true
+	})).Return(int64(1), nil)
+	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	p := Policy{
+		ExtraAttrs: map[string]any{"redis_url_reg": "stale-persisted-url"},
+	}
+	_, err := g.ctl.Start(nil, p, task.ExecutionTriggerSchedule)
+	g.Nil(err)
+	g.Equal("stale-persisted-url", gotParams["redis_url_reg"])
 }
 
 func (g *gcCtrTestSuite) TestStop() {
