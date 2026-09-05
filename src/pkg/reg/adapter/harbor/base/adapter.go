@@ -17,6 +17,7 @@ package base
 import (
 	"fmt"
 	"net/http"
+	neturl "net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -317,8 +318,23 @@ type Project struct {
 	RegistryID int64          `json:"registry_id"`
 }
 
-func isLocalHarbor(url string) bool {
-	return url == os.Getenv("CORE_URL")
+func isLocalHarbor(rawURL string) bool {
+	coreURL := os.Getenv("CORE_URL")
+	if rawURL == coreURL {
+		return true
+	}
+	u, err := neturl.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	c, err := neturl.Parse(coreURL)
+	if err != nil {
+		return false
+	}
+	// the host portion of a URL (DNS name) is case-insensitive, unlike the path
+	u.Host = strings.ToLower(u.Host)
+	c.Host = strings.ToLower(c.Host)
+	return u.String() == c.String()
 }
 
 // check whether the current process is running inside core
