@@ -185,7 +185,7 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 		wantSQLStr string
 		wantParams []any
 	}{
-		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{1.0, 2.0}})}, " and cvss_score_v3 between ? and ?", []any{1.0, 2.0}},
+		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{Min: 1.0, Max: 2.0}})}, " and cvss_score_v3 between ? and ?", []any{1.0, 2.0}},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
