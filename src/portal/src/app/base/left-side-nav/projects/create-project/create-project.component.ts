@@ -59,6 +59,7 @@ import { RegistryService } from '../../../../../../ng-swagger-gen/services/regis
 import { ProjectService } from '../../../../../../ng-swagger-gen/services/project.service';
 
 const PAGE_SIZE: number = 100;
+const DEFAULT_RETENTION_DAYS = 7;
 @Component({
     selector: 'create-project',
     templateUrl: 'create-project.component.html',
@@ -101,6 +102,8 @@ export class CreateProjectComponent
     nameTooltipText = 'PROJECT.NAME_TOOLTIP';
     checkOnGoing = false;
     enableProxyCache: boolean = false;
+    retentionDays: number = DEFAULT_RETENTION_DAYS;
+    readonly maxRetentionDays = 18250; // 50 years
     endpoint: string = '';
     @Output() create = new EventEmitter<boolean>();
     @Input() quotaObj: QuotaHardInterface;
@@ -379,6 +382,13 @@ export class CreateProjectComponent
     }
 
     onSubmit() {
+        if (this.enableProxyCache && !this.isRetentionDaysValid) {
+            this.inlineAlert.showInlineError(
+                'PROJECT.PROXY_CACHE_RETENTION_DAYS_INVALID'
+            );
+            return;
+        }
+
         // **Invoke bandwidth validation before submission**
         this.validateBandwidth();
         if (this.bandwidthError) {
@@ -442,6 +452,9 @@ export class CreateProjectComponent
                     metadata,
                     storage_limit: +storageByte,
                     registry_id: registryId,
+                    ...(this.enableProxyCache
+                        ? { retention_days: this.retentionDays }
+                        : {}),
                 },
             })
             .subscribe(
@@ -470,6 +483,7 @@ export class CreateProjectComponent
         this.hasChanged = false;
         this.createProjectOpened = true;
         this.enableProxyCache = false;
+        this.retentionDays = DEFAULT_RETENTION_DAYS;
         this.endpoint = '';
         if (
             this.currentForm &&
@@ -501,7 +515,16 @@ export class CreateProjectComponent
             !this.checkOnGoing &&
             !this.bandwidthError &&
             !this.maxUpstreamConnError &&
-            !this.repositoryFilterError
+            !this.repositoryFilterError &&
+            (!this.enableProxyCache || this.isRetentionDaysValid)
+        );
+    }
+
+    get isRetentionDaysValid(): boolean {
+        return (
+            Number.isInteger(this.retentionDays) &&
+            this.retentionDays >= 0 &&
+            this.retentionDays <= this.maxRetentionDays
         );
     }
 

@@ -5116,6 +5116,8 @@ paths:
         Create Retention Policy, you can reference metadatas API for the policy model.
         You can check project metadatas to find whether a retention policy is already binded.
         This method should only be called when no retention policy binded to project yet.
+        System administrators may create an unattached project policy with scope.level set to project and scope.ref set to 0.
+        The policy is not scheduled until its ID is supplied as metadata.retention_id when creating a proxy cache project.
       tags:
         - Retention
       parameters:
@@ -7450,6 +7452,17 @@ definitions:
         format: int64
         description: The ID of referenced registry when creating the proxy cache project
         x-nullable: true
+      retention_days:
+        type: integer
+        format: int64
+        minimum: 0
+        maximum: 18250
+        description: >-
+          The number of days since the last pull for the retention policy created with a proxy cache project.
+          Omitted or null uses seven days. Zero is a valid retention threshold and does not disable retention.
+          Only supported when creating a proxy cache project; rejected for ordinary projects and project updates.
+          Cannot be combined with a non-empty metadata.retention_id.
+        x-nullable: true
   Project:
     type: object
     properties:
@@ -7551,7 +7564,7 @@ definitions:
         x-nullable: true
       retention_id:
         type: string
-        description: 'The ID of the tag retention policy for the project'
+        description: 'The ID of the tag retention policy for the project. When creating a proxy cache project, system administrators may supply an unattached policy created through POST /retentions. If omitted, a policy is created using retention_days, which defaults to seven days. Cannot be combined with a non-null retention_days value. On project update, omit this field or supply the ID already associated with the project; use the retention API to change the policy.'
         x-nullable: true
       proxy_speed_kb:
         type: string
@@ -8579,6 +8592,7 @@ definitions:
         type: string
       ref:
         type: integer
+        description: 'The project ID. System administrators may use 0 on creation to create an unattached policy for subsequent proxy cache project creation.'
 
   RetentionRule:
     type: object
