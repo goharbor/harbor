@@ -184,7 +184,7 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 			return r.SendError(ctx, errors.BadRequestError(err))
 		}
 	default:
-		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("scope %s is not support", p.Scope.Level)))
+		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("scope %s is not supported", p.Scope.Level)))
 	}
 
 	old, err := r.proMetaMgr.Get(ctx, p.Scope.Reference, "retention_id")

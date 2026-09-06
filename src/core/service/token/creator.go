@@ -202,7 +202,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 
 	ctx, ok := security.FromContext(r.Context())
 	if !ok {
-		return nil, fmt.Errorf("failed to  get security context from request")
+		return nil, fmt.Errorf("failed to get security context from request")
 	}
 
 	// for docker login
