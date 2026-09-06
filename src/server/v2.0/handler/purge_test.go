@@ -15,14 +15,21 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/purge"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	"github.com/goharbor/harbor/src/testing/mock"
 )
 
 func Test_verifyUpdateRequest(t *testing.T) {
@@ -70,6 +77,20 @@ func Test_verifyCreateRequest(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetPurgeHistoryMalformedQuery(t *testing.T) {
+	secCtx := &securitytesting.Context{}
+	secCtx.On("IsAuthenticated").Return(true)
+	secCtx.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+	ctx := security.NewContext(context.Background(), secCtx)
+
+	malformedQuery := "abc"
+	res := (&purgeAPI{}).GetPurgeHistory(ctx, purge.GetPurgeHistoryParams{Q: &malformedQuery})
+
+	rec := httptest.NewRecorder()
+	res.WriteResponse(rec, runtime.JSONProducer())
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
 func Test_checkRetentionHour(t *testing.T) {
