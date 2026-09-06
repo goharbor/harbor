@@ -134,7 +134,7 @@ func (j *Job) Validate(params job.Parameters) error {
 	}
 
 	if authType != authorizationBearer && authType != authorizationBasic {
-		return errors.Wrapf(err, "job validate: not support auth type %s", authType)
+		return errors.Errorf("job validate: not support auth type %s", authType)
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		authorization, err = makeBasicAuthorization(robotAccount)
 	}
 	if err != nil {
-		_ = logAndWrapError(myLogger, err, "scan job: make authorization")
+		return logAndWrapError(myLogger, err, "scan job: make authorization")
 	}
 
 	if shouldStop() {
