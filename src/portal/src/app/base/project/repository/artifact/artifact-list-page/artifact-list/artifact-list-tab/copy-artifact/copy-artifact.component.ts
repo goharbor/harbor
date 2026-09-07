@@ -25,6 +25,7 @@ import { TranslateService } from '@ngx-translate/core';
     selector: 'app-copy-artifact',
     templateUrl: './copy-artifact.component.html',
     styleUrls: ['./copy-artifact.component.scss'],
+    standalone: false,
 })
 export class CopyArtifactComponent implements OnInit {
     retagDialogOpened: boolean = false;

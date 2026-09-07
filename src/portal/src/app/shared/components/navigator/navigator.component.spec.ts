@@ -101,5 +101,6 @@ describe('NavigatorComponent', () => {
     selector: 'test-component-wrapper',
     template:
         '<clr-main-container><navigator></navigator></clr-main-container>',
+    standalone: false,
 })
 class TestComponentWrapperComponent {}

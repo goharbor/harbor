@@ -2,9 +2,12 @@
     <h4 class="mt-1">{{ 'WEBHOOK.WEBHOOKS' | translate }}</h4>
     <clr-datagrid
         (clrDgRefresh)="getWebhooks($event)"
+        clrDgSelectionType="single"
         [clrDgLoading]="loadingWebhookList"
-        [(clrDgSingleSelected)]="selectedRow"
-        (clrDgSingleSelectedChange)="refreshExecutions($event)">
+        [clrDgSelected]="selectedRow ? [selectedRow] : []"
+        (clrDgSelectedChange)="
+            selectedRow = $event?.[0]; refreshExecutions($event?.[0])
+        ">
         <clr-dg-action-bar>
             <div class="clr-row">
                 <div class="clr-col-7">
@@ -19,14 +22,15 @@
                         {{ 'WEBHOOK.NEW_WEBHOOK' | translate }}
                     </button>
                     <clr-dropdown
-                        [clrCloseMenuOnItemClick]="false"
+                        [clrCloseMenuOnItemClick]="true"
                         class="btn btn-link"
                         clrDropdownTrigger>
                         <span id="action-webhook"
                             >{{ 'MEMBER.ACTION' | translate }}
                             <clr-icon
                                 class="clr-icon"
-                                shape="caret down"></clr-icon
+                                shape="caret"
+                                direction="down"></clr-icon
                         ></span>
                         <clr-dropdown-menu *clrIfOpen>
                             <button
@@ -36,10 +40,9 @@
                                     !selectedRow || !hasUpdatePermission
                                 ">
                                 <span id="toggle-webhook">
-                                    <span
-                                        *ngIf="
-                                            selectedRow && !selectedRow.enabled
-                                        ">
+                                    @if ( selectedRow && !selectedRow.enabled )
+                                    {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -48,13 +51,9 @@
                                             'WEBHOOK.ENABLED_BUTTON' | translate
                                         }}</span>
                                     </span>
-                                    <span
-                                        *ngIf="
-                                            !(
-                                                selectedRow &&
-                                                !selectedRow.enabled
-                                            )
-                                        ">
+                                    } @if ( !( selectedRow &&
+                                    !selectedRow.enabled ) ) {
+                                    <span>
                                         <clr-icon
                                             class="margin-top-2"
                                             size="16"
@@ -64,6 +63,7 @@
                                                 | translate
                                         }}</span>
                                     </span>
+                                    }
                                 </span>
                             </button>
                             <button
@@ -121,7 +121,7 @@
         <clr-dg-column [clrDgField]="'name'">{{
             'WEBHOOK.NAME' | translate
         }}</clr-dg-column>
-        <clr-dg-column class="width-120">{{
+        <clr-dg-column class="width-140">{{
             'WEBHOOK.ENABLED' | translate
         }}</clr-dg-column>
         <clr-dg-column>{{ 'WEBHOOK.NOTIFY_TYPE' | translate }}</clr-dg-column>
@@ -139,23 +139,28 @@
         <clr-dg-placeholder>
             {{ 'WEBHOOK.NO_WEBHOOK' | translate }}
         </clr-dg-placeholder>
-        <clr-dg-row *ngFor="let w of webhookList" [clrDgItem]="w">
+        @for (w of webhookList; track w) {
+        <clr-dg-row [clrDgItem]="w">
             <clr-dg-cell>{{ w.name }}</clr-dg-cell>
-            <clr-dg-cell [ngSwitch]="w.enabled">
-                <div *ngSwitchCase="true" class="icon-wrap">
+            <clr-dg-cell>
+                @switch (w.enabled) { @case (true) {
+                <div class="icon-wrap">
                     <clr-icon
                         shape="check-circle"
                         size="20"
-                        class="is-success enabled-icon"></clr-icon>
+                        status="success"
+                        class="enabled-icon"></clr-icon>
                     <span>{{ 'WEBHOOK.ENABLED' | translate }}</span>
                 </div>
-                <div *ngSwitchCase="false" class="icon-wrap">
+                } @case (false) {
+                <div class="icon-wrap">
                     <clr-icon
                         shape="exclamation-triangle"
-                        size="20"
-                        class="is-warning"></clr-icon>
+                        size="18"
+                        status="warning"></clr-icon>
                     <span>{{ 'WEBHOOK.DISABLED' | translate }}</span>
                 </div>
+                } }
             </clr-dg-cell>
             <clr-dg-cell>{{ w?.targets[0].type }}</clr-dg-cell>
             <clr-dg-cell>{{
@@ -163,11 +168,14 @@
             }}</clr-dg-cell>
             <clr-dg-cell>{{ w?.targets[0].address }}</clr-dg-cell>
             <clr-dg-cell class="event-types">
-                <div class="cell" *ngIf="w?.event_types?.length">
+                @if (w?.event_types?.length) {
+                <div class="cell">
                     <div class="bar-state">
-                        <span class="label-flex" *ngIf="w?.event_types[0]">{{
+                        @if (w?.event_types[0]) {
+                        <span class="label-flex">{{
                             eventTypeToText(w?.event_types[0])
                         }}</span>
+                        }
                     </div>
                     <div
                         class="signpost-item"
@@ -183,25 +191,27 @@
                                     [clrPosition]="'top-middle'"
                                     *clrIfOpen>
                                     <div>
-                                        <div
-                                            *ngFor="let e of w?.event_types"
-                                            class="bar-state">
+                                        @for (e of w?.event_types; track e) {
+                                        <div class="bar-state">
                                             <span class="label not-scan">{{
                                                 eventTypeToText(e)
                                             }}</span>
                                         </div>
+                                        }
                                     </div>
                                 </clr-signpost-content>
                             </clr-signpost>
                         </div>
                     </div>
                 </div>
+                }
             </clr-dg-cell>
             <clr-dg-cell>{{
                 w.creation_time | harborDatetime : 'short'
             }}</clr-dg-cell>
             <clr-dg-cell>{{ w.description }}</clr-dg-cell>
         </clr-dg-row>
+        }
         <clr-dg-footer>
             <clr-dg-pagination
                 #pagination
@@ -211,20 +221,22 @@
                 <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                     'PAGINATION.PAGE_SIZE' | translate
                 }}</clr-dg-page-size>
-                <span *ngIf="total"
+                @if (total) {
+                <span
                     >{{ pagination.firstItem + 1 }} -
                     {{ pagination.lastItem + 1 }}
                     {{ 'WEBHOOK.OF' | translate }}</span
                 >
+                }
                 {{ total }} {{ 'WEBHOOK.ITEMS' | translate }}
             </clr-dg-pagination>
         </clr-dg-footer>
     </clr-datagrid>
 </div>
 
-<app-executions
-    [selectedWebhook]="selectedRow"
-    *ngIf="selectedRow"></app-executions>
+@if (selectedRow) {
+<app-executions [selectedWebhook]="selectedRow"></app-executions>
+}
 
 <add-webhook
     (notify)="success()"

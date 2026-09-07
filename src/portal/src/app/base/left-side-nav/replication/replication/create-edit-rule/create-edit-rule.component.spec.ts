@@ -34,6 +34,7 @@ import { RegistryService } from '../../../../../../../ng-swagger-gen/services/re
 import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
 import { ReplicationPolicy } from '../../../../../../../ng-swagger-gen/models/replication-policy';
 import { ReplicationExecution } from '../../../../../../../ng-swagger-gen/models/replication-execution';
+import { Router } from '@angular/router';
 
 describe('CreateEditRuleComponent (inline template)', () => {
     let mockRules: ReplicationPolicy[] = [
@@ -303,4 +304,17 @@ describe('CreateEditRuleComponent (inline template)', () => {
         tick(5000);
         expect(comp.targetList.length).toBe(4);
     }));
+
+    it('goToLabels should close the modal and navigate to /harbor/labels', () => {
+        const router = TestBed.inject(Router);
+        const navigateSpy = spyOn(router, 'navigate');
+        const closeSpy = spyOn(comp, 'close').and.callThrough();
+
+        comp.createEditRuleOpened = true;
+        comp.goToLabels();
+
+        expect(closeSpy).toHaveBeenCalled();
+        expect(comp.createEditRuleOpened).toBeFalse();
+        expect(navigateSpy).toHaveBeenCalledOnceWith(['/harbor/labels']);
+    });
 });

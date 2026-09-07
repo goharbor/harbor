@@ -1,27 +1,27 @@
 <clr-datagrid
+    clrDgSelectionType="multi"
     (clrDgRefresh)="clrLoad($event)"
     [clrDgLoading]="loading"
     [(clrDgSelected)]="selectedRow"
     (clrDgSelectedChange)="selectionChanged()">
     <clr-dg-action-bar>
+        @if (projectCreationRestriction) {
         <button
             type="button"
             class="btn btn-secondary"
-            (click)="addNewProject()"
-            *ngIf="projectCreationRestriction">
+            (click)="addNewProject()">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
                 'PROJECT.NEW_PROJECT' | translate
             }}
         </button>
+        }
         <clr-dropdown
-            [clrCloseMenuOnItemClick]="false"
+            [clrCloseMenuOnItemClick]="true"
             class="btn btn-link"
             clrDropdownTrigger>
             <span
                 >{{ 'MEMBER.ACTION' | translate
-                }}<clr-icon
-                    shape="caret
-            down"></clr-icon
+                }}<clr-icon shape="caret" direction="down"></clr-icon
             ></span>
             <clr-dropdown-menu *clrIfOpen>
                 <button
@@ -38,6 +38,7 @@
                     id="delete-project"
                     type="button"
                     class="btn btn-secondary"
+                    clrDropdownItem
                     [disabled]="!canDelete"
                     (click)="deleteProjects(selectedRow)">
                     <clr-icon shape="times" size="16"></clr-icon>&nbsp;
@@ -56,7 +57,8 @@
     <clr-dg-column [clrDgSortBy]="'creation_time'">{{
         'PROJECT.CREATION_TIME' | translate
     }}</clr-dg-column>
-    <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
+    @for (p of projects; track p) {
+    <clr-dg-row [clrDgItem]="p">
         <clr-dg-cell>
             <a
                 href="javascript:void(0)"
@@ -84,6 +86,7 @@
             p.creation_time | harborDatetime : 'short'
         }}</clr-dg-cell>
     </clr-dg-row>
+    }
     <clr-dg-footer>
         <clr-dg-pagination
             #pagination
@@ -93,10 +96,12 @@
             <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
-            <span *ngIf="totalCount"
+            @if (totalCount) {
+            <span
                 >{{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}
                 {{ 'PROJECT.OF' | translate }}
             </span>
+            }
             {{ totalCount }} {{ 'PROJECT.ITEMS' | translate }}
         </clr-dg-pagination>
     </clr-dg-footer>

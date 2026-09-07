@@ -1,4 +1,5 @@
 <clr-datagrid
+    clrDgSelectionType="multi"
     [(clrDgSelected)]="selectedRows"
     [clrDgLoading]="loading"
     (clrDgRefresh)="clrLoad($event)">
@@ -82,11 +83,12 @@
         <clr-dg-cell>{{ j.count || 0 }}</clr-dg-cell>
         <clr-dg-cell>
             <span class="container">
+                @if (showWarning(j?.latency)) {
                 <cds-icon
-                    *ngIf="showWarning(j?.latency)"
                     size="20"
                     class="warning"
                     shape="exclamation-triangle"></cds-icon>
+                }
                 <span class="ml-5px">{{ getDuration(j?.latency) || 0 }}</span>
             </span>
         </clr-dg-cell>
@@ -100,11 +102,13 @@
             <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
                 'PAGINATION.PAGE_SIZE' | translate
             }}</clr-dg-page-size>
-            <span *ngIf="jobQueue?.length">
+            @if (jobQueue?.length) {
+            <span>
                 {{ pagination.firstItem + 1 }} -
                 {{ pagination.lastItem + 1 }}
                 {{ 'GROUP.OF' | translate }}
             </span>
+            }
             {{ jobQueue?.length }} {{ 'GROUP.ITEMS' | translate }}
         </clr-dg-pagination>
     </clr-dg-footer>

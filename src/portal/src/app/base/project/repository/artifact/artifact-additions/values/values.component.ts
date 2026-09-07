@@ -23,6 +23,7 @@ import { isObject } from '../../../../../../shared/units/utils';
     selector: 'hbr-artifact-values',
     templateUrl: './values.component.html',
     styleUrls: ['./values.component.scss'],
+    standalone: false,
 })
 export class ValuesComponent implements OnInit {
     @Input()

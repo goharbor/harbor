@@ -54,8 +54,8 @@ describe('PushImageButtonComponent (inline template)', () => {
         el.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        let copyInputs: HTMLInputElement[] =
-            fixture.nativeElement.querySelectorAll('.command-input');
+        let copyInputs =
+            document.querySelectorAll<HTMLInputElement>('.command-input');
         expect(copyInputs.length).toEqual(6);
         expect(copyInputs[0].value.trim()).toEqual(
             `docker tag SOURCE_IMAGE[:TAG] https://testing.harbor.com/testing/REPOSITORY[:TAG]`
@@ -72,5 +72,6 @@ describe('PushImageButtonComponent (inline template)', () => {
         [projectName]="'testing'"
         [registryUrl]="'https://testing.harbor.com'">
     </hbr-push-image-button>`,
+    standalone: false,
 })
 class TestHostComponent {}

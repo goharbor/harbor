@@ -106,7 +106,7 @@ describe('LabelComponent (inline template)', () => {
 
     it('should open create label modal', () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
+        return fixture.whenStable().then(() => {
             fixture.detectChanges();
             comp.editLabel([mockOneData]);
             fixture.detectChanges();

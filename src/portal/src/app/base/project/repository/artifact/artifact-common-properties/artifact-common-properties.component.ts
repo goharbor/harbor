@@ -30,6 +30,7 @@ enum Types {
     selector: 'artifact-common-properties',
     templateUrl: './artifact-common-properties.component.html',
     styleUrls: ['./artifact-common-properties.component.scss'],
+    standalone: false,
 })
 export class ArtifactCommonPropertiesComponent implements OnChanges {
     @Input() artifactDetails: Artifact;

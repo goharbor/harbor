@@ -33,6 +33,7 @@ import { LabelService } from '../../../../../../ng-swagger-gen/services/label.se
     selector: 'hbr-create-edit-label',
     templateUrl: './create-edit-label.component.html',
     styleUrls: ['./create-edit-label.component.scss'],
+    standalone: false,
 })
 export class CreateEditLabelComponent implements OnInit, OnDestroy {
     formShow: boolean;

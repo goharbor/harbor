@@ -69,6 +69,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		Type: model.RegistryTypeAzureAcr,
 		SupportedResourceTypes: []string{
 			model.ResourceTypeImage,
+			model.ResourceTypeArtifact,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{
@@ -84,6 +85,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedCopyByChunk: true,
 	}, nil
 }
 

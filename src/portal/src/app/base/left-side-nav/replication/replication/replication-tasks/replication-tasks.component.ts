@@ -54,6 +54,7 @@ const SUCCEED: string = 'Succeed';
     selector: 'replication-tasks',
     templateUrl: './replication-tasks.component.html',
     styleUrls: ['./replication-tasks.component.scss'],
+    standalone: false,
 })
 export class ReplicationTasksComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

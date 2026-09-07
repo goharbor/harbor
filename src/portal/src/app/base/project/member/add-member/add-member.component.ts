@@ -37,6 +37,7 @@ import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity'
     selector: 'add-member',
     templateUrl: 'add-member.component.html',
     styleUrls: ['add-member.component.scss'],
+    standalone: false,
 })
 export class AddMemberComponent implements OnInit, OnDestroy {
     member: UserEntity = {};

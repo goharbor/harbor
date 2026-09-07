@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/jackc/pgx/v4/stdlib" // registry pgx driver
+	_ "github.com/jackc/pgx/v5/stdlib" // registry pgx driver
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/viper"
 

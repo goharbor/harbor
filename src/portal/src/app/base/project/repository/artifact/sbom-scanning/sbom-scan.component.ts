@@ -52,6 +52,7 @@ const RETRY_TIMES: number = 3;
     selector: 'hbr-sbom-bar',
     templateUrl: './sbom-scan-component.html',
     styleUrls: ['./scanning.scss'],
+    standalone: false,
 })
 export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() inputScanner: Scanner;

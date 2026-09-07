@@ -1,6 +1,7 @@
-<clr-dropdown *ngIf="!isTagMode">
+@if (!isTagMode) {
+<clr-dropdown>
+    @if (isImage(artifact)) {
     <hbr-copy-input
-        *ngIf="isImage(artifact)"
         [title]="getPullCommandForRuntimeByDigest(artifact)"
         [iconMode]="true"
         id="pullCommandForDigest"
@@ -10,8 +11,8 @@
         [defaultValue]="
             getPullCommandForRuntimeByDigest(artifact)
         "></hbr-copy-input>
+    } @if (isCNAB(artifact)) {
     <div
-        *ngIf="isCNAB(artifact)"
         class="flex"
         id="pullCommandForCNAB"
         aria-label="Dropdown header Action">
@@ -21,8 +22,8 @@
             (onCopySuccess)="onCpSuccess(getPullCommandForCNAB(artifact))"
             [defaultValue]="getPullCommandForCNAB(artifact)"></hbr-copy-input>
     </div>
+    } @if (isChart(artifact) && artifact.tagNumber > 0) {
     <div
-        *ngIf="isChart(artifact) && artifact.tagNumber > 0"
         class="flex"
         id="pullCommandForChart"
         aria-label="Dropdown header Action">
@@ -32,31 +33,30 @@
             (onCopySuccess)="onCpSuccess(getPullCommandForChart(artifact))"
             [defaultValue]="getPullCommandForChart(artifact)"></hbr-copy-input>
     </div>
+    }
 </clr-dropdown>
-
-<clr-dropdown
-    class="mr-1"
-    *ngIf="isTagMode"
-    [disabled]="!hasPullCommandForTag(artifact)">
+} @if (isTagMode && hasPullCommandForTag(artifact)) {
+<clr-dropdown class="mr-1">
+    @if (isImage(artifact)) {
     <hbr-copy-input
-        *ngIf="isImage(artifact)"
         [title]="getPullCommandForRuntimeByTag(artifact)"
         [iconMode]="true"
         (onCopySuccess)="onCpSuccess(getPullCommandForRuntimeByTag(artifact))"
         [defaultValue]="
             getPullCommandForRuntimeByTag(artifact)
         "></hbr-copy-input>
-
+    } @if (isCNAB(artifact)) {
     <hbr-copy-input
-        *ngIf="isCNAB(artifact)"
         [title]="getPullCommandForCNABByTag(artifact)"
         [iconMode]="true"
         (onCopySuccess)="onCpSuccess(getPullCommandForCNABByTag(artifact))"
         [defaultValue]="getPullCommandForCNABByTag(artifact)"></hbr-copy-input>
+    } @if (isChart(artifact)) {
     <hbr-copy-input
-        *ngIf="isChart(artifact)"
         [title]="getPullCommandForChartByTag(artifact)"
         [iconMode]="true"
         (onCopySuccess)="onCpSuccess(getPullCommandForChartByTag(artifact))"
         [defaultValue]="getPullCommandForChartByTag(artifact)"></hbr-copy-input>
+    }
 </clr-dropdown>
+}

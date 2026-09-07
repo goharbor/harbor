@@ -448,7 +448,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 		return location, end, err
 	}
 
-	req.Header.Set("Content-Length", fmt.Sprintf("%d", end-start+1))
+	req.ContentLength = end - start + 1
 	req.Header.Set("Content-Range", fmt.Sprintf("%d-%d", start, end))
 	resp, err := c.do(req)
 	if err != nil {

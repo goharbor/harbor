@@ -16,12 +16,16 @@ import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { IconService } from '../../../../../../ng-swagger-gen/services/icon.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SharedTestingModule } from '../../../../shared/shared.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ArtifactService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [SharedTestingModule, HttpClientTestingModule],
+            imports: [SharedTestingModule],
             providers: [
                 {
                     provide: ArtifactService,
@@ -29,6 +33,8 @@ describe('ArtifactService', () => {
                 },
                 IconService,
                 DomSanitizer,
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         });
     });

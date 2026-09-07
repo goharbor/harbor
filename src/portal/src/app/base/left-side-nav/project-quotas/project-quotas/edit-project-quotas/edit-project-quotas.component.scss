@@ -28,7 +28,7 @@
     .quota-input {
       width: 2.25rem;
       margin-left: 1rem;
-      margin-right: 0.2rem;
+      margin-right: 0;
     }
 
     .clr-validate-icon {
@@ -37,12 +37,6 @@
 
     .select-div {
       width: 2.5rem;
-    }
-
-    .clr-select-wrapper {
-      position: absolute;
-      right: -8rem;
-      top: -0.11rem;
     }
 
   }
@@ -58,10 +52,6 @@
 
     .select-div {
       width: 1.6rem;
-    }
-
-    .clr-select-wrapper {
-      right: -5.5rem;
     }
   }
 }
@@ -84,9 +74,10 @@ select {
 
 .progress-label {
   position: absolute;
-  right: -4rem;
+  left: 7rem;
   margin-top: 0;
-  width: 5rem;
+  width: auto;
+  white-space: nowrap;
   font-weight: 100;
   font-size: 10px;
 }
@@ -95,6 +86,29 @@ select {
   .clr-error {
     .clr-validate-icon {
       margin-left: -12px;
+    }
+  }
+
+  .clr-input-group {
+    border-bottom: none !important;
+    background-image: none !important;
+
+    .quota-input {
+      border-bottom: 1px solid var(--clr-forms-border-color, #b3b3b3) !important;
+      background: none;
+
+      &:focus {
+        border-bottom-color: var(--clr-forms-focused-color, #0072a3) !important;
+      }
+    }
+
+    .clr-select-wrapper {
+      border-bottom: 1px solid var(--clr-forms-border-color, #b3b3b3) !important;
+      margin-left: 0.5rem;
+
+      &:focus-within {
+        border-bottom-color: var(--clr-forms-focused-color, #0072a3) !important;
+      }
     }
   }
 }

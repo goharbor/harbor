@@ -50,6 +50,7 @@ const expireDays = 10;
     selector: 'sign-in',
     templateUrl: 'sign-in.component.html',
     styleUrls: ['sign-in.component.scss'],
+    standalone: false,
 })
 export class SignInComponent implements AfterViewChecked, OnInit {
     showPwd: boolean = false;

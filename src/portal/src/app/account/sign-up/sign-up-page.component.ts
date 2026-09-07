@@ -24,6 +24,7 @@ import { AlertType } from '../../shared/entities/shared.const';
     selector: 'sign-up-page',
     templateUrl: 'sign-up-page.component.html',
     styleUrls: ['../../common.scss'],
+    standalone: false,
 })
 export class SignUpPageComponent implements OnInit {
     error: any;
