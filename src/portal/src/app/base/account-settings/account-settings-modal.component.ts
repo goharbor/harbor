@@ -36,6 +36,7 @@ import { AppConfigService } from '../../services/app-config.service';
     selector: 'account-settings-modal',
     templateUrl: 'account-settings-modal.component.html',
     styleUrls: ['./account-settings-modal.component.scss', '../../common.scss'],
+    standalone: false,
 })
 export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     opened = false;

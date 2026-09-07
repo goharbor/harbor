@@ -140,8 +140,8 @@ func TestInjectPasswd(t *testing.T) {
 	}
 	p := "pass"
 	injectPasswd(u, p)
-	assert.Equal(t, "sha256", u.PasswordVersion)
-	assert.Equal(t, utils.Encrypt(p, u.Salt, "sha256"), u.Password)
+	assert.Equal(t, utils.PBKDF2SHA256, u.PasswordVersion)
+	assert.Equal(t, utils.Encrypt(p, u.Salt, utils.PBKDF2SHA256), u.Password)
 }
 
 func (m *mgrTestSuite) TestCreate() {

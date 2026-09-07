@@ -62,6 +62,7 @@ const QuotaType = 'project';
     selector: 'project-quotas',
     templateUrl: './project-quotas.component.html',
     styleUrls: ['./project-quotas.component.scss'],
+    standalone: false,
 })
 export class ProjectQuotasComponent implements OnChanges {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

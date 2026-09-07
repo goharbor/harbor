@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ClrDatagridStateInterface } from '@clr/angular/data/datagrid/interfaces/state.interface';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { Worker } from 'ng-swagger-gen/models';
 import { WorkerPool } from 'ng-swagger-gen/models/worker-pool';
 import { JobserviceService } from 'ng-swagger-gen/services';
@@ -45,6 +45,7 @@ import { JobServiceDashboardSharedDataService } from '../job-service-dashboard-s
     selector: 'app-worker-list',
     templateUrl: './worker-list.component.html',
     styleUrls: ['./worker-list.component.scss'],
+    standalone: false,
 })
 export class WorkerListComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

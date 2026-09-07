@@ -275,9 +275,11 @@ Check The Quick Search
 
 Select Filter Label For CVE Export
     [Arguments]    @{labels}
-    Retry Element Click  ${vulnerabilities_filter_label_xpath}
+    Retry Element Click  ${vulnerabilities_filter_label_xpath}   
     FOR  ${label}  IN  @{labels}
         Log  ${label}
-        Retry Element Click  //hbr-label-piece//span[contains(text(), '${label}')]
-    END
+        ${js_xpath}=    Set Variable    //button[contains(@class,'dropdown-item') and contains(.,'${label}')] | //button[contains(.,'${label}')] | //span[contains(text(),'${label}')]
+        Execute Javascript    var xpath = "${js_xpath}"; var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null); if(result.singleNodeValue) { result.singleNodeValue.click(); }
+        Sleep  1
+    END    
     Retry Element Click  ${vulnerabilities_filter_label_xpath}

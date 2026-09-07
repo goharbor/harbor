@@ -110,8 +110,9 @@ describe('NewRobotComponent', () => {
         fixture.autoDetectChanges();
         component.isEditMode = false;
         component.addRobotOpened = true;
+        fixture.detectChanges();
         await fixture.whenStable();
-        const nameInput = fixture.nativeElement.querySelector('#name');
+        const nameInput = document.querySelector<HTMLInputElement>('#name');
         nameInput.value = '';
         nameInput.dispatchEvent(new Event('input'));
         nameInput.blur();
@@ -124,8 +125,9 @@ describe('NewRobotComponent', () => {
         component.isEditMode = true;
         component.addRobotOpened = true;
         component.systemRobot = robot1;
+        fixture.detectChanges();
         await fixture.whenStable();
-        const nameInput = fixture.nativeElement.querySelector('#name');
+        const nameInput = document.querySelector<HTMLInputElement>('#name');
         expect(nameInput.value).toEqual('robot1');
     });
 });

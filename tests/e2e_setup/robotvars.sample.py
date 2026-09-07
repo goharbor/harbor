@@ -1,7 +1,7 @@
 # all value should be string
 SCANNER_ENDPOINT = "http://<scanner_ip>:8081"
 ES_ENDPOINT =  "<elastic_search_ip>:9200" 
-WEBHOOK_ENDPOINT =  "<webhook_server_ip>:8084" 
+WEBHOOK_ENDPOINT_UI =  "<webhook_server_ip>:8084" 
 DISTRIBUTION_ENDPOINT =  "http://<dragonfly_server_ip>:8080" 
 DOCKER_USER =   "<docker_user_name>" 
 DOCKER_PWD =  "<docker_password>" 

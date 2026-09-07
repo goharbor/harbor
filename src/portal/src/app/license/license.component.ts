@@ -21,6 +21,7 @@ import { Title } from '@angular/platform-browser';
     viewProviders: [Title],
     templateUrl: './license.component.html',
     styleUrls: ['./license.component.scss'],
+    standalone: false,
 })
 export class LicenseComponent implements OnInit {
     constructor(private http: HttpClient) {}

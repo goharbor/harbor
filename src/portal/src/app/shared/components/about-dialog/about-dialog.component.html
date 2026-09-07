@@ -16,12 +16,14 @@
             <div>
                 {{ customName ? customName : ('APP_TITLE.HARBOR' | translate) }}
             </div>
-            <div *ngIf="version">
+            @if (version) {
+            <div>
                 <span class="p5 about-version"
                     >{{ 'ABOUT.VERSION' | translate }} {{ version }}</span
                 >
             </div>
-            <div *ngIf="!customIntroduction">
+            } @if (!customIntroduction) {
+            <div>
                 <p class="p5">{{ 'ABOUT.COPYRIGHT' | translate }}</p>
                 <p class="p5">
                     <a
@@ -32,9 +34,11 @@
                     >
                 </p>
             </div>
-            <div *ngIf="customIntroduction">
+            } @if (customIntroduction) {
+            <div>
                 <p class="p5">{{ customIntroduction }}</p>
             </div>
+            }
         </div>
     </div>
     <div class="modal-footer margin-left-override">

@@ -37,6 +37,7 @@ const ONE_MINUTE = 60000;
     selector: 'gc-config',
     templateUrl: './gc.component.html',
     styleUrls: ['./gc.component.scss'],
+    standalone: false,
 })
 export class GcComponent implements OnInit, OnDestroy {
     originCron: OriginCron;

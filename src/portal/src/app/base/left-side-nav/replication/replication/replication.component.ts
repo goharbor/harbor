@@ -109,6 +109,7 @@ const STATUS_MAP = {
     selector: 'hbr-replication',
     templateUrl: './replication.component.html',
     styleUrls: ['./replication.component.scss'],
+    standalone: false,
 })
 export class ReplicationComponent implements OnInit, OnDestroy {
     @Input() projectId: number | string;

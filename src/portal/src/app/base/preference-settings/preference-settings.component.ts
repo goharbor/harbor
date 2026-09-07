@@ -21,7 +21,7 @@ import {
 import { registerLocaleData } from '@angular/common';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
+import { ClrCommonStrings } from '@clr/angular';
 import { ClrCommonStringsService } from '@clr/angular';
 import {
     CUSTOM_RUNTIME_LOCALSTORAGE_KEY,
@@ -46,6 +46,7 @@ import { InlineAlertComponent } from 'src/app/shared/components/inline-alert/inl
     selector: 'preference-settings',
     templateUrl: 'preference-settings.component.html',
     styleUrls: ['preference-settings.component.scss'],
+    standalone: false,
 })
 export class PreferenceSettingsComponent implements OnInit {
     readonly guiLanguages = Object.entries(LANGUAGES);

@@ -52,7 +52,8 @@ func (d *Database) Load(ctx context.Context) (map[string]any, error) {
 			if decryptPassword, err := encrypt.Instance().Decrypt(item.Value); err == nil {
 				item.Value = decryptPassword
 			} else {
-				log.Errorf("decrypt password failed, key: %s, error %v,", item.Key, err)
+				log.Errorf("decrypt password failed, key: %s, error %v, skipping corrupted value", item.Key, err)
+				continue
 			}
 		}
 		resultMap[itemMetadata.Name] = item.Value

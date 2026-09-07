@@ -14,18 +14,24 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { JobLogService, JobLogDefaultService } from './job-log.service';
 import { SharedTestingModule } from '../shared.module';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('JobLogService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            imports: [SharedTestingModule, HttpClientTestingModule],
+            imports: [SharedTestingModule],
             providers: [
                 JobLogDefaultService,
                 {
                     provide: JobLogService,
                     useClass: JobLogDefaultService,
                 },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         });
     });

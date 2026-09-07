@@ -52,6 +52,7 @@ import {
     selector: 'hbr-artifact-sbom',
     templateUrl: './artifact-sbom.component.html',
     styleUrls: ['./artifact-sbom.component.scss'],
+    standalone: false,
 })
 export class ArtifactSbomComponent implements OnInit, OnDestroy {
     @Input()

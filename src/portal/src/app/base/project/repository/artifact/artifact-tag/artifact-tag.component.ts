@@ -70,6 +70,7 @@ class InitTag {
     selector: 'artifact-tag',
     templateUrl: './artifact-tag.component.html',
     styleUrls: ['./artifact-tag.component.scss'],
+    standalone: false,
 })
 export class ArtifactTagComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

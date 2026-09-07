@@ -1,7 +1,7 @@
 <div class="grid-content" (scroll)="onScroll($event)">
     <div class="items" [ngStyle]="itemsHolderStyle" #itemsHolder>
+        @for (item of items; track trackByFn(i, item); let i = $index) {
         <span
-            *ngFor="let item of items; let i = index; trackBy: trackByFn"
             class="card-item"
             [ngStyle]="cardStyles[i]"
             #cardItem
@@ -12,12 +12,14 @@
                 [ngTemplateOutletContext]="{ item: item }">
             </ng-template>
         </span>
-        <span *ngIf="items.length === 0 && !loading" class="content-empty">
+        } @if (items.length === 0 && !loading) {
+        <span class="content-empty">
             {{ 'REPOSITORY.NO_ITEMS' | translate }}
         </span>
+        }
     </div>
+    @if (loading) {
     <div
-        *ngIf="loading"
         [ngClass]="{
             'central-block-loading': isFirstPage,
             'central-block-loading-more': !isFirstPage
@@ -25,4 +27,5 @@
         <span class="vertical-helper"></span>
         <div class="spinner"></div>
     </div>
+    }
 </div>

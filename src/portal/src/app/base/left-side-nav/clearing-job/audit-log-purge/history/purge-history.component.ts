@@ -46,6 +46,7 @@ import {
     selector: 'app-purge-history',
     templateUrl: './purge-history.component.html',
     styleUrls: ['./purge-history.component.scss'],
+    standalone: false,
 })
 export class PurgeHistoryComponent implements OnInit, OnDestroy {
     jobs: Array<ExecHistory> = [];

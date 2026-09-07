@@ -27,6 +27,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -319,6 +320,59 @@ func (m *manifestTestSuite) TestPutManifestEmptyBody() {
 
 	putManifest(w, req)
 	m.Equal(http.StatusCreated, w.Code)
+}
+
+func (m *manifestTestSuite) TestPutManifestOversizedTagReturns413() {
+	// a tag push must read the body to compute its digest, so an over-limit
+	// body is rejected with 413 before it is buffered or proxied
+	proxyCalled := false
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		proxyCalled = true
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	body := bytes.Repeat([]byte("x"), common.MaxManifestBodySize+1)
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", bytes.NewReader(body))
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", "latest")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+
+	putManifest(w, req)
+	m.Equal(http.StatusRequestEntityTooLarge, w.Code)
+	m.False(proxyCalled, "over-limit manifest must not reach the backend proxy")
+}
+
+func (m *manifestTestSuite) TestPutManifestOversizedDigestProxied() {
+	// a digest push is not read by the handler (the digest is taken from the
+	// reference), so the handler does not size-limit it; the bound for the
+	// digest path is enforced by the blob/quota middleware, not here
+	providedDigest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
+	proxyCalled := false
+	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		proxyCalled = true
+		_, _ = io.Copy(io.Discard, req.Body)
+		w.Header().Set("Docker-Content-Digest", providedDigest)
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	body := bytes.Repeat([]byte("x"), common.MaxManifestBodySize+1)
+	req := httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/"+providedDigest, bytes.NewReader(body))
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":splat", "library/hello-world")
+	input.SetParam(":reference", providedDigest)
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
+
+	w := &httptest.ResponseRecorder{}
+	mock.OnAnything(m.repoCtl, "Ensure").Return(false, int64(1), nil)
+	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
+
+	putManifest(w, req)
+	m.Equal(http.StatusCreated, w.Code)
+	m.True(proxyCalled, "digest push is proxied unread by the handler")
 }
 
 func TestManifestTestSuite(t *testing.T) {

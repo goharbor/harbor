@@ -4,26 +4,35 @@
         <a (click)="goProBack()">{{ 'SIDE_NAV.PROJECTS' | translate }}</a>
         <span class="back-icon"><</span>
         <a (click)="watchGoBackEvt(projectId)">{{ projectName }}</a>
-        <span *ngIf="depth"
+        @if (depth) {
+        <span
             >&lt;<a (click)="backInitRepo()">{{ repoName }}</a></span
         >
-        <span *ngIf="referArtifactNameArray?.length >= 1">
-            <span *ngFor="let digest of referArtifactNameArray; let i = index">
+        } @if (referArtifactNameArray?.length >= 1) {
+        <span>
+            @for (digest of referArtifactNameArray; track digest; let i =
+            $index) {
+            <span>
                 &lt;<a (click)="jumpDigest(i)">{{
                     digest | slice : 0 : 15
                 }}</a></span
             >
+            }
         </span>
+        }
     </div>
     <section class="overview-section">
         <div class="title-wrapper">
             <div class="title-block">
-                <h2 sub-header-title class="custom-h2" *ngIf="!artifactDigest">
+                @if (!artifactDigest) {
+                <h2 sub-header-title class="custom-h2">
                     {{ repoName }}
                 </h2>
-                <h2 sub-header-title class="custom-h2" *ngIf="artifactDigest">
+                } @if (artifactDigest) {
+                <h2 sub-header-title class="custom-h2">
                     {{ artifactDigest | slice : 0 : 15 }}
                 </h2>
+                }
             </div>
         </div>
     </section>
@@ -31,10 +40,8 @@
     <section class="detail-section">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <ul id="configTabs" class="nav" role="tablist">
-                <li
-                    role="presentation"
-                    class="nav-item"
-                    *ngIf="!artifactDigest">
+                @if (!artifactDigest) {
+                <li role="presentation" class="nav-item">
                     <button
                         id="repo-info"
                         class="btn btn-link nav-link"
@@ -45,6 +52,7 @@
                         {{ 'REPOSITORY.INFO' | translate }}
                     </button>
                 </li>
+                }
                 <li role="presentation" class="nav-item">
                     <button
                         id="repo-image"

@@ -518,7 +518,7 @@ external_redis:
   #  # tls configuration for redis connection
   #  # only server-authentication is supported
   #  # mtls for redis connection is not supported
-  #  # tls connection will be disable by default 
+  #  # tls connection will be disable by default
   tlsOptions:
     enable: {{ external_redis.tlsOptions.enable }}
   # if it is a self-signed ca, please set the ca path specifically.
@@ -531,7 +531,7 @@ external_redis:
   #   # tls configuration for redis connection
   #   # only server-authentication is supported
   #   # mtls for redis connection is not supported
-  #   # tls connection will be disable by default 
+  #   # tls connection will be disable by default
   # tlsOptions:
   #   enable: false
   #   # if it is a self-signed ca, please set the ca path specifically.
@@ -570,7 +570,7 @@ external_redis:
 #   # tls configuration for redis connection
 #   # only server-authentication is supported
 #   # mtls for redis connection is not supported
-#   # tls connection will be disable by default 
+#   # tls connection will be disable by default
 #   tlsOptions:
 #     enable: false
 #   # if it is a self-signed ca, please set the ca path specifically.
@@ -631,7 +631,7 @@ proxy:
 
 {% if metric is defined %}
 metric:
-  enabled: {{ metric.enabled }}
+  enabled: {{ metric.enabled  | lower }}
   port: {{ metric.port }}
   path: {{ metric.path }}
 {% else %}

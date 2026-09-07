@@ -7,13 +7,15 @@
         <inline-alert
             class="modal-title"
             (confirmEvt)="confirmCancel($event)"></inline-alert>
-        <div class="alert alert-warning" *ngIf="!editable">
+        @if (!editable) {
+        <div class="alert alert-warning">
             <div class="alert-item static">
                 <span class="alert-text">
                     {{ 'DESTINATION.CANNOT_EDIT' | translate }}
                 </span>
             </div>
         </div>
+        } @if (createEditDestinationOpened) {
         <form #targetForm="ngForm" class="clr-form clr-form-horizontal">
             <!-- provider -->
             <clr-select-container>
@@ -27,20 +29,17 @@
                     (change)="adapterChange($event)"
                     [(ngModel)]="target.type"
                     [disabled]="testOngoing || editDisabled">
-                    <ng-container *ngIf="!editDisabled">
-                        <option
-                            *ngFor="let adapter of adapterList"
-                            value="{{ adapter }}">
-                            {{ getAdapterText(adapter) }}
-                        </option>
-                    </ng-container>
-                    <ng-container *ngIf="editDisabled">
-                        <option
-                            *ngFor="let adapter of [target.type]"
-                            value="{{ adapter }}">
-                            {{ getAdapterText(adapter) }}
-                        </option>
-                    </ng-container>
+                    @if (!editDisabled) { @for (adapter of adapterList; track
+                    adapter) {
+                    <option value="{{ adapter }}">
+                        {{ getAdapterText(adapter) }}
+                    </option>
+                    } } @if (editDisabled) { @for (adapter of [target.type];
+                    track adapter) {
+                    <option value="{{ adapter }}">
+                        {{ getAdapterText(adapter) }}
+                    </option>
+                    } }
                 </select>
             </clr-select-container>
             <!-- Endpoint name -->
@@ -60,14 +59,12 @@
                     size="30"
                     #targetName="ngModel"
                     required />
-                <clr-control-error
-                    *ngIf="
-                        targetName.errors &&
-                        targetName.errors.required &&
-                        (targetName.dirty || targetName.touched)
-                    ">
+                @if ( targetName.errors && targetName.errors.required &&
+                (targetName.dirty || targetName.touched) ) {
+                <clr-control-error>
                     {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}
                 </clr-control-error>
+                }
             </clr-input-container>
             <!--Description-->
             <clr-textarea-container>
@@ -95,20 +92,15 @@
                         (targetEndpoint.dirty || targetEndpoint.touched)
                     ">
                     <div class="clr-input-wrapper position-relative">
+                        @if ( !( !showEndpointList && targetEndpoint?.errors &&
+                        targetEndpoint.errors.required && (targetEndpoint.dirty
+                        || targetEndpoint.touched) ) && endpointList?.length ) {
                         <clr-icon
-                            *ngIf="
-                                !(
-                                    !showEndpointList &&
-                                    targetEndpoint?.errors &&
-                                    targetEndpoint.errors.required &&
-                                    (targetEndpoint.dirty ||
-                                        targetEndpoint.touched)
-                                ) && endpointList?.length
-                            "
                             class="down"
                             shape="caret"
                             dir="down"
                             (click)="showEndpointList = true"></clr-icon>
+                        }
                         <input
                             autocomplete="off"
                             (blur)="blur()"
@@ -124,38 +116,35 @@
                             #targetEndpoint="ngModel"
                             required
                             placeholder="http(s)://192.168.1.1" />
+                        @if (endpointList?.length && showEndpointList) {
                         <div
                             class="selectBox"
                             (mouseleave)="endpointOnHover = false"
-                            (mouseover)="endpointOnHover = true"
-                            *ngIf="endpointList?.length && showEndpointList">
+                            (mouseover)="endpointOnHover = true">
                             <ul>
-                                <li
-                                    *ngFor="let endpoint of endpointList"
-                                    (click)="selectedEndpoint(endpoint.value)">
+                                @for (endpoint of endpointList; track endpoint)
+                                {
+                                <li (click)="selectedEndpoint(endpoint.value)">
                                     {{ endpoint.key }}
                                 </li>
+                                }
                             </ul>
                         </div>
+                        } @if ( !showEndpointList && targetEndpoint?.errors &&
+                        targetEndpoint.errors.required && (targetEndpoint.dirty
+                        || targetEndpoint.touched) ) {
                         <clr-icon
-                            *ngIf="
-                                !showEndpointList &&
-                                targetEndpoint?.errors &&
-                                targetEndpoint.errors.required &&
-                                (targetEndpoint.dirty || targetEndpoint.touched)
-                            "
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
+                        }
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            !showEndpointList &&
-                            targetEndpoint?.errors &&
-                            targetEndpoint.errors.required &&
-                            (targetEndpoint.dirty || targetEndpoint.touched)
-                        ">
+                    @if ( !showEndpointList && targetEndpoint?.errors &&
+                    targetEndpoint.errors.required && (targetEndpoint.dirty ||
+                    targetEndpoint.touched) ) {
+                    <clr-control-error>
                         {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <!-- access_key -->
@@ -181,10 +170,10 @@
                 }}</label>
                 <div class="clr-control-container">
                     <div class="clr-textarea-wrapper mt-0">
+                        @if (isNormalCredential()) {
                         <input
                             autocomplete="off"
                             class="clr-input"
-                            *ngIf="isNormalCredential(); else gcr_secret"
                             type="password"
                             placeholder="Access Secret"
                             id="destination_password"
@@ -194,20 +183,20 @@
                             size="30"
                             name="access_secret"
                             #access_secret="ngModel" />
-                        <ng-template #gcr_secret>
-                            <textarea
-                                autocomplete="off"
-                                type="text"
-                                row="3"
-                                placeholder="Json Secret"
-                                class="clr-textarea"
-                                id="destination_password"
-                                [disabled]="testOngoing"
-                                [readonly]="!editable"
-                                [(ngModel)]="target.credential.access_secret"
-                                name="access_secret"
-                                #access_secret="ngModel"></textarea>
-                        </ng-template>
+                        } @else {
+                        <textarea
+                            autocomplete="off"
+                            type="text"
+                            row="3"
+                            placeholder="Json Secret"
+                            class="clr-textarea"
+                            id="destination_password"
+                            [disabled]="testOngoing"
+                            [readonly]="!editable"
+                            [(ngModel)]="target.credential.access_secret"
+                            name="access_secret"
+                            #access_secret="ngModel"></textarea>
+                        }
                     </div>
                 </div>
             </div>
@@ -278,6 +267,7 @@
                 </clr-control-helper>
             </clr-textarea-container>
         </form>
+        }
     </div>
     <div class="modal-footer">
         <button
@@ -285,7 +275,7 @@
             type="button"
             class="btn btn-outline"
             (click)="testConnection()"
-            [disabled]="inProgress || targetEndpoint?.errors">
+            [disabled]="inProgress || isEndpointInvalid">
             {{ 'DESTINATION.TEST_CONNECTION' | translate }}
         </button>
         <button

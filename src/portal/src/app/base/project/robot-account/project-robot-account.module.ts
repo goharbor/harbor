@@ -16,6 +16,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../../shared/shared.module';
 import { RobotAccountComponent } from './robot-account.component';
 import { AddRobotComponent } from './add-robot/add-robot.component';
+import { ClrIcon } from '@clr/angular';
 
 const routes: Routes = [
     {

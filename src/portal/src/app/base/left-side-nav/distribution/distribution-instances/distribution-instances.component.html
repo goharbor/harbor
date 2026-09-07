@@ -5,6 +5,7 @@
         </h2>
         <div>
             <clr-datagrid
+                clrDgSelectionType="multi"
                 (clrDgRefresh)="loadData($event)"
                 [clrDgLoading]="inProgress"
                 [(clrDgSelected)]="selectedRow">
@@ -22,115 +23,111 @@
                                 }}
                             </button>
                             <clr-dropdown
-                                [clrCloseMenuOnItemClick]="false"
+                                [clrCloseMenuOnItemClick]="true"
                                 class="btn btn-link"
                                 clrDropdownTrigger>
                                 <span id="member-action"
                                     >{{ 'BUTTON.ACTIONS' | translate
-                                    }}<clr-icon shape="caret down"></clr-icon
+                                    }}<clr-icon
+                                        shape="caret"
+                                        direction="down"></clr-icon
                                 ></span>
                                 <clr-dropdown-menu *clrIfOpen>
-                                    <clr-dropdown>
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary"
-                                            (click)="editInstance()"
-                                            [disabled]="
-                                                !(
-                                                    selectedRow &&
-                                                    selectedRow.length === 1
-                                                )
-                                            ">
-                                            <clr-icon
-                                                shape="edit"
-                                                size="16"></clr-icon
-                                            >&nbsp;
-                                            <span id="distribution-edit">{{
-                                                'BUTTON.EDIT' | translate
-                                            }}</span>
-                                        </button>
-                                        <button
-                                            *ngIf="
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        clrDropdownItem
+                                        (click)="editInstance()"
+                                        [disabled]="
+                                            !(
+                                                selectedRow &&
+                                                selectedRow.length === 1
+                                            )
+                                        ">
+                                        <clr-icon
+                                            shape="edit"
+                                            size="16"></clr-icon
+                                        >&nbsp;
+                                        <span id="distribution-edit">{{
+                                            'BUTTON.EDIT' | translate
+                                        }}</span>
+                                    </button>
+                                    @if ( selectedRow && selectedRow.length ===
+                                    1 && !selectedRow[0].enabled ) {
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        clrDropdownItem
+                                        (click)="
+                                            operateInstances(
+                                                'enable',
+                                                selectedRow
+                                            )
+                                        "
+                                        [disabled]="
+                                            !(
                                                 selectedRow &&
                                                 selectedRow.length === 1 &&
                                                 !selectedRow[0].enabled
-                                            "
-                                            type="button"
-                                            class="btn btn-secondary"
-                                            (click)="
-                                                operateInstances(
-                                                    'enable',
-                                                    selectedRow
-                                                )
-                                            "
-                                            [disabled]="
-                                                !(
-                                                    selectedRow &&
-                                                    selectedRow.length === 1 &&
-                                                    !selectedRow[0].enabled
-                                                )
-                                            ">
-                                            <clr-icon
-                                                shape="connect"
-                                                size="16"></clr-icon
-                                            >&nbsp;
-                                            <span id="distribution-enable">{{
-                                                'WEBHOOK.ENABLED_BUTTON'
-                                                    | translate
-                                            }}</span>
-                                        </button>
-                                        <button
-                                            *ngIf="
-                                                !(
-                                                    selectedRow &&
-                                                    selectedRow.length === 1 &&
-                                                    !selectedRow[0].enabled
-                                                )
-                                            "
-                                            type="button"
-                                            class="btn btn-secondary"
-                                            (click)="
-                                                operateInstances(
-                                                    'disable',
-                                                    selectedRow
-                                                )
-                                            "
-                                            [disabled]="
-                                                !(
-                                                    selectedRow &&
-                                                    selectedRow.length === 1 &&
-                                                    selectedRow[0].enabled
-                                                )
-                                            ">
-                                            <clr-icon
-                                                shape="disconnect"
-                                                size="16"></clr-icon
-                                            >&nbsp;
-                                            <span id="distribution-disable">{{
-                                                'WEBHOOK.DISABLED_BUTTON'
-                                                    | translate
-                                            }}</span>
-                                        </button>
-                                        <div class="dropdown-divider"></div>
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary"
-                                            (click)="
-                                                operateInstances(
-                                                    'delete',
-                                                    selectedRow
-                                                )
-                                            "
-                                            [disabled]="selectedRow.length < 1">
-                                            <clr-icon
-                                                shape="window-close"
-                                                size="16"></clr-icon
-                                            >&nbsp;
-                                            <span id="distribution-delete">{{
-                                                'BUTTON.DELETE' | translate
-                                            }}</span>
-                                        </button>
-                                    </clr-dropdown>
+                                            )
+                                        ">
+                                        <clr-icon
+                                            shape="connect"
+                                            size="16"></clr-icon
+                                        >&nbsp;
+                                        <span id="distribution-enable">{{
+                                            'WEBHOOK.ENABLED_BUTTON' | translate
+                                        }}</span>
+                                    </button>
+                                    } @if ( !( selectedRow && selectedRow.length
+                                    === 1 && !selectedRow[0].enabled ) ) {
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        clrDropdownItem
+                                        (click)="
+                                            operateInstances(
+                                                'disable',
+                                                selectedRow
+                                            )
+                                        "
+                                        [disabled]="
+                                            !(
+                                                selectedRow &&
+                                                selectedRow.length === 1 &&
+                                                selectedRow[0].enabled
+                                            )
+                                        ">
+                                        <clr-icon
+                                            shape="disconnect"
+                                            size="16"></clr-icon
+                                        >&nbsp;
+                                        <span id="distribution-disable">{{
+                                            'WEBHOOK.DISABLED_BUTTON'
+                                                | translate
+                                        }}</span>
+                                    </button>
+                                    }
+                                    <div class="dropdown-divider"></div>
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        clrDropdownItem
+                                        (click)="
+                                            operateInstances(
+                                                'delete',
+                                                selectedRow
+                                            )
+                                        "
+                                        [disabled]="selectedRow.length < 1">
+                                        <clr-icon
+                                            shape="window-close"
+                                            size="16"></clr-icon
+                                        >&nbsp;
+                                        <span id="distribution-delete">{{
+                                            'BUTTON.DELETE' | translate
+                                        }}</span>
+                                    </button>
                                 </clr-dropdown-menu>
                             </clr-dropdown>
                         </div>
@@ -182,9 +179,8 @@
                 <clr-dg-placeholder>{{
                     'DISTRIBUTION.NOT_FOUND' | translate
                 }}</clr-dg-placeholder>
-                <clr-dg-row
-                    *ngFor="let instance of instances"
-                    [clrDgItem]="instance">
+                @for (instance of instances; track instance) {
+                <clr-dg-row [clrDgItem]="instance">
                     <clr-dg-cell>
                         <span>{{ instance.name }}</span>
                     </clr-dg-cell>
@@ -193,47 +189,41 @@
                         <span>{{ instance.vendor }}</span>
                     </clr-dg-cell>
                     <clr-dg-cell>
-                        <span
-                            *ngIf="
-                                !instance.hasCheckHealth;
-                                else elseBlockLoading
-                            "
-                            class="spinner spinner-inline ml-2"></span>
-                        <ng-template #elseBlockLoading>
-                            <span
-                                *ngIf="
-                                    instance.pingStatus === 'Healthy';
-                                    else elseBlock
-                                "
-                                class="label label-success"
-                                >{{ 'SCANNER.HEALTHY' | translate }}</span
-                            >
-                            <ng-template #elseBlock>
-                                <span class="label label-danger">{{
-                                    'SCANNER.UNHEALTHY' | translate
-                                }}</span>
-                            </ng-template>
-                        </ng-template>
+                        @if ( !instance.hasCheckHealth) {
+                        <span class="spinner spinner-inline ml-2"></span>
+                        } @else { @if ( instance.pingStatus === 'Healthy') {
+                        <span class="label label-success">{{
+                            'SCANNER.HEALTHY' | translate
+                        }}</span>
+                        } @else {
+                        <span class="label label-danger">{{
+                            'SCANNER.UNHEALTHY' | translate
+                        }}</span>
+                        } }
                     </clr-dg-cell>
                     <clr-dg-cell>
-                        <div *ngIf="instance.enabled" class="icon-wrap">
+                        @if (instance.enabled) {
+                        <div class="icon-wrap">
                             <clr-icon
                                 shape="check-circle"
                                 size="20"
-                                class="is-success enabled-icon"></clr-icon>
+                                status="success"
+                                class="enabled-icon"></clr-icon>
                             <span class="margin-left-5px">{{
                                 'WEBHOOK.ENABLED' | translate
                             }}</span>
                         </div>
-                        <div *ngIf="!instance.enabled" class="icon-wrap">
+                        } @if (!instance.enabled) {
+                        <div class="icon-wrap">
                             <clr-icon
                                 shape="exclamation-triangle"
                                 size="20"
-                                class="is-warning"></clr-icon>
+                                status="warning"></clr-icon>
                             <span class="margin-left-5px">{{
                                 'WEBHOOK.DISABLED' | translate
                             }}</span>
                         </div>
+                        }
                     </clr-dg-cell>
                     <clr-dg-cell>{{ instance.auth_mode }}</clr-dg-cell>
                     <clr-dg-cell>{{
@@ -242,6 +232,7 @@
                     }}</clr-dg-cell>
                     <clr-dg-cell>{{ instance.description }}</clr-dg-cell>
                 </clr-dg-row>
+                }
                 <clr-dg-footer>
                     <clr-dg-pagination
                         #pagination
@@ -254,11 +245,13 @@
                                 'PAGINATION.PAGE_SIZE' | translate
                             }}</clr-dg-page-size
                         >
-                        <span *ngIf="totalCount"
+                        @if (totalCount) {
+                        <span
                             >{{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}
                             {{ 'ARTIFACT.OF' | translate }}
                         </span>
+                        }
                         <span
                             >{{ totalCount }}
                             {{ 'ARTIFACT.ITEMS' | translate }}</span

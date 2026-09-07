@@ -88,7 +88,7 @@ func filterAccess(ctx context.Context, access []*token.ResourceActions,
 	ctl project.Controller, filters map[string]accessFilter) error {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
-		return fmt.Errorf("failed to  get security context from request")
+		return fmt.Errorf("failed to get security context from request")
 	}
 	var err error
 	for _, a := range access {

@@ -16,6 +16,7 @@ import { Component } from '@angular/core';
 @Component({
     selector: 'app-labels',
     templateUrl: './labels.component.html',
+    standalone: false,
 })
 export class LabelsComponent {
     constructor() {}

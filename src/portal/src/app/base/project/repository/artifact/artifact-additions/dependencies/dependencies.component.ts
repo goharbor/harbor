@@ -22,6 +22,7 @@ import { finalize } from 'rxjs/operators';
     selector: 'hbr-artifact-dependencies',
     templateUrl: './dependencies.component.html',
     styleUrls: ['./dependencies.component.scss'],
+    standalone: false,
 })
 export class DependenciesComponent implements OnInit {
     @Input()

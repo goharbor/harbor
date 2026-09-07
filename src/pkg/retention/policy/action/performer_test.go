@@ -212,6 +212,64 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 	assert.Equal(suite.T(), "dev", results[0].Target.Tags[0])
 }
 
+func (suite *TestPerformerSuite) TestPerformImmutableRepositoryExclusion() {
+	const projectID int64 = 987654321
+	rule := &immumodel.Metadata{
+		ProjectID: projectID,
+		Priority:  1,
+		Action:    "immutable",
+		Template:  "immutable_template",
+		TagSelectors: []*immumodel.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "**",
+			},
+		},
+		ScopeSelectors: map[string][]*immumodel.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "repoExcludes",
+					Pattern:    "qa/**",
+				},
+			},
+		},
+	}
+	ruleID, err := immutable.Ctr.CreateImmutableRule(orm.Context(), rule)
+	require.NoError(suite.T(), err)
+	defer func() {
+		require.NoError(suite.T(), immutable.Ctr.DeleteImmutableRule(orm.Context(), ruleID))
+	}()
+
+	p := &retainAction{
+		all: []*selector.Candidate{
+			{
+				NamespaceID: projectID,
+				Namespace:   "example",
+				Repository:  "qa/team/component/backend",
+				Kind:        selector.Image,
+				Tags:        []string{"build-42"},
+				Digest:      "d0",
+			},
+			{
+				NamespaceID: projectID,
+				Namespace:   "example",
+				Repository:  "prod/team/component/backend",
+				Kind:        selector.Image,
+				Tags:        []string{"build-42"},
+				Digest:      "d1",
+			},
+		},
+	}
+
+	results, err := p.Perform(orm.Context(), nil)
+	require.NoError(suite.T(), err)
+	require.Len(suite.T(), results, 2)
+	assert.NoError(suite.T(), results[0].Error)
+	assert.IsType(suite.T(), (*selector.ImmutableError)(nil), results[1].Error)
+}
+
 type fakeRetentionClient struct{}
 
 // GetCandidates ...

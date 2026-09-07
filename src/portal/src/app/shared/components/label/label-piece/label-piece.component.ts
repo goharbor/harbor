@@ -19,6 +19,7 @@ import { Label } from '../../../../../../ng-swagger-gen/models/label';
     selector: 'hbr-label-piece',
     templateUrl: './label-piece.component.html',
     styleUrls: ['./label-piece.component.scss'],
+    standalone: false,
 })
 export class LabelPieceComponent implements OnChanges {
     @Input() label: Label;

@@ -98,6 +98,8 @@ func TestEncrypt(t *testing.T) {
 		alg     string
 		want    string
 	}{
+		// SHA1 is kept as a golden case to guard the legacy PBKDF2-HMAC-SHA1
+		// verification path that Encrypt still supports for old credentials.
 		"sha1 test":   {content: "content", salt: "salt", alg: SHA1, want: "dc79e76c88415c97eb089d9cc80b4ab0"},
 		"sha256 test": {content: "content", salt: "salt", alg: SHA256, want: "83d3d6f3e7cacb040423adf7ced63d21"},
 	}
@@ -153,11 +155,26 @@ func TestGenerateRandomString(t *testing.T) {
 	}
 }
 
+func TestGenerateRandomStringOrError(t *testing.T) {
+	str, err := GenerateRandomStringOrError()
+	assert.Nil(t, err)
+	assert.Equal(t, 32, len(str))
+	str2, err := GenerateRandomStringOrError()
+	assert.Nil(t, err)
+	assert.NotEqual(t, str, str2)
+}
+
 func TestGenerateRandomStringWithLen(t *testing.T) {
 	str := GenerateRandomStringWithLen(16)
 	if len(str) != 16 {
 		t.Errorf("Failed to generate ramdom string with fixed length.")
 	}
+}
+
+func TestGenerateRandomStringWithLenAndError(t *testing.T) {
+	str, err := GenerateRandomStringWithLenAndError(16)
+	assert.Nil(t, err)
+	assert.Equal(t, 16, len(str))
 }
 
 func TestTestTCPConn(t *testing.T) {

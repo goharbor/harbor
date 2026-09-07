@@ -27,6 +27,7 @@ import {
     selector: 'app-tag-retention-tasks',
     templateUrl: './tag-retention-tasks.component.html',
     styleUrls: ['./tag-retention-tasks.component.css'],
+    standalone: false,
 })
 export class TagRetentionTasksComponent implements OnDestroy {
     @Input()

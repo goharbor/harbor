@@ -23,6 +23,7 @@ import { InlineAlertComponent } from '../../../shared/components/inline-alert/in
     selector: 'new-user-modal',
     templateUrl: 'new-user-modal.component.html',
     styleUrls: ['../../../common.scss', './new-user-madal.component.scss'],
+    standalone: false,
 })
 export class NewUserModalComponent {
     opened: boolean = false;

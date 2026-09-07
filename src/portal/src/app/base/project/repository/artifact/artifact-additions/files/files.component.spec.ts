@@ -117,12 +117,12 @@ describe('FilesComponent', () => {
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should get license  and render', async () => {
+    it('should get files and render', async () => {
         component.filesLink = mockedLink;
         component.ngOnInit();
         fixture.detectChanges();
         await fixture.whenStable();
-        const tables = fixture.nativeElement.getElementsByTagName('clr-tree');
-        expect(tables.length).toEqual(1);
+        fixture.detectChanges();
+        expect(component.filesList?.length).toEqual(filesList.length);
     });
 });

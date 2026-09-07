@@ -11,7 +11,8 @@
                 </h3>
             </div>
             <div id="error-message">
-                <div class="alert alert-danger" role="alert" *ngIf="errorOpen">
+                @if (errorOpen) {
+                <div class="alert alert-danger" role="alert">
                     <div class="alert-items">
                         <div class="alert-item static">
                             <div class="alert-icon-wrapper">
@@ -34,6 +35,7 @@
                             shape="close"></clr-icon>
                     </button>
                 </div>
+                }
             </div>
             <div class="modal-body">
                 <p class="body-message">
