@@ -15,6 +15,8 @@
 package security
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -26,6 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/pkg/oidc"
 	testingUser "github.com/goharbor/harbor/src/testing/controller/user"
 )
@@ -45,6 +49,7 @@ func TestOIDCCli(t *testing.T) {
 	assert.Nil(t, ctx)
 
 	// pass
+	config.InitWithSettings(map[string]any{common.OIDCLoginGroups: ""})
 	username := "oidcModiferTester"
 	password := "oidcSecret"
 	testCtl := &testingUser.Controller{}
@@ -59,6 +64,67 @@ func TestOIDCCli(t *testing.T) {
 	req.SetBasicAuth(username, password)
 	ctx = oidcCli.Generate(req)
 	assert.NotNil(t, ctx)
+}
+
+func TestOIDCCliLoginGroupsBlocked(t *testing.T) {
+	config.InitWithSettings(map[string]any{
+		common.OIDCLoginGroups: "allowed-group",
+	})
+	t.Cleanup(func() {
+		config.InitWithSettings(map[string]any{common.OIDCLoginGroups: ""})
+	})
+
+	username := "blockedUser"
+	password := "oidcSecret"
+	testCtl := &testingUser.Controller{}
+	testCtl.On("GetByName", mock.Anything, username).Return(
+		&models.User{
+			Username: username,
+			Email:    fmt.Sprintf("%s@test.domain", username),
+		}, nil)
+	uctl = testCtl
+	oidc.SetHardcodeVerifierForTest(password)
+
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	req.SetBasicAuth(username, password)
+
+	// The fake verifier returns a UserInfo with no group claim, so the user
+	// should be denied when oidc_login_groups is configured.
+	ctx := (&oidcCli{}).Generate(req)
+	assert.Nil(t, ctx)
+}
+
+func TestOIDCCliOIDCSettingError(t *testing.T) {
+	config.InitWithSettings(map[string]any{
+		common.OIDCLoginGroups: "",
+	})
+
+	username := "settingErrUser"
+	password := "oidcSecret"
+
+	testCtl := &testingUser.Controller{}
+	testCtl.On("GetByName", mock.Anything, username).Return(
+		&models.User{Username: username}, nil)
+	origUctl := uctl
+	uctl = testCtl
+	t.Cleanup(func() { uctl = origUctl })
+	oidc.SetHardcodeVerifierForTest(password)
+
+	origSettingFn := oidcCliSettingFn
+	oidcCliSettingFn = func(_ context.Context) (*cfgModels.OIDCSetting, error) {
+		return nil, errors.New("config load failed")
+	}
+	t.Cleanup(func() { oidcCliSettingFn = origSettingFn })
+
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	req.SetBasicAuth(username, password)
+
+	ctx := (&oidcCli{}).Generate(req)
+	assert.Nil(t, ctx)
 }
 
 func TestOIDCCliValid(t *testing.T) {
