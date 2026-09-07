@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsecrapi "github.com/aws/aws-sdk-go-v2/service/ecr"
@@ -31,7 +32,7 @@ import (
 )
 
 const (
-	ecrPattern = "https://(?:api|(\\d+)\\.dkr)\\.ecr(?:-public|-fips)?\\.([\\w\\-]+)\\.(amazonaws\\.com(\\.cn)?|sc2s\\.sgov\\.gov|c2s\\.ic\\.gov)"
+	ecrPattern = "(?i)https://(?:api|(\\d+)\\.dkr)\\.ecr(?:-public|-fips)?\\.([\\w\\-]+)\\.(amazonaws\\.com(\\.cn)?|sc2s\\.sgov\\.gov|c2s\\.ic\\.gov)"
 )
 
 var (
@@ -69,7 +70,7 @@ func parseAccountRegion(url string) (string, string, error) {
 	if rs == nil || len(rs) < 3 {
 		return "", "", errors.New("bad aws url")
 	}
-	return rs[1], rs[2], nil
+	return rs[1], strings.ToLower(rs[2]), nil
 }
 
 type factory struct {
