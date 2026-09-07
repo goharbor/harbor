@@ -225,7 +225,6 @@ func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error
 }
 
 func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.Config) (*gooidc.IDToken, error) {
-	log.Debugf("Raw ID token for verification: %s", rawIDToken)
 	p, err := provider.get(ctx)
 	if err != nil {
 		return nil, err
