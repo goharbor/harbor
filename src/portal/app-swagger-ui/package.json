@@ -7,7 +7,7 @@
     "start": "webpack serve --open --config webpack.dev.js"
   },
   "dependencies": {
-    "css-loader": "^6.11.0",
+    "css-loader": "^7.1.5",
     "style-loader": "^4.0.0",
     "swagger-ui": "5.32.13"
   },
