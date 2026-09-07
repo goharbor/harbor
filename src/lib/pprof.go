@@ -17,6 +17,7 @@ package lib
 import (
 	"errors"
 	"net/http"
+
 	// import pprof
 	_ "net/http/pprof" // nolint:gosec // pprof is only registered when PPROF_ENABLED=true.
 	"os"
