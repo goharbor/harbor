@@ -48,6 +48,13 @@ func TestSendError(t *testing.T) {
 	SendError(rw, err)
 	assert.Equal(t, http.StatusNotFound, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"object not found"}]}`+"\n", rw.Body.String())
+
+	// manifest unknown error, the OCI distribution spec code for a missing manifest
+	rw = httptest.NewRecorder()
+	err = errors.New(nil).WithCode(errors.MANIFESTUNKNOWN).WithMessage("manifest unknown")
+	SendError(rw, err)
+	assert.Equal(t, http.StatusNotFound, rw.Code)
+	assert.Equal(t, `{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}`+"\n", rw.Body.String())
 }
 
 func TestAPIError(t *testing.T) {
