@@ -238,17 +238,24 @@ func (m *managerTestSuite) TestDelete_ConcurrentInlineCleanup() {
 	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil)
 
+	const deletes = 2
+	errs := make(chan error, deletes)
 	var wg sync.WaitGroup
-	for i := 0; i < 2; i++ {
+	for i := 0; i < deletes; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_ = m.cachedManager.Delete(m.ctx, 1)
+			errs <- m.cachedManager.Delete(m.ctx, 1)
 		}()
 	}
 	wg.Wait()
+	close(errs)
+	for err := range errs {
+		m.NoError(err)
+	}
 
-	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+	// each Delete evicts two keys (by id and by repository+digest)
+	m.cache.AssertNumberOfCalls(m.T(), "Delete", deletes*2)
 }
 
 // TestScheduleCleanUp_DefersViaAfterCommit verifies the in-transaction
