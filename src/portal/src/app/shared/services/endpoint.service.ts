@@ -34,6 +34,7 @@ export const ADAPTERS_MAP = {
     gitlab: 'Gitlab',
     'google-gcr': 'Google GCR',
     harbor: 'Harbor',
+    'harbor-satellite': 'Harbor Satellite',
     'helm-hub': 'Helm Hub',
     'artifact-hub': 'Artifact Hub',
     'huawei-SWR': 'Huawei SWR',
