@@ -185,9 +185,15 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			span.AddEvent("rollback transaction")
 			closed = true
 			if e := tx.Rollback(); e != nil {
-				tracelib.RecordError(span, e, "rollback transaction failed")
 				logRollbackErr(e)
-				return e
+				// database/sql already rolled the transaction back on its own
+				// (e.g. the request context was canceled), so this isn't a
+				// genuine rollback failure - preserve f's original error
+				// instead of masking it with sql.ErrTxDone.
+				if !errors.Is(e, sql.ErrTxDone) {
+					tracelib.RecordError(span, e, "rollback transaction failed")
+					return e
+				}
 			}
 
 			return err
