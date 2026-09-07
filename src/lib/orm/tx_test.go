@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -28,8 +29,9 @@ import (
 // calls; WithTransaction never touches any other method in these tests.
 type fakeTxOrmer struct {
 	orm.TxOrmer
-	commits   int
-	rollbacks int
+	commits     int
+	rollbacks   int
+	rollbackErr error
 }
 
 func (f *fakeTxOrmer) Commit() error {
@@ -39,7 +41,7 @@ func (f *fakeTxOrmer) Commit() error {
 
 func (f *fakeTxOrmer) Rollback() error {
 	f.rollbacks++
-	return nil
+	return f.rollbackErr
 }
 
 // fakeOrmer is a minimal orm.Ormer that hands out fakeTxOrmer from
@@ -82,6 +84,21 @@ func TestWithTransaction_ErrorRollsBackOnce(t *testing.T) {
 	require.Error(t, wrapped(ctx))
 
 	assert.Equal(t, 1, tx.rollbacks, "the error path must roll back exactly once, not again via the deferred rollback")
+	assert.Equal(t, 0, tx.commits)
+}
+
+func TestWithTransaction_PreservesOriginalErrorWhenAlreadyRolledBack(t *testing.T) {
+	tx := &fakeTxOrmer{rollbackErr: sql.ErrTxDone}
+	ctx := NewContext(context.Background(), &fakeOrmer{tx: tx})
+
+	wantErr := errors.New("boom")
+	wrapped := WithTransaction(func(context.Context) error {
+		return wantErr
+	})
+
+	err := wrapped(ctx)
+	assert.Equal(t, wantErr, err, "sql.ErrTxDone from an already-completed rollback must not mask the callback's error")
+	assert.Equal(t, 1, tx.rollbacks)
 	assert.Equal(t, 0, tx.commits)
 }
 
