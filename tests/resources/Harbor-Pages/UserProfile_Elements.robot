@@ -17,8 +17,8 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Variables ***
 ${head_admin_xpath}  xpath=//clr-dropdown//button//clr-icon[@shape='user']
-${change_password_xpath}  xpath=//clr-main-container//clr-dropdown//a[contains(.,'Change Password')]
-${user_profile_xpath}  xpath=//clr-main-container//clr-dropdown//a[1]
+${change_password_xpath}  xpath=(//a[normalize-space()='Change Password'])[1]
+${user_profile_xpath}  xpath=(//a[normalize-space()='User Profile'])[1]
 ${old_password_xpath}  xpath=//*[@id='oldPassword']
 ${new_password_xpath}  xpath=//*[@id='newPassword']
 ${renew_password_xpath}  xpath=//*[@id='reNewPassword']

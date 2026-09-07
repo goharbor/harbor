@@ -40,6 +40,7 @@ import {
     selector: 'app-executions',
     templateUrl: './executions.component.html',
     styleUrls: ['./executions.component.scss'],
+    standalone: false,
 })
 export class ExecutionsComponent implements OnDestroy {
     @Input()

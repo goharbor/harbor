@@ -6,15 +6,17 @@
         ><span class="badge badge-3 ml-5"
             >{{ rules?.length ? rules?.length : 0 }}/15</span
         >
-        <span *ngIf="loadingRule" class="spinner spinner-inline ml-2"
-            >Loading...</span
-        >
+        @if (loadingRule) {
+        <span class="spinner spinner-inline ml-2">Loading...</span>
+        }
     </div>
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col">
-        <ul *ngIf="rules?.length > 0" class="list-unstyled">
-            <li class="rule" *ngFor="let rule of rules; let i = index">
+        @if (rules?.length > 0) {
+        <ul class="list-unstyled">
+            @for (rule of rules; track rule; let i = $index) {
+            <li class="rule">
                 <div class="clr-row">
                     <div class="clr-col-2 flex-150">
                         <div
@@ -25,24 +27,27 @@
                                 id="{{ 'action' + i }}"
                                 class="dropdown-toggle btn btn-sm btn-link">
                                 {{ 'IMMUTABLE_TAG.ACTION' | translate }}
-                                <clr-icon shape="caret down"></clr-icon>
+                                <clr-icon
+                                    shape="caret"
+                                    direction="down"></clr-icon>
                             </button>
                             <div class="dropdown-menu">
+                                @if (!rule?.disabled) {
                                 <button
-                                    *ngIf="!rule?.disabled"
                                     type="button"
                                     id="{{ 'disable-btn' + i }}"
                                     class="dropdown-item"
                                     (click)="toggleDisable(rule, true)">
                                     {{ 'IMMUTABLE_TAG.DISABLE' | translate }}
                                 </button>
+                                } @if (rule?.disabled) {
                                 <button
-                                    *ngIf="rule?.disabled"
                                     type="button"
                                     class="dropdown-item"
                                     (click)="toggleDisable(rule, false)">
                                     {{ 'IMMUTABLE_TAG.ENABLE' | translate }}
                                 </button>
+                                }
                                 <button
                                     type="button"
                                     id="{{ 'edit-btn' + i }}"
@@ -62,15 +67,16 @@
                     </div>
                     <div class="clr-col">
                         <span>
+                            @if (!rule?.disabled) {
                             <clr-icon
-                                *ngIf="!rule?.disabled"
                                 class="color-green"
                                 shape="success-standard"></clr-icon>
+                            } @if (rule?.disabled) {
                             <clr-icon
                                 id="{{ 'disable-icon' + i }}"
-                                *ngIf="rule?.disabled"
                                 class="ml-0 color-red"
                                 shape="error-standard"></clr-icon>
+                            }
                         </span>
                         <span class="rule-name ml-5">
                             <span>{{
@@ -99,31 +105,27 @@
                             <span id="{{ 'tag-selectors-patten' + i }}">{{
                                 formatPattern(rule?.tag_selectors[0]?.pattern)
                             }}</span>
-                            <ng-container
-                                *ngIf="
-                                    rule?.tag_selectors[1]?.pattern &&
-                                    rule?.tag_selectors[1]?.pattern
-                                ">
-                                <span class="color-97">{{
-                                    'IMMUTABLE_TAG.AND' | translate
-                                }}</span>
-                                <span>{{
-                                    'IMMUTABLE_TAG.LOWER_LABELS' | translate
-                                }}</span>
-                                <span>{{
-                                    getI18nKey(
-                                        rule?.tag_selectors[1]?.decoration
-                                    ) | translate
-                                }}</span>
-                                <span>{{
-                                    rule?.tag_selectors[1]?.pattern
-                                }}</span>
-                            </ng-container>
+                            @if ( rule?.tag_selectors[1]?.pattern &&
+                            rule?.tag_selectors[1]?.pattern ) {
+                            <span class="color-97">{{
+                                'IMMUTABLE_TAG.AND' | translate
+                            }}</span>
+                            <span>{{
+                                'IMMUTABLE_TAG.LOWER_LABELS' | translate
+                            }}</span>
+                            <span>{{
+                                getI18nKey(rule?.tag_selectors[1]?.decoration)
+                                    | translate
+                            }}</span>
+                            <span>{{ rule?.tag_selectors[1]?.pattern }}</span>
+                            }
                         </span>
                     </div>
                 </div>
             </li>
+            }
         </ul>
+        }
         <div class="v-center clr-row" [ngClass]="{ 'pt-1': rules?.length > 0 }">
             <div class="clr-col-2 flex-150"></div>
             <div class="add-rule-btn">
@@ -144,7 +146,6 @@
     [rules]="rules"
     [projectId]="projectId"
     (clickAdd)="clickAdd($event)"></app-add-immutable-rule>
-<div
-    class="backdrop-transparent"
-    (click)="ruleIndex = -1"
-    *ngIf="ruleIndex !== -1"></div>
+@if (ruleIndex !== -1) {
+<div class="backdrop-transparent" (click)="ruleIndex = -1"></div>
+}

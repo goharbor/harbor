@@ -26,6 +26,7 @@ import { BatchInfo } from '../../../base/global-confirmation-dialog/confirmation
     selector: 'confirmation-dialog',
     templateUrl: './confirmation-dialog.component.html',
     styleUrls: ['./confirmation-dialog.component.scss'],
+    standalone: false,
 })
 export class ConfirmationDialogComponent {
     opened = false;

@@ -66,6 +66,7 @@ const INTERVAL: number = 30000;
 @Component({
     selector: 'list-project',
     templateUrl: 'list-project.component.html',
+    standalone: false,
 })
 export class ListProjectComponent implements OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

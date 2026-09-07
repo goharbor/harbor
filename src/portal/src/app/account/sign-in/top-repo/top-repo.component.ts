@@ -21,8 +21,8 @@ import { ListMode } from '../../../shared/entities/shared.const';
     selector: 'top-repo',
     templateUrl: 'top-repo.component.html',
     styleUrls: ['top-repo.component.scss'],
-
     providers: [TopRepoService],
+    standalone: false,
 })
 export class TopRepoComponent implements OnInit {
     topRepos: Repository[] = [];

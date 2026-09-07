@@ -48,6 +48,7 @@ import {
     selector: 'app-schedule-card',
     templateUrl: './schedule-card.component.html',
     styleUrls: ['./schedule-card.component.scss'],
+    standalone: false,
 })
 export class ScheduleCardComponent implements OnInit, OnDestroy {
     isPaused: boolean = false;

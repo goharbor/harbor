@@ -24,9 +24,9 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 	migrate "github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/pgx" // import pgx driver for migrator
-	_ "github.com/golang-migrate/migrate/v4/source/file"  // import local file driver for migrator
-	_ "github.com/jackc/pgx/v4/stdlib"                    // registry pgx driver
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5" // import pgx driver for migrator
+	_ "github.com/golang-migrate/migrate/v4/source/file"     // import local file driver for migrator
+	_ "github.com/jackc/pgx/v5/stdlib"                       // registry pgx driver
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -146,7 +146,7 @@ func (p *pgsql) UpgradeSchema() error {
 // NewMigrator creates a migrator base on the information
 func NewMigrator(database *models.PostGreSQL) (*migrate.Migrate, error) {
 	dbURL := url.URL{
-		Scheme:   "pgx",
+		Scheme:   "pgx5",
 		User:     url.UserPassword(database.Username, database.Password),
 		Host:     net.JoinHostPort(database.Host, strconv.Itoa(database.Port)),
 		Path:     database.Database,

@@ -105,9 +105,12 @@ func (p *providerHelper) create(ctx context.Context) error {
 
 var provider = &providerHelper{}
 
+// Used only when an admin disables OIDC certificate verification.
+// The default path verifies certificates; this fallback still requires TLS 1.2+.
 var insecureTransport = &http.Transport{
 	TLSClientConfig: &tls.Config{
-		InsecureSkipVerify: true,
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true, // nolint:gosec // G402: gated by admin-controlled OIDCSetting.VerifyCert
 	},
 	Proxy: http.ProxyFromEnvironment,
 }
@@ -222,7 +225,6 @@ func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error
 }
 
 func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.Config) (*gooidc.IDToken, error) {
-	log.Debugf("Raw ID token for verification: %s", rawIDToken)
 	p, err := provider.get(ctx)
 	if err != nil {
 		return nil, err

@@ -31,6 +31,7 @@ describe('P2pProviderService', () => {
         [P2pProviderService],
         (service: P2pProviderService) => {
             const date = new Date();
+            date.setMilliseconds(0);
             const noDuration: string = service.getDuration(
                 new Date(date).toUTCString(),
                 new Date(date.getTime()).toUTCString()

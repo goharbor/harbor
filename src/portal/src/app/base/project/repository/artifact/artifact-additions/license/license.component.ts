@@ -21,6 +21,7 @@ import { finalize } from 'rxjs/operators';
     selector: 'hbr-artifact-license',
     templateUrl: './license.component.html',
     styleUrls: ['./license.component.scss'],
+    standalone: false,
 })
 export class ArtifactLicenseComponent implements OnInit {
     @Input() licenseLink: AdditionLink;

@@ -1,0 +1,17 @@
+:host {
+    display: flex;
+
+    .search {
+        max-width: 100%;
+        flex: 1;
+        width: 100%;
+
+        label {
+            width: 100%;
+
+            input.search-input {
+                width: 100%;
+            }
+        }
+    }
+}

@@ -156,7 +156,7 @@ func match(ctx context.Context, reqHost, rawURL string) bool {
 	if cfgURL.Scheme == "https" && strings.HasSuffix(reqHost, ":443") {
 		reqHost = strings.TrimSuffix(reqHost, ":443")
 	}
-	return reqHost == cfgURL.Host
+	return strings.EqualFold(reqHost, cfgURL.Host)
 }
 
 var (

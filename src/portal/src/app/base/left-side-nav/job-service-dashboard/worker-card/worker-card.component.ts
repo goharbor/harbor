@@ -40,6 +40,7 @@ import {
     selector: 'app-worker-card',
     templateUrl: './worker-card.component.html',
     styleUrls: ['./worker-card.component.scss'],
+    standalone: false,
 })
 export class WorkerCardComponent implements OnInit, OnDestroy {
     denominator: number = 0;

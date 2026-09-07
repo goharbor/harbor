@@ -353,8 +353,8 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[0]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement
-            .querySelector('#artifact-list-copy-digest')
+        document
+            .querySelector<HTMLElement>('#artifact-list-copy-digest')
             .click();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -365,21 +365,19 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement
-            .querySelector('#artifact-list-add-labels')
+        document
+            .querySelector<HTMLElement>('#artifact-list-add-labels')
             .click();
         fixture.detectChanges();
         await fixture.whenStable();
-        expect(
-            fixture.nativeElement.querySelector('app-label-selector')
-        ).toBeTruthy();
+        expect(document.querySelector('app-label-selector')).toBeTruthy();
     });
 
     it('should open copy artifact modal', async () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement.querySelector('#artifact-list-copy').click();
+        document.querySelector<HTMLElement>('#artifact-list-copy').click();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(
@@ -391,7 +389,7 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement.querySelector('#artifact-list-delete').click();
+        document.querySelector<HTMLElement>('#artifact-list-delete').click();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(
@@ -403,7 +401,7 @@ describe('ArtifactListTabComponent', () => {
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
         const generatedButton =
-            fixture.nativeElement.querySelector('#generate-sbom-btn');
+            document.querySelector<HTMLButtonElement>('#generate-sbom-btn');
         fixture.detectChanges();
         await fixture.whenStable();
         expect(generatedButton.disabled).toBeTruthy();
@@ -413,7 +411,7 @@ describe('ArtifactListTabComponent', () => {
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
         const stopButton =
-            fixture.nativeElement.querySelector('#stop-sbom-btn');
+            document.querySelector<HTMLButtonElement>('#stop-sbom-btn');
         fixture.detectChanges();
         await fixture.whenStable().then(() => {
             expect(stopButton.disabled).toBeTruthy();

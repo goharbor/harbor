@@ -34,6 +34,7 @@
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid
+                clrDgSelectionType="multi"
                 [(clrDgSelected)]="selectedRow"
                 [clrDgLoading]="loading"
                 (clrDgRefresh)="getQuotaList($event)">
@@ -73,7 +74,8 @@
                 <clr-dg-placeholder>{{
                     'QUOTA.PLACEHOLDER' | translate
                 }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let quota of quotaList" [clrDgItem]="quota">
+                @for (quota of quotaList; track quota) {
+                <clr-dg-row [clrDgItem]="quota">
                     <clr-dg-cell>
                         <a
                             href="javascript:void(0)"
@@ -143,6 +145,7 @@
                         </div>
                     </clr-dg-cell>
                 </clr-dg-row>
+                }
                 <clr-dg-footer>
                     <clr-dg-pagination
                         #pagination
@@ -155,11 +158,13 @@
                                 'PAGINATION.PAGE_SIZE' | translate
                             }}</clr-dg-page-size
                         >
-                        <span *ngIf="totalCount"
+                        @if (totalCount) {
+                        <span
                             >{{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}
                             {{ 'DESTINATION.OF' | translate }}</span
                         >
+                        }
                         {{ totalCount }} {{ 'SUMMARY.QUOTAS' | translate }}
                     </clr-dg-pagination>
                 </clr-dg-footer>

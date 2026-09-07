@@ -1,75 +1,64 @@
 .label-form {
     margin-bottom: -10px;
-    padding-top: 0;
     margin-top: 20px;
-    width: 100%;
-    background-color: #eee;
     border: 1px solid #ccc;
 
-    section {
-      padding: .5rem 0;
+    .flex-fill {
+        flex: 1;
+        min-width: 0;
     }
-  
-    section>label {
-      margin-left: 20px;
-    }
-  /* stylelint-disable */
+
+    /* stylelint-disable */
     .btnColor {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 26px;
-      height: 22px;
-      min-width: 26px;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 26px;
+        height: 22px;
+        min-width: 26px;
     }
 
-    .colorPanel {
-      span {
-        margin: 5px 4px;
-        width: 30px;
-        height: 24px;
-        text-align: center;
-        line-height: 24px;
-        font-size: 12px;
-        border: 1px solid #A1A1A1;
-      }
+    .dropdown-color {
+        margin-left: 0.5rem;
     }
-  
-    .dropdown-menu {
-      display: inline-block;
-      width: 166px;
-      padding: 6px;
 
-      .dropdown-item {
-        display: inline-block;
-        margin: 2px 4px;
-        padding: 0;
-        width: 30px;
-        height: 24px;
-        text-align: center;
-        line-height: 24px;
-        border: 0;
-        color: white;
-        font-size: 12px;
-      }
-    }
-  
     .dropdown .dropdown-toggle.btn {
-      padding: 0 !important;
+        padding: 0 !important;
     }
 
-    .borderSty
-    {
-      border: 1px solid #A1A1A1 !important;
-      line-height: 22px;
+    .borderSty {
+        border: 1px solid #a1a1a1 !important;
+        line-height: 22px;
     }
 }
 
 ::ng-deep {
-  .clr-form-control {
-    display: inherit;
-  }
+    .color-dropdown-menu {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        width: 166px !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        padding: 6px !important;
+
+        .dropdown-item {
+            display: inline-block !important;
+            margin: 2px 4px !important;
+            padding: 0 !important;
+            width: 30px !important;
+            min-width: unset !important;
+            max-width: unset !important;
+            height: 24px !important;
+            text-align: center !important;
+            line-height: 24px !important;
+            border: 0 !important;
+            color: white !important;
+            font-size: 12px !important;
+            cursor: pointer !important;
+        }
+    }
 }
 
 .position-ab {
-  position: absolute;
+    position: absolute;
 }

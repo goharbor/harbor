@@ -1,141 +1,154 @@
-<ng-container *ngIf="mode === PermissionSelectPanelModes.MODAL">
-    <div (click)="modalOpen = true">
-        <ng-content select="[modal]"></ng-content>
+@if (mode === PermissionSelectPanelModes.MODAL) {
+<div (click)="modalOpen = true">
+    <ng-content select="[modal]"></ng-content>
+</div>
+<clr-modal
+    [clrModalSize]="'lg'"
+    [(clrModalOpen)]="modalOpen"
+    [clrModalStaticBackdrop]="false">
+    <div class="modal-body">
+        <table class="table table-compact mt-0">
+            <thead>
+                <tr>
+                    <th class="left">
+                        {{ 'AUDIT_LOG.RESOURCE' | translate }}
+                    </th>
+                    @for (item of candidateActions; track item) {
+                    <th class="left">
+                        {{ convertKey(item) | translate }}
+                    </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (resource of candidateResources; track resource) {
+                <tr>
+                    <td class="left td">
+                        {{ convertKey(resource) | translate }}
+                    </td>
+                    @for (action of candidateActions; track action) {
+                    <td class="td">
+                        @if (isCandidate(resource, action)) {
+                        <input
+                            type="checkbox"
+                            clrCheckbox
+                            [disabled]="true"
+                            [ngModel]="getCheckBoxValue(resource, action)"
+                            (ngModelChange)="
+                                setCheckBoxValue(resource, action, $event)
+                            " />
+                        }
+                    </td>
+                    }
+                </tr>
+                }
+            </tbody>
+        </table>
     </div>
-    <clr-modal
-        [clrModalSize]="'lg'"
-        [(clrModalOpen)]="modalOpen"
-        [clrModalStaticBackdrop]="false">
-        <div class="modal-body">
-            <table class="table table-compact mt-0">
-                <thead>
-                    <tr>
-                        <th class="left">
-                            {{ 'AUDIT_LOG.RESOURCE' | translate }}
-                        </th>
-                        <th class="left" *ngFor="let item of candidateActions">
-                            {{ convertKey(item) | translate }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let resource of candidateResources">
-                        <td class="left td">
-                            {{ convertKey(resource) | translate }}
-                        </td>
-                        <td class="td" *ngFor="let action of candidateActions">
-                            <input
-                                *ngIf="isCandidate(resource, action)"
-                                type="checkbox"
-                                clrCheckbox
-                                [disabled]="true"
-                                [ngModel]="getCheckBoxValue(resource, action)"
-                                (ngModelChange)="
-                                    setCheckBoxValue(resource, action, $event)
-                                " />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+</clr-modal>
+} @if (mode === PermissionSelectPanelModes.DROPDOWN) {
+<clr-dropdown [clrCloseMenuOnItemClick]="false">
+    <span #dropdown class="trigger" clrDropdownTrigger>
+        <ng-content></ng-content>
+    </span>
+    <clr-dropdown-menu
+        #dropdownMenu
+        class="dropdown-menu p-1"
+        clrPosition="{{ dropdownPosition }}"
+        [style.position]="usedInDatagrid ? 'fixed' : 'absolute'"
+        [style.transform]="usedInDatagrid ? getTransform() : 'unset'"
+        *clrIfOpen>
+        <div>
+            <button
+                class="btn btn-link btn-sm select-all-for-dropdown p-0"
+                (click)="selectAllOrUnselectAll()">
+                @if (!isAllSelected()) {
+                <span>{{ 'SYSTEM_ROBOT.SELECT_ALL' | translate }}</span>
+                } @if (isAllSelected()) {
+                <span>{{ 'SYSTEM_ROBOT.UNSELECT_ALL' | translate }}</span>
+                }
+            </button>
         </div>
-    </clr-modal>
-</ng-container>
-
-<ng-container *ngIf="mode === PermissionSelectPanelModes.DROPDOWN">
-    <clr-dropdown [clrCloseMenuOnItemClick]="false">
-        <span #dropdown class="trigger" clrDropdownTrigger>
-            <ng-content></ng-content>
-        </span>
-        <clr-dropdown-menu
-            #dropdownMenu
-            class="dropdown-menu p-1"
-            clrPosition="{{ dropdownPosition }}"
-            [style.position]="usedInDatagrid ? 'fixed' : 'absolute'"
-            [style.transform]="usedInDatagrid ? getTransform() : 'unset'"
-            *clrIfOpen>
-            <div>
-                <button
-                    class="btn btn-link btn-sm select-all-for-dropdown p-0"
-                    (click)="selectAllOrUnselectAll()">
-                    <span *ngIf="!isAllSelected()">{{
-                        'SYSTEM_ROBOT.SELECT_ALL' | translate
-                    }}</span>
-                    <span *ngIf="isAllSelected()">{{
-                        'SYSTEM_ROBOT.UNSELECT_ALL' | translate
-                    }}</span>
-                </button>
-            </div>
-            <table class="table table-compact mt-0">
-                <thead>
-                    <tr>
-                        <th class="left">
-                            {{ 'AUDIT_LOG.RESOURCE' | translate }}
-                        </th>
-                        <th class="left" *ngFor="let item of candidateActions">
-                            {{ convertKey(item) | translate }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let resource of candidateResources">
-                        <td class="left td">
-                            {{ convertKey(resource) | translate }}
-                        </td>
-                        <td class="td" *ngFor="let action of candidateActions">
-                            <input
-                                *ngIf="isCandidate(resource, action)"
-                                type="checkbox"
-                                clrCheckbox
-                                [ngModel]="getCheckBoxValue(resource, action)"
-                                (ngModelChange)="
-                                    setCheckBoxValue(resource, action, $event)
-                                " />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </clr-dropdown-menu>
-    </clr-dropdown>
-</ng-container>
-
-<ng-container *ngIf="mode === PermissionSelectPanelModes.NORMAL">
-    <div>
-        <button
-            class="btn btn-outline btn-sm"
-            (click)="selectAllOrUnselectAll()">
-            <span *ngIf="!isAllSelected()">{{
-                'SYSTEM_ROBOT.SELECT_ALL' | translate
-            }}</span>
-            <span *ngIf="isAllSelected()">{{
-                'SYSTEM_ROBOT.UNSELECT_ALL' | translate
-            }}</span>
-        </button>
-    </div>
-    <table class="table table-compact mt-0">
-        <thead>
-            <tr>
-                <th class="left">
-                    {{ 'AUDIT_LOG.RESOURCE' | translate }}
-                </th>
-                <th class="left" *ngFor="let item of candidateActions">
-                    {{ convertKey(item) | translate }}
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let resource of candidateResources">
-                <td class="left td">{{ convertKey(resource) | translate }}</td>
-                <td class="td" *ngFor="let action of candidateActions">
-                    <input
-                        *ngIf="isCandidate(resource, action)"
-                        type="checkbox"
-                        clrCheckbox
-                        [ngModel]="getCheckBoxValue(resource, action)"
-                        (ngModelChange)="
-                            setCheckBoxValue(resource, action, $event)
-                        " />
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</ng-container>
+        <table class="table table-compact mt-0">
+            <thead>
+                <tr>
+                    <th class="left">
+                        {{ 'AUDIT_LOG.RESOURCE' | translate }}
+                    </th>
+                    @for (item of candidateActions; track item) {
+                    <th class="left">
+                        {{ convertKey(item) | translate }}
+                    </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (resource of candidateResources; track resource) {
+                <tr>
+                    <td class="left td">
+                        {{ convertKey(resource) | translate }}
+                    </td>
+                    @for (action of candidateActions; track action) {
+                    <td class="td">
+                        @if (isCandidate(resource, action)) {
+                        <input
+                            type="checkbox"
+                            clrCheckbox
+                            [ngModel]="getCheckBoxValue(resource, action)"
+                            (ngModelChange)="
+                                setCheckBoxValue(resource, action, $event)
+                            " />
+                        }
+                    </td>
+                    }
+                </tr>
+                }
+            </tbody>
+        </table>
+    </clr-dropdown-menu>
+</clr-dropdown>
+} @if (mode === PermissionSelectPanelModes.NORMAL) {
+<div>
+    <button class="btn btn-outline btn-sm" (click)="selectAllOrUnselectAll()">
+        @if (!isAllSelected()) {
+        <span>{{ 'SYSTEM_ROBOT.SELECT_ALL' | translate }}</span>
+        } @if (isAllSelected()) {
+        <span>{{ 'SYSTEM_ROBOT.UNSELECT_ALL' | translate }}</span>
+        }
+    </button>
+</div>
+<table class="table table-compact mt-0">
+    <thead>
+        <tr>
+            <th class="left">
+                {{ 'AUDIT_LOG.RESOURCE' | translate }}
+            </th>
+            @for (item of candidateActions; track item) {
+            <th class="left">
+                {{ convertKey(item) | translate }}
+            </th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (resource of candidateResources; track resource) {
+        <tr>
+            <td class="left td">{{ convertKey(resource) | translate }}</td>
+            @for (action of candidateActions; track action) {
+            <td class="td">
+                @if (isCandidate(resource, action)) {
+                <input
+                    type="checkbox"
+                    clrCheckbox
+                    [ngModel]="getCheckBoxValue(resource, action)"
+                    (ngModelChange)="
+                        setCheckBoxValue(resource, action, $event)
+                    " />
+                }
+            </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>
+}

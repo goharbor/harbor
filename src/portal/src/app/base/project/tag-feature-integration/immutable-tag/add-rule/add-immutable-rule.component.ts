@@ -32,6 +32,7 @@ const INVALID_RULE = 'TAG_RETENTION.INVALID_RULE';
     selector: 'app-add-immutable-rule',
     templateUrl: './add-immutable-rule.component.html',
     styleUrls: ['./add-immutable-rule.component.scss'],
+    standalone: false,
 })
 export class AddImmutableRuleComponent {
     addRuleOpened: boolean = false;

@@ -17,8 +17,9 @@ import {
     Optional,
     SkipSelf,
     Renderer2,
+    DOCUMENT,
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+
 import { WINDOW } from '../ngx-window-token/window-token';
 
 @Injectable()

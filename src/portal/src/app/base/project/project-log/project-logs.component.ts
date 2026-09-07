@@ -17,6 +17,7 @@ import { Component } from '@angular/core';
     selector: 'project-logs',
     templateUrl: './project-logs.component.html',
     styleUrls: ['./project-logs.component.scss'],
+    standalone: false,
 })
 export class ProjectLogsComponent {
     inProgress: boolean = true;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component } from '@angular/core';
-import { ClrDatagridStateInterface } from '@clr/angular/data/datagrid/interfaces/state.interface';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import {
     doSorting,
     getPageSizeFromLocalStorage,
@@ -29,6 +29,7 @@ import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
     selector: 'app-schedule-list',
     templateUrl: './schedule-list.component.html',
     styleUrls: ['./schedule-list.component.scss'],
+    standalone: false,
 })
 export class ScheduleListComponent {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

@@ -18,6 +18,7 @@ import {
     Output,
     ViewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Label } from 'ng-swagger-gen/models/label';
 import { finalize } from 'rxjs/operators';
 import { Project } from 'src/app/base/project/project';
@@ -38,6 +39,7 @@ const SUPPORTED_MIME_TYPE: string =
     selector: 'export-cve',
     templateUrl: './export-cve.component.html',
     styleUrls: ['./export-cve.component.scss'],
+    standalone: false,
 })
 export class ExportCveComponent {
     @Output() triggerExportSuccess = new EventEmitter<void>();
@@ -60,7 +62,8 @@ export class ExportCveComponent {
         private labelService: LabelService,
         private scanDataExportService: ScanDataExportService,
         private msgHandler: MessageHandlerService,
-        private event: EventService
+        private event: EventService,
+        private router: Router
     ) {}
     reset() {
         this.inlineAlertComponent?.close();
@@ -85,6 +88,11 @@ export class ExportCveComponent {
 
     cancel() {
         this.close();
+    }
+
+    goToLabels() {
+        this.close();
+        this.router.navigate(['/harbor/labels']);
     }
 
     save() {

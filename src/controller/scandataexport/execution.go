@@ -184,8 +184,12 @@ func (c *controller) convertToExportExecStatus(ctx context.Context, exec *task.E
 		EndTime:       exec.EndTime,
 	}
 	if pids, ok := exec.ExtraAttrs[export.ProjectIDsAttribute]; ok {
-		for _, pid := range pids.([]any) {
-			execStatus.ProjectIDs = append(execStatus.ProjectIDs, int64(pid.(float64)))
+		if list, ok := pids.([]any); ok {
+			for _, pid := range list {
+				if id, ok := task.Int64FromAny(pid); ok {
+					execStatus.ProjectIDs = append(execStatus.ProjectIDs, id)
+				}
+			}
 		}
 	}
 	if digest, ok := exec.ExtraAttrs[export.DigestKey]; ok {

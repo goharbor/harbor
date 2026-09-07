@@ -16,11 +16,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ClarityModule } from '@clr/angular';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { DistributionInstancesComponent } from './distribution-instances.component';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
 import { Instance } from '../../../../../../ng-swagger-gen/models/instance';
-import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import {
+    HttpHeaders,
+    HttpResponse,
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Metadata } from '../../../../../../ng-swagger-gen/models/metadata';
@@ -115,19 +120,16 @@ describe('DistributionInstanceComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                ClarityModule,
-                TranslateModule,
-                SharedTestingModule,
-                HttpClientTestingModule,
-            ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
-            providers: [
-                { provide: PreheatService, useValue: fakedPreheatService },
-            ],
             declarations: [
                 DistributionInstancesComponent,
                 DistributionSetupModalComponent,
+            ],
+            imports: [ClarityModule, TranslateModule, SharedTestingModule],
+            providers: [
+                { provide: PreheatService, useValue: fakedPreheatService },
+                provideHttpClient(withInterceptorsFromDi()),
+                provideHttpClientTesting(),
             ],
         }).compileComponents();
     });

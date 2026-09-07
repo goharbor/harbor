@@ -22,7 +22,7 @@ import locale_pt from '@angular/common/locales/pt-PT';
 import locale_tr from '@angular/common/locales/tr';
 import locale_de from '@angular/common/locales/de';
 import locale_ru from '@angular/common/locales/ru';
-import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
+import { ClrCommonStrings } from '@clr/angular';
 
 export const enum AlertType {
     DANGER,

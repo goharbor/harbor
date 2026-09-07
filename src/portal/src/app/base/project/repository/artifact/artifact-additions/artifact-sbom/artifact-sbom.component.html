@@ -20,14 +20,9 @@
                             class="btn btn-secondary"
                             [clrLoading]="downloadSbomBtnState"
                             [disabled]="!canDownloadSbom()">
-                            <clr-icon
-                                shape="download"
-                                size="16"
-                                *ngIf="!isRunningState()"></clr-icon
-                            >&nbsp;
-                            <span *ngIf="!isRunningState()">{{
-                                'SBOM.DOWNLOAD' | translate
-                            }}</span>
+                            <clr-icon shape="download" size="16"></clr-icon>
+                            &nbsp;
+                            <span>{{ 'SBOM.DOWNLOAD' | translate }}</span>
                         </button>
                     </div>
                 </div>
@@ -48,12 +43,11 @@
                 'SBOM.GRID.COLUMN_LICENSE' | translate
             }}</clr-dg-column>
             <clr-dg-placeholder>
-                <span *ngIf="hasGeneratedSbom(); else elseBlock">{{
-                    'SBOM.STATE.OTHER_STATUS' | translate
-                }}</span>
-                <ng-template #elseBlock>
-                    {{ 'SBOM.CHART.TOOLTIPS_TITLE_ZERO' | translate }}
-                </ng-template>
+                @if (hasGeneratedSbom()) {
+                <span>{{ 'SBOM.STATE.OTHER_STATUS' | translate }}</span>
+                } @else {
+                {{ 'SBOM.CHART.TOOLTIPS_TITLE_ZERO' | translate }}
+                }
             </clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let res of artifactSbomPackages()">
                 <clr-dg-cell class="package-medium">{{
@@ -67,7 +61,8 @@
 
             <clr-dg-footer>
                 <div class="report">
-                    <i *ngIf="artifact?.sbom_overview">{{
+                    @if (artifact?.sbom_overview) {
+                    <i>{{
                         'SBOM.REPORTED_BY'
                             | translate
                                 : {
@@ -76,6 +71,7 @@
                                       )
                                   }
                     }}</i>
+                    }
                 </div>
                 <clr-dg-pagination
                     #pagination
@@ -87,11 +83,13 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="artifactSbomPackages().length"
+                    @if (artifactSbomPackages().length) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'SBOM.GRID.FOOT_OF' | translate }}</span
                     >
+                    }
                     {{ artifactSbomPackages().length }}
                     {{ 'SBOM.GRID.FOOT_ITEMS' | translate }}
                 </clr-dg-pagination>

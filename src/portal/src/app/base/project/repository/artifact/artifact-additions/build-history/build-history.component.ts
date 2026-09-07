@@ -22,6 +22,7 @@ import { ErrorHandler } from '../../../../../../shared/units/error-handler';
     selector: 'hbr-artifact-build-history',
     templateUrl: './build-history.component.html',
     styleUrls: ['./build-history.component.scss'],
+    standalone: false,
 })
 export class BuildHistoryComponent implements OnInit {
     @Input()

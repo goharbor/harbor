@@ -127,6 +127,7 @@ Start Docker Daemon Locally
     #${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/docker_config.sh
     #Log  ${output}
     #Should Be Equal As Integers  ${rc}  0
+    Run Keyword If  '${pid}' != '${EMPTY}'  Wait Until Docker Daemon Ready
     Return From Keyword If  '${pid}' != '${EMPTY}'
     OperatingSystem.File Should Exist  /usr/local/bin/dockerd-entrypoint.sh
     ${handle}=    Set Variable    ""
@@ -137,15 +138,19 @@ Start Docker Daemon Locally
         Log To Console  network type is public
         ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-docker-local.log 2>&1  shell=True
     END
-    ${handle}=  Start Process  /usr/local/bin/dockerd-entrypoint.sh dockerd>./daemon-local.log 2>&1  shell=True
     Process Should Be Running  ${handle}
-    FOR  ${IDX}  IN RANGE  5
-        ${pid}=  Run  pidof dockerd
-        Exit For Loop If  '${pid}' != '${EMPTY}'
+    Wait Until Docker Daemon Ready
+    [Return]  ${handle}
+
+Wait Until Docker Daemon Ready
+    FOR  ${IDX}  IN RANGE  30
+        ${rc}  ${output}=  Run And Return Rc And Output  docker info
+        Return From Keyword If  '${rc}' == '0'
+        Log  Docker daemon is not ready yet: ${output}
         Sleep  2s
     END
-    Sleep  2s
-    [Return]  ${handle}
+    Log To Console  Docker daemon failed to become ready: ${output}
+    Fail  Docker daemon did not become ready
 
 Start Containerd Daemon Locally
     ${handle}=  Start Process  /usr/local/bin/containerd > ./daemon-local.log 2>&1 &  shell=True

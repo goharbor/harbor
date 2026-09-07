@@ -29,15 +29,13 @@
                 </span>
             </button>
             <clr-dropdown
-                [clrCloseMenuOnItemClick]="false"
+                [clrCloseMenuOnItemClick]="true"
                 class="btn btn-link"
                 clrDropdownTrigger>
                 <span
                     >{{ 'MEMBER.ACTION' | translate
-                    }}<clr-icon
-                        shape="caret
-            down"></clr-icon
-                ></span>
+                    }}<clr-icon shape="caret" direction="down"></clr-icon>
+                </span>
                 <clr-dropdown-menu *clrIfOpen>
                     <button
                         [disabled]="
@@ -65,14 +63,11 @@
                             'BUTTON.EDIT' | translate
                         }}</span>
                     </button>
+                    @if ( selectedRows && selectedRows.length === 1 &&
+                    selectedRows[0].disable ) {
                     <button
-                        *ngIf="
-                            selectedRows &&
-                            selectedRows.length === 1 &&
-                            selectedRows[0].disable
-                        "
                         type="button"
-                        class="btn btn-secondary"
+                        clrDropdownItem
                         (click)="disableOrEnable()"
                         [disabled]="
                             !hasRobotUpdatePermission ||
@@ -89,16 +84,11 @@
                             'WEBHOOK.ENABLED_BUTTON' | translate
                         }}</span>
                     </button>
+                    } @if ( !( selectedRows && selectedRows.length === 1 &&
+                    selectedRows[0].disable ) ) {
                     <button
-                        *ngIf="
-                            !(
-                                selectedRows &&
-                                selectedRows.length === 1 &&
-                                selectedRows[0].disable
-                            )
-                        "
                         type="button"
-                        class="btn btn-secondary"
+                        clrDropdownItem
                         (click)="disableOrEnable()"
                         [disabled]="
                             !hasRobotUpdatePermission ||
@@ -114,6 +104,7 @@
                             'WEBHOOK.DISABLED_BUTTON' | translate
                         }}</span>
                     </button>
+                    }
                     <div class="dropdown-divider"></div>
                     <button
                         [disabled]="
@@ -132,6 +123,7 @@
             </clr-dropdown>
         </clr-dg-action-bar>
         <clr-datagrid
+            clrDgSelectionType="multi"
             (clrDgRefresh)="clrLoad($event)"
             [clrDgLoading]="loading"
             [(clrDgSelected)]="selectedRows">
@@ -156,26 +148,28 @@
             <clr-dg-placeholder>{{
                 'SYSTEM_ROBOT.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
-            <clr-dg-row *ngFor="let r of robots" [clrDgItem]="r">
+            @for (r of robots; track r) {
+            <clr-dg-row [clrDgItem]="r">
                 <clr-dg-cell>
                     {{ r.name }}
-                    <span
-                        *ngIf="!r.editable"
-                        class="label label-warning ml-1"
-                        >{{ 'SYSTEM_ROBOT.LEGACY' | translate }}</span
-                    >
+                    @if (!r.editable) {
+                    <span class="label label-warning ml-1">{{
+                        'SYSTEM_ROBOT.LEGACY' | translate
+                    }}</span>
+                    }
                 </clr-dg-cell>
-                <clr-dg-cell [ngSwitch]="r.disable">
+                <clr-dg-cell>
+                    @switch (r.disable) { @case (false) {
                     <clr-icon
                         shape="check-circle"
-                        *ngSwitchCase="false"
                         size="20"
                         class="color-green"></clr-icon>
+                    } @case (true) {
                     <clr-icon
                         shape="times-circle"
-                        *ngSwitchCase="true"
                         size="16"
                         class="color-red red-position"></clr-icon>
+                    } }
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <robot-permissions-panel
@@ -188,7 +182,8 @@
                             <clr-icon
                                 class="icon"
                                 size="12"
-                                shape="caret down"></clr-icon>
+                                shape="caret"
+                                direction="down"></clr-icon>
                         </button>
                     </robot-permissions-panel>
                 </clr-dg-cell>
@@ -202,6 +197,7 @@
                 ></clr-dg-cell>
                 <clr-dg-cell>{{ r.description }}</clr-dg-cell>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
@@ -214,12 +210,14 @@
                             'PAGINATION.PAGE_SIZE' | translate
                         }}</clr-dg-page-size
                     >
-                    <span *ngIf="total"
+                    @if (total) {
+                    <span
                         >{{ pagination.firstItem + 1 }}
                         -
                         {{ pagination.lastItem + 1 }}
                         {{ 'ROBOT_ACCOUNT.OF' | translate }}
                     </span>
+                    }
                     {{ total }} {{ 'ROBOT_ACCOUNT.ITEMS' | translate }}
                 </clr-dg-pagination>
             </clr-dg-footer>

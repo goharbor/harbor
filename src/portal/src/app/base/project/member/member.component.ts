@@ -60,6 +60,7 @@ import { AddGroupComponent } from './add-group/add-group.component';
 @Component({
     templateUrl: 'member.component.html',
     styleUrls: ['./member.component.scss'],
+    standalone: false,
 })
 export class MemberComponent implements OnInit, OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

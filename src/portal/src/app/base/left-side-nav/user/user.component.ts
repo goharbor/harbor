@@ -60,6 +60,7 @@ import {
     templateUrl: 'user.component.html',
     styleUrls: ['user.component.scss'],
     providers: [UserService],
+    standalone: false,
 })
 export class UserComponent implements OnDestroy {
     clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;

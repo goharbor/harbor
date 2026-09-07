@@ -1,6 +1,47 @@
-FROM goharbor/photon:5.0
+# TARGETARCH is auto-populated by BuildKit via --platform; default ensures
+# graceful fallback to amd64 if built without explicit platform flag.
+ARG TARGETARCH=amd64
+# VALKEY_VERSION and VALKEY_SHA256 are only used by the arm64 source-build path.
+# On amd64 the Photon tdnf package is installed directly (version managed by Photon).
+ARG VALKEY_VERSION
+ARG VALKEY_SHA256
 
+# ---- amd64: use tdnf package (unchanged from original) ----
+FROM goharbor/photon:5.0 AS amd64-base
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -g 999 valkey \
     && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey
 RUN tdnf install -y valkey && tdnf clean all
+
+# ---- arm64: build from source (Photon OS has no valkey package for aarch64) ----
+FROM goharbor/photon:5.0 AS arm64-builder
+ARG VALKEY_VERSION
+ARG VALKEY_SHA256
+RUN tdnf install -y gcc make coreutils gawk glibc-devel linux-api-headers \
+    binutils tar gzip ca-certificates curl openssl-devel >> /dev/null \
+    && tdnf clean all
+WORKDIR /tmp
+RUN curl -fsSL -o valkey.tar.gz \
+    "https://github.com/valkey-io/valkey/archive/refs/tags/${VALKEY_VERSION}.tar.gz" \
+    && echo "${VALKEY_SHA256}  valkey.tar.gz" | sha256sum -c - \
+    && tar -xzf valkey.tar.gz \
+    && cd "valkey-${VALKEY_VERSION}" \
+    && make -j"$(nproc)" BUILD_TLS=yes \
+    && make PREFIX=/usr/local install
+RUN strip /usr/local/bin/valkey-* || true
+
+FROM goharbor/photon:5.0 AS arm64-base
+RUN tdnf install -y shadow openssl >> /dev/null \
+    && groupadd -g 999 valkey \
+    && useradd -u 999 -g 999 -c "Valkey Database Server" -d /var/lib/redis -s /sbin/nologin -m valkey \
+    && tdnf clean all
+COPY --from=arm64-builder /usr/local/bin/valkey-server /usr/local/bin/valkey-server
+COPY --from=arm64-builder /usr/local/bin/valkey-cli /usr/local/bin/valkey-cli
+COPY --from=arm64-builder /usr/local/bin/valkey-check-aof /usr/local/bin/valkey-check-aof
+COPY --from=arm64-builder /usr/local/bin/valkey-check-rdb /usr/local/bin/valkey-check-rdb
+COPY --from=arm64-builder /usr/local/bin/valkey-benchmark /usr/local/bin/valkey-benchmark
+RUN ln -sf /usr/local/bin/valkey-server /usr/local/bin/redis-server \
+    && ln -sf /usr/local/bin/valkey-cli /usr/local/bin/redis-cli
+
+# ---- Select final image based on target architecture ----
+FROM ${TARGETARCH}-base
