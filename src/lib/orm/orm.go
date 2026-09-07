@@ -85,6 +85,15 @@ func NewContext(ctx context.Context, o orm.QueryExecutor) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if _, isTx := o.(orm.TxOrmer); !isTx {
+		// A non-transactional ormer opens its own database session, so a hooks
+		// sink inherited through ctx (Clone, Copy) belongs to a transaction this
+		// session is not part of. Detach it, otherwise AfterCommit would queue
+		// into a scope that may already have committed and drained.
+		if _, inherited := ctx.Value(hooksKey{}).(*txHooks); inherited {
+			ctx = context.WithValue(ctx, hooksKey{}, (*txHooks)(nil))
+		}
+	}
 	return context.WithValue(ctx, ormKey{}, o)
 }
 
@@ -212,10 +221,17 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		}
 
 		var tx ormerTx
+		// parentHooks is the enclosing scope's sink. It is set only when this
+		// scope is a savepoint on the enclosing transaction: an independent
+		// transaction started from a Clone or Copy of a transaction context
+		// still sees the enclosing sink through context values, but its
+		// commit is its own, so it must fire its own hooks.
+		var parentHooks *txHooks
 		if _, ok := o.(orm.Ormer); ok {
 			tx = ormerTx{Ormer: o.(orm.Ormer)}
 		} else if _, ok := o.(orm.TxOrmer); ok {
 			tx = ormerTx{TxOrmer: o.(orm.TxOrmer)}
+			parentHooks, _ = cx.Value(hooksKey{}).(*txHooks)
 		} else {
 			return errors.New("no orm found in the context")
 		}
@@ -232,7 +248,6 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		// sink is discarded when it rolls back and handed to the enclosing
 		// scope when it releases; the outermost scope, which has no enclosing
 		// sink to hand to, is the one that fires them.
-		parentHooks, _ := cx.Value(hooksKey{}).(*txHooks)
 		hooks := &txHooks{}
 		cx = context.WithValue(cx, hooksKey{}, hooks)
 

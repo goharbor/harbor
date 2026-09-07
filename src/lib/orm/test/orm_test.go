@@ -533,6 +533,60 @@ func (suite *OrmSuite) TestAfterCommit_OrderWithinAndAcrossScopes() {
 	suite.Equal([]string{"outer-before", "inner-1", "inner-2", "outer-after"}, fired)
 }
 
+// TestAfterCommit_IndependentTxFromCopiedContext asserts that a transaction
+// started from a Copy or Clone of a transaction context is independent: it
+// fires its own hooks on its own commit instead of handing them to the scope
+// it was copied from. This is the background-handler pattern (notifier,
+// retention, proxy) where the enclosing scope may already have drained by the
+// time the copied context is used.
+func (suite *OrmSuite) TestAfterCommit_IndependentTxFromCopiedContext() {
+	for name, derive := range map[string]func(context.Context) context.Context{
+		"copy":  Copy,
+		"clone": Clone,
+	} {
+		suite.Run(name, func() {
+			ctx := NewContext(context.TODO(), orm.NewOrm())
+
+			var ranInner, ranInnerBeforeOuterCommit, ranOuter bool
+			err := WithTransaction(func(outerCtx context.Context) error {
+				AfterCommit(outerCtx, func() { ranOuter = true })
+
+				err := WithTransaction(func(innerCtx context.Context) error {
+					AfterCommit(innerCtx, func() { ranInner = true })
+					return nil
+				})(derive(outerCtx))
+				if err != nil {
+					return err
+				}
+				// The derived transaction has committed on its own session.
+				ranInnerBeforeOuterCommit = ranInner
+				suite.False(ranOuter, "outer hook must wait for the outer commit")
+				return nil
+			})(ctx)
+
+			suite.NoError(err)
+			suite.True(ranInnerBeforeOuterCommit, "independent tx must fire its hooks on its own commit, not be adopted by the enclosing scope")
+			suite.True(ranOuter)
+		})
+	}
+}
+
+// TestAfterCommit_CopiedContextOutsideTxRunsInline asserts that AfterCommit
+// called with a Copy of a transaction context, but outside any transaction of
+// its own, runs the callback inline rather than queueing it into the sink of
+// the transaction it was copied from.
+func (suite *OrmSuite) TestAfterCommit_CopiedContextOutsideTxRunsInline() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var ranInline bool
+	err := WithTransaction(func(txCtx context.Context) error {
+		AfterCommit(Copy(txCtx), func() { ranInline = true })
+		suite.True(ranInline, "a copied context is not inside this transaction; the hook must run inline")
+		return nil
+	})(ctx)
+	suite.NoError(err)
+}
+
 func (suite *OrmSuite) TestReadOrCreate() {
 	ctx := NewContext(context.TODO(), orm.NewOrm())
 
