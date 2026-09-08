@@ -276,6 +276,9 @@ func (t *taskDAO) querySetter(ctx context.Context, query *q.Query, options ...or
 		if len(keyPrefix) == 0 {
 			return qs, nil
 		}
+		if err := validateExtraAttrsValue(key, value); err != nil {
+			return nil, err
+		}
 		inClause, err := orm.CreateInClause(ctx, "select id from task where extra_attrs->>? = ?",
 			strings.TrimPrefix(key, keyPrefix), value)
 		if err != nil {

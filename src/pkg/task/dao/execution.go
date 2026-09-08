@@ -355,6 +355,19 @@ type jsonbStru struct {
 	value     any
 }
 
+// the extra attrs value is bound as a raw SQL parameter, which only accepts scalars
+func validateExtraAttrsValue(key string, value any) error {
+	switch value.(type) {
+	case string, bool, time.Time,
+		int, int8, int16, int32, int64,
+		uint, uint8, uint16, uint32, uint64,
+		float32, float64:
+		return nil
+	}
+	return errors.New(nil).WithCode(errors.BadRequestCode).
+		WithMessagef("unsupported value for the extra attrs filter %q, only exact match is supported", key)
+}
+
 func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options ...orm.Option) (orm.QuerySeter, error) {
 	qs, err := orm.QuerySetter(ctx, &Execution{}, query, options...)
 	if err != nil {
@@ -386,6 +399,11 @@ func (e *executionDAO) querySetter(ctx context.Context, query *q.Query, options 
 		}
 		if len(jsonbStrus) == 0 {
 			return qs, nil
+		}
+		for _, stru := range jsonbStrus {
+			if err := validateExtraAttrsValue(stru.key, stru.value); err != nil {
+				return nil, err
+			}
 		}
 
 		idSQL, args := buildInClauseSQLForExtraAttrs(jsonbStrus)
