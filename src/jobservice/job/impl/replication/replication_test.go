@@ -26,7 +26,7 @@ import (
 )
 
 func TestParseParam(t *testing.T) {
-	params := map[string]interface{}{}
+	params := map[string]any{}
 	// not exist param
 	err := parseParam(params, "not_exist_param", nil)
 	assert.NotNil(t, err)
@@ -80,7 +80,7 @@ func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource, opts 
 func TestRun(t *testing.T) {
 	err := transfer.RegisterFactory("art", fakedTransferFactory)
 	require.Nil(t, err)
-	params := map[string]interface{}{
+	params := map[string]any{
 		"src_resource": `{"type":"art"}`,
 		"dst_resource": `{}`,
 	}

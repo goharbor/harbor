@@ -1,4 +1,4 @@
-// Copyright (c) 2018 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import { Label } from '../../../services';
     selector: 'hbr-resource-label-signpost',
     templateUrl: './label-signpost.component.html',
     styleUrls: ['./label-signpost.component.scss'],
+    standalone: false,
 })
 export class LabelSignPostComponent {
     @Input() labels: Label[] = [];

@@ -9,11 +9,11 @@ This document provides a link to the [Harbor Project board](https://github.com/o
 Discussion on the roadmap can take place in threads under [Issues](https://github.com/goharbor/harbor/issues) or in [community meetings](https://goharbor.io/community/). Please open and comment on an issue if you want to provide suggestions and feedback to an item in the roadmap. Please review the roadmap to avoid potential duplicated effort.
 
 ### How to add an item to the roadmap?
-Please open an issue to track any initiative on the roadmap of Harbor (Usually driven by new feature requests). We will work with and rely on our community to focus our efforts to improve Harbor.
+Please open an issue to track any initiative on the roadmap of Harbor (Usually driven by new feature requests). We will work with and rely on our community to focus our efforts on improving Harbor.
 
 ### Current Roadmap
 
-The following table includes the current roadmap for Harbor. If you have any questions or would like to contribute to Harbor, please attend a [community meeting](https://goharbor.io/community/) to discuss with our team. If you don't know where to start, we are always looking for contributors that will help us reduce technical, automation, and documentation debt. Please take the timelines & dates as proposals and goals. Priorities and requirements change based on community feedback, roadblocks encountered, community contributions, etc. If you depend on a specific item, we encourage you to attend community meetings to get updated status information, or help us deliver that feature by contributing to Harbor.
+The following table includes the current roadmap for Harbor. If you have any questions or would like to contribute to Harbor, please attend a [community meeting](https://goharbor.io/community/) to discuss with our team. If you don't know where to start, we are always looking for contributors who will help us reduce technical, automation, and documentation debt. Please take the timelines & dates as proposals and goals. Priorities and requirements change based on community feedback, roadblocks encountered, community contributions, etc. If you depend on a specific item, we encourage you to attend community meetings to get updated status information, or help us deliver that feature by contributing to Harbor.
 
 
 `Last Updated: June 2022`
@@ -49,4 +49,4 @@ The following table includes the current roadmap for Harbor. If you have any que
 |I&AM and RBAC|Improved Multi-tenancy through granular access and ability to manage teams of users and robot accounts through workspaces|Dec 2020|
 |Observability|Expose Harbor metrics through Prometheus Integration|Mar 2021|
 |Tracing|Leverage OpenTelemetry for enhanced tracing capabilities and identify bottlenecks and improve performance |Mar 2021|
-|Image Signing|Leverage Sigstore Cosign to deliver persisting image signatures across image replications|Apr 2021|
+|Image Signing|Leverage Sigstore Cosign to deliver persistent image signatures across image replications|Apr 2021|

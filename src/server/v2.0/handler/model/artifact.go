@@ -29,8 +29,8 @@ import (
 type Artifact struct {
 	artifact.Artifact
 	// TODO: rename to VulOverview
-	ScanOverview map[string]interface{} `json:"scan_overview"`
-	SBOMOverView map[string]interface{} `json:"sbom_overview"`
+	ScanOverview map[string]any `json:"scan_overview"`
+	SBOMOverView map[string]any `json:"sbom_overview"`
 }
 
 // ToSwagger converts the artifact to the swagger model
@@ -58,6 +58,9 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 	}
 	for _, acc := range a.Accessories {
 		art.Accessories = append(art.Accessories, NewAccessory(acc.GetData()).ToSwagger())
+	}
+	for _, acc := range a.InheritedAccessories {
+		art.InheritedAccessories = append(art.InheritedAccessories, NewAccessory(acc.GetData()).ToSwagger())
 	}
 	for _, tag := range a.Tags {
 		art.Tags = append(art.Tags, NewTag(tag).ToSwagger())

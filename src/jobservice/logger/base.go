@@ -71,7 +71,7 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 
 		// Singleton
 		if d.Singleton {
-			var li interface{}
+			var li any
 			li, ok = singletons.Load(name)
 			if ok {
 				l = li.(Interface)
@@ -200,7 +200,7 @@ func Init(ctx context.Context) error {
 		// For logger of job service itself, the depth should be 6
 		if lc.Name == NameFile || lc.Name == NameStdOutput {
 			if lc.Settings == nil {
-				lc.Settings = map[string]interface{}{}
+				lc.Settings = map[string]any{}
 			}
 			lc.Settings["depth"] = 6
 		}

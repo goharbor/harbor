@@ -24,6 +24,7 @@ import { MessageHandlerService } from '../../services/message-handler.service';
 import { SkinableConfig } from '../../../services/skinable-config.service';
 import {
     CommonRoutes,
+    CONFIG_AUTH_MODE,
     DATETIME_RENDERINGS,
     DatetimeRendering,
     DEFAULT_DATETIME_RENDERING_LOCALSTORAGE_KEY,
@@ -40,15 +41,17 @@ import {
     StyleMode,
 } from '../../../services/theme';
 import { getDatetimeRendering } from '../../units/shared.utils';
-import { ClrCommonStrings } from '@clr/angular/utils/i18n/common-strings.interface';
+import { ClrCommonStrings } from '@clr/angular';
 import { map } from 'rxjs/operators';
 import { forkJoin, Observable } from 'rxjs';
 import { ClrCommonStringsService } from '@clr/angular';
+import { signInStatusError } from '../../../account/sign-in/sign-in.component';
 
 @Component({
     selector: 'navigator',
     templateUrl: 'navigator.component.html',
     styleUrls: ['navigator.component.scss'],
+    standalone: false,
 })
 export class NavigatorComponent implements OnInit {
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
@@ -60,6 +63,7 @@ export class NavigatorComponent implements OnInit {
     selectedDatetimeRendering: DatetimeRendering = DefaultDatetimeRendering;
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: CustomStyle;
+    isCoreServiceAvailable: boolean = true;
     constructor(
         private session: SessionService,
         private router: Router,
@@ -124,7 +128,13 @@ export class NavigatorComponent implements OnInit {
         }
         return null;
     }
-
+    public get isOidcLoginMode(): boolean {
+        return (
+            this.appConfigService.getConfig() &&
+            this.appConfigService.getConfig().auth_mode ===
+                CONFIG_AUTH_MODE.OIDC_AUTH
+        );
+    }
     public get currentDatetimeRendering(): string {
         return DATETIME_RENDERINGS[this.selectedDatetimeRendering];
     }
@@ -173,6 +183,14 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
+    // Open change preferences dialog
+    openPreferencesModal(): void {
+        this.showDialogModalAction.emit({
+            modalName: modalEvents.PREFERENCES,
+            modalFlag: true,
+        });
+    }
+
     // Open change password dialog
     openChangePwdModal(): void {
         this.showDialogModalAction.emit({
@@ -191,16 +209,43 @@ export class NavigatorComponent implements OnInit {
 
     // Log out system
     logOut(): void {
-        // Naviagte to the sign in router-guard
-        // Appending 'signout' means destroy session cache
-        let signout = true;
-        let redirect_url = this.location.pathname;
-        let navigatorExtra: NavigationExtras = {
-            queryParams: { signout, redirect_url },
-        };
-        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-        // Confirm search result panel is close
-        this.searchTrigger.closeSearch(true);
+        // Call the service to send out the http request
+        this.session.signOff().subscribe(
+            () => {
+                // Naviagte to the sign in router-guard
+                // Appending 'signout' means destroy session cache
+                let signout = true;
+                let redirect_url = this.location.pathname;
+                let navigatorExtra: NavigationExtras = {
+                    queryParams: { signout, redirect_url },
+                };
+                this.router.navigate(
+                    [CommonRoutes.EMBEDDED_SIGN_IN],
+                    navigatorExtra
+                );
+                // Confirm search result panel is close
+                this.searchTrigger.closeSearch(true);
+            },
+            error => {
+                // 403 oidc logout no body;
+                if (this.isOidcLoginMode && error && error.status === 403) {
+                    try {
+                        let redirect_location = '';
+                        redirect_location =
+                            error.error && error.error.redirect_location
+                                ? error.error.redirect_location
+                                : JSON.parse(error.error).redirect_location;
+                        window.location.href = redirect_location;
+                        return;
+                    } catch (error) {}
+                }
+                // core service is not available for error code 5xx
+                if (error && /5[0-9][0-9]/.test(error.status)) {
+                    this.isCoreServiceAvailable = false;
+                }
+                this.handleError(error);
+            }
+        );
     }
 
     // Switch languages
@@ -254,5 +299,14 @@ export class NavigatorComponent implements OnInit {
             }
         }
         return null;
+    }
+
+    // General error handler
+    handleError(error: any) {
+        // Set error status
+        let message = error.status
+            ? error.status + ':' + error.statusText
+            : error;
+        console.error('An error occurred when signing out:', message);
     }
 }

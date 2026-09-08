@@ -94,7 +94,7 @@ func (suite *ControllerTestSuite) TestCreate() {
 	defer os.Remove(secretKeyPath)
 	suite.T().Setenv("KEY_PATH", secretKeyPath)
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotTokenDuration: "30",
 	}
 	config.InitWithSettings(conf)
@@ -170,7 +170,7 @@ func (suite *ControllerTestSuite) TestUpdate() {
 	c := controller{robotMgr: robotMgr, rbacMgr: rbacMgr, proMgr: projectMgr}
 	ctx := context.TODO()
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotPrefix: "robot$",
 	}
 	config.InitWithSettings(conf)
@@ -247,7 +247,7 @@ func (suite *ControllerTestSuite) TestList() {
 	}, nil)
 	projectMgr.On("Get", mock.Anything, mock.Anything).Return(&proModels.Project{ProjectID: 1, Name: "library"}, nil)
 	rs, err := c.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"name": "test3",
 		},
 	}, &Option{

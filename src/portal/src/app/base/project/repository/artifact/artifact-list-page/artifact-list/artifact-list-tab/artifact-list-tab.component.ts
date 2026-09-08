@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../../../../../shared/entities/shared.const';
 import {
     operateChanges,
@@ -91,18 +92,23 @@ export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 const CHECKING: string = 'checking';
 const TRUE: string = 'true';
 const FALSE: string = 'false';
+// the artifact carries no signature of its own but the index referencing it is signed
+const INHERITED: string = 'inherited';
 
 @Component({
     selector: 'artifact-list-tab',
     templateUrl: './artifact-list-tab.component.html',
     styleUrls: ['./artifact-list-tab.component.scss'],
+    standalone: false,
 })
 export class ArtifactListTabComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     projectName: string;
     repoName: string;
     registryUrl: string;
     artifactList: ArtifactFront[] = [];
+    artifact: ArtifactFront;
     availableTime = AVAILABLE_TIME;
     inprogress: boolean;
     pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>(
@@ -409,7 +415,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                     withTag: false,
                                     XAcceptVulnerabilities:
                                         DEFAULT_SUPPORTED_MIME_TYPES,
-                                    withAccessory: false,
+                                    // ask for both kinds of accessory here: a child of this
+                                    // index may be covered by a signature on the index
+                                    // itself, and having them inline saves a request per
+                                    // child compared with looking the direct ones up after
+                                    withAccessory: true,
+                                    withInheritedAccessory: true,
                                 };
                             platFormAttr.push({ platform: child.platform });
                             observableLists.push(
@@ -437,7 +448,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                 });
                                 this.getArtifactTagsAsync(this.artifactList);
                                 this.getAccessoriesAsync(this.artifactList);
-                                this.checkCosignAndSbomAsync(this.artifactList);
+                                this.checkCosignAndSbom(this.artifactList);
                                 this.getIconsFromBackEnd();
                             },
                             error => {
@@ -912,6 +923,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
         );
     }
 
+    hasChild(artifact: Artifact): boolean {
+        return !!(
+            artifact &&
+            artifact.references &&
+            artifact.references.some(ref => ref['child_digest'])
+        );
+    }
+
     submitFinish(e: boolean) {
         this.scanFinishedArtifactLength += 1;
         // all selected scan action has started
@@ -1154,6 +1173,42 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
             }
         }
     }
+
+    // Children of an index are fetched with their accessories already included, so their
+    // signed state is decided from what is in hand instead of a request per child.
+    checkCosignAndSbom(artifacts: ArtifactFront[]) {
+        artifacts?.forEach(item => {
+            const accessories = item?.accessories ?? [];
+            item.signed = accessories.some(
+                acc =>
+                    acc.type === AccessoryType.COSIGN ||
+                    acc.type === AccessoryType.NOTATION
+            )
+                ? TRUE
+                : this.inheritedSignedState(item);
+            item.sbomDigest = item?.sbom_overview?.sbom_digest;
+            if (!item.sbomDigest) {
+                item.sbomDigest =
+                    accessories.filter(
+                        acc => acc.type === AccessoryType.SBOM
+                    )?.[0]?.digest ?? undefined;
+            }
+        });
+    }
+
+    // An artifact with no signature of its own is still covered by a signature on the index
+    // that references it. That is a weaker claim than being signed directly, so it gets its
+    // own state rather than being folded into either "signed" or "not signed".
+    inheritedSignedState(item: ArtifactFront): string {
+        return item?.inherited_accessories?.some(
+            acc =>
+                acc.type === AccessoryType.COSIGN ||
+                acc.type === AccessoryType.NOTATION
+        )
+            ? INHERITED
+            : FALSE;
+    }
+
     // return true if all selected rows are in "running" state
     canStopScan(): boolean {
         if (this.onSendingStopScanCommand) {

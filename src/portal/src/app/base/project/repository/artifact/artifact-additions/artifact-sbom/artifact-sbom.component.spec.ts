@@ -1,10 +1,23 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ArtifactSbomComponent } from './artifact-sbom.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { of } from 'rxjs';
 import {
-    TranslateFakeLoader,
+    TranslateNoOpLoader,
     TranslateLoader,
     TranslateModule,
 } from '@ngx-translate/core';
@@ -30,8 +43,9 @@ describe('ArtifactSbomComponent', () => {
             downloadLocation: 'NONE',
             checksums: [
                 {
-                    algorithm: 'SHA1',
-                    checksumValue: '132992eab020986b3b5d886a77212889680467a0',
+                    algorithm: 'SHA256',
+                    checksumValue:
+                        '132992eab020986b3b5d88a2c212889680467a0888eb055dfae1a415ff6cdd22',
                 },
             ],
             sourceInfo: 'built package from: alpine-baselayout 3.2.0-r18',
@@ -60,8 +74,9 @@ describe('ArtifactSbomComponent', () => {
             downloadLocation: 'NONE',
             checksums: [
                 {
-                    algorithm: 'SHA1',
-                    checksumValue: '903176b2d2a8ddefd1ba6940f19ad17c2c1d4aff',
+                    algorithm: 'SHA256',
+                    checksumValue:
+                        '903176b2d2a8ddefd1ba6940f19ad17c2c1d4aff904c6439bf6eedf58abde4e2',
                 },
             ],
             sourceInfo: 'built package from: alpine-keys 2.4-r1',
@@ -141,7 +156,7 @@ describe('ArtifactSbomComponent', () => {
                 TranslateModule.forRoot({
                     loader: {
                         provide: TranslateLoader,
-                        useClass: TranslateFakeLoader,
+                        useClass: TranslateNoOpLoader,
                     },
                 }),
             ],

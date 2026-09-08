@@ -51,6 +51,8 @@ type Manager interface {
 	UpdateName(ctx context.Context, id int, groupName string) error
 	// Onboard sync the user group from external auth server to Harbor
 	Onboard(ctx context.Context, g *model.UserGroup) error
+	// SearchByName user groups by names with fuzzy search
+	SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error)
 }
 
 type manager struct {
@@ -158,4 +160,8 @@ func (m *manager) onBoardCommonUserGroup(ctx context.Context, g *model.UserGroup
 
 func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
+	return m.dao.SearchByName(ctx, name, limitSize)
 }

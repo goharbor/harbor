@@ -1,76 +1,81 @@
-linters-settings:
-  gofmt:
-    # Simplify code: gofmt with `-s` option.
-    # Default: true
-    simplify: false
-  misspell:
-    locale: US,UK
-  goimports:
-    local-prefixes: github.com/goharbor/harbor
-  stylecheck:
-    checks: [
-      "ST1019",  # Importing the same package multiple times.
-    ]
-  goheader:
-    template-path: copyright.tmpl
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
+  enable:
+    - bodyclose
+    - dupl
+    - errcheck
+    - goheader
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - usestdlibvars
+    - whitespace
+  settings:
+    goheader:
+      template-path: copyright.tmpl
+    dupl:
+      threshold: 300
+    gosec:
+      excludes:
+        - G101
+        - G110
+        - G112
+        - G114
+        - G115
+        - G306
+        - G402
+        - G404
+    misspell:
+      locale: US,UK
+    staticcheck:
+      checks:
+        - ST1019
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+        path: "(common/|core/utils/|core/api/|jobservice/api/|jobservice/common/utils/|registryctl/api/|pkg/permission/types/|pkg/quota/types/|server/middleware/util/|server/registry/util/|pkg/reg/util/|controller/event/handler/util/)"
+      # TODO: Fix package naming - these packages conflict with Go stdlib
+      - linters:
+          - revive
+        text: "var-naming: avoid package names that conflict with Go standard library package names"
+        path: "(common/http/|lib/errors/|lib/http/)"
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - .*_test\.go
+      - .*test\.go
+      - testing
+      - src/jobservice/mgt/mock_manager.go
+formatters:
   enable:
     - gofmt
-    - goheader
-    - misspell
-    - typecheck
-    # - dogsled
-    # - dupl
-    # - depguard
-    # - funlen
-    # - goconst
-    # - gocritic
-    # - gocyclo
-    # - goimports
-    # - goprintffuncname
-    - ineffassign
-    # - nakedret
-    # - nolintlint
-    - revive
-    - whitespace
-    - bodyclose
-    - errcheck
-    # - gosec
-    - gosimple
     - goimports
-    - govet
-    # - noctx
-    # - rowserrcheck
-    - staticcheck
-    - stylecheck
-    # - unconvert
-    # - unparam
-    # - unused  // disabled due to too many false positive check and limited support golang 1.19 https://github.com/dominikh/go-tools/issues/1282
- 
-run:
-  skip-files:
-    - ".*_test.go"
-    - ".*test.go"
-  skip-dirs:
-    - "testing"
-  timeout: 20m
-
-issue:
-  max-same-issues: 0
-  max-per-linter: 0
-
-issues:
-  # Excluding configuration per-path, per-linter, per-text and per-source
-  exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
-      linters:
-        - goimports
-    - path: src/testing/*.go
-      linters:
-        - goimports
-    - path: src/jobservice/mgt/mock_manager.go
-      linters:
-        - goimports
+  settings:
+    gofmt:
+      simplify: false
+    goimports:
+      local-prefixes:
+        - github.com/goharbor/harbor
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - .*_test\.go
+      - .*test\.go
+      - testing
+      - src/jobservice/mgt/mock_manager.go

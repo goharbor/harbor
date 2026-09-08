@@ -26,7 +26,7 @@ import (
 )
 
 func TestRobot(t *testing.T) {
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotNamePrefix: "robot@",
 	}
 	config.InitWithSettings(conf)

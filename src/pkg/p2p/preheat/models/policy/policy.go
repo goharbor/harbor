@@ -16,7 +16,6 @@ package policy
 
 import (
 	"encoding/json"
-	"strconv"
 	"time"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
@@ -73,10 +72,10 @@ type Schema struct {
 	TriggerStr string `orm:"column(trigger)" json:"-"`
 	Enabled    bool   `orm:"column(enabled)" json:"enabled"`
 	// ExtraAttrs is used to store extra attributes provided by vendor.
-	ExtraAttrsStr string                 `orm:"column(extra_attrs)" json:"-"`
-	ExtraAttrs    map[string]interface{} `orm:"-" json:"extra_attrs"`
-	CreatedAt     time.Time              `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime   time.Time              `orm:"column(update_time)" json:"update_time"`
+	ExtraAttrsStr string         `orm:"column(extra_attrs)" json:"-"`
+	ExtraAttrs    map[string]any `orm:"-" json:"extra_attrs"`
+	CreatedAt     time.Time      `orm:"column(creation_time)" json:"creation_time"`
+	UpdatedTime   time.Time      `orm:"column(update_time)" json:"update_time"`
 }
 
 // TableName specifies the policy schema table name.
@@ -102,8 +101,8 @@ type FilterType = string
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type  FilterType  `json:"type"`
-	Value interface{} `json:"value"`
+	Type  FilterType `json:"type"`
+	Value any        `json:"value"`
 }
 
 // TriggerType represents the type of trigger.
@@ -198,24 +197,6 @@ func decodeFilters(filterStr string) ([]*Filter, error) {
 	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
 		return nil, err
 	}
-
-	// Convert value type
-	// TODO: remove switch after UI bug #12579 fixed
-	for _, f := range filters {
-		if f.Type == FilterTypeVulnerability {
-			switch f.Value.(type) {
-			case string:
-				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
-				if err != nil {
-					return nil, errors.Wrapf(err, "parse filters")
-				}
-				f.Value = (int)(sev)
-			case float64:
-				f.Value = (int)(f.Value.(float64))
-			}
-		}
-	}
-
 	return filters, nil
 }
 
@@ -235,12 +216,12 @@ func decodeTrigger(triggerStr string) (*Trigger, error) {
 }
 
 // decodeExtraAttrs parse extraAttrsStr to extraAttrs.
-func decodeExtraAttrs(extraAttrsStr string) (map[string]interface{}, error) {
+func decodeExtraAttrs(extraAttrsStr string) (map[string]any, error) {
 	if len(extraAttrsStr) == 0 {
 		return nil, nil
 	}
 
-	extraAttrs := make(map[string]interface{})
+	extraAttrs := make(map[string]any)
 	if err := json.Unmarshal([]byte(extraAttrsStr), &extraAttrs); err != nil {
 		return nil, err
 	}

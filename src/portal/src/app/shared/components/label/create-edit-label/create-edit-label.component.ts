@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import { LabelService } from '../../../../../../ng-swagger-gen/services/label.se
     selector: 'hbr-create-edit-label',
     templateUrl: './create-edit-label.component.html',
     styleUrls: ['./create-edit-label.component.scss'],
+    standalone: false,
 })
 export class CreateEditLabelComponent implements OnInit, OnDestroy {
     formShow: boolean;

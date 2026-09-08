@@ -33,6 +33,10 @@ type Artifact struct {
 	AdditionLinks map[string]*AdditionLink   `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
 	Labels        []*model.Label             `json:"labels"`
 	Accessories   []accessoryModel.Accessory `json:"-"`
+	// signatures of the parent OCI index that also cover this artifact, informational only,
+	// never use in copy/delete/walk. Untagged like Accessories: the accessory interface
+	// cannot be unmarshalled directly, the API view is built by the handler instead.
+	InheritedAccessories []accessoryModel.Accessory `json:"-"`
 }
 
 // UnmarshalJSON to customize the accessories unmarshal
@@ -40,7 +44,7 @@ func (artifact *Artifact) UnmarshalJSON(data []byte) error {
 	type Alias Artifact
 	ali := &struct {
 		*Alias
-		AccessoryItems []interface{} `json:"accessories,omitempty"`
+		AccessoryItems []any `json:"accessories,omitempty"`
 	}{
 		Alias: (*Alias)(artifact),
 	}
@@ -112,9 +116,14 @@ type AdditionLink struct {
 
 // Option is used to specify the properties returned when listing/getting artifacts
 type Option struct {
-	WithTag            bool
-	TagOption          *tag.Option // only works when WithTag is set to true
-	WithLabel          bool
-	WithAccessory      bool
-	LatestInRepository bool
+	WithTag   bool
+	TagOption *tag.Option // only works when WithTag is set to true
+	WithLabel bool
+	// WithAccessory returns the accessories whose subject is the artifact itself
+	WithAccessory bool
+	// WithInheritedAccessory returns the accessories of the parent OCI index that also
+	// cover the artifact. Opt-in only: it costs an extra reference lookup per artifact,
+	// so it must never be enabled by default or on internal paths such as copy.
+	WithInheritedAccessory bool
+	LatestInRepository     bool
 }

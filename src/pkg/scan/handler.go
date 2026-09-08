@@ -46,7 +46,7 @@ type Handler interface {
 	// RequiredPermissions defines the permission used by the scan robot account
 	RequiredPermissions() []*types.Policy
 	// RequestParameters defines the parameters for scan request
-	RequestParameters() map[string]interface{}
+	RequestParameters() map[string]any
 	// PostScan defines the operation after scan
 	PostScan(ctx job.Context, sr *v1.ScanRequest, rp *scan.Report, rawReport string, startTime time.Time, robot *model.Robot) (string, error)
 	ReportHandler
@@ -62,8 +62,8 @@ type ReportHandler interface {
 	Update(ctx context.Context, uuid string, report string) error
 	// MakePlaceHolder make the report place holder, if exist, delete it and create a new one
 	MakePlaceHolder(ctx context.Context, art *artifact.Artifact, r *scanner.Registration) (rps []*scan.Report, err error)
-	// GetPlaceHolder get the the report place holder
+	// GetPlaceHolder get the report place holder
 	GetPlaceHolder(ctx context.Context, artRepo string, artDigest string, scannerUUID string, mimeType string) (rp *scan.Report, err error)
 	// GetSummary get the summary of the report
-	GetSummary(ctx context.Context, ar *artifact.Artifact, mimeTypes []string) (map[string]interface{}, error)
+	GetSummary(ctx context.Context, ar *artifact.Artifact, mimeTypes []string) (map[string]any, error)
 }

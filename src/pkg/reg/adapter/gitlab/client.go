@@ -24,6 +24,7 @@ import (
 	"reflect"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -57,7 +58,11 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		token:    registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(registry.Insecure),
+					common_http.WithCACert(registry.CACertificate),
+				),
+				Timeout: config.RegistryHTTPClientTimeout(),
 			}),
 	}
 	return client, nil
@@ -111,7 +116,7 @@ func (c *Client) getTags(projectID int64, repositoryID int64) ([]*Tag, error) {
 
 // GetAndIteratePagination iterates the pagination header and returns all resources
 // The parameter "v" must be a pointer to a slice
-func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err

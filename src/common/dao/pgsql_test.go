@@ -27,7 +27,7 @@ func TestMaxOpenConns(t *testing.T) {
 
 	queryNum := 200
 	results := make([]bool, queryNum)
-	for i := 0; i < queryNum; i++ {
+	for i := range queryNum {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()

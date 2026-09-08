@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import logging
 import os
 import yaml
@@ -213,6 +214,8 @@ def parse_yaml_config(config_file_path, with_trivy):
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_skip_java_db_update'] = trivy_configs.get("skip_java_db_update") or False
+    config_dict['trivy_db_repository'] = trivy_configs.get("db_repository") or 'ghcr.io/aquasecurity/trivy-db'
+    config_dict['trivy_java_db_repository'] = trivy_configs.get("java_db_repository") or 'ghcr.io/aquasecurity/trivy-java-db'
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
     config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
@@ -226,7 +229,6 @@ def parse_yaml_config(config_file_path, with_trivy):
     value = config_dict["max_job_duration_hours"]
     if not isinstance(value, int) or value < 24:
         config_dict["max_job_duration_hours"] = 24
-    config_dict['max_job_duration_seconds'] = config_dict['max_job_duration_hours'] * 3600
     config_dict['job_loggers'] = js_config["job_loggers"]
     config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
@@ -354,6 +356,11 @@ def parse_yaml_config(config_file_path, with_trivy):
 
     return config_dict
 
+def get_redis_schema(redis=None):
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        return redis.get('sentinel_master_set', None) and 'rediss+sentinel' or 'rediss'
+    else:
+        return redis.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
 
 def get_redis_url(db, redis=None):
     """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index?idle_timeout_seconds=30`
@@ -373,7 +380,7 @@ def get_redis_url(db, redis=None):
         'password': '',
     }
     kwargs.update(redis or {})
-    kwargs['scheme'] = kwargs.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
+    kwargs['scheme'] = get_redis_schema(kwargs)
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
     kwargs['password_part'] = quote(str(kwargs.get('password', None)), safe='') and (':%s@' % quote(str(kwargs['password']), safe='')) or ''
@@ -458,5 +465,8 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
+    
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
     return configs

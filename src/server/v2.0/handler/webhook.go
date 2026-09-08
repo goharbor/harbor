@@ -53,11 +53,11 @@ type webhookAPI struct {
 	webhookCtl webhook_ctl.Controller
 }
 
-func (n *webhookAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (n *webhookAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
-func (n *webhookAPI) requirePolicyInProject(ctx context.Context, projectIDOrName interface{}, policyID int64) error {
+func (n *webhookAPI) requirePolicyInProject(ctx context.Context, projectIDOrName any, policyID int64) error {
 	projectID, err := getProjectID(ctx, projectIDOrName)
 	if err != nil {
 		return err

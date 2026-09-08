@@ -75,7 +75,7 @@ type QuotaRefObject struct {
 
 // ToSwagger converts the QuotaRefObject to the swagger model
 func (rl *QuotaRefObject) ToSwagger() models.QuotaRefObject {
-	result := make(map[string]interface{}, len(rl.QuotaRefObject))
+	result := make(map[string]any, len(rl.QuotaRefObject))
 
 	for name, value := range rl.QuotaRefObject {
 		result[string(name)] = value

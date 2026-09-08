@@ -58,11 +58,14 @@ then
     sed "s/# github_token: xxx/github_token: $GITHUB_TOKEN/" -i make/harbor.yml
 fi
 
-sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" TRIVYFLAG=true GEN_TLS=true PULL_BASE_FROM_DOCKERHUB=false
+sudo make compile build prepare COMPILETAG=compile_golangimage GOBUILDTAGS="include_oss include_gcs" TRIVYFLAG=true EXPORTERFLAG=true GEN_TLS=true PULL_BASE_FROM_DOCKERHUB=false
 
 # set the debugging env
 echo "GC_TIME_WINDOW_HOURS=0" | sudo tee -a ./make/common/config/core/env
 echo "EXECUTION_STATUS_REFRESH_INTERVAL_SECONDS=5" | sudo tee -a ./make/common/config/core/env
+# Disable exporter metric cache in API tests. Leading newline avoids merging
+# into the previous line if exporter/env has no trailing newline.
+printf '\nHARBOR_EXPORTER_CACHE_TIME=0\n' | sudo tee -a ./make/common/config/exporter/env
 sudo make start
 
 # waiting 5 minutes to start

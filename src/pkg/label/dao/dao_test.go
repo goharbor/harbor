@@ -164,7 +164,7 @@ func (l *labelDaoTestSuite) DeleteReference() {
 
 func (l *labelDaoTestSuite) DeleteReferences() {
 	n, err := l.dao.DeleteReferences(l.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"LabelID": 1000,
 		},
 	})

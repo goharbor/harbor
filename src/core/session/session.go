@@ -22,7 +22,9 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/server/web/session"
+	goredis "github.com/redis/go-redis/v9"
 
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/cache/redis"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -41,12 +43,12 @@ type Store struct {
 	c           cache.Cache
 	sid         string
 	lock        sync.RWMutex
-	values      map[interface{}]interface{}
+	values      map[any]any
 	maxlifetime int64
 }
 
 // Set value in redis session
-func (rs *Store) Set(_ context.Context, key, value interface{}) error {
+func (rs *Store) Set(_ context.Context, key, value any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	rs.values[key] = value
@@ -54,7 +56,7 @@ func (rs *Store) Set(_ context.Context, key, value interface{}) error {
 }
 
 // Get value in redis session
-func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
+func (rs *Store) Get(_ context.Context, key any) any {
 	rs.lock.RLock()
 	defer rs.lock.RUnlock()
 	if v, ok := rs.values[key]; ok {
@@ -64,7 +66,7 @@ func (rs *Store) Get(_ context.Context, key interface{}) interface{} {
 }
 
 // Delete value in redis session
-func (rs *Store) Delete(_ context.Context, key interface{}) error {
+func (rs *Store) Delete(_ context.Context, key any) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 	delete(rs.values, key)
@@ -75,7 +77,7 @@ func (rs *Store) Delete(_ context.Context, key interface{}) error {
 func (rs *Store) Flush(_ context.Context) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
-	rs.values = make(map[interface{}]interface{})
+	rs.values = make(map[any]any)
 	return nil
 }
 
@@ -95,15 +97,23 @@ func (rs *Store) releaseSession(ctx context.Context, _ http.ResponseWriter, requ
 	if ctx == nil {
 		ctx = context.TODO()
 	}
-	maxlifetime := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
+
+	// When skipSessionRenewal is true, save the session data but preserve
+	// the existing TTL in Redis (KeepTTL). This prevents background polling
+	// requests from keeping the session alive indefinitely.
+	exp := time.Duration(systemSessionTimeout(ctx, rs.maxlifetime))
+	if lib.GetSkipSessionRenewal(ctx) {
+		exp = goredis.KeepTTL
+	}
+
 	if rdb, ok := rs.c.(*redis.Cache); ok {
 		if requirePresent {
-			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), maxlifetime)
+			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
 		} else {
-			cmd := rdb.Client.Set(ctx, rs.sid, string(b), maxlifetime)
+			cmd := rdb.Client.Set(ctx, rs.sid, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
@@ -144,7 +154,7 @@ func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url stri
 
 // SessionRead read redis session by sid
 func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store, error) {
-	kv := make(map[interface{}]interface{})
+	kv := make(map[any]any)
 	if ctx == nil {
 		ctx = context.TODO()
 	}
@@ -172,7 +182,7 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
 	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
-		err := rp.c.Save(ctx, sid, "", time.Duration(rp.maxlifetime))
+		err := rp.c.Save(ctx, sid, map[any]any{}, maxlifetime)
 		if err != nil {
 			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
 		}
@@ -182,8 +192,8 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 			rdb.Rename(ctx, oldsid, sid)
 			rdb.Expire(ctx, sid, maxlifetime)
 		} else {
-			kv := make(map[interface{}]interface{})
-			err := rp.c.Fetch(ctx, sid, &kv)
+			kv := make(map[any]any)
+			err := rp.c.Fetch(ctx, oldsid, &kv)
 			if err != nil && !errors.Is(err, cache.ErrNotFound) {
 				return nil, err
 			}

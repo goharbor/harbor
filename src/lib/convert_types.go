@@ -43,7 +43,7 @@ func StringValue(v *string) string {
 }
 
 // ToBool convert interface to bool
-func ToBool(v interface{}) bool {
+func ToBool(v any) bool {
 	switch b := v.(type) {
 	case bool:
 		return b

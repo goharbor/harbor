@@ -75,8 +75,9 @@ type controller struct {
 
 // Start starts the manual GC
 func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (int64, error) {
-	para := make(map[string]interface{})
+	para := make(map[string]any)
 	para["delete_untagged"] = policy.DeleteUntagged
+	para["delete_tag"] = policy.DeleteTag
 	para["dry_run"] = policy.DryRun
 	para["workers"] = policy.Workers
 	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
@@ -129,7 +130,7 @@ func (c *controller) ListExecutions(ctx context.Context, query *q.Query) ([]*Exe
 // GetExecution ...
 func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, error) {
 	execs, err := c.exeMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.GarbageCollectionVendorType,
 		},
@@ -147,7 +148,7 @@ func (c *controller) GetExecution(ctx context.Context, id int64) (*Execution, er
 // GetTask ...
 func (c *controller) GetTask(ctx context.Context, id int64) (*Task, error) {
 	tasks, err := c.taskMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ID":         id,
 			"VendorType": job.GarbageCollectionVendorType,
 		},
@@ -203,8 +204,9 @@ func (c *controller) GetSchedule(ctx context.Context) (*scheduler.Schedule, erro
 
 // CreateSchedule ...
 func (c *controller) CreateSchedule(ctx context.Context, cronType, cron string, policy Policy) (int64, error) {
-	extras := make(map[string]interface{})
+	extras := make(map[string]any)
 	extras["delete_untagged"] = policy.DeleteUntagged
+	extras["delete_tag"] = policy.DeleteTag
 	extras["workers"] = policy.Workers
 	return c.schedulerMgr.Schedule(ctx, job.GarbageCollectionVendorType, -1, cronType, cron, job.GarbageCollectionVendorType, policy, extras)
 }
@@ -234,6 +236,7 @@ func convertTask(task *task.Task) *Task {
 		StatusMessage:  task.StatusMessage,
 		RunCount:       task.RunCount,
 		DeleteUntagged: task.GetBoolFromExtraAttrs("delete_untagged"),
+		DeleteTag:      task.GetBoolFromExtraAttrs("delete_tag"),
 		DryRun:         task.GetBoolFromExtraAttrs("dry_run"),
 		Workers:        int(task.GetNumFromExtraAttrs("workers")),
 		JobID:          task.JobID,

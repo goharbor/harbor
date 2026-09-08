@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
@@ -59,8 +60,10 @@ import {
     templateUrl: 'user.component.html',
     styleUrls: ['user.component.scss'],
     providers: [UserService],
+    standalone: false,
 })
 export class UserComponent implements OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     users: User[] = [];
     selectedRow: User[] = [];
     ISADMINISTRATOR: string = 'USER.ENABLE_ADMIN_ACTION';

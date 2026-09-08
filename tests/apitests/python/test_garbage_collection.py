@@ -165,7 +165,7 @@ class TestProjects(unittest.TestCase):
             32. Trigger GC and wait for GC to succeed;
             33. Check garbage collection details;
             34. Check the log for garbage collection workers;
-            35. Get the GC log and check that the image(IA) and all aeecssory is deleted;
+            35. Get the GC log and check that the image(IA) and all Accessory is deleted;
         """
         url = ADMIN_CLIENT["endpoint"]
         user_password = "Aa123456"
@@ -329,7 +329,7 @@ class TestProjects(unittest.TestCase):
         gc_log = self.gc.get_gc_log_by_id(gc_id, **ADMIN_CLIENT)
         self.assertIn("workers: {}".format(workers), gc_log)
 
-        # 35. Get the GC log and check that the image(IA) and all aeecssory is deleted
+        # 35. Get the GC log and check that the image(IA) and all Accessory is deleted
         self.assertIn(self.image, gc_log)
         self.assertIn(deleted_prefix + sbom_digest, gc_log)
         self.assertIn(deleted_prefix + sbom_signature_digest, gc_log)

@@ -13,6 +13,7 @@
 // limitations under the License.
 export const modalEvents = {
     USER_PROFILE: 'USER_PROFILE',
+    PREFERENCES: 'PREFERENCES',
     CHANGE_PWD: 'CHANGE_PWD',
     ABOUT: 'ABOUT',
 };

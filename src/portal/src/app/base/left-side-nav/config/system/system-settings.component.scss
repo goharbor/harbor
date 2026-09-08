@@ -176,7 +176,6 @@ input[type=number] {
 
 .flex-baseline {
   display: flex;
-  align-items: baseline;
 }
 
 $message-type-width: 12rem;
@@ -188,6 +187,10 @@ $message-type-width: 12rem;
 
 .message-label {
   margin-right: 0.25rem;
+}
+
+.audit-log-type {
+  max-width: 20rem;
 }
 
 .duration {
@@ -211,4 +214,12 @@ $message-type-width: 12rem;
 
 .date {
   width: 6rem;
+}
+
+.float-left {
+  float:left;
+
+  label {
+    min-width: 7rem;
+  }
 }

@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestBuildImageResourceURL(t *testing.T) {
-	cfg := map[string]interface{}{
+	cfg := map[string]any{
 		common.ExtEndpoint: "https://demo.goharbor.io",
 	}
 	config.InitWithSettings(cfg)

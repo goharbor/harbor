@@ -53,6 +53,7 @@
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid
+                clrDgSelectionType="multi"
                 (clrDgRefresh)="retrieve($event)"
                 [clrDgLoading]="loading"
                 [(clrDgSelected)]="selectedRow">
@@ -68,7 +69,8 @@
                 <clr-dg-placeholder>{{
                     'LABEL.PLACEHOLDER' | translate
                 }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let label of targets" [clrDgItem]="label">
+                @for (label of targets; track label) {
+                <clr-dg-row [clrDgItem]="label">
                     <clr-dg-cell>
                         <hbr-label-piece [label]="label"></hbr-label-piece>
                     </clr-dg-cell>
@@ -77,20 +79,26 @@
                         label.creation_time | harborDatetime : 'short'
                     }}</clr-dg-cell>
                 </clr-dg-row>
+                }
                 <clr-dg-footer>
                     <clr-dg-pagination
                         #pagination
                         [clrDgPageSize]="pageSize"
                         [(clrDgPage)]="page"
                         [clrDgTotalItems]="total">
-                        <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                            'PAGINATION.PAGE_SIZE' | translate
-                        }}</clr-dg-page-size>
-                        <span *ngIf="total"
+                        <clr-dg-page-size
+                            [clrPageSizeOptions]="clrPageSizeOptions"
+                            >{{
+                                'PAGINATION.PAGE_SIZE' | translate
+                            }}</clr-dg-page-size
+                        >
+                        @if (total) {
+                        <span
                             >{{ pagination.firstItem + 1 }} -
                             {{ pagination.lastItem + 1 }}
                             {{ 'DESTINATION.OF' | translate }}</span
                         >
+                        }
                         {{ total }} {{ 'DESTINATION.ITEMS' | translate }}
                     </clr-dg-pagination>
                 </clr-dg-footer>

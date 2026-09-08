@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/docker/distribution/registry/auth/token"
@@ -148,7 +149,7 @@ func TestMakeToken(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error while getting public key from cert: %s", crt)
 	}
-	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (interface{}, error) {
+	tok, err := jwt.ParseWithClaims(tokenString, &harborClaims{}, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
@@ -239,10 +240,8 @@ func (f *fakeSecurityContext) IsSolutionUser() bool {
 }
 func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
 	if actions, ok := f.rcActions[resource]; ok {
-		for _, a := range actions {
-			if a == action {
-				return true
-			}
+		if slices.Contains(actions, action) {
+			return true
 		}
 	}
 	return false
@@ -251,7 +250,7 @@ func (f *fakeSecurityContext) Can(ctx context.Context, action rbac.Action, resou
 func (f *fakeSecurityContext) GetMyProjects() ([]*proModels.Project, error) {
 	return nil, nil
 }
-func (f *fakeSecurityContext) GetProjectRoles(interface{}) []int {
+func (f *fakeSecurityContext) GetProjectRoles(any) []int {
 	return nil
 }
 

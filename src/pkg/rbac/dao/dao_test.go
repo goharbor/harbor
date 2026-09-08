@@ -126,7 +126,7 @@ func (suite *DaoTestSuite) TestDeletePermission() {
 
 func (suite *DaoTestSuite) TestListPermissions() {
 	rps, err := suite.dao.ListPermissions(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"role_type":            "robot",
 			"role_id":              1,
 			"permission_policy_id": 4,
@@ -141,7 +141,7 @@ func (suite *DaoTestSuite) TestDeletePermissionsByRole() {
 	suite.Require().Nil(err)
 
 	rps, err := suite.dao.ListPermissions(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"role_type": "serviceaccount",
 			"role_id":   2,
 		},
@@ -172,7 +172,7 @@ func (suite *DaoTestSuite) TestDeleteRbacPolicy() {
 
 func (suite *DaoTestSuite) TestListRbacPolicies() {
 	rps, err := suite.dao.ListRbacPolicies(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"scope":    "/project/1",
 			"resource": "repository",
 			"action":   "pull",

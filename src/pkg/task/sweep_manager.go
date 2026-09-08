@@ -68,7 +68,7 @@ func (sm *sweepManager) listVendorIDs(ctx context.Context, vendorType string) ([
 // getCandidateMaxStartTime returns the max start time for candidate executions, obtain the start time of the xth recent one.
 func (sm *sweepManager) getCandidateMaxStartTime(ctx context.Context, vendorType string, vendorID, retainCnt int64) (*time.Time, error) {
 	query := &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": vendorType,
 			"VendorID":   vendorID,
 		},
@@ -121,7 +121,7 @@ func (sm *sweepManager) ListCandidates(ctx context.Context, vendorType string, r
 		// count the records for pagination
 		sql := `SELECT COUNT(1) FROM execution WHERE vendor_type = ? AND vendor_id = ? AND start_time < ? AND status IN (?,?,?)`
 		totalOfCandidate := 0
-		params := []interface{}{
+		params := []any{
 			vendorType,
 			vendorID,
 			maxStartTime.Format(timeFormat),
@@ -145,7 +145,7 @@ func (sm *sweepManager) ListCandidates(ctx context.Context, vendorType string, r
 		for i := n; i >= 1; i-- {
 			q2.PageNumber = int64(i)
 			// should copy params as pagination will append the slice
-			paginationParams := make([]interface{}, len(params))
+			paginationParams := make([]any, len(params))
 			copy(paginationParams, params)
 			paginationSQL, paginationParams := orm.PaginationOnRawSQL(q2, sql, paginationParams)
 			ids := make([]int64, 0, defaultPageSize)
@@ -165,7 +165,7 @@ func (sm *sweepManager) Clean(ctx context.Context, execIDs []int64) error {
 		return err
 	}
 	// construct sql params
-	params := make([]interface{}, 0, len(execIDs))
+	params := make([]any, 0, len(execIDs))
 	for _, eid := range execIDs {
 		params = append(params, eid)
 	}

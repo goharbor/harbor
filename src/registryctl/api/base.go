@@ -48,7 +48,7 @@ func HandleError(w http.ResponseWriter, err error) {
 }
 
 // WriteJSON response status code will be written automatically if there is an error
-func WriteJSON(w http.ResponseWriter, v interface{}) error {
+func WriteJSON(w http.ResponseWriter, v any) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		HandleInternalServerError(w, err)

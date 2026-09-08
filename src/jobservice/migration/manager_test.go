@@ -58,7 +58,7 @@ func (suite *ManagerTestSuite) SetupSuite() {
 	suite.manager = New(suite.pool, suite.namespace)
 }
 
-// SetupTestSuite sets up env for each test case
+// SetupTest sets up env for each test case
 func (suite *ManagerTestSuite) SetupTest() {
 	// Mock fake data
 	conn := suite.pool.Get()
@@ -69,7 +69,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 	id := utils.MakeIdentifier()
 	suite.jobID = id
 	// Mock stats of periodic job
-	args := []interface{}{
+	args := []any{
 		rds.KeyJobStats(suite.namespace, id),
 		"status_hook",
 		"http://core:8080/hook",
@@ -101,10 +101,10 @@ func (suite *ManagerTestSuite) SetupTest() {
 	require.Equal(suite.T(), "ok", strings.ToLower(reply), "ok expected")
 
 	// Mock periodic job policy object
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params["redis_url_reg"] = "redis://redis:6379/1"
 
-	policy := make(map[string]interface{})
+	policy := make(map[string]any)
 	policy["job_name"] = jobNameGarbageCollection
 	policy["job_params"] = params
 	policy["cron_spec"] = "0 0 17 * * *"
@@ -118,7 +118,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 
 	score := time.Now().Unix()
 	suite.numbericID = score
-	zaddArgs := []interface{}{
+	zaddArgs := []any{
 		rds.KeyPeriodicPolicy(suite.namespace),
 		score,
 		rawJSON,
@@ -130,7 +130,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 	require.Equal(suite.T(), 2, count)
 
 	// Mock key score mapping
-	keyScoreArgs := []interface{}{
+	keyScoreArgs := []any{
 		fmt.Sprintf("%s%s", rds.KeyNamespacePrefix(suite.namespace), "period:key_score"),
 		score,
 		id,
@@ -141,7 +141,7 @@ func (suite *ManagerTestSuite) SetupTest() {
 	require.Equal(suite.T(), 1, count)
 }
 
-// SetupTestSuite clears up env for each test case
+// TearDownTest clears up env for each test case
 func (suite *ManagerTestSuite) TearDownTest() {
 	conn := suite.pool.Get()
 	defer func() {
@@ -181,7 +181,7 @@ func (suite *ManagerTestSuite) TestManager() {
 	assert.NoError(suite.T(), err, "check existence of key score mapping error")
 	assert.Equal(suite.T(), 0, count)
 
-	hmGetArgs := []interface{}{
+	hmGetArgs := []any{
 		rds.KeyJobStats(suite.namespace, suite.jobID),
 		"id",
 		"status",

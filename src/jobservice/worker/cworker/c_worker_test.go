@@ -78,7 +78,7 @@ func (suite *CWorkerTestSuite) SetupSuite() {
 	)
 
 	suite.cWorker = NewWorker(envCtx, suite.namespace, 5, suite.pool, suite.lcmCtl)
-	err := suite.cWorker.RegisterJobs(map[string]interface{}{
+	err := suite.cWorker.RegisterJobs(map[string]any{
 		"fake_job":          (*fakeJob)(nil),
 		"fake_long_run_job": (*fakeLongRunJob)(nil),
 	})
@@ -110,7 +110,7 @@ func (suite *CWorkerTestSuite) TestRegisterJobs() {
 	_, ok := suite.cWorker.IsKnownJob("fake_job")
 	assert.EqualValues(suite.T(), true, ok, "expected known job but registering 'fake_job' appears to have failed")
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params["name"] = "testing:v1"
 	err := suite.cWorker.ValidateJobParameters((*fakeJob)(nil), params)
 	assert.NoError(suite.T(), err, "validate parameters: nil error expected but got %s", err)
@@ -184,7 +184,7 @@ func (suite *CWorkerTestSuite) TestWorkerStats() {
 // TestStopJob test stop job
 func (suite *CWorkerTestSuite) TestStopJob() {
 	// Stop generic job
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params["name"] = "testing:v1"
 
 	genericJob, err := suite.cWorker.Enqueue("fake_long_run_job", params, false, "")

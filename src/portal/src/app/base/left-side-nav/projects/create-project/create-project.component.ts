@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,10 @@ import { NgForm, Validators } from '@angular/forms';
 import { forkJoin, fromEvent, Observable, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Project } from '../../../project/project';
+import {
+    Project,
+    REPOSITORY_FILTER_KIND_DOUBLESTAR,
+} from '../../../project/project';
 import {
     QuotaUnits,
     QuotaUnlimited,
@@ -49,6 +52,7 @@ import {
     GetIntegerAndUnit,
     validateLimit,
 } from '../../../../shared/units/utils';
+import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
 import { RegistryService } from '../../../../../../ng-swagger-gen/services/registry.service';
@@ -59,6 +63,7 @@ const PAGE_SIZE: number = 100;
     selector: 'create-project',
     templateUrl: 'create-project.component.html',
     styleUrls: ['create-project.scss'],
+    standalone: false,
 })
 export class CreateProjectComponent
     implements OnInit, AfterViewInit, OnChanges, OnDestroy
@@ -111,6 +116,10 @@ export class CreateProjectComponent
 
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
+
+    maxUpstreamConnError: string | null = null;
+
+    repositoryFilterError: string | null = null;
 
     constructor(
         private projectService: ProjectService,
@@ -320,12 +329,47 @@ export class CreateProjectComponent
             (!Number.isInteger(value) && value !== -1) ||
             (value <= 0 && value !== -1)
         ) {
-            this.bandwidthError =
-                'Please enter -1 or an integer  greater than 0.';
+            this.translateService
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.bandwidthError = res;
+                });
         } else {
             this.bandwidthError = null;
         }
     }
+
+    validateMaxUpstreamConnections(): void {
+        const value = Number(this.project.metadata.max_upstream_conn);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translateService
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.maxUpstreamConnError = res;
+                });
+        } else {
+            this.maxUpstreamConnError = null;
+        }
+    }
+
+    validateRepositoryFilter(): void {
+        const pattern = this.project.metadata.proxy_cache_filter_pattern;
+        const kind = this.project.metadata.proxy_cache_filter_kind;
+        const errorKey = validateRepositoryFilterPattern(kind, pattern);
+
+        if (errorKey) {
+            this.translateService.get(errorKey).subscribe((res: string) => {
+                this.repositoryFilterError = res;
+            });
+        } else {
+            this.repositoryFilterError = null;
+        }
+    }
+
     convertSpeedValue(realSpeed: number): number {
         if (this.selectedSpeedLimitUnit == BandwidthUnit.MB) {
             return realSpeed * KB_TO_MB;
@@ -339,6 +383,18 @@ export class CreateProjectComponent
         this.validateBandwidth();
         if (this.bandwidthError) {
             this.inlineAlert.showInlineError(this.bandwidthError);
+            return;
+        }
+
+        this.validateMaxUpstreamConnections();
+        if (this.maxUpstreamConnError) {
+            this.inlineAlert.showInlineError(this.maxUpstreamConnError);
+            return;
+        }
+
+        this.validateRepositoryFilter();
+        if (this.repositoryFilterError) {
+            this.inlineAlert.showInlineError(this.repositoryFilterError);
             return;
         }
 
@@ -356,15 +412,34 @@ export class CreateProjectComponent
         const registryId: number = this.enableProxyCache
             ? +this.project.registry_id
             : null;
+        const metadata: Record<string, string> = {
+            public: this.project.metadata.public ? 'true' : 'false',
+            proxy_speed_kb: this.project.metadata.bandwidth.toString(),
+            max_upstream_conn:
+                this.project.metadata.max_upstream_conn.toString(),
+            proxy_cache_local_on_not_found: this.project.metadata
+                .proxy_cache_local_on_not_found
+                ? 'true'
+                : 'false',
+            proxy_referrer_api: this.project.metadata.proxy_referrer_api
+                ? 'true'
+                : 'false',
+        };
+        if (
+            this.enableProxyCache &&
+            this.project.metadata.proxy_cache_filter_pattern
+        ) {
+            metadata.proxy_cache_filter_pattern =
+                this.project.metadata.proxy_cache_filter_pattern;
+            metadata.proxy_cache_filter_kind =
+                this.project.metadata.proxy_cache_filter_kind ||
+                REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        }
         this.projectService
             .createProject({
                 project: {
                     project_name: this.project.name,
-                    metadata: {
-                        public: this.project.metadata.public ? 'true' : 'false',
-                        proxy_speed_kb:
-                            this.project.metadata.bandwidth.toString(),
-                    },
+                    metadata,
                     storage_limit: +storageByte,
                     registry_id: registryId,
                 },
@@ -408,6 +483,13 @@ export class CreateProjectComponent
         this.storageLimitUnit = this.storageDefaultLimitUnit;
         this.selectedSpeedLimitUnit = BandwidthUnit.KB;
         this.speedLimit = -1;
+        this.project.metadata.max_upstream_conn = -1;
+        this.project.metadata.proxy_cache_local_on_not_found = false;
+        this.project.metadata.proxy_referrer_api = false;
+        this.project.metadata.proxy_cache_filter_pattern = '';
+        this.project.metadata.proxy_cache_filter_kind =
+            REPOSITORY_FILTER_KIND_DOUBLESTAR;
+        this.repositoryFilterError = null;
     }
 
     public get isValid(): boolean {
@@ -417,7 +499,9 @@ export class CreateProjectComponent
             !this.isSubmitOnGoing &&
             this.isNameValid &&
             !this.checkOnGoing &&
-            !this.bandwidthError
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError &&
+            !this.repositoryFilterError
         );
     }
 

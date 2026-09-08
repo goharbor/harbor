@@ -1,9 +1,12 @@
 name: Release Note Label Check
 
 # Trigger the workflow on pull requests only
-on: 
+on:
   pull_request:
     types: [opened, labeled, unlabeled, synchronize]
+
+permissions:
+  pull-requests: read
 
 env:
   GOPROXY: https://proxy.golang.org/
@@ -14,10 +17,11 @@ jobs:
   # - At most one two the main category labels
   check-label:
     name: Check release-note label set
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-16-64-x86
     steps:
-      - uses: mheap/github-action-required-labels@v5
+      - uses: mheap/github-action-required-labels@23e10fde7e062233401931a0eece796cd9bf3177 # v5.6.0
         with:
           mode: minimum
           count: 1
-          labels: "release-note/ignore-for-release, release-note/new-feature, release-note/update, release-note/enhancement, release-note/community, release-note/breaking-change, release-note/docs, release-note/infra, release-note/deprecation"
+          labels: "release-note/.*"
+          use_regex: true

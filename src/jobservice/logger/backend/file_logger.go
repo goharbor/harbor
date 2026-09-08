@@ -54,51 +54,51 @@ func (fl *FileLogger) Close() error {
 }
 
 // Debug ...
-func (fl *FileLogger) Debug(v ...interface{}) {
+func (fl *FileLogger) Debug(v ...any) {
 	fl.backendLogger.Debug(v...)
 }
 
 // Debugf with format
-func (fl *FileLogger) Debugf(format string, v ...interface{}) {
+func (fl *FileLogger) Debugf(format string, v ...any) {
 	fl.backendLogger.Debugf(format, v...)
 }
 
 // Info ...
-func (fl *FileLogger) Info(v ...interface{}) {
+func (fl *FileLogger) Info(v ...any) {
 	fl.backendLogger.Info(v...)
 }
 
 // Infof with format
-func (fl *FileLogger) Infof(format string, v ...interface{}) {
+func (fl *FileLogger) Infof(format string, v ...any) {
 	fl.backendLogger.Infof(format, v...)
 }
 
 // Warning ...
-func (fl *FileLogger) Warning(v ...interface{}) {
+func (fl *FileLogger) Warning(v ...any) {
 	fl.backendLogger.Warning(v...)
 }
 
 // Warningf with format
-func (fl *FileLogger) Warningf(format string, v ...interface{}) {
+func (fl *FileLogger) Warningf(format string, v ...any) {
 	fl.backendLogger.Warningf(format, v...)
 }
 
 // Error ...
-func (fl *FileLogger) Error(v ...interface{}) {
+func (fl *FileLogger) Error(v ...any) {
 	fl.backendLogger.Error(v...)
 }
 
 // Errorf with format
-func (fl *FileLogger) Errorf(format string, v ...interface{}) {
+func (fl *FileLogger) Errorf(format string, v ...any) {
 	fl.backendLogger.Errorf(format, v...)
 }
 
 // Fatal error
-func (fl *FileLogger) Fatal(v ...interface{}) {
+func (fl *FileLogger) Fatal(v ...any) {
 	fl.backendLogger.Fatal(v...)
 }
 
 // Fatalf error
-func (fl *FileLogger) Fatalf(format string, v ...interface{}) {
+func (fl *FileLogger) Fatalf(format string, v ...any) {
 	fl.backendLogger.Fatalf(format, v...)
 }

@@ -119,6 +119,7 @@ const (
 	OIDCExtraRedirectParms           = "oidc_extra_redirect_parms"
 	OIDCScope                        = "oidc_scope"
 	OIDCUserClaim                    = "oidc_user_claim"
+	OIDCLogout                       = "oidc_logout"
 
 	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
@@ -151,6 +152,7 @@ const (
 
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
+	OIDCLoginoutPath = "/c/oidc/logout"
 
 	AuthProxyRedirectPath = "/c/authproxy/redirect"
 
@@ -208,7 +210,7 @@ const (
 	// 24h.
 	DefaultCacheExpireHours = 24
 
-	PurgeAuditIncludeOperations = "include_operations"
+	PurgeAuditIncludeEventTypes = "include_event_types"
 	PurgeAuditDryRun            = "dry_run"
 	PurgeAuditRetentionHour     = "audit_retention_hour"
 	// AuditLogForwardEndpoint indicate to forward the audit log to an endpoint
@@ -220,8 +222,8 @@ const (
 	// ScannerSkipUpdatePullTime
 	ScannerSkipUpdatePullTime = "scanner_skip_update_pulltime"
 
-	// AuditLogEventsDisabled
-	AuditLogEventsDisabled = "audit_log_events_disabled"
+	// AuditLogEventsDisabled ...
+	AuditLogEventsDisabled = "disabled_audit_log_event_types"
 
 	// SessionTimeout defines the web session timeout
 	SessionTimeout = "session_timeout"
@@ -248,6 +250,22 @@ const (
 	// DefaultBeegoMaxUploadSizeBytes sets default max upload size to 128GB
 	DefaultBeegoMaxUploadSizeBytes = 1 << 37
 
+	// MaxManifestBodySize bounds the manifest PUT body buffered in memory. OCI
+	// manifests are sub-MiB in practice, so 4MiB is a generous ceiling.
+	MaxManifestBodySize = 4 << 20
+
+	// MaxAuditLogPayloadSize bounds the audit log payload size.
+	MaxAuditLogPayloadSize = 4 << 20
+
 	// Global Leeway used for token validation
 	JwtLeeway = 60 * time.Second
+
+	// The replication adapter whitelist
+	ReplicationAdapterWhiteList = "REPLICATION_ADAPTER_WHITELIST"
+
+	// UserAgentHeaderName is the HTTP header key for user agent.
+	UserAgentHeaderName = "User-Agent"
+
+	// UserAgent is the default user-agent header for registry client requests
+	UserAgent = "harbor-registry-client"
 )

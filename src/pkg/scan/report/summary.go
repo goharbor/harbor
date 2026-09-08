@@ -41,7 +41,7 @@ func WithArtifactDigest(artifactDigest string) Option {
 }
 
 // SummaryMerger is a helper function to merge summary together
-type SummaryMerger func(s1, s2 interface{}) (interface{}, error)
+type SummaryMerger func(s1, s2 any) (any, error)
 
 // SupportedSummaryMergers declares mappings between mime type and summary merger func.
 var SupportedSummaryMergers = map[string]SummaryMerger{
@@ -50,7 +50,7 @@ var SupportedSummaryMergers = map[string]SummaryMerger{
 }
 
 // MergeSummary merge summary s1 and s2
-func MergeSummary(mimeType string, s1, s2 interface{}) (interface{}, error) {
+func MergeSummary(mimeType string, s1, s2 any) (any, error) {
 	m, ok := SupportedSummaryMergers[mimeType]
 	if !ok {
 		return nil, errors.Errorf("no summary merger bound with mime type %s", mimeType)
@@ -60,7 +60,7 @@ func MergeSummary(mimeType string, s1, s2 interface{}) (interface{}, error) {
 }
 
 // MergeNativeSummary merge vuln.NativeReportSummary together
-func MergeNativeSummary(s1, s2 interface{}) (interface{}, error) {
+func MergeNativeSummary(s1, s2 any) (any, error) {
 	nrs1, ok := s1.(*vuln.NativeReportSummary)
 	if !ok {
 		return nil, errors.New("native report summary required")
@@ -82,7 +82,7 @@ var SupportedGenerators = map[string]SummaryGenerator{
 
 // GenerateSummary is a helper function to generate report
 // summary based on the given report.
-func GenerateSummary(r *scan.Report, options ...Option) (interface{}, error) {
+func GenerateSummary(r *scan.Report, options ...Option) (any, error) {
 	g, ok := SupportedGenerators[r.MimeType]
 	if !ok {
 		return nil, errors.Errorf("no generator bound with mime type %s", r.MimeType)
@@ -93,18 +93,15 @@ func GenerateSummary(r *scan.Report, options ...Option) (interface{}, error) {
 
 // SummaryGenerator is a func template which used to generated report
 // summary for relevant mime type.
-type SummaryGenerator func(r *scan.Report, options ...Option) (interface{}, error)
+type SummaryGenerator func(r *scan.Report, options ...Option) (any, error)
 
 // GenerateNativeSummary generates the report summary for the native report.
-func GenerateNativeSummary(r *scan.Report, _ ...Option) (interface{}, error) {
+func GenerateNativeSummary(r *scan.Report, _ ...Option) (any, error) {
 	sum := &vuln.NativeReportSummary{}
 	sum.ReportID = r.UUID
 	sum.StartTime = r.StartTime
 	sum.EndTime = r.EndTime
-	sum.Duration = r.EndTime.Unix() - r.StartTime.Unix()
-	if sum.Duration < 0 {
-		sum.Duration = 0
-	}
+	sum.Duration = max(r.EndTime.Unix()-r.StartTime.Unix(), 0)
 
 	sum.ScanStatus = job.ErrorStatus.String()
 	if job.Status(r.Status).Code() != -1 {

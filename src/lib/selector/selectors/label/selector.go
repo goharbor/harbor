@@ -50,7 +50,7 @@ func (s *selector) Select(artifacts []*iselector.Candidate) (selected []*iselect
 }
 
 // New is factory method for label selector
-func New(decoration string, pattern interface{}, _ string) iselector.Selector {
+func New(decoration string, pattern any, _ string) iselector.Selector {
 	labels := make([]string, 0)
 
 	if pattern != nil {

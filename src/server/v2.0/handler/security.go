@@ -136,6 +136,7 @@ func toVulnerabilities(vuls []*secHubModel.VulnerabilityItem) []*models.Vulnerab
 			Digest:         item.Digest,
 			CVEID:          item.CVEID,
 			Severity:       item.Severity,
+			Status:         item.Status,
 			Package:        item.Package,
 			Tags:           item.Tags,
 			Version:        item.PackageVersion,

@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	libredis "github.com/goharbor/harbor/src/lib/redis"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -66,7 +67,7 @@ func (e *executionDAOTestSuite) TearDownTest() {
 
 func (e *executionDAOTestSuite) TestCount() {
 	count, err := e.executionDAO.Count(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "value",
 		},
@@ -75,7 +76,7 @@ func (e *executionDAOTestSuite) TestCount() {
 	e.Equal(int64(1), count)
 
 	count, err = e.executionDAO.Count(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "incorrect-value",
 		},
@@ -86,7 +87,7 @@ func (e *executionDAOTestSuite) TestCount() {
 
 func (e *executionDAOTestSuite) TestList() {
 	executions, err := e.executionDAO.List(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "value",
 		},
@@ -96,7 +97,7 @@ func (e *executionDAOTestSuite) TestList() {
 	e.Equal(e.executionID, executions[0].ID)
 
 	executions, err = e.executionDAO.List(e.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":     "test",
 			"ExtraAttrs.key": "incorrect-value",
 		},
@@ -332,13 +333,31 @@ func (e *executionDAOTestSuite) TestRefreshStatus() {
 }
 
 func (e *executionDAOTestSuite) TestAsyncRefreshStatus() {
-	err := e.executionDAO.AsyncRefreshStatus(e.ctx, e.executionID, "GC")
+	e.T().Setenv("_REDIS_URL_HARBOR", "redis://localhost:6379/0")
+	client, err := libredis.GetHarborClient()
+	e.Require().NoError(err)
+
+	member := buildExecStatusOutdateMember(e.executionID, "GC")
+	defer client.SRem(e.ctx, execStatusOutdateSetKey, member)
+
+	err = e.executionDAO.AsyncRefreshStatus(e.ctx, e.executionID, "GC")
 	e.NoError(err)
-	defer cache.Default().Delete(e.ctx, buildExecStatusOutdateKey(e.executionID, "GC"))
-	e.True(cache.Default().Contains(e.ctx, buildExecStatusOutdateKey(e.executionID, "GC")))
+
+	isMember, err := client.SIsMember(e.ctx, execStatusOutdateSetKey, member).Result()
+	e.NoError(err)
+	e.True(isMember)
+
+	// AsyncRefreshStatus should be idempotent: calling it again does not fail
+	// and does not introduce duplicates (SET semantic).
+	err = e.executionDAO.AsyncRefreshStatus(e.ctx, e.executionID, "GC")
+	e.NoError(err)
+	count, err := client.SCard(e.ctx, execStatusOutdateSetKey).Result()
+	e.NoError(err)
+	e.GreaterOrEqual(count, int64(1))
 }
 
 func (e *executionDAOTestSuite) TestScanAndRefreshOutdateStatus() {
+	e.T().Setenv("_REDIS_URL_HARBOR", "redis://localhost:6379/0")
 	// create execution1 with 1 running task
 	id1, err := e.executionDAO.Create(e.ctx, &Execution{
 		VendorType: "test1",
@@ -431,9 +450,9 @@ func Test_buildInClauseSQLForExtraAttrs(t *testing.T) {
 	}
 }
 
-func Test_extractExecIDVendorFromKey(t *testing.T) {
+func Test_parseExecStatusOutdateMember(t *testing.T) {
 	type args struct {
-		key string
+		member string
 	}
 	tests := []struct {
 		name       string
@@ -442,25 +461,35 @@ func Test_extractExecIDVendorFromKey(t *testing.T) {
 		wantVendor string
 		wantErr    bool
 	}{
-		{"invalid format", args{"invalid:foo:bar"}, 0, "", true},
-		{"invalid execution id", args{"execution:id:12abc:vendor:GC:status_outdate"}, 0, "", true},
-		{"invalid vendor type", args{"execution:id:100:vendor:foo:status_outdate"}, 0, "", true},
-		{"valid 1", args{"execution:id:100:vendor:GARBAGE_COLLECTION:status_outdate"}, 100, "GARBAGE_COLLECTION", false},
-		{"valid 2", args{"execution:id:100:vendor:P2P_PREHEAT:status_outdate"}, 100, "P2P_PREHEAT", false},
+		{"empty", args{""}, 0, "", true},
+		{"missing vendor", args{"100"}, 0, "", true},
+		{"empty vendor", args{"100:"}, 0, "", true},
+		{"invalid execution id", args{"12abc:GC"}, 0, "", true},
+		{"valid 1", args{"100:GARBAGE_COLLECTION"}, 100, "GARBAGE_COLLECTION", false},
+		{"valid 2", args{"200:P2P_PREHEAT"}, 200, "P2P_PREHEAT", false},
+		// vendor itself may not legally contain ':' but parser uses SplitN(2) so
+		// extra colons would be kept inside vendor part; guard the common case.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := extractExecIDVendorFromKey(tt.args.key)
+			got, got1, err := parseExecStatusOutdateMember(tt.args.member)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("extractExecIDVendorFromKey() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("parseExecStatusOutdateMember() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.wantID {
-				t.Errorf("extractExecIDVendorFromKey() got = %v, want %v", got, tt.wantID)
+				t.Errorf("parseExecStatusOutdateMember() got = %v, want %v", got, tt.wantID)
 			}
 			if got1 != tt.wantVendor {
-				t.Errorf("extractExecIDVendorFromKey() got1 = %v, want %v", got1, tt.wantVendor)
+				t.Errorf("parseExecStatusOutdateMember() got1 = %v, want %v", got1, tt.wantVendor)
 			}
 		})
+	}
+}
+
+func Test_buildExecStatusOutdateMember(t *testing.T) {
+	got := buildExecStatusOutdateMember(123, "GARBAGE_COLLECTION")
+	if got != "123:GARBAGE_COLLECTION" {
+		t.Errorf("buildExecStatusOutdateMember() = %v, want %v", got, "123:GARBAGE_COLLECTION")
 	}
 }

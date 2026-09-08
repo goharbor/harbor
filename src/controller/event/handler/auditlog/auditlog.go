@@ -41,7 +41,7 @@ func (h *Handler) Name() string {
 }
 
 // Handle ...
-func (h *Handler) Handle(ctx context.Context, value interface{}) error {
+func (h *Handler) Handle(ctx context.Context, value any) error {
 	var addAuditLog bool
 	switch v := value.(type) {
 	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
@@ -65,7 +65,7 @@ func (h *Handler) Handle(ctx context.Context, value interface{}) error {
 		if auditLog != nil && config.AuditLogEventEnabled(ctx, fmt.Sprintf("%v_%v", auditLog.Operation, auditLog.ResourceType)) {
 			_, err := auditext.Mgr.Create(ctx, auditLog)
 			if err != nil {
-				log.Debugf("add audit log err: %v", err)
+				log.Infof("add audit log err: %v", err)
 			}
 		}
 	}

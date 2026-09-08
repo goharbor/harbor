@@ -34,7 +34,7 @@ func TestGetRegistryClient(t *testing.T) {
 	assert.NotNil(t, client)
 
 	// multiple calls should return the same client
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		newClient, err := GetRegistryClient()
 		assert.NoError(t, err)
 		assert.Equal(t, client, newClient)
@@ -55,7 +55,7 @@ func TestGetHarborClient(t *testing.T) {
 	assert.NotNil(t, client)
 
 	// multiple calls should return the same client
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		newClient, err := GetHarborClient()
 		assert.NoError(t, err)
 		assert.Equal(t, client, newClient)

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package list
+package list // nolint:revive
 
 import (
 	"container/list"
@@ -36,7 +36,7 @@ func New() *SyncList {
 }
 
 // Iterate the list
-func (l *SyncList) Iterate(f func(ele interface{}) bool) {
+func (l *SyncList) Iterate(f func(ele any) bool) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
 
@@ -54,7 +54,7 @@ func (l *SyncList) Iterate(f func(ele interface{}) bool) {
 }
 
 // Push the element to the back of the list
-func (l *SyncList) Push(ele interface{}) {
+func (l *SyncList) Push(ele any) {
 	if ele != nil {
 		l.lock.Lock()
 		defer l.lock.Unlock()

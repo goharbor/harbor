@@ -184,6 +184,7 @@ func (suite *MiddlewareTestSuite) TestNonScannerPulling() {
 	mock.OnAnything(securityCtx, "Name").Return("local")
 	mock.OnAnything(securityCtx, "Can").Return(true, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(false, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
 
 	req := suite.makeRequest()
 	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
@@ -213,6 +214,7 @@ func (suite *MiddlewareTestSuite) TestCheckIsScannableFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(false, fmt.Errorf("error"))
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 
 	req := suite.makeRequest()
@@ -222,11 +224,29 @@ func (suite *MiddlewareTestSuite) TestCheckIsScannableFailed() {
 	suite.Equal(rr.Code, http.StatusInternalServerError)
 }
 
-func (suite *MiddlewareTestSuite) TestArtifactIsNotScannable() {
+func (suite *MiddlewareTestSuite) TestArtifactIsNotScannableButScanned() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	mock.OnAnything(suite.checker, "IsScannable").Return(false, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(&scan.Vulnerable{
+		ScanStatus:  "Success",
+		CVEBypassed: []string{"cve-2020"},
+	}, nil)
+
+	req := suite.makeRequest()
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(rr.Code, http.StatusOK)
+}
+
+func (suite *MiddlewareTestSuite) TestArtifactIsNotScannableNotScanned() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.checker, "IsScannable").Return(false, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
 
 	req := suite.makeRequest()
 	rr := httptest.NewRecorder()

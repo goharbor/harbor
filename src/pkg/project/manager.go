@@ -39,7 +39,7 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) error
 
 	// Get the project specified by the ID or name
-	Get(ctx context.Context, idOrName interface{}) (*models.Project, error)
+	Get(ctx context.Context, idOrName any) (*models.Project, error)
 
 	// List projects according to the query
 	List(ctx context.Context, query *q.Query) ([]*models.Project, error)
@@ -98,7 +98,7 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 }
 
 // Get the project specified by the ID
-func (m *manager) Get(ctx context.Context, idOrName interface{}) (*models.Project, error) {
+func (m *manager) Get(ctx context.Context, idOrName any) (*models.Project, error) {
 	id, ok := idOrName.(int64)
 	if ok {
 		return m.dao.Get(ctx, id)

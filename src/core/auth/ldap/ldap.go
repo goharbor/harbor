@@ -127,7 +127,7 @@ func (l *Auth) attachLDAPGroup(ctx context.Context, ldapUsers []model.User, u *m
 		l.attachGroupParallel(ctx, ldapUsers, u)
 		return
 	}
-	// Attach LDAP group sequencially
+	// Attach LDAP group sequentially
 	for _, dn := range ldapUsers[0].GroupDNList {
 		if lgroup, exist := verifyGroupInLDAP(dn, sess); exist {
 			userGroups = append(userGroups, ugModel.UserGroup{GroupName: lgroup.Name, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
@@ -150,7 +150,7 @@ func (l *Auth) attachGroupParallel(ctx context.Context, ldapUsers []model.User, 
 	g := new(errgroup.Group)
 	g.SetLimit(workerCount)
 
-	for i := 0; i < workerCount; i++ {
+	for i := range workerCount {
 		curIndex := i
 		g.Go(func() error {
 			userGroups := make([]ugModel.UserGroup, 0)
@@ -230,8 +230,12 @@ func (l *Auth) OnBoardUser(ctx context.Context, u *models.User) error {
 			u.Email = u.Username
 		}
 	}
-	u.Password = "12345678AbC" // Password is not kept in local db
-	u.Comment = "from LDAP."   // Source is from LDAP
+	pwd, err := utils.GenerateRandomStringOrError()
+	if err != nil {
+		return fmt.Errorf("failed to generate random password: %w", err)
+	}
+	u.Password = pwd         // Password is not kept in local db
+	u.Comment = "from LDAP." // Source is from LDAP
 
 	return l.userMgr.Onboard(ctx, u)
 }
@@ -292,7 +296,7 @@ func (l *Auth) SearchGroup(ctx context.Context, groupKey string) (*ugModel.UserG
 	}
 
 	if len(userGroupList) == 0 {
-		return nil, errors.NotFoundError(nil).WithMessagef("failed to searh ldap group with groupDN:%v", groupKey)
+		return nil, errors.NotFoundError(nil).WithMessagef("failed to search ldap group with groupDN:%v", groupKey)
 	}
 	userGroup := ugModel.UserGroup{
 		GroupName:   userGroupList[0].Name,

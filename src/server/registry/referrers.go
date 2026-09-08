@@ -180,7 +180,7 @@ type listReferrersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload interface{} `json:"body,omitempty"`
+	Payload any `json:"body,omitempty"`
 }
 
 // newListReferrersOK creates newlistReferrersOK with default headers values
@@ -207,7 +207,7 @@ func (o *listReferrersOK) WithXTotalCount(xTotalCount int64) *listReferrersOK {
 }
 
 // WithPayload adds the payload to the list accessories o k response
-func (o *listReferrersOK) WithPayload(payload interface{}) *listReferrersOK {
+func (o *listReferrersOK) WithPayload(payload any) *listReferrersOK {
 	o.Payload = payload
 	return o
 }
@@ -229,7 +229,7 @@ func (o *listReferrersOK) WriteResponse(rw http.ResponseWriter) {
 		rw.Header().Set("X-Total-Count", xTotalCount)
 	}
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(http.StatusOK)
 	payload := o.Payload
 	if payload == nil {
 		// return empty index

@@ -145,8 +145,16 @@ Test Case - Replication From Dockerhub
     Harbor API Test  ./tests/apitests/python/test_replication_from_dockerhub.py
 
 Test Case - Proxy Cache
-    [Tags]  proxy_cache
+    [Tags]  proxy_cache_from_harbor
     Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
+
+Test Case - Proxy Cache From Dockerhub
+    [Tags]  proxy_cache_from_dockerhub
+    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py  PROXY_UPSTREAM_LIST=docker-hub
+
+Test Case - Proxy Cache From JFrog
+    [Tags]  proxy_cache_from_jfrog
+    Harbor API Test  ./tests/apitests/python/test_proxy_cache.py  PROXY_UPSTREAM_LIST=jfrog-artifactory
 
 Test Case - Tag Immutability
     [Tags]  tag_immutability
@@ -175,6 +183,10 @@ Test Case - Cosign Sign Artifact
 Test Case - Notation Sign Artifact
     [Tags]  notation
     Harbor API Test  ./tests/apitests/python/test_notation_sign_artifact.py
+
+Test Case - Signature Inheritance For OCI Index Children
+    [Tags]  inherited_signature
+    Harbor API Test  ./tests/apitests/python/test_signature_inheritance.py
 
 Test Case - Log Rotation
     [Tags]  log_rotation

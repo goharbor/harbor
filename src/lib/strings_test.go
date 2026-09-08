@@ -15,6 +15,7 @@
 package lib
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,6 +50,59 @@ func TestTitle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equalf(t, tt.want, Title(tt.args.s), "Title(%v)", tt.args.s)
+		})
+	}
+}
+
+func TestSliceToUpper(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []string
+		expected []string
+	}{
+		{
+			name:     "Empty slice",
+			input:    []string{},
+			expected: []string{},
+		},
+		{
+			name:     "Single element",
+			input:    []string{"hello"},
+			expected: []string{"HELLO"},
+		},
+		{
+			name:     "Multiple elements",
+			input:    []string{"hello", "world", "go"},
+			expected: []string{"HELLO", "WORLD", "GO"},
+		},
+		{
+			name:     "Already uppercase",
+			input:    []string{"HELLO", "WORLD"},
+			expected: []string{"HELLO", "WORLD"},
+		},
+		{
+			name:     "Mixed case",
+			input:    []string{"Hello", "World", "Go"},
+			expected: []string{"HELLO", "WORLD", "GO"},
+		},
+		{
+			name:     "With special characters",
+			input:    []string{"hello!", "world?", "go#"},
+			expected: []string{"HELLO!", "WORLD?", "GO#"},
+		},
+		{
+			name:     "With numbers",
+			input:    []string{"hello123", "world456"},
+			expected: []string{"HELLO123", "WORLD456"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SliceToUpper(tt.input)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("SliceToUpper() = %v, want %v", result, tt.expected)
+			}
 		})
 	}
 }

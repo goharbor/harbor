@@ -2,15 +2,23 @@ package instance
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
 	providerModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
+
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 )
 
 type fakeDao struct {
@@ -137,4 +145,125 @@ func (im *instanceManagerSuite) TestList() {
 
 func TestInstanceManager(t *testing.T) {
 	suite.Run(t, &instanceManagerSuite{})
+}
+
+func TestEncryptAuthDataWithEmptyAuthData(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: "",
+	}
+
+	err := encryptAuthData(inst)
+	require.NoError(t, err)
+	assert.Equal(t, "", inst.AuthData)
+}
+
+func TestEncryptAuthDataWithData(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	authInfo := map[string]string{
+		"username": "admin",
+		"password": "secret123",
+	}
+	authData, _ := json.Marshal(authInfo)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: string(authData),
+	}
+
+	err := encryptAuthData(inst)
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(inst.AuthData, utils.EncryptHeaderV1), "Encrypted data should have encryption header")
+	assert.NotEqual(t, string(authData), inst.AuthData, "AuthData should be encrypted")
+}
+
+func TestDecryptAndDecodeWithEmptyAuthData(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: "",
+	}
+
+	err := decryptAndDecode(inst)
+	require.NoError(t, err)
+	assert.Nil(t, inst.AuthInfo)
+}
+
+func TestDecryptAndDecodeWithEncryptedData(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	authInfo := map[string]string{
+		"username": "admin",
+		"password": "secret123",
+	}
+	authData, _ := json.Marshal(authInfo)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: string(authData),
+	}
+
+	err := encryptAuthData(inst)
+	require.NoError(t, err)
+
+	err = decryptAndDecode(inst)
+	require.NoError(t, err)
+	assert.Equal(t, "admin", inst.AuthInfo["username"])
+	assert.Equal(t, "secret123", inst.AuthInfo["password"])
+}
+
+func TestDecryptAndDecodeWithPlainJSON(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	authInfo := map[string]string{
+		"username": "admin",
+		"password": "secret123",
+	}
+	authData, _ := json.Marshal(authInfo)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: string(authData),
+	}
+
+	err := decryptAndDecode(inst)
+	require.NoError(t, err)
+	assert.Equal(t, "admin", inst.AuthInfo["username"])
+	assert.Equal(t, "secret123", inst.AuthInfo["password"])
+}
+
+func TestEncryptDecryptRoundTrip(t *testing.T) {
+	kp := &encrypt.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(nil, kp)
+
+	authInfo := map[string]string{
+		"username":  "admin",
+		"password":  "secret123",
+		"api_token": "tok_abc123xyz",
+	}
+	authData, _ := json.Marshal(authInfo)
+
+	inst := &providerModel.Instance{
+		Name:     "test-instance",
+		AuthData: string(authData),
+	}
+
+	err := encryptAuthData(inst)
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(inst.AuthData, utils.EncryptHeaderV1))
+
+	err = decryptAndDecode(inst)
+	require.NoError(t, err)
+	assert.Equal(t, "admin", inst.AuthInfo["username"])
+	assert.Equal(t, "secret123", inst.AuthInfo["password"])
+	assert.Equal(t, "tok_abc123xyz", inst.AuthInfo["api_token"])
 }

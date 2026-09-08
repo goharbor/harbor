@@ -74,7 +74,7 @@ func (b *BaseController) RequireAuthenticated() bool {
 }
 
 // HasProjectPermission returns true when the request has action permission on project subresource
-func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
+func (b *BaseController) HasProjectPermission(projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
 	_, _, err := utils.ParseProjectIDOrName(projectIDOrName)
 	if err != nil {
 		return false, err
@@ -95,7 +95,7 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 
 // RequireProjectAccess returns true when the request has action access on project subresource
 // otherwise send UnAuthorized or Forbidden response and returns false
-func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
+func (b *BaseController) RequireProjectAccess(projectIDOrName any, action rbac.Action, subresource ...rbac.Resource) bool {
 	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
 	if err != nil {
 		if errors.IsNotFoundErr(err) {
@@ -116,7 +116,7 @@ func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, actio
 
 // This should be called when a project is not found, if the caller is a system admin it returns 404.
 // If it's regular user, it will render permission error
-func (b *BaseController) handleProjectNotFound(projectIDOrName interface{}) {
+func (b *BaseController) handleProjectNotFound(projectIDOrName any) {
 	if b.SecurityCtx.IsSysAdmin() {
 		b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
 	} else {
@@ -134,7 +134,7 @@ func (b *BaseController) SendPermissionError() {
 }
 
 // WriteJSONData writes the JSON data to the client.
-func (b *BaseController) WriteJSONData(object interface{}) {
+func (b *BaseController) WriteJSONData(object any) {
 	b.Data["json"] = object
 	if err := b.ServeJSON(); err != nil {
 		log.Errorf("failed to serve json, %v", err)
@@ -144,7 +144,7 @@ func (b *BaseController) WriteJSONData(object interface{}) {
 }
 
 // WriteYamlData writes the yaml data to the client.
-func (b *BaseController) WriteYamlData(object interface{}) {
+func (b *BaseController) WriteYamlData(object any) {
 	yData, err := yaml.Marshal(object)
 	if err != nil {
 		b.SendInternalServerError(err)

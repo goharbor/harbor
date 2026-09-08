@@ -35,9 +35,9 @@ const (
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type       string      `json:"type"`
-	Value      interface{} `json:"value"`
-	Decoration string      `json:"decoration,omitempty"`
+	Type       string `json:"type"`
+	Value      any    `json:"value"`
+	Decoration string `json:"decoration,omitempty"`
 }
 
 func (f *Filter) Validate() error {
@@ -62,7 +62,7 @@ func (f *Filter) Validate() error {
 			}
 		}
 	case FilterTypeLabel:
-		labels, ok := f.Value.([]interface{})
+		labels, ok := f.Value.([]any)
 		if !ok {
 			return errors.New(nil).WithCode(errors.BadRequestCode).
 				WithMessage("the type of label filter value isn't string slice")

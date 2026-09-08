@@ -81,9 +81,9 @@ type Controller interface {
 	//     mimeTypes []string       : the mime types of the reports
 	//
 	//   Returns:
-	//     map[string]interface{} : report summaries indexed by mime types
+	//     map[string]any : report summaries indexed by mime types
 	//     error                  : non nil error if any errors occurred
-	GetSummary(ctx context.Context, artifact *artifact.Artifact, scanType string, mimeTypes []string) (map[string]interface{}, error)
+	GetSummary(ctx context.Context, artifact *artifact.Artifact, scanType string, mimeTypes []string) (map[string]any, error)
 
 	// Get the scan log for the specified artifact with the given digest
 	//

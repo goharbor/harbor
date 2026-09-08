@@ -1,0 +1,47 @@
+@if (!loading) {
+<div class="row content-wrapper">
+    <div class="col-md-8 md-container">
+        @if (filesList && filesList.length > 0) {
+        <div class="md-div">
+            <clr-tree>
+                <clr-tree-node
+                    *clrRecursiveFor="
+                        let file of filesList;
+                        getChildren: getChildren
+                    "
+                    [(clrExpanded)]="file.expanded">
+                    <div class="file">
+                        <div>
+                            <clr-icon
+                                size="20"
+                                solid
+                                [attr.shape]="
+                                    file.children
+                                        ? file.expanded
+                                            ? 'folder-open'
+                                            : 'folder'
+                                        : 'file'
+                                "></clr-icon>
+                            {{ file.name }}
+                        </div>
+                        @if (file.size === 0 || file.size) {
+                        <div>
+                            {{ sizeTransform(file.size + '') }}
+                        </div>
+                        }
+                    </div>
+                </clr-tree-node>
+            </clr-tree>
+        </div>
+        } @if (filesList && filesList.length === 0) {
+        <div class="pl-1">
+            {{ 'ARTIFACT.NO_FILES' | translate }}
+        </div>
+        }
+    </div>
+</div>
+} @if (loading) {
+<div class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
+}

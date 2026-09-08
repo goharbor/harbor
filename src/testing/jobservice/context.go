@@ -27,7 +27,7 @@ func (mjc *MockJobContext) Build(tracker job.Tracker) (job.Context, error) {
 }
 
 // Get ...
-func (mjc *MockJobContext) Get(prop string) (interface{}, bool) {
+func (mjc *MockJobContext) Get(prop string) (any, bool) {
 	args := mjc.Called(prop)
 	return args.Get(0), args.Bool(1)
 }
@@ -71,51 +71,51 @@ type MockJobLogger struct {
 }
 
 // Debug ...
-func (mjl *MockJobLogger) Debug(v ...interface{}) {
+func (mjl *MockJobLogger) Debug(v ...any) {
 	logger.Debug(v...)
 }
 
 // Debugf ...
-func (mjl *MockJobLogger) Debugf(format string, v ...interface{}) {
+func (mjl *MockJobLogger) Debugf(format string, v ...any) {
 	logger.Debugf(format, v...)
 }
 
 // Info ...
-func (mjl *MockJobLogger) Info(v ...interface{}) {
+func (mjl *MockJobLogger) Info(v ...any) {
 	logger.Info(v...)
 }
 
 // Infof ...
-func (mjl *MockJobLogger) Infof(format string, v ...interface{}) {
+func (mjl *MockJobLogger) Infof(format string, v ...any) {
 	logger.Infof(format, v...)
 }
 
 // Warning ...
-func (mjl *MockJobLogger) Warning(v ...interface{}) {
+func (mjl *MockJobLogger) Warning(v ...any) {
 	logger.Warning(v...)
 }
 
 // Warningf ...
-func (mjl *MockJobLogger) Warningf(format string, v ...interface{}) {
+func (mjl *MockJobLogger) Warningf(format string, v ...any) {
 	logger.Warningf(format, v...)
 }
 
 // Error ...
-func (mjl *MockJobLogger) Error(v ...interface{}) {
+func (mjl *MockJobLogger) Error(v ...any) {
 	logger.Error(v...)
 }
 
 // Errorf ...
-func (mjl *MockJobLogger) Errorf(format string, v ...interface{}) {
+func (mjl *MockJobLogger) Errorf(format string, v ...any) {
 	logger.Errorf(format, v...)
 }
 
 // Fatal ...
-func (mjl *MockJobLogger) Fatal(v ...interface{}) {
+func (mjl *MockJobLogger) Fatal(v ...any) {
 	logger.Fatal(v...)
 }
 
 // Fatalf ...
-func (mjl *MockJobLogger) Fatalf(format string, v ...interface{}) {
+func (mjl *MockJobLogger) Fatalf(format string, v ...any) {
 	logger.Fatalf(format, v...)
 }

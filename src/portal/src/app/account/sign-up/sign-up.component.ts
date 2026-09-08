@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
     selector: 'sign-up',
     templateUrl: 'sign-up.component.html',
     styleUrls: ['../../common.scss'],
+    standalone: false,
 })
 export class SignUpComponent {
     opened: boolean = false;

@@ -65,6 +65,30 @@ Test Case - Proxy Cache
     Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
     Close Browser
 
+Test Case - Proxy Cache Filter
+    [Tags]  proxy_cache_filter
+    ${d}=  Get Current Date    result_format=%m%s
+    ${registry}=  Set Variable  https://registry.goharbor.io
+    ${user_namespace}=  Set Variable  nightly
+    ${allowed_image}=  Set Variable  for_proxy
+    ${allowed_tag}=  Set Variable  1.0
+    ${blocked_image}=  Set Variable  redis
+    ${blocked_tag}=  Set Variable  latest
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint  harbor  e_filter${d}  ${registry}  ${null}  ${null}
+    Create An New Project With Proxy Cache Filter  proj_filter${d}  e_filter${d}  ${user_namespace}/${allowed_image}  doublestar
+    Clean All Local Images
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${allowed_image}  tag=${allowed_tag}
+    Cannot Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
+    Go Into Project Without Check  proj_filter${d}
+    Wait Until Keyword Succeeds  10 min  15s  Refresh Repositories And Check Repo Exist  proj_filter${d}  ${user_namespace}/${allowed_image}
+    Update Project Proxy Cache Filter  ^${user_namespace}/(for_proxy|redis)$  regex
+    Clean All Local Images
+    Pull Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj_filter${d}  ${user_namespace}/${blocked_image}  tag=${blocked_tag}
+    Close Browser
+
 Test Case - GC Schedule Job
     [tags]  GC_schedule
     Init Chrome Driver
@@ -230,7 +254,7 @@ Test Case - Log Rotation Schedule Job
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Log Rotation
-    ${exclude_operations}  Create List  Pull
+    ${exclude_operations}  Create List  Pull artifact
     Set Log Rotation Schedule  2  Days  Custom  0 */2 * * * *  ${exclude_operations}
     Sleep  480
     Set Log Rotation Schedule  2  Days  None
@@ -247,13 +271,13 @@ Test Case - Log Rotation Schedule Job
         Should Be Equal As Strings  ${log["job_status"]}  Success
         Should Be Equal As Strings  ${log["job_parameters"]["audit_retention_hour"]}  48
         Should Be Equal As Strings  ${log["job_parameters"]["dry_run"]}  False
-        Should Not Contain Any  ${log["job_parameters"]["include_operations"]}  @{exclude_operations}  ignore_case=True
+        Should Not Contain Any  ${log["job_parameters"]["include_event_types"]}  @{exclude_operations}  ignore_case=True
     END
     Should Be True  ${len} > 3 and ${len} < 6
     Close Browser
 
 Test Case - Job Service Dashboard Schedules
-    [Tags]  job_service_schedules
+    [Tags]  job_service_dashboard_schedules
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
     ${schedule_type}=  Set Variable  Custom
@@ -337,3 +361,28 @@ Test Case - Job Service Dashboard Schedules
     Switch To Job Schedules
     Resume All Schedules
     Close Browser
+
+*** Keywords ***
+Go Into Project Without Check
+    [Arguments]  ${project}
+    FOR  ${n}  IN RANGE  1  4
+        ${out}  Run Keyword And Ignore Error  Retry Go Into Project Without Check  ${project}
+        Run Keyword If  '${out[0]}'=='PASS'  Exit For Loop
+        Reload Page
+        Sleep  2
+    END
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Go Into Project Without Check
+    [Arguments]  ${project}
+    Retry Text Input  ${search_input}  ${project}
+    Wait Until Page Contains Element  //list-project-ro//a[contains(., '${project}')]
+    Retry Link Click  //list-project-ro//a[contains(., '${project}')]
+    Wait Until Page Contains Element  //project-detail//h1[contains(., '${project}')]
+
+Refresh Repositories And Check Repo Exist
+    [Arguments]  ${pro_name}  ${repo_name}
+    Reload Page
+    Sleep  5
+    Page Should Contain Element  //clr-dg-row[contains(.,'${pro_name}/${repo_name}')]

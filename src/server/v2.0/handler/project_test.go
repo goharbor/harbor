@@ -18,17 +18,71 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	apiModels "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
 )
+
+func TestValidateProxyCacheRepositoryFilterUpdate(t *testing.T) {
+	tests := []struct {
+		name    string
+		stored  map[string]string
+		update  *apiModels.ProjectMetadata
+		wantErr bool
+	}{
+		{
+			name: "reject pattern-only update incompatible with stored kind",
+			stored: map[string]string{
+				models.ProMetaProxyCacheFilterPattern: "^foo/.*$",
+				models.ProMetaProxyCacheFilterKind:    pattern.KindRegex,
+			},
+			update:  &apiModels.ProjectMetadata{ProxyCacheFilterPattern: stringPtr("*")},
+			wantErr: true,
+		},
+		{
+			name: "reject kind-only update incompatible with stored pattern",
+			stored: map[string]string{
+				models.ProMetaProxyCacheFilterPattern: "*",
+				models.ProMetaProxyCacheFilterKind:    pattern.KindDoublestar,
+			},
+			update:  &apiModels.ProjectMetadata{ProxyCacheFilterKind: stringPtr(pattern.KindRegex)},
+			wantErr: true,
+		},
+		{
+			name: "accept compatible partial update",
+			stored: map[string]string{
+				models.ProMetaProxyCacheFilterPattern: "^foo/.*$",
+				models.ProMetaProxyCacheFilterKind:    pattern.KindRegex,
+			},
+			update: &apiModels.ProjectMetadata{ProxyCacheFilterPattern: stringPtr("^bar/.*$")},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateProxyCacheRepositoryFilterUpdate(tt.update, tt.stored)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func stringPtr(value string) *string {
+	return &value
+}
 
 type ProjectTestSuite struct {
 	htesting.Suite
@@ -151,7 +205,7 @@ func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(0), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return(nil, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/projects/1/scanner/candidates", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -163,7 +217,7 @@ func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(3), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
 
-		var scanners []interface{}
+		var scanners []any
 		res, err := suite.GetJSON("/projects/1/scanner/candidates?page_size=1&page=2&name=n&description=d&url=u&ex_name=n&ex_url=u", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -183,7 +237,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		// get project failed
 		mock.OnAnything(suite.projectCtl, "Get").Return(nil, fmt.Errorf("failed to get project")).Once()
 
-		res, err := suite.PutJSON("/projects/1/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/1/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(500, res.StatusCode)
 	}
@@ -192,7 +246,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "SetRegistrationByProject").Return(nil).Once()
 
-		res, err := suite.PutJSON("/projects/1/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/1/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 	}
@@ -202,7 +256,7 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
 		mock.OnAnything(suite.scannerCtl, "SetRegistrationByProject").Return(nil).Once()
 
-		res, err := suite.PutJSON("/projects/library/scanner", map[string]interface{}{"uuid": "uuid"})
+		res, err := suite.PutJSON("/projects/library/scanner", map[string]any{"uuid": "uuid"})
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 	}

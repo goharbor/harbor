@@ -30,7 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/config/store"
 )
 
-var TestDBConfig = map[string]interface{}{
+var TestDBConfig = map[string]any{
 	"postgresql_host":     "localhost",
 	"postgresql_database": "registry",
 	"postgresql_password": "root123",
@@ -72,7 +72,7 @@ func TestSaveToDatabase(t *testing.T) {
 }
 
 func TestUpdateCfg(t *testing.T) {
-	testConfig := map[string]interface{}{
+	testConfig := map[string]any{
 		"ldap_url":             "ldaps://ldap.vmware.com",
 		"ldap_search_dn":       "cn=admin,dc=example,dc=com",
 		"ldap_timeout":         10,
@@ -99,7 +99,7 @@ func TestCfgManager_loadDefaultValues(t *testing.T) {
 func TestCfgManger_loadSystemValues(t *testing.T) {
 	configManager.LoadDefault()
 	configManager.LoadSystemConfigFromEnv()
-	configManager.UpdateConfig(testCtx, map[string]interface{}{
+	configManager.UpdateConfig(testCtx, map[string]any{
 		"postgresql_host": "127.0.0.1",
 	})
 	if configManager.Get(testCtx, "postgresql_host").GetString() != "127.0.0.1" {
@@ -107,7 +107,7 @@ func TestCfgManger_loadSystemValues(t *testing.T) {
 	}
 }
 func TestCfgManager_GetDatabaseCfg(t *testing.T) {
-	configManager.UpdateConfig(testCtx, map[string]interface{}{
+	configManager.UpdateConfig(testCtx, map[string]any{
 		"postgresql_host":     "localhost",
 		"postgresql_database": "registry",
 		"postgresql_password": "root123",
@@ -155,7 +155,7 @@ func TestConfigStore_Load(t *testing.T) {
 func TestToString(t *testing.T) {
 	cases := []struct {
 		name   string
-		value  interface{}
+		value  any
 		expect string
 	}{
 		{

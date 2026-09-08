@@ -35,7 +35,7 @@ type SchedulerController interface {
 	// Get the schedule
 	Get(ctx context.Context, vendorType string) (*scheduler.Schedule, error)
 	// Create with cron type & string
-	Create(ctx context.Context, vendorType, cronType, cron, callbackFuncName string, policy interface{}, extrasParam map[string]interface{}) (int64, error)
+	Create(ctx context.Context, vendorType, cronType, cron, callbackFuncName string, policy any, extrasParam map[string]any) (int64, error)
 	// Delete the schedule
 	Delete(ctx context.Context, vendorType string) error
 	// List lists schedules
@@ -76,7 +76,7 @@ func (s *schedulerController) Get(ctx context.Context, vendorType string) (*sche
 }
 
 func (s *schedulerController) Create(ctx context.Context, vendorType, cronType, cron, callbackFuncName string,
-	policy interface{}, extrasParam map[string]interface{}) (int64, error) {
+	policy any, extrasParam map[string]any) (int64, error) {
 	return s.schedulerMgr.Schedule(ctx, vendorType, -1, cronType, cron, callbackFuncName, policy, extrasParam)
 }
 

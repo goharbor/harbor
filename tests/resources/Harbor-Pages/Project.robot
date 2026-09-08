@@ -37,6 +37,33 @@ Create An New Project And Go Into Project
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Go Into Project  ${projectname}  has_image=${false}
 
+Create An New Project With Proxy Cache Filter
+    [Arguments]  ${projectname}  ${registry}  ${filter_pattern}  ${filter_kind}=doublestar
+    Navigate To Projects
+    FOR  ${n}  IN RANGE  1  8
+        ${out}  Run Keyword And Ignore Error  Retry Button Click  xpath=${create_project_button_xpath}
+        Log All  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+    END
+    Log To Console  Project Name: ${projectname}
+    Retry Text Input  xpath=${project_name_xpath}  ${projectname}
+    Retry Element Click  ${project_proxy_cache_switcher_xpath}
+    Retry Element Click  ${project_registry_select_id}
+    Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
+    Retry Text Input  ${project_proxy_cache_filter_pattern_xpath}  ${filter_pattern}
+    Retry Element Click  ${project_proxy_cache_filter_kind_xpath}
+    Retry Element Click  xpath=//select[@id='repositoryFilterKind']//option[@value='${filter_kind}']
+    Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
+    Go Into Project  ${projectname}  has_image=${false}
+
+Update Project Proxy Cache Filter
+    [Arguments]  ${filter_pattern}  ${filter_kind}
+    Switch To Project Configuration
+    Retry Text Input  ${project_proxy_cache_filter_pattern_xpath}  ${filter_pattern}
+    Retry Element Click  ${project_proxy_cache_filter_kind_xpath}
+    Retry Element Click  xpath=//select[@id='repositoryFilterKind']//option[@value='${filter_kind}']
+    Retry Element Click  xpath=//button[contains(.,'SAVE')]
+
 Create An New Project With New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
     Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
@@ -142,7 +169,8 @@ Delete Repo
 Delete Repo on CardView
     [Arguments]  ${reponame}
     Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
-    Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
+    # Only one Delete button is displayed here, so selecting the first match is safe.
+    Retry Element Click  (//button[normalize-space()='Delete'])[1]
     Retry Element Click  ${repo_delete_on_card_view_btn}
 
 Delete Project
@@ -164,7 +192,7 @@ Project Should Be Deleted
     Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
 
 Advanced Search Should Display
-    Retry Wait Until Page Contains Element  xpath=//audit-log//div[@class='flex-xs-middle']/button
+    Retry Wait Until Page Contains Element  xpath=//project-audit-log//button[contains(., 'Advanced')]
 
 # it's not a common keywords, only used into log case.
 Do Log Advanced Search
@@ -173,24 +201,24 @@ Do Log Advanced Search
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'artifact') and contains(.,'delete')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'project') and contains(.,'create')]
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'repository') and contains(.,'delete')]
-    Retry Element Click  xpath=//audit-log//div[@class='flex-xs-middle']/button
-    Retry Element Click  xpath=//project-detail//audit-log//clr-dropdown/button
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Advanced')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
     #pull log
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Pull')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Pull']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'pull')]
     #create log
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Create')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Create']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'create')]
     #delete log
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Delete')]
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Delete']
     Retry Wait Until Page Not Contains Element  xpath=//clr-dg-row[contains(.,'delete')]
     #others
-    Retry Element Click  xpath=//audit-log//clr-dropdown/button
-    Retry Element Click  xpath=//audit-log//clr-dropdown//a[contains(.,'Others')]
-    Retry Element Click  xpath=//audit-log//hbr-filter//clr-icon
-    Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor-jobservice
+    Retry Element Click  xpath=//project-audit-log//button[contains(., 'Operations')]
+    Retry Element Click  xpath=//clr-dropdown-menu/a[normalize-space(.)='Others']
+    Retry Element Click  xpath=//project-audit-log//hbr-filter//clr-icon
+    Retry Text Input  xpath=//project-audit-log//hbr-filter//input  harbor-jobservice
     Retry Wait Until Page Not Contains Element   //audit-log//clr-dg-row[2]
 
 Retry Click Repo Name
@@ -288,21 +316,24 @@ Edit Repo Info
     Retry Wait Until Page Contains  test_description_info
 
 Switch To Project Label
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Labels')]
 
 Switch To Project Repo
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Repositories')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Repositories')]
 
 Switch To Project Scanner
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Scanner')]
+    Retry Element Click  xpath=//*[self::button or self::a][contains(., 'Scanner')]
 
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label[contains(@class,'clr-control-label')]
-    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span
-    Retry Element Click  xpath=//clr-dropdown-menu//clr-dropdown//button[contains(.,'Add Labels')]
-    Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
-    Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
+    Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//span | //clr-dg-action-bar//button[contains(@class,'dropdown-toggle')]
+    Retry Element Click  xpath=//clr-dropdown-menu//button[contains(.,'Add Labels')] | //button[contains(.,'Add Labels')]
+    Sleep  2
+    ${js_xpath}=    Set Variable    //button[contains(@class,'dropdown-item') and contains(.,'${labelName}')] | //button[contains(.,'${labelName}')]
+    Execute Javascript    var xpath = "${js_xpath}"; var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null); if(result.singleNodeValue) { result.singleNodeValue.click(); }
+    Sleep  2
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${tagName}')]//*[contains(.,'${labelName}')]
 
 Filter Labels In Tags
     [Arguments]  ${labelName1}  ${labelName2}
@@ -389,17 +420,17 @@ Should Not Be Signed
 Should Be Signed By Cosign
     [Arguments]  ${tag}=${null}  ${digest}=${null}
     IF  '${tag}' != '${null}'
-        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+        Retry Wait Element Visible  xpath=//*[normalize-space(.)='${tag}']//ancestor::*[contains(@class,'datagrid-row-master') or contains(@class,'datagrid-row')][1]//*[contains(.,'signature.cosign')]
     ELSE
-        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.cosign']]]
+        Retry Wait Element Visible  xpath=//*[contains(.,'${digest}')]//ancestor::*[contains(@class,'datagrid-row-master') or contains(@class,'datagrid-row')][1]//*[contains(.,'signature.cosign')]
     END
 
 Should Be Signed By Notation
     [Arguments]  ${tag}=${null}  ${digest}=${null}
     IF  '${tag}' != '${null}'
-        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/clr-tooltip/div/div/span[contains(.,'${tag}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+        Retry Wait Element Visible  xpath=//*[normalize-space(.)='${tag}']//ancestor::*[contains(@class,'datagrid-row-master') or contains(@class,'datagrid-row')][1]//*[contains(.,'signature.notation')]
     ELSE
-        Retry Wait Element Visible  //clr-dg-row[./clr-expandable-animation/div/div/div/clr-dg-cell/div/a[contains(.,'${digest}')] and .//clr-dg-row[.//img[@title='signature.notation']]]
+        Retry Wait Element Visible  xpath=//*[contains(.,'${digest}')]//ancestor::*[contains(@class,'datagrid-row-master') or contains(@class,'datagrid-row')][1]//*[contains(.,'signature.notation')]
     END
 
 Delete Accessory

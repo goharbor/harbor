@@ -23,6 +23,7 @@ import { InlineAlertComponent } from '../../shared/components/inline-alert/inlin
     selector: 'password-setting',
     templateUrl: 'password-setting.component.html',
     styleUrls: ['./password-setting.component.scss', '../../common.scss'],
+    standalone: false,
 })
 export class PasswordSettingComponent implements AfterViewChecked {
     showOldPwd: boolean = false;
@@ -196,7 +197,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
                             msg.includes('old_password_is_not_correct')
                         ) {
                             this.inlineAlert.showInlineError(
-                                'INCONRRECT_OLD_PWD'
+                                'INCORRECT_OLD_PWD'
                             );
                         } else {
                             this.inlineAlert.showInlineError(error);

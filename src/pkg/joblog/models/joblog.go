@@ -35,7 +35,7 @@ type JobLog struct {
 	Content      string    `orm:"column(content)" json:"content"`
 }
 
-// TableName is required by by beego orm to map JobLog to table job_log
+// TableName is required by beego orm to map JobLog to table job_log
 func (a *JobLog) TableName() string {
 	return JobLogTable
 }

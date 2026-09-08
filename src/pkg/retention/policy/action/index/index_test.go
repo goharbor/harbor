@@ -74,7 +74,7 @@ func (suite *IndexTestSuite) TestGet() {
 }
 
 type fakePerformer struct {
-	parameters interface{}
+	parameters any
 	isDryRun   bool
 }
 
@@ -89,7 +89,7 @@ func (p *fakePerformer) Perform(ctx context.Context, candidates []*selector.Cand
 	return
 }
 
-func newFakePerformer(params interface{}, isDryRun bool) action.Performer {
+func newFakePerformer(params any, isDryRun bool) action.Performer {
 	return &fakePerformer{
 		parameters: params,
 		isDryRun:   isDryRun,

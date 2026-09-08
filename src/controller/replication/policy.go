@@ -33,7 +33,7 @@ const callbackFuncName = "REPLICATION_CALLBACK"
 
 func init() {
 	callbackFunc := func(ctx context.Context, param string) error {
-		params := make(map[string]interface{})
+		params := make(map[string]any)
 		if err := json.Unmarshal([]byte(param), &params); err != nil {
 			return err
 		}
@@ -133,13 +133,13 @@ func (c *controller) CreatePolicy(ctx context.Context, policy *model.Policy) (in
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
-		cbParams := map[string]interface{}{
+		cbParams := map[string]any{
 			"policy_id": id,
 			// the operator of schedule job is harbor-jobservice
 			"operator": secret.JobserviceUser,
 		}
 		if _, err = c.scheduler.Schedule(ctx, job.ReplicationVendorType, id, "", policy.Trigger.Settings.Cron,
-			callbackFuncName, cbParams, map[string]interface{}{}); err != nil {
+			callbackFuncName, cbParams, map[string]any{}); err != nil {
 			return 0, err
 		}
 	}
@@ -165,13 +165,13 @@ func (c *controller) UpdatePolicy(ctx context.Context, policy *model.Policy, pro
 	}
 	// create schedule if needed
 	if policy.IsScheduledTrigger() {
-		cbParams := map[string]interface{}{
+		cbParams := map[string]any{
 			"policy_id": policy.ID,
 			// the operator of schedule job is harbor-jobservice
 			"operator": secret.JobserviceUser,
 		}
 		if _, err := c.scheduler.Schedule(ctx, job.ReplicationVendorType, policy.ID, "", policy.Trigger.Settings.Cron,
-			callbackFuncName, cbParams, map[string]interface{}{}); err != nil {
+			callbackFuncName, cbParams, map[string]any{}); err != nil {
 			return err
 		}
 	}

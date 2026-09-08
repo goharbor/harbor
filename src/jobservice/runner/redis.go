@@ -42,13 +42,13 @@ const (
 
 // RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis worker.
 type RedisJob struct {
-	job     interface{}    // the real job implementation
+	job     any            // the real job implementation
 	context *env.Context   // context
 	ctl     lcm.Controller // life cycle controller
 }
 
 // NewRedisJob is constructor of RedisJob
-func NewRedisJob(job interface{}, ctx *env.Context, ctl lcm.Controller) *RedisJob {
+func NewRedisJob(job any, ctx *env.Context, ctl lcm.Controller) *RedisJob {
 	return &RedisJob{
 		job:     job,
 		context: ctx,

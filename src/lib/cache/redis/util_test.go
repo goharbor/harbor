@@ -37,7 +37,7 @@ func TestParseSentinelURL(t *testing.T) {
 	assert.Equal(t, []string{"host1:26379", "host2:26379"}, o.SentinelAddrs)
 	assert.Equal(t, "mymaster", o.MasterName)
 	assert.Equal(t, 1, o.DB)
-	assert.Equal(t, 30*time.Second, o.IdleTimeout)
+	assert.Equal(t, 30*time.Second, o.ConnMaxIdleTime)
 	assert.Equal(t, 10, o.MaxRetries)
 	assert.Equal(t, 10*time.Second, o.MaxRetryBackoff)
 	assert.Equal(t, 1*time.Second, o.MinRetryBackoff)
@@ -47,7 +47,7 @@ func TestParseSentinelURL(t *testing.T) {
 	assert.Equal(t, true, o.PoolFIFO)
 	assert.Equal(t, 1000, o.PoolSize)
 	assert.Equal(t, 100, o.MinIdleConns)
-	assert.Equal(t, 10*time.Second, o.MaxConnAge)
+	assert.Equal(t, 10*time.Second, o.ConnMaxLifetime)
 	assert.Equal(t, 10*time.Second, o.PoolTimeout)
 
 	// invalid url should return err

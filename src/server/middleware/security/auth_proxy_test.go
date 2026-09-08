@@ -45,7 +45,7 @@ func TestAuthProxy(t *testing.T) {
 	require.Nil(t, err)
 	defer server.Close()
 
-	c := map[string]interface{}{
+	c := map[string]any{
 		common.HTTPAuthProxySkipSearch:          "true",
 		common.HTTPAuthProxyVerifyCert:          "false",
 		common.HTTPAuthProxyEndpoint:            "https://auth.proxy/suffix",

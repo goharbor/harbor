@@ -42,7 +42,7 @@ type scanAPI struct {
 	scanCtl scan.Controller
 }
 
-func (s *scanAPI) Prepare(ctx context.Context, _ string, params interface{}) middleware.Responder {
+func (s *scanAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
 		s.SendError(ctx, err)
 	}
@@ -69,7 +69,7 @@ func (s *scanAPI) StopScanArtifact(ctx context.Context, params operation.StopSca
 		return s.SendError(ctx, err)
 	}
 
-	if err := s.scanCtl.Stop(ctx, curArtifact, params.ScanType.ScanType); err != nil {
+	if err := s.scanCtl.Stop(ctx, curArtifact, scanType); err != nil {
 		return s.SendError(ctx, err)
 	}
 

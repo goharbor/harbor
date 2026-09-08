@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package runtime // nolint:revive
 
 import (
 	"context"
@@ -312,7 +312,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 	// Register jobs here
 	if err := redisWorker.RegisterJobs(
-		map[string]interface{}{
+		map[string]any{
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs

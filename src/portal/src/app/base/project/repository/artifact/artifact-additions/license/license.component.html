@@ -1,0 +1,30 @@
+@if (!loading) {
+<div class="row content-wrapper">
+    <div class="col-md-8">
+        <div class="col-xs-8">
+            @if (license) {
+            <div
+                class="yaml-container"
+                [innerHTML]="license | language | markdown | async"></div>
+            }
+        </div>
+        @if (!license) {
+        <div>
+            @if (fileTooLargeStatus) {
+            <div class="col-md-8 md-container pl-1">
+                {{ 'ARTIFACT.FILE_TOO_LARGE' | translate }}
+            </div>
+            } @if (noLicenseStatus) {
+            <div class="col-md-8 md-container pl-1">
+                {{ 'ARTIFACT.NO_LICENSE' | translate }}
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
+} @if (loading) {
+<div class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
+}

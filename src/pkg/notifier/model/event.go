@@ -48,11 +48,11 @@ type EventData struct {
 
 // Resource describe infos of resource triggered notification
 type Resource struct {
-	Digest       string                 `json:"digest,omitempty"`
-	Tag          string                 `json:"tag,omitempty"`
-	ResourceURL  string                 `json:"resource_url,omitempty"`
-	ScanOverview map[string]interface{} `json:"scan_overview,omitempty"`
-	SBOMOverview map[string]interface{} `json:"sbom_overview,omitempty"`
+	Digest       string         `json:"digest,omitempty"`
+	Tag          string         `json:"tag,omitempty"`
+	ResourceURL  string         `json:"resource_url,omitempty"`
+	ScanOverview map[string]any `json:"scan_overview,omitempty"`
+	SBOMOverview map[string]any `json:"sbom_overview,omitempty"`
 }
 
 // Repository info of notification event

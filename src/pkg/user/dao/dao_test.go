@@ -191,6 +191,36 @@ func (suite *DaoTestSuite) appendClearSQL(uid int) {
 	suite.ClearSQLs = append(suite.ClearSQLs, fmt.Sprintf("DELETE FROM harbor_user WHERE user_id = %d", uid))
 }
 
+func (suite *DaoTestSuite) TestSearchByName() {
+	// prepare data
+	ctx := orm.Context()
+	// insert some other users
+	for i := 0; i < 20; i++ {
+		id, err := suite.dao.Create(ctx, &commonmodels.User{
+			Username: fmt.Sprintf("searchbyname_%d", i),
+			Realname: "search by name test",
+		})
+		suite.Nil(err)
+		suite.appendClearSQL(id)
+	}
+	// insert the target user
+	id, err := suite.dao.Create(ctx, &commonmodels.User{
+		Username: "searchbyname",
+		Realname: "search by name test",
+	})
+	suite.Nil(err)
+	suite.appendClearSQL(id)
+
+	// search by name, the first 10 records should be returned
+	users, err := suite.dao.SearchByName(ctx, "searchbyname", 10)
+	suite.Nil(err)
+	suite.Len(users, 10)
+
+	// the first record should be the target user
+	suite.Equal("searchbyname", users[0].Username)
+
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }

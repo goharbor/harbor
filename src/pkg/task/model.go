@@ -15,7 +15,10 @@
 package task
 
 import (
+	"bytes"
 	"encoding/json"
+	"math"
+	"strconv"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -47,10 +50,10 @@ type Execution struct {
 	// trigger type: manual/schedule/event
 	Trigger string `json:"trigger"`
 	// the customized attributes for different kinds of consumers
-	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
-	StartTime  time.Time              `json:"start_time"`
-	UpdateTime time.Time              `json:"update_time"`
-	EndTime    time.Time              `json:"end_time"`
+	ExtraAttrs map[string]any `json:"extra_attrs"`
+	StartTime  time.Time      `json:"start_time"`
+	UpdateTime time.Time      `json:"update_time"`
+	EndTime    time.Time      `json:"end_time"`
 }
 
 // IsOnGoing returns true when the execution is running
@@ -78,7 +81,7 @@ type Task struct {
 	// the ID of jobservice job
 	JobID string `json:"job_id"`
 	// the customized attributes for different kinds of consumers
-	ExtraAttrs map[string]interface{} `json:"extra_attrs"`
+	ExtraAttrs map[string]any `json:"extra_attrs"`
 	// the time that the task record created
 	CreationTime time.Time `json:"creation_time"`
 	// the time that the underlying job starts
@@ -103,8 +106,10 @@ func (t *Task) From(task *dao.Task) {
 	t.EndTime = task.EndTime
 	t.StatusRevision = task.StatusRevision
 	if len(task.ExtraAttrs) > 0 {
-		extras := map[string]interface{}{}
-		if err := json.Unmarshal([]byte(task.ExtraAttrs), &extras); err != nil {
+		extras := map[string]any{}
+		d := json.NewDecoder(bytes.NewReader([]byte(task.ExtraAttrs)))
+		d.UseNumber()
+		if err := d.Decode(&extras); err != nil {
 			log.Errorf("failed to unmarshal the extra attributes of task %d: %v", task.ID, err)
 			return
 		}
@@ -153,11 +158,65 @@ func (t *Task) GetNumFromExtraAttrs(key string) float64 {
 	if !exist {
 		return 0
 	}
-	v, ok := rt.(float64)
-	if !ok {
+	switch v := rt.(type) {
+	case float64:
+		return v
+	case json.Number:
+		f, _ := v.Float64()
+		return f
+	case int64:
+		return float64(v)
+	case int:
+		return float64(v)
+	}
+	return 0
+}
+
+// GetInt64FromExtraAttrs returns the int64 value specified by key
+func (t *Task) GetInt64FromExtraAttrs(key string) int64 {
+	if len(t.ExtraAttrs) == 0 {
 		return 0
 	}
-	return v
+	rt, exist := t.ExtraAttrs[key]
+	if !exist {
+		return 0
+	}
+	i, _ := Int64FromAny(rt)
+	return i
+}
+
+// Int64FromAny converts a JSON-decoded value to int64 without losing
+// precision, returns false if the value cannot be represented as an int64
+func Int64FromAny(value any) (int64, bool) {
+	switch v := value.(type) {
+	case int64:
+		return v, true
+	case int:
+		return int64(v), true
+	case int32:
+		return int64(v), true
+	case json.Number:
+		if i, err := v.Int64(); err == nil {
+			return i, true
+		}
+	case string:
+		if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+			return i, true
+		}
+	case float64:
+		// for values decoded without UseNumber, check bounds and integral round-trip
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return 0, false
+		}
+		if v < float64(math.MinInt64) || v >= 9223372036854775808.0 {
+			return 0, false
+		}
+		i := int64(v)
+		if float64(i) == v {
+			return i, true
+		}
+	}
+	return 0, false
 }
 
 // Job is the model represents the requested jobservice job

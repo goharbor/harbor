@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -46,14 +47,18 @@ func NewClient(registry *model.Registry) *Client {
 		password: registry.Credential.AccessSecret,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: common_http.GetHTTPTransport(common_http.WithInsecure(registry.Insecure)),
+				Transport: common_http.GetHTTPTransport(
+					common_http.WithInsecure(registry.Insecure),
+					common_http.WithCACert(registry.CACertificate),
+				),
+				Timeout: config.RegistryHTTPClientTimeout(),
 			}),
 	}
 	return client
 }
 
 // getAndIteratePagination will iterator over a paginated response from DTR
-func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
+func (c *Client) getAndIteratePagination(endpoint string, v any) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err

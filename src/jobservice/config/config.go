@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"github.com/goccy/go-yaml"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -42,6 +42,7 @@ const (
 	jobServiceRedisIdleConnTimeoutSecond = "JOB_SERVICE_POOL_REDIS_CONN_IDLE_TIMEOUT_SECOND"
 	jobServiceAuthSecret                 = "JOBSERVICE_SECRET"
 	coreURL                              = "CORE_URL"
+	maxJobDurationSeconds                = "MAX_JOB_DURATION_SECONDS"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -123,7 +124,7 @@ type MetricConfig struct {
 }
 
 // CustomizedSettings keeps the customized settings of logger
-type CustomizedSettings map[string]interface{}
+type CustomizedSettings map[string]any
 
 // LogSweeperConfig keeps settings of log sweeper
 type LogSweeperConfig struct {
@@ -182,7 +183,19 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	}
 
 	// Validate settings
-	return c.validate()
+	if err := c.validate(); err != nil {
+		return err
+	}
+	initMaxJobDurationEnv()
+	return nil
+}
+
+func initMaxJobDurationEnv() {
+	// set environment for gocraft/work if not present in env, it will be used to expire the job service redis key
+	if len(os.Getenv(maxJobDurationSeconds)) == 0 {
+		duration := MaxUpdateDuration()
+		os.Setenv(maxJobDurationSeconds, fmt.Sprintf("%v", duration.Seconds()))
+	}
 }
 
 // GetAuthSecret get the auth secret from the env
@@ -317,11 +330,11 @@ func (c *Configuration) validate() error {
 	}
 
 	if c.PoolConfig == nil {
-		return errors.New("no worker worker is configured")
+		return errors.New("no worker is configured")
 	}
 
 	if c.PoolConfig.Backend != JobServicePoolBackendRedis {
-		return fmt.Errorf("worker worker backend %s does not support", c.PoolConfig.Backend)
+		return fmt.Errorf("worker backend %s is not supported", c.PoolConfig.Backend)
 	}
 
 	// When backend is redis

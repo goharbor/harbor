@@ -4,7 +4,7 @@ from pathlib import Path
 from subprocess import DEVNULL
 import logging
 
-from g import DEFAULT_GID, DEFAULT_UID, shared_cert_dir, storage_ca_bundle_filename, internal_tls_dir, internal_ca_filename
+from g import DEFAULT_GID, DEFAULT_UID, shared_cert_dir, storage_ca_bundle_filename, internal_tls_dir, internal_ca_filename, redis_tls_ca_filename
 from .misc import (
     mark_file,
     generate_random_string,
@@ -120,18 +120,23 @@ def prepare_trust_ca(config_dict):
 
     internal_ca_src = internal_tls_dir.joinpath(internal_ca_filename)
     ca_bundle_src = config_dict.get('registry_custom_ca_bundle_path')
+    redis_tls_ca_src = config_dict.get('redis_custom_tls_ca_path')
     for src_path, dst_filename in (
         (internal_ca_src, internal_ca_filename),
-        (ca_bundle_src, storage_ca_bundle_filename)):
+        (ca_bundle_src, storage_ca_bundle_filename),
+        (redis_tls_ca_src, redis_tls_ca_filename)):
+        print('copy {} to shared trust ca dir as name {} ...'.format(src_path, dst_filename))
         logging.info('copy {} to shared trust ca dir as name {} ...'.format(src_path, dst_filename))
         # check if source file valied
         if not src_path:
             continue
         real_src_path = get_realpath(str(src_path))
         if not real_src_path.exists():
+            print('ca file {} is not exist'.format(real_src_path))
             logging.info('ca file {} is not exist'.format(real_src_path))
             continue
         if not real_src_path.is_file():
+            print('{} is not file'.format(real_src_path))
             logging.info('{} is not file'.format(real_src_path))
             continue
 

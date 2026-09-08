@@ -24,7 +24,7 @@ import (
 )
 
 // Parameters for job execution.
-type Parameters map[string]interface{}
+type Parameters map[string]any
 
 // Request is the request of launching a job.
 type Request struct {

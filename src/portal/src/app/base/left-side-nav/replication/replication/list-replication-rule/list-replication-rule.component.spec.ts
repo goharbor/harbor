@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfirmationDialogComponent } from '../../../../../shared/components/confirmation-dialog';
 import { ListReplicationRuleComponent } from './list-replication-rule.component';
@@ -117,12 +130,11 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         action.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const disable: HTMLElement =
-            fixture.nativeElement.querySelector('#rule-disable');
+        const disable = document.querySelector<HTMLElement>('#rule-disable');
         disable.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const button: HTMLElement = fixture.nativeElement.querySelector(
+        const button = document.querySelector<HTMLElement>(
             '#dialog-action-disable'
         );
         button.click();
@@ -144,12 +156,11 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         action.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const enable: HTMLElement =
-            fixture.nativeElement.querySelector('#rule-enable');
+        const enable = document.querySelector<HTMLElement>('#rule-enable');
         enable.click();
         fixture.detectChanges();
         await fixture.whenStable();
-        const button: HTMLElement = fixture.nativeElement.querySelector(
+        const button = document.querySelector<HTMLElement>(
             '#dialog-action-enable'
         );
         button.click();

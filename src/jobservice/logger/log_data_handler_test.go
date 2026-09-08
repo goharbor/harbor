@@ -33,12 +33,12 @@ func TestRetrieve(t *testing.T) {
 		{
 			Name:  "FILE",
 			Level: "INFO",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"base_dir": os.TempDir(),
 			},
 			Sweeper: &config.LogSweeperConfig{
 				Duration: 1,
-				Settings: map[string]interface{}{
+				Settings: map[string]any{
 					"work_dir": os.TempDir(),
 				},
 			},

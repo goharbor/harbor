@@ -20,7 +20,7 @@ import (
 
 func TestToBool(t *testing.T) {
 	type args struct {
-		v interface{}
+		v any
 	}
 	tests := []struct {
 		name string

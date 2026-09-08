@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package driver
+package driver // nolint:revive
 
 import (
 	"context"
@@ -27,7 +27,7 @@ var (
 )
 
 // QuotaRefObject type for quota ref object
-type QuotaRefObject map[string]interface{}
+type QuotaRefObject map[string]any
 
 // Driver the driver for quota
 type Driver interface {

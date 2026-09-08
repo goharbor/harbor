@@ -107,6 +107,7 @@ func (m *manager) Get(ctx context.Context, id int64) (model.Accessory, error) {
 		Digest:            acc.Digest,
 		CreatTime:         acc.CreationTime,
 		Icon:              m.GetIcon(acc.Type),
+		Source:            acc.Source,
 	})
 }
 
@@ -131,6 +132,7 @@ func (m *manager) List(ctx context.Context, query *q.Query) ([]model.Accessory, 
 			Digest:            accD.Digest,
 			CreatTime:         accD.CreationTime,
 			Icon:              m.GetIcon(accD.Type),
+			Source:            accD.Source,
 		})
 		if err != nil {
 			return nil, errors.New(err).WithCode(errors.BadRequestCode)
@@ -149,6 +151,7 @@ func (m *manager) Create(ctx context.Context, accessory model.AccessoryData) (in
 		Size:                  accessory.Size,
 		Digest:                accessory.Digest,
 		Type:                  accessory.Type,
+		Source:                accessory.Source,
 	}
 	return m.dao.Create(ctx, acc)
 }

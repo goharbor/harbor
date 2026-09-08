@@ -1,5 +1,10 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
+const fs = require('fs');
+
+if (!process.env.CHROME_BIN && fs.existsSync('/usr/sbin/chromium')) {
+  process.env.CHROME_BIN = '/usr/sbin/chromium';
+}
 
 module.exports = function (config) {
   config.set({
@@ -58,11 +63,15 @@ module.exports = function (config) {
     singleRun: true,
     browsers: ['ChromeHeadlessNoSandbox'],
     browserDisconnectTolerance: 2,
-    browserNoActivityTimeout: 50000,
+    browserNoActivityTimeout: 120000,
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
         flags: ['--no-sandbox']
+      },
+      ChromeDebugging: {
+        base: 'Chrome',
+        flags: ['--remote-debugging-port=9333']
       }
     },
     restartOnFileChange: true

@@ -46,7 +46,6 @@ type Data struct {
 	AuthMode          string
 	PrimaryAuthMode   bool
 	SelfRegistration  bool
-	HarborVersion     string
 	BannerMessage     string
 	AuthProxySettings *models.HTTPAuthProxy
 	Protected         *protectedData
@@ -56,6 +55,7 @@ type Data struct {
 type protectedData struct {
 	CurrentTime                 time.Time
 	RegistryURL                 string
+	HarborVersion               string
 	ExtURL                      string
 	ProjectCreationRestrict     string
 	HasCARoot                   bool
@@ -102,7 +102,6 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		AuthMode:         utils.SafeCastString(cfg[common.AUTHMode]),
 		PrimaryAuthMode:  utils.SafeCastBool(cfg[common.PrimaryAuthMode]),
 		SelfRegistration: utils.SafeCastBool(cfg[common.SelfRegistration]),
-		HarborVersion:    fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 		BannerMessage:    utils.SafeCastString(mgr.Get(ctx, common.BannerMessage).GetString()),
 		OIDCProviderName: OIDCProviderName(cfg),
 	}
@@ -129,6 +128,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	res.Protected = &protectedData{
 		CurrentTime:                 time.Now(),
 		ReadOnly:                    config.ReadOnly(ctx),
+		HarborVersion:               fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit),
 		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,
 		HasCARoot:                   enableCADownload,
@@ -139,7 +139,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 	return res, nil
 }
 
-func OIDCProviderName(cfg map[string]interface{}) string {
+func OIDCProviderName(cfg map[string]any) string {
 	authMode := utils.SafeCastString(cfg[common.AUTHMode])
 	if authMode != common.OIDCAuth {
 		return ""

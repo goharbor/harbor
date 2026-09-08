@@ -59,7 +59,7 @@ type Client interface {
 
 	// GetScanReport gets the scan result for the corresponding ScanRequest identifier.
 	// Note that this is a blocking method which either returns a non `nil` scan report or error.
-	// A caller is supposed to cast the returned interface{} to a structure that corresponds
+	// A caller is supposed to cast the returned any to a structure that corresponds
 	// to the specified MIME type.
 	//
 	//   Arguments:
@@ -83,6 +83,10 @@ func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Cli
 	transport := &http.Transport{
 		Proxy:        http.ProxyFromEnvironment,
 		MaxIdleConns: 100,
+		// each client instance talks to a single scanner adapter endpoint, so
+		// allow all idle connections to be kept for that host (default is 2,
+		// which causes connection churn during scan-all bursts)
+		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipCertVerify,
 		},

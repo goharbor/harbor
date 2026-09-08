@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import { Label } from '../../../../../../ng-swagger-gen/models/label';
     selector: 'hbr-label-piece',
     templateUrl: './label-piece.component.html',
     styleUrls: ['./label-piece.component.scss'],
+    standalone: false,
 })
 export class LabelPieceComponent implements OnChanges {
     @Input() label: Label;

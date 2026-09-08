@@ -38,7 +38,7 @@ func (qp *Handler) Name() string {
 }
 
 // Handle ...
-func (qp *Handler) Handle(ctx context.Context, value interface{}) error {
+func (qp *Handler) Handle(ctx context.Context, value any) error {
 	quotaEvent, ok := value.(*event.QuotaEvent)
 	if !ok {
 		return errors.New("invalid quota event type")

@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	ctlEvent "github.com/goharbor/harbor/src/controller/event"
+	ctlevent "github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -32,8 +32,11 @@ import (
 func init() {
 	var login = &loginResolver{}
 	var logout = &logoutResolver{}
+	var oidclogout = &oidcLogoutResolver{}
 	commonevent.RegisterResolver(`/c/login$`, login)
+	commonevent.RegisterResolver(`/c/oidc/callback.*`, login)
 	commonevent.RegisterResolver(`/c/log_out$`, logout)
+	commonevent.RegisterResolver(`/c/oidc/logout$`, oidclogout)
 }
 
 const (
@@ -54,7 +57,7 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 		OcurrAt:              time.Now(),
 		Operation:            opLogin,
 		OperationDescription: opLogin,
-		IsSuccessful:         true,
+		IsSuccessful:         ce.ResponseCode <= http.StatusTemporaryRedirect,
 	}
 
 	// Extract the username from payload
@@ -65,11 +68,12 @@ func (l *loginResolver) Resolve(ce *commonevent.Metadata, event *event.Event) er
 			e.ResourceName = match[1]
 			e.Operator = match[1]
 		}
+	} else if ce.RequestMethod == http.MethodGet {
+		e.IsSuccessful = true // for OIDC login event, always success
+		e.Operator = ce.Username
+		e.ResourceName = ce.Username
 	}
-	if ce.ResponseCode != http.StatusOK {
-		e.IsSuccessful = false
-	}
-	event.Topic = ctlEvent.TopicCommonEvent
+	event.Topic = ctlevent.TopicCommonEvent
 	event.Data = e
 	return nil
 }

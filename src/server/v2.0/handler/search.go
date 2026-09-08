@@ -167,7 +167,7 @@ func (s *searchAPI) filterRepositories(ctx context.Context, projects []*project.
 
 // searchOK ...
 type searchOK struct {
-	Payload interface{}
+	Payload any
 }
 
 func (o *searchOK) WithPayload(payload *models.Search) *searchOK {
@@ -187,7 +187,7 @@ func (o *searchOK) WithPayload(payload *models.Search) *searchOK {
 }
 
 func (o *searchOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-	rw.WriteHeader(200)
+	rw.WriteHeader(http.StatusOK)
 
 	if o.Payload != nil {
 		payload := o.Payload

@@ -1,4 +1,7 @@
 name: CONFORMANCE_TEST
+permissions:
+  contents: read
+
 env:
   DOCKER_COMPOSE_VERSION: 1.23.0
 
@@ -15,24 +18,23 @@ jobs:
       CONFORMANCE_TEST: true
     runs-on:
       #- self-hosted
-      - ubuntu-latest
+      - cncf-ubuntu-16-64-x86
     steps:
-      - uses: actions/checkout@v3
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: google-github-actions/auth@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
         with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
-      - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud info
-      - name: Set up Go 1.21
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.23.2
-        id: go
-      - uses: actions/checkout@v3
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
+      - name: Set up Go 1.21
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.23.2
+          cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
+        id: go
       - name: before_install
         run: |
           set -x
@@ -65,6 +67,5 @@ jobs:
       - name: upload test result to gs
         run: |
           cd src/github.com/goharbor/harbor
-          gsutil cp ./distribution-spec/conformance/report.html gs://harbor-conformance-test/report.html
-          gsutil acl ch -u AllUsers:R gs://harbor-conformance-test/report.html
+          aws s3 cp ./distribution-spec/conformance/report.html s3://harbor-conformance-test/report.html
         if: always()

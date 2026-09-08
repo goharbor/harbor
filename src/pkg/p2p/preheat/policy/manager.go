@@ -125,7 +125,7 @@ func (m *manager) ListPoliciesByProject(ctx context.Context, project int64, quer
 	}
 
 	if query.Keywords == nil {
-		query.Keywords = make(map[string]interface{})
+		query.Keywords = make(map[string]any)
 	}
 	// set project filter
 	query.Keywords["project_id"] = project

@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 		userMgr:             user.New(),
 	}
 	cfgMap := cut.GetUnitTestConfig()
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
 		common.HTTPAuthProxyVerifyCert:          false,

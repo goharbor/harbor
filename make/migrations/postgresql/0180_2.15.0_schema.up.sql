@@ -1,0 +1,1 @@
+ALTER TABLE registry ADD COLUMN IF NOT EXISTS ca_certificate TEXT;

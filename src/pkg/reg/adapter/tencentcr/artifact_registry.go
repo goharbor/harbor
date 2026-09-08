@@ -26,7 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
-var (
+const (
 	tcrQPSLimit = 10
 )
 

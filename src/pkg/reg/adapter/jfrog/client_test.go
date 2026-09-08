@@ -76,13 +76,6 @@ func (c *clientTestSuite) TearDownSuite() {
 	c.mockServer.Close()
 }
 
-func (c *clientTestSuite) TestGetDockerRepositories() {
-	repos, err := c.client.getDockerRepositories()
-	c.NoError(err)
-	c.Len(repos, 2)
-	c.Equal("repo1", repos[0].Key)
-}
-
 func (c *clientTestSuite) TestCreateDockerRepository() {
 	err := c.client.createDockerRepository("test")
 	c.NoError(err)

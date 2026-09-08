@@ -1,4 +1,5 @@
-:host::ng-deep.modal-dialog {
-  width: 31rem;
-  height: 35rem;
+:host::ng-deep .modal-dialog {
+  .modal-body-wrapper {
+    max-height: unset;
+  }
 }

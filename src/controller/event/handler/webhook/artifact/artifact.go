@@ -39,7 +39,7 @@ func (a *Handler) Name() string {
 }
 
 // Handle preprocess artifact event data and then publish hook event
-func (a *Handler) Handle(ctx context.Context, value interface{}) error {
+func (a *Handler) Handle(ctx context.Context, value any) error {
 	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil

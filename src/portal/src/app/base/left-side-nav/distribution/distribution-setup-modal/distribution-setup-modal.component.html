@@ -19,11 +19,11 @@
                     [(ngModel)]="model.vendor"
                     required>
                     <option class="display-none" value=""></option>
-                    <option
-                        *ngFor="let provider of providers"
-                        value="{{ provider.id }}">
+                    @for (provider of providers; track provider) {
+                    <option value="{{ provider.id }}">
                         {{ provider.name }}
                     </option>
+                    }
                 </select>
                 <clr-control-error>
                     {{ 'TOOLTIP.ITEM_REQUIRED' | translate }}
@@ -59,29 +59,18 @@
                             class="spinner spinner-inline"
                             [hidden]="!checkNameOnGoing"></span>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            ((nameNg.dirty || nameNg.touched) &&
-                                nameNg.invalid) ||
-                            isNameExisting
-                        ">
-                        <span
-                            *ngIf="
-                                !(
-                                    (nameNg.dirty || nameNg.touched) &&
-                                    nameNg.invalid
-                                ) && isNameExisting
-                            "
-                            >{{ 'SCANNER.NAME_EXISTS' | translate }}</span
-                        >
-                        <span
-                            *ngIf="
-                                (nameNg.dirty || nameNg.touched) &&
-                                nameNg.invalid
-                            "
-                            >{{ 'TOOLTIP.ITEM_REQUIRED' | translate }}</span
-                        >
+                    @if ( ((nameNg.dirty || nameNg.touched) && nameNg.invalid)
+                    || isNameExisting ) {
+                    <clr-control-error>
+                        @if ( !( (nameNg.dirty || nameNg.touched) &&
+                        nameNg.invalid ) && isNameExisting ) {
+                        <span>{{ 'SCANNER.NAME_EXISTS' | translate }}</span>
+                        } @if ( (nameNg.dirty || nameNg.touched) &&
+                        nameNg.invalid ) {
+                        <span>{{ 'TOOLTIP.ITEM_REQUIRED' | translate }}</span>
+                        }
                     </clr-control-error>
+                    }
                 </div>
             </div>
 
@@ -129,29 +118,18 @@
                             class="spinner spinner-inline"
                             [hidden]="!checkEndpointOngoing"></span>
                     </div>
-                    <clr-control-error
-                        *ngIf="
-                            ((endpointNg.dirty || endpointNg.touched) &&
-                                endpointNg.invalid) ||
-                            isEndpointExisting
-                        ">
-                        <span
-                            *ngIf="
-                                !(
-                                    (endpointNg.dirty || endpointNg.touched) &&
-                                    endpointNg.invalid
-                                ) && isEndpointExisting
-                            "
-                            >{{ 'SCANNER.ENDPOINT_EXISTS' | translate }}</span
-                        >
-                        <span
-                            *ngIf="
-                                (endpointNg.dirty || endpointNg.touched) &&
-                                endpointNg.invalid
-                            "
-                            >{{ 'TOOLTIP.ENDPOINT_FORMAT' | translate }}</span
-                        >
+                    @if ( ((endpointNg.dirty || endpointNg.touched) &&
+                    endpointNg.invalid) || isEndpointExisting ) {
+                    <clr-control-error>
+                        @if ( !( (endpointNg.dirty || endpointNg.touched) &&
+                        endpointNg.invalid ) && isEndpointExisting ) {
+                        <span>{{ 'SCANNER.ENDPOINT_EXISTS' | translate }}</span>
+                        } @if ( (endpointNg.dirty || endpointNg.touched) &&
+                        endpointNg.invalid ) {
+                        <span>{{ 'TOOLTIP.ENDPOINT_FORMAT' | translate }}</span>
+                        }
                     </clr-control-error>
+                    }
                 </div>
             </div>
             <!-- auth mode -->
@@ -195,17 +173,19 @@
                 </clr-radio-wrapper>
             </clr-radio-container>
             <!-- auth data -->
-            <span *ngIf="model.auth_mode === 'BASIC'">
+            @if (model.auth_mode === 'BASIC') {
+            <span>
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isBasicCredentialRequired()"
                         for="auth_data_username"
                         >{{ 'DISTRIBUTION.USERNAME' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isBasicCredentialRequired()"
                         type="text"
                         id="auth_data_username"
                         [(ngModel)]="authData['username']"
@@ -221,14 +201,15 @@
                 </clr-input-container>
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isBasicCredentialRequired()"
                         for="auth_data_password"
                         >{{ 'DISTRIBUTION.PASSWORD' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isBasicCredentialRequired()"
                         type="password"
                         id="auth_data_password"
                         [(ngModel)]="authData['password']"
@@ -243,17 +224,19 @@
                     </clr-control-error>
                 </clr-input-container>
             </span>
-            <span *ngIf="model.auth_mode === 'OAUTH'">
+            } @if (model.auth_mode === 'OAUTH') {
+            <span>
                 <clr-input-container>
                     <label
-                        class="required clr-control-label"
+                        class="clr-control-label"
+                        [class.required]="isOAuthTokenRequired()"
                         for="auth_data_token"
                         >{{ 'DISTRIBUTION.TOKEN' | translate }}</label
                     >
                     <input
                         class="width-280"
                         clrInput
-                        required
+                        [required]="isOAuthTokenRequired()"
                         type="password"
                         id="auth_data_token"
                         [(ngModel)]="authData['token']"
@@ -267,7 +250,9 @@
                     </clr-control-error>
                 </clr-input-container>
             </span>
-            <span *ngIf="model.auth_mode === 'NONE'"></span>
+            } @if (model.auth_mode === 'NONE') {
+            <span></span>
+            }
 
             <!-- 5. enabled -->
             <div class="clr-form-control">

@@ -24,6 +24,9 @@ Purge Now
     [Arguments]  ${keep_records}  ${keep_records_unit}  ${expected_status}=SUCCESS  ${exclude_operations}=@{EMPTY}
     Retry Text Input  ${keep_records_input}  ${keep_records}
     Retry Double Keywords When Error  Retry Element Click  ${keep_records_unit_select}  Retry Element Click  ${keep_records_unit_select}//option[contains(.,'${keep_records_unit}')]
+    Retry Element Click  ${include_event_type_create_artifact}
+    Retry Element Click  ${include_event_type_pull_artifact}
+    Retry Element Click  ${include_event_type_delete_artifact}
     ${len}=  Get Length  ${exclude_operations}
     Run Keyword If  ${len} > 0  Click Exclude Operation  @{exclude_operations}
     Retry Double Keywords When Error  Retry Button Click  ${purge_now_btn}  Retry Wait Until Page Contains Element  ${latest_purge_job_status_xpath}\[contains(.,'${expected_status}')]

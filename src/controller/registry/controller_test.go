@@ -15,10 +15,14 @@
 package registry
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib/config"
+	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testingproject "github.com/goharbor/harbor/src/testing/pkg/project"
@@ -172,6 +176,64 @@ func (r *registryTestSuite) TestDelete() {
 	r.Nil(err)
 	r.repMgr.AssertExpectations(r.T())
 	r.proMgr.AssertExpectations(r.T())
+}
+
+func (r *registryTestSuite) TestGetWhitelistedAdapters() {
+	tests := []struct {
+		name     string
+		input    string
+		expected map[string]struct{}
+	}{
+		{
+			name:     "adapter empty",
+			input:    "",
+			expected: nil,
+		},
+		{
+			name:  "adapters with spaces",
+			input: "dockerhub, aws, gcr  ",
+			expected: map[string]struct{}{
+				"dockerhub": {},
+				"aws":       {},
+				"gcr":       {},
+			},
+		},
+		{
+			name:  "adapters with empty entries",
+			input: "harbor, , quay,",
+			expected: map[string]struct{}{
+				"harbor": {},
+				"quay":   {},
+			},
+		},
+		{
+			name:  "adapters all",
+			input: "ali-acr,aws-ecr,azure-acr,docker-hub,google-gcr,harbor,huawei-SWR,jfrog-artifactory,tencent-tcr,volcengine-cr",
+			expected: map[string]struct{}{
+				"ali-acr":           {},
+				"aws-ecr":           {},
+				"azure-acr":         {},
+				"docker-hub":        {},
+				"google-gcr":        {},
+				"harbor":            {},
+				"huawei-SWR":        {},
+				"jfrog-artifactory": {},
+				"tencent-tcr":       {},
+				"volcengine-cr":     {},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		r.Run(tt.name, func() {
+			conf := map[string]any{
+				common.ReplicationAdapterWhiteList: tt.input,
+			}
+			config.InitWithSettings(conf)
+			result := getWhitelistedAdapters(context.TODO())
+			r.Equal(tt.expected, result)
+		})
+	}
 }
 
 func TestRegistryTestSuite(t *testing.T) {

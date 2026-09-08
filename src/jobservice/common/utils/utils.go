@@ -48,7 +48,7 @@ func MakeIdentifier() string {
 	return fmt.Sprintf("%x", b)
 }
 
-// IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.
+// IsEmptyStr check if the specified str is empty (len ==0) after trimming prefix and suffix spaces.
 func IsEmptyStr(str string) bool {
 	return len(strings.TrimSpace(str)) == 0
 }

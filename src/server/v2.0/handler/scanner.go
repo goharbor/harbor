@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/scanner"
@@ -223,7 +224,14 @@ func (s *scannerAPI) UpdateScanner(ctx context.Context, params operation.UpdateS
 		return s.SendError(ctx, errors.ForbiddenError(nil).WithMessagef(format, r.Name))
 	}
 
+	// GET no longer returns access_credential; an empty value in the update body means "leave unchanged"
+	// when the resulting auth type still requires a credential.
+	existingAccessCredential := r.AccessCredential
 	copyToScannerRegistration(r, params.Registration)
+	if params.Registration != nil && params.Registration.AccessCredential == "" &&
+		scannerAuthRequiresAccessCredential(r.Auth) {
+		r.AccessCredential = existingAccessCredential
+	}
 
 	if err := r.Validate(true); err != nil {
 		return s.SendError(ctx, errors.BadRequestError(nil).WithMessage(err.Error()))
@@ -245,4 +253,14 @@ func copyToScannerRegistration(r *scanner.Registration, req *models.ScannerRegis
 	r.UseInternalAddr = lib.BoolValue(req.UseInternalAddr)
 	r.Auth = req.Auth
 	r.AccessCredential = req.AccessCredential
+}
+
+// scannerAuthRequiresAccessCredential matches scanner.Registration.Validate: these auth types need a non-empty credential.
+func scannerAuthRequiresAccessCredential(authType string) bool {
+	switch authType {
+	case auth.Basic, auth.Bearer, auth.APIKey:
+		return true
+	default:
+		return false
+	}
 }

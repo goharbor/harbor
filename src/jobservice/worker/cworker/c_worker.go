@@ -134,7 +134,16 @@ func (w *basicWorker) Start() error {
 	// Start the periodic scheduler
 	w.scheduler.Start()
 
+	// Start the backend worker pool
+	// Add middleware
+	w.pool.Middleware((*workerContext).logJob)
+	// Non blocking call
+	w.pool.Start()
+	logger.Infof("Basic worker is started")
+
 	// Listen to the system signal
+	// IMPORTANT: This goroutine must be started AFTER w.pool.Start() returns
+	// to avoid a race condition between Start() and Stop() in the gocraft/work library.
 	w.context.WG.Add(1)
 	go func() {
 		defer func() {
@@ -146,15 +155,8 @@ func (w *basicWorker) Start() error {
 		w.pool.Stop()
 	}()
 
-	// Start the backend worker pool
-	// Add middleware
-	w.pool.Middleware((*workerContext).logJob)
-	// Non blocking call
-	w.pool.Start()
-	logger.Infof("Basic worker is started")
-
 	// Start the reaper
-	w.knownJobs.Range(func(k interface{}, _ interface{}) bool {
+	w.knownJobs.Range(func(k any, _ any) bool {
 		w.reaper.jobTypes = append(w.reaper.jobTypes, k.(string))
 
 		return true
@@ -171,7 +173,7 @@ func (w *basicWorker) GetPoolID() string {
 }
 
 // RegisterJobs is used to register multiple jobs to worker.
-func (w *basicWorker) RegisterJobs(jobs map[string]interface{}) error {
+func (w *basicWorker) RegisterJobs(jobs map[string]any) error {
 	if len(jobs) == 0 {
 		// Do nothing
 		return nil
@@ -374,12 +376,12 @@ func (w *basicWorker) RetryJob(_ string) error {
 }
 
 // IsKnownJob ...
-func (w *basicWorker) IsKnownJob(name string) (interface{}, bool) {
+func (w *basicWorker) IsKnownJob(name string) (any, bool) {
 	return w.knownJobs.Load(name)
 }
 
 // ValidateJobParameters ...
-func (w *basicWorker) ValidateJobParameters(jobType interface{}, params job.Parameters) error {
+func (w *basicWorker) ValidateJobParameters(jobType any, params job.Parameters) error {
 	if jobType == nil {
 		return errors.New("nil job type")
 	}
@@ -390,7 +392,7 @@ func (w *basicWorker) ValidateJobParameters(jobType interface{}, params job.Para
 
 // RegisterJob is used to register the job to the worker.
 // j is the type of job
-func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
+func (w *basicWorker) registerJob(name string, j any) (err error) {
 	if utils.IsEmptyStr(name) || j == nil {
 		return errors.New("job can not be registered with empty name or nil interface")
 	}
@@ -406,7 +408,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 	}
 
 	// Same job implementation can be only registered with one name
-	w.knownJobs.Range(func(jName interface{}, jInList interface{}) bool {
+	w.knownJobs.Range(func(jName any, jInList any) bool {
 		jobImpl := reflect.TypeOf(j).String()
 		if reflect.TypeOf(jInList).String() == jobImpl {
 			err = errors.Errorf("job %s has been already registered with name %s", jobImpl, jName)

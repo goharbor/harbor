@@ -180,7 +180,7 @@ func (c *controller) CreateInstance(ctx context.Context, instance *providerModel
 
 	// Avoid duplicated endpoint
 	var query = &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"endpoint": instance.Endpoint,
 		},
 	}
@@ -208,7 +208,7 @@ func (c *controller) DeleteInstance(ctx context.Context, id int64) error {
 	}
 	// delete instance should check the instance whether be used by policies
 	policies, err := c.ListPolicies(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"provider_id": id,
 		},
 	})
@@ -235,7 +235,7 @@ func (c *controller) UpdateInstance(ctx context.Context, instance *providerModel
 	if !instance.Enabled {
 		// update instance should check the instance whether be used by policies
 		policies, err := c.ListPolicies(ctx, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"provider_id": instance.ID,
 			},
 		})
@@ -311,7 +311,7 @@ func (c *controller) CreatePolicy(ctx context.Context, schema *policyModels.Sche
 		schema.Trigger.Type == policyModels.TriggerTypeScheduled &&
 		len(schema.Trigger.Settings.Cron) > 0 {
 		// schedule and update policy
-		extras := make(map[string]interface{})
+		extras := make(map[string]any)
 		if _, err = c.scheduler.Schedule(ctx, job.P2PPreheatVendorType, id, "", schema.Trigger.Settings.Cron,
 			SchedulerCallback, TriggerParam{PolicyID: id}, extras); err != nil {
 			return 0, err
@@ -409,7 +409,7 @@ func (c *controller) UpdatePolicy(ctx context.Context, schema *policyModels.Sche
 
 	// schedule new
 	if needSch {
-		extras := make(map[string]interface{})
+		extras := make(map[string]any)
 		if _, err := c.scheduler.Schedule(ctx, job.P2PPreheatVendorType, schema.ID, "", cron, SchedulerCallback,
 			TriggerParam{PolicyID: schema.ID}, extras); err != nil {
 			return err
@@ -465,7 +465,7 @@ func (c *controller) DeletePoliciesOfProject(ctx context.Context, project int64)
 // deleteExecs delete executions
 func (c *controller) deleteExecs(ctx context.Context, vendorID int64) error {
 	executions, err := c.executionMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": job.P2PPreheatVendorType,
 			"VendorID":   vendorID,
 		},

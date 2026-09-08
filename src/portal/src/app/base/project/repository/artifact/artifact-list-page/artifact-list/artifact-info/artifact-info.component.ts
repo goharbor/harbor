@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import {
     selector: 'artifact-info',
     templateUrl: './artifact-info.component.html',
     styleUrls: ['./artifact-info.component.scss'],
+    standalone: false,
 })
 export class ArtifactInfoComponent implements OnInit {
     projectName: string;

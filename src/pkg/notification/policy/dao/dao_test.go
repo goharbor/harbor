@@ -99,7 +99,7 @@ func (suite *DaoTestSuite) TestDelete() {
 
 func (suite *DaoTestSuite) TestList() {
 	jobs, err := suite.dao.List(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": 333,
 		},
 	})
@@ -151,7 +151,7 @@ func (suite *DaoTestSuite) TestCount() {
 	suite.True(total > 0)
 
 	total, err = suite.dao.Count(orm.Context(), &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID": 111,
 		},
 	})

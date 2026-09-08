@@ -78,3 +78,24 @@
 :host::ng-deep.modal-dialog {
   width: 48rem;
 }
+
+:host ::ng-deep {
+  .cover-all-form-control {
+    align-items: center;
+
+    .clr-control-label {
+      margin-top: 0;
+    }
+  }
+
+  .cover-all-checkbox-wrapper {
+    display: inline-flex;
+    align-items: center;
+
+    label {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 0;
+    }
+  }
+}

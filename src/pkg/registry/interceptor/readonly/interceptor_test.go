@@ -53,7 +53,7 @@ func TestIntercept(t *testing.T) {
 	// method: DELETE
 	// read only enable: true
 	req, _ = http.NewRequest(http.MethodDelete, "", nil)
-	err := config.DefaultMgr().UpdateConfig(context.Background(), map[string]interface{}{common.ReadOnly: true})
+	err := config.DefaultMgr().UpdateConfig(context.Background(), map[string]any{common.ReadOnly: true})
 	require.Nil(t, err)
 	time.Sleep(1 * time.Nanosecond) // make sure the cached key is expired
 	assert.Equal(t, Err, interceptor.Intercept(req))

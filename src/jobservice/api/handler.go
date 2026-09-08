@@ -271,7 +271,7 @@ func (dh *DefaultHandler) HandleGetJobsReq(w http.ResponseWriter, req *http.Requ
 	dh.handleJSONData(w, req, http.StatusOK, jobs)
 }
 
-func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object interface{}) {
+func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object any) {
 	data, err := json.Marshal(object)
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))

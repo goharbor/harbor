@@ -151,7 +151,8 @@ replication_policy_payload = {
     "deletion": False,
     "override": True,
     "speed": -1,
-    "copy_by_chunk": False
+    "copy_by_chunk": False,
+    "single_active_replication": False
 }
 create_replication_policy = Permission("{}/replication/policies".format(harbor_base_url), "POST", 201, replication_policy_payload, "id", id_from_header=True)
 list_replication_policy = Permission("{}/replication/policies".format(harbor_base_url), "GET", 200, replication_policy_payload)
@@ -204,7 +205,8 @@ if "replication" in resources or "all" == resources:
         "deletion": False,
         "override": True,
         "speed": -1,
-        "copy_by_chunk": False
+        "copy_by_chunk": False,
+        "single_active_replication": False
     }
     response = requests.post("{}/replication/policies".format(harbor_base_url), data=json.dumps(replication_policy_payload), verify=False, auth=(admin_user_name, admin_password), headers={"Content-Type": "application/json"})
     replication_policy_id = int(response.headers["Location"].split("/")[-1])
@@ -318,7 +320,7 @@ update_gc_schedule = Permission("{}/system/gc/schedule".format(harbor_base_url),
 purge_audit_payload = {
     "parameters": {
         "audit_retention_hour": 24,
-        "include_operations": "create,delete,pull",
+        "include_event_types": "create_artifact,delete_artifact,pull_artifact",
         "dry_run": True
     },
     "schedule": {

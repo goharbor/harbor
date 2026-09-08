@@ -1,4 +1,19 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -50,6 +65,8 @@ const TRUE: string = 'true';
     selector: 'add-p2p-policy',
     templateUrl: './add-p2p-policy.component.html',
     styleUrls: ['./add-p2p-policy.component.scss'],
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     severityOptions = [
@@ -120,7 +137,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         private session: SessionService,
         private route: ActivatedRoute,
         private appConfigService: AppConfigService,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private cdr: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -173,6 +191,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     if (res && res.length > 0) {
                         this.isNameExisting = true;
                     }
+                    this.cdr.markForCheck();
                 });
         }
     }
@@ -190,6 +209,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity];
             }
             this.hasInit.emit(true);
+            this.cdr.markForCheck();
         });
     }
 
@@ -337,7 +357,12 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
             policy.enabled = true;
             this.preheatService
                 .CreatePolicy({ projectName: this.projectName, policy: policy })
-                .pipe(finalize(() => (this.loading = false)))
+                .pipe(
+                    finalize(() => {
+                        this.loading = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.buttonStatus = ClrLoadingState.SUCCESS;
@@ -357,7 +382,12 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     preheatPolicyName: this.originPolicyForEdit.name,
                     policy: policy,
                 })
-                .pipe(finalize(() => (this.loading = false)))
+                .pipe(
+                    finalize(() => {
+                        this.loading = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.buttonStatus = ClrLoadingState.SUCCESS;

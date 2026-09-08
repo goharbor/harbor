@@ -235,7 +235,7 @@ func (suite *ControllerTestSuite) GetPoolID() string {
 	return suite.worker.GetPoolID()
 }
 
-func (suite *ControllerTestSuite) RegisterJobs(jobs map[string]interface{}) error {
+func (suite *ControllerTestSuite) RegisterJobs(jobs map[string]any) error {
 	return suite.worker.RegisterJobs(jobs)
 }
 
@@ -255,11 +255,11 @@ func (suite *ControllerTestSuite) Stats() (*worker.Stats, error) {
 	return suite.worker.Stats()
 }
 
-func (suite *ControllerTestSuite) IsKnownJob(name string) (interface{}, bool) {
+func (suite *ControllerTestSuite) IsKnownJob(name string) (any, bool) {
 	return suite.worker.IsKnownJob(name)
 }
 
-func (suite *ControllerTestSuite) ValidateJobParameters(jobType interface{}, params job.Parameters) error {
+func (suite *ControllerTestSuite) ValidateJobParameters(jobType any, params job.Parameters) error {
 	return suite.worker.ValidateJobParameters(jobType, params)
 }
 
@@ -305,7 +305,7 @@ func (f *fakeWorker) GetPoolID() string {
 	return f.Called().String()
 }
 
-func (f *fakeWorker) RegisterJobs(jobs map[string]interface{}) error {
+func (f *fakeWorker) RegisterJobs(jobs map[string]any) error {
 	return f.Called(jobs).Error(0)
 }
 
@@ -345,7 +345,7 @@ func (f *fakeWorker) Stats() (*worker.Stats, error) {
 	return args.Get(0).(*worker.Stats), nil
 }
 
-func (f *fakeWorker) IsKnownJob(name string) (interface{}, bool) {
+func (f *fakeWorker) IsKnownJob(name string) (any, bool) {
 	args := f.Called(name)
 	if !args.Bool(1) {
 		return nil, args.Bool(1)
@@ -354,7 +354,7 @@ func (f *fakeWorker) IsKnownJob(name string) (interface{}, bool) {
 	return args.Get(0), args.Bool(1)
 }
 
-func (f *fakeWorker) ValidateJobParameters(jobType interface{}, params job.Parameters) error {
+func (f *fakeWorker) ValidateJobParameters(jobType any, params job.Parameters) error {
 	return f.Called(jobType, params).Error(0)
 }
 

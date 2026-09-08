@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ArtifactListTabComponent } from './artifact-list-tab.component';
@@ -340,8 +353,8 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[0]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement
-            .querySelector('#artifact-list-copy-digest')
+        document
+            .querySelector<HTMLElement>('#artifact-list-copy-digest')
             .click();
         fixture.detectChanges();
         await fixture.whenStable();
@@ -352,21 +365,19 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement
-            .querySelector('#artifact-list-add-labels')
+        document
+            .querySelector<HTMLElement>('#artifact-list-add-labels')
             .click();
         fixture.detectChanges();
         await fixture.whenStable();
-        expect(
-            fixture.nativeElement.querySelector('app-label-selector')
-        ).toBeTruthy();
+        expect(document.querySelector('app-label-selector')).toBeTruthy();
     });
 
     it('should open copy artifact modal', async () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement.querySelector('#artifact-list-copy').click();
+        document.querySelector<HTMLElement>('#artifact-list-copy').click();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(
@@ -378,7 +389,7 @@ describe('ArtifactListTabComponent', () => {
         await fixture.whenStable();
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
-        fixture.nativeElement.querySelector('#artifact-list-delete').click();
+        document.querySelector<HTMLElement>('#artifact-list-delete').click();
         fixture.detectChanges();
         await fixture.whenStable();
         expect(
@@ -390,7 +401,7 @@ describe('ArtifactListTabComponent', () => {
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
         const generatedButton =
-            fixture.nativeElement.querySelector('#generate-sbom-btn');
+            document.querySelector<HTMLButtonElement>('#generate-sbom-btn');
         fixture.detectChanges();
         await fixture.whenStable();
         expect(generatedButton.disabled).toBeTruthy();
@@ -400,7 +411,7 @@ describe('ArtifactListTabComponent', () => {
         comp.selectedRow = [mockArtifacts[1]];
         await stepOpenAction(fixture, comp);
         const stopButton =
-            fixture.nativeElement.querySelector('#stop-sbom-btn');
+            document.querySelector<HTMLButtonElement>('#stop-sbom-btn');
         fixture.detectChanges();
         await fixture.whenStable().then(() => {
             expect(stopButton.disabled).toBeTruthy();
@@ -488,6 +499,26 @@ describe('ArtifactListTabComponent', () => {
             SBOM_SCAN_STATUS.NOT_GENERATED_SBOM
         );
         expect(comp.handleScanOverview(mockArtifacts[0])).not.toBeNull();
+    });
+    it('Should return true for artifacts with child references', async () => {
+        const artifactWithChild = {
+            ...mockArtifacts[0],
+            references: [{ child_digest: 'childDigest123' }], // child reference
+        };
+
+        const result = comp.hasChild(artifactWithChild);
+
+        expect(result).toBeTruthy();
+    });
+    it('Should return false for artifacts without child references', async () => {
+        const artifactWithoutChild = {
+            ...mockArtifacts[0],
+            references: [], // No child references
+        };
+
+        const result = comp.hasChild(artifactWithoutChild);
+
+        expect(result).toBeFalsy();
     });
     it('Test utils', async () => {
         fixture = TestBed.createComponent(ArtifactListTabComponent);

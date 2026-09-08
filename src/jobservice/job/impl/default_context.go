@@ -17,6 +17,7 @@ package impl
 import (
 	"context"
 	"errors"
+	"maps"
 
 	o "github.com/beego/beego/v2/client/orm"
 
@@ -32,7 +33,7 @@ type DefaultContext struct {
 	// Logger for job
 	logger logger.Interface
 	// Other required information
-	properties map[string]interface{}
+	properties map[string]any
 	// Track the job attached with the context
 	tracker job.Tracker
 }
@@ -41,7 +42,7 @@ type DefaultContext struct {
 func NewDefaultContext(sysCtx context.Context) job.Context {
 	return &DefaultContext{
 		sysContext: sysCtx,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 	}
 }
 
@@ -56,14 +57,12 @@ func (dc *DefaultContext) Build(t job.Tracker) (job.Context, error) {
 		// TODO support DB transaction
 		sysContext: orm.NewContext(dc.sysContext, o.NewOrm()),
 		tracker:    t,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 	}
 
 	// Copy properties
 	if len(dc.properties) > 0 {
-		for k, v := range dc.properties {
-			jContext.properties[k] = v
-		}
+		maps.Copy(jContext.properties, dc.properties)
 	}
 
 	// Set loggers for job
@@ -78,7 +77,7 @@ func (dc *DefaultContext) Build(t job.Tracker) (job.Context, error) {
 }
 
 // Get implements the same method in env.Context interface
-func (dc *DefaultContext) Get(prop string) (interface{}, bool) {
+func (dc *DefaultContext) Get(prop string) (any, bool) {
 	v, ok := dc.properties[prop]
 	return v, ok
 }

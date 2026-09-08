@@ -93,7 +93,7 @@ func (d *dao) ListPermissions(ctx context.Context, query *q.Query) ([]*model.Rol
 
 func (d *dao) DeletePermissionsByRole(ctx context.Context, roleType string, roleID int64) error {
 	qs, err := orm.QuerySetter(ctx, &model.RolePermission{}, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"role_type": roleType,
 			"role_id":   roleID,
 		},

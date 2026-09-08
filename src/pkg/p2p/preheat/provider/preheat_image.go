@@ -16,14 +16,18 @@ package provider
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/url"
-
-	"github.com/pkg/errors"
+	"slices"
 )
 
-const (
-	// SupportedType indicates the supported preheating type 'image'.
-	SupportedType = "image"
+var (
+	// SupportedTypes indicates the supported preheating types.
+	SupportedTypes = []string{
+		"image",
+		"cnai",
+	}
 )
 
 // PreheatImage contains related information which can help providers to get/pull the images.
@@ -35,7 +39,7 @@ type PreheatImage struct {
 	URL string `json:"url"`
 
 	// The headers which will be sent to the above URL of preheating image
-	Headers map[string]interface{} `json:"headers"`
+	Headers map[string]any `json:"headers"`
 
 	// The image name
 	ImageName string `json:"image,omitempty"`
@@ -47,7 +51,7 @@ type PreheatImage struct {
 	Digest string `json:"digest"`
 
 	// ExtraAttrs contains extra attributes for the preheating image.
-	ExtraAttrs map[string]interface{} `json:"extra_attrs,omitempty"`
+	ExtraAttrs map[string]any `json:"extra_attrs,omitempty"`
 }
 
 // FromJSON build preheating image from the given data.
@@ -57,7 +61,7 @@ func (img *PreheatImage) FromJSON(data string) error {
 	}
 
 	if err := json.Unmarshal([]byte(data), img); err != nil {
-		return errors.Wrap(err, "construct preheating image error")
+		return fmt.Errorf("construct preheating image error: %w", err)
 	}
 
 	return nil
@@ -67,7 +71,7 @@ func (img *PreheatImage) FromJSON(data string) error {
 func (img *PreheatImage) ToJSON() (string, error) {
 	data, err := json.Marshal(img)
 	if err != nil {
-		return "", errors.Wrap(err, "encode preheating image error")
+		return "", fmt.Errorf("encode preheating image error: %w", err)
 	}
 
 	return string(data), nil
@@ -75,8 +79,8 @@ func (img *PreheatImage) ToJSON() (string, error) {
 
 // Validate PreheatImage
 func (img *PreheatImage) Validate() error {
-	if img.Type != SupportedType {
-		return errors.Errorf("unsupported type '%s'", img.Type)
+	if !slices.Contains(SupportedTypes, img.Type) {
+		return fmt.Errorf("unsupported type '%s'", img.Type)
 	}
 
 	if len(img.ImageName) == 0 || len(img.Tag) == 0 {
@@ -89,7 +93,7 @@ func (img *PreheatImage) Validate() error {
 
 	_, err := url.Parse(img.URL)
 	if err != nil {
-		return errors.Wrap(err, "malformed registry URL")
+		return fmt.Errorf("malformed registry URL: %w", err)
 	}
 
 	return nil

@@ -17,6 +17,7 @@ package proxy
 import (
 	"context"
 	"testing"
+	"time"
 
 	distribution2 "github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
@@ -24,7 +25,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
+	ctltag "github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	modeltag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	testregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
@@ -61,6 +65,11 @@ func (a *artifactControllerMock) GetByReference(ctx context.Context, repository,
 		art = args[0].(*artifact.Artifact)
 	}
 	return art, args.Error(1)
+}
+
+func (a *artifactControllerMock) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, t time.Time) error {
+	args := a.Called(ctx, artifactID, tagID, t)
+	return args.Error(0)
 }
 
 type localHelperTestSuite struct {
@@ -145,6 +154,77 @@ func (lh *localHelperTestSuite) TestManifestExist() {
 	a, err := lh.local.GetManifest(ctx, art)
 	lh.Assert().Nil(err)
 	lh.Assert().NotNil(a)
+}
+
+func (lh *localHelperTestSuite) TestUpdatePullTime_EmptyReference() {
+	ctx := context.Background()
+	// both Digest and Tag are empty — should return nil without calling any controller method
+	art := lib.ArtifactInfo{Repository: "library/hello-world"}
+	err := lh.local.UpdatePullTime(ctx, art)
+	lh.Require().Nil(err)
+	lh.artCtl.AssertNotCalled(lh.T(), "GetByReference")
+	lh.artCtl.AssertNotCalled(lh.T(), "UpdatePullTime")
+}
+
+func (lh *localHelperTestSuite) TestUpdatePullTime_ArtifactNotFound() {
+	ctx := context.Background()
+	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
+	lh.artCtl.On("GetByReference", ctx, art.Repository, dig, &artifact.Option{WithTag: true}).
+		Return(nil, errors.NotFoundError(nil))
+	err := lh.local.UpdatePullTime(ctx, art)
+	lh.Require().NotNil(err)
+}
+
+func (lh *localHelperTestSuite) TestUpdatePullTime_ByDigestNoTag() {
+	ctx := context.Background()
+	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: dig}
+	a := &artifact.Artifact{}
+	a.ID = 100
+	lh.artCtl.On("GetByReference", ctx, art.Repository, dig, &artifact.Option{WithTag: true}).
+		Return(a, nil)
+	lh.artCtl.On("UpdatePullTime", ctx, int64(100), int64(0), mock.AnythingOfType("time.Time")).
+		Return(nil)
+	err := lh.local.UpdatePullTime(ctx, art)
+	lh.Require().Nil(err)
+	lh.artCtl.AssertCalled(lh.T(), "UpdatePullTime", ctx, int64(100), int64(0), mock.AnythingOfType("time.Time"))
+}
+
+func (lh *localHelperTestSuite) TestUpdatePullTime_ByTagFound() {
+	ctx := context.Background()
+	tag := "latest"
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: tag}
+	a := &artifact.Artifact{}
+	a.ID = 200
+	a.Tags = []*ctltag.Tag{
+		{Tag: modeltag.Tag{ID: 42, ArtifactID: 200, Name: tag}},
+	}
+	lh.artCtl.On("GetByReference", ctx, art.Repository, tag, &artifact.Option{WithTag: true}).
+		Return(a, nil)
+	lh.artCtl.On("UpdatePullTime", ctx, int64(200), int64(42), mock.AnythingOfType("time.Time")).
+		Return(nil)
+	err := lh.local.UpdatePullTime(ctx, art)
+	lh.Require().Nil(err)
+	lh.artCtl.AssertCalled(lh.T(), "UpdatePullTime", ctx, int64(200), int64(42), mock.AnythingOfType("time.Time"))
+}
+
+func (lh *localHelperTestSuite) TestUpdatePullTime_ByTagNotFound() {
+	ctx := context.Background()
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "v1.0"}
+	a := &artifact.Artifact{}
+	a.ID = 300
+	a.Tags = []*ctltag.Tag{
+		{Tag: modeltag.Tag{ID: 99, ArtifactID: 300, Name: "latest"}},
+	}
+	lh.artCtl.On("GetByReference", ctx, art.Repository, "v1.0", &artifact.Option{WithTag: true}).
+		Return(a, nil)
+	// tagID should be 0 because "v1.0" was not found in a.Tags
+	lh.artCtl.On("UpdatePullTime", ctx, int64(300), int64(0), mock.AnythingOfType("time.Time")).
+		Return(nil)
+	err := lh.local.UpdatePullTime(ctx, art)
+	lh.Require().Nil(err)
+	lh.artCtl.AssertCalled(lh.T(), "UpdatePullTime", ctx, int64(300), int64(0), mock.AnythingOfType("time.Time"))
 }
 
 func TestLocalHelperTestSuite(t *testing.T) {

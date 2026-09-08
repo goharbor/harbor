@@ -18,6 +18,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../entities/shared.const';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogComponent } from '../confirmation-dialog';
@@ -46,8 +47,10 @@ import { ClrDatagridStateInterface } from '@clr/angular';
     selector: 'hbr-label',
     templateUrl: './label.component.html',
     styleUrls: ['./label.component.scss'],
+    standalone: false,
 })
 export class LabelComponent {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     timerHandler: any;
     loading: boolean = true;
     targets: Label[];

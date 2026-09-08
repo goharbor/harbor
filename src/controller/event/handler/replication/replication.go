@@ -36,7 +36,7 @@ func (r *Handler) Name() string {
 }
 
 // Handle ...
-func (r *Handler) Handle(ctx context.Context, value interface{}) error {
+func (r *Handler) Handle(ctx context.Context, value any) error {
 	pushArtEvent, ok := value.(*event.PushArtifactEvent)
 	if ok {
 		return r.handlePushArtifact(ctx, pushArtEvent)
@@ -78,7 +78,7 @@ func (r *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtif
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
 					Name: event.Repository,
-					Metadata: map[string]interface{}{
+					Metadata: map[string]any{
 						"public": strconv.FormatBool(public),
 					},
 				},
@@ -138,7 +138,7 @@ func (r *Handler) handleCreateTag(ctx context.Context, event *event.CreateTagEve
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
 					Name: event.Repository,
-					Metadata: map[string]interface{}{
+					Metadata: map[string]any{
 						"public": strconv.FormatBool(public),
 					},
 				},

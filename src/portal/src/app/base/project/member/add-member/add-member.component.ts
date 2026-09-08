@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity'
     selector: 'add-member',
     templateUrl: 'add-member.component.html',
     styleUrls: ['add-member.component.scss'],
+    standalone: false,
 })
 export class AddMemberComponent implements OnInit, OnDestroy {
     member: UserEntity = {};

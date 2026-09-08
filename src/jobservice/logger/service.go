@@ -29,7 +29,7 @@ func jobServiceLogger() (Interface, bool) {
 }
 
 // Debug ...
-func Debug(v ...interface{}) {
+func Debug(v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Debug(v...)
 	} else {
@@ -38,7 +38,7 @@ func Debug(v ...interface{}) {
 }
 
 // Debugf for debuging with format
-func Debugf(format string, v ...interface{}) {
+func Debugf(format string, v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Debugf(format, v...)
 	} else {
@@ -47,7 +47,7 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Info ...
-func Info(v ...interface{}) {
+func Info(v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Info(v...)
 	} else {
@@ -56,7 +56,7 @@ func Info(v ...interface{}) {
 }
 
 // Infof for logging info with format
-func Infof(format string, v ...interface{}) {
+func Infof(format string, v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Infof(format, v...)
 	} else {
@@ -65,7 +65,7 @@ func Infof(format string, v ...interface{}) {
 }
 
 // Warning ...
-func Warning(v ...interface{}) {
+func Warning(v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Warning(v...)
 	} else {
@@ -74,7 +74,7 @@ func Warning(v ...interface{}) {
 }
 
 // Warningf for warning with format
-func Warningf(format string, v ...interface{}) {
+func Warningf(format string, v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Warningf(format, v...)
 	} else {
@@ -83,7 +83,7 @@ func Warningf(format string, v ...interface{}) {
 }
 
 // Error for logging error
-func Error(v ...interface{}) {
+func Error(v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Error(v...)
 	} else {
@@ -92,7 +92,7 @@ func Error(v ...interface{}) {
 }
 
 // Errorf for logging error with format
-func Errorf(format string, v ...interface{}) {
+func Errorf(format string, v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Errorf(format, v...)
 	} else {
@@ -101,7 +101,7 @@ func Errorf(format string, v ...interface{}) {
 }
 
 // Fatal ...
-func Fatal(v ...interface{}) {
+func Fatal(v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Fatal(v...)
 	} else {
@@ -110,7 +110,7 @@ func Fatal(v ...interface{}) {
 }
 
 // Fatalf for fatal error with error
-func Fatalf(format string, v ...interface{}) {
+func Fatalf(format string, v ...any) {
 	if jLogger, ok := jobServiceLogger(); ok {
 		jLogger.Fatalf(format, v...)
 	} else {

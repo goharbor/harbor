@@ -19,37 +19,45 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/docker/distribution/registry/client/auth/challenge"
 
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/util"
 )
 
 func getRegionRegistryName(url string) (string, string, error) {
-	reg := regexp.MustCompile(`https://(.*)\.cr\.volces|ivolces\.com`)
+	reg := regexp.MustCompile(`(?i)https://(.*)\.cr\.(?:volces|ivolces)\.com`)
 	rs := reg.FindStringSubmatch(url)
 	if rs == nil || len(rs) != 2 {
 		return "", "", errors.New("Invalid url")
 	}
 	registryNameRegion := rs[1]
 	for regionReg := range regionRegs {
-		reg = regexp.MustCompile(regionReg)
+		reg = regexp.MustCompile("(?i)" + regionReg)
 		res := reg.FindStringSubmatch(registryNameRegion)
 		if res == nil || len(res) != 3 {
 			log.Debug("fail to match", "reg", regionReg)
 			continue
 		}
-		return res[2], res[1], nil
+		return strings.ToLower(res[2]), res[1], nil
 	}
 
 	return "", "", errors.New("invalid region")
 }
 
-func getRealmService(host string, insecure bool) (string, string, error) {
+var resolveHost = func(host string) string { return host }
+
+func getRealmService(host string, insecure bool, caCert string) (string, string, error) {
 	client := &http.Client{
-		Transport: util.GetHTTPTransport(insecure),
+		Transport: util.GetHTTPTransport(insecure, caCert),
+		Timeout:   config.RegistryHTTPClientTimeout(),
 	}
+
+	// Allow tests to override the host (e.g., inject mock server URL) via resolveHost
+	host = resolveHost(host)
 
 	resp, err := client.Get(host + "/v2/")
 	if err != nil {

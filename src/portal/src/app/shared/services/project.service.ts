@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { throwError as observableThrowError, Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
@@ -140,31 +153,49 @@ export class ProjectDefaultService extends ProjectService {
         projectAllowlist: object
     ): any {
         let baseUrl: string = CURRENT_BASE_HREF + '/projects';
+        const metadata: Record<string, string> = {
+            public: projectPolicy.Public ? 'true' : 'false',
+            enable_content_trust: projectPolicy.ContentTrust ? 'true' : 'false',
+            enable_content_trust_cosign: projectPolicy.ContentTrustCosign
+                ? 'true'
+                : 'false',
+            prevent_vul: projectPolicy.PreventVulImg ? 'true' : 'false',
+            severity: projectPolicy.PreventVulImgSeverity,
+            auto_scan: projectPolicy.ScanImgOnPush ? 'true' : 'false',
+            auto_sbom_generation: projectPolicy.GenerateSbomOnPush
+                ? 'true'
+                : 'false',
+            reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
+            proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
+            max_upstream_conn:
+                projectPolicy.MaxUpstreamConn !== undefined &&
+                projectPolicy.MaxUpstreamConn !== null
+                    ? projectPolicy.MaxUpstreamConn.toString()
+                    : '-1',
+            proxy_cache_local_on_not_found:
+                projectPolicy.ProxyCacheLocalOnNotFound ? 'true' : 'false',
+            proxy_referrer_api: projectPolicy.ProxyReferrerAPI
+                ? 'true'
+                : 'false',
+        };
+        if (
+            projectPolicy.ProxyCacheFilterPattern !== undefined &&
+            projectPolicy.ProxyCacheFilterPattern !== null
+        ) {
+            metadata.proxy_cache_filter_pattern =
+                projectPolicy.ProxyCacheFilterPattern;
+            metadata.proxy_cache_filter_kind =
+                projectPolicy.ProxyCacheFilterKind || 'doublestar';
+        } else {
+            metadata.proxy_cache_filter_pattern = '';
+            metadata.proxy_cache_filter_kind = 'doublestar';
+        }
         return this.http
             .put<any>(
                 `${baseUrl}/${projectId}`,
                 {
                     registry_id: projectPolicy.RegistryId,
-                    metadata: {
-                        public: projectPolicy.Public ? 'true' : 'false',
-                        enable_content_trust: projectPolicy.ContentTrust
-                            ? 'true'
-                            : 'false',
-                        enable_content_trust_cosign:
-                            projectPolicy.ContentTrustCosign ? 'true' : 'false',
-                        prevent_vul: projectPolicy.PreventVulImg
-                            ? 'true'
-                            : 'false',
-                        severity: projectPolicy.PreventVulImgSeverity,
-                        auto_scan: projectPolicy.ScanImgOnPush
-                            ? 'true'
-                            : 'false',
-                        auto_sbom_generation: projectPolicy.GenerateSbomOnPush
-                            ? 'true'
-                            : 'false',
-                        reuse_sys_cve_allowlist: reuseSysCVEVAllowlist,
-                        proxy_speed_kb: projectPolicy.ProxySpeedKb.toString(),
-                    },
+                    metadata,
                     cve_allowlist: projectAllowlist,
                 },
                 HTTP_JSON_OPTIONS

@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/docker/distribution"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -58,7 +58,7 @@ type Controller interface {
 
 	// Exist check blob exist by digest,
 	// it check the blob associated with the artifact when `IsAssociatedWithArtifact` option provided,
-	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
+	// and also check the blob associated with the project when `IsAssociatedWithProject` option provided.
 	Exist(ctx context.Context, digest string, options ...Option) (bool, error)
 
 	// FindMissingAssociationsForProjectByArtifact returns blobs which are associated with artifact but not associated with project
@@ -66,7 +66,7 @@ type Controller interface {
 
 	// Get get the blob by digest,
 	// it check the blob associated with the artifact when `IsAssociatedWithArtifact` option provided,
-	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
+	// and also check the blob associated with the project when `IsAssociatedWithProject` option provided.
 	Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error)
 
 	// List list blobs
@@ -225,10 +225,10 @@ func (c *controller) Get(ctx context.Context, digest string, options ...Option) 
 
 	opts := newOptions(options...)
 
-	keywords := make(map[string]interface{})
+	keywords := make(map[string]any)
 	if digest != "" {
 		ol := q.OrList{
-			Values: []interface{}{
+			Values: []any{
 				digest,
 			},
 		}

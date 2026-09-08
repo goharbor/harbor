@@ -35,6 +35,7 @@ import (
 	_ "github.com/docker/distribution/registry/storage/driver/swift"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib"
 	cfgLib "github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
@@ -91,6 +92,9 @@ func (s *RegistryCtl) Start() {
 }
 
 func main() {
+	// Start pprof server
+	lib.StartPprof()
+
 	configPath := flag.String("c", "", "Specify registryCtl configuration file path")
 	flag.Parse()
 

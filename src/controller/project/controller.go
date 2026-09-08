@@ -53,9 +53,9 @@ type Controller interface {
 	// Delete delete the project by project id
 	Delete(ctx context.Context, id int64) error
 	// Exists returns true when the specific project exists
-	Exists(ctx context.Context, projectIDOrName interface{}) (bool, error)
+	Exists(ctx context.Context, projectIDOrName any) (bool, error)
 	// Get get the project by project id or name
-	Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error)
+	Get(ctx context.Context, projectIDOrName any, options ...Option) (*models.Project, error)
 	// GetByName get the project by project name
 	GetByName(ctx context.Context, projectName string, options ...Option) (*models.Project, error)
 	// List list projects
@@ -144,7 +144,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (bool, error) {
+func (c *controller) Exists(ctx context.Context, projectIDOrName any) (bool, error) {
 	_, err := c.projectMgr.Get(ctx, projectIDOrName)
 	if err == nil {
 		return true, nil
@@ -155,7 +155,7 @@ func (c *controller) Exists(ctx context.Context, projectIDOrName interface{}) (b
 	return false, err
 }
 
-func (c *controller) Get(ctx context.Context, projectIDOrName interface{}, options ...Option) (*models.Project, error) {
+func (c *controller) Get(ctx context.Context, projectIDOrName any, options ...Option) (*models.Project, error) {
 	p, err := c.projectMgr.Get(ctx, projectIDOrName)
 	if err != nil {
 		return nil, err

@@ -86,7 +86,7 @@ func (d *daoTestSuite) TestCount() {
 	d.True(total > 0)
 	// query by repository ID and name
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"repository_id": 1000,
 			"name":          "latest",
 		},
@@ -110,7 +110,7 @@ func (d *daoTestSuite) TestList() {
 
 	// query by repository ID and name
 	tags, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"repository_id": 1000,
 			"name":          "latest",
 		},
@@ -251,7 +251,7 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Nil(err)
 
 	tags, err := d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ArtifactID": artifactID,
 		},
 	})
@@ -262,7 +262,7 @@ func (d *daoTestSuite) TestDeleteOfArtifact() {
 	d.Require().Nil(err)
 
 	tags, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ArtifactID": artifactID,
 		},
 	})

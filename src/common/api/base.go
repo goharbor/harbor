@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/beego/beego/v2/core/validation"
 	"github.com/beego/beego/v2/server/web"
@@ -78,7 +79,7 @@ func (b *BaseAPI) RenderError(code int, text string) {
 }
 
 // DecodeJSONReq decodes a json request
-func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
+func (b *BaseAPI) DecodeJSONReq(v any) error {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<35), v)
 	if err != nil {
 		log.Errorf("Error while decoding the json request, error: %v, %v",
@@ -89,7 +90,7 @@ func (b *BaseAPI) DecodeJSONReq(v interface{}) error {
 }
 
 // Validate validates v if it implements interface validation.ValidFormer
-func (b *BaseAPI) Validate(v interface{}) (bool, error) {
+func (b *BaseAPI) Validate(v any) (bool, error) {
 	validator := validation.Validation{}
 	isValid, err := validator.Valid(v)
 	if err != nil {
@@ -98,17 +99,17 @@ func (b *BaseAPI) Validate(v interface{}) (bool, error) {
 	}
 
 	if !isValid {
-		message := ""
+		var message strings.Builder
 		for _, e := range validator.Errors {
-			message += fmt.Sprintf("%s %s \n", e.Field, e.Message)
+			message.WriteString(fmt.Sprintf("%s %s \n", e.Field, e.Message))
 		}
-		return false, errors.New(message)
+		return false, errors.New(message.String())
 	}
 	return true, nil
 }
 
 // DecodeJSONReqAndValidate does both decoding and validation
-func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) (bool, error) {
+func (b *BaseAPI) DecodeJSONReqAndValidate(v any) (bool, error) {
 	if err := b.DecodeJSONReq(v); err != nil {
 		return false, err
 	}

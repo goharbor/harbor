@@ -34,7 +34,6 @@ def prepare_job_service(config_dict):
         internal_tls=config_dict['internal_tls'],
         max_job_workers=config_dict['max_job_workers'],
         max_job_duration_hours=config_dict['max_job_duration_hours'],
-        max_job_duration_seconds=config_dict['max_job_duration_seconds'],
         job_loggers=config_dict['job_loggers'],
         logger_sweeper_duration=config_dict['logger_sweeper_duration'],
         redis_url=config_dict['redis_url_js'],

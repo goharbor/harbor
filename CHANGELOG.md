@@ -31,10 +31,10 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 * Support Image Retag, enables the user to tag image to different repositories and projects, this is particularly useful in cases when images need to be retagged programmatically in a CI pipeline.
 * Support Image Build History, makes it easy to see the contents of a container image, refer to the [User Guide](https://github.com/goharbor/harbor/blob/release-1.7.0/docs/user_guide.md#build-history).
 * Support Logger customization, enables the user to customize STDOUT / STDERR / FILE / DB logger of running jobs.
-* Improve user experience of Helm Chart Repository:
-   - Chart searching included in the global search results
-   - Show chart versions total number in the chart list
-   - Mark labels to helm charts
+* Improve the user experience of Helm Chart Repository:
+   - Chart searching is included in the global search results
+   - Show the total number of chart versions in the chart list
+   - Mark labels in helm charts
    - The latest version can be downloaded as default one on the chart list view
    - The chart can be deleted by deleting all the versions under it
 
@@ -58,7 +58,7 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 - Replication policy rework to support wildcard, scheduled replication.
 - Support repository level description.
 - Batch operation on projects/repositories/users from UI.
-- On board LDAP user when adding member to a project.
+- On board LDAP user when adding a member to a project.
 
 ## v1.3.0 (2018-01-04)
 
@@ -75,11 +75,11 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 ## v1.1.0 (2017-04-18)
 
 - Add in Notary support
-- User can update configuration through Harbor UI
+- User can update the configuration through Harbor UI
 - Redesign of Harbor's UI using Clarity
 - Some changes to API
-- Fix some security issues in token service
-- Upgrade base image of nginx for latest openssl version
+- Fix some security issues in the token service
+- Upgrade the base image of nginx to the latest openssl version
 - Various bug fixes.
 
 ## v0.5.0 (2016-12-6)
@@ -88,7 +88,7 @@ API explorer integration. End users can now explore and trigger Harbor’s API v
 - Easier configuration for HTTPS in prepare script
 - Script to collect logs of a Harbor deployment
 - User can view the storage usage (default location) of Harbor.
-- Add an attribute to disable normal user to create project
+- Add an attribute to disable normal users from creating projects.
 - Various bug fixes.
 
 For Harbor virtual appliance:

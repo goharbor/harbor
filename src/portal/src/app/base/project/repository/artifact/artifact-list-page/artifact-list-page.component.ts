@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
     selector: 'artifact-list-page',
     templateUrl: 'artifact-list-page.component.html',
     styleUrls: ['./artifact-list-page.component.scss'],
+    standalone: false,
 })
 export class ArtifactListPageComponent implements OnDestroy {
     projectId: string;
