@@ -51,6 +51,31 @@ func TestParseEndpoint(t *testing.T) {
 	}
 }
 
+func TestEqualURL(t *testing.T) {
+	cases := []struct {
+		url1     string
+		url2     string
+		expected bool
+	}{
+		{"http://example.com:8080/v2", "http://example.com:8080/v2", true},
+		{"http://EXAMPLE.COM:8080/v2", "http://example.com:8080/v2", true},
+		{"http://example.com:8080/V2", "http://example.com:8080/v2", false},
+		{"https://core:8080", "https://CORE:8080", true},
+		{"http://example.com", "https://example.com", false},
+		{"http://example.com:8080", "http://example.com:8081", false},
+		{"http://example.com/foo", "http://example.com/bar", false},
+		{"://invalid-url-1", "http://example.com", false},
+		{"http://example.com", "://invalid-url-2", false},
+		{"http://example.com/A%", "http://example.com/a%", false},
+	}
+
+	for _, c := range cases {
+		t.Run(c.url1+"_vs_"+c.url2, func(t *testing.T) {
+			assert.Equal(t, c.expected, EqualURL(c.url1, c.url2))
+		})
+	}
+}
+
 func TestParseRepository(t *testing.T) {
 	repository := "library/ubuntu"
 	project, rest := ParseRepository(repository)
