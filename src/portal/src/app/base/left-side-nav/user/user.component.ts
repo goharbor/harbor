@@ -172,8 +172,11 @@ export class UserComponent implements OnDestroy {
         if (
             appConfig &&
             appConfig.auth_mode !== CONFIG_AUTH_MODE.DB_AUTH &&
-            !u.sysadmin_flag
+            !u.sysadmin_flag &&
+            !u.sysadmin_flag_source
         ) {
+            // never confirmed via a real login sync (or a manual grant/revocation) - we
+            // genuinely don't know this user's admin status, unlike a confirmed "No"
             key = 'USER.UNKNOWN';
         }
         this.translate
