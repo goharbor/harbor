@@ -86,12 +86,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 		return a.SendError(ctx, err)
 	}
 	repositoryName := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
-	_, err := a.repoCtl.GetByName(ctx, repositoryName)
-	if err != nil {
-		switch {
-		case errors.IsErr(err, errors.NotFoundCode):
-			return operation.NewListArtifactsNotFound().WithPayload(&models.Errors{Errors: []*models.Error{{Message: "Repository not found"}}})
-		}
+	if _, err := a.repoCtl.GetByName(ctx, repositoryName); err != nil {
 		return a.SendError(ctx, err)
 	}
 
