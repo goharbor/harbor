@@ -524,13 +524,44 @@ func (suite *OrmSuite) TestAfterCommit_OrderWithinAndAcrossScopes() {
 		})(outerCtx); err != nil {
 			return err
 		}
+		suite.Empty(fired, "nested hooks must wait for the outermost commit")
 
 		record(outerCtx, "outer-after")
+		suite.Empty(fired, "outer hooks must wait for the outermost commit")
 		return nil
 	})(ctx)
 
 	suite.NoError(err)
 	suite.Equal([]string{"outer-before", "inner-1", "inner-2", "outer-after"}, fired)
+}
+
+// TestAfterCommit_RejectsCompletedNestedContext asserts that a context from a
+// completed savepoint cannot start more DB work whose hooks have no live parent.
+func (suite *OrmSuite) TestAfterCommit_RejectsCompletedNestedContext() {
+	ctx := NewContext(context.TODO(), orm.NewOrm())
+
+	var completedCtx context.Context
+	secondScopeRan := false
+
+	err := WithTransaction(func(outerCtx context.Context) error {
+		if err := WithTransaction(func(innerCtx context.Context) error {
+			completedCtx = innerCtx
+			return nil
+		})(outerCtx); err != nil {
+			return err
+		}
+
+		err := WithTransaction(func(ctx context.Context) error {
+			secondScopeRan = true
+			AfterCommit(ctx, func() {})
+			return nil
+		})(completedCtx)
+		suite.EqualError(err, "transaction context belongs to a completed scope")
+		return nil
+	})(ctx)
+
+	suite.NoError(err)
+	suite.False(secondScopeRan, "a completed transaction context must be rejected before starting DB work")
 }
 
 // TestAfterCommit_IndependentTxFromCopiedContext asserts that a transaction

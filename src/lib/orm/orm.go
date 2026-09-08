@@ -89,7 +89,9 @@ func NewContext(ctx context.Context, o orm.QueryExecutor) context.Context {
 		// A non-transactional ormer opens its own database session, so a hooks
 		// sink inherited through ctx (Clone, Copy) belongs to a transaction this
 		// session is not part of. Detach it, otherwise AfterCommit would queue
-		// into a scope that may already have committed and drained.
+		// into a scope that may already have committed and drained, and
+		// WithTransaction would hand its hooks to that scope instead of firing
+		// them after its own commit.
 		if _, inherited := ctx.Value(hooksKey{}).(*txHooks); inherited {
 			ctx = context.WithValue(ctx, hooksKey{}, (*txHooks)(nil))
 		}
@@ -148,6 +150,7 @@ type hooksKey struct{}
 type txHooks struct {
 	mu          sync.Mutex
 	afterCommit []func()
+	closed      bool
 }
 
 func (h *txHooks) add(fn func()) {
@@ -167,6 +170,18 @@ func (h *txHooks) adopt(cbs []func()) {
 	h.mu.Unlock()
 }
 
+func (h *txHooks) close() {
+	h.mu.Lock()
+	h.closed = true
+	h.mu.Unlock()
+}
+
+func (h *txHooks) isClosed() bool {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.closed
+}
+
 func (h *txHooks) drain() []func() {
 	h.mu.Lock()
 	cbs := h.afterCommit
@@ -184,11 +199,12 @@ func (h *txHooks) drain() []func() {
 // so Go code cannot sit holding row locks while waiting on an external system.
 // Panics raised by fn are recovered and logged.
 //
-// ctx must derive from a context passed to an active WithTransaction callback.
-// Using it after that callback returns has undefined behavior. Within a scope,
-// callbacks run in registration order. Callbacks from a released nested scope
-// are inserted at the savepoint-release point. All other ordering, including
-// ordering across goroutines, is unspecified.
+// When ctx contains a transaction scope, it must derive from a context passed
+// to an active WithTransaction callback. Using it after that callback returns
+// has undefined behavior. Within a scope, callbacks run in registration order.
+// Callbacks from a released nested scope are inserted at the savepoint-release
+// point. All other ordering, including ordering across goroutines, is
+// unspecified.
 func AfterCommit(ctx context.Context, fn func()) {
 	if fn == nil {
 		return
@@ -209,11 +225,19 @@ func safeInvoke(fn func()) {
 	fn()
 }
 
-// WithTransaction a decorator which make f run in transaction
+// WithTransaction returns a function that runs f in a transaction. The context
+// passed to f is valid only until f returns and must not be retained for a
+// later WithTransaction call.
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
 		cx, span := tracelib.StartTrace(ctx, tracerName, GetTransactionOpNameFromContext(ctx))
 		defer span.End()
+
+		parentHooks, _ := cx.Value(hooksKey{}).(*txHooks)
+		if parentHooks != nil && parentHooks.isClosed() {
+			return errors.New("transaction context belongs to a completed scope")
+		}
+
 		o, err := FromContext(ctx)
 		if err != nil {
 			tracelib.RecordError(span, err, "get orm from ctx failed")
@@ -221,17 +245,10 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		}
 
 		var tx ormerTx
-		// parentHooks is the enclosing scope's sink. It is set only when this
-		// scope is a savepoint on the enclosing transaction: an independent
-		// transaction started from a Clone or Copy of a transaction context
-		// still sees the enclosing sink through context values, but its
-		// commit is its own, so it must fire its own hooks.
-		var parentHooks *txHooks
 		if _, ok := o.(orm.Ormer); ok {
 			tx = ormerTx{Ormer: o.(orm.Ormer)}
 		} else if _, ok := o.(orm.TxOrmer); ok {
 			tx = ormerTx{TxOrmer: o.(orm.TxOrmer)}
-			parentHooks, _ = cx.Value(hooksKey{}).(*txHooks)
 		} else {
 			return errors.New("no orm found in the context")
 		}
@@ -254,7 +271,9 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 		// When set multiple times, context.WithValue returns only the last ormer.
 		// To ensure that the rollback works, set TxOrmer as the ormer in the transaction.
 		cx = NewContext(cx, tx.TxOrmer)
-		if err := f(cx); err != nil {
+		err = f(cx)
+		hooks.close()
+		if err != nil {
 			span.AddEvent("rollback transaction")
 			hooks.drain() // discard this scope's unfired callbacks
 			if e := tx.Rollback(); e != nil {

@@ -182,9 +182,6 @@ func (m *Manager) Touch(ctx context.Context, id int64) error {
 	if err = m.delegator.Touch(ctx, id); err != nil {
 		return err
 	}
-	// Defer cache invalidation until after the enclosing transaction commits,
-	// so Redis round-trips never hold the Postgres row locks open. When there
-	// is no enclosing transaction, AfterCommit runs the hook synchronously.
 	m.scheduleCleanUp(ctx, repo)
 	return nil
 }
