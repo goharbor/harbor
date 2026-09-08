@@ -238,7 +238,12 @@ func (u *usersAPI) getUserByID(ctx context.Context, id int) (*models.UserResp, e
 	m := &model.User{
 		User: us,
 	}
-	return m.ToUserResp(), nil
+	resp := m.ToUserResp()
+	// OIDC CLI secrets are credentials and may only be disclosed to their owner.
+	if resp.OIDCUserMeta != nil && !matchUserID(ctx, id) {
+		resp.OIDCUserMeta.Secret = "*****"
+	}
+	return resp, nil
 }
 
 func (u *usersAPI) UpdateUserProfile(ctx context.Context, params operation.UpdateUserProfileParams) middleware.Responder {
