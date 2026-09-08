@@ -55,7 +55,12 @@ func (p *Processor) ListAdditionTypes(_ context.Context, _ *artifact.Artifact) [
 }
 
 // AbstractAddition reads the VEX document from its manifest layer.
-func (p *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, _ string) (*processor.Addition, error) {
+func (p *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, addition string) (*processor.Addition, error) {
+	if addition != AdditionTypeVEX {
+		return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("addition %s isn't supported for %s", addition, ArtifactTypeVEX)
+	}
+
 	manifest, _, err := p.RegCli.PullManifest(art.RepositoryName, art.Digest)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pull manifest")

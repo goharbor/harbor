@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-    of,
-    throwError,
-} from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ArtifactVEXComponent } from './artifact-vex.component';
 import { AdditionsService } from '../additions.service';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
 import * as utils from '../../../../../../shared/units/utils';
+import { SharedTestingModule } from '../../../../../../shared/shared.module';
 
 describe('ArtifactVEXComponent', () => {
     let component: ArtifactVEXComponent;
@@ -28,11 +26,13 @@ describe('ArtifactVEXComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [ArtifactVEXComponent],
+            imports: [SharedTestingModule],
             providers: [
                 {
                     provide: AdditionsService,
                     useValue: {
-                        getDetailByLink: () => of('{"@context":"https://openvex.dev/ns/v0.2.0"}'),
+                        getDetailByLink: () =>
+                            of('{"@context":"https://openvex.dev/ns/v0.2.0"}'),
                     },
                 },
                 { provide: ErrorHandler, useValue: { error() {} } },
@@ -48,12 +48,15 @@ describe('ArtifactVEXComponent', () => {
     });
 
     it('should display the VEX document', () => {
-        expect(fixture.nativeElement.querySelector('.vex-content').textContent).toContain('openvex.dev');
+        expect(
+            fixture.nativeElement.querySelector('.vex-content').textContent
+        ).toContain('openvex.dev');
     });
 
     it('should not display the empty-state message when loading fails', () => {
         const additionsService = TestBed.inject(AdditionsService);
-        additionsService.getDetailByLink = () => throwError(() => new Error('Request failed'));
+        additionsService.getDetailByLink = () =>
+            throwError(() => new Error('Request failed'));
         fixture = TestBed.createComponent(ArtifactVEXComponent);
         component = fixture.componentInstance;
         component.vexLink = { absolute: false, href: '/vex' };
@@ -61,7 +64,9 @@ describe('ArtifactVEXComponent', () => {
 
         expect(component.error).toBeTrue();
         expect(fixture.nativeElement.querySelector('.vex-content')).toBeNull();
-        expect(fixture.nativeElement.textContent).not.toContain('No VEX document');
+        expect(fixture.nativeElement.textContent).not.toContain(
+            'No VEX document'
+        );
     });
 
     it('should download the parsed object, not the pretty-printed string', () => {

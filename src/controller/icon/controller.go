@@ -91,9 +91,8 @@ var (
 )
 
 type buildInIcon struct {
-	path        string
-	resize      bool
-	contentType string
+	path   string
+	resize bool
 }
 
 // Icon model for artifact icon
@@ -161,19 +160,6 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		}
 		defer iconFile.Close()
 	}
-	if builtInIcon.contentType != "" {
-		content, err := io.ReadAll(iconFile)
-		if err != nil {
-			return nil, err
-		}
-		icon := &Icon{
-			ContentType: builtInIcon.contentType,
-			Content:     base64.StdEncoding.EncodeToString(content),
-		}
-		c.cache.Store(digest, icon)
-		return icon, nil
-	}
-
 	img, _, err := image.Decode(iconFile)
 	if err != nil {
 		return nil, err

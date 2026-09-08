@@ -1081,6 +1081,7 @@
         "NO_LICENSE": "No license file provided by this model.",
         "NO_FILES": "No file provided by this model.",
         "NO_VEX": "No VEX document provided for this artifact.",
+        "DOWNLOAD_VEX": "Download VEX",
         "MODEL_NO_README": "No readme file provided by this model.",
         "FILE_TOO_LARGE": "The file is too large to be processed.",
         "ITEMS": "items",

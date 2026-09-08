@@ -39,11 +39,7 @@ export class ArtifactVEXComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        if (
-            this.vexLink &&
-            !this.vexLink.absolute &&
-            this.vexLink.href
-        ) {
+        if (this.vexLink && !this.vexLink.absolute && this.vexLink.href) {
             this.loading = true;
             this.additionsService
                 .getDetailByLink(this.vexLink.href, false, true)

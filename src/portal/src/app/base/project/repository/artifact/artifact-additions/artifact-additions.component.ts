@@ -59,11 +59,23 @@ export class ArtifactAdditionsComponent implements AfterViewChecked, OnInit {
     ngOnInit(): void {
         this.activeTab = this.tab;
 
-        if (!this.activeTab && this.additionLinks && this.additionLinks[ADDITIONS.VULNERABILITIES]) {
+        if (
+            !this.activeTab &&
+            this.additionLinks &&
+            this.additionLinks[ADDITIONS.VULNERABILITIES]
+        ) {
             this.currentTabLinkId = 'vulnerability';
-        } else if (!this.activeTab && this.additionLinks && this.additionLinks[ADDITIONS.SUMMARY]) {
+        } else if (
+            !this.activeTab &&
+            this.additionLinks &&
+            this.additionLinks[ADDITIONS.SUMMARY]
+        ) {
             this.currentTabLinkId = 'summary-link';
-        } else if (!this.activeTab && this.additionLinks && this.additionLinks[ADDITIONS.VEX]) {
+        } else if (
+            !this.activeTab &&
+            this.additionLinks &&
+            this.additionLinks[ADDITIONS.VEX]
+        ) {
             this.currentTabLinkId = 'vex';
         }
 
