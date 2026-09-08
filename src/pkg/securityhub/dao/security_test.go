@@ -186,6 +186,8 @@ func (suite *SecurityDaoTestSuite) TestRangeFilter() {
 		wantParams []any
 	}{
 		{"normal", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{1.0, 2.0}})}, " and cvss_score_v3 between ? and ?", []any{1.0, 2.0}},
+		{"min only", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{Min: 7.0}})}, " and cvss_score_v3 >= ?", []any{7.0}},
+		{"max only", args{suite.Context(), "cvss_score_v3", q.New(q.KeyWords{"cvss_score_v3": &q.Range{Max: 7.0}})}, " and cvss_score_v3 <= ?", []any{7.0}},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
