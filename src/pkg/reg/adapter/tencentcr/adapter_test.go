@@ -107,6 +107,32 @@ func TestAdapter_NewAdapter_Pingfailed(t *testing.T) {
 	assert.Nil(t, adapter)
 }
 
+func TestAdapter_validateEndpoint(t *testing.T) {
+	validEndpoints := []string{
+		"https://my-registry.tencentcloudcr.com",
+		"https://my-registry.TencentCloudCR.com",
+		"https://my-registry.tencentcloudcr.com:443",
+		"http://sub.my-registry.tencentcloudcr.com:8080",
+	}
+	for _, ep := range validEndpoints {
+		host, ok := validateEndpoint(ep)
+		assert.True(t, ok, "expected valid endpoint for %s", ep)
+		assert.NotEmpty(t, host)
+	}
+
+	invalidEndpoints := []string{
+		"$$$",
+		"https://registry.tencentcloudcr.com.attacker.example",
+		"https://attacker.example/.tencentcloudcr.com",
+		"https://not-tencentcloudcr.com",
+		"https://.tencentcloudcr.com",
+	}
+	for _, ep := range invalidEndpoints {
+		_, ok := validateEndpoint(ep)
+		assert.False(t, ok, "expected invalid endpoint for %s", ep)
+	}
+}
+
 func TestAdapter_NewAdapter_InvalidAKSK(t *testing.T) {
 	// Error AK/SK
 	adapter, err := newAdapter(&model.Registry{

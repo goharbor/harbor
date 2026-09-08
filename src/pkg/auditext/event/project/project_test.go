@@ -88,6 +88,7 @@ func TestProjectEventResolver_Resolve(t *testing.T) {
 
 	mockCtrl.On("Get", mock.Anything, int64(123)).Return(proj, nil)
 	mockCtrl.On("Get", mock.Anything, "test-proj").Return(proj, nil)
+	mockCtrl.On("Get", mock.Anything, "123").Return(proj, nil)
 
 	r := &resolver{}
 
@@ -135,5 +136,25 @@ func TestProjectEventResolver_Resolve(t *testing.T) {
 		assert.Equal(t, int64(123), data.ProjectID)
 		assert.Equal(t, "update project: test-proj", data.OperationDescription)
 		assert.True(t, data.IsSuccessful)
+	})
+
+	t.Run("Resolve all-digit project name with X-Is-Resource-Name", func(t *testing.T) {
+		ce := &commonevent.Metadata{
+			Ctx:            context.Background(),
+			Username:       "admin",
+			RequestURL:     "/api/v2.0/projects/123",
+			RequestMethod:  "PUT",
+			ResponseCode:   http.StatusOK,
+			IsResourceName: true,
+		}
+		evt := &event.Event{}
+		err := r.Resolve(ce, evt)
+		assert.NoError(t, err)
+
+		data, ok := evt.Data.(*model.CommonEvent)
+		assert.True(t, ok)
+		assert.Equal(t, "test-proj", data.ResourceName)
+		// The segment must be resolved as a project *name*, not ID 123.
+		mockCtrl.AssertCalled(t, "Get", mock.Anything, "123")
 	})
 }

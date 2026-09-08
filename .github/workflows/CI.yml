@@ -53,17 +53,17 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
          path: src/github.com/goharbor/harbor
       - name: Set up Go 1.26
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
            go-version: 1.26.4
            cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
       - name: Cache CI Go tools
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/go/bin
           key: ci-gotools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('src/github.com/goharbor/harbor/tests/ci/ut_install.sh') }}
@@ -107,7 +107,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -121,11 +121,11 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: 1.23.2
           cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
@@ -169,7 +169,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
       - name: upload_logs
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: db-api-harbor-logs.tar.gz
@@ -184,11 +184,11 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: 1.23.2
           cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
@@ -233,7 +233,7 @@ jobs:
           df -h
       - name: upload_logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: proxy-api-harbor-logs.tar.gz
           path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -246,11 +246,11 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: 1.23.2
           cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
@@ -293,7 +293,7 @@ jobs:
           df -h
       - name: upload_logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ldap-api-harbor-logs.tar.gz
           path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -306,11 +306,11 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
       - name: Set up Go 1.23
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: 1.23.2
           cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
@@ -359,10 +359,10 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: src/github.com/goharbor/harbor
       - name: script
@@ -373,7 +373,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

@@ -76,16 +76,16 @@ func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
-		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule parameter cannot be empty"))
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
-		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
+		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should be provided"))
 	}
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_event_types should provide"))
+		return errors.BadRequestError(fmt.Errorf("include_event_types should be provided"))
 	}
 	return nil
 }
@@ -304,16 +304,16 @@ func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
-		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule parameter cannot be empty"))
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
-		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
+		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should be provided"))
 	}
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_event_types should provide"))
+		return errors.BadRequestError(fmt.Errorf("include_event_types should be provided"))
 	}
 	return nil
 }
