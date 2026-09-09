@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -151,7 +152,40 @@ func (c *client) Ping() error {
 		return err
 	}
 	defer resp.Body.Close()
-	return nil
+	return checkRegistryPingResponse(resp, c.url)
+}
+
+// checkRegistryPingResponse rejects a /v2/ response that is positively not a registry,
+// so a non-registry endpoint isn't stored as healthy. It rejects a rendered page only:
+// requiring Docker-Distribution-Api-Version would reject OCI-only registries that never
+// set it, and rejecting any non-JSON body would catch a sniffed Content-Type.
+func checkRegistryPingResponse(resp *http.Response, url string) error {
+	mediaType, isPage := isRenderedPage(resp)
+	if !isPage {
+		return nil
+	}
+	// an empty body carries no signal even with a page content type
+	if resp.ContentLength == 0 {
+		return nil
+	}
+
+	return errors.New(nil).WithCode(errors.BadRequestCode).
+		WithMessagef("%s is not a registry v2 endpoint: /v2/ returned a %q page", url, mediaType)
+}
+
+// isRenderedPage reports whether a response carries a web page, which a registry
+// returns neither for /v2/ nor for a blob.
+func isRenderedPage(resp *http.Response) (string, bool) {
+	mediaType, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil {
+		return "", false
+	}
+	switch mediaType {
+	case "text/html", "application/xhtml+xml":
+		return mediaType, true
+	}
+
+	return "", false
 }
 
 func (c *client) Catalog() ([]string, error) {
@@ -370,6 +404,13 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 		return 0, nil, err
 	}
 
+	// Fail before the caller commits a response downstream.
+	if mediaType, bad := isRenderedPage(resp); bad {
+		defer resp.Body.Close()
+		return 0, nil, errors.New(nil).WithCode(errors.BadGatewayCode).
+			WithMessagef("%s returned a %q body instead of blob %s in repository %s", c.url, mediaType, digest, repository)
+	}
+
 	var size int64
 	n := resp.Header.Get("Content-Length")
 	// no content-length is acceptable, which can taken from manifests
@@ -396,6 +437,13 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 	resp, err := c.do(req)
 	if err != nil {
 		return 0, nil, err
+	}
+
+	// Same guard as PullBlob: a ranged read of a blob is never a web page.
+	if mediaType, bad := isRenderedPage(resp); bad {
+		defer resp.Body.Close()
+		return 0, nil, errors.New(nil).WithCode(errors.BadGatewayCode).
+			WithMessagef("%s returned a %q body instead of blob %s in repository %s", c.url, mediaType, digest, repository)
 	}
 
 	var size int64
