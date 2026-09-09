@@ -70,7 +70,7 @@ func TestUnmarshalJSONWithACCUnknownType(t *testing.T) {
 	var artifact []Artifact
 	err := json.Unmarshal(data, &artifact)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "accessory type  not support")
+	assert.Contains(t, err.Error(), `unsupported accessory type ""`)
 }
 
 func TestUnmarshalJSONWithoutACC(t *testing.T) {

@@ -54,6 +54,21 @@ func ParseEndpoint(endpoint string) (*url.URL, error) {
 	return url.ParseRequestURI(endpoint)
 }
 
+// EqualURL checks whether two URLs are equal, with case-insensitive host matching per RFC 1035.
+func EqualURL(rawURL1, rawURL2 string) bool {
+	if rawURL1 == rawURL2 {
+		return true
+	}
+	u1, err1 := url.Parse(rawURL1)
+	u2, err2 := url.Parse(rawURL2)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	u1.Host = strings.ToLower(u1.Host)
+	u2.Host = strings.ToLower(u2.Host)
+	return u1.String() == u2.String()
+}
+
 // ParseRepository splits a repository into two parts: project and rest
 func ParseRepository(repository string) (project, rest string) {
 	repository = strings.TrimLeft(repository, "/")
@@ -66,19 +81,33 @@ func ParseRepository(repository string) (project, rest string) {
 	return
 }
 
-// GenerateRandomStringWithLen generates a random string with length
-func GenerateRandomStringWithLen(length int) string {
+// GenerateRandomStringWithLenAndError generates a random string with length or returns an error if entropy cannot be read
+func GenerateRandomStringWithLenAndError(length int) (string, error) {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	l := len(chars)
 	result := make([]byte, length)
 	_, err := rand.Read(result)
 	if err != nil {
-		log.Warningf("Error reading random bytes: %v", err)
+		return "", fmt.Errorf("failed to read random bytes: %w", err)
 	}
 	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
-	return string(result)
+	return string(result), nil
+}
+
+// GenerateRandomStringOrError generates a random string with 32 byte length or returns an error if entropy cannot be read
+func GenerateRandomStringOrError() (string, error) {
+	return GenerateRandomStringWithLenAndError(32)
+}
+
+// GenerateRandomStringWithLen generates a random string with length
+func GenerateRandomStringWithLen(length int) string {
+	str, err := GenerateRandomStringWithLenAndError(length)
+	if err != nil {
+		log.Warningf("Error reading random bytes: %v", err)
+	}
+	return str
 }
 
 // GenerateRandomString generate a random string with 32 byte length
