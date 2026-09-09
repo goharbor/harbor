@@ -32,7 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnai"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/sbom"
-	_ "github.com/goharbor/harbor/src/controller/artifact/processor/vex"
+	_ "github.com/goharbor/harbor/src/controller/artifact/processor/vex" // Register the VEX artifact processor.
 	"github.com/goharbor/harbor/src/controller/artifact/processor/wasm"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/project"

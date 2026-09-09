@@ -1083,6 +1083,8 @@
         "NO_README": "Nenhum arquivo de README fornecido por esse chart.",
         "NO_LICENSE": "Nenhum arquivo LICENSE é fornecido para este modelo.",
         "NO_FILES": "Nenhum arquivo fornecido para este modelo.",
+        "NO_VEX": "Nenhum documento VEX fornecido para este artefato.",
+        "DOWNLOAD_VEX": "Baixar VEX",
         "MODEL_NO_README": "Não há arquivo README fornecido para este modelo.",
         "FILE_TOO_LARGE": "O arquivo é muito grande para ser processado.",
         "ITEMS": "itens",

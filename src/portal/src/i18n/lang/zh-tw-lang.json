@@ -1081,6 +1081,8 @@
         "NO_README": "此 Chart 未提供 README 檔案。",
         "NO_LICENSE": "此模型未提供授權檔案。",
         "NO_FILES": "此模型未提供檔案。",
+        "NO_VEX": "此模型未提供 VEX 檔案。",
+        "DOWNLOAD_VEX": "下載 VEX",
         "MODEL_NO_README": "此模型未提供 README 檔案。",
         "FILE_TOO_LARGE": "檔案過大，無法處理。",
         "ITEMS": "項",

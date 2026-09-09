@@ -1080,6 +1080,8 @@
         "NO_README": "Kein Readme für dieses Chart verfügbar.",
         "NO_LICENSE": "Kein License für dieses Model verfügbar.",
         "NO_FILES": "Kein für dieses Model verfügbar.",
+        "NO_VEX": "Kein VEX-Dokument für dieses Artefakt bereitgestellt.",
+        "DOWNLOAD_VEX": "VEX herunterladen",
         "MODEL_NO_README": "Kein Readme für dieses Model verfügbar.",
         "FILE_TOO_LARGE": "Die Datei ist zu groß, um verarbeitet zu werden.",
         "ITEMS": "Einträge",
