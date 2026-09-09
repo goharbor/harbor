@@ -9,13 +9,13 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgoharbor%2Fharbor?ref=badge_shield)
 [![Helm Chart on Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/harbor)](https://artifacthub.io/packages/helm/harbor/harbor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/goharbor/harbor/badge)](https://scorecard.dev/viewer/?uri=github.com/goharbor/harbor)
-</br>
+<br>
 
 |![notification](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
-</br> </br>
+<br><br>
 
 **Note**: The `main` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `main` branch in order to get a stable set of binaries.
@@ -36,7 +36,6 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management, and supports importing LDAP groups into Harbor that can then be given permissions to specific projects.
 * **OIDC support**: Harbor leverages OpenID Connect (OIDC) to verify the identity of users authenticated by an external authorization server or identity provider. Single sign-on can be enabled to log into the Harbor portal.
 * **Image deletion & garbage collection**: System administrators can run garbage collection jobs so that images (dangling manifests and unreferenced blobs) can be deleted and their space can be freed up periodically.
-* **Notary**: Support signing container images using Docker Content Trust (leveraging Notary) for guaranteeing authenticity and provenance.  In addition, policies that prevent unsigned images from being deployed can also be activated.
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
@@ -54,7 +53,7 @@ For learning the architecture design of Harbor, check the document [Architecture
 ## Install & Run
 **System requirements:**
 
-**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+ .
+**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+.
 
 Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
@@ -118,9 +117,9 @@ A third party security audit was performed by Cure53 in October 2019. You can se
 
 ### Reporting security vulnerabilities
 
-If you've found a security related issue, a vulnerability, or a potential vulnerability in Harbor please let the [Harbor Security Team](mailto:cncf-harbor-security@lists.cncf.io) know with the details of the vulnerability. We'll send a confirmation
-email to acknowledge your report, and we'll send an additional email when we've identified the issue
-positively or negatively.
+If you've found a security related issue, a vulnerability, or a potential vulnerability in Harbor, do not file a public issue. Report it privately via [GitHub private vulnerability reporting](https://github.com/goharbor/harbor/security/advisories/new): open the
+[Security tab](https://github.com/goharbor/harbor/security) and click **Report a vulnerability**. The Harbor Security Team will acknowledge your report, and will follow up in the advisory
+thread once we've identified the issue positively or negatively.
 
 For further details please see our complete [security release process](SECURITY.md).
 

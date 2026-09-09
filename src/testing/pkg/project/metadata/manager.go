@@ -5,6 +5,7 @@ package metadata
 import (
 	context "context"
 
+	metadata "github.com/goharbor/harbor/src/pkg/project/metadata"
 	models "github.com/goharbor/harbor/src/pkg/project/metadata/models"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -135,6 +136,24 @@ func (_m *Manager) Update(ctx context.Context, projectID int64, meta map[string]
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, int64, map[string]string) error); ok {
 		r0 = rf(ctx, projectID, meta)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateWithValidation provides a mock function with given fields: ctx, projectID, meta, validate
+func (_m *Manager) UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate metadata.Validator) error {
+	ret := _m.Called(ctx, projectID, meta, validate)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateWithValidation")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, map[string]string, metadata.Validator) error); ok {
+		r0 = rf(ctx, projectID, meta, validate)
 	} else {
 		r0 = ret.Error(0)
 	}
