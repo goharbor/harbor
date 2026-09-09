@@ -83,7 +83,7 @@ func (s *preheatSuite) SetupSuite() {
 	}, nil)
 	s.fakeInstanceMgr.On("Save", mock.Anything, mock.Anything).Return(int64(1), nil)
 	s.fakeInstanceMgr.On("Count", mock.Anything, &q.Query{Keywords: map[string]any{
-		"endpoint": "http://localhost",
+		"endpoint__iexact": "http://localhost",
 	}}).Return(int64(1), nil)
 	s.fakeInstanceMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
 	s.fakeInstanceMgr.On("Delete", mock.Anything, int64(1)).Return(nil)

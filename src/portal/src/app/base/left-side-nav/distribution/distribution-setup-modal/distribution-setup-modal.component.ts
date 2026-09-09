@@ -142,10 +142,13 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
                     debounceTime(500),
                     distinctUntilChanged(),
                     filter(endpoint => {
+                        const normalize = (u: string) =>
+                            (u || '').trim().toLowerCase();
                         if (
                             this.editingMode &&
                             this.originModelForEdit &&
-                            this.originModelForEdit.endpoint === endpoint
+                            normalize(this.originModelForEdit.endpoint) ===
+                                normalize(endpoint)
                         ) {
                             return false;
                         }
@@ -442,7 +445,11 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
             ) {
                 return true;
             }
-            if (this.model.endpoint !== this.originModelForEdit.endpoint) {
+            const normalize = (u: string) => (u || '').trim().toLowerCase();
+            if (
+                normalize(this.model.endpoint) !==
+                normalize(this.originModelForEdit.endpoint)
+            ) {
                 return true;
             }
             // eslint-disable-next-line eqeqeq

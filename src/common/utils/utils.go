@@ -43,15 +43,20 @@ func ParseEndpoint(endpoint string) (*url.URL, error) {
 	}
 	i := strings.Index(endpoint, "://")
 	if i >= 0 {
-		scheme := endpoint[:i]
+		scheme := strings.ToLower(endpoint[:i])
 		if scheme != "http" && scheme != "https" {
-			return nil, fmt.Errorf("invalid scheme: %s", scheme)
+			return nil, fmt.Errorf("invalid scheme: %s", endpoint[:i])
 		}
+		endpoint = scheme + endpoint[i:]
 	} else {
 		endpoint = "http://" + endpoint
 	}
 
-	return url.ParseRequestURI(endpoint)
+	u, err := url.ParseRequestURI(endpoint)
+	if err == nil && u != nil {
+		u.Host = strings.ToLower(u.Host)
+	}
+	return u, err
 }
 
 // EqualURL checks whether two URLs are equal, with case-insensitive host matching per RFC 1035.
@@ -64,6 +69,8 @@ func EqualURL(rawURL1, rawURL2 string) bool {
 	if err1 != nil || err2 != nil {
 		return false
 	}
+	u1.Scheme = strings.ToLower(u1.Scheme)
+	u2.Scheme = strings.ToLower(u2.Scheme)
 	u1.Host = strings.ToLower(u1.Host)
 	u2.Host = strings.ToLower(u2.Host)
 	return u1.String() == u2.String()

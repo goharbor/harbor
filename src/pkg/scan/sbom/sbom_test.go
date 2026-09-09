@@ -191,6 +191,21 @@ func (suite *SBOMTestSuite) TestPostScan() {
 	accessory, err := suite.handler.PostScan(ctx, req, nil, rawReport, startTime, robot)
 	suite.Require().NoError(err)
 	suite.Require().NotEmpty(accessory)
+
+	// test mixed-case scheme
+	reqMixed := &v1.ScanRequest{
+		Registry: &v1.Registry{
+			URL: "HTTP://myregistry.example.com",
+		},
+		Artifact: &v1.Artifact{
+			Repository: "library/nosql",
+		},
+	}
+	accessory, err = suite.handler.PostScan(ctx, reqMixed, nil, rawReport, startTime, robot)
+	suite.Require().NoError(err)
+	suite.Require().NotEmpty(accessory)
+	suite.True(reqMixed.Registry.Insecure)
+	suite.Equal("myregistry.example.com", reqMixed.Registry.URL)
 }
 
 func (suite *SBOMTestSuite) TestMakeReportPlaceHolder() {

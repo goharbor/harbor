@@ -36,6 +36,8 @@ func TestParseEndpoint(t *testing.T) {
 		{" example.com/ ", false, "http://example.com"},
 		{"ftp://example.com", true, ""},
 		{"http://example.com", false, "http://example.com"},
+		{"HTTP://EXAMPLE.COM", false, "http://example.com"},
+		{"HTTPS://Example.COM:8080/path", false, "https://example.com:8080/path"},
 		{"https://example.com", false, "https://example.com"},
 		{"http://example!@#!?//#", true, ""},
 	}
@@ -61,6 +63,8 @@ func TestEqualURL(t *testing.T) {
 		{"http://EXAMPLE.COM:8080/v2", "http://example.com:8080/v2", true},
 		{"http://example.com:8080/V2", "http://example.com:8080/v2", false},
 		{"https://core:8080", "https://CORE:8080", true},
+		{"HTTP://core:8080", "http://CORE:8080", true},
+		{"HTTP://EXAMPLE.COM", "http://example.com", true},
 		{"http://example.com", "https://example.com", false},
 		{"http://example.com:8080", "http://example.com:8081", false},
 		{"http://example.com/foo", "http://example.com/bar", false},

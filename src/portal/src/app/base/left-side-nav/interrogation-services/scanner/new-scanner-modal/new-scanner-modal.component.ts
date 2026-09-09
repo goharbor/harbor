@@ -212,9 +212,12 @@ export class NewScannerModalComponent {
         ) {
             return true;
         }
+        const normalize = (u: string) => (u || '').trim().toLowerCase();
         if (
-            this.originValue.url !==
-            this.newScannerFormComponent.newScannerForm.get('url').value
+            normalize(this.originValue.url) !==
+            normalize(
+                this.newScannerFormComponent.newScannerForm.get('url').value
+            )
         ) {
             return true;
         }

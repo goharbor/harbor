@@ -137,10 +137,13 @@ export class NewScannerFormComponent implements AfterViewInit, OnDestroy {
                     debounceTime(800),
                     distinctUntilChanged(),
                     filter(endpointUrl => {
+                        const normalize = (u: string) =>
+                            (u || '').trim().toLowerCase();
                         if (
                             this.isEdit &&
                             this.originValue &&
-                            this.originValue.url === endpointUrl
+                            normalize(this.originValue.url) ===
+                                normalize(endpointUrl)
                         ) {
                             return false;
                         }
@@ -166,10 +169,14 @@ export class NewScannerFormComponent implements AfterViewInit, OnDestroy {
                 .subscribe(
                     response => {
                         if (response && response.length > 0) {
+                            const normalize = (u: string) =>
+                                (u || '').trim().toLowerCase();
                             response.forEach(s => {
                                 if (
-                                    s.url ===
-                                    this.newScannerForm.get('url').value
+                                    normalize(s.url) ===
+                                    normalize(
+                                        this.newScannerForm.get('url').value
+                                    )
                                 ) {
                                     this.isEndpointUrlExisting = true;
                                     return;
