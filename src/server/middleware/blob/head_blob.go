@@ -55,7 +55,13 @@ func handleHead(req *http.Request) error {
 	}
 
 	switch bb.Status {
-	case blob_models.StatusNone, blob_models.StatusDelete:
+	case blob_models.StatusNone:
+		if err := touchIfDue(req, bb); err != nil {
+			return err
+		}
+	case blob_models.StatusDelete:
+		// Rescue the blob from GC candidacy: this status transition must
+		// always be written.
 		if err := blob.Ctl.Touch(req.Context(), bb); err != nil {
 			log.Errorf("failed to update blob: %s status to StatusNone, error:%v", blobInfo.Digest, err)
 			return errors.Wrapf(err, "the request id is: %s", req.Header.Get(requestid.HeaderXRequestID))
