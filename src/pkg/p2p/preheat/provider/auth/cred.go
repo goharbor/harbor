@@ -45,3 +45,8 @@ func (c *Credential) String() string {
 	}
 	return fmt.Sprintf("{Mode:%s Data:<redacted>}", c.Mode)
 }
+
+// GoString prevents Go-syntax formatting from exposing credential data.
+func (c *Credential) GoString() string {
+	return c.String()
+}
