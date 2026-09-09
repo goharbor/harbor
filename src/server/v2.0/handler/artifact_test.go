@@ -297,7 +297,7 @@ func (suite *ArtifactTestSuite) TestGetArtifactInheritedAccessories() {
 }
 
 func (suite *ArtifactTestSuite) TestListArtifacts() {
-	times := 2
+	times := 3
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("IsSysAdmin").Return(true).Times(times)
 	mock.OnAnything(suite.Security, "Can").Return(true).Times(times)
@@ -335,6 +335,22 @@ func (suite *ArtifactTestSuite) TestListArtifacts() {
 		suite.Equal(200, res.StatusCode)
 		suite.Empty(body)
 		suite.Equal("0", res.Header.Get("X-Total-Count"))
+	}
+
+	{
+		// any other lookup failure is propagated, not turned into a 404 or an empty list
+		suite.repoCtl.On("GetByName", mock.Anything, "library/photon").
+			Return(nil, errors.New("database unavailable")).Once()
+
+		res, err := suite.Get(url)
+		suite.NoError(err)
+		suite.Equal(500, res.StatusCode)
+		var body map[string]any
+		suite.NoError(json.NewDecoder(res.Body).Decode(&body))
+		errs, ok := body["errors"].([]any)
+		suite.Require().True(ok)
+		suite.Require().Len(errs, 1)
+		suite.Equal(errors.GeneralCode, errs[0].(map[string]any)["code"])
 	}
 }
 
