@@ -61,3 +61,15 @@ func TestGetHarborClient(t *testing.T) {
 		assert.Equal(t, client, newClient)
 	}
 }
+
+func TestGetRedisPool_InvalidURLDoesNotLeakPassword(t *testing.T) {
+	_, err := GetRedisPool("test-pool", "redis://:secret_pwd@invalid:port:fail", nil)
+	assert.Error(t, err)
+	assert.NotContains(t, err.Error(), "secret_pwd")
+}
+
+func TestGetRedisPool_SentinelMissingMasterDoesNotLeakPassword(t *testing.T) {
+	_, err := GetRedisPool("sentinel-pool", "redis+sentinel://:secret_pwd@127.0.0.1:26379", nil)
+	assert.Error(t, err)
+	assert.NotContains(t, err.Error(), "secret_pwd")
+}

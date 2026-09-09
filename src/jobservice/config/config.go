@@ -174,7 +174,10 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		redisAddress := c.PoolConfig.RedisPoolCfg.RedisURL
 		if !utils.IsEmptyStr(redisAddress) {
 			if _, err := url.Parse(redisAddress); err != nil {
-				return fmt.Errorf("bad redis url for jobservice, %s", redisAddress)
+				if urlErr, ok := err.(*url.Error); ok {
+					err = urlErr.Err
+				}
+				return fmt.Errorf("bad redis url for jobservice: %w", err)
 			}
 			if !strings.Contains(redisAddress, "://") {
 				c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
