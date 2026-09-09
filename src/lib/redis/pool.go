@@ -59,10 +59,7 @@ func GetRedisPool(name string, rawurl string, param *PoolParam) (*redis.Pool, er
 
 	u, err := url.Parse(rawurl)
 	if err != nil {
-		if urlErr, ok := err.(*url.Error); ok {
-			err = urlErr.Err
-		}
-		return nil, fmt.Errorf("bad redis url for %s: %w", name, err)
+		return nil, fmt.Errorf("bad redis url for %s", name)
 	}
 
 	if param == nil {

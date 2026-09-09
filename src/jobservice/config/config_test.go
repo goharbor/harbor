@@ -40,11 +40,19 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingFailed() {
 }
 
 func (suite *ConfigurationTestSuite) TestConfigLoadingInvalidRedisURLDoesNotLeakPassword() {
-	suite.T().Setenv("JOB_SERVICE_POOL_REDIS_URL", "redis://:secret_pwd@invalid:port:fail")
-	cfg := &Configuration{}
-	err := cfg.Load("../config_test.yml", true)
-	require.Error(suite.T(), err)
-	assert.NotContains(suite.T(), err.Error(), "secret_pwd")
+	testCases := []string{
+		"redis://:secret_pwd@invalid:port:fail",
+		"redis://:%zz@localhost",
+		"redis://:secret_%zz_pwd@localhost",
+	}
+	for _, tc := range testCases {
+		suite.T().Setenv("JOB_SERVICE_POOL_REDIS_URL", tc)
+		cfg := &Configuration{}
+		err := cfg.Load("../config_test.yml", true)
+		require.Error(suite.T(), err)
+		assert.NotContains(suite.T(), err.Error(), "secret")
+		assert.NotContains(suite.T(), err.Error(), "%zz")
+	}
 }
 
 // TestConfigLoadingSucceed ...
