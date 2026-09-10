@@ -36,11 +36,11 @@ func Handle(ctx context.Context, event *Event) error {
 		len(event.Resource.Metadata.Artifacts) == 0 {
 		return errors.New("invalid event")
 	}
-	var policies []*repctlmodel.Policy
+	var matches []*policyMatch
 	var err error
 	switch event.Type {
 	case EventTypeArtifactPush, EventTypeTagDelete, EventTypeArtifactDelete:
-		policies, err = getRelatedPolicies(ctx, event.Resource)
+		matches, err = getRelatedPolicies(ctx, event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)
 	}
@@ -48,7 +48,7 @@ func Handle(ctx context.Context, event *Event) error {
 		return err
 	}
 
-	if len(policies) == 0 {
+	if len(matches) == 0 {
 		log.Debugf("no policy found for the event %v, do nothing", event)
 		return nil
 	}
@@ -57,8 +57,8 @@ func Handle(ctx context.Context, event *Event) error {
 		ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
 	}
 
-	for _, policy := range policies {
-		id, err := replication.Ctl.Start(ctx, policy, event.Resource, task.ExecutionTriggerEvent)
+	for _, match := range matches {
+		id, err := replication.Ctl.Start(ctx, match.policy, match.resource, task.ExecutionTriggerEvent)
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,12 @@ func Handle(ctx context.Context, event *Event) error {
 	return nil
 }
 
-func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repctlmodel.Policy, error) {
+type policyMatch struct {
+	policy   *repctlmodel.Policy
+	resource *model.Resource
+}
+
+func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*policyMatch, error) {
 	// Only query enabled event-based replication policies here, so the loop below
 	// doesn't need to check policy.Enabled or policy.Trigger.Type again.
 	policies, err := replication.Ctl.ListPolicies(ctx, q.New(q.KeyWords{
@@ -77,7 +82,7 @@ func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repct
 	if err != nil {
 		return nil, err
 	}
-	result := []*repctlmodel.Policy{}
+	result := []*policyMatch{}
 	for _, policy := range policies {
 		// currently, the events are produced only by local Harbor,
 		// so they should only apply to the policies whose source registry is local Harbor
@@ -98,7 +103,7 @@ func getRelatedPolicies(ctx context.Context, resource *model.Resource) ([]*repct
 			continue
 		}
 
-		result = append(result, policy)
+		result = append(result, &policyMatch{policy: policy, resource: resources[0]})
 	}
 	return result, nil
 }

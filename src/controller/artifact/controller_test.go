@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/artifact/processor/chart"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/cnab"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -37,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/blob/models"
 	"github.com/goharbor/harbor/src/pkg/label/model"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	projectModel "github.com/goharbor/harbor/src/pkg/project/models"
 	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -829,6 +831,62 @@ func (c *controllerTestSuite) TestCopy() {
 	c.accMgr.On("Ensure", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)
+}
+
+func (c *controllerTestSuite) TestCopyReplicatesAllTags() {
+	c.artMgr.On("Get", mock.Anything, mock.Anything).Return(&artifact.Artifact{
+		ID:     1,
+		Digest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+	}, nil)
+	c.proCtl.On("GetByName", mock.Anything, mock.Anything).Return(&projectModel.Project{ProjectID: 1, Name: "library", RegistryID: 0}, nil)
+	c.repoMgr.On("GetByName", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
+		RepositoryID: 1,
+		Name:         "library/hello-world",
+	}, nil)
+	c.repoMgr.On("Touch", mock.Anything, mock.Anything).Return(nil)
+	c.artMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil)
+	c.artMgr.On("GetByDigest", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.NotFoundError(nil))
+	c.tagCtl.On("List").Return([]*tag.Tag{
+		{
+			Tag: model_tag.Tag{
+				ID:   1,
+				Name: "1.0.11",
+			},
+		},
+		{
+			Tag: model_tag.Tag{
+				ID:   2,
+				Name: "1.0.3",
+			},
+		},
+	}, nil)
+	c.accMgr.On("List", mock.Anything, mock.Anything).Return([]accessorymodel.Accessory{}, nil)
+	c.tagCtl.On("Update").Return(nil)
+	c.repoMgr.On("Get", mock.Anything, mock.Anything).Return(&repomodel.RepoRecord{
+		RepositoryID: 1,
+		Name:         "library/hello-world",
+	}, nil)
+	c.abstractor.On("AbstractMetadata").Return(nil)
+	c.artMgr.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	c.regCli.On("Copy", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	c.tagCtl.On("Ensure").Return(int64(1), nil)
+
+	eveCtx := notification.NewEventCtx()
+	ctx := notification.NewContext(orm.NewContext(nil, &ormtesting.FakeOrmer{}), eveCtx)
+	_, err := c.ctl.Copy(ctx, "library/hello-world", "1.0.3", "library/hello-world2")
+	c.Require().Nil(err)
+
+	var pushEvent *metadata.PushArtifactEventMetadata
+	for e := eveCtx.Events.Front(); e != nil; e = e.Next() {
+		if m, ok := e.Value.(*metadata.PushArtifactEventMetadata); ok {
+			pushEvent = m
+			break
+		}
+	}
+	c.Require().NotNil(pushEvent, "no push event was fired")
+	c.Require().Len(pushEvent.Tags, 2)
+	c.Equal("1.0.3", pushEvent.Tags[0])
+	c.Equal("1.0.11", pushEvent.Tags[1])
 }
 
 func (c *controllerTestSuite) TestUpdatePullTime() {
