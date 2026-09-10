@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
@@ -178,6 +179,13 @@ func (c *controller) CreateInstance(ctx context.Context, instance *providerModel
 		return 0, errors.New("nil instance object provided")
 	}
 
+	// Normalize endpoint host via NormalizeAndValidateHTTPURL before checking duplicate
+	normEndpoint, err := lib.NormalizeAndValidateHTTPURL(instance.Endpoint)
+	if err != nil {
+		return 0, err
+	}
+	instance.Endpoint = normEndpoint
+
 	// Avoid duplicated endpoint
 	var query = &q.Query{
 		Keywords: map[string]any{
@@ -253,6 +261,14 @@ func (c *controller) UpdateInstance(ctx context.Context, instance *providerModel
 	// vendor type does not support change
 	if oldIns.Vendor != instance.Vendor {
 		return errors.Errorf("provider [%s] vendor cannot be changed", oldIns.Name)
+	}
+
+	if instance.Endpoint != "" {
+		normEndpoint, err := lib.NormalizeAndValidateHTTPURL(instance.Endpoint)
+		if err != nil {
+			return err
+		}
+		instance.Endpoint = normEndpoint
 	}
 
 	return c.iManager.Update(ctx, instance, properties...)
