@@ -495,6 +495,16 @@ func (suite *TestReportConverterSuite) TestGenericVulnReportSummaryAfterConversi
 	assert.Equal(suite.T(), 1, sevMapping[vuln.Medium])
 }
 
+// recordIDs returns the vulnerability record ids of the given records, so report associations
+// are compared by identity rather than by count.
+func recordIDs(records []*scan.VulnerabilityRecord) []int64 {
+	ids := make([]int64, 0, len(records))
+	for _, r := range records {
+		ids = append(ids, r.ID)
+	}
+	return ids
+}
+
 // TestConvertEmptyReportKeepsLastResult verifies that an empty raw report is rejected before any
 // database write, so the previous scan result on the reused report row stays intact.
 func (suite *TestReportConverterSuite) TestConvertEmptyReportKeepsLastResult() {
@@ -532,7 +542,7 @@ func (suite *TestReportConverterSuite) TestConvertEmptyReportKeepsLastResult() {
 
 	after, err := suite.vulnerabilityRecordDao.GetForReport(ctx, rp.UUID)
 	require.NoError(suite.T(), err)
-	assert.Len(suite.T(), after, len(before), "vulnerability associations must survive an empty report")
+	assert.ElementsMatch(suite.T(), recordIDs(before), recordIDs(after), "vulnerability associations must survive an empty report")
 
 	rptsAfter, err := suite.reportDao.List(ctx, q.New(q.KeyWords{"UUID": rp.UUID}))
 	require.NoError(suite.T(), err)
