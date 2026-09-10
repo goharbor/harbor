@@ -147,6 +147,13 @@ func (s *preheatSuite) TestCreateInstance() {
 	s.Equal(ErrorConflict, err)
 	s.Empty(id)
 
+	// Case: instance with mixed-case already existed endpoint, expect conflict.
+	id, err = s.controller.CreateInstance(s.ctx, &providerModel.Instance{
+		Endpoint: "http://LOCALHOST",
+	})
+	s.Equal(ErrorConflict, err)
+	s.Empty(id)
+
 	// Case: instance with invalid provider, expect error.
 	id, err = s.controller.CreateInstance(s.ctx, &providerModel.Instance{
 		Endpoint: "http://foo.bar",
