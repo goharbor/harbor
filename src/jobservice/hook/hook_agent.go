@@ -25,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -150,7 +151,16 @@ func (ba *basicAgent) retry(evt *Event) {
 			}
 		}
 
-		return ba.client.SendEvent(evt)
+		err = ba.client.SendEvent(evt)
+		if errs.IsObjectNotFoundError(err) {
+			// The subscribed target (e.g. the task) no longer exists, so the
+			// event can never be delivered. Stop retrying to avoid unbounded
+			// error volume from the Reaper's hourly re-fire loop.
+			logger.Infof("Hook event is abandoned as the target no longer exists: %s->%s", evt.Message, evt.URL)
+			return nil
+		}
+
+		return err
 	}, bf, func(e error, d time.Duration) {
 		logger.Errorf("Retry: sending hook event error: %s, evt=%s->%s, duration=%v", e.Error(), evt.Message, evt.URL, d)
 	})
