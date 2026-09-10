@@ -121,6 +121,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     selectedUnit: string = BandwidthUnit.KB;
     copySpeedUnit: string = BandwidthUnit.KB;
     showChunkOption: boolean = false;
+    showCreateRepoOption: boolean = false;
     stringForLabelFilter: string = '';
     copyStringForLabelFilter: string = '';
     constructor(
@@ -338,6 +339,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             speed: -1,
             copy_by_chunk: false,
             single_active_replication: false,
+            create_repo_if_not_exist: true,
         });
     }
 
@@ -372,6 +374,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             speed: -1,
             copy_by_chunk: false,
             single_active_replication: false,
+            create_repo_if_not_exist: true,
         });
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
@@ -416,6 +419,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 speed: speed,
                 copy_by_chunk: rule.copy_by_chunk,
                 single_active_replication: rule.single_active_replication,
+                create_repo_if_not_exist:
+                    rule.adapter_options?.['skip_repo_creation'] !== 'true',
             });
             let filtersArray = this.getFilterArray(rule);
             this.noSelectedEndpoint = false;
@@ -570,6 +575,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             delete copyRuleForm?.copy_by_chunk;
             delete this.ruleForm?.value?.copy_by_chunk;
         }
+        // Translate the ECR-only "create repo if not exists" checkbox into
+        // the generic adapter_options map that the backend expects; this
+        // field is adapter-specific and shouldn't be sent as a top-level key.
+        if (this.showCreateRepoOption) {
+            copyRuleForm.adapter_options = {
+                ...(copyRuleForm.adapter_options || {}),
+                skip_repo_creation: (
+                    !copyRuleForm['create_repo_if_not_exist']
+                ).toString(),
+            };
+        }
+        delete copyRuleForm['create_repo_if_not_exist'];
+        delete this.ruleForm?.value?.create_repo_if_not_exist;
 
         if (this.policyId < 0) {
             this.repService.createReplicationRule(copyRuleForm).subscribe(
@@ -904,14 +922,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     checkChunkOption(id: number, info?: RegistryInfo) {
         this.showChunkOption = false;
+        this.showCreateRepoOption = false;
         this.ruleForm.get('copy_by_chunk').reset(false);
+        this.ruleForm.get('create_repo_if_not_exist').reset(true);
         if (info) {
             this.showChunkOption = info.supported_copy_by_chunk;
+            this.showCreateRepoOption = info.supported_create_repo_config;
         } else {
             if (id) {
                 this.endpointService.getRegistryInfo({ id }).subscribe(res => {
                     if (res) {
                         this.showChunkOption = res.supported_copy_by_chunk;
+                        this.showCreateRepoOption =
+                            res.supported_create_repo_config;
                     }
                 });
             }

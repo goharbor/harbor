@@ -48,6 +48,24 @@ type Policy struct {
 	Speed                     int32           `json:"speed"`
 	CopyByChunk               bool            `json:"copy_by_chunk"`
 	SingleActiveReplication   bool            `json:"single_active_replication"`
+	// AdapterOptions is a generic key/value bag for adapter-specific settings.
+	// Each adapter interprets only the keys it understands; unknown keys are
+	// ignored. e.g. the AWS ECR adapter reads "skip_repo_creation" to decide
+	// whether to pre-create the destination repository before pushing (so ECR
+	// repository creation templates, which only apply when ECR creates the repo
+	// itself, can take effect).
+	AdapterOptions map[string]string `json:"adapter_options,omitempty"`
+}
+
+// AdapterOption returns the value of the given adapter-specific option key and
+// whether it was set. Callers should treat a missing key as "use the default"
+// rather than assuming any particular value.
+func (p *Policy) AdapterOption(key string) (string, bool) {
+	if p.AdapterOptions == nil {
+		return "", false
+	}
+	v, ok := p.AdapterOptions[key]
+	return v, ok
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled
@@ -144,6 +162,13 @@ func (p *Policy) From(policy *replicationmodel.Policy) error {
 	p.CopyByChunk = policy.CopyByChunk
 	p.SingleActiveReplication = policy.SingleActiveReplication
 
+	// parse AdapterOptions
+	adapterOptions, err := parseAdapterOptions(policy.AdapterOptions)
+	if err != nil {
+		return err
+	}
+	p.AdapterOptions = adapterOptions
+
 	if policy.SrcRegistryID > 0 {
 		p.SrcRegistry = &model.Registry{
 			ID: policy.SrcRegistryID,
@@ -213,6 +238,14 @@ func (p *Policy) To() (*replicationmodel.Policy, error) {
 		policy.Filters = string(filters)
 	}
 
+	if len(p.AdapterOptions) > 0 {
+		adapterOptions, err := json.Marshal(p.AdapterOptions)
+		if err != nil {
+			return nil, err
+		}
+		policy.AdapterOptions = string(adapterOptions)
+	}
+
 	return policy, nil
 }
 
@@ -235,6 +268,19 @@ type scheduleParam struct {
 	Type    string `json:"type"`
 	Weekday int8   `json:"weekday"`
 	Offtime int64  `json:"offtime"`
+}
+
+// parseAdapterOptions unmarshals the JSON-encoded adapter options blob stored
+// on the DAO model. An empty string means no options were set.
+func parseAdapterOptions(str string) (map[string]string, error) {
+	if len(str) == 0 {
+		return nil, nil
+	}
+	options := map[string]string{}
+	if err := json.Unmarshal([]byte(str), &options); err != nil {
+		return nil, err
+	}
+	return options, nil
 }
 
 func parseFilters(str string) ([]*model.Filter, error) {

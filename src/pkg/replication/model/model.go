@@ -44,6 +44,12 @@ type Policy struct {
 	Speed                     int32     `orm:"column(speed_kb)"`
 	CopyByChunk               bool      `orm:"column(copy_by_chunk)"`
 	SingleActiveReplication   bool      `orm:"column(single_active_replication)"`
+	// AdapterOptions is a generic JSON-encoded key/value bag for adapter-specific
+	// settings that don't warrant a dedicated column of their own. Each adapter
+	// reads only the keys it understands and ignores the rest. e.g. the AWS ECR
+	// adapter reads "skip_repo_creation" to decide whether to pre-create the
+	// destination repository before pushing.
+	AdapterOptions string `orm:"column(adapter_options)"`
 }
 
 // TableName set table name for ORM
