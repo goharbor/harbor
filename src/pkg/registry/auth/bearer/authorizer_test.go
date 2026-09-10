@@ -15,10 +15,14 @@
 package bearer
 
 import (
+	"context"
 	"fmt"
+	libcache "github.com/goharbor/harbor/src/lib/cache"
+	_ "github.com/goharbor/harbor/src/lib/cache/memory"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,4 +59,74 @@ func TestModify(t *testing.T) {
 	err = authorizer.Modify(req)
 	require.Nil(t, err)
 	assert.Equal(t, fmt.Sprintf("Bearer %s", token), req.Header.Get("Authorization"))
+}
+
+// New clients must share tokens, but credentials and repository scopes must not.
+func TestSharedTokenCache(t *testing.T) {
+	require.NoError(t, libcache.Initialize(libcache.Memory, ""))
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		fmt.Fprintf(w, `{"access_token":"token-%d","expires_in":3600}`, requests)
+	}))
+	defer server.Close()
+	newAuth := func(password string) *authorizer {
+		return NewAuthorizer(server.URL, "service", basic.NewAuthorizer("user", password), http.DefaultTransport).(*authorizer)
+	}
+	req, _ := http.NewRequest(http.MethodGet, server.URL+"/v2/repo/manifests/latest", nil)
+	require.NoError(t, newAuth("secret").Modify(req))
+	require.NoError(t, newAuth("secret").Modify(req))
+	assert.Equal(t, 1, requests)
+	assert.Equal(t, "Bearer token-1", req.Header.Get("Authorization"))
+
+	require.NoError(t, newAuth("changed").Modify(req))
+	assert.Equal(t, 2, requests)
+	other, _ := http.NewRequest(http.MethodGet, server.URL+"/v2/other/manifests/latest", nil)
+	require.NoError(t, newAuth("secret").Modify(other))
+	assert.Equal(t, 3, requests)
+
+	a := newAuth("secret")
+	a.Invalidate(req)
+	require.NoError(t, a.Modify(req))
+	assert.Equal(t, 4, requests)
+	tokenReq, err := a.tokenRequest(parseScopes(req))
+	require.NoError(t, err)
+	expired := &token{Token: "expired", ExpiresIn: 60, IssuedAt: "2000-01-01T00:00:00Z"}
+	require.NoError(t, libcache.Default().Save(context.Background(), tokenCacheKey(tokenReq), expired, time.Hour))
+	require.NoError(t, newAuth("secret").Modify(req))
+	assert.Equal(t, 5, requests)
+}
+
+func TestRejectedTokenRefresh(t *testing.T) {
+	require.NoError(t, libcache.Initialize(libcache.Memory, ""))
+	tokens, pulls := 0, 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/token" {
+			tokens++
+			fmt.Fprintf(w, `{"token":"token-%d","expires_in":3600}`, tokens)
+			return
+		}
+		pulls++
+		if r.Header.Get("Authorization") != "Bearer token-2" {
+			w.WriteHeader(http.StatusUnauthorized)
+		}
+	}))
+	defer server.Close()
+	a := NewAuthorizer(server.URL+"/token", "service", basic.NewAuthorizer("user", "secret"), http.DefaultTransport)
+	client := commonhttp.NewClient(server.Client(), a)
+	req, _ := http.NewRequest(http.MethodGet, server.URL+"/v2/repo/manifests/latest", nil)
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+	resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 2, tokens)
+	assert.Equal(t, 2, pulls)
+	// A permanently rejected token must only be retried once.
+	req, _ = http.NewRequest(http.MethodGet, server.URL+"/v2/other/manifests/latest", nil)
+	resp, err = client.Do(req)
+	require.NoError(t, err)
+	resp.Body.Close()
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	assert.Equal(t, 4, tokens)
+	assert.Equal(t, 4, pulls)
 }

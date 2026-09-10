@@ -151,3 +151,13 @@ func (a *authorizer) isTarget(req *http.Request) bool {
 	}
 	return true
 }
+
+// Invalidate forwards registry authentication failures to the bearer authorizer.
+func (a *authorizer) Invalidate(req *http.Request) {
+	if a.url == nil || !a.isTarget(req) {
+		return
+	}
+	if invalidator, ok := a.authorizer.(interface{ Invalidate(*http.Request) }); ok {
+		invalidator.Invalidate(req)
+	}
+}

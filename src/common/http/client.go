@@ -65,6 +65,27 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 		}
 	}
 
+	resp, err := c.client.Do(req)
+	if err != nil || resp.StatusCode != http.StatusUnauthorized ||
+		(req.Method != http.MethodGet && req.Method != http.MethodHead) {
+		return resp, err
+	}
+	retry := false
+	for _, m := range c.modifiers {
+		if invalidator, ok := m.(interface{ Invalidate(*http.Request) }); ok {
+			invalidator.Invalidate(req)
+			retry = true
+		}
+	}
+	if !retry {
+		return resp, nil
+	}
+	resp.Body.Close()
+	for _, m := range c.modifiers {
+		if err := m.Modify(req); err != nil {
+			return nil, err
+		}
+	}
 	return c.client.Do(req)
 }
 
