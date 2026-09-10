@@ -70,7 +70,10 @@ describe('ArtifactVEXComponent', () => {
     });
 
     it('should download the parsed object, not the pretty-printed string', () => {
-        const downloadJsonSpy = spyOn(utils, 'downloadJson');
+        const downloadJsonSpy = jasmine.createSpy('downloadJson');
+        spyOnProperty(utils, 'downloadJson', 'get').and.returnValue(
+            downloadJsonSpy
+        );
         component.download();
         expect(downloadJsonSpy).toHaveBeenCalledWith(
             { '@context': 'https://openvex.dev/ns/v0.2.0' },
