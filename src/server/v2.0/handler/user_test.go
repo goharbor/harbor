@@ -4,18 +4,139 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/security/local"
+	robotsecurity "github.com/goharbor/harbor/src/common/security/robot"
+	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/controller/user"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
+	robotmodel "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
+	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/user"
 	usertesting "github.com/goharbor/harbor/src/testing/controller/user"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
 )
+
+func TestGetUserOIDCSecret(t *testing.T) {
+	const secret = "user-oidc-cli-secret"
+	owner := local.NewSecurityContext(&commonmodels.User{UserID: 2, Username: "oidc-user"})
+	admin := local.NewSecurityContext(&commonmodels.User{UserID: 1, Username: "admin", SysAdminFlag: true})
+	readOnlyRobot := func(id int64) security.Context {
+		return robotsecurity.NewSecurityContext(&robot.Robot{
+			Robot: robotmodel.Robot{ID: id, Name: "robot$user-reader"},
+			Level: robot.LEVELSYSTEM,
+			Permissions: []*robot.Permission{{
+				Kind:  robot.LEVELSYSTEM,
+				Scope: robot.SCOPESYSTEM,
+				Access: []*types.Policy{{
+					Resource: rbac.ResourceUser,
+					Action:   rbac.ActionRead,
+					Effect:   types.EffectAllow,
+				}},
+			}},
+		})
+	}
+	tests := []struct {
+		name         string
+		caller       security.Context
+		authMode     string
+		userID       int
+		withOIDCInfo bool
+		withMeta     bool
+		wantSecret   string
+	}{
+		{"owner", owner, common.OIDCAuth, 2, true, true, secret},
+		{"other user administrator", admin, common.OIDCAuth, 2, true, true, "*****"},
+		{"system robot with user read", readOnlyRobot(10), common.OIDCAuth, 2, true, true, "*****"},
+		{"system robot with matching ID", readOnlyRobot(2), common.OIDCAuth, 2, true, true, "*****"},
+		{"missing OIDC metadata", admin, common.OIDCAuth, 2, true, false, ""},
+		{"database authentication", admin, common.DBAuth, 2, false, false, ""},
+		{"built-in administrator", admin, common.OIDCAuth, 1, false, false, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := security.NewContext(context.Background(), tt.caller)
+			us := &commonmodels.User{UserID: tt.userID, Username: "test-user", Email: "test@example.com"}
+			if tt.withMeta {
+				us.OIDCUserMeta = &commonmodels.OIDCUser{
+					ID:           7,
+					UserID:       tt.userID,
+					SubIss:       "subject-issuer",
+					PlainSecret:  secret,
+					CreationTime: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdateTime:   time.Date(2026, 1, 2, 0, 0, 0, 0, time.UTC),
+				}
+			}
+			ctl := &usertesting.Controller{}
+			ctl.On("Get", ctx, tt.userID, &user.Option{WithOIDCInfo: tt.withOIDCInfo}).Return(us, nil).Once()
+			t.Cleanup(func() { ctl.AssertExpectations(t) })
+			api := &usersAPI{
+				ctl:     ctl,
+				getAuth: func(context.Context) (string, error) { return tt.authMode, nil },
+			}
+
+			res := api.GetUser(ctx, operation.GetUserParams{UserID: int64(tt.userID)})
+			require.IsType(t, &operation.GetUserOK{}, res)
+			payload := res.(*operation.GetUserOK).Payload
+			require.NotNil(t, payload)
+			assert.Equal(t, int64(tt.userID), payload.UserID)
+			assert.Equal(t, us.Username, payload.Username)
+			assert.Equal(t, us.Email, payload.Email)
+			if !tt.withMeta {
+				assert.Nil(t, payload.OIDCUserMeta)
+				return
+			}
+			assert.Equal(t, &models.OIDCUserInfo{
+				ID:           us.OIDCUserMeta.ID,
+				UserID:       int64(tt.userID),
+				Subiss:       us.OIDCUserMeta.SubIss,
+				Secret:       tt.wantSecret,
+				CreationTime: strfmt.DateTime(us.OIDCUserMeta.CreationTime),
+				UpdateTime:   strfmt.DateTime(us.OIDCUserMeta.UpdateTime),
+			}, payload.OIDCUserMeta)
+			assert.Equal(t, secret, us.OIDCUserMeta.PlainSecret, "redaction must not mutate the controller's user")
+		})
+	}
+}
+
+func TestGetCurrentUserInfoOIDCSecret(t *testing.T) {
+	us := &commonmodels.User{
+		UserID:   2,
+		Username: "oidc-user",
+		OIDCUserMeta: &commonmodels.OIDCUser{
+			UserID:      2,
+			PlainSecret: "own-oidc-cli-secret",
+		},
+	}
+	ctx := security.NewContext(context.Background(), local.NewSecurityContext(us))
+	ctl := &usertesting.Controller{}
+	ctl.On("Get", ctx, us.UserID, &user.Option{WithOIDCInfo: true}).Return(us, nil).Once()
+	t.Cleanup(func() { ctl.AssertExpectations(t) })
+	api := &usersAPI{
+		ctl:     ctl,
+		getAuth: func(context.Context) (string, error) { return common.OIDCAuth, nil },
+	}
+
+	res := api.GetCurrentUserInfo(ctx, operation.GetCurrentUserInfoParams{})
+	require.IsType(t, &operation.GetCurrentUserInfoOK{}, res)
+	payload := res.(*operation.GetCurrentUserInfoOK).Payload
+	require.NotNil(t, payload)
+	require.NotNil(t, payload.OIDCUserMeta)
+	assert.Equal(t, int64(us.UserID), payload.UserID)
+	assert.Equal(t, "own-oidc-cli-secret", payload.OIDCUserMeta.Secret)
+}
 
 func TestRequireValidSecret(t *testing.T) {
 	cases := []struct {
