@@ -194,6 +194,59 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().NotNil(err)
 	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
 	s.Require().Nil(p1)
+
+	// Test Manual Trigger
+	p2 := &policy.Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Template: "always",
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "**",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    "**",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &policy.Trigger{
+			Kind: "Manual",
+		},
+		Scope: &policy.Scope{
+			Level:     "project",
+			Reference: 1,
+		},
+	}
+
+	id2, err := c.CreateRetention(ctx, p2)
+	s.Require().Nil(err)
+	s.Require().True(id2 > 0)
+
+	p2, err = c.GetRetention(ctx, id2)
+	s.Require().Nil(err)
+	s.Require().EqualValues("project", p2.Scope.Level)
+
+	p2.Scope.Level = "test-manual"
+	err = c.UpdateRetention(ctx, p2)
+	s.Require().Nil(err)
+	p2, err = c.GetRetention(ctx, id2)
+	s.Require().Nil(err)
+	s.Require().EqualValues("test-manual", p2.Scope.Level)
+
+	err = c.DeleteRetention(ctx, id2)
+	s.Require().Nil(err)
 }
 
 func (s *ControllerTestSuite) TestExecution() {
