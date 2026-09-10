@@ -16,6 +16,7 @@ package vex
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -26,6 +27,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/controller/artifact/processor/base"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	registrytesting "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
@@ -47,4 +49,47 @@ func TestOpenVEXProcessor(t *testing.T) {
 	require.Equal(t, `{"statements":[]}`, string(addition.Content))
 	require.Equal(t, []string{AdditionTypeVEX}, processor.ListAdditionTypes(context.Background(), nil))
 	require.Equal(t, ArtifactTypeVEX, processor.GetArtifactType(context.Background(), nil))
+}
+
+func TestAbstractAdditionErrors(t *testing.T) {
+	registryClient := &registrytesting.Client{}
+	processor := &Processor{ManifestProcessor: &base.ManifestProcessor{RegCli: registryClient}}
+
+	_, err := processor.AbstractAddition(context.Background(), &artifact.Artifact{}, "unsupported")
+	require.Error(t, err)
+
+	registryClient.On("PullManifest", mock.Anything, mock.Anything).Return(nil, "", errors.NotFoundError(fmt.Errorf("not found"))).Once()
+	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
+	require.Error(t, err)
+}
+
+func TestAbstractAdditionWithoutLayer(t *testing.T) {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(`{
+        "schemaVersion": 2,
+        "config": {"mediaType": "application/vnd.oci.empty.v1+json", "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b", "size": 2}
+    }`))
+	require.NoError(t, err)
+	registryClient := &registrytesting.Client{}
+	registryClient.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "sha256:123", nil).Once()
+	processor := &Processor{ManifestProcessor: &base.ManifestProcessor{RegCli: registryClient}}
+
+	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
+	require.Error(t, err)
+	require.True(t, errors.IsNotFoundErr(err))
+}
+
+func TestAbstractAdditionPullBlobError(t *testing.T) {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(`{
+        "schemaVersion": 2,
+        "config": {"mediaType": "application/vnd.oci.empty.v1+json", "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b", "size": 2},
+        "layers": [{"mediaType": "application/json", "digest": "sha256:abc", "size": 42}]
+    }`))
+	require.NoError(t, err)
+	registryClient := &registrytesting.Client{}
+	registryClient.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "sha256:123", nil).Once()
+	registryClient.On("PullBlob", mock.Anything, mock.Anything).Return(int64(42), nil, errors.NotFoundError(fmt.Errorf("not found"))).Once()
+	processor := &Processor{ManifestProcessor: &base.ManifestProcessor{RegCli: registryClient}}
+
+	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
+	require.Error(t, err)
 }
