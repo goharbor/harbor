@@ -194,6 +194,15 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 	if t := q.duration("idle_timeout_seconds"); t != 0 {
 		o.ConnMaxIdleTime = t
 	}
+	// sentinel specific authentication parameters, allowing different credentials
+	// to authenticate against Sentinel while keeping master auth intact
+	if su := q.string("sentinel_username"); su != "" {
+		o.SentinelUsername = su
+	}
+	if sp := q.string("sentinel_password"); sp != "" {
+		o.SentinelPassword = sp
+	}
+
 	if q.err != nil {
 		return nil, q.err
 	}
