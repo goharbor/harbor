@@ -17,7 +17,6 @@ package retention
 import (
 	"context"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -26,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -192,7 +192,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 
 	p1, err = c.GetRetention(ctx, id)
 	s.Require().NotNil(err)
-	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
+	s.Require().True(errors.IsNotFoundErr(err))
 	s.Require().Nil(p1)
 }
 

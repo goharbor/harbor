@@ -2,12 +2,12 @@ package retention
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -82,7 +82,7 @@ func TestPolicy(t *testing.T) {
 
 	p1, err = m.GetPolicy(ctx, id)
 	assert.NotNil(t, err)
-	assert.True(t, strings.Contains(err.Error(), "no such Retention policy"))
+	assert.True(t, errors.IsNotFoundErr(err))
 	assert.Nil(t, p1)
 }
 

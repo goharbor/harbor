@@ -64,7 +64,7 @@ func GetPolicy(ctx context.Context, id int64) (*models.RetentionPolicy, error) {
 		ID: id,
 	}
 	if err := o.Read(p); err != nil {
-		return nil, err
+		return nil, orm.WrapNotFoundError(err, "retention policy %d not found", id)
 	}
 	return p, nil
 }
