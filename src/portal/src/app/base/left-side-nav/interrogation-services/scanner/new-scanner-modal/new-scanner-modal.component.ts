@@ -21,7 +21,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { InlineAlertComponent } from '../../../../../shared/components/inline-alert/inline-alert.component';
 import { ScannerService } from '../../../../../../../ng-swagger-gen/services/scanner.service';
 import { ScannerRegistrationReq } from '../../../../../../../ng-swagger-gen/models/scanner-registration-req';
-import { clone } from '../../../../../shared/units/utils';
+import { clone, equalEndpoint } from '../../../../../shared/units/utils';
 
 @Component({
     selector: 'new-scanner-modal',
@@ -213,8 +213,10 @@ export class NewScannerModalComponent {
             return true;
         }
         if (
-            this.originValue.url !==
-            this.newScannerFormComponent.newScannerForm.get('url').value
+            !equalEndpoint(
+                this.originValue.url,
+                this.newScannerFormComponent.newScannerForm.get('url').value
+            )
         ) {
             return true;
         }

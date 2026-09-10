@@ -15,6 +15,7 @@ import {
     DEFAULT_PAGE_SIZE,
     delUrlParam,
     durationStr,
+    equalEndpoint,
     getHiddenArrayFromLocalStorage,
     getPageSizeFromLocalStorage,
     getQueryString,
@@ -168,5 +169,45 @@ describe('functions in utils.ts should work', () => {
             true,
             true,
         ]);
+    });
+
+    it('function equalEndpoint() should work', () => {
+        expect(equalEndpoint(null, null)).toBe(true);
+        expect(equalEndpoint('', '')).toBe(true);
+        expect(
+            equalEndpoint(
+                'http://example.com:8080/v2',
+                'http://example.com:8080/v2'
+            )
+        ).toBe(true);
+        expect(
+            equalEndpoint(
+                'http://EXAMPLE.COM:8080/v2',
+                'http://example.com:8080/v2'
+            )
+        ).toBe(true);
+        expect(
+            equalEndpoint(
+                'http://example.com:8080/V2',
+                'http://example.com:8080/v2'
+            )
+        ).toBe(false);
+        expect(equalEndpoint('https://core:8080', 'https://CORE:8080')).toBe(
+            true
+        );
+        expect(equalEndpoint('http://example.com', 'https://example.com')).toBe(
+            false
+        );
+        expect(
+            equalEndpoint('http://example.com:8080', 'http://example.com:8081')
+        ).toBe(false);
+        expect(
+            equalEndpoint('http://example.com/foo', 'http://example.com/bar')
+        ).toBe(false);
+        expect(equalEndpoint('invalid-url-1', 'http://example.com')).toBe(
+            false
+        );
+        expect(equalEndpoint('http://example.com', null)).toBe(false);
+        expect(equalEndpoint('example.com', 'EXAMPLE.COM')).toBe(true);
     });
 });
