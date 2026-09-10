@@ -257,7 +257,10 @@ func parseInt64(str string) (int64, error) {
 	}
 
 	fval, err := strconv.ParseFloat(str, 64)
-	if err == nil && fval == math.Trunc(fval) {
+	// float64(math.MaxInt64) rounds up to 2^63, so the upper bound is exclusive;
+	// float64(math.MinInt64) is exact, so the lower bound is inclusive.
+	if err == nil && fval == math.Trunc(fval) &&
+		fval >= float64(math.MinInt64) && fval < float64(math.MaxInt64) {
 		return int64(fval), nil
 	}
 
@@ -271,7 +274,8 @@ func parseInt(str string) (int, error) {
 	}
 
 	fval, err := strconv.ParseFloat(str, 32)
-	if err == nil && fval == math.Trunc(fval) {
+	if err == nil && fval == math.Trunc(fval) &&
+		fval >= float64(math.MinInt64) && fval < float64(math.MaxInt64) {
 		return int(fval), nil
 	}
 
