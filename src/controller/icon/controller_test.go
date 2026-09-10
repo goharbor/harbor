@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	iconlib "github.com/goharbor/harbor/src/lib/icon"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/mock"
 	artifact_testing "github.com/goharbor/harbor/src/testing/pkg/artifact"
@@ -76,6 +77,17 @@ func (c *controllerTestSuite) TestGet() {
 	c.NotEmpty(icon.Content)
 	c.argMgr.AssertExpectations(c.T())
 	c.regCli.AssertExpectations(c.T())
+}
+
+func (c *controllerTestSuite) TestGetBuiltInOpenVEXIcon() {
+	builtInIcon := builtInIcons[iconlib.DigestOfIconAccOpenVEX]
+	builtInIcon.path = "../../../icons/openvex.png"
+	builtInIcons[iconlib.DigestOfIconAccOpenVEX] = builtInIcon
+
+	icon, err := c.controller.Get(nil, iconlib.DigestOfIconAccOpenVEX)
+	c.Require().NoError(err)
+	c.Equal("image/png", icon.ContentType)
+	c.NotEmpty(icon.Content)
 }
 
 func TestControllerTestSuite(t *testing.T) {
