@@ -151,7 +151,7 @@ func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params we
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.validateTargets(policy); !ok {
+	if ok, err := n.normalizeAndValidateTargets(policy); !ok {
 		return n.SendError(ctx, err)
 	}
 
@@ -190,7 +190,7 @@ func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params we
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.validateTargets(policy); !ok {
+	if ok, err := n.normalizeAndValidateTargets(policy); !ok {
 		return n.SendError(ctx, err)
 	}
 
@@ -402,7 +402,7 @@ func (n *webhookAPI) GetSupportedEventTypes(ctx context.Context, params webhook.
 	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
 
-func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) {
+func (n *webhookAPI) normalizeAndValidateTargets(policy *policy_model.Policy) (bool, error) {
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessagef("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
@@ -411,8 +411,8 @@ func (n *webhookAPI) validateTargets(policy *policy_model.Policy) (bool, error) 
 		if err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
 		}
-		// Prevent SSRF security issue #3755
-		target.Address = url.Scheme + "://" + url.Host + url.Path
+		// Prevent SSRF security issue #3755 and normalize host per RFC 1035
+		target.Address = url.Scheme + "://" + strings.ToLower(url.Host) + url.Path
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)

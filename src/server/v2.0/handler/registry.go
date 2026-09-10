@@ -243,7 +243,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 		// authoritative; ignore url/insecure/ca overrides so the ping (and the saved
 		// credentials it sends) can't be redirected to or MITM'd via an untrusted endpoint
 		if params.Registry.URL != nil && params.Registry.ID == nil {
-			url, err := lib.ValidateHTTPURL(*params.Registry.URL)
+			url, err := lib.NormalizeAndValidateHTTPURL(*params.Registry.URL)
 			if err != nil {
 				return r.SendError(ctx, err)
 			}

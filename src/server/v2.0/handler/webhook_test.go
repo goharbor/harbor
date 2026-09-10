@@ -96,6 +96,18 @@ func (suite *WebhookTestSuite) TestCreateWebhookPolicyOfProject() {
 		suite.NoError(err)
 		suite.Equal(201, resp.StatusCode)
 	}
+
+	{
+		// mixed-case target address should be normalized to lowercase host
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{
+			EventTypes: []string{"PUSH_ARTIFACT"},
+			Targets: []*models.WebhookTargetObject{
+				{Type: "http", Address: "http://WEBHOOK-TARGET.CORP.LOCAL:8080/events"},
+			},
+		})
+		suite.NoError(err)
+		suite.Equal(201, resp.StatusCode)
+	}
 }
 
 func (suite *WebhookTestSuite) TestUpdateWebhookPolicyOfProject() {
