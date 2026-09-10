@@ -263,6 +263,38 @@ func (suite *ControllerTestSuite) TestPing() {
 	suite.NotNil(meta)
 }
 
+// TestPingInvalidURL tests ping for scanner with invalid URL
+func (suite *ControllerTestSuite) TestPingInvalidURL() {
+	reg := &scanner.Registration{
+		Name:        "invalidURL",
+		Description: "sample registration",
+		URL:         "://invalid.url",
+	}
+	meta, err := suite.c.Ping(context.TODO(), reg)
+	require.Error(suite.T(), err)
+	suite.Nil(meta)
+	require.Contains(suite.T(), err.Error(), "invalid scanner URL")
+}
+
+// TestPingAdapterFailure tests ping for scanner with adapter failure
+func (suite *ControllerTestSuite) TestPingAdapterFailure() {
+	mc := &v1testing.Client{}
+	mc.On("GetMetadata").Return(nil, fmt.Errorf("dial timeout"))
+
+	mcp := &v1testing.ClientPool{}
+	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
+	c := &basicController{
+		manager:    suite.mMgr,
+		proMetaMgr: suite.mMeta,
+		clientPool: mcp,
+	}
+
+	meta, err := c.Ping(context.TODO(), suite.sample)
+	require.Error(suite.T(), err)
+	suite.Nil(meta)
+	require.Contains(suite.T(), err.Error(), "scanner controller: ping failed")
+}
+
 // TestPingWithGenericMimeType tests ping for scanners supporting MIME type MimeTypeGenericVulnerabilityReport
 func (suite *ControllerTestSuite) TestPingWithGenericMimeType() {
 	m := &v1.ScannerAdapterMetadata{
