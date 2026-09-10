@@ -16,7 +16,6 @@ import { of, throwError } from 'rxjs';
 import { ArtifactVEXComponent } from './artifact-vex.component';
 import { AdditionsService } from '../additions.service';
 import { ErrorHandler } from '../../../../../../shared/units/error-handler';
-import * as utils from '../../../../../../shared/units/utils';
 import { SharedTestingModule } from '../../../../../../shared/shared.module';
 
 describe('ArtifactVEXComponent', () => {
@@ -70,14 +69,26 @@ describe('ArtifactVEXComponent', () => {
     });
 
     it('should download the parsed object, not the pretty-printed string', () => {
-        const downloadJsonSpy = jasmine.createSpy('downloadJson');
-        spyOnProperty(utils, 'downloadJson', 'get').and.returnValue(
-            downloadJsonSpy
-        );
+        // downloadJson is a plain function import (not spy-able via
+        // spyOn/spyOnProperty on the ES module namespace), so assert on its
+        // observable side effects instead of mocking the function itself.
+        spyOn(window.URL, 'createObjectURL').and.returnValue('blob:fake-url');
+        const clickSpy = spyOn(HTMLAnchorElement.prototype, 'click');
+
         component.download();
-        expect(downloadJsonSpy).toHaveBeenCalledWith(
-            { '@context': 'https://openvex.dev/ns/v0.2.0' },
-            'vex.json'
-        );
+
+        expect(clickSpy).toHaveBeenCalled();
+        const blob = (
+            window.URL.createObjectURL as jasmine.Spy
+        ).calls.mostRecent().args[0] as Blob;
+        expect(blob.type).toBe('application/json;charset=utf-8');
+
+        return blob.text().then(text => {
+            expect(text).toBe(
+                JSON.stringify({
+                    '@context': 'https://openvex.dev/ns/v0.2.0',
+                })
+            );
+        });
     });
 });
