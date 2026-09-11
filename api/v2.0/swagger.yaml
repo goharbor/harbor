@@ -3463,8 +3463,81 @@ paths:
         '500':
           $ref: '#/responses/500'
 
-
-
+  /roles/{role_id}:
+    get:
+      summary: Get a role
+      description: This endpoint returns specific role information by role ID.
+      tags:
+        - role
+      operationId: GetRoleByID
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          description: Return matched role information.
+          schema:
+            $ref: '#/definitions/Role'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a role account
+      description: This endpoint updates specific role information by role ID.
+      tags:
+        - role
+      operationId: UpdateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a role account
+      description: This endpoint deletes specific role information by role ID.
+      tags:
+        - role
+      operationId: DeleteRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 
   '/quotas':
     get:
@@ -3666,81 +3739,6 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/robotId'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /roles/{role_id}:
-    get:
-      summary: Get a role
-      description: This endpoint returns specific role information by role ID.
-      tags:
-        - role
-      operationId: GetRoleByID
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/roleId'
-      responses:
-        '200':
-          description: Return matched role information.
-          schema:
-            $ref: '#/definitions/Role'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    put:
-      summary: Update a role account
-      description: This endpoint updates specific role information by role ID.
-      tags:
-        - role
-      operationId: UpdateRole
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/roleId'
-        - name: role
-          in: body
-          description: The JSON object of a role.
-          required: true
-          schema:
-            $ref: '#/definitions/Role'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '409':
-          $ref: '#/responses/409'
-        '500':
-          $ref: '#/responses/500'
-    delete:
-      summary: Delete a role account
-      description: This endpoint deletes specific role information by role ID.
-      tags:
-        - role
-      operationId: DeleteRole
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/roleId'
       responses:
         '200':
           $ref: '#/responses/200'
