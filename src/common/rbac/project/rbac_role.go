@@ -384,3 +384,16 @@ func isBuiltinProjectRole(roleID int) bool {
 		return false
 	}
 }
+
+// BuiltinRolePolicies returns the (un-namespaced) project policies granted by the
+// built-in role with the given ID (1-5), or nil if roleID is not a built-in role.
+// Built-in permissions live only in the compile-time rolePoliciesMap — there are
+// no role_permission rows for them — so callers that need a built-in role's
+// permission set (e.g. anti-escalation checks) must use this rather than a DB
+// lookup, which would report a built-in role as permissionless.
+func BuiltinRolePolicies(roleID int) []*types.Policy {
+	if !isBuiltinProjectRole(roleID) {
+		return nil
+	}
+	return rolePoliciesMap[(&projectRBACRole{roleID: roleID}).GetRoleName()]
+}
