@@ -17,6 +17,7 @@ package connection
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 
@@ -30,17 +31,23 @@ type ConnLimiter struct {
 // Limiter is a global connection limiter instance
 var Limiter = &ConnLimiter{}
 
+// SlotTTL is how long a held connection outlives its last Acquire or Refresh.
+// A holder that neither releases nor refreshes within this time, because the
+// process died, stops counting against the limit.
+const SlotTTL = 60 * time.Second
+
 // Used to compare and increase connection number in redis
 //
 // KEYS[1]: key of max_conn_upstream
 // ARGV[1]: max connection limit
+// ARGV[2]: seconds until the connections expire unless refreshed
 var increaseWithLimitText = `
 local current = tonumber(redis.call('GET', KEYS[1]) or '0')
 local max = tonumber(ARGV[1])
 
 if current + 1 <= max then
     redis.call('INCRBY', KEYS[1], 1)
-	redis.call('EXPIRE', KEYS[1], 3600) -- set expire to avoid always lock
+    redis.call('EXPIRE', KEYS[1], ARGV[2])
     return 1
 else
     return 0
@@ -51,13 +58,22 @@ var acquireScript = redis.NewScript(increaseWithLimitText)
 
 // Acquire tries to acquire a connection, returns true if successful
 func (c *ConnLimiter) Acquire(ctx context.Context, rdb *redis.Client, key string, limit int) bool {
-	result, err := acquireScript.Run(ctx, rdb, []string{key}, fmt.Sprintf("%v", limit)).Int()
+	result, err := acquireScript.Run(ctx, rdb, []string{key}, fmt.Sprintf("%v", limit), int(SlotTTL.Seconds())).Int()
 	if err != nil {
 		log.Errorf("failed to get the connection lock in redis, error %v", err)
 		return false
 	}
 	log.Debugf("Acquire script result is %d", result)
 	return result == 1
+}
+
+// Refresh extends the held connections' expiry by SlotTTL. It is a no-op on
+// a key that has already expired, so a late refresh cannot recreate a count
+// that new acquirers have started over.
+func (c *ConnLimiter) Refresh(ctx context.Context, rdb *redis.Client, key string) {
+	if err := rdb.Expire(ctx, key, SlotTTL).Err(); err != nil {
+		log.Warningf("failed to refresh the connection lock in redis, key: %s, error: %v", key, err)
+	}
 }
 
 var decreaseText = `

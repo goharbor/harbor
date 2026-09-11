@@ -7559,7 +7559,7 @@ definitions:
         x-nullable: true
       max_upstream_conn:
         type: string
-        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
+        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections. Requests beyond the limit wait for a connection to free up or for the content to arrive in the local cache.'
         x-nullable: true
       proxy_cache_local_on_not_found:
         type: string
