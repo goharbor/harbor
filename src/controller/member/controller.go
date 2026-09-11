@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/role"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 )
@@ -82,11 +83,12 @@ type controller struct {
 	mgr          member.Manager
 	projectMgr   project.Manager
 	groupManager usergroup.Manager
+	roleMgr      role.Manager
 }
 
 // NewController ...
 func NewController() Controller {
-	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New(), groupManager: usergroup.Mgr}
+	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New(), groupManager: usergroup.Mgr, roleMgr: role.Mgr}
 }
 
 func (c *controller) Count(ctx context.Context, projectNameOrID any, query *q.Query) (int, error) {
@@ -223,24 +225,35 @@ func (c *controller) Create(ctx context.Context, projectNameOrID any, req Reques
 		return 0, ErrDuplicateProjectMember
 	}
 
-	if !isValidRole(member.Role) {
-		// Return invalid role error
-		return 0, ErrInvalidRole
+	if err := c.validateRole(ctx, member.Role); err != nil {
+		return 0, err
 	}
 	return c.mgr.AddProjectMember(ctx, member)
 }
 
-func isValidRole(role int) bool {
-	switch role {
+// validateRole ensures a member's role is real: a built-in role (1-5), or a
+// custom role that exists in the database. Unknown IDs are rejected so a member
+// can never be assigned a non-existent role.
+func (c *controller) validateRole(ctx context.Context, roleID int) error {
+	switch roleID {
 	case common.RoleProjectAdmin,
 		common.RoleMaintainer,
 		common.RoleDeveloper,
 		common.RoleGuest,
 		common.RoleLimitedGuest:
-		return true
-	default:
-		return false
+		return nil
 	}
+	// Custom role IDs are assigned by the DB sequence above the built-in range.
+	if roleID <= common.RoleLimitedGuest {
+		return ErrInvalidRole
+	}
+	if _, err := c.roleMgr.Get(ctx, int64(roleID)); err != nil {
+		if errors.IsNotFoundErr(err) {
+			return ErrInvalidRole
+		}
+		return err
+	}
+	return nil
 }
 
 func (c *controller) List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error) {
