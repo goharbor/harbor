@@ -18,14 +18,12 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/common/security"
-	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member"
-	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/rbac"
@@ -128,11 +126,6 @@ func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
 	})(ctx); err != nil {
 		return 0, err
 	}
-	// fire event
-	notification.AddEvent(ctx, &metadata.CreateRoleEventMetadata{
-		Ctx:  ctx,
-		Role: rCreate,
-	})
 	return roleID, nil
 }
 
@@ -166,15 +159,6 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 	})(ctx); err != nil {
 		return err
 	}
-	// fire event
-	deleteMetadata := &metadata.DeleteRoleEventMetadata{
-		Ctx:  ctx,
-		Role: rDelete,
-	}
-	if len(option) != 0 && option[0].Operator != "" {
-		deleteMetadata.Operator = option[0].Operator
-	}
-	notification.AddEvent(ctx, deleteMetadata)
 	return nil
 }
 
@@ -219,11 +203,6 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 	})(ctx); err != nil {
 		return err
 	}
-	// fire event
-	notification.AddEvent(ctx, &metadata.UpdateRoleEventMetadata{
-		Ctx:  ctx,
-		Role: existing,
-	})
 	return nil
 }
 
