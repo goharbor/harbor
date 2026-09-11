@@ -32,50 +32,19 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// checkSysAdmin
-// ---------------------------------------------------------------------------
-
-func TestCheckSysAdmin_SysAdmin(t *testing.T) {
-	sc := &securityMock.Context{}
-	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(true)
-
-	err := (&roleAPI{}).checkSysAdmin(newCtxWithSecurity(sc))
-	assert.NoError(t, err)
-}
-
-func TestCheckSysAdmin_NonSysAdminForbidden(t *testing.T) {
-	sc := &securityMock.Context{}
-	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(false)
-
-	err := (&roleAPI{}).checkSysAdmin(newCtxWithSecurity(sc))
-	assert.Error(t, err)
-	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err))
-}
-
-func TestCheckSysAdmin_UnauthenticatedUnauthorized(t *testing.T) {
-	sc := &securityMock.Context{}
-	sc.On("IsAuthenticated").Return(false)
-
-	err := (&roleAPI{}).checkSysAdmin(newCtxWithSecurity(sc))
-	assert.Error(t, err)
-	assert.Equal(t, errors.UnAuthorizedCode, errors.ErrCode(err))
-}
-
-// ---------------------------------------------------------------------------
 // CreateRole authorization gate (escalation prevention)
 // ---------------------------------------------------------------------------
 
 // TestCreateRole_NonSysAdminForbidden proves that role definition is restricted
 // to system admins: a non-sysadmin attempting to create a role with broad
-// permissions is rejected at the checkSysAdmin gate before any role is created,
+// permissions is rejected at the RequireSystemAccess gate before any role is created,
 // so there is no privilege-escalation path through this handler. roleCtl is
 // intentionally nil — the request must never reach it.
 func TestCreateRole_NonSysAdminForbidden(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(false)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(false)
+	sc.On("GetUsername").Return("tester")
 
 	api := &roleAPI{}
 	params := operation.CreateRoleParams{
@@ -108,7 +77,7 @@ func TestCreateRole_NonSysAdminForbidden(t *testing.T) {
 func TestDeleteRole_Success(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(true)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(true)
 
 	rc := &stubRoleCtl{}
 	rc.On("Get", testifymock.Anything, int64(5), testifymock.Anything).
@@ -126,7 +95,8 @@ func TestDeleteRole_Success(t *testing.T) {
 func TestUpdateRole_NonSysAdminForbidden(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(false)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(false)
+	sc.On("GetUsername").Return("tester")
 
 	resp := (&roleAPI{}).UpdateRole(newCtxWithSecurity(sc), operation.UpdateRoleParams{RoleID: 5})
 
@@ -139,7 +109,7 @@ func TestUpdateRole_NonSysAdminForbidden(t *testing.T) {
 func TestUpdateRole_LegacyRoleDenied(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsAuthenticated").Return(true)
-	sc.On("IsSysAdmin").Return(true)
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(true)
 
 	rc := &stubRoleCtl{}
 	rc.On("Get", testifymock.Anything, int64(1), testifymock.Anything).

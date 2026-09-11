@@ -68,6 +68,7 @@ const (
 	ResourceCatalog            = Resource("catalog")
 	ResourceProject            = Resource("project")
 	ResourceUser               = Resource("user")
+	ResourceRole               = Resource("role")
 	ResourceUserGroup          = Resource("user-group")
 	ResourceRegistry           = Resource("registry")
 	ResourceReplication        = Resource("replication")
@@ -130,6 +131,12 @@ func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
 			&types.Policy{Resource: ResourceUser, Action: ActionUpdate},
 			&types.Policy{Resource: ResourceUser, Action: ActionList},
 			&types.Policy{Resource: ResourceUser, Action: ActionDelete},
+
+			&types.Policy{Resource: ResourceRole, Action: ActionCreate},
+			&types.Policy{Resource: ResourceRole, Action: ActionRead},
+			&types.Policy{Resource: ResourceRole, Action: ActionUpdate},
+			&types.Policy{Resource: ResourceRole, Action: ActionList},
+			&types.Policy{Resource: ResourceRole, Action: ActionDelete},
 
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionCreate},
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionList},
@@ -317,10 +324,6 @@ var (
 			{Resource: ResourceQuota, Action: ActionRead},
 		},
 		ScopeRole: {
-			{Resource: ResourceSelf, Action: ActionRead},
-			{Resource: ResourceSelf, Action: ActionUpdate},
-			{Resource: ResourceSelf, Action: ActionDelete},
-
 			{Resource: ResourceMember, Action: ActionCreate},
 			{Resource: ResourceMember, Action: ActionRead},
 			{Resource: ResourceMember, Action: ActionUpdate},

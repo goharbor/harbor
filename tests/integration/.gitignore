@@ -1,6 +1,0 @@
-# local Python virtualenvs used to run the integration tests
-test-harbor-role/
-venv/
-.venv/
-__pycache__/
-*.pyc
