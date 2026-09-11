@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/docker/distribution"
@@ -29,11 +28,20 @@ import (
 
 	"github.com/goharbor/harbor/src/lib"
 	libCache "github.com/goharbor/harbor/src/lib/cache"
-	libErrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const defaultHandler = "default"
+
+const pendingManifestList = "pendingmanifestlist:"
+
+type pendingManifestListState struct {
+	Repository  string
+	Digest      string
+	Tag         string
+	ContentType string
+	Payload     []byte
+}
 
 // NewCacheHandlerRegistry ...
 func NewCacheHandlerRegistry(local localInterface) map[string]ManifestCacheHandler {
@@ -41,7 +49,7 @@ func NewCacheHandlerRegistry(local localInterface) map[string]ManifestCacheHandl
 		local: local,
 		cache: libCache.Default(),
 	}
-	manHandler := &ManifestCache{local}
+	manHandler := &ManifestCache{local: local, manifestListCache: manListHandler}
 	registry := map[string]ManifestCacheHandler{
 		manifestlist.MediaTypeManifestList: manListHandler,
 		v1.MediaTypeImageIndex:             manListHandler,
@@ -86,24 +94,108 @@ func (m *ManifestListCache) CacheContent(ctx context.Context, _ string, man dist
 	if err := m.cache.Save(ctx, key, payload, manifestListCacheInterval); err != nil {
 		log.Errorf("failed to cache payload, error %v", err)
 	}
-	if err := m.push(ctx, art.Repository, getReference(art), man); err != nil {
+	if err := m.push(ctx, art, man, contentType); err != nil {
 		log.Errorf("error when push manifest list to local :%v", err)
 	}
 }
 
 // cacheTrimmedDigest - cache the change Trimmed Digest for controller.EnsureTag when digest is changed
-func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, newDig string) {
-	if m.cache == nil {
+func (m *ManifestListCache) cacheTrimmedDigest(ctx context.Context, originDig string, newDig string) {
+	if m.cache == nil || len(originDig) == 0 {
 		return
 	}
-	art := lib.GetArtifactInfo(ctx)
-	key := TrimmedManifestlist + string(art.Digest)
+	key := TrimmedManifestlist + originDig
 	err := m.cache.Save(ctx, key, newDig)
 	if err != nil {
 		log.Warningf("failed to cache the trimmed manifest, err %v", err)
 		return
 	}
 	log.Debugf("Saved key:%v, value:%v", key, newDig)
+}
+
+func (m *ManifestListCache) getTrimmedDigest(ctx context.Context, originDig string) (string, error) {
+	if m.cache == nil || len(originDig) == 0 {
+		return "", nil
+	}
+	var trimmedDigest string
+	err := m.cache.Fetch(ctx, TrimmedManifestlist+originDig, &trimmedDigest)
+	if errors.Is(err, libCache.ErrNotFound) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return trimmedDigest, nil
+}
+
+func pendingManifestListKey(repo string, childDigest string, parentDigest string) string {
+	return pendingManifestList + repo + ":" + childDigest + ":" + parentDigest
+}
+
+func (m *ManifestListCache) registerPendingManifestList(ctx context.Context, art lib.ArtifactInfo, man distribution.Manifest, contentType string) {
+	if m.cache == nil || len(art.Digest) == 0 {
+		return
+	}
+	_, payload, err := man.Payload()
+	if err != nil {
+		log.Errorf("failed to get payload for pending manifest list, error %v", err)
+		return
+	}
+	state := pendingManifestListState{
+		Repository:  art.Repository,
+		Digest:      art.Digest,
+		Tag:         art.Tag,
+		ContentType: contentType,
+		Payload:     payload,
+	}
+	for _, ref := range man.References() {
+		key := pendingManifestListKey(art.Repository, string(ref.Digest), art.Digest)
+		if err := m.cache.Save(ctx, key, state, manifestListCacheInterval); err != nil {
+			log.Errorf("failed to save pending manifest list, key %v, error %v", key, err)
+		}
+	}
+}
+
+func (m *ManifestListCache) deletePendingManifestList(ctx context.Context, art lib.ArtifactInfo, man distribution.Manifest) {
+	if m.cache == nil || len(art.Digest) == 0 {
+		return
+	}
+	for _, ref := range man.References() {
+		key := pendingManifestListKey(art.Repository, string(ref.Digest), art.Digest)
+		if err := m.cache.Delete(ctx, key); err != nil {
+			log.Warningf("failed to delete pending manifest list, key %v, error %v", key, err)
+		}
+	}
+}
+
+func (m *ManifestListCache) reconcilePendingManifestLists(ctx context.Context, repo string, childDigest string) {
+	if m.cache == nil || len(childDigest) == 0 {
+		return
+	}
+	iter, err := m.cache.Scan(ctx, pendingManifestList+repo+":"+childDigest+":")
+	if err != nil {
+		log.Errorf("failed to scan pending manifest list for repo %v digest %v, error %v", repo, childDigest, err)
+		return
+	}
+	for iter.Next(ctx) {
+		key := iter.Val()
+		var state pendingManifestListState
+		if err := m.cache.Fetch(ctx, key, &state); err != nil {
+			if !errors.Is(err, libCache.ErrNotFound) {
+				log.Errorf("failed to fetch pending manifest list, key %v, error %v", key, err)
+			}
+			continue
+		}
+		man, _, err := distribution.UnmarshalManifest(state.ContentType, state.Payload)
+		if err != nil {
+			log.Errorf("failed to unmarshal pending manifest list, key %v, error %v", key, err)
+			continue
+		}
+		art := lib.ArtifactInfo{Repository: state.Repository, Digest: state.Digest, Tag: state.Tag}
+		if err := m.push(ctx, art, man, state.ContentType); err != nil {
+			log.Errorf("failed to reconcile pending manifest list, key %v, error %v", key, err)
+		}
+	}
 }
 
 func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string, manifest distribution.Manifest) (distribution.Manifest, error) {
@@ -125,15 +217,17 @@ func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string,
 	return nil, fmt.Errorf("current manifest list type is unknown, manifest type[%T], content [%+v]", manifest, manifest)
 }
 
-func (m *ManifestListCache) push(ctx context.Context, repo, reference string, man distribution.Manifest) error {
+func (m *ManifestListCache) push(ctx context.Context, art lib.ArtifactInfo, man distribution.Manifest, contentType string) error {
 	// For manifest list, it might include some different manifest
 	// it will wait and check for 30 mins, if all depend manifests are ready then push it
 	// if time exceed, then push a updated manifest list which contains existing manifest
+	repo := art.Repository
+	reference := getReference(art)
 	var newMan distribution.Manifest
 	var err error
 	for range maxManifestListWait {
 		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, reference)
-		time.Sleep(sleepIntervalSec * time.Second)
+		time.Sleep(time.Duration(sleepIntervalSec) * time.Second)
 		newMan, err = m.updateManifestList(ctx, repo, man)
 		if err != nil {
 			return err
@@ -143,7 +237,9 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 		}
 	}
 	if len(newMan.References()) == 0 {
-		return libErrors.New("manifest list doesn't contain any pushed manifest")
+		m.registerPendingManifestList(ctx, art, man, contentType)
+		log.Debugf("manifest list is pending because no child manifest is ready yet, repository: %v, reference: %v", repo, reference)
+		return nil
 	}
 	_, pl, err := newMan.Payload()
 	if err != nil {
@@ -152,45 +248,52 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	}
 	log.Debugf("The manifest list payload: %v", string(pl))
 	newDig := digest.FromBytes(pl)
-	m.cacheTrimmedDigest(ctx, string(newDig))
-	// Because the manifest list maybe updated, need to recheck if it is exist in local
-	art := lib.ArtifactInfo{Repository: repo, Tag: reference}
-	a, err := m.local.GetManifest(ctx, art)
+	previousTrimmedDigest, err := m.getTrimmedDigest(ctx, art.Digest)
 	if err != nil {
 		return err
 	}
-	if a != nil && a.Digest == string(newDig) {
-		return nil
-	}
-	// when pushing with digest, should push to its actual digest
-	if strings.HasPrefix(reference, "sha256:") {
-		reference = string(newDig)
-	}
-	err = m.local.PushManifest(repo, reference, newMan)
+	m.cacheTrimmedDigest(ctx, art.Digest, string(newDig))
+	err = m.local.PushManifest(repo, string(newDig), newMan)
 	if err != nil {
 		log.Errorf("failed to push manifest list, error: %v", err)
 		return err
 	}
-	log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
+	if len(art.Tag) > 0 {
+		err = m.local.PushManifest(repo, art.Tag, newMan)
+		if err != nil {
+			log.Errorf("failed to push manifest list tag, error: %v", err)
+			return err
+		}
+	}
+	if len(newMan.References()) < len(man.References()) {
+		m.registerPendingManifestList(ctx, art, man, contentType)
+		log.Debugf("push manifest list partially, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
+	} else {
+		m.deletePendingManifestList(ctx, art, man)
+		log.Debugf("push manifest list successfully, repository: %v, reference: %v, digest: %v", repo, reference, newDig)
+	}
+	if len(previousTrimmedDigest) > 0 && previousTrimmedDigest != string(newDig) {
+		m.local.DeleteManifest(repo, previousTrimmedDigest)
+	}
 	log.Debug("update artifact pull time to avoid it is removed by GC before the manifest list is pushed to local")
-	artForPullTime := art
-	artForPullTime.Digest = reference
+	artForPullTime := lib.ArtifactInfo{Repository: repo, Digest: string(newDig), Tag: art.Tag}
 	if err := m.local.UpdatePullTime(ctx, artForPullTime); err != nil {
-		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", artForPullTime.Repository, reference, err)
+		log.Errorf("failed to update pull time for artifact %v:%v, error: %v", artForPullTime.Repository, getReference(artForPullTime), err)
 	}
 	return nil
 }
 
 // ManifestCache default Manifest handler
 type ManifestCache struct {
-	local localInterface
+	local             localInterface
+	manifestListCache *ManifestListCache
 }
 
 // CacheContent ...
 func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, _ string) {
 	var waitBlobs []distribution.Descriptor
 	for n := range maxManifestWait {
-		time.Sleep(sleepIntervalSec * time.Second)
+		time.Sleep(time.Duration(sleepIntervalSec) * time.Second)
 		waitBlobs = m.local.CheckDependencies(ctx, art.Repository, man)
 		if len(waitBlobs) == 0 {
 			break
@@ -212,19 +315,28 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 		}
 	}
 
-	err := m.push(art, man)
+	digestAvailable, err := m.push(art, man)
 	if err != nil {
 		log.Errorf("error occurred on manifest push to local: %v", err)
+		if !digestAvailable {
+			return
+		}
+	}
+	if m.manifestListCache != nil && len(art.Digest) > 0 {
+		m.manifestListCache.reconcilePendingManifestLists(ctx, art.Repository, art.Digest)
 	}
 }
 
-func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) error {
+func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) (bool, error) {
 	errs := []error{}
+	digestAvailable := false
 	if len(art.Digest) > 0 {
 		err := m.local.PushManifest(art.Repository, art.Digest, man)
 		if err != nil {
 			log.Errorf("failed to push manifest referencing digest, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
 			errs = append(errs, err)
+		} else {
+			digestAvailable = true
 		}
 	}
 	if len(art.Tag) > 0 {
@@ -234,7 +346,7 @@ func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) er
 			errs = append(errs, err)
 		}
 	}
-	return errors.Join(errs...)
+	return digestAvailable, errors.Join(errs...)
 }
 
 func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
