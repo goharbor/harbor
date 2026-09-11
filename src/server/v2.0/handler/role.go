@@ -46,7 +46,7 @@ type roleAPI struct {
 }
 
 func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRoleParams) middleware.Responder {
-	if err := rAPI.checkSysAdmin(ctx); err != nil {
+	if err := rAPI.RequireSystemAccess(ctx, rbac.ActionCreate, rbac.ResourceRole); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -104,7 +104,7 @@ func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRole
 }
 
 func (rAPI *roleAPI) DeleteRole(ctx context.Context, params operation.DeleteRoleParams) middleware.Responder {
-	if err := rAPI.checkSysAdmin(ctx); err != nil {
+	if err := rAPI.RequireSystemAccess(ctx, rbac.ActionDelete, rbac.ResourceRole); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
@@ -173,25 +173,9 @@ func (rAPI *roleAPI) GetRoleByID(ctx context.Context, params operation.GetRoleBy
 	return operation.NewGetRoleByIDOK().WithPayload(model.NewRole(r).ToSwagger())
 }
 
-// checkSysAdmin returns UnauthorizedError for unauthenticated callers and
-// ForbiddenError for callers who are not sysadmins.
-func (rAPI *roleAPI) checkSysAdmin(ctx context.Context) error {
-	sc, err := rAPI.GetSecurityContext(ctx)
-	if err != nil {
-		return err
-	}
-	if !sc.IsAuthenticated() {
-		return errors.UnauthorizedError(nil)
-	}
-	if !sc.IsSysAdmin() {
-		return errors.ForbiddenError(nil).WithMessage("only sysadmins can manage roles")
-	}
-	return nil
-}
-
 func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRoleParams) middleware.Responder {
 	var err error
-	if err := rAPI.checkSysAdmin(ctx); err != nil {
+	if err := rAPI.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceRole); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 	r, err := rAPI.roleCtl.Get(ctx, params.RoleID, &role.Option{
@@ -215,10 +199,10 @@ func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRole
 
 // validate checks that every requested permission is a project-role-scoped
 // access drawn from the role permission catalog (rbac.ScopeRole). Role creation
-// and update are restricted to system admins (see checkSysAdmin), so there is no
-// privilege escalation to guard against here: a sysadmin already holds every
-// permission, and non-admins never reach this path
-// (see TestCreateRole_NonSysAdminForbidden). Escalation is enforced separately on
+// and update require system-level access to rbac.ResourceRole (see
+// RequireSystemAccess), so there is no privilege escalation to guard against
+// here: the caller already holds every permission, and unauthorized callers
+// never reach this path. Escalation is enforced separately on
 // the paths where non-admin callers assign permissions (validateNoEscalation).
 func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 	if len(permissions) == 0 {
