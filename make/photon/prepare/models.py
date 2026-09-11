@@ -243,8 +243,35 @@ class Cache:
         return
 
 class Core:
+    # keep these two defaults in sync with the historical hardcoded values that
+    # used to live directly in templates/core/env.jinja
+    default_permitted_registry_types_for_proxy_cache = [
+        'docker-hub', 'harbor', 'azure-acr', 'ali-acr', 'aws-ecr', 'google-gcr',
+        'docker-registry', 'github-ghcr', 'jfrog-artifactory',
+    ]
+    default_replication_adapter_whitelist = [
+        'ali-acr', 'aws-ecr', 'azure-acr', 'docker-hub', 'docker-registry',
+        'github-ghcr', 'google-gcr', 'harbor', 'huawei-SWR', 'jfrog-artifactory',
+        'tencent-tcr', 'volcengine-cr',
+    ]
+
     def __init__(self, config: dict):
         self.quota_update_provider = config.get('quota_update_provider') or 'db'
+        self.permitted_registry_types_for_proxy_cache = self._to_csv(
+            config.get('permitted_registry_types_for_proxy_cache'),
+            self.default_permitted_registry_types_for_proxy_cache)
+        self.replication_adapter_whitelist = self._to_csv(
+            config.get('replication_adapter_whitelist'),
+            self.default_replication_adapter_whitelist)
+
+    @staticmethod
+    def _to_csv(value, default_list):
+        if not value:
+            return ','.join(default_list)
+        if isinstance(value, (list, tuple)):
+            return ','.join(str(v).strip() for v in value)
+        # allow a plain comma separated string as well
+        return ','.join(v.strip() for v in str(value).split(',') if v.strip())
 
     def validate(self):
         if not self.quota_update_provider:
