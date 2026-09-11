@@ -195,6 +195,24 @@ func (_m *Manager) UpdateUsername(ctx context.Context, username string, replaceW
 	return r0
 }
 
+// UpdateUsernameForUserResource provides a mock function with given fields: ctx, username, replaceWith
+func (_m *Manager) UpdateUsernameForUserResource(ctx context.Context, username string, replaceWith string) error {
+	ret := _m.Called(ctx, username, replaceWith)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUsernameForUserResource")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, username, replaceWith)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewManager creates a new instance of Manager. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewManager(t interface {

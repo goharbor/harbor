@@ -21,6 +21,7 @@ import (
 
 	beegorm "github.com/beego/beego/v2/client/orm"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
@@ -44,6 +45,8 @@ type DAO interface {
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
 	// UpdateUsername replaces username in matched records
 	UpdateUsername(ctx context.Context, username string, usernameReplace string) error
+	// UpdateUsernameForUserResource replaces the username in the resource and op_desc columns of user related records
+	UpdateUsernameForUserResource(ctx context.Context, username string, usernameReplace string) error
 }
 
 // New returns an instance of the default DAO
@@ -59,6 +62,16 @@ func (d *dao) UpdateUsername(ctx context.Context, username string, usernameRepla
 		return err
 	}
 	_, err = o.Raw("UPDATE audit_log_ext SET username = ? WHERE username = ?", usernameReplace, username).Exec()
+	return err
+}
+
+func (d *dao) UpdateUsernameForUserResource(ctx context.Context, username string, usernameReplace string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Raw("UPDATE audit_log_ext SET resource = ?, op_desc = REPLACE(op_desc, ?, ?) WHERE resource_type = ? AND resource = ?",
+		usernameReplace, username, usernameReplace, rbac.ResourceUser.String(), username).Exec()
 	return err
 }
 
