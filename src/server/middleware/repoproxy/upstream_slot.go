@@ -27,23 +27,43 @@ import (
 	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 )
 
-// acquireUpstreamSlot enforces the project's max_upstream_conn. The returned
-// release gives the slot back and must be called once the upstream work is
-// done; it is a no-op when the project sets no limit.
-func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (func(), error) {
+// upstreamAccess is how a request should proceed once acquireUpstreamSlot
+// returns.
+type upstreamAccess int
+
+const (
+	// fetchUpstream: the request holds an upstream connection slot and must
+	// release it when done.
+	fetchUpstream upstreamAccess = iota
+	// serveLocal: another request brought the content into the local registry
+	// while this one was waiting; serve it from there.
+	serveLocal
+)
+
+const upstreamSlotPollInterval = time.Second
+
+// acquireUpstreamSlot enforces the project's max_upstream_conn. With every
+// slot taken it waits for one to free up or for existsLocally to report the
+// content, for as long as the client stays connected. The returned release
+// gives the slot back and must be called once the upstream work is done; it
+// is a no-op when the project sets no limit or the content is served locally.
+func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, existsLocally func() bool) (upstreamAccess, func(), error) {
 	release := func() {}
 	if p.MaxUpstreamConnection() <= 0 {
-		return release, nil
+		return fetchUpstream, release, nil
 	}
 	client, err := redis.GetHarborClient()
 	if err != nil {
-		return release, errors.NewErrs(err)
+		return fetchUpstream, release, errors.NewErrs(err)
 	}
 	key := upstreamRegistryConnectionKey(art)
 	log.Debugf("upstream registry connection limit key: %s", key)
-	if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-		log.Infof("current connection exceed max connections to upstream registry, key: %s", key)
-		return release, tooManyRequestsError
+	acquire := func() bool {
+		return connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection())
+	}
+	access, err := waitForUpstreamSlot(ctx, acquire, existsLocally, upstreamSlotPollInterval)
+	if err != nil || access == serveLocal {
+		return access, release, err
 	}
 	// Background context: the request's context may already be canceled by
 	// the time the slot is refreshed or released.
@@ -58,7 +78,28 @@ func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.Arti
 			connection.Limiter.Release(context.Background(), client, key)
 		})
 	}
-	return release, nil
+	return fetchUpstream, release, nil
+}
+
+// waitForUpstreamSlot blocks until acquire succeeds, existsLocally reports
+// the content or the client goes away, sleeping interval between attempts.
+// There is no timeout of its own: a slot whose holder died expires on its own
+// (see connection.SlotTTL), and a live holder is worth waiting for however
+// long its pull takes.
+func waitForUpstreamSlot(ctx context.Context, acquire func() bool, existsLocally func() bool, interval time.Duration) (upstreamAccess, error) {
+	for {
+		if acquire() {
+			return fetchUpstream, nil
+		}
+		select {
+		case <-ctx.Done():
+			return fetchUpstream, ctx.Err()
+		case <-time.After(interval):
+		}
+		if existsLocally() {
+			return serveLocal, nil
+		}
+	}
 }
 
 // slotRefreshInterval leaves two missed refreshes before a live holder's slot

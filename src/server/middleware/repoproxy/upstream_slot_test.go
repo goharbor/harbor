@@ -15,6 +15,7 @@
 package repoproxy
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -45,4 +46,92 @@ func TestKeepSlotAlive_RefreshesUntilStopped(t *testing.T) {
 	settled := refreshes.Load()
 	time.Sleep(20 * time.Millisecond)
 	require.Equal(t, settled, refreshes.Load(), "no refresh may happen after stop")
+}
+
+const testWaitInterval = time.Millisecond
+
+// trueAfter returns a func that is false for its first n calls.
+func trueAfter(n int) func() bool {
+	calls := 0
+	return func() bool {
+		calls++
+		return calls > n
+	}
+}
+
+func never() bool { return false }
+
+func TestWaitForUpstreamSlot_AcquiresImmediately(t *testing.T) {
+	// Given
+	localChecked := false
+	existsLocally := func() bool {
+		localChecked = true
+		return false
+	}
+
+	// When
+	access, err := waitForUpstreamSlot(context.Background(), trueAfter(0), existsLocally, testWaitInterval)
+
+	// Then
+	require.NoError(t, err)
+	require.Equal(t, fetchUpstream, access)
+	require.False(t, localChecked, "a free slot must not cost a local lookup")
+}
+
+func TestWaitForUpstreamSlot_ServesLocalOnceAnotherRequestStoredTheBlob(t *testing.T) {
+	// Given
+	existsLocally := trueAfter(2)
+
+	// When
+	access, err := waitForUpstreamSlot(context.Background(), never, existsLocally, testWaitInterval)
+
+	// Then
+	require.NoError(t, err)
+	require.Equal(t, serveLocal, access)
+}
+
+func TestWaitForUpstreamSlot_FetchesUpstreamWhenASlotFreesUp(t *testing.T) {
+	// Given
+	acquire := trueAfter(50)
+
+	// When
+	access, err := waitForUpstreamSlot(context.Background(), acquire, never, testWaitInterval)
+
+	// Then
+	require.NoError(t, err)
+	require.Equal(t, fetchUpstream, access)
+}
+
+func TestWaitForUpstreamSlot_ChecksLocalBeforeReacquiring(t *testing.T) {
+	// Given the slot frees and the blob lands locally while this request
+	// sleeps
+	freed := false
+	acquire := func() bool {
+		if freed {
+			return true
+		}
+		freed = true
+		return false
+	}
+	existsLocally := func() bool { return freed }
+
+	// When
+	access, err := waitForUpstreamSlot(context.Background(), acquire, existsLocally, testWaitInterval)
+
+	// Then the local copy wins, so the slot is not spent on a fetch nobody
+	// needs
+	require.NoError(t, err)
+	require.Equal(t, serveLocal, access)
+}
+
+func TestWaitForUpstreamSlot_StopsWhenTheClientGoesAway(t *testing.T) {
+	// Given
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	// When
+	_, err := waitForUpstreamSlot(ctx, never, never, time.Hour)
+
+	// Then
+	require.ErrorIs(t, err, context.Canceled)
 }

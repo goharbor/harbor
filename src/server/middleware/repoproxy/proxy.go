@@ -135,20 +135,31 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	release, err := acquireUpstreamSlot(ctx, p, art)
+	access, release, err := acquireUpstreamSlot(ctx, p, art, func() bool { return proxyCtl.UseLocalBlob(ctx, art) })
 	if err != nil {
 		return err
 	}
-	defer release()
+	if access == serveLocal {
+		next.ServeHTTP(w, r)
+		return nil
+	}
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
-	size, reader, _, err := proxyCtl.ProxyBlob(ctx, p, art)
+	size, reader, stored, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
+		release()
 		return err
 	}
 	defer reader.Close()
+	// Hold the slot until the blob is in the local registry, not merely until
+	// this client has it: a waiter let through earlier would find no local
+	// copy and fetch the blob from upstream a second time.
+	go func() {
+		<-stored
+		release()
+	}()
 	return serveBlob(w, reader, size, art.Digest)
 }
 
@@ -338,7 +349,9 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	release, err := acquireUpstreamSlot(ctx, p, art)
+	// A manifest is only cached locally once all its blobs are, so waiting for
+	// a local copy is not an option; waiters take their turn upstream instead.
+	_, release, err := acquireUpstreamSlot(ctx, p, art, func() bool { return false })
 	if err != nil {
 		return err
 	}
