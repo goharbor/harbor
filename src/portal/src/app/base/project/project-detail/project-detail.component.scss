@@ -158,3 +158,22 @@ button {
   max-width: 20rem;
   overflow: hidden;
 }
+
+@media screen and (max-width: 767px) {
+  .flex-end {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .card {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .project-name {
+    max-width: 12rem;
+  }
+}
+
