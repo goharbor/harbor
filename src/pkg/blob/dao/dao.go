@@ -127,12 +127,16 @@ func (d *dao) GetArtifactAndBlob(ctx context.Context, artifactDigest, blobDigest
 }
 
 func (d *dao) DeleteArtifactAndBlobByArtifact(ctx context.Context, artifactDigest string) error {
-	qs, err := orm.QuerySetter(ctx, &models.ArtifactAndBlob{}, q.New(q.KeyWords{"digest_af": artifactDigest}))
+	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return err
 	}
-
-	_, err = qs.Delete()
+	// Guard against deleting shared artifact_blob rows that are still referenced
+	// by live artifacts in other projects. artifact_blob is keyed by digest_af
+	// (manifest digest), so identical manifests in different projects share one
+	// row. Deleting that row for one project would orphan the others.
+	// See https://github.com/goharbor/harbor/issues/23803
+	_, err = o.Raw(`DELETE FROM artifact_blob WHERE digest_af = ? AND NOT EXISTS (SELECT 1 FROM artifact WHERE digest = ?)`, artifactDigest, artifactDigest).Exec()
 	return err
 }
 
