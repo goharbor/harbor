@@ -16,6 +16,8 @@ package repoproxy
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -44,7 +46,35 @@ func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.Arti
 		return release, tooManyRequestsError
 	}
 	// Background context: the request's context may already be canceled by
-	// the time the slot is released.
-	release = func() { connection.Limiter.Release(context.Background(), client, key) }
+	// the time the slot is refreshed or released.
+	stop := make(chan struct{})
+	go keepSlotAlive(stop, slotRefreshInterval, func() {
+		connection.Limiter.Refresh(context.Background(), client, key)
+	})
+	var once sync.Once
+	release = func() {
+		once.Do(func() {
+			close(stop)
+			connection.Limiter.Release(context.Background(), client, key)
+		})
+	}
 	return release, nil
+}
+
+// slotRefreshInterval leaves two missed refreshes before a live holder's slot
+// expires under it.
+const slotRefreshInterval = connection.SlotTTL / 3
+
+// keepSlotAlive calls refresh every interval until stop is closed.
+func keepSlotAlive(stop <-chan struct{}, interval time.Duration, refresh func()) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-stop:
+			return
+		case <-ticker.C:
+			refresh()
+		}
+	}
 }
