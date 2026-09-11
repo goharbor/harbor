@@ -140,6 +140,23 @@ func TestValidate_EmptyAccess(t *testing.T) {
 	assert.Equal(t, errors.BadRequestCode, errors.ErrCode(err))
 }
 
+// A malformed payload with a null permission element must be rejected with 400,
+// not dereferenced into a panic.
+func TestValidate_NilPermission(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{nil})
+	assert.Error(t, err)
+	assert.Equal(t, errors.BadRequestCode, errors.ErrCode(err))
+}
+
+// A malformed payload with a null access element must be rejected with 400.
+func TestValidate_NilAccess(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{nil}},
+	})
+	assert.Error(t, err)
+	assert.Equal(t, errors.BadRequestCode, errors.ErrCode(err))
+}
+
 func TestValidate_WrongKind(t *testing.T) {
 	err := (&roleAPI{}).validate([]*models.RolePermission{
 		{Kind: "system", Access: []*models.Access{{Resource: "member", Action: "create"}}},

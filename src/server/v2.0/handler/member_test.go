@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	testifymock "github.com/stretchr/testify/mock"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security"
@@ -149,6 +150,24 @@ func TestCheckNoEscalation_CallerLacksPermission(t *testing.T) {
 	err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, 30)
 	assert.Error(t, err)
 	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err), "expected ForbiddenError, got: %v", err)
+}
+
+// A built-in role's permissions live in the compile-time policy map, not the DB.
+// Assigning a built-in role (e.g. projectAdmin) must still be blocked when the
+// caller lacks its permissions — the previous DB-only lookup reported built-in
+// roles as permissionless and silently allowed escalation.
+func TestCheckNoEscalation_BuiltinRoleSynthesized(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsSysAdmin").Return(false)
+	// Caller holds none of projectAdmin's permissions.
+	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(false)
+
+	rc := &stubRoleCtl{} // Get must NOT be consulted for a built-in role.
+
+	err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, int64(common.RoleProjectAdmin))
+	assert.Error(t, err)
+	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err), "assigning projectAdmin without holding its perms must be forbidden")
+	rc.AssertNotCalled(t, "Get")
 }
 
 func TestCheckNoEscalation_FirstPermissionPassesSecondFails(t *testing.T) {

@@ -22,11 +22,13 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/member"
 	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
+	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/member"
 )
@@ -185,20 +187,31 @@ func (m *memberAPI) UpdateProjectMember(ctx context.Context, params operation.Up
 
 // checkNoEscalation rejects role assignments where the target role has permissions the caller lacks.
 func (m *memberAPI) checkNoEscalation(ctx context.Context, projectNameOrID any, roleID int64) error {
-	r, err := m.roleCtl.Get(ctx, roleID, &roleCtl.Option{WithPermission: true})
-	if err != nil {
-		return err
+	// Collect the (resource, action) pairs the target role grants. Built-in roles
+	// (IDs 1-5) have no role_permission rows — their permissions live only in the
+	// compile-time policy map — so they must be synthesized here. Reading them from
+	// the DB would report a built-in role as permissionless and let a caller assign
+	// e.g. projectAdmin without holding its permissions.
+	var accesses []*types.Policy
+	if builtin := rbacProject.BuiltinRolePolicies(int(roleID)); builtin != nil {
+		accesses = builtin
+	} else {
+		r, err := m.roleCtl.Get(ctx, roleID, &roleCtl.Option{WithPermission: true})
+		if err != nil {
+			return err
+		}
+		for _, perm := range r.Permissions {
+			accesses = append(accesses, perm.Access...)
+		}
 	}
-	for _, perm := range r.Permissions {
-		for _, acc := range perm.Access {
-			has, err := m.HasProjectPermission(ctx, projectNameOrID, acc.Action, acc.Resource)
-			if err != nil {
-				return err
-			}
-			if !has {
-				return errors.ForbiddenError(nil).WithMessagef(
-					"escalation not allowed: you lack %s:%s", acc.Resource, acc.Action)
-			}
+	for _, acc := range accesses {
+		has, err := m.HasProjectPermission(ctx, projectNameOrID, acc.Action, acc.Resource)
+		if err != nil {
+			return err
+		}
+		if !has {
+			return errors.ForbiddenError(nil).WithMessagef(
+				"escalation not allowed: you lack %s:%s", acc.Resource, acc.Action)
 		}
 	}
 	return nil

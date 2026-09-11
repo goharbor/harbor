@@ -210,8 +210,16 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 	}
 
 	for _, perm := range permissions {
+		if perm == nil {
+			return errors.New(nil).WithMessage("bad request nil permission").WithCode(errors.BadRequestCode)
+		}
 		if len(perm.Access) == 0 {
 			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+		}
+		for _, acc := range perm.Access {
+			if acc == nil {
+				return errors.New(nil).WithMessage("bad request nil access").WithCode(errors.BadRequestCode)
+			}
 		}
 	}
 
