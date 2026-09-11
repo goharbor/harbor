@@ -155,7 +155,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
-	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
+	size, reader, _, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
 	}
