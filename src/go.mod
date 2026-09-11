@@ -86,7 +86,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.58.0
 	github.com/aws/smithy-go v1.26.0
 	github.com/goccy/go-yaml v1.19.2
-	github.com/jackc/pgx/v5 v5.10.0
+	github.com/jackc/pgx/v5 v5.11.0
 )
 
 require (
