@@ -47,12 +47,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	accModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -137,20 +135,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	if p.MaxUpstreamConnection() > 0 {
-		client, err := redis.GetHarborClient()
-		if err != nil {
-			return errors.NewErrs(err)
-		}
-		key := upstreamRegistryConnectionKey(art)
-		log.Debugf("handle blob, upstream registry connection limit key: %s", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
-			return tooManyRequestsError
-		}
-		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	release, err := acquireUpstreamSlot(ctx, p, art)
+	if err != nil {
+		return err
 	}
+	defer release()
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
@@ -349,20 +338,11 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	if p.MaxUpstreamConnection() > 0 {
-		client, err := redis.GetHarborClient()
-		if err != nil {
-			return errors.NewErrs(err)
-		}
-		key := upstreamRegistryConnectionKey(art)
-		log.Debugf("handle manifest key %v", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
-			return tooManyRequestsError
-		}
-		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	release, err := acquireUpstreamSlot(ctx, p, art)
+	if err != nil {
+		return err
 	}
+	defer release()
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
