@@ -7,8 +7,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/role/model"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testmember "github.com/goharbor/harbor/src/testing/pkg/member"
 	testproject "github.com/goharbor/harbor/src/testing/pkg/project"
@@ -23,6 +25,9 @@ type ControllerTestSuite struct {
 	proMgr    *testproject.Manager
 	memberMgr *testmember.Manager
 	c         controller
+	// ctx carries a fake ormer so the controller's orm.WithTransaction wrappers
+	// resolve an ormer from context; the actual DB calls are mocked at the manager level.
+	ctx context.Context
 }
 
 func (suite *ControllerTestSuite) SetupTest() {
@@ -36,6 +41,7 @@ func (suite *ControllerTestSuite) SetupTest() {
 		proMgr:    suite.proMgr,
 		memberMgr: suite.memberMgr,
 	}
+	suite.ctx = orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 }
 
 func (suite *ControllerTestSuite) TestDeleteBuiltinRole() {
@@ -45,7 +51,7 @@ func (suite *ControllerTestSuite) TestDeleteBuiltinRole() {
 		IsBuiltin: true,
 	}, nil)
 
-	err := suite.c.Delete(context.TODO(), int64(1))
+	err := suite.c.Delete(suite.ctx, int64(1))
 	suite.Require().NotNil(err)
 	suite.True(errors.IsErr(err, errors.ForbiddenCode))
 	suite.roleMgr.AssertNotCalled(suite.T(), "Delete", mock.Anything, mock.Anything)
@@ -61,7 +67,7 @@ func (suite *ControllerTestSuite) TestDeleteCustomRole() {
 	suite.roleMgr.On("Delete", mock.Anything, int64(2)).Return(nil)
 	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(2)).Return(nil)
 
-	err := suite.c.Delete(context.TODO(), int64(2))
+	err := suite.c.Delete(suite.ctx, int64(2))
 	suite.Nil(err)
 }
 
@@ -75,14 +81,14 @@ func (suite *ControllerTestSuite) TestDeleteAssignedRoleRejected() {
 	}, nil)
 	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 3).Return(2, nil)
 
-	err := suite.c.Delete(context.TODO(), int64(3))
+	err := suite.c.Delete(suite.ctx, int64(3))
 	suite.Require().NotNil(err)
 	suite.True(errors.IsErr(err, errors.PreconditionCode))
 	suite.roleMgr.AssertNotCalled(suite.T(), "Delete", mock.Anything, mock.Anything)
 }
 
 func (suite *ControllerTestSuite) TestUpdateNilRole() {
-	err := suite.c.Update(context.TODO(), nil, nil)
+	err := suite.c.Update(suite.ctx, nil, nil)
 	suite.Require().NotNil(err)
 	suite.True(errors.IsErr(err, errors.BadRequestCode))
 }
@@ -94,7 +100,7 @@ func (suite *ControllerTestSuite) TestUpdateBuiltinRole() {
 		IsBuiltin: true,
 	}, nil)
 
-	err := suite.c.Update(context.TODO(), &Role{
+	err := suite.c.Update(suite.ctx, &Role{
 		Role: model.Role{ID: 1, Name: "projectAdmin"},
 	}, &Option{WithPermission: true})
 	suite.Require().NotNil(err)
@@ -114,7 +120,7 @@ func (suite *ControllerTestSuite) TestUpdateCustomRole() {
 	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
 	suite.rbacMgr.On("CreatePermission", mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	err := suite.c.Update(context.TODO(), &Role{
+	err := suite.c.Update(suite.ctx, &Role{
 		Role: model.Role{ID: 2, Name: "myCustomRole"},
 		Permissions: []*Permission{
 			{
@@ -132,7 +138,7 @@ func (suite *ControllerTestSuite) TestCreateCustomRole() {
 	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
 	suite.rbacMgr.On("CreatePermission", mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	id, err := suite.c.Create(context.TODO(), &Role{
+	id, err := suite.c.Create(suite.ctx, &Role{
 		Role: model.Role{Name: "myCustomRole"},
 		Permissions: []*Permission{
 			{

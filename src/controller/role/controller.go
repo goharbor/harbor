@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member"
@@ -112,12 +113,19 @@ func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
 		Description: r.Description,
 		CreatedBy:   r.CreatedBy,
 	}
-	roleID, err := d.roleMgr.Create(ctx, rCreate)
-	if err != nil {
-		return 0, err
-	}
-	r.ID = roleID
-	if err := d.createPermission(ctx, r); err != nil {
+	// Create the role row and its permission records atomically: a failed
+	// permission insert must not leave a named role with missing permissions
+	// (whose unique name would then block a clean retry).
+	var roleID int64
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		id, err := d.roleMgr.Create(ctx, rCreate)
+		if err != nil {
+			return err
+		}
+		r.ID = id
+		roleID = id
+		return d.createPermission(ctx, r)
+	})(ctx); err != nil {
 		return 0, err
 	}
 	// fire event
@@ -137,19 +145,25 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 	if rDelete.IsBuiltin {
 		return errors.ForbiddenError(nil).WithMessagef("cannot delete built-in role %d", id)
 	}
-	// A role assigned to project members cannot be deleted: project_member.role
-	// has no FK, so deleting would orphan those memberships.
-	assigned, err := d.memberMgr.GetTotalOfProjectMembersByRole(ctx, int(id))
-	if err != nil {
-		return err
-	}
-	if assigned > 0 {
-		return errors.PreconditionFailedError(nil).WithMessagef("cannot delete role %d: it is still assigned to %d project member(s)", id, assigned)
-	}
-	if err := d.roleMgr.Delete(ctx, id); err != nil {
-		return err
-	}
-	if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, id); err != nil {
+	// A role assigned to project members cannot be deleted (project_member.role
+	// has no FK, so deleting would orphan those memberships). Re-check the count
+	// and delete the role + its permissions together in one transaction, so the
+	// guard and the delete are serialized and the permission rows never outlive
+	// the role. (A concurrent assignment is still possible without a DB-level FK;
+	// that is tracked as a follow-up.)
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		assigned, err := d.memberMgr.GetTotalOfProjectMembersByRole(ctx, int(id))
+		if err != nil {
+			return err
+		}
+		if assigned > 0 {
+			return errors.PreconditionFailedError(nil).WithMessagef("cannot delete role %d: it is still assigned to %d project member(s)", id, assigned)
+		}
+		if err := d.roleMgr.Delete(ctx, id); err != nil {
+			return err
+		}
+		return d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, id)
+	})(ctx); err != nil {
 		return err
 	}
 	// fire event
@@ -181,22 +195,29 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 	if sc, ok := security.FromContext(ctx); ok {
 		modifiedBy = sc.GetUsername()
 	}
-	if err := d.roleMgr.Update(ctx, &model.Role{
-		ID:          r.ID,
-		Description: r.Description,
-		Modified:    true,
-		ModifiedBy:  modifiedBy,
-	}, "description", "modified", "modified_by", "modified_at"); err != nil {
+	// Apply the field update and permission replacement atomically: deleting the
+	// old permissions and inserting the new set must never be observable as a
+	// partial state, which would silently change the role's authorization.
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		if err := d.roleMgr.Update(ctx, &model.Role{
+			ID:          r.ID,
+			Description: r.Description,
+			Modified:    true,
+			ModifiedBy:  modifiedBy,
+		}, "description", "modified", "modified_by", "modified_at"); err != nil {
+			return err
+		}
+		if option != nil && option.WithPermission {
+			if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, r.ID); err != nil && !errors.IsNotFoundErr(err) {
+				return err
+			}
+			if err := d.createPermission(ctx, r); err != nil {
+				return err
+			}
+		}
+		return nil
+	})(ctx); err != nil {
 		return err
-	}
-	// update the permission
-	if option != nil && option.WithPermission {
-		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, r.ID); err != nil && !errors.IsNotFoundErr(err) {
-			return err
-		}
-		if err := d.createPermission(ctx, r); err != nil {
-			return err
-		}
 	}
 	// fire event
 	notification.AddEvent(ctx, &metadata.UpdateRoleEventMetadata{
