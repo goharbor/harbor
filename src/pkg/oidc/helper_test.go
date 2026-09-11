@@ -83,11 +83,11 @@ func TestHelperGet(t *testing.T) {
 	}
 	config.GetCfgManager(ctx).UpdateConfig(ctx, update)
 
-	t.Log("Sleep for 5 seconds")
-	time.Sleep(5 * time.Second)
-	oidcSetting, err := config.OIDCSetting(ctx)
-	assert.Nil(t, err)
-	assert.Equal(t, "new-secret", oidcSetting.ClientSecret)
+	t.Log("Wait for config update")
+	assert.Eventually(t, func() bool {
+		oidcSetting, err := config.OIDCSetting(ctx)
+		return err == nil && oidcSetting.ClientSecret == "new-secret"
+	}, 6*time.Second, 100*time.Millisecond)
 }
 
 func TestAuthCodeURL(t *testing.T) {

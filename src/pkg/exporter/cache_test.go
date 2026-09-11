@@ -3,6 +3,7 @@ package exporter
 import (
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -32,7 +33,8 @@ func (c *CacheTestSuite) TestCacheFunction() {
 	_, ok = CacheGet("key1")
 	c.False(ok)
 	// timeout 1 second
-	time.Sleep(2 * time.Second)
-	_, ok = CacheGet("key2")
-	c.False(ok)
+	assert.Eventually(c.T(), func() bool {
+		_, ok = CacheGet("key2")
+		return !ok
+	}, 3*time.Second, 100*time.Millisecond)
 }
