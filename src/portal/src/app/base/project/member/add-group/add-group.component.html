@@ -38,6 +38,7 @@
                             [hidden]="!checkOnGoing"></span>
                         <div
                             class="selectBox"
+                            (scroll)="onGroupListScroll($event)"
                             [style.display]="
                                 searchedGroups.length ? 'block' : 'none'
                             ">
@@ -48,6 +49,11 @@
                                 </li>
                                 }
                             </ul>
+                            <div
+                                class="loading-more"
+                                [hidden]="!loadingMoreGroups">
+                                <span class="spinner spinner-inline"></span>
+                            </div>
                         </div>
                     </div>
                     @if ( (groupName.invalid && (groupName.touched ||

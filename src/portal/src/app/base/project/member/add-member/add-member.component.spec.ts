@@ -14,7 +14,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddMemberComponent } from './add-member.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { UserService } from '../../../left-side-nav/user/user.service';
+import { UserService } from 'ng-swagger-gen/services/user.service';
 import { of } from 'rxjs';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { ActivatedRoute } from '@angular/router';
@@ -32,6 +32,9 @@ describe('AddMemberComponent', () => {
     const mockUserService = {
         searchUsers: () => {
             return of([[], []]);
+        },
+        searchUsersResponse: () => {
+            return of({ body: [], headers: { get: () => '0' } });
         },
     };
 
