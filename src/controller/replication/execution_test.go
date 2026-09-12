@@ -81,7 +81,9 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		return r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 1)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -97,7 +99,9 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		return r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 1)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -111,7 +115,6 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
 	r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 0)
 	r.execMgr.AssertNumberOfCalls(r.T(), "MarkError", 1) // Ensure execution marked as final status error
 	r.execMgr.AssertExpectations(r.T())
@@ -129,7 +132,9 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		return r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 1)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
