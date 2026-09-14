@@ -58,8 +58,11 @@ func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.Arti
 	}
 	key := upstreamRegistryConnectionKey(art)
 	log.Debugf("upstream registry connection limit key: %s", key)
+	var token string
 	acquire := func() bool {
-		return connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection())
+		var ok bool
+		token, ok = connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection())
+		return ok
 	}
 	access, err := waitForUpstreamSlot(ctx, acquire, existsLocally, upstreamSlotPollInterval)
 	if err != nil || access == serveLocal {
@@ -69,13 +72,13 @@ func acquireUpstreamSlot(ctx context.Context, p *proModels.Project, art lib.Arti
 	// the time the slot is refreshed or released.
 	stop := make(chan struct{})
 	go keepSlotAlive(stop, slotRefreshInterval, func() {
-		connection.Limiter.Refresh(context.Background(), client, key)
+		connection.Limiter.Refresh(context.Background(), client, key, token)
 	})
 	var once sync.Once
 	release = func() {
 		once.Do(func() {
 			close(stop)
-			connection.Limiter.Release(context.Background(), client, key)
+			connection.Limiter.Release(context.Background(), client, key, token)
 		})
 	}
 	return fetchUpstream, release, nil
