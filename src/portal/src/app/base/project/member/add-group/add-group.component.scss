@@ -6,7 +6,8 @@
 .selectBox{
   position: absolute;
   width: 173px;
-  height: auto;
+  max-height: 200px;
+  overflow-y: auto;
   background-color: white;
   border: 1px solid rgb(0 0 0 / 15%);
   border-right-width: 2px;
@@ -14,6 +15,11 @@
   border-radius: 6px;
   box-shadow: 0 5px 10px rgb(0 0 0 / 20%);
   z-index: 100;
+}
+
+.loading-more{
+  text-align: center;
+  padding: 4px 0;
 }
 
 .selectBox ul li{
