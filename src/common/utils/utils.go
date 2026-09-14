@@ -334,9 +334,14 @@ func ValidateCronString(cron string) error {
 	if len(cron) == 0 {
 		return fmt.Errorf("empty cron string is invalid")
 	}
-	_, err := CronParser().Parse(cron)
+	schedule, err := CronParser().Parse(cron)
 	if err != nil {
 		return err
+	}
+	// Reject cron expressions that can never fire (e.g. Feb 30).
+	// Parse succeeds for such specs but schedule.Next returns time.Time{}.
+	if schedule.Next(time.Now()).IsZero() {
+		return fmt.Errorf("cron expression %q can never fire: no matching date exists", cron)
 	}
 	cronParts := strings.Split(cron, " ")
 	if len(cronParts) == 6 && cronParts[0] != "0" {
