@@ -1,11 +1,15 @@
 package awsecr
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
@@ -293,10 +297,10 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "ppp",
 		}
 		svc, _ = getAwsSvc(
-			"test-region", registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, "", &server.URL)
+			"test-region", registry.Credential, registry.Insecure, "", &server.URL)
 	} else {
 		svc, _ = getAwsSvc(
-			"test-region", "", "", registry.Insecure, "", &server.URL)
+			"test-region", nil, registry.Insecure, "", &server.URL)
 	}
 	return &adapter{
 		registry: registry,
@@ -403,9 +407,9 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	)
 	defer server.Close()
 	svc, err := getAwsSvc(
-		"test-region", "xxx", "ppp", true, "", &server.URL)
+		"test-region", &model.Credential{AccessKey: "xxx", AccessSecret: "ppp"}, true, "", &server.URL)
 	require.Nil(t, err)
-	a, _ := NewAuth("xxx", svc).(*awsAuthCredential)
+	a, _ := NewAuth(svc).(*awsAuthCredential)
 	req := httptest.NewRequest(http.MethodGet, "https://1234.DKR.ECR.TEST-REGION.AMAZONAWS.COM/v2/", nil)
 	err = a.Modify(req)
 	require.Nil(t, err)
@@ -414,6 +418,133 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	time.Sleep(150 * time.Millisecond)
 	err = a.Modify(req)
 	require.Nil(t, err)
+}
+
+func TestGetAwsSvc_RoleCredentials(t *testing.T) {
+	tokenFile := filepath.Join(t.TempDir(), "token")
+	require.NoError(t, os.WriteFile(tokenFile, []byte("web-identity-token"), 0600))
+
+	tests := []struct {
+		name                string
+		credential          *model.Credential
+		expectedAction      string
+		expectedSourceKey   string
+		expectedSourceID    string
+		expectedWebIdentity string
+	}{
+		{
+			name: "web identity token file",
+			credential: roleTestCredential(t, model.CredentialTypeAWSWebIdentity, roleCredential{
+				RoleARN:                  "arn:aws:iam::123456789012:role/web-identity",
+				WebIdentityTokenFilePath: tokenFile,
+			}, ""),
+			expectedAction:      "AssumeRoleWithWebIdentity",
+			expectedWebIdentity: "web-identity-token",
+		},
+		{
+			name: "assume role with static source",
+			credential: roleTestCredential(t, model.CredentialTypeAWSAssumeRole, roleCredential{
+				RoleARN:         "arn:aws:iam::123456789012:role/target",
+				SourceIdentity:  "harbor-replication",
+				SourceAccessKey: "STATIC_SOURCE_KEY",
+			}, "static-source-secret"),
+			expectedAction:    "AssumeRole",
+			expectedSourceKey: "STATIC_SOURCE_KEY",
+			expectedSourceID:  "harbor-replication",
+		},
+		{
+			name: "assume role with default source",
+			credential: roleTestCredential(t, model.CredentialTypeAWSAssumeRole, roleCredential{
+				RoleARN:        "arn:aws:iam::123456789012:role/target",
+				SourceIdentity: "harbor-replication",
+			}, ""),
+			expectedAction:    "AssumeRole",
+			expectedSourceKey: "DEFAULT_SOURCE_KEY",
+			expectedSourceID:  "harbor-replication",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("AWS_ACCESS_KEY_ID", "DEFAULT_SOURCE_KEY")
+			t.Setenv("AWS_SECRET_ACCESS_KEY", "default-source-secret")
+
+			calledAction := make(chan string, 1)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if target := r.Header.Get("X-Amz-Target"); target != "" {
+					assert.Contains(t, target, "GetAuthorizationToken")
+					assert.Contains(t, r.Header.Get("Authorization"), "ASSUMED_ACCESS_KEY")
+					w.Header().Set("Content-Type", "application/x-amz-json-1.1")
+					fmt.Fprintf(w, `{"authorizationData":[{"authorizationToken":"QVdTOnBhc3M=","expiresAt":%d,"proxyEndpoint":"https://123456789012.dkr.ecr.test-region.amazonaws.com"}]}`,
+						time.Now().Add(time.Hour).Unix())
+					return
+				}
+
+				if !assert.NoError(t, r.ParseForm()) {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+				action := r.Form.Get("Action")
+				calledAction <- action
+				assert.Equal(t, tt.expectedAction, action)
+				if tt.expectedSourceKey == "" {
+					assert.Empty(t, r.Header.Get("Authorization"))
+				} else {
+					assert.Contains(t, r.Header.Get("Authorization"), tt.expectedSourceKey)
+				}
+				assert.Equal(t, tt.expectedSourceID, r.Form.Get("SourceIdentity"))
+				assert.Equal(t, tt.expectedWebIdentity, r.Form.Get("WebIdentityToken"))
+
+				expires := time.Now().Add(time.Hour).UTC().Format(time.RFC3339)
+				w.Header().Set("Content-Type", "text/xml")
+				fmt.Fprintf(w, `<%[1]sResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/"><%[1]sResult><Credentials><AccessKeyId>ASSUMED_ACCESS_KEY</AccessKeyId><SecretAccessKey>assumed-secret-key</SecretAccessKey><SessionToken>assumed-session-token</SessionToken><Expiration>%[2]s</Expiration></Credentials></%[1]sResult></%[1]sResponse>`,
+					action, expires)
+			}))
+			defer server.Close()
+
+			svc, err := getAwsSvc("test-region", tt.credential, false, "", &server.URL)
+			require.NoError(t, err)
+			_, err = svc.GetAuthorizationToken(context.Background(), &awsecrapi.GetAuthorizationTokenInput{})
+			require.NoError(t, err)
+			select {
+			case action := <-calledAction:
+				require.Equal(t, tt.expectedAction, action)
+			default:
+				t.Fatal("STS was not called")
+			}
+		})
+	}
+}
+
+func TestParseRoleCredential(t *testing.T) {
+	tests := []struct {
+		name           string
+		credentialType string
+		credential     *model.Credential
+		errorContains  string
+	}{
+		{name: "missing credential", credentialType: model.CredentialTypeAWSAssumeRole, errorContains: "credential is required"},
+		{name: "invalid JSON", credentialType: model.CredentialTypeAWSAssumeRole, credential: &model.Credential{AccessKey: "{"}, errorContains: "invalid AWS role credential"},
+		{name: "missing role ARN", credentialType: model.CredentialTypeAWSAssumeRole, credential: &model.Credential{AccessKey: `{}`}, errorContains: "role ARN is required"},
+		{name: "relative token path", credentialType: model.CredentialTypeAWSWebIdentity, credential: roleTestCredential(t, model.CredentialTypeAWSWebIdentity, roleCredential{RoleARN: "arn:aws:iam::123456789012:role/test", WebIdentityTokenFilePath: "token"}, ""), errorContains: "absolute local path"},
+		{name: "web identity source identity", credentialType: model.CredentialTypeAWSWebIdentity, credential: roleTestCredential(t, model.CredentialTypeAWSWebIdentity, roleCredential{RoleARN: "arn:aws:iam::123456789012:role/test", WebIdentityTokenFilePath: "/token", SourceIdentity: "harbor"}, ""), errorContains: "supplied by the token claim"},
+		{name: "missing source secret", credentialType: model.CredentialTypeAWSAssumeRole, credential: roleTestCredential(t, model.CredentialTypeAWSAssumeRole, roleCredential{RoleARN: "arn:aws:iam::123456789012:role/test", SourceAccessKey: "key"}, ""), errorContains: "source access secret is required"},
+		{name: "invalid source identity", credentialType: model.CredentialTypeAWSAssumeRole, credential: roleTestCredential(t, model.CredentialTypeAWSAssumeRole, roleCredential{RoleARN: "arn:aws:iam::123456789012:role/test", SourceIdentity: "aws:reserved"}, ""), errorContains: "invalid AWS source identity"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := parseRoleCredential(tt.credentialType, tt.credential)
+			require.ErrorContains(t, err, tt.errorContains)
+		})
+	}
+}
+
+func roleTestCredential(t *testing.T, credentialType string, role roleCredential, secret string) *model.Credential {
+	t.Helper()
+	encoded, err := json.Marshal(role)
+	require.NoError(t, err)
+	return &model.Credential{Type: credentialType, AccessKey: string(encoded), AccessSecret: secret}
 }
 
 func TestGetAdapterInfo_ChinaRegionEndpoints(t *testing.T) {

@@ -657,4 +657,87 @@ describe('CreateEditEndpointComponent (inline template)', () => {
             expect(comp.target.name).toEqual('target_01');
         });
     });
+
+    it('should serialize AWS ECR credential modes', () => {
+        comp.target.type = 'aws-ecr';
+
+        comp.awsAuthMode = 'default';
+        comp.serializeAwsCredential();
+        expect(comp.target.credential).toEqual({
+            type: 'basic',
+            access_key: '',
+            access_secret: '',
+        });
+
+        comp.awsAuthMode = 'static';
+        comp.awsSourceAccessKey = 'access-key';
+        comp.awsSourceAccessSecret = 'access-secret';
+        comp.serializeAwsCredential();
+        expect(comp.target.credential).toEqual({
+            type: 'basic',
+            access_key: 'access-key',
+            access_secret: 'access-secret',
+        });
+
+        comp.awsAuthMode = 'web_identity';
+        comp.awsRoleArn = 'arn:aws:iam::123456789012:role/web';
+        comp.awsWebIdentityTokenFile = '/var/run/secrets/aws/token';
+        comp.serializeAwsCredential();
+        expect(comp.target.credential).toEqual({
+            type: 'aws_web_identity',
+            access_key: JSON.stringify({
+                role_arn: 'arn:aws:iam::123456789012:role/web',
+                web_identity_token_file: '/var/run/secrets/aws/token',
+            }),
+            access_secret: '',
+        });
+
+        comp.awsAuthMode = 'assume_role';
+        comp.awsRoleArn = 'arn:aws:iam::123456789012:role/target';
+        comp.awsSourceIdentity = 'harbor-replication';
+        comp.awsSourceAuthMode = 'static';
+        comp.awsSourceAccessKey = 'source-key';
+        comp.awsSourceAccessSecret = 'source-secret';
+        comp.serializeAwsCredential();
+        expect(comp.target.credential).toEqual({
+            type: 'aws_assume_role',
+            access_key: JSON.stringify({
+                role_arn: 'arn:aws:iam::123456789012:role/target',
+                source_identity: 'harbor-replication',
+                source_access_key: 'source-key',
+            }),
+            access_secret: 'source-secret',
+        });
+    });
+
+    it('should restore and update an AWS assume role credential', () => {
+        comp.target = {
+            ...comp.initEndpoint(),
+            type: 'aws-ecr',
+            credential: {
+                type: 'aws_assume_role',
+                access_key: JSON.stringify({
+                    role_arn: 'arn:aws:iam::123456789012:role/target',
+                    source_identity: 'harbor-replication',
+                    source_access_key: 'source-key',
+                }),
+                access_secret: '*****',
+            },
+        };
+        comp.initVal = JSON.parse(JSON.stringify(comp.target));
+
+        comp.loadAwsCredential();
+        expect(comp.awsAuthMode).toBe('assume_role');
+        expect(comp.awsRoleArn).toBe('arn:aws:iam::123456789012:role/target');
+        expect(comp.awsSourceIdentity).toBe('harbor-replication');
+        expect(comp.awsSourceAuthMode).toBe('static');
+        expect(comp.awsSourceAccessKey).toBe('source-key');
+        expect(comp.awsSourceAccessSecret).toBe('rjGcfuRu');
+
+        comp.awsAuthMode = 'web_identity';
+        comp.awsWebIdentityTokenFile = '/var/run/secrets/aws/token';
+        comp.serializeAwsCredential();
+        expect(comp.getChanges().credential_type).toBe('aws_web_identity');
+        expect(comp.getChanges().access_secret).toBe('');
+    });
 });

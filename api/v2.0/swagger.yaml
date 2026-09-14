@@ -7754,13 +7754,26 @@ definitions:
     properties:
       type:
         type: string
-        description: Credential type, such as 'basic', 'oauth'.
+        description: >-
+          Credential type, such as 'basic', 'oauth', 'aws_web_identity', or
+          'aws_assume_role'.
       access_key:
         type: string
-        description: Access key, e.g. user name when credential type is 'basic'.
+        description: >-
+          Access key, e.g. user name when credential type is 'basic'. For
+          'aws_web_identity', this is a JSON object containing 'role_arn' and
+          'web_identity_token_file'; the file must be an absolute local path
+          available to both Harbor core and jobservice. Source identity for
+          web identity must come from the token claim. For 'aws_assume_role',
+          this is a JSON object containing 'role_arn' and optional
+          'source_identity' and 'source_access_key'.
       access_secret:
         type: string
-        description: Access secret, e.g. password when credential type is 'basic'.
+        description: >-
+          Access secret, e.g. password when credential type is 'basic'. For
+          'aws_assume_role', this is the source secret key when
+          'source_access_key' is configured; omit both to use the default
+          credentials chain.
   Registry:
     type: object
     properties:
@@ -7818,7 +7831,9 @@ definitions:
         x-nullable: true
       credential_type:
         type: string
-        description: Credential type of the registry, e.g. 'basic'.
+        description: >-
+          Credential type of the registry, e.g. 'basic', 'aws_web_identity',
+          or 'aws_assume_role'.
         x-nullable: true
       access_key:
         type: string
@@ -7854,7 +7869,9 @@ definitions:
         x-nullable: true
       credential_type:
         type: string
-        description: Credential type of the registry, e.g. 'basic'.
+        description: >-
+          Credential type of the registry, e.g. 'basic', 'aws_web_identity',
+          or 'aws_assume_role'.
         x-nullable: true
       access_key:
         type: string

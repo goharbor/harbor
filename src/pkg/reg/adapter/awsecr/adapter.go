@@ -53,11 +53,11 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	svc, err := getAwsSvc(
-		region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure, registry.CACertificate, nil)
+		region, registry.Credential, registry.Insecure, registry.CACertificate, nil)
 	if err != nil {
 		return nil, err
 	}
-	authorizer := NewAuth(registry.Credential.AccessKey, svc)
+	authorizer := NewAuth(svc)
 	return &adapter{
 		registry: registry,
 		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),

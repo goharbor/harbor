@@ -53,6 +53,7 @@ export interface Endpoint extends Base {
 export interface PingEndpoint extends Base {
     access_key?: string;
     access_secret?: string;
+    credential_type?: string;
     description: string;
     insecure: boolean;
     ca_certificate?: string;

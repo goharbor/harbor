@@ -42,6 +42,9 @@ const FAKE_PASSWORD = 'rjGcfuRu';
 const FAKE_JSON_KEY = 'No Change';
 const METADATA_URL = CURRENT_BASE_HREF + '/replication/adapterinfos';
 const FIXED_PATTERN_TYPE: string = 'EndpointPatternTypeFix';
+const AWS_ECR = 'aws-ecr';
+const AWS_WEB_IDENTITY = 'aws_web_identity';
+const AWS_ASSUME_ROLE = 'aws_assume_role';
 @Component({
     selector: 'hbr-create-edit-endpoint',
     templateUrl: './create-edit-endpoint.component.html',
@@ -80,6 +83,13 @@ export class CreateEditEndpointComponent
     endpointOnHover: boolean = false;
     testButtonState: ClrLoadingState = ClrLoadingState.DEFAULT;
     okButtonState: ClrLoadingState = ClrLoadingState.DEFAULT;
+    awsAuthMode: string = 'default';
+    awsRoleArn: string = '';
+    awsWebIdentityTokenFile: string = '';
+    awsSourceIdentity: string = '';
+    awsSourceAuthMode: string = 'default';
+    awsSourceAccessKey: string = '';
+    awsSourceAccessSecret: string = '';
     constructor(
         private endpointService: EndpointService,
         private errorHandler: ErrorHandler,
@@ -213,6 +223,7 @@ export class CreateEditEndpointComponent
         }
         this.target = this.initEndpoint();
         this.initVal = this.initEndpoint();
+        this.resetAwsCredential();
         this.formValues = null;
         this.endpointId = '';
         this.inlineAlert.close();
@@ -229,6 +240,9 @@ export class CreateEditEndpointComponent
             this.endpointService.getEndpoint(targetId).subscribe(
                 target => {
                     this.target = target;
+                    if (this.isAwsEcr()) {
+                        this.loadAwsCredential();
+                    }
                     this.urlDisabled =
                         this.adapterInfo &&
                         this.adapterInfo[this.target.type] &&
@@ -237,14 +251,16 @@ export class CreateEditEndpointComponent
                             .endpoint_type === FIXED_PATTERN_TYPE;
                     // Keep data cache
                     this.initVal = clone(target);
-                    this.initVal.credential.access_secret =
-                        this.target.type === 'google-gcr'
-                            ? FAKE_JSON_KEY
-                            : FAKE_PASSWORD;
-                    this.target.credential.access_secret =
-                        this.target.type === 'google-gcr'
-                            ? FAKE_JSON_KEY
-                            : FAKE_PASSWORD;
+                    if (this.target.credential.access_secret) {
+                        this.initVal.credential.access_secret =
+                            this.target.type === 'google-gcr'
+                                ? FAKE_JSON_KEY
+                                : FAKE_PASSWORD;
+                        this.target.credential.access_secret =
+                            this.target.type === 'google-gcr'
+                                ? FAKE_JSON_KEY
+                                : FAKE_PASSWORD;
+                    }
 
                     // Open the modal now
                     this.open();
@@ -268,13 +284,18 @@ export class CreateEditEndpointComponent
         this.targetForm.controls.endpointUrl.reset('');
         let selectValue = this.targetForm.controls.adapter.value;
         this.urlDisabled = false;
-        if (this.isNormalCredential()) {
-            this.targetForm.controls.access_key.setValue('');
+        this.target.credential.type = 'basic';
+        this.target.credential.access_secret = '';
+        if (selectValue === AWS_ECR) {
+            this.resetAwsCredential();
+            this.serializeAwsCredential();
+        } else if (this.isNormalCredential()) {
+            this.target.credential.access_key = '';
         } else {
-            this.targetForm.controls.access_key.setValue(
-                this.adapterInfo[this.target.type].credential_pattern
-                    .access_key_data
-            );
+            this.target.credential.access_key =
+                this.adapterInfo[
+                    this.target.type
+                ].credential_pattern.access_key_data;
         }
         if (
             this.adapterInfo &&
@@ -299,6 +320,7 @@ export class CreateEditEndpointComponent
     }
 
     testConnection() {
+        this.serializeAwsCredential();
         let payload: PingEndpoint = this.initPingEndpoint();
         if (!this.endpointId) {
             payload.name = this.target.name;
@@ -307,6 +329,7 @@ export class CreateEditEndpointComponent
             payload.url = this.target.url;
             payload.access_key = this.target.credential.access_key;
             payload.access_secret = this.target.credential.access_secret;
+            payload.credential_type = this.target.credential.type;
             payload.insecure = this.target.insecure;
             payload.ca_certificate = this.target.ca_certificate;
         } else {
@@ -359,6 +382,7 @@ export class CreateEditEndpointComponent
         }
         this.onGoing = true;
         this.okButtonState = ClrLoadingState.LOADING;
+        this.serializeAwsCredential();
         this.endpointService.createEndpoint(this.target).subscribe(
             response => {
                 this.translateService
@@ -382,6 +406,7 @@ export class CreateEditEndpointComponent
             return; // Avoid duplicated submitting
         }
 
+        this.serializeAwsCredential();
         let payload: Endpoint = this.initEndpoint();
         for (let prop of Object.keys(payload)) {
             delete payload[prop];
@@ -495,21 +520,125 @@ export class CreateEditEndpointComponent
                     Object.assign({}, field, this.target[prop])
                 )) {
                     if (!compareValue(field[pro], this.target[prop][pro])) {
-                        changes[pro] = this.target[prop][pro];
+                        let key =
+                            prop === 'credential' && pro === 'type'
+                                ? 'credential_type'
+                                : pro;
+                        changes[key] = this.target[prop][pro];
                         // Number
                         if (typeof field[pro] === 'number') {
-                            changes[pro] = +changes[pro];
+                            changes[key] = +changes[key];
                         }
 
                         // Trim string value
                         if (typeof field[pro] === 'string') {
-                            changes[pro] = ('' + changes[pro]).trim();
+                            changes[key] = ('' + changes[key]).trim();
                         }
                     }
                 }
             }
         }
         return changes;
+    }
+
+    isAwsEcr(): boolean {
+        return this.target?.type === AWS_ECR;
+    }
+
+    awsCredentialChange(): void {
+        this.serializeAwsCredential();
+    }
+
+    resetAwsCredential(): void {
+        this.awsAuthMode = 'default';
+        this.awsRoleArn = '';
+        this.awsWebIdentityTokenFile = '';
+        this.awsSourceIdentity = '';
+        this.awsSourceAuthMode = 'default';
+        this.awsSourceAccessKey = '';
+        this.awsSourceAccessSecret = '';
+    }
+
+    loadAwsCredential(): void {
+        this.resetAwsCredential();
+        const credential = this.target.credential;
+        if (credential.type === AWS_WEB_IDENTITY) {
+            this.awsAuthMode = 'web_identity';
+        } else if (credential.type === AWS_ASSUME_ROLE) {
+            this.awsAuthMode = 'assume_role';
+        } else {
+            this.awsAuthMode = credential.access_key ? 'static' : 'default';
+            this.awsSourceAccessKey = credential.access_key || '';
+            this.awsSourceAccessSecret = credential.access_secret
+                ? FAKE_PASSWORD
+                : '';
+            return;
+        }
+
+        let role: { [key: string]: string };
+        try {
+            role = JSON.parse(credential.access_key || '{}');
+        } catch {
+            return;
+        }
+        this.awsRoleArn = role.role_arn || '';
+        this.awsWebIdentityTokenFile = role.web_identity_token_file || '';
+        this.awsSourceIdentity = role.source_identity || '';
+        this.awsSourceAccessKey = role.source_access_key || '';
+        this.awsSourceAuthMode = this.awsSourceAccessKey ? 'static' : 'default';
+        this.awsSourceAccessSecret = credential.access_secret
+            ? FAKE_PASSWORD
+            : '';
+    }
+
+    serializeAwsCredential(): void {
+        if (!this.isAwsEcr()) {
+            return;
+        }
+        if (this.awsAuthMode === 'default') {
+            this.target.credential = {
+                type: 'basic',
+                access_key: '',
+                access_secret: '',
+            };
+            return;
+        }
+        if (this.awsAuthMode === 'static') {
+            this.target.credential = {
+                type: 'basic',
+                access_key: this.awsSourceAccessKey,
+                access_secret: this.awsSourceAccessSecret,
+            };
+            return;
+        }
+
+        let role: { [key: string]: string } = {
+            role_arn: this.awsRoleArn,
+        };
+        if (this.awsAuthMode === 'web_identity') {
+            role.web_identity_token_file = this.awsWebIdentityTokenFile;
+            this.target.credential = {
+                type: AWS_WEB_IDENTITY,
+                access_key: JSON.stringify(role),
+                access_secret: '',
+            };
+            return;
+        }
+
+        if (this.awsSourceIdentity) {
+            role.source_identity = this.awsSourceIdentity;
+        }
+        if (this.awsSourceAuthMode === 'static') {
+            role.source_access_key = this.awsSourceAccessKey;
+        }
+        this.target.credential = {
+            type: AWS_ASSUME_ROLE,
+            access_key: JSON.stringify(role),
+            access_secret:
+                this.awsSourceAuthMode === 'static'
+                    ? this.awsSourceAccessSecret
+                    : '',
+        };
     }
 
     getAdapterText(adapter: string): string {

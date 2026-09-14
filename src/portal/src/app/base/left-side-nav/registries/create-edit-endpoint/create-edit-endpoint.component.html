@@ -147,6 +147,149 @@
                     }
                 </div>
             </div>
+            @if (isAwsEcr()) {
+            <clr-select-container>
+                <label class="required">{{
+                    'DESTINATION.AWS_AUTH_METHOD' | translate
+                }}</label>
+                <select
+                    clrSelect
+                    id="aws_auth_mode"
+                    name="aws_auth_mode"
+                    [disabled]="testOngoing || !editable"
+                    [(ngModel)]="awsAuthMode"
+                    (ngModelChange)="awsCredentialChange()">
+                    <option value="default">
+                        {{ 'DESTINATION.AWS_DEFAULT_CREDENTIALS' | translate }}
+                    </option>
+                    <option value="static">
+                        {{ 'DESTINATION.AWS_STATIC_CREDENTIALS' | translate }}
+                    </option>
+                    <option value="web_identity">
+                        {{ 'DESTINATION.AWS_WEB_IDENTITY' | translate }}
+                    </option>
+                    <option value="assume_role">
+                        {{ 'DESTINATION.AWS_ASSUME_ROLE' | translate }}
+                    </option>
+                </select>
+            </clr-select-container>
+            @if (awsAuthMode === 'web_identity' || awsAuthMode ===
+            'assume_role') {
+            <clr-input-container>
+                <label class="required">{{
+                    'DESTINATION.AWS_ROLE_ARN' | translate
+                }}</label>
+                <input
+                    autocomplete="off"
+                    clrInput
+                    type="text"
+                    id="aws_role_arn"
+                    name="aws_role_arn"
+                    [disabled]="testOngoing"
+                    [readonly]="!editable"
+                    [(ngModel)]="awsRoleArn"
+                    (ngModelChange)="awsCredentialChange()"
+                    size="30"
+                    required />
+            </clr-input-container>
+            } @if (awsAuthMode === 'web_identity') {
+            <clr-input-container>
+                <label class="required">{{
+                    'DESTINATION.AWS_WEB_IDENTITY_TOKEN_FILE' | translate
+                }}</label>
+                <input
+                    autocomplete="off"
+                    clrInput
+                    type="text"
+                    id="aws_web_identity_token_file"
+                    name="aws_web_identity_token_file"
+                    [disabled]="testOngoing"
+                    [readonly]="!editable"
+                    [(ngModel)]="awsWebIdentityTokenFile"
+                    (ngModelChange)="awsCredentialChange()"
+                    size="30"
+                    pattern="^/.*"
+                    required />
+                <clr-control-helper>{{
+                    'DESTINATION.AWS_WEB_IDENTITY_TOKEN_FILE_HELPER' | translate
+                }}</clr-control-helper>
+            </clr-input-container>
+            } @if (awsAuthMode === 'assume_role') {
+            <clr-input-container>
+                <label>{{
+                    'DESTINATION.AWS_SOURCE_IDENTITY' | translate
+                }}</label>
+                <input
+                    autocomplete="off"
+                    clrInput
+                    type="text"
+                    id="aws_source_identity"
+                    name="aws_source_identity"
+                    [disabled]="testOngoing"
+                    [readonly]="!editable"
+                    [(ngModel)]="awsSourceIdentity"
+                    (ngModelChange)="awsCredentialChange()"
+                    size="30"
+                    minlength="2"
+                    maxlength="64"
+                    pattern="^(?![aA][wW][sS]:)[A-Za-z0-9_+=,.@-]+$" />
+            </clr-input-container>
+            <clr-select-container>
+                <label class="required">{{
+                    'DESTINATION.AWS_SOURCE_CREDENTIALS' | translate
+                }}</label>
+                <select
+                    clrSelect
+                    id="aws_source_auth_mode"
+                    name="aws_source_auth_mode"
+                    [disabled]="testOngoing || !editable"
+                    [(ngModel)]="awsSourceAuthMode"
+                    (ngModelChange)="awsCredentialChange()">
+                    <option value="default">
+                        {{ 'DESTINATION.AWS_DEFAULT_CREDENTIALS' | translate }}
+                    </option>
+                    <option value="static">
+                        {{ 'DESTINATION.AWS_STATIC_CREDENTIALS' | translate }}
+                    </option>
+                </select>
+            </clr-select-container>
+            } @if (awsAuthMode === 'static' || (awsAuthMode === 'assume_role' &&
+            awsSourceAuthMode === 'static')) {
+            <clr-input-container>
+                <label class="required">{{
+                    'DESTINATION.ACCESS_ID' | translate
+                }}</label>
+                <input
+                    autocomplete="off"
+                    clrInput
+                    type="text"
+                    id="aws_source_access_key"
+                    name="aws_source_access_key"
+                    [disabled]="testOngoing"
+                    [readonly]="!editable"
+                    [(ngModel)]="awsSourceAccessKey"
+                    (ngModelChange)="awsCredentialChange()"
+                    size="30"
+                    required />
+            </clr-input-container>
+            <clr-input-container>
+                <label class="required">{{
+                    'DESTINATION.ACCESS_SECRET' | translate
+                }}</label>
+                <input
+                    autocomplete="off"
+                    clrInput
+                    type="password"
+                    id="aws_source_access_secret"
+                    name="aws_source_access_secret"
+                    [disabled]="testOngoing"
+                    [readonly]="!editable"
+                    [(ngModel)]="awsSourceAccessSecret"
+                    (ngModelChange)="awsCredentialChange()"
+                    size="30"
+                    required />
+            </clr-input-container>
+            } } @else {
             <!-- access_key -->
             <clr-input-container>
                 <label>{{ 'DESTINATION.ACCESS_ID' | translate }}</label>
@@ -200,6 +343,7 @@
                     </div>
                 </div>
             </div>
+            }
             <!-- Verify Remote Cert -->
             <clr-checkbox-container>
                 <label

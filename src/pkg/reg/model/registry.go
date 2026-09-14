@@ -49,6 +49,10 @@ const (
 	CredentialTypeOAuth = "oauth"
 	// CredentialTypeSecret is only used by the communication of Harbor internal components
 	CredentialTypeSecret = "secret"
+	// CredentialTypeAWSWebIdentity indicates AWS AssumeRoleWithWebIdentity credentials
+	CredentialTypeAWSWebIdentity = "aws_web_identity"
+	// CredentialTypeAWSAssumeRole indicates AWS AssumeRole credentials
+	CredentialTypeAWSAssumeRole = "aws_assume_role"
 
 	// EndpointPatternTypeStandard ...
 	EndpointPatternTypeStandard = "EndpointPatternTypeStandard"
