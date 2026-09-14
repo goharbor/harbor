@@ -15,9 +15,11 @@
 package adapter
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"sort"
 
 	"github.com/docker/distribution"
@@ -61,6 +63,8 @@ type ArtifactRegistry interface {
 	DeleteManifest(repository, reference string) error // the "reference" can be "tag" or "digest", the function needs to handle both
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	// PullBlobRange preserves the upstream status, headers and body for proxy cache requests.
+	PullBlobRange(ctx context.Context, repository, digest, byteRange, ifRange string) (*http.Response, error)
 	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
 	PushBlobChunk(repository, digest string, size int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
