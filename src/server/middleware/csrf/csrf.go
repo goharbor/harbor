@@ -16,77 +16,68 @@ package csrf
 
 import (
 	"net/http"
-	"os"
+	"slices"
 	"strings"
-	"sync"
 
-	"github.com/gorilla/csrf"
-
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib"
-	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
-const (
-	csrfKeyEnv  = "CSRF_KEY"
-	tokenHeader = "X-Harbor-CSRF-Token"
-)
+// protect judges each request on the origin that browser actually used, so it
+// needs no configuration and is safe for concurrent use.
+var protect = http.NewCrossOriginProtection()
 
-var (
-	once       sync.Once
-	secureFlag = true
-	protect    func(handler http.Handler) http.Handler
-)
+// safeMethods are the methods RFC 7231 defines as safe, which carry no state
+// change and so need no cross-origin check.
+var safeMethods = []string{http.MethodGet, http.MethodHead, http.MethodOptions}
 
-// attachToken makes sure if csrf generate a new token it will be included in the response header
-func attachToken(w http.ResponseWriter, r *http.Request) {
-	if t := csrf.Token(r); len(t) > 0 {
-		w.Header().Set(tokenHeader, t)
-	} else {
-		log.Warningf("token not found in context, skip attaching")
+// check applies the cross-origin protection, then closes the one gap it leaves
+// open by design.
+//
+// CrossOriginProtection admits a request carrying neither Sec-Fetch-Site nor
+// Origin, reading it as non-browser traffic. That is the right default for a
+// library, but not here: csrfSkipper has already excused the registry, API and
+// service routes that non-browser clients use, so an unsafe request arriving
+// without either header is one we cannot vouch for. Refusing it matches what the
+// previous token scheme did, which rejected any write that failed to present a
+// token.
+func check(req *http.Request) error {
+	if err := protect.Check(req); err != nil {
+		return err
 	}
+
+	if slices.Contains(safeMethods, req.Method) {
+		return nil
+	}
+
+	if req.Header.Get("Sec-Fetch-Site") == "" && req.Header.Get("Origin") == "" {
+		return errors.New("request carries neither Sec-Fetch-Site nor Origin, cannot confirm its origin")
+	}
+
+	return nil
 }
 
-func handleError(w http.ResponseWriter, r *http.Request) {
-	attachToken(w, r)
-	lib_http.SendError(w, errors.New(csrf.FailureReason(r)).WithCode(errors.ForbiddenCode))
-}
-
-func attach(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		attachToken(rw, req)
-		handler.ServeHTTP(rw, req)
-	})
-}
-
-// Middleware initialize the middleware to apply csrf selectively
+// Middleware rejects cross-origin requests that carry a session. It reads the
+// Fetch metadata headers browsers have sent since 2023, falling back to
+// comparing Origin against the Host the client addressed.
+//
+// Deliberately no configured endpoint takes part in the decision. Harbor is
+// commonly reachable on several ingresses, over different schemes, behind
+// proxies that rewrite Host; a single configured origin describes none of that,
+// and every attempt to reconstruct "the" expected origin gets one of those
+// deployments wrong.
 func Middleware() func(handler http.Handler) http.Handler {
-	once.Do(func() {
-		key := os.Getenv(csrfKeyEnv)
-		if len(key) == 0 {
-			key = utils.GenerateRandomString()
-		} else if len(key) != 32 {
-			log.Errorf("Invalid CSRF key length from the environment (%d characters). Please ensure the key length is 32 characters.", len(key))
-			protect = func(_ http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-					lib_http.SendError(w, errors.New("invalid CSRF key length from the environment. Please ensure the key length is 32 characters"))
-				})
-			}
+	return middleware.New(func(rw http.ResponseWriter, req *http.Request, next http.Handler) {
+		if err := check(req); err != nil {
+			log.Debugf("Rejected cross-origin request for %s: %v", lib.TrimLineBreaks(req.URL.Path), err)
+			lib_http.SendError(rw, errors.New(err).WithCode(errors.ForbiddenCode))
 			return
 		}
-		secureFlag = secureCookie()
-		protect = csrf.Protect([]byte(key), csrf.RequestHeader(tokenHeader),
-			csrf.Secure(secureFlag),
-			csrf.ErrorHandler(http.HandlerFunc(handleError)),
-			csrf.SameSite(csrf.SameSiteStrictMode),
-			csrf.Path("/"))
-	})
-	return middleware.New(func(rw http.ResponseWriter, req *http.Request, next http.Handler) {
-		protect(attach(next)).ServeHTTP(rw, req)
+
+		next.ServeHTTP(rw, req)
 	}, csrfSkipper)
 }
 
@@ -99,13 +90,4 @@ func csrfSkipper(req *http.Request) bool {
 		return true
 	}
 	return false
-}
-
-func secureCookie() bool {
-	ep, err := config.ExtEndpoint()
-	if err != nil {
-		log.Warningf("Failed to get external endpoint: %v, set cookie secure flag to true", err)
-		return true
-	}
-	return !strings.HasPrefix(strings.ToLower(ep), "http://")
 }
