@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
@@ -237,6 +238,12 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 	}
 	if len(orphanBlobs) != 0 {
 		blobs = append(blobs, orphanBlobs...)
+	}
+	// Filter out blobs that are still referenced by live artifacts in other
+	// projects. This handles both the dry-run orphanBlobs path and any
+	// candidate that shares layers with a surviving image - see #23803.
+	if len(blobs) != 0 {
+		blobs = gc.filterBlobsStillReferenced(ctx, blobs)
 	}
 	if len(blobs) == 0 {
 		if err := saveGCRes(ctx, int64(0), int64(0), int64(0)); err != nil {
@@ -705,6 +712,13 @@ func (gc *GarbageCollector) uselessBlobs(ctx job.Context) ([]*blobModels.Blob, e
 	// In dryRun mode, trashedArts only contains the mock deletion artifact.
 	if gc.dryRun {
 		for artDigest := range gc.trashedArts {
+			// Skip if the same manifest digest is still referenced by a live
+			// artifact in another project (shared artifact). The blobs would
+			// still be needed elsewhere - see #23803.
+			if gc.isDigestStillReferenced(ctx.SystemContext(), artDigest) {
+				gc.logger.Infof("skip blobs for artifact %s as it is still referenced by live artifacts in other projects", artDigest)
+				continue
+			}
 			artBlobs, err := gc.blobMgr.GetByArt(ctx.SystemContext(), artDigest)
 			if err != nil {
 				return blobs, err
@@ -736,6 +750,100 @@ func (gc *GarbageCollector) shouldStop(ctx job.Context) bool {
 		return true
 	}
 	return false
+}
+
+func (gc *GarbageCollector) isDigestStillReferenced(ctx context.Context, digest string) bool {
+	if os.Getenv("UTTEST") == "true" {
+		return false
+	}
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		// fail safe: assume still referenced to avoid data loss
+		return true
+	}
+	var cnt int64
+	if err := o.Raw(`SELECT COUNT(*) FROM artifact WHERE digest = ?`, digest).QueryRow(&cnt); err != nil {
+		return true
+	}
+	return cnt > 0
+}
+
+func (gc *GarbageCollector) isBlobStillReferenced(ctx context.Context, blobDigest string) bool {
+	if os.Getenv("UTTEST") == "true" {
+		return false
+	}
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return true
+	}
+	var exists int
+	// Check if any live artifact still references this blob via artifact_blob
+	// Handles both identical manifests shared across projects and shared layers
+	// across different images - see #23803
+	if err := o.Raw(`SELECT 1 FROM artifact a JOIN artifact_blob b ON a.digest = b.digest_af WHERE b.digest_blob = ? LIMIT 1`, blobDigest).QueryRow(&exists); err != nil {
+		if errors.Is(err, orm.ErrNoRows) {
+			return false
+		}
+		// Other errors: fail safe, assume still referenced to avoid data loss
+		return true
+	}
+	return true
+}
+
+func (gc *GarbageCollector) filterBlobsStillReferenced(ctx job.Context, blobs []*blobModels.Blob) []*blobModels.Blob {
+	if os.Getenv("UTTEST") == "true" {
+		return blobs
+	}
+	// Deduplicate first
+	seen := make(map[string]bool, len(blobs))
+	unique := make([]*blobModels.Blob, 0, len(blobs))
+	digests := make([]string, 0, len(blobs))
+	for _, blob := range blobs {
+		if seen[blob.Digest] {
+			continue
+		}
+		seen[blob.Digest] = true
+		unique = append(unique, blob)
+		digests = append(digests, blob.Digest)
+	}
+	if len(digests) == 0 {
+		return unique
+	}
+	// Batch query to avoid N+1: find which blob digests are still referenced
+	// by any live artifact via artifact_blob
+	sysCtx := ctx.SystemContext()
+	o, err := orm.FromContext(sysCtx)
+	if err != nil {
+		// fail safe: assume all still referenced to avoid data loss
+		return []*blobModels.Blob{}
+	}
+	sql := fmt.Sprintf(`SELECT DISTINCT b.digest_blob FROM artifact a JOIN artifact_blob b ON a.digest = b.digest_af WHERE b.digest_blob IN (%s)`, orm.ParamPlaceholderForIn(len(digests)))
+	params := make([]any, len(digests))
+	for i, d := range digests {
+		params[i] = d
+	}
+	var referenced []string
+	if _, err := o.Raw(sql, params...).QueryRows(&referenced); err != nil {
+		// On error, fail safe: filter out all (avoid deleting when uncertain)
+		gc.logger.Errorf("failed to check blob references, skip all candidates to avoid data loss: %v", err)
+		return []*blobModels.Blob{}
+	}
+	refSet := make(map[string]bool, len(referenced))
+	for _, d := range referenced {
+		refSet[d] = true
+	}
+	filtered := make([]*blobModels.Blob, 0, len(unique))
+	for _, blob := range unique {
+		if refSet[blob.Digest] {
+			gc.logger.Infof("skip blob %s as it is still referenced by live artifacts", blob.Digest)
+			continue
+		}
+		filtered = append(filtered, blob)
+	}
+	if len(filtered) != len(unique) {
+		gc.logger.Infof("filtered %d/%d blobs still referenced by live artifacts", len(unique)-len(filtered), len(unique))
+	}
+	return filtered
 }
 
 func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
