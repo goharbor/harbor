@@ -279,7 +279,7 @@ func (suite *ScanAllTestSuite) TestStopScanAll() {
 }
 
 func (suite *ScanAllTestSuite) TestCreateScanAllSchedule() {
-	times := 11
+	times := 12
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
@@ -296,6 +296,13 @@ func (suite *ScanAllTestSuite) TestCreateScanAllSchedule() {
 		res, err := suite.Post("/system/scanAll/schedule", bytes.NewBuffer([]byte("bad body")))
 		suite.NoError(err)
 		suite.Equal(422, res.StatusCode)
+	}
+
+	{
+		// create scan all schedule with an empty schedule object (regression: previously panicked)
+		res, err := suite.Post("/system/scanAll/schedule", bytes.NewBuffer([]byte("{}")))
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
 	}
 
 	{
@@ -392,7 +399,7 @@ func (suite *ScanAllTestSuite) TestCreateScanAllSchedule() {
 }
 
 func (suite *ScanAllTestSuite) TestUpdateScanAllSchedule() {
-	times := 11
+	times := 12
 	suite.Security.On("IsAuthenticated").Return(true).Times(times)
 	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
 	mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{{ID: int64(1)}}, nil).Times(times)
@@ -409,6 +416,13 @@ func (suite *ScanAllTestSuite) TestUpdateScanAllSchedule() {
 		res, err := suite.Put("/system/scanAll/schedule", bytes.NewBuffer([]byte("bad body")))
 		suite.NoError(err)
 		suite.Equal(422, res.StatusCode)
+	}
+
+	{
+		// update scan all schedule with an empty schedule object (regression: previously panicked)
+		res, err := suite.Put("/system/scanAll/schedule", bytes.NewBuffer([]byte("{}")))
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
 	}
 
 	{
