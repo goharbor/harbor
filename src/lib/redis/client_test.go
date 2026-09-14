@@ -61,3 +61,23 @@ func TestGetHarborClient(t *testing.T) {
 		assert.Equal(t, client, newClient)
 	}
 }
+
+func TestGetRedisPool_InvalidURLDoesNotLeakPassword(t *testing.T) {
+	testCases := []string{
+		"redis://:secret_pwd@invalid:port:fail",
+		"redis://:%zz@localhost",
+		"redis://:secret_%zz_pwd@localhost",
+	}
+	for _, tc := range testCases {
+		_, err := GetRedisPool("test-pool", tc, nil)
+		assert.Error(t, err)
+		assert.NotContains(t, err.Error(), "secret")
+		assert.NotContains(t, err.Error(), "%zz")
+	}
+}
+
+func TestGetRedisPool_SentinelMissingMasterDoesNotLeakPassword(t *testing.T) {
+	_, err := GetRedisPool("sentinel-pool", "redis+sentinel://:secret_pwd@127.0.0.1:26379", nil)
+	assert.Error(t, err)
+	assert.NotContains(t, err.Error(), "secret_pwd")
+}

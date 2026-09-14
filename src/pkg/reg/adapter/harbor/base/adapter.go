@@ -17,7 +17,6 @@ package base
 import (
 	"fmt"
 	"net/http"
-	neturl "net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -25,6 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -320,21 +320,10 @@ type Project struct {
 
 func isLocalHarbor(rawURL string) bool {
 	coreURL := os.Getenv("CORE_URL")
-	if rawURL == coreURL {
-		return true
-	}
-	u, err := neturl.Parse(rawURL)
-	if err != nil {
+	if rawURL == "" || coreURL == "" {
 		return false
 	}
-	c, err := neturl.Parse(coreURL)
-	if err != nil {
-		return false
-	}
-	// the host portion of a URL (DNS name) is case-insensitive, unlike the path
-	u.Host = strings.ToLower(u.Host)
-	c.Host = strings.ToLower(c.Host)
-	return u.String() == c.String()
+	return utils.EqualURL(rawURL, coreURL)
 }
 
 // check whether the current process is running inside core
