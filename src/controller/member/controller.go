@@ -76,7 +76,7 @@ type UserGroup struct {
 var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessage("The project member specified already exist")
 
 // ErrInvalidRole ...
-var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("Failed to update project member, role is not in 1,2,3")
+var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("invalid role: must be a built-in project role (1-5) or an existing custom role")
 
 type controller struct {
 	userManager  user.Manager
@@ -106,6 +106,9 @@ func (c *controller) UpdateRole(ctx context.Context, projectNameOrID any, member
 	}
 	if p == nil {
 		return errors.BadRequestError(nil).WithMessage("project is not found")
+	}
+	if err := c.validateRole(ctx, role); err != nil {
+		return err
 	}
 	return c.mgr.UpdateRole(ctx, p.ProjectID, memberID, role)
 }
