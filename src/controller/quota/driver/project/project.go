@@ -89,7 +89,7 @@ func (d *driver) Validate(hardLimits types.ResourceList) error {
 
 	for resource, value := range hardLimits {
 		if !resources[resource] {
-			return fmt.Errorf("resource %s not support", resource)
+			return fmt.Errorf("resource %s is not supported", resource)
 		}
 
 		if err := lib.ValidateQuotaLimit(value); err != nil {

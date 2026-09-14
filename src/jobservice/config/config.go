@@ -174,7 +174,7 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		redisAddress := c.PoolConfig.RedisPoolCfg.RedisURL
 		if !utils.IsEmptyStr(redisAddress) {
 			if _, err := url.Parse(redisAddress); err != nil {
-				return fmt.Errorf("bad redis url for jobservice, %s", redisAddress)
+				return errors.New("bad redis url for jobservice")
 			}
 			if !strings.Contains(redisAddress, "://") {
 				c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
@@ -330,11 +330,11 @@ func (c *Configuration) validate() error {
 	}
 
 	if c.PoolConfig == nil {
-		return errors.New("no worker worker is configured")
+		return errors.New("no worker is configured")
 	}
 
 	if c.PoolConfig.Backend != JobServicePoolBackendRedis {
-		return fmt.Errorf("worker worker backend %s does not support", c.PoolConfig.Backend)
+		return fmt.Errorf("worker backend %s is not supported", c.PoolConfig.Backend)
 	}
 
 	// When backend is redis

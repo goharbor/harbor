@@ -45,7 +45,7 @@ func (m *memberAPI) CreateProjectMember(ctx context.Context, params operation.Cr
 		return m.SendError(ctx, err)
 	}
 	if params.ProjectMember == nil {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the project member should provide"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the project member should be provided"))
 	}
 	req, err := toMemberReq(params.ProjectMember)
 	if err != nil {

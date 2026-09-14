@@ -23,7 +23,7 @@ var (
 	errListNamespaceResp    = errors.New("[VolcengineCR adapt] ListNamespaces resp nil")
 	errListRepositoriesResp = errors.New("[VolcengineCR adapt] ListRepositories resp nil")
 	errListTagsResp         = errors.New("[VolcengineCR adapt] ListTags resp nil")
-	errPareseDigest         = errors.New("[VolcengineCR adapt]  fail to parse reference")
+	errPareseDigest         = errors.New("[VolcengineCR adapt] failed to parse reference")
 	errNilVolcCrClient      = errors.New("[volcengine-cr.createRepository] nil volcCr client")
 )
 

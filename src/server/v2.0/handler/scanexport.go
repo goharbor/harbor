@@ -50,6 +50,10 @@ func newScanDataExportAPI() *scanDataExportAPI {
 	}
 }
 
+const (
+	defaultScanDataExportErrorStatusText = "The export job failed without reporting a reason; check the jobservice logs for details."
+)
+
 type scanDataExportAPI struct {
 	BaseAPI
 	scanDataExportCtl scandataexport.Controller
@@ -143,7 +147,7 @@ func (se *scanDataExportAPI) GetScanDataExportExecution(ctx context.Context, par
 	}
 	// add human friendly message when status is error
 	if sdeExec.Status == job.ErrorStatus.String() && sdeExec.StatusText == "" {
-		sdeExec.StatusText = "Please contact the system administrator to check the logs of jobservice."
+		sdeExec.StatusText = defaultScanDataExportErrorStatusText
 	}
 
 	return operation.NewGetScanDataExportExecutionOK().WithPayload(&sdeExec)
@@ -240,7 +244,7 @@ func (se *scanDataExportAPI) GetScanDataExportExecutionList(ctx context.Context,
 		}
 		// add human friendly message when status is error
 		if sdeExec.Status == job.ErrorStatus.String() && sdeExec.StatusText == "" {
-			sdeExec.StatusText = "Please contact the system administrator to check the logs of jobservice."
+			sdeExec.StatusText = defaultScanDataExportErrorStatusText
 		}
 		// store project ids
 		for _, pid := range execution.ProjectIDs {
