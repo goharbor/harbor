@@ -102,6 +102,12 @@ func Test_getRegistryURL(t *testing.T) {
 			"https://registry.cn-hangzhou.aliyuncs.com",
 			false,
 		},
+		{
+			"change match mixed case url",
+			"https://CR.CN-Hangzhou.AliyunCS.com",
+			"https://registry.cn-hangzhou.aliyuncs.com",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
