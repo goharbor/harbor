@@ -35,11 +35,11 @@ func (r *reached) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 }
 
 // serve runs one request through the middleware on the given host.
-func serve(t *testing.T, method, host string, headers map[string]string, carrySession bool) (int, bool) {
+func serve(t *testing.T, method, host, path string, headers map[string]string, carrySession bool) (int, bool) {
 	t.Helper()
 
 	handler := &reached{}
-	req := httptest.NewRequest(method, "https://"+host+"/c/login", nil)
+	req := httptest.NewRequest(method, "https://"+host+path, nil)
 	req.Host = host
 	for k, v := range headers {
 		req.Header.Set(k, v)
@@ -92,6 +92,30 @@ func TestMiddlewareAllows(t *testing.T) {
 			headers: map[string]string{"Origin": "https://" + host},
 		},
 		{
+			name:    "same-origin browser write over plain HTTP behind a Host-rewriting proxy",
+			method:  http.MethodPost,
+			host:    host,
+			headers: map[string]string{"Origin": "http://" + host + ":8099"},
+		},
+		{
+			name:    "plain HTTP, proxy preserves the port, Origin matches exactly",
+			method:  http.MethodPost,
+			host:    host + ":8099",
+			headers: map[string]string{"Origin": "http://" + host + ":8099"},
+		},
+		{
+			name:    "IPv6 literal, port dropped by the proxy",
+			method:  http.MethodPost,
+			host:    "[::1]",
+			headers: map[string]string{"Origin": "http://[::1]:8099"},
+		},
+		{
+			name:    "safe method is exempt even from a foreign origin",
+			method:  http.MethodGet,
+			host:    host,
+			headers: map[string]string{"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example.com"},
+		},
+		{
 			name:   "safe method needs no origin at all",
 			method: http.MethodGet,
 			host:   host,
@@ -105,7 +129,7 @@ func TestMiddlewareAllows(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			code, called := serve(t, c.method, c.host, c.headers, false)
+			code, called := serve(t, c.method, c.host, "/c/login", c.headers, false)
 
 			assert.Equal(t, http.StatusOK, code)
 			assert.True(t, called, "request should have reached the handler")
@@ -134,6 +158,22 @@ func TestMiddlewareRejects(t *testing.T) {
 			headers: map[string]string{"Origin": "https://evil.example.com"},
 		},
 		{
+			name:    "no Sec-Fetch-Site, sibling subdomain Origin with a port",
+			headers: map[string]string{"Origin": "http://evil." + host + ":8099"},
+		},
+		{
+			name:    "no Sec-Fetch-Site, a look-alike host that only suffixes the real one",
+			headers: map[string]string{"Origin": "http://" + host + ".evil.example.com:8099"},
+		},
+		{
+			name:    "no Sec-Fetch-Site, an unparseable Origin",
+			headers: map[string]string{"Origin": "http://[::bad::]:8099"},
+		},
+		{
+			name:    "no Sec-Fetch-Site, the opaque Origin null",
+			headers: map[string]string{"Origin": "null"},
+		},
+		{
 			name:    "a forged token buys nothing, no token is consulted",
 			headers: map[string]string{"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example.com", "X-Harbor-CSRF-Token": "anything"},
 		},
@@ -148,12 +188,27 @@ func TestMiddlewareRejects(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			code, called := serve(t, http.MethodPost, host, c.headers, false)
+			code, called := serve(t, http.MethodPost, host, "/c/login", c.headers, false)
 
 			assert.Equal(t, http.StatusForbidden, code)
 			assert.False(t, called, "request should not have reached the handler")
 		})
 	}
+}
+
+// TestMiddlewareSessionCarryingWrite drives a logged-in browser write through
+// the full middleware on a route csrfSkipper does not skip: same-origin passes,
+// cross-origin is refused, with the session present the whole way through.
+func TestMiddlewareSessionCarryingWrite(t *testing.T) {
+	code, called := serve(t, http.MethodPost, host, "/api/v2.0/projects",
+		map[string]string{"Sec-Fetch-Site": "same-origin", "Origin": "https://" + host}, true)
+	assert.Equal(t, http.StatusOK, code)
+	assert.True(t, called, "same-origin session-carrying write should reach the handler")
+
+	code, called = serve(t, http.MethodPost, host, "/api/v2.0/projects",
+		map[string]string{"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example.com"}, true)
+	assert.Equal(t, http.StatusForbidden, code)
+	assert.False(t, called, "cross-origin session-carrying write must be refused")
 }
 
 // TestCsrfSkipper pins which routes the check applies to. Anything not carrying
