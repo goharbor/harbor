@@ -15,7 +15,9 @@
 package csrf
 
 import (
+	"net"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -46,6 +48,15 @@ var safeMethods = []string{http.MethodGet, http.MethodHead, http.MethodOptions}
 // token.
 func check(req *http.Request) error {
 	if err := protect.Check(req); err != nil {
+		// protect.Check compares Origin against Host including the port. Browsers
+		// send no Sec-Fetch-Site over plain HTTP, so the check falls to that
+		// comparison, and a proxy that rewrites Host drops the port from it — the
+		// bundled nginx sets Host to $host — making a legitimate same-origin write
+		// look cross-origin. Re-admit exactly that: no Sec-Fetch-Site, and an
+		// Origin whose host matches the request Host once the port is set aside.
+		if req.Header.Get("Sec-Fetch-Site") == "" && originHostMatchesIgnoringPort(req) {
+			return nil
+		}
 		return err
 	}
 
@@ -58,6 +69,31 @@ func check(req *http.Request) error {
 	}
 
 	return nil
+}
+
+// originHostMatchesIgnoringPort reports whether the request's Origin names the
+// same host as the request targeted, disregarding the port. A differing host —
+// a foreign site or a sibling subdomain — never matches, so the cross-site and
+// CVE-2025-24358 rejections stand.
+func originHostMatchesIgnoringPort(req *http.Request) bool {
+	origin := req.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+	o, err := url.Parse(origin)
+	if err != nil || o.Hostname() == "" {
+		return false
+	}
+	return o.Hostname() == hostname(req.Host)
+}
+
+// hostname returns the host of a Host header or authority without any port and
+// without IPv6 brackets, so it can be compared to url.URL.Hostname.
+func hostname(host string) string {
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		return h
+	}
+	return strings.Trim(host, "[]")
 }
 
 // Middleware rejects cross-origin requests that carry a session. It reads the
