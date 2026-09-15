@@ -73,7 +73,8 @@ func fetchResources(adapter adp.Adapter, policy *repctlmodel.Policy) ([]*model.R
 
 // assemble the source resources by filling the registry information
 func assembleSourceResources(resources []*model.Resource,
-	policy *repctlmodel.Policy) []*model.Resource {
+	policy *repctlmodel.Policy,
+) []*model.Resource {
 	for _, resource := range resources {
 		resource.Registry = policy.SrcRegistry
 	}
@@ -83,25 +84,51 @@ func assembleSourceResources(resources []*model.Resource,
 
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
-	policy *repctlmodel.Policy, dstRepoComponentPathType string) ([]*model.Resource, error) {
+	policy *repctlmodel.Policy, dstRepoComponentPathType string,
+) ([]*model.Resource, error) {
 	var result []*model.Resource
 	for _, resource := range resources {
-		name, err := replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount, dstRepoComponentPathType)
-		if err != nil {
-			return nil, err
+		var registry *model.Registry
+		var repositoryName string
+		var err error
+
+		log.Debugf("assembling dest resources...")
+
+		// Check condition to determine whether to assemble list or destination resources
+		if policy.DestRegistry.Type == "harbor-satellite" {
+			// Assemble list resources
+			registry = policy.SrcRegistry
+			repositoryName = resource.Metadata.Repository.Name
+
+			if resource.ExtendedInfo == nil {
+				resource.ExtendedInfo = make(map[string]interface{})
+			}
+			resource.ExtendedInfo["destinationURL"] = policy.DestRegistry.URL
+			resource.ExtendedInfo["groupName"] = policy.DestNamespace
+		} else {
+			// Assemble destination resources
+			registry = policy.DestRegistry
+			repositoryName, err = replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace, policy.DestNamespaceReplaceCount, dstRepoComponentPathType)
+			if err != nil {
+				return nil, err
+			}
 		}
+
+		// Create the resource
 		res := &model.Resource{
 			Type:         resource.Type,
-			Registry:     policy.DestRegistry,
+			Registry:     registry,
 			ExtendedInfo: resource.ExtendedInfo,
 			Deleted:      resource.Deleted,
 			IsDeleteTag:  resource.IsDeleteTag,
 			Override:     policy.Override,
 			Skip:         resource.Skip,
 		}
+
+		// Fill the resource metadata
 		res.Metadata = &model.ResourceMetadata{
 			Repository: &model.Repository{
-				Name:     name,
+				Name:     repositoryName,
 				Metadata: resource.Metadata.Repository.Metadata,
 			},
 			Vtags:     resource.Metadata.Vtags,
@@ -109,6 +136,7 @@ func assembleDestinationResources(resources []*model.Resource,
 		}
 		result = append(result, res)
 	}
+
 	log.Debug("assemble the destination resources completed")
 	return result, nil
 }
