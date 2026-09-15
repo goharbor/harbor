@@ -132,12 +132,6 @@ func (n *NolimitProvider) GetPermissions(s scope) []*types.Policy {
 			&types.Policy{Resource: ResourceUser, Action: ActionList},
 			&types.Policy{Resource: ResourceUser, Action: ActionDelete},
 
-			&types.Policy{Resource: ResourceRole, Action: ActionCreate},
-			&types.Policy{Resource: ResourceRole, Action: ActionRead},
-			&types.Policy{Resource: ResourceRole, Action: ActionUpdate},
-			&types.Policy{Resource: ResourceRole, Action: ActionList},
-			&types.Policy{Resource: ResourceRole, Action: ActionDelete},
-
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionCreate},
 			&types.Policy{Resource: ResourceLdapUser, Action: ActionList},
 

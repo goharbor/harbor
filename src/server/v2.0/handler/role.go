@@ -198,12 +198,9 @@ func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRole
 }
 
 // validate checks that every requested permission is a project-role-scoped
-// access drawn from the role permission catalog (rbac.ScopeRole). Role creation
-// and update require system-level access to rbac.ResourceRole (see
-// RequireSystemAccess), so there is no privilege escalation to guard against
-// here: the caller already holds every permission, and unauthorized callers
-// never reach this path. Escalation is enforced separately on
-// the paths where non-admin callers assign permissions (validateNoEscalation).
+// access drawn from the role permission catalog (rbac.ScopeRole). Role writes
+// are sysadmin-only (rbac.ResourceRole is not in the grantable system catalog),
+// so no per-permission escalation guard is needed here.
 func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 	if len(permissions) == 0 {
 		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
