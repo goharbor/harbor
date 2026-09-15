@@ -1,0 +1,253 @@
+<div>
+    <form [formGroup]="newOptimizerForm" class="clr-form clr-form-horizontal">
+        <div class="clr-form-control">
+            <label class="required clr-control-label">{{
+                'OPTIMIZER.NAME' | translate
+            }}</label>
+            <div class="clr-control-container" [class.clr-error]="!isNameValid">
+                <div class="clr-input-wrapper">
+                    <input
+                        autocomplete="off"
+                        #name
+                        formControlName="name"
+                        class="clr-input width-280"
+                        type="text"
+                        id="optimizer-name" />
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <span
+                        class="spinner spinner-inline"
+                        [hidden]="!checkOnGoing"></span>
+                </div>
+                <clr-control-error *ngIf="!isNameValid">
+                    <span id="name-error">{{ nameTooltip | translate }}</span>
+                </clr-control-error>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label">{{
+                'OPTIMIZER.DESCRIPTION' | translate
+            }}</label>
+            <div class="clr-control-container">
+                <textarea
+                    autocomplete="off"
+                    formControlName="description"
+                    class="clr-textarea width-280"
+                    type="text"
+                    id="description">
+                </textarea>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="required clr-control-label">{{
+                'OPTIMIZER.ENDPOINT' | translate
+            }}</label>
+            <div
+                class="clr-control-container"
+                [class.clr-error]="!isEndpointValid || showEndpointError">
+                <div class="clr-input-wrapper">
+                    <input
+                        (focus)="showEndpointError = false"
+                        (blur)="checkEndpointUrl()"
+                        #endpointUrl
+                        placeholder="http(s)://192.168.1.1"
+                        autocomplete="off"
+                        formControlName="url"
+                        class="clr-input width-280"
+                        type="text"
+                        id="optimizer-endpoint" />
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <span
+                        class="spinner spinner-inline"
+                        [hidden]="!checkEndpointOnGoing"></span>
+                </div>
+                <clr-control-error
+                    *ngIf="!isEndpointValid || showEndpointError">
+                    <span id="endpoint-error">{{
+                        endpointTooltip | translate
+                    }}</span>
+                </clr-control-error>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label">{{
+                'OPTIMIZER.AUTH' | translate
+            }}</label>
+            <div class="clr-control-container">
+                <div class="clr-select-wrapper">
+                    <select
+                        formControlName="auth"
+                        class="clr-select width-280"
+                        id="optimizer-authorization">
+                        <option value="None">
+                            {{ 'OPTIMIZER.NONE' | translate }}
+                        </option>
+                        <option value="Basic">
+                            {{ 'OPTIMIZER.BASIC' | translate }}
+                        </option>
+                        <option value="Bearer">
+                            {{ 'OPTIMIZER.BEARER' | translate }}
+                        </option>
+                        <option value="APIKey">
+                            {{ 'OPTIMIZER.API_KEY' | translate }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <ng-container formGroupName="accessCredential">
+            <div class="clr-form-control" *ngIf="auth === 'Basic'">
+                <label class="required clr-control-label">{{
+                    'OPTIMIZER.USERNAME' | translate
+                }}</label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="!isUserNameValid">
+                    <div class="clr-input-wrapper">
+                        <input
+                            formControlName="username"
+                            autocomplete="off"
+                            class="clr-input width-280"
+                            type="text"
+                            id="optimizer-username" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isUserNameValid">
+                        {{ 'OPTIMIZER.USERNAME_REQUIRED' | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth === 'Basic'">
+                <label class="required clr-control-label">{{
+                    'OPTIMIZER.PASSWORD' | translate
+                }}</label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="!isPasswordValid">
+                    <div class="clr-input-wrapper">
+                        <input
+                            formControlName="password"
+                            autocomplete="off"
+                            class="clr-input width-280"
+                            type="password"
+                            id="optimizer-password" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isPasswordValid">
+                        <span id="pwd-error">{{
+                            'OPTIMIZER.PASSWORD_REQUIRED' | translate
+                        }}</span>
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth === 'Bearer'">
+                <label class="required clr-control-label">{{
+                    'OPTIMIZER.TOKEN' | translate
+                }}</label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="!isTokenValid">
+                    <div class="clr-input-wrapper">
+                        <input
+                            formControlName="token"
+                            autocomplete="off"
+                            class="clr-input width-280"
+                            type="text"
+                            id="optimizer-token" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isTokenValid">
+                        {{ 'OPTIMIZER.TOKEN_REQUIRED' | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth === 'APIKey'">
+                <label class="required clr-control-label">{{
+                    'OPTIMIZER.API_KEY' | translate
+                }}</label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="!isApiKeyValid">
+                    <div class="clr-input-wrapper">
+                        <input
+                            formControlName="apiKey"
+                            autocomplete="off"
+                            class="clr-input width-280"
+                            type="text"
+                            id="optimizer-apiKey" />
+                        <clr-icon
+                            class="clr-validate-icon"
+                            shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isApiKeyValid">
+                        {{ 'OPTIMIZER.API_KEY_REQUIRED' | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
+        </ng-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label">{{
+                'OPTIMIZER.OPTIONS' | translate
+            }}</label>
+            <div class="clr-control-container padding-top-3">
+                <clr-checkbox-wrapper>
+                    <input
+                        name="optimizer-skipCertVerify"
+                        clrCheckbox
+                        formControlName="skipCertVerify"
+                        type="checkbox"
+                        id="optimizer-skipCertVerify" />
+                    <label for="optimizer-skipCertVerify"
+                        >{{ 'OPTIMIZER.SKIP' | translate }}
+                        <clr-tooltip>
+                            <clr-icon
+                                class="color-57"
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="md"
+                                *clrIfOpen>
+                                {{ 'OPTIMIZER.SKIP_CERT_VERIFY' | translate }}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+                <clr-checkbox-wrapper>
+                    <input
+                        name="optimizer-use-inner"
+                        clrCheckbox
+                        formControlName="useInner"
+                        type="checkbox"
+                        id="optimizer-use-inner" />
+                    <label for="optimizer-use-inner"
+                        >{{ 'OPTIMIZER.USE_INNER' | translate }}
+                        <clr-tooltip>
+                            <clr-icon
+                                class="color-57"
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="24"></clr-icon>
+                            <clr-tooltip-content
+                                clrPosition="top-left"
+                                clrSize="md"
+                                *clrIfOpen>
+                                {{ 'OPTIMIZER.USE_INNER_TIP' | translate }}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+            </div>
+        </div>
+    </form>
+</div>
