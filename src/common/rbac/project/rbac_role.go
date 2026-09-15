@@ -343,13 +343,26 @@ func (role *projectRBACRole) GetPolicies() []*types.Policy {
 	// Custom role: permissions are loaded from the database.
 	if role.custom != nil {
 		namespace := NewNamespace(role.projectID)
+		// Every project member must be able to view the project itself
+		// (self:read gates GetProject/RequireProjectAccess). Built-in roles carry
+		// it in rolePoliciesMap and public projects grant it via
+		// publicProjectPolicies, but a custom role in a private project would
+		// otherwise have no way to obtain it (self:* is intentionally excluded
+		// from the ScopeRole catalog), so grant baseline visibility here.
+		selfRead := &types.Policy{Resource: namespace.Resource(rbac.ResourceSelf), Action: rbac.ActionRead}
+		policies = append(policies, selfRead)
 		for _, permission := range role.custom.Permissions {
 			for _, policy := range permission.Access {
-				policies = append(policies, &types.Policy{
+				p := &types.Policy{
 					Resource: namespace.Resource(policy.Resource),
 					Action:   policy.Action,
 					Effect:   policy.Effect,
-				})
+				}
+				// Avoid duplicating the baseline self:read if the role carries it.
+				if p.Resource == selfRead.Resource && p.Action == selfRead.Action && p.Effect == selfRead.Effect {
+					continue
+				}
+				policies = append(policies, p)
 			}
 		}
 		return policies
