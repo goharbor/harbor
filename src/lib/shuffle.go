@@ -15,14 +15,19 @@
 package lib
 
 import (
-	"math/rand"
-	"time"
+	"crypto/rand"
+	"math/big"
 )
 
-// ShuffleStringSlice shuffles the string slice in place.
+// ShuffleStringSlice shuffles the string slice in place using crypto-secure randomness.
 func ShuffleStringSlice(slice []string) {
-	rd := rand.New(rand.NewSource(time.Now().UnixNano()))
-	rd.Shuffle(len(slice), func(i, j int) {
+	for i := len(slice) - 1; i > 0; i-- {
+		jBig, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			// fallback to deterministic shuffle on error (should not happen)
+			continue
+		}
+		j := int(jBig.Int64())
 		slice[i], slice[j] = slice[j], slice[i]
-	})
+	}
 }
