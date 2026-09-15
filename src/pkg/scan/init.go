@@ -17,6 +17,7 @@ package scan
 import (
 	"context"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
@@ -54,7 +55,7 @@ func EnsureScanners(ctx context.Context, wantedScanners []scanner.Registration) 
 				return errors.Errorf("creating registration %s at %s failed: %v", ws.Name, ws.URL, err)
 			}
 			log.Infof("Successfully registered %s scanner at %s", ws.Name, ws.URL)
-		} else if scanner.URL != ws.URL {
+		} else if !utils.EqualURL(scanner.URL, ws.URL) {
 			scanner.URL = ws.URL
 			if err := scannerManager.Update(ctx, scanner); err != nil {
 				return errors.Errorf("updating registration %s to %s failed: %v", ws.Name, ws.URL, err)
