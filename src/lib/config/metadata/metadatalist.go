@@ -155,6 +155,7 @@ var (
 		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &NonEmptyStringType{}, Editable: true, Description: `The robot account name prefix`},
 		{Name: common.RobotScannerNamePrefix, Scope: SystemScope, Group: BasicGroup, EnvKey: "ROBOT_SCANNER_NAME_PREFIX", DefaultValue: "scanner", ItemType: &StringType{}, Editable: true, Description: `The scanner robot account name prefix`},
 		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true, Description: `Enable notification`},
+		{Name: common.WebhookAllowPrivateIP, Scope: UserScope, Group: BasicGroup, EnvKey: "WEBHOOK_ALLOW_PRIVATE_IP", DefaultValue: "false", ItemType: &BoolType{}, Editable: true, Description: `Allow webhook and Slack notifications to send requests to private IP addresses`},
 
 		{Name: common.MetricEnable, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_ENABLE", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.MetricPort, Scope: SystemScope, Group: BasicGroup, EnvKey: "METRIC_PORT", DefaultValue: "9090", ItemType: &PortType{}, Editable: true},

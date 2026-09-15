@@ -159,6 +159,9 @@ const (
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
 
+	// WebhookAllowPrivateIP indicates whether webhook and slack notifications are allowed to target private IP addresses
+	WebhookAllowPrivateIP = "webhook_allow_private_ip"
+
 	// Quota setting items for project
 	QuotaPerProjectEnable = "quota_per_project_enable"
 	StoragePerProject     = "storage_per_project"

@@ -92,6 +92,7 @@ export class Configuration {
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;
     notification_enable: BoolValueItem;
+    webhook_allow_private_ip: BoolValueItem;
     http_authproxy_admin_groups?: StringValueItem;
     http_authproxy_endpoint?: StringValueItem;
     http_authproxy_tokenreview_endpoint?: StringValueItem;
@@ -169,6 +170,7 @@ export class Configuration {
         );
         this.read_only = new BoolValueItem(false, true);
         this.notification_enable = new BoolValueItem(false, true);
+        this.webhook_allow_private_ip = new BoolValueItem(false, true);
         this.http_authproxy_admin_groups = new StringValueItem('', true);
         this.http_authproxy_endpoint = new StringValueItem('', true);
         this.http_authproxy_tokenreview_endpoint = new StringValueItem(

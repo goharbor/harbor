@@ -24,17 +24,16 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/controller/task"
 	webhook_ctl "github.com/goharbor/harbor/src/controller/webhook"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	policy_model "github.com/goharbor/harbor/src/pkg/notification/policy/model"
-	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
@@ -145,21 +144,20 @@ func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params we
 		return n.SendError(ctx, err)
 	}
 
-	projectID, err := getProjectID(ctx, projectNameOrID)
-	if err != nil {
-		return n.SendError(ctx, err)
-	}
-
 	policy := &policy_model.Policy{}
 	if err := lib.JSONCopy(policy, params.Policy); err != nil {
 		log.Warningf("failed to call JSONCopy on notification policy when CreateWebhookPolicyOfProject, error: %v", err)
 	}
-	policy.ProjectID = projectID
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
 	if ok, err := n.validateTargets(ctx, policy); !ok {
+		return n.SendError(ctx, err)
+	}
+
+	projectID, err := getProjectID(ctx, projectNameOrID)
+	if err != nil {
 		return n.SendError(ctx, err)
 	}
 	policy.ProjectID = projectID
@@ -189,7 +187,6 @@ func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params we
 	if err := lib.JSONCopy(policy, params.Policy); err != nil {
 		log.Warningf("failed to call JSONCopy on notification policy when UpdateWebhookPolicyOfProject, error: %v", err)
 	}
-	policy.ProjectID = projectID
 
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
@@ -411,23 +408,7 @@ func (n *webhookAPI) validateTargets(ctx context.Context, policy *policy_model.P
 		return false, errors.New(nil).WithMessagef("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
 
-	allowPrivate := false
-	if policy.ProjectID > 0 {
-		meta, err := metadata.Ctl.Get(ctx, policy.ProjectID, proModels.ProMetaWebhookAllowPrivateIP)
-		if err == nil && meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
-			allowPrivate = true
-		}
-	} else if projectNameOrID, ok := ctx.Value("projectNameOrID").(string); ok {
-		// Try to parse ProjectID from context if it's not set in policy yet
-		if pid, err := getProjectID(ctx, projectNameOrID); err == nil && pid > 0 {
-			meta, err := metadata.Ctl.Get(ctx, pid, proModels.ProMetaWebhookAllowPrivateIP)
-			if err == nil && meta != nil && meta[proModels.ProMetaWebhookAllowPrivateIP] == "true" {
-				allowPrivate = true
-			}
-		}
-	}
-
-	if allowPrivate {
+	if config.WebhookAllowPrivateIP(ctx) {
 		ctx = context.WithValue(ctx, lib.AllowPrivateIPKey, true)
 	}
 

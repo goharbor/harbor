@@ -285,6 +285,7 @@ export class SystemSettingsComponent
                 prop === 'project_creation_restriction' ||
                 prop === 'robot_token_duration' ||
                 prop === 'notification_enable' ||
+                prop === 'webhook_allow_private_ip' ||
                 prop === 'robot_name_prefix' ||
                 prop === 'audit_log_forward_endpoint' ||
                 prop === 'skip_audit_log_database' ||
@@ -305,6 +306,10 @@ export class SystemSettingsComponent
 
     setWebhookNotificationEnabledValue($event: any) {
         this.currentConfig.notification_enable.value = $event;
+    }
+
+    setWebhookAllowPrivateIPValue($event: any) {
+        this.currentConfig.webhook_allow_private_ip.value = $event;
     }
 
     disabled(prop: any): boolean {

@@ -135,6 +135,12 @@ func ReadOnly(ctx context.Context) bool {
 	return DefaultMgr().Get(ctx, common.ReadOnly).GetBool()
 }
 
+// WebhookAllowPrivateIP returns a bool to indicate if webhook and slack notifications
+// are allowed to send requests to private IP addresses.
+func WebhookAllowPrivateIP(ctx context.Context) bool {
+	return DefaultMgr().Get(ctx, common.WebhookAllowPrivateIP).GetBool()
+}
+
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting(ctx context.Context) (*cfgModels.HTTPAuthProxy, error) {

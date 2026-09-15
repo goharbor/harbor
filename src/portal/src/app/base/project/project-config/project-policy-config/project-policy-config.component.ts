@@ -61,7 +61,6 @@ export class ProjectPolicy {
     MaxUpstreamConn?: number | null;
     ProxyCacheLocalOnNotFound?: boolean;
     ProxyReferrerAPI?: boolean;
-    WebhookAllowPrivateIP: boolean;
 
     constructor() {
         this.Public = false;
@@ -72,9 +71,6 @@ export class ProjectPolicy {
         this.ScanImgOnPush = false;
         this.GenerateSbomOnPush = false;
         this.ProxyCacheEnabled = false;
-        this.ProxyCacheLocalOnNotFound = false;
-        this.ProxyReferrerAPI = false;
-        this.WebhookAllowPrivateIP = false;
         this.RegistryId = null;
         this.ProxySpeedKb = -1;
         this.MaxUpstreamConn = -1;
@@ -105,8 +101,6 @@ export class ProjectPolicy {
             pro.metadata.proxy_cache_local_on_not_found === 'true';
         this.ProxyReferrerAPI =
             pro.metadata.proxy_referrer_api === 'true' ? true : false;
-        this.WebhookAllowPrivateIP =
-            pro.metadata.webhook_allow_private_ip === 'true';
     }
 }
 const PAGE_SIZE: number = 100;

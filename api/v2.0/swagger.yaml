@@ -7533,10 +7533,6 @@ definitions:
         type: string
         description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
         x-nullable: true
-      webhook_allow_private_ip:
-        type: string
-        description: 'Whether to allow webhooks to send requests to individual private IPs. The valid values are "true", "false".'
-        x-nullable: true
   ProjectSummary:
     type: object
     properties:
@@ -9324,6 +9320,9 @@ definitions:
       notification_enable:
         $ref: '#/definitions/BoolConfigItem'
         description: Enable notification
+      webhook_allow_private_ip:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Allow webhook and Slack notifications to send requests to private IP addresses
       quota_per_project_enable:
         $ref: '#/definitions/BoolConfigItem'
         description: Enable quota per project
@@ -9607,6 +9606,11 @@ definitions:
       notification_enable:
         type: boolean
         description: Enable notification
+        x-omitempty: true
+        x-isnullable: true
+      webhook_allow_private_ip:
+        type: boolean
+        description: Allow webhook and Slack notifications to send requests to private IP addresses
         x-omitempty: true
         x-isnullable: true
       quota_per_project_enable:

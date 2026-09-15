@@ -767,6 +767,7 @@
     },
     "CONFIG": {
         "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks Enabled",
+        "WEBHOOK_ALLOW_PRIVATE_IP": "Allow Webhooks to Private IP",
         "SECURITY": "Security",
         "TITLE": "Configuration",
         "AUTH": "Authentication",
@@ -823,6 +824,7 @@
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
+            "WEBHOOK_ALLOW_PRIVATE_IP_TOOLTIP": "Allow webhook and Slack notification targets to resolve to private IP addresses. Disabling this protects against server-side request forgery (SSRF).",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalent to 0 0 * * * *.",
             "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalent to 0 0 0 * * 0.",
             "DAILY_CRON": "Run once a day, midnight. Equivalent to 0 0 0 * * *.",
