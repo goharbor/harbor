@@ -39,3 +39,21 @@
 @mixin dropdown-as-action-button {
     margin: .25rem .5rem .25rem 0;
 }
+
+@mixin mobile {
+    @media screen and (max-width: 767px) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media screen and (min-width: 768px) and (max-width: 1024px) {
+        @content;
+    }
+}
+
+@mixin tablet-and-below {
+    @media screen and (max-width: 1024px) {
+        @content;
+    }
+}
