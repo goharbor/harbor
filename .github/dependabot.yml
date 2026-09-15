@@ -47,6 +47,12 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
+    # tablewriter v1 replaced the setter API (SetHeader, Append, ...) that
+    # src/pkg/p2p/preheat/provider/dragonfly.go uses, so the major is a code
+    # change, not a bump. See #23901.
+    ignore:
+      - dependency-name: "github.com/olekukonko/tablewriter"
+        update-types: ["version-update:semver-major"]
     groups:
       # The k8s.io and sigs.k8s.io modules are released as one set and only
       # compile against each other at the same minor version.
@@ -81,6 +87,12 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
+    # tablewriter v1 replaced the setter API (SetHeader, Append, ...) that
+    # src/pkg/p2p/preheat/provider/dragonfly.go uses, so the major is a code
+    # change, not a bump. See #23901.
+    ignore:
+      - dependency-name: "github.com/olekukonko/tablewriter"
+        update-types: ["version-update:semver-major"]
     groups:
       kubernetes:
         patterns:
