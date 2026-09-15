@@ -803,7 +803,24 @@ func (bc *basicController) GetVulnerable(ctx context.Context, artifact *ar.Artif
 	}
 
 	if !vulnerable.IsScanSuccess() {
-		return vulnerable, nil
+		// If the scan is not yet successful (e.g., running, pending, or errored)
+		// but there are reports with data from a previous successful scan,
+		// use that data for the vulnerability assessment instead of blocking pulls.
+		hasData := false
+		for _, rp := range reports {
+			if len(rp.Report) > 0 {
+				hasData = true
+				break
+			}
+		}
+		if !hasData {
+			return vulnerable, nil
+		}
+		// Fall through to use the available scan data for vulnerability assessment
+		log.G(ctx).Debugf("artifact %s@%s has scan status %q but previous scan data exists, "+
+			"using last successful scan results for vulnerability assessment",
+			artifact.RepositoryName, artifact.Digest, scanStatus)
+		vulnerable.ScanStatus = job.SuccessStatus.String()
 	}
 
 	raw, err := report.Reports(reports).ResolveData(mimeType)
