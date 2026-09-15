@@ -49,7 +49,7 @@ func (s *SecurityContext) IsAuthenticated() bool {
 	}
 	valid := s.store.IsValid(s.secret)
 	if !valid {
-		log.Debugf("invalid secret: %s", s.secret)
+		log.Debug("invalid secret")
 	}
 
 	return valid
