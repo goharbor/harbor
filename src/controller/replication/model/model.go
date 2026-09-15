@@ -105,7 +105,12 @@ func (p *Policy) Validate() error {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessagef("the cron string cannot be empty when the trigger type is %s", model.TriggerTypeScheduled)
 			}
-			if _, err := utils.CronParser().Parse(p.Trigger.Settings.Cron); err != nil {
+			sched, err := utils.CronParser().Parse(p.Trigger.Settings.Cron)
+			if err != nil {
+				return errors.New(nil).WithCode(errors.BadRequestCode).
+					WithMessagef("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
+			}
+			if !utils.IsCronReachable(sched) {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessagef("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
 			}

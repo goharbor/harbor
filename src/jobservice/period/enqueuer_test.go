@@ -137,9 +137,11 @@ func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
 	before, err := redis.Int(conn.Do("ZCARD", key))
 	require.NoError(suite.T(), err)
 
+	workerConn := suite.pool.Get()
+	defer func() { _ = workerConn.Close() }()
 	done := make(chan struct{})
 	go func() {
-		suite.enqueuer.scheduleNextJobs(p, conn)
+		suite.enqueuer.scheduleNextJobs(p, workerConn)
 		close(done)
 	}()
 
@@ -148,6 +150,7 @@ func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
 		// returned promptly, as expected
 	case <-time.After(5 * time.Second):
 		suite.Fail("scheduleNextJobs did not return within 5s for unreachable cron")
+		return
 	}
 
 	after, err := redis.Int(conn.Do("ZCARD", key))
