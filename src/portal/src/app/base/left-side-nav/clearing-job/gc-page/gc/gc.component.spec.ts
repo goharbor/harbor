@@ -62,7 +62,7 @@ describe('GcComponent', () => {
         spyGcNow = spyOn(gcRepoService, 'createGCSchedule').and.returnValues(
             of(null)
         );
-        spyStatus = spyOn(gcRepoService, 'getGCHistory').and.returnValues(
+        spyStatus = spyOn(gcRepoService, 'getGCHistory').and.returnValue(
             of([
                 {
                     id: 1,
@@ -97,6 +97,19 @@ describe('GcComponent', () => {
         ele.click();
         fixture.detectChanges();
         expect(spyGcNow.calls.count()).toEqual(1);
+    });
+    it('should render worker number input with clr-input class', () => {
+        const input: HTMLInputElement =
+            fixture.nativeElement.querySelector('input[type="number"]');
+        expect(input).toBeTruthy();
+        expect(input.classList).toContain('clr-input');
+    });
+    it('should submit a worker count above the former limit of 10', () => {
+        component.workerNum = 24;
+        component.gcNow();
+        expect(
+            spyGcNow.calls.mostRecent().args[0].schedule.parameters.workers
+        ).toEqual(24);
     });
     it('getScheduleType function should work', () => {
         expect(GcComponent.getScheduleType).toBeTruthy();

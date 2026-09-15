@@ -69,18 +69,14 @@
             </clr-tooltip>
         </div>
         <div class="clr-col">
-            <div class="clr-select-wrapper">
-                <select
-                    id="workers"
-                    class="clr-select worker-select"
-                    [(ngModel)]="workerNum">
-                    @for (item of workerOptions; track item) {
-                    <option value="{{ item }}">
-                        {{ item }}
-                    </option>
-                    }
-                </select>
+            <div class="clr-control-container">
+                <input type="number"
+                 class="clr-input"
+                id="workerNum"
+                name="workerNum"
+                [(ngModel)]="workerNum" placeholder="1"/>
             </div>
+            <span class="explain">{{ 'GC.WORKERS_HELPER' | translate }}</span>
         </div>
     </div>
     <div class="clr-row">

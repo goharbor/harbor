@@ -2486,7 +2486,8 @@
     "DRY_RUN_SUCCESS": "Успешно вызван пробный запуск",
     "DELETE_DETAIL": "{{blob}} блоб(ов) и {{manifest}} манифест(ов) удалено, {{size}} места освобождено",
     "DELETE_DETAIL_DRY_RUN": "{{blob}} блоб(ов) и {{manifest}} манифест(ов) может быть удалено, {{size}} места может быть освобождено",
-    "WORKERS_TOOLTIP": "Установите количество рабочих, которые могут выполнять задачи СМ параллельно, значение по умолчанию 1."
+    "WORKERS_TOOLTIP": "Установите количество рабочих, которые могут выполнять задачи СМ параллельно, значение по умолчанию 1.",
+    "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts."
   },
   "RETAG": {
     "MSG_SUCCESS": "Артефакт успешно скопирован",
