@@ -97,9 +97,14 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	if len(vendorType) == 0 {
 		return 0, fmt.Errorf("empty vendor type")
 	}
-	if _, err := utils.CronParser().Parse(cron); err != nil {
+	parsedCron, err := utils.CronParser().Parse(cron)
+	if err != nil {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessagef("invalid cron %s: %v", cron, err)
+	}
+	if !utils.IsCronReachable(parsedCron) {
+		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("invalid cron %s: expression can never fire", cron)
 	}
 	if !callbackFuncExist(callbackFuncName) {
 		return 0, fmt.Errorf("callback function %s not found", callbackFuncName)

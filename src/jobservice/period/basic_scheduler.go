@@ -16,6 +16,7 @@ package period
 
 import (
 	"context"
+	"math"
 	"math/rand"
 	"time"
 
@@ -218,7 +219,9 @@ func (bs *basicScheduler) clearDirtyJobs() {
 	nowEpoch := time.Now().Unix()
 	scope := nowEpoch - int64(enqueuerHorizon/time.Minute)*60
 
-	jobScores, err := rds.GetZsetByScore(conn, rds.RedisKeyScheduled(bs.namespace), []int64{0, scope})
+	// Use math.MinInt64 as lower bound to include negative-epoch entries.
+	// Jobs with an unreachable cron spec get score time.Time{}.Unix() which is negative.
+	jobScores, err := rds.GetZsetByScore(conn, rds.RedisKeyScheduled(bs.namespace), []int64{math.MinInt64, scope})
 	if err != nil {
 		logger.Errorf("Get dirty jobs error: %s", err)
 		return

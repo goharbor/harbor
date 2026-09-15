@@ -167,7 +167,9 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 		e.lastEnqueueErr = err
 		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", lib.TrimLineBreaks(p.JobName), p.ID, err)
 	} else {
-		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
+		// schedule.Next returns time.Time{} for specs that can never fire.
+		// Without the IsZero check the loop runs indefinitely.
+		for t := schedule.Next(nowTime); !t.IsZero() && t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
 
 			// Clone parameters
