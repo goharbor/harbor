@@ -15,6 +15,7 @@
 package project
 
 import (
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 )
@@ -34,6 +35,19 @@ func (pru *rbacUser) GetUserName() string {
 // GetPolicies returns policies of the visitor
 func (pru *rbacUser) GetPolicies() []*types.Policy {
 	policies := pru.policies
+
+	// Any member of the project — i.e. a user assigned at least one role in it —
+	// can view the project itself (self:read gates GetProject/RequireProjectAccess).
+	// Built-in roles also carry self:read in rolePoliciesMap; granting it here
+	// makes baseline visibility a property of membership, so custom roles (whose
+	// self:* is intentionally not selectable in the ScopeRole catalog) obtain it
+	// too, without seeding anything into the database.
+	if len(pru.projectRoles) > 0 {
+		policies = append(policies, &types.Policy{
+			Resource: NewNamespace(pru.project.ProjectID).Resource(rbac.ResourceSelf),
+			Action:   rbac.ActionRead,
+		})
+	}
 
 	if pru.project.IsPublic() {
 		policies = append(policies, getPoliciesForPublicProject(pru.project.ProjectID)...)
