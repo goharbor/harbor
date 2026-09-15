@@ -290,7 +290,7 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 }
 
 func validateWorkers(workers int) bool {
-	if workers <= 0 || workers > 10 {
+	if workers <= 0 {
 		return false
 	}
 	return true

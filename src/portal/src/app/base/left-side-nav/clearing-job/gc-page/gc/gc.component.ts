@@ -23,9 +23,7 @@ import { GcHistoryComponent } from './gc-history/gc-history.component';
 import {
     JOB_STATUS,
     REFRESH_STATUS_TIME_DIFFERENCE,
-    WORKER_OPTIONS,
 } from '../../clearing-job-interfact';
-import { clone } from '../../../../../shared/units/utils';
 import {
     SkipSessionRenewalService,
     skipSessionRenewal,
@@ -49,7 +47,6 @@ export class GcComponent implements OnInit, OnDestroy {
     shouldDeleteUntagged: boolean;
     shouldDeleteTag: boolean;
     workerNum: number = 1;
-    workerOptions: number[] = clone(WORKER_OPTIONS);
     dryRunOnGoing: boolean = false;
 
     lastCompletedTime: string;
