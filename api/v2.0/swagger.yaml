@@ -1588,6 +1588,7 @@ paths:
             - readme.md
             - dependencies
             - sbom
+            - vex
             - license
             - files
           required: true
