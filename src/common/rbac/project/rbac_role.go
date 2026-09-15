@@ -340,29 +340,19 @@ func (role *projectRBACRole) GetRoleName() string {
 func (role *projectRBACRole) GetPolicies() []*types.Policy {
 	policies := []*types.Policy{}
 
-	// Custom role: permissions are loaded from the database.
+	// Custom role: permissions are loaded from the database. Baseline project
+	// visibility (self:read) is not added here — it is granted to any project
+	// member in rbacUser.GetPolicies, so built-in and custom roles obtain it the
+	// same way.
 	if role.custom != nil {
 		namespace := NewNamespace(role.projectID)
-		// Every project member must be able to view the project itself
-		// (self:read gates GetProject/RequireProjectAccess). Built-in roles carry
-		// it in rolePoliciesMap and public projects grant it via
-		// publicProjectPolicies, but a custom role in a private project would
-		// otherwise have no way to obtain it (self:* is intentionally excluded
-		// from the ScopeRole catalog), so grant baseline visibility here.
-		selfRead := &types.Policy{Resource: namespace.Resource(rbac.ResourceSelf), Action: rbac.ActionRead}
-		policies = append(policies, selfRead)
 		for _, permission := range role.custom.Permissions {
 			for _, policy := range permission.Access {
-				p := &types.Policy{
+				policies = append(policies, &types.Policy{
 					Resource: namespace.Resource(policy.Resource),
 					Action:   policy.Action,
 					Effect:   policy.Effect,
-				}
-				// Avoid duplicating the baseline self:read if the role carries it.
-				if p.Resource == selfRead.Resource && p.Action == selfRead.Action && p.Effect == selfRead.Effect {
-					continue
-				}
-				policies = append(policies, p)
+				})
 			}
 		}
 		return policies
