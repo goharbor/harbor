@@ -190,6 +190,26 @@ func TestCustomProjectRoleAccess(t *testing.T) {
 		resource := NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository)
 		assert.False(evaluator.HasPermission(context.TODO(), resource, rbac.ActionPush))
 	}
+
+	{
+		// a custom role on a PRIVATE project always grants baseline self:read so
+		// the member can view the project, even though the role carries only
+		// repository:pull and self:* is not selectable in the ScopeRole catalog.
+		ctl := &projecttesting.Controller{}
+		ctl_r := &stubRoleCtl{}
+		mock.OnAnything(ctl, "Get").Return(private, nil)
+		mock.OnAnything(ctl, "ListRoles").Return([]int{customRoleID}, nil)
+		ctl_r.On("Get", testifymock.Anything, int64(customRoleID), testifymock.Anything).
+			Return(customRole("puller", &types.Policy{Resource: rbac.ResourceRepository, Action: rbac.ActionPull}), nil)
+
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl, ctl_r))
+		self := NewNamespace(private.ProjectID).Resource(rbac.ResourceSelf)
+		// can view the project itself
+		assert.True(evaluator.HasPermission(context.TODO(), self, rbac.ActionRead))
+		// but the baseline never leaks self:update/self:delete (project edit/delete)
+		assert.False(evaluator.HasPermission(context.TODO(), self, rbac.ActionUpdate))
+		assert.False(evaluator.HasPermission(context.TODO(), self, rbac.ActionDelete))
+	}
 }
 
 func BenchmarkProjectEvaluator(b *testing.B) {
