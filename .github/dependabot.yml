@@ -128,6 +128,10 @@ updates:
       # The Angular packages pin each other with exact peer dependencies, and
       # @angular-devkit/build-angular and @angular/core pin typescript and
       # zone.js as well, so a single-package bump always fails "npm ci".
+      # @angular/animations is deprecated, so Dependabot never bumps it, but
+      # @clr/angular needs it. It is the one Angular package with a caret
+      # range in package.json, which lets the group's lockfile update move
+      # it along with @angular/core. Keep the caret.
       angular:
         patterns:
           - "@angular/*"
