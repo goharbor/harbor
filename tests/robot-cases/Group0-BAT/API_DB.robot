@@ -148,6 +148,10 @@ Test Case - Proxy Cache
     [Tags]  proxy_cache_from_harbor
     Harbor API Test  ./tests/apitests/python/test_proxy_cache.py
 
+Test Case - Generate SBOM Of A Proxy Cached Image
+    [Tags]  proxy_cache_from_harbor  generate_sbom_proxy_cache
+    Harbor API Test  ./tests/apitests/python/test_sbom_generation_of_proxy_cache_artifact.py
+
 Test Case - Proxy Cache From Dockerhub
     [Tags]  proxy_cache_from_dockerhub
     Harbor API Test  ./tests/apitests/python/test_proxy_cache.py  PROXY_UPSTREAM_LIST=docker-hub
