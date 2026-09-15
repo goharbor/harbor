@@ -18,29 +18,32 @@ import "sync"
 
 type inflightRequest struct {
 	mu     sync.Mutex
-	reqMap map[string]any
+	reqMap map[string]chan struct{}
 }
 
 var inflightChecker = &inflightRequest{
-	reqMap: make(map[string]any),
+	reqMap: make(map[string]chan struct{}),
 }
 
-// addRequest if the artifact already exist in the inflightRequest, return false
-// else return true
-func (in *inflightRequest) addRequest(artifact string) (suc bool) {
+// addRequest registers the artifact as in flight and returns true if the
+// caller now owns the request. If it is already in flight, returns false and
+// a channel that is closed once the owner removes the request.
+func (in *inflightRequest) addRequest(artifact string) (suc bool, done <-chan struct{}) {
 	in.mu.Lock()
 	defer in.mu.Unlock()
-	_, ok := in.reqMap[artifact]
-	if ok {
-		// Skip some following operation if it is in reqMap
-		return false
+	if ch, ok := in.reqMap[artifact]; ok {
+		return false, ch
 	}
-	in.reqMap[artifact] = 1
-	return true
+	ch := make(chan struct{})
+	in.reqMap[artifact] = ch
+	return true, ch
 }
 
 func (in *inflightRequest) removeRequest(artifact string) {
 	in.mu.Lock()
 	defer in.mu.Unlock()
-	delete(in.reqMap, artifact)
+	if ch, ok := in.reqMap[artifact]; ok {
+		close(ch)
+		delete(in.reqMap, artifact)
+	}
 }
