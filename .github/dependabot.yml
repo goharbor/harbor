@@ -23,6 +23,17 @@ updates:
     reviewers:
       - "OrlinVasilev"
     groups:
+      # codeql-analysis.yml runs codeql-action/init and codeql-action/analyze
+      # in one job. init writes a config file stamped with its version and
+      # analyze rejects it from any other version, so both must be bumped
+      # in the same pull request.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
+      codeql-action-security:
+        applies-to: security-updates
+        patterns:
+          - "github/codeql-action*"
       patch-updates:
         patterns:
           - "*"
