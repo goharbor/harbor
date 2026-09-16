@@ -3,9 +3,12 @@
 package flow
 
 import (
+	context "context"
+
 	distribution "github.com/docker/distribution"
 
 	io "io"
+	http "net/http"
 
 	model "github.com/goharbor/harbor/src/pkg/reg/model"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -418,6 +421,36 @@ func (_m *mockAdapter) PullBlobChunk(repository string, digest string, blobSize 
 	}
 
 	return r0, r1, r2
+}
+
+// PullBlobRange provides a mock function with given fields: ctx, repository, digest, byteRange, ifRange
+func (_m *mockAdapter) PullBlobRange(ctx context.Context, repository string, digest string, byteRange string, ifRange string) (*http.Response, error) {
+	ret := _m.Called(ctx, repository, digest, byteRange, ifRange)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PullBlobRange")
+	}
+
+	var r0 *http.Response
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) (*http.Response, error)); ok {
+		return rf(ctx, repository, digest, byteRange, ifRange)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) *http.Response); ok {
+		r0 = rf(ctx, repository, digest, byteRange, ifRange)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*http.Response)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string) error); ok {
+		r1 = rf(ctx, repository, digest, byteRange, ifRange)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // PullManifest provides a mock function with given fields: repository, reference, accepttedMediaTypes

@@ -60,6 +60,10 @@ import (
 const (
 	contentLength                  = "Content-Length"
 	contentType                    = "Content-Type"
+	contentRange                   = "Content-Range"
+	acceptRanges                   = "Accept-Ranges"
+	lastModified                   = "Last-Modified"
+	contentEncoding                = "Content-Encoding"
 	dockerContentDigest            = "Docker-Content-Digest"
 	etag                           = "Etag"
 	ensureTagInterval              = 10 * time.Second
@@ -76,12 +80,28 @@ var proxyHeaderNames = []string{
 	xTotalCount,
 }
 
+var blobRangeHeaderNames = []string{
+	contentLength,
+	contentType,
+	contentRange,
+	acceptRanges,
+	dockerContentDigest,
+	etag,
+	lastModified,
+	contentEncoding,
+}
+
 var tooManyRequestsError = errors.New("too many requests to upstream registry").WithCode(errors.RateLimitCode)
+var errBlobRangeStream = errors.New("failed to stream blob range")
 
 // BlobGetMiddleware handle get blob request
 func BlobGetMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleBlob(w, r, next); err != nil {
+			if errors.Is(err, errBlobRangeStream) {
+				log.Error(err)
+				return
+			}
 			httpLib.SendError(w, err)
 		}
 	})
@@ -155,12 +175,108 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
+	if byteRange := r.Header.Get("Range"); len(r.Header.Values("Range")) == 1 && isSingleRange(byteRange) {
+		resp, err := proxyCtl.ProxyBlobRange(ctx, p, art, byteRange, r.Header.Get("If-Range"))
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		return serveBlobRange(w, resp)
+	}
 	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 	return serveBlob(w, reader, size, art.Digest)
+}
+
+// isSingleRange accepts a single byte range with an explicit start offset.
+// Other range forms continue to use the full blob pull path.
+func isSingleRange(value string) bool {
+	if !strings.HasPrefix(value, "bytes=") {
+		return false
+	}
+	first, last, ok := strings.Cut(strings.TrimPrefix(value, "bytes="), "-")
+	if !ok || first == "" {
+		return false
+	}
+	for _, part := range []string{first, last} {
+		for _, ch := range part {
+			if ch < '0' || ch > '9' {
+				return false
+			}
+		}
+	}
+	start, err := strconv.ParseInt(first, 10, 64)
+	if err != nil {
+		return false
+	}
+	if last == "" {
+		return true
+	}
+	end, err := strconv.ParseInt(last, 10, 64)
+	return err == nil && end >= start
+}
+
+func serveBlobRange(w http.ResponseWriter, resp *http.Response) error {
+	switch resp.StatusCode {
+	case http.StatusOK, http.StatusPartialContent:
+	default:
+		return errors.Errorf("unexpected blob range response status: %d", resp.StatusCode)
+	}
+	size, err := blobRangeResponseLength(resp)
+	if err != nil {
+		return err
+	}
+	for _, name := range blobRangeHeaderNames {
+		if values := resp.Header.Values(name); len(values) > 0 {
+			w.Header()[http.CanonicalHeaderKey(name)] = values
+		}
+	}
+	w.Header().Set(contentLength, strconv.FormatInt(size, 10))
+	w.WriteHeader(resp.StatusCode)
+	_, err = io.CopyN(w, resp.Body, size)
+	if err != nil {
+		return fmt.Errorf("%w: %v", errBlobRangeStream, err)
+	}
+	return nil
+}
+
+func blobRangeResponseLength(resp *http.Response) (int64, error) {
+	if resp.ContentLength >= 0 {
+		return resp.ContentLength, nil
+	}
+	if resp.StatusCode != http.StatusPartialContent {
+		return 0, errors.New("missing Content-Length in blob response")
+	}
+	parts := strings.Fields(resp.Header.Get(contentRange))
+	if len(parts) != 2 || parts[0] != "bytes" {
+		return 0, errors.New("invalid Content-Range in blob response")
+	}
+	interval, total, ok := strings.Cut(parts[1], "/")
+	if !ok {
+		return 0, errors.New("invalid Content-Range in blob response")
+	}
+	first, last, ok := strings.Cut(interval, "-")
+	if !ok {
+		return 0, errors.New("invalid Content-Range in blob response")
+	}
+	start, err := strconv.ParseInt(first, 10, 64)
+	if err != nil || start < 0 {
+		return 0, errors.New("invalid Content-Range in blob response")
+	}
+	end, err := strconv.ParseInt(last, 10, 64)
+	if err != nil || end < start || end-start == int64(^uint64(0)>>1) {
+		return 0, errors.New("invalid Content-Range in blob response")
+	}
+	if total != "*" {
+		totalSize, err := strconv.ParseInt(total, 10, 64)
+		if err != nil || totalSize <= end {
+			return 0, errors.New("invalid Content-Range in blob response")
+		}
+	}
+	return end - start + 1, nil
 }
 
 // serveBlob sets the blob headers before streaming the body: the first write
