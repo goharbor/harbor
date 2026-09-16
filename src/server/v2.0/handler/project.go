@@ -185,20 +185,6 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
-	var retentionPolicy *policy.Metadata
-	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
-		retentionID, err := strconv.ParseInt(*req.Metadata.RetentionID, 10, 64)
-		if err != nil || retentionID <= 0 {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("metadata.retention_id must be a positive integer"))
-		}
-		retentionPolicy, err = a.retentionCtl.GetRetention(ctx, retentionID)
-		if err != nil {
-			return a.SendError(ctx, errors.BadRequestError(err))
-		}
-		if retentionPolicy.Scope == nil || retentionPolicy.Scope.Level != policy.ScopeLevelProject || retentionPolicy.Scope.Reference != 0 {
-			return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("metadata.retention_id must reference an unassigned project retention policy"))
-		}
-	}
 
 	var ownerID int
 	// TODO: revise the ownerID in project model.
@@ -259,25 +245,16 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	// RegistryID is provided in the request body and it's valid,
-	// attach the supplied policy or create a policy with the requested retention period
+	// create a default retention policy for proxy project
 	if req.RegistryID != nil {
-		var retentionID int64
-		if retentionPolicy != nil {
-			retentionID = retentionPolicy.ID
-			retentionPolicy.Scope.Reference = projectID
-			if err := a.retentionCtl.UpdateRetention(ctx, retentionPolicy); err != nil {
-				return a.SendError(ctx, err)
-			}
-		} else {
-			days := defaultDaysToRetentionForProxyCacheProject
-			if req.RetentionDays != nil {
-				days = int(*req.RetentionDays)
-			}
-			plc := policy.WithNDaysSinceLastPull(projectID, days)
-			retentionID, err = a.retentionCtl.CreateRetention(ctx, plc)
-			if err != nil {
-				return a.SendError(ctx, err)
-			}
+		days := defaultDaysToRetentionForProxyCacheProject
+		if req.RetentionDays != nil {
+			days = int(*req.RetentionDays)
+		}
+		plc := policy.WithNDaysSinceLastPull(projectID, days)
+		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
+		if err != nil {
+			return a.SendError(ctx, err)
 		}
 		md := map[string]string{"retention_id": strconv.FormatInt(retentionID, 10)}
 		if err := a.metadataMgr.Add(ctx, projectID, md); err != nil {
@@ -840,13 +817,10 @@ func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.Project
 		if *req.RetentionDays < 0 || *req.RetentionDays > maxDaysToRetentionForProxyCacheProject {
 			return errors.BadRequestError(nil).WithMessagef("retention_days must be between 0 and %d", maxDaysToRetentionForProxyCacheProject)
 		}
-		if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
-			return errors.BadRequestError(nil).WithMessage("retention_days cannot be combined with metadata.retention_id")
-		}
 	}
 
-	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" && req.RegistryID == nil {
-		return errors.BadRequestError(nil).WithMessage("metadata.retention_id is only supported when creating a proxy cache project")
+	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
+		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
 	}
 
 	if req.RegistryID != nil {

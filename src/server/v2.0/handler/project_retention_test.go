@@ -77,6 +77,7 @@ func TestCreateProjectRetention(t *testing.T) {
 		{name: "zero", registryID: swag.Int64(1), days: swag.Int64(0), wantDays: 0, wantStatus: http.StatusCreated},
 		{name: "maximum", registryID: swag.Int64(1), days: swag.Int64(18250), wantDays: 18250, wantStatus: http.StatusCreated},
 		{name: "empty retention ID", registryID: swag.Int64(1), days: swag.Int64(30), retentionID: swag.String(""), wantDays: 30, wantStatus: http.StatusCreated},
+		{name: "retention ID without days", registryID: swag.Int64(1), retentionID: swag.String("73"), wantStatus: http.StatusBadRequest},
 		{name: "retention ID with days", registryID: swag.Int64(1), days: swag.Int64(30), retentionID: swag.String("73"), wantStatus: http.StatusBadRequest},
 		{name: "retention ID with zero days", registryID: swag.Int64(1), days: swag.Int64(0), retentionID: swag.String("73"), wantStatus: http.StatusBadRequest},
 		{name: "ordinary project", wantStatus: http.StatusCreated},
