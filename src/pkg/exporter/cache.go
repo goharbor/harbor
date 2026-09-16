@@ -70,7 +70,10 @@ func CacheDelete(key string) {
 
 // StartCacheCleaner start a cache clean job
 func StartCacheCleaner() {
-	now := time.Now().UnixNano()
+	cleanExpired(time.Now().Unix())
+}
+
+func cleanExpired(now int64) {
 	c.Lock()
 	defer c.Unlock()
 	for k, v := range c.store {
