@@ -1250,7 +1250,9 @@
         "DELETE_DETAIL": "已刪除 {{blob}} 個 blob 和 {{manifest}} 個 manifest，釋放了 {{size}} 空間。",
         "DELETE_DETAIL_DRY_RUN": "可刪除 {{blob}} 個 blob 和 {{manifest}} 個 manifest，可釋放 {{size}} 空間。",
         "WORKERS_TOOLTIP": "設定可平行執行垃圾回收任務的 Worker 數量，預設值為 1。",
-        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts."
+        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts.",
+        "WORKERS_HELPER_LIMIT": "Max: {{max}} Worker. Set by GC_MAX_WORKERS env var",
+        "WORKERS_HELPER_LIMIT_UNKNOWN": "Saving may enforce an upper limit configured by your deployment operator."
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 複製成功。",

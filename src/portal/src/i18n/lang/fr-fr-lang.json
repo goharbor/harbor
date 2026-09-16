@@ -1251,7 +1251,9 @@
         "DELETE_DETAIL": "{{blob}} blob(s) et {{manifest}} manifeste(s) supprimé(s), {{size}} d'espace libéré",
         "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) et {{manifest}} manifeste(s) peuvent être supprimé(s), {{size}} d'espace peut être libéré",
         "WORKERS_TOOLTIP": "Configurer le nombre de workers qui peuvent exécuter la purge en parallèle, la valeur par défaut est 1.",
-        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts."
+        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts.",
+        "WORKERS_HELPER_LIMIT": "Max: {{max}} Worker. Set by GC_MAX_WORKERS env var",
+        "WORKERS_HELPER_LIMIT_UNKNOWN": "Saving may enforce an upper limit configured by your deployment operator."
     },
     "RETAG": {
         "MSG_SUCCESS": "Artefact copié",

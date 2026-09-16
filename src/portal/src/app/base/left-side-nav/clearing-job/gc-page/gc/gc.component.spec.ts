@@ -21,6 +21,7 @@ import { SharedTestingModule } from '../../../../../shared/shared.module';
 import { GcService } from '../../../../../../../ng-swagger-gen/services/gc.service';
 import { ScheduleType } from '../../../../../shared/entities/shared.const';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { AppConfigService } from '../../../../../services/app-config.service';
 
 describe('GcComponent', () => {
     let component: GcComponent;
@@ -35,6 +36,12 @@ describe('GcComponent', () => {
             return info;
         },
     };
+    const fakedAppConfigService = {
+        config: {} as any,
+        getConfig() {
+            return this.config;
+        },
+    };
     let spySchedule: jasmine.Spy;
     let spyGcNow: jasmine.Spy;
     let spyStatus: jasmine.Spy;
@@ -46,12 +53,16 @@ describe('GcComponent', () => {
                 CronScheduleComponent,
                 CronTooltipComponent,
             ],
-            providers: [{ provide: ErrorHandler, useValue: fakedErrorHandler }],
+            providers: [
+                { provide: ErrorHandler, useValue: fakedErrorHandler },
+                { provide: AppConfigService, useValue: fakedAppConfigService },
+            ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
 
     beforeEach(() => {
+        fakedAppConfigService.config = {} as any;
         fixture = TestBed.createComponent(GcComponent);
         component = fixture.componentInstance;
 
@@ -103,6 +114,22 @@ describe('GcComponent', () => {
             fixture.nativeElement.querySelector('input[type="number"]');
         expect(input).toBeTruthy();
         expect(input.classList).toContain('clr-input');
+    });
+    it('should not cap the worker input when no limit is configured', () => {
+        const input: HTMLInputElement = fixture.nativeElement.querySelector(
+            'input[type="number"]'
+        );
+        expect(component.maxWorkers).toBeUndefined();
+        expect(input.getAttribute('max')).toBeFalsy();
+    });
+    it('should cap the worker input at the configured maximum', () => {
+        fakedAppConfigService.config = { gc_max_workers: 8 } as any;
+        fixture.detectChanges();
+        const input: HTMLInputElement = fixture.nativeElement.querySelector(
+            'input[type="number"]'
+        );
+        expect(component.maxWorkers).toEqual(8);
+        expect(input.getAttribute('max')).toEqual('8');
     });
     it('should submit a worker count above the former limit of 10', () => {
         component.workerNum = 24;

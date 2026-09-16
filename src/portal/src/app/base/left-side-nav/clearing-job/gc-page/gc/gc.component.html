@@ -70,13 +70,26 @@
         </div>
         <div class="clr-col">
             <div class="clr-control-container">
-                <input type="number"
-                 class="clr-input"
-                id="workerNum"
-                name="workerNum"
-                [(ngModel)]="workerNum" placeholder="1"/>
+                <input
+                    type="number"
+                    class="clr-input"
+                    id="workerNum"
+                    name="workerNum"
+                    min="1"
+                    [max]="maxWorkers"
+                    [(ngModel)]="workerNum"
+                    placeholder="1" />
             </div>
-            <span class="explain">{{ 'GC.WORKERS_HELPER' | translate }}</span>
+            <span class="explain">
+                {{ 'GC.WORKERS_HELPER' | translate }}
+                @if (maxWorkers) {
+                {{
+                    'GC.WORKERS_HELPER_LIMIT' | translate : { max: maxWorkers }
+                }}
+                } @else {
+                {{ 'GC.WORKERS_HELPER_LIMIT_UNKNOWN' | translate }}
+                }
+            </span>
         </div>
     </div>
     <div class="clr-row">

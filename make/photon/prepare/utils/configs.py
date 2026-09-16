@@ -229,6 +229,15 @@ def parse_yaml_config(config_file_path, with_trivy):
     value = config_dict["max_job_duration_hours"]
     if not isinstance(value, int) or value < 24:
         config_dict["max_job_duration_hours"] = 24
+    # the maximum number of GC workers an administrator may configure. Unset
+    # means that no limit is enforced.
+    gc_max_workers = js_config.get("gc_max_workers")
+    if isinstance(gc_max_workers, int) and not isinstance(gc_max_workers, bool) and gc_max_workers > 0:
+        config_dict['gc_max_workers'] = gc_max_workers
+    else:
+        if gc_max_workers is not None:
+            logging.warning("Invalid jobservice.gc_max_workers: %s, it must be a positive integer. No GC worker limit is enforced." % gc_max_workers)
+        config_dict['gc_max_workers'] = ''
     config_dict['job_loggers'] = js_config["job_loggers"]
     config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
