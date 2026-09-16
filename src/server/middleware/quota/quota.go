@@ -229,6 +229,17 @@ func RefreshMiddleware(config RefreshConfig, skipers ...middleware.Skipper) func
 			return nil
 		}
 
+		// When async refresh is enabled, only mark the reference dirty
+		// instead of recomputing and writing the usage synchronously; a
+		// background task coalesces all marks and recomputes the usage once
+		// per reference per interval. (The reference lookup above still
+		// reads the database - the mark itself is memory-only.) See
+		// controller/quota/refresh_async.go for semantics.
+		if cq.AsyncRefreshEnabled() {
+			cq.MarkRefresh(reference, referenceID)
+			return nil
+		}
+
 		if err = quotaController.Refresh(r.Context(), reference, referenceID, cq.IgnoreLimitation(config.IgnoreLimitation)); err != nil {
 			logger.Errorf("refresh quota for %s %s failed, error: %v", reference, referenceID, err)
 
