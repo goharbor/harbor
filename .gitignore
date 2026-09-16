@@ -54,8 +54,20 @@ src/portal/cypress/screenshots
 **/robotvars.py
 src/core/conf/app.conf
 
-src/server/v2.0/models/
-src/server/v2.0/restapi/
+# go-swagger output ("make gen_apis"). Everything is ignored except the
+# zz_generated_placeholder.go files, which are committed so that the packages
+# resolve before code generation has run. The patterns are written level by
+# level because git cannot re-include a file whose parent directory is excluded.
+src/server/v2.0/models/*
+!src/server/v2.0/models/zz_generated_placeholder.go
+src/server/v2.0/restapi/*
+!src/server/v2.0/restapi/zz_generated_placeholder.go
+!src/server/v2.0/restapi/operations/
+src/server/v2.0/restapi/operations/*
+!src/server/v2.0/restapi/operations/zz_generated_placeholder.go
+!src/server/v2.0/restapi/operations/*/
+src/server/v2.0/restapi/operations/*/*
+!src/server/v2.0/restapi/operations/*/zz_generated_placeholder.go
 .editorconfig
 
 harborclient/
