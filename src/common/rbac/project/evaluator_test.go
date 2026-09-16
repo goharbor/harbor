@@ -210,6 +210,34 @@ func TestCustomProjectRoleAccess(t *testing.T) {
 		assert.False(evaluator.HasPermission(context.TODO(), self, rbac.ActionUpdate))
 		assert.False(evaluator.HasPermission(context.TODO(), self, rbac.ActionDelete))
 	}
+
+	{
+		// the baseline self:read is scoped to the project the user is a member
+		// of: it must NOT grant read on a different private project where the
+		// user holds no role.
+		other := &proModels.Project{
+			ProjectID: 3,
+			Name:      "other_private_project",
+			OwnerID:   1,
+			Metadata:  map[string]string{"public": "false"},
+		}
+
+		ctl := &projecttesting.Controller{}
+		ctl_r := &stubRoleCtl{}
+		ctl.On("Get", testifymock.Anything, private.ProjectID, testifymock.Anything).Return(private, nil)
+		ctl.On("Get", testifymock.Anything, other.ProjectID, testifymock.Anything).Return(other, nil)
+		// member of `private` via the custom role, but not of `other`
+		ctl.On("ListRoles", testifymock.Anything, private.ProjectID, testifymock.Anything).Return([]int{customRoleID}, nil)
+		ctl.On("ListRoles", testifymock.Anything, other.ProjectID, testifymock.Anything).Return([]int{}, nil)
+		ctl_r.On("Get", testifymock.Anything, int64(customRoleID), testifymock.Anything).
+			Return(customRole("puller", &types.Policy{Resource: rbac.ResourceRepository, Action: rbac.ActionPull}), nil)
+
+		evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl, ctl_r))
+		assert.True(evaluator.HasPermission(context.TODO(),
+			NewNamespace(private.ProjectID).Resource(rbac.ResourceSelf), rbac.ActionRead))
+		assert.False(evaluator.HasPermission(context.TODO(),
+			NewNamespace(other.ProjectID).Resource(rbac.ResourceSelf), rbac.ActionRead))
+	}
 }
 
 func BenchmarkProjectEvaluator(b *testing.B) {

@@ -470,15 +470,11 @@ func containsAccess(policies []*types.Policy, item *models.Access) bool {
 	return false
 }
 
-// robotToHumanResourceMap maps ScopeProject resource names to their ScopeRole equivalents.
+// mapRobotToHumanResource maps ScopeProject resource names to their ScopeRole equivalents.
 // Needed because robots use "project" for the project entity while human roles use "" (ResourceSelf).
-var robotToHumanResourceMap = map[rbac.Resource]rbac.Resource{
-	rbac.ResourceProject: rbac.ResourceSelf,
-}
-
 func mapRobotToHumanResource(r rbac.Resource) rbac.Resource {
-	if mapped, ok := robotToHumanResourceMap[r]; ok {
-		return mapped
+	if r == rbac.ResourceProject {
+		return rbac.ResourceSelf
 	}
 	return r
 }
