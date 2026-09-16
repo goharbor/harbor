@@ -40,8 +40,8 @@ func TestEventResolver_PreCheck(t *testing.T) {
 		wantCapture      bool
 		wantResourceName string
 	}{
-		{"test normal", fields{ResourceIDPattern: `/api/v2.0/tests/(\d+)`, ResourceType: "test", SucceedCodes: []int{200}, ShouldResolveName: true, IDToNameFunc: func(string) string { return "test" }}, args{context.Background(), "/api/v2.0/tests/123", "DELETE"}, true, "test"},
-		{"test resource name", fields{ResourceIDPattern: `/api/v2.0/tests/(\d+)`, ResourceType: "test", SucceedCodes: []int{200}, ShouldResolveName: true, IDToNameFunc: func(string) string { return "test_resource_name" }}, args{context.Background(), "/api/v2.0/tests/234", "DELETE"}, true, "test_resource_name"},
+		{"test normal", fields{ResourceIDPattern: `/api/v2.0/tests/(\d+)`, ResourceType: "test", SucceedCodes: []int{200}, ShouldResolveName: true, IDToNameFunc: func(context.Context, string) string { return "test" }}, args{context.Background(), "/api/v2.0/tests/123", "DELETE"}, true, "test"},
+		{"test resource name", fields{ResourceIDPattern: `/api/v2.0/tests/(\d+)`, ResourceType: "test", SucceedCodes: []int{200}, ShouldResolveName: true, IDToNameFunc: func(context.Context, string) string { return "test_resource_name" }}, args{context.Background(), "/api/v2.0/tests/234", "DELETE"}, true, "test_resource_name"},
 		{"test no resource name", fields{ResourceIDPattern: `/api/v2.0/tests/(\d+)`, ResourceType: "test", SucceedCodes: []int{200}, ShouldResolveName: true}, args{context.Background(), "/api/v2.0/tests/234", "GET"}, true, ""},
 	}
 	for _, tt := range tests {
@@ -62,5 +62,26 @@ func TestEventResolver_PreCheck(t *testing.T) {
 				t.Errorf("EventResolver.PreCheck() gotResourceName = %v, want %v", gotResourceName, tt.wantResourceName)
 			}
 		})
+	}
+}
+
+func TestEventResolver_PreCheckPassesContext(t *testing.T) {
+	type ctxKey struct{}
+	ctx := context.WithValue(context.Background(), ctxKey{}, "request")
+	var got context.Context
+	e := &Resolver{
+		ResourceIDPattern: `/api/v2.0/tests/(\d+)`,
+		ResourceType:      "test",
+		ShouldResolveName: true,
+		IDToNameFunc: func(c context.Context, _ string) string {
+			got = c
+			return "test"
+		},
+	}
+	if _, gotResourceName := e.PreCheck(ctx, "/api/v2.0/tests/123", "DELETE"); gotResourceName != "test" {
+		t.Errorf("EventResolver.PreCheck() gotResourceName = %v, want %v", gotResourceName, "test")
+	}
+	if got == nil || got.Value(ctxKey{}) != "request" {
+		t.Errorf("EventResolver.PreCheck() did not pass the request context to IDToNameFunc")
 	}
 }
