@@ -217,7 +217,7 @@ func (suite *CacheTestSuite) TestManifestCache_push_succeeds() {
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
 
-	err = suite.mCache.push(artInfo, man)
+	err = suite.mCache.push(context.Background(), artInfo, man)
 	suite.Assert().NoError(err)
 }
 
@@ -238,10 +238,10 @@ func (suite *CacheTestSuite) TestManifestCache_push_fails() {
 
 	digestErr := fmt.Errorf("error during manifest push referencing digest")
 	tagErr := fmt.Errorf("error during manifest push referencing tag")
-	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(digestErr)
-	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(tagErr)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Times(localPushAttempts).Return(digestErr)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Times(localPushAttempts).Return(tagErr)
 
-	err = suite.mCache.push(artInfo, man)
+	err = suite.mCache.push(context.Background(), artInfo, man)
 	suite.Assert().Error(err)
 	wrappedErr, isWrappedErr := err.(interface{ Unwrap() []error })
 	suite.Assert().True(isWrappedErr)
