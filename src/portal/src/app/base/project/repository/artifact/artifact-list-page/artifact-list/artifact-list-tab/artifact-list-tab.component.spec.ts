@@ -531,6 +531,38 @@ describe('ArtifactListTabComponent', () => {
         expect(comp.hasEnabledSbom()).toBeTruthy();
         expect(comp.canAddLabel()).toBeFalsy();
     });
+
+    it('should format and populate annotationsArray', () => {
+        const artifactsWithAnnotations: ArtifactFront[] = [
+            {
+                id: 10,
+                type: 'image',
+                digest: 'sha256:111',
+                annotations: {
+                    'org.opencontainers.image.vendor': 'Harbor',
+                    'custom.key': 'custom-value',
+                },
+            },
+            {
+                id: 11,
+                type: 'image',
+                digest: 'sha256:222',
+            },
+        ];
+
+        comp.populateAnnotations(artifactsWithAnnotations);
+
+        expect(artifactsWithAnnotations[0].annotationsArray).toBeDefined();
+        expect(artifactsWithAnnotations[0].annotationsArray.length).toBe(2);
+        expect(artifactsWithAnnotations[0].annotationsArray).toContain(
+            'org.opencontainers.image.vendor: Harbor'
+        );
+        expect(artifactsWithAnnotations[0].annotationsArray).toContain(
+            'custom.key: custom-value'
+        );
+
+        expect(artifactsWithAnnotations[1].annotationsArray).toBeUndefined();
+    });
 });
 
 async function stepOpenAction(fixture, comp) {
