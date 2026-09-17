@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -177,11 +179,12 @@ func (suite *ProjectTestSuite) TestGetScannerOfProject() {
 }
 
 func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
-	times := 4
-	suite.Security.On("IsAuthenticated").Return(true).Times(times)
-	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(times)
+	suite.Security.On("IsAuthenticated").Return(true)
 
 	{
+		suite.Security.On("IsSysAdmin").Return(false)
+		suite.Security.On("Can", mock.Anything, mock.Anything, system.NewNamespace().Resource(rbac.ResourceScanner)).Return(false)
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
 		// list scanners failed
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(0), fmt.Errorf("failed to count scanners")).Once()
 
@@ -213,18 +216,56 @@ func (suite *ProjectTestSuite) TestListScannerCandidatesOfProject() {
 	}
 
 	{
-		// scanners found
+		// scanners found for non-admin user (URL redacted)
 		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(3), nil).Once()
 		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
 
-		var scanners []any
+		var scanners []map[string]any
 		res, err := suite.GetJSON("/projects/1/scanner/candidates?page_size=1&page=2&name=n&description=d&url=u&ex_name=n&ex_url=u", &scanners)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 		suite.Len(scanners, 1)
+		suite.Nil(scanners[0]["url"])
 		suite.Equal("3", res.Header.Get("X-Total-Count"))
 		suite.Contains(res.Header, "Link")
 		suite.Equal(`</api/v2.0/projects/1/scanner/candidates?description=d&ex_name=n&ex_url=u&name=n&page=1&page_size=1&url=u>; rel="prev" , </api/v2.0/projects/1/scanner/candidates?description=d&ex_name=n&ex_url=u&name=n&page=3&page_size=1&url=u>; rel="next"`, res.Header.Get("Link"))
+	}
+
+	{
+		// scanners found for sysadmin user (URL kept)
+		suite.Security.ExpectedCalls = nil
+		suite.Security.On("IsAuthenticated").Return(true)
+		suite.Security.On("IsSysAdmin").Return(true)
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
+
+		var scanners []map[string]any
+		res, err := suite.GetJSON("/projects/1/scanner/candidates", &scanners)
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+		suite.Len(scanners, 1)
+		suite.Equal(suite.reg.URL, scanners[0]["url"])
+	}
+
+	{
+		// scanners found for non-sysadmin user with system scanner list permission (URL kept)
+		suite.Security.ExpectedCalls = nil
+		suite.Security.On("IsAuthenticated").Return(true)
+		suite.Security.On("IsSysAdmin").Return(false)
+		suite.Security.On("Can", mock.Anything, rbac.ActionList, system.NewNamespace().Resource(rbac.ResourceScanner)).Return(true)
+		suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+		mock.OnAnything(suite.scannerCtl, "GetTotalOfRegistrations").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.scannerCtl, "ListRegistrations").Return([]*scanner.Registration{suite.reg}, nil).Once()
+
+		var scanners []map[string]any
+		res, err := suite.GetJSON("/projects/1/scanner/candidates", &scanners)
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+		suite.Len(scanners, 1)
+		suite.Equal(suite.reg.URL, scanners[0]["url"])
 	}
 }
 

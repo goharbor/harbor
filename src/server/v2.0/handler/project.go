@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSec "github.com/goharbor/harbor/src/common/security/robot"
@@ -672,9 +673,18 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 		return a.SendError(ctx, err)
 	}
 
+	hasAdminPermission := false
+	if secCtx, err := a.GetSecurityContext(ctx); err == nil && secCtx != nil {
+		hasAdminPermission = secCtx.IsSysAdmin() || secCtx.Can(ctx, rbac.ActionList, system.NewNamespace().Resource(rbac.ResourceScanner))
+	}
+
 	payload := make([]*models.ScannerRegistration, len(scanners))
 	for i, scanner := range scanners {
-		payload[i] = model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		s := model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		if s != nil && !hasAdminPermission {
+			s.URL = ""
+		}
+		payload[i] = s
 	}
 
 	return operation.NewListScannerCandidatesOfProjectOK().
