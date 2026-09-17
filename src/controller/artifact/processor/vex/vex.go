@@ -73,7 +73,7 @@ func (p *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 	if err := json.Unmarshal(payload, vexManifest); err != nil {
 		return nil, err
 	}
-	if len(vexManifest.Layers) == 0 {
+	if len(vexManifest.Layers) != 1 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("The VEX document is not found")
 	}
 	_, blob, err := p.RegCli.PullBlob(art.RepositoryName, vexManifest.Layers[0].Digest.String())
