@@ -23,7 +23,11 @@ import {
     PageSizeMapKeys,
     setPageSizeToLocalStorage,
 } from '../../../shared/units/utils';
-import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
+import {
+    ClrDatagridSortOrder,
+    ClrDatagridStateInterface,
+    ClrLoadingState,
+} from '@clr/angular';
 import {
     catchError,
     debounceTime,
@@ -84,6 +88,8 @@ export class RolesComponent implements OnInit, OnDestroy {
     total: number = 0;
     roles: FrontRole[] = [];
     selectedRows: FrontRole[] = [];
+    // Default the grid to ascending role_id so built-in roles (1-5) sort first.
+    ascSort: ClrDatagridSortOrder = ClrDatagridSortOrder.ASC;
     loading: boolean = true;
     loadingData: boolean = false;
     addBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
@@ -122,6 +128,7 @@ export class RolesComponent implements OnInit, OnDestroy {
                         const queryParam: RoleService.ListRoleParams = {
                             page: this.currentPage,
                             pageSize: this.pageSize,
+                            sort: 'role_id',
                         };
                         this.searchKey = roleSearchName;
                         if (this.searchKey) {
