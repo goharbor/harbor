@@ -130,7 +130,7 @@ func (d *controller) Create(ctx context.Context, r *Role) (int64, error) {
 }
 
 // Delete ...
-func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) error {
+func (d *controller) Delete(ctx context.Context, id int64, _ ...*Option) error {
 	rDelete, err := d.roleMgr.Get(ctx, id)
 	if err != nil {
 		return err
@@ -155,7 +155,13 @@ func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) er
 		if err := d.roleMgr.Delete(ctx, id); err != nil {
 			return err
 		}
-		return d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, id)
+		// A custom role with no permission rows makes DeletePermissionsByRole
+		// return NotFound; that must not roll back the (valid) role delete. Mirror
+		// the guard Update already uses on the same call.
+		if err := d.rbacMgr.DeletePermissionsByRole(ctx, ROLETYPE, id); err != nil && !errors.IsNotFoundErr(err) {
+			return err
+		}
+		return nil
 	})(ctx); err != nil {
 		return err
 	}
@@ -185,10 +191,11 @@ func (d *controller) Update(ctx context.Context, r *Role, option *Option) error 
 	if err := orm.WithTransaction(func(ctx context.Context) error {
 		if err := d.roleMgr.Update(ctx, &model.Role{
 			ID:          r.ID,
+			Name:        r.Name,
 			Description: r.Description,
 			Modified:    true,
 			ModifiedBy:  modifiedBy,
-		}, "description", "modified", "modified_by", "modified_at"); err != nil {
+		}, "name", "description", "modified", "modified_by", "modified_at"); err != nil {
 			return err
 		}
 		if option != nil && option.WithPermission {

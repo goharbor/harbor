@@ -71,6 +71,24 @@ func (suite *ControllerTestSuite) TestDeleteCustomRole() {
 	suite.Nil(err)
 }
 
+// A custom role with no permission rows must still be deletable: the underlying
+// DeletePermissionsByRole reports NotFound when it removes zero rows, and that
+// must not roll back the (valid) role delete.
+func (suite *ControllerTestSuite) TestDeleteCustomRoleWithoutPermissions() {
+	suite.roleMgr.On("Get", mock.Anything, int64(4)).Return(&model.Role{
+		ID:        4,
+		Name:      "emptyRole",
+		IsBuiltin: false,
+	}, nil)
+	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 4).Return(0, nil)
+	suite.roleMgr.On("Delete", mock.Anything, int64(4)).Return(nil)
+	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(4)).
+		Return(errors.NotFoundError(nil).WithMessage("no permission rows"))
+
+	err := suite.c.Delete(suite.ctx, int64(4))
+	suite.Nil(err)
+}
+
 // A role still assigned to project members cannot be deleted (avoids orphaning
 // project_member rows, which have no FK to role).
 func (suite *ControllerTestSuite) TestDeleteAssignedRoleRejected() {
@@ -114,8 +132,8 @@ func (suite *ControllerTestSuite) TestUpdateCustomRole() {
 		Name:      "myCustomRole",
 		IsBuiltin: false,
 	}, nil)
-	// Update now persists description + the modification audit columns
-	suite.roleMgr.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	// Update now persists name + description + the modification audit columns
+	suite.roleMgr.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(2)).Return(nil)
 	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
 	suite.rbacMgr.On("CreatePermission", mock.Anything, mock.Anything).Return(int64(1), nil)

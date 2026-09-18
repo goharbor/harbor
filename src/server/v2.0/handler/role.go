@@ -22,6 +22,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
@@ -133,7 +134,9 @@ func (rAPI *roleAPI) ListRole(ctx context.Context, params operation.ListRolePara
 		return rAPI.SendError(ctx, err)
 	}
 
-	query.Keywords["Visible"] = true
+	// Note: this lists both built-in roles (is_builtin=true, permissions resolved
+	// from the compile-time rolePoliciesMap) and custom roles. There is no
+	// "Visible" column, so no server-side hiding of built-ins is attempted here.
 
 	total, err := rAPI.roleCtl.Count(ctx, query)
 	if err != nil {
@@ -149,6 +152,7 @@ func (rAPI *roleAPI) ListRole(ctx context.Context, params operation.ListRolePara
 
 	var results []*models.Role
 	for _, r := range roles {
+		fillBuiltinPermissions(r)
 		results = append(results, model.NewRole(r).ToSwagger())
 	}
 
@@ -169,8 +173,31 @@ func (rAPI *roleAPI) GetRoleByID(ctx context.Context, params operation.GetRoleBy
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
+	fillBuiltinPermissions(r)
 
 	return operation.NewGetRoleByIDOK().WithPayload(model.NewRole(r).ToSwagger())
+}
+
+// fillBuiltinPermissions populates a built-in role's permissions from the
+// compile-time rolePoliciesMap. Built-in roles have no role_permission rows in
+// the database (that is the whole point of the hybrid design), so the DB-backed
+// controller reports them as permissionless; the read API must resolve them
+// from code so GET /roles(/{id}) shows a built-in's real permission set instead
+// of an empty one. Custom roles are left untouched — their permissions come
+// from the database via the controller.
+func fillBuiltinPermissions(r *role.Role) {
+	if r == nil || !r.IsBuiltin {
+		return
+	}
+	policies := rbacProject.BuiltinRolePolicies(int(r.ID))
+	if len(policies) == 0 {
+		return
+	}
+	r.Permissions = []*role.Permission{{
+		Kind:      role.LEVELROLE,
+		Namespace: "*",
+		Access:    policies,
+	}}
 }
 
 func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRoleParams) middleware.Responder {
@@ -217,6 +244,14 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 			if acc == nil {
 				return errors.New(nil).WithMessage("bad request nil access").WithCode(errors.BadRequestCode)
 			}
+			// Effect is stored verbatim in permission_policy.effect and handed to
+			// casbin, whose model only recognizes "" and "allow". Reject anything
+			// else (a mis-cased "Allow", a typo, or a "deny" we have no semantics
+			// for) so it cannot be persisted as a permission that silently grants
+			// nothing.
+			if acc.Effect != "" && acc.Effect != string(types.EffectAllow) {
+				return errors.New(nil).WithMessagef("bad request permission effect: %s", acc.Effect).WithCode(errors.BadRequestCode)
+			}
 		}
 	}
 
@@ -242,6 +277,16 @@ func (rAPI *roleAPI) validate(permissions []*models.RolePermission) error {
 func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRoleParams, r *role.Role) error {
 	if err := rAPI.validate(params.Role.Permissions); err != nil {
 		return err
+	}
+
+	// A rename is allowed; validate the new name and apply it so it is persisted
+	// (the DB unique index rejects a collision). An empty or unchanged name leaves
+	// the existing name in place.
+	if params.Role.Name != "" && params.Role.Name != r.Name {
+		if err := validateRoleName(params.Role.Name); err != nil {
+			return err
+		}
+		r.Name = params.Role.Name
 	}
 
 	if len(params.Role.Permissions) != 0 {

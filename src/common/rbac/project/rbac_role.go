@@ -38,6 +38,7 @@ var (
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionUpdate},
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceMetadata, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 

@@ -3368,7 +3368,10 @@ paths:
   /roles:
     get:
       summary: Get roles
-      description: List the roles with the specified level and permissions.
+      description: >-
+        List the roles (built-in and custom) with their permissions. Readable by
+        any authenticated user (e.g. to populate member-role pickers), whereas
+        creating, updating and deleting roles is restricted to system admins.
       tags:
         - role
       operationId: ListRole
@@ -3438,7 +3441,10 @@ paths:
   /roles/{role_id}:
     get:
       summary: Get a role
-      description: This endpoint returns specific role information by role ID.
+      description: >-
+        Returns a role (built-in or custom) with its permissions by role ID.
+        Readable by any authenticated user; creating, updating and deleting roles
+        is restricted to system admins.
       tags:
         - role
       operationId: GetRoleByID

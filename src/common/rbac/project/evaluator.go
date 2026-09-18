@@ -56,11 +56,16 @@ func NewBuilderForUser(user *models.User, ctl project.Controller, ctlR role.Cont
 				roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID})
 				continue
 			}
-			// Custom roles load their permissions from the database.
+			// Custom roles load their permissions from the database. If one role
+			// fails to load (a transient DB error, or a project_member.role that
+			// points at a deleted role), skip just that role rather than returning
+			// nil for the whole rbacUser — dropping the user would strip every other
+			// role they hold in this project, built-ins included, turning a single
+			// bad role into a total denial or a permanent lockout.
 			r, err := ctlR.Get(ctx, int64(roleID), &role.Option{WithPermission: true})
 			if err != nil {
-				log.Errorf("failed to get role %d: %v", roleID, err)
-				return nil
+				log.Errorf("failed to get role %d, skipping it for user %s in project %d: %v", roleID, user.Username, p.ProjectID, err)
+				continue
 			}
 			roles = append(roles, &projectRBACRole{projectID: p.ProjectID, roleID: roleID, custom: r})
 		}

@@ -181,6 +181,32 @@ func TestValidate_ValidPermission(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestValidate_EmptyEffectAllowed(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create", Effect: ""}}},
+	})
+	assert.NoError(t, err)
+}
+
+func TestValidate_AllowEffectAllowed(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create", Effect: "allow"}}},
+	})
+	assert.NoError(t, err)
+}
+
+func TestValidate_BadEffectRejected(t *testing.T) {
+	// A mis-cased "Allow", a "deny" we have no semantics for, or a typo must be
+	// rejected — otherwise it is stored verbatim and silently grants nothing.
+	for _, effect := range []string{"Allow", "deny", "foo"} {
+		err := (&roleAPI{}).validate([]*models.RolePermission{
+			{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create", Effect: effect}}},
+		})
+		assert.Error(t, err, "effect %q should be rejected", effect)
+		assert.Equal(t, errors.BadRequestCode, errors.ErrCode(err))
+	}
+}
+
 // ---------------------------------------------------------------------------
 // containsRoleAccess
 // ---------------------------------------------------------------------------
