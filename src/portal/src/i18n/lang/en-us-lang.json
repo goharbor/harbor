@@ -2031,6 +2031,8 @@
             "guest": "Guest",
             "master": "Maintainer",
             "limitedGuest": "Limited Guest"
-        }
+        },
+        "SIDE_NAV": "Roles",
+        "ID": "ID"
     }
 }
