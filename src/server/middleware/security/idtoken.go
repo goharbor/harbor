@@ -40,6 +40,13 @@ import (
 
 const idTokenOnboardComment = "Onboarded via OIDC (ID token)" // harbor_user.comment is varchar(30)
 
+// Indirections so tests can stand in for the OIDC provider without a live
+// issuer (same pattern as uctl in oidc_cli.go).
+var (
+	verifyIDToken       = oidc.VerifyToken
+	userInfoFromIDToken = oidc.UserInfoFromIDToken
+)
+
 type idToken struct{}
 
 func (i *idToken) Generate(req *http.Request) security.Context {
@@ -55,7 +62,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	if len(token) == 0 {
 		return nil
 	}
-	claims, err := oidc.VerifyToken(ctx, token)
+	claims, err := verifyIDToken(ctx, token)
 	if err != nil {
 		log.Warningf("failed to verify token: %v", err)
 		return nil
@@ -65,7 +72,7 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get OIDC settings: %v", err)
 		return nil
 	}
-	info, err := oidc.UserInfoFromIDToken(ctx, &oidc.Token{RawIDToken: token}, *setting)
+	info, err := userInfoFromIDToken(ctx, &oidc.Token{RawIDToken: token}, *setting)
 	if err != nil {
 		log.Errorf("Failed to get user info from ID token: %v", err)
 		return nil
