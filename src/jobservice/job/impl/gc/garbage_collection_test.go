@@ -85,7 +85,10 @@ func (suite *gcTestSuite) TestShouldRetry() {
 
 func (suite *gcTestSuite) TestValidate() {
 	gc := &GarbageCollector{}
-	suite.Nil(gc.Validate(nil))
+	suite.Error(gc.Validate(nil))
+	suite.Error(gc.Validate(map[string]any{"redis_url_reg": ""}))
+	suite.Error(gc.Validate(map[string]any{"redis_url_reg": 123}))
+	suite.Nil(gc.Validate(map[string]any{"redis_url_reg": "redis url"}))
 }
 
 func (suite *gcTestSuite) TestDeletedArt() {
