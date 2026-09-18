@@ -79,6 +79,7 @@ func (suite *DaoTestSuite) TestList() {
 	suite.Require().Nil(err)
 	suite.Equal(suite.roleID3, roles[0].ID)
 
+	// Roles have no "visible" concept, so a created role is returned by List.
 	r := &model.Role{
 		Name: "testvisible",
 	}
@@ -89,7 +90,9 @@ func (suite *DaoTestSuite) TestList() {
 			"name": "testvisible",
 		},
 	})
-	suite.Equal(len(roles), 0)
+	suite.Require().Nil(err)
+	suite.Equal(1, len(roles))
+	suite.Equal("testvisible", roles[0].Name)
 }
 
 func (suite *DaoTestSuite) TestGet() {
