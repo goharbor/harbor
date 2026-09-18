@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
@@ -181,8 +180,7 @@ func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 	if err != nil {
 		log.Errorf("format repository id key error: %v", err)
 	} else {
-		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, idIdx); err != nil {
 			log.Errorf("delete repository cache key %s error: %v", idIdx, err)
 		}
 	}
@@ -192,7 +190,7 @@ func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 	if err != nil {
 		log.Errorf("format repository name key error: %v", err)
 	} else {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, nameIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, nameIdx); err != nil {
 			log.Errorf("delete repository cache key %s error: %v", nameIdx, err)
 		}
 	}
