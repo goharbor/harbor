@@ -29,6 +29,7 @@ import {
 import { PermissionsKinds } from '../../left-side-nav/system-robot-accounts/system-robot-util';
 import {
     clone,
+    CURRENT_BASE_HREF,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
@@ -64,6 +65,8 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
 import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
+import { HttpClient } from '@angular/common/http';
+import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
 @Component({
     selector: 'app-robot-account',
@@ -101,6 +104,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
 
     loadingMetadata: boolean = false;
     robotMetadata: Permissions;
+    effectivePermissions: Permission[] = [];
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -111,7 +115,8 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         private translate: TranslateService,
         private sanitizer: DomSanitizer,
         private systemInfoService: SysteminfoService,
-        private permissionService: PermissionsService
+        private permissionService: PermissionsService,
+        private http: HttpClient
     ) {}
     ngOnInit() {
         this.getCurrenTime();
@@ -198,6 +203,18 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => (this.loadingMetadata = false)))
             .subscribe(res => {
                 this.robotMetadata = res;
+                // The current user's effective permissions in this project drive
+                // the anti-escalation filtering of what a robot can be granted.
+                // The dedicated /permissions/effective endpoint was removed on the
+                // backend; use the current-user permissions endpoint with a
+                // project scope and relative (resource-name) form instead.
+                this.http
+                    .get<Permission[]>(
+                        `${CURRENT_BASE_HREF}/users/current/permissions?scope=/project/${this.projectId}&relative=true`
+                    )
+                    .subscribe(perms => {
+                        this.effectivePermissions = perms ?? [];
+                    });
             });
     }
 
