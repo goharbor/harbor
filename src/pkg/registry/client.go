@@ -16,6 +16,7 @@ package registry
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -81,6 +82,8 @@ type Client interface {
 	BlobExist(repository, digest string) (exist bool, err error)
 	// PullBlob pulls the specified blob. The caller must close the returned "blob"
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	// PullBlobRange pulls a blob range and preserves the upstream response. The caller must close the body.
+	PullBlobRange(ctx context.Context, repository, digest, byteRange, ifRange string) (*http.Response, error)
 	// PullBlobChunk pulls the specified blob, but by chunked
 	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
 	// PushBlob pushes the specified blob
@@ -382,6 +385,53 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 	}
 
 	return size, resp.Body, nil
+}
+
+// PullBlobRange pulls a blob range without discarding its status and response headers.
+func (c *client) PullBlobRange(
+	ctx context.Context, repository, digest, byteRange, ifRange string,
+) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Accept-Encoding", "identity")
+	req.Header.Add("Range", byteRange)
+	if ifRange != "" {
+		req.Header.Add("If-Range", ifRange)
+	}
+	resp, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == http.StatusOK && resp.ContentLength < 0 {
+		size, err := c.blobSize(ctx, repository, digest)
+		if err != nil {
+			resp.Body.Close()
+			return nil, err
+		}
+		resp.ContentLength = size
+	}
+	return resp, nil
+}
+
+func (c *client) blobSize(ctx context.Context, repository, digest string) (int64, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, buildBlobURL(c.url, repository, digest), nil)
+	if err != nil {
+		return 0, err
+	}
+
+	req.Header.Add("Accept-Encoding", "identity")
+	resp, err := c.do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	if resp.ContentLength < 0 {
+		return 0, errors.New("missing Content-Length in blob HEAD response")
+	}
+	return resp.ContentLength, nil
 }
 
 // PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
