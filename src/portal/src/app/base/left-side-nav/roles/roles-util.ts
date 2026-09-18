@@ -11,12 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Robot } from '../../../../../ng-swagger-gen/models/robot';
+import { Role } from '../../../../../ng-swagger-gen/models/role';
 import { Access } from '../../../../../ng-swagger-gen/models/access';
-import { RobotPermission } from '../../../../../ng-swagger-gen/models/robot-permission';
+import { RolePermission } from '../../../../../ng-swagger-gen/models/role-permission';
 import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
-export interface FrontRobot extends Robot {
+export interface FrontRole extends Role {
     permissionScope?: {
         coverAll?: boolean;
         access?: Array<Access>;
@@ -28,8 +28,7 @@ export interface FrontAccess extends Access {
 }
 
 export enum PermissionsKinds {
-    PROJECT = 'project',
-    SYSTEM = 'system',
+    ROLE = 'project-role',
 }
 
 export enum Resource {
@@ -52,52 +51,52 @@ export const NAMESPACE_ALL_PROJECTS: string = '*';
 export const NAMESPACE_SYSTEM: string = '/';
 
 export const ACTION_RESOURCE_I18N_MAP = {
-    push: 'SYSTEM_ROBOT.PUSH_AND_PULL', // push permission contains pull permission
-    pull: 'ROBOT_ACCOUNT.PULL',
-    read: 'SYSTEM_ROBOT.READ',
-    create: 'SYSTEM_ROBOT.CREATE',
-    delete: 'SYSTEM_ROBOT.DELETE',
-    scan: 'SYSTEM_ROBOT.SCAN',
-    stop: 'SYSTEM_ROBOT.STOP',
-    list: 'SYSTEM_ROBOT.LIST',
-    update: 'ROBOT_ACCOUNT.UPDATE',
-    'audit-log': 'ROBOT_ACCOUNT.AUDIT_LOG',
-    'preheat-instance': 'ROBOT_ACCOUNT.PREHEAT_INSTANCE',
-    '': 'ROBOT_ACCOUNT.PROJECT',
-    project: 'ROBOT_ACCOUNT.PROJECT',
-    'replication-policy': 'ROBOT_ACCOUNT.REPLICATION_POLICY',
-    replication: 'ROBOT_ACCOUNT.REPLICATION',
-    'replication-adapter': 'ROBOT_ACCOUNT.REPLICATION_ADAPTER',
-    registry: 'ROBOT_ACCOUNT.REGISTRY',
-    'scan-all': 'ROBOT_ACCOUNT.SCAN_ALL',
-    'system-volumes': 'ROBOT_ACCOUNT.SYSTEM_VOLUMES',
-    'garbage-collection': 'ROBOT_ACCOUNT.GARBAGE_COLLECTION',
-    'purge-audit': 'ROBOT_ACCOUNT.PURGE_AUDIT',
-    'jobservice-monitor': 'ROBOT_ACCOUNT.JOBSERVICE_MONITOR',
-    'tag-retention': 'ROBOT_ACCOUNT.TAG_RETENTION',
-    scanner: 'ROBOT_ACCOUNT.SCANNER',
-    label: 'ROBOT_ACCOUNT.LABEL',
-    'export-cve': 'ROBOT_ACCOUNT.EXPORT_CVE',
-    'security-hub': 'ROBOT_ACCOUNT.SECURITY_HUB',
-    catalog: 'ROBOT_ACCOUNT.CATALOG',
-    metadata: 'ROBOT_ACCOUNT.METADATA',
-    repository: 'ROBOT_ACCOUNT.REPOSITORY',
-    artifact: 'ROBOT_ACCOUNT.ARTIFACT',
-    tag: 'ROBOT_ACCOUNT.TAG',
-    accessory: 'ROBOT_ACCOUNT.ACCESSORY',
-    'artifact-addition': 'ROBOT_ACCOUNT.ARTIFACT_ADDITION',
-    'artifact-label': 'ROBOT_ACCOUNT.ARTIFACT_LABEL',
-    'preheat-policy': 'ROBOT_ACCOUNT.PREHEAT_POLICY',
-    'immutable-tag': 'ROBOT_ACCOUNT.IMMUTABLE_TAG',
-    log: 'ROBOT_ACCOUNT.LOG',
-    'notification-policy': 'ROBOT_ACCOUNT.NOTIFICATION_POLICY',
-    quota: 'ROBOT_ACCOUNT.QUOTA',
-    sbom: 'ROBOT_ACCOUNT.SBOM',
-    robot: 'ROBOT_ACCOUNT.ROBOT',
-    user: 'ROBOT_ACCOUNT.USER',
-    'user-group': 'ROBOT_ACCOUNT.GROUP',
-    'ldap-user': 'ROBOT_ACCOUNT.LDAPUSER',
-    member: 'ROBOT_ACCOUNT.MEMBER',
+    push: 'ROLE.PUSH',
+    pull: 'ROLE.PULL',
+    read: 'ROLE.READ',
+    create: 'ROLE.CREATE',
+    delete: 'ROLE.DELETE',
+    scan: 'ROLE.SCAN',
+    stop: 'ROLE.STOP',
+    list: 'ROLE.LIST',
+    update: 'ROLE.UPDATE',
+    'audit-log': 'ROLE.AUDIT_LOG',
+    'preheat-instance': 'ROLE.PREHEAT_INSTANCE',
+    '': 'ROLE.PROJECT',
+    project: 'ROLE.PROJECT',
+    'replication-policy': 'ROLE.REPLICATION_POLICY',
+    replication: 'ROLE.REPLICATION',
+    'replication-adapter': 'ROLE.REPLICATION_ADAPTER',
+    registry: 'ROLE.REGISTRY',
+    'scan-all': 'ROLE.SCAN_ALL',
+    'system-volumes': 'ROLE.SYSTEM_VOLUMES',
+    'garbage-collection': 'ROLE.GARBAGE_COLLECTION',
+    'purge-audit': 'ROLE.PURGE_AUDIT',
+    'jobservice-monitor': 'ROLE.JOBSERVICE_MONITOR',
+    'tag-retention': 'ROLE.TAG_RETENTION',
+    scanner: 'ROLE.SCANNER',
+    label: 'ROLE.LABEL',
+    'export-cve': 'ROLE.EXPORT_CVE',
+    'security-hub': 'ROLE.SECURITY_HUB',
+    catalog: 'ROLE.CATALOG',
+    metadata: 'ROLE.METADATA',
+    repository: 'ROLE.REPOSITORY',
+    artifact: 'ROLE.ARTIFACT',
+    tag: 'ROLE.TAG',
+    accessory: 'ROLE.ACCESSORY',
+    'artifact-addition': 'ROLE.ARTIFACT_ADDITION',
+    'artifact-label': 'ROLE.ARTIFACT_LABEL',
+    'preheat-policy': 'ROLE.PREHEAT_POLICY',
+    'immutable-tag': 'ROLE.IMMUTABLE_TAG',
+    log: 'ROLE.LOG',
+    'notification-policy': 'ROLE.NOTIFICATION_POLICY',
+    quota: 'ROLE.QUOTA',
+    sbom: 'ROLE.SBOM',
+    role: 'ROLE.ROLE',
+    user: 'ROLE.USER',
+    'user-group': 'ROLE.GROUP',
+    'ldap-user': 'ROLE.LDAPUSER',
+    member: 'ROLE.MEMBER',
 };
 
 export function convertKey(key: string) {
@@ -135,11 +134,7 @@ export function onlyHasPushPermission(access: Access[]): boolean {
     return false;
 }
 
-export enum RobotTimeRemainColor {
-    GREEN = 'green',
-    WARNING = 'yellow',
-    EXPIRED = 'red',
-}
+
 
 export function isCandidate(
     candidatePermissions: Permission[],
@@ -175,7 +170,7 @@ export function hasPermission(
     return false;
 }
 
-export const NEW_EMPTY_ROBOT: Robot = {
+export const NEW_EMPTY_ROLE: Role = {
     permissions: [
         {
             access: [],
@@ -183,13 +178,15 @@ export const NEW_EMPTY_ROBOT: Robot = {
     ],
 };
 
-export function getSystemAccess(r: Robot): Access[] {
-    let systemPermissions: RobotPermission[] = [];
-    if (r?.permissions?.length) {
+export function getRoleAccess(r: Role): Access[] {
+    let systemPermissions: RolePermission[] = [];
+    systemPermissions = r.permissions;
+/*    if (r?.permissions?.length) {
         systemPermissions = r.permissions.filter(
-            item => item.kind === PermissionsKinds.SYSTEM
+            item => item.kind === PermissionsKinds.ROLE
         );
     }
+*/
     if (systemPermissions?.length) {
         const map = {};
         systemPermissions.forEach(p => {
