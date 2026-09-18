@@ -3,6 +3,8 @@ set -x
 
 set -e
 
+./tests/ci/installer_runtime_test.sh
+
 sudo apt-get update && sudo apt-get install -y libldap2-dev
 
 if [ -n "$XDG_CONFIG_HOME" ] && [[ "$XDG_CONFIG_HOME" == *'$HOME'* ]]; then
