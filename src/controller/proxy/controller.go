@@ -38,7 +38,7 @@ import (
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
-const (
+var (
 	// wait more time than manifest (maxManifestWait) because manifest list depends on manifest ready
 	maxManifestListWait = 20
 	maxManifestWait     = 10
