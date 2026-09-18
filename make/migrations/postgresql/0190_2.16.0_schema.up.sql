@@ -37,9 +37,12 @@ ALTER TABLE role ADD COLUMN IF NOT EXISTS modified_by  VARCHAR(255);
 ALTER TABLE role ADD COLUMN IF NOT EXISTS modified_at  TIMESTAMP WITH TIME ZONE;
 
 -- Widen the role name to match the API/UI contract (was varchar(20)) and enforce
--- name uniqueness so custom roles cannot collide.
+-- name uniqueness so custom roles cannot collide. The uniqueness is
+-- case-insensitive (lower(name)) so "Maintainer" and "maintainer" cannot coexist
+-- and be mistaken for one another.
 ALTER TABLE role ALTER COLUMN name TYPE varchar(255);
-CREATE UNIQUE INDEX IF NOT EXISTS uq_role_name ON role (name);
+DROP INDEX IF EXISTS uq_role_name;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_role_name ON role (lower(name));
 
 -- Mark all roles seeded by migrations as built-in (immutable).
 UPDATE role SET is_builtin = TRUE
