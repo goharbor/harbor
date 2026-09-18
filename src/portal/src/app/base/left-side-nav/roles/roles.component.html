@@ -76,13 +76,16 @@
             [clrDgLoading]="loading"
             clrDgSelectionType="multi"
             [(clrDgSelected)]="selectedRows">
-            <clr-dg-column [clrDgSortBy]="'role_id'" [clrDgSortOrder]="ascSort">{{
-                'ROLE.ID' | translate
-            }}</clr-dg-column>
+            <clr-dg-column
+                class="id-col"
+                [clrDgSortBy]="'role_id'"
+                [clrDgSortOrder]="ascSort"
+                >{{ 'ROLE.ID' | translate }}</clr-dg-column
+            >
             <clr-dg-column [clrDgSortBy]="'name'">{{
                 'ROLE.NAME' | translate
             }}</clr-dg-column>
-            <clr-dg-column>{{
+            <clr-dg-column class="builtin-col">{{
                 'ROLE.BUILTIN' | translate
             }}</clr-dg-column>
             <clr-dg-column>{{
@@ -105,9 +108,9 @@
             }}</clr-dg-placeholder>
             @for (r of roles; track r.id) {
             <clr-dg-row [clrDgItem]="r">
-                <clr-dg-cell>{{ r.id }}</clr-dg-cell>
+                <clr-dg-cell class="id-col">{{ r.id }}</clr-dg-cell>
                 <clr-dg-cell>{{ getRoleName(r) }}</clr-dg-cell>
-                <clr-dg-cell>
+                <clr-dg-cell class="builtin-col">
                     <clr-icon *ngIf="r.is_builtin" shape="check-circle" size="16" style="color: var(--clr-color-success-700)"></clr-icon>
                 </clr-dg-cell>
                 <clr-dg-cell>{{ r.description || '–' }}</clr-dg-cell>
