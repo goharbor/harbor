@@ -119,6 +119,45 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 	}
 }
 
+// TestScheduleNextJobsUnreachableCron verifies that scheduleNextJobs returns
+// promptly and adds no entries for a cron spec that can never fire.
+func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
+	p := &Policy{
+		ID:       "unreachable_policy",
+		JobName:  job.SampleJob,
+		CronSpec: "0 0 3 30 2 *",
+	}
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.RedisKeyScheduled(suite.namespace)
+	before, err := redis.Int(conn.Do("ZCARD", key))
+	require.NoError(suite.T(), err)
+
+	workerConn := suite.pool.Get()
+	defer func() { _ = workerConn.Close() }()
+	done := make(chan struct{})
+	go func() {
+		suite.enqueuer.scheduleNextJobs(p, workerConn)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// returned promptly, as expected
+	case <-time.After(5 * time.Second):
+		suite.Fail("scheduleNextJobs did not return within 5s for unreachable cron")
+		return
+	}
+
+	after, err := redis.Int(conn.Do("ZCARD", key))
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), before, after, "unreachable cron should not enqueue any jobs")
+}
+
 func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
