@@ -37,6 +37,7 @@
                             [hidden]="!checkOnGoing"></span>
                         <div
                             class="selectBox"
+                            (scroll)="onUserListScroll($event)"
                             [style.display]="
                                 searchedUserLists.length ? 'block' : 'none'
                             ">
@@ -47,6 +48,11 @@
                                 </li>
                                 }
                             </ul>
+                            <div
+                                class="loading-more"
+                                [hidden]="!loadingMoreUsers">
+                                <span class="spinner spinner-inline"></span>
+                            </div>
                         </div>
                     </div>
                     @if ( (memberName.invalid && (memberName.touched ||
