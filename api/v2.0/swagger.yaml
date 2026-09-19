@@ -8295,6 +8295,11 @@ definitions:
         x-nullable: true
         x-omitempty: true
         description: The flag to indicate whether Harbor is in readonly mode.
+      gc_max_workers:
+        type: integer
+        x-nullable: true
+        x-omitempty: true
+        description: The maximum number of workers that can be configured for garbage collection. It is omitted when no limit is configured.
       notification_enable:
         type: boolean
         x-nullable: true

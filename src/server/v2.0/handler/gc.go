@@ -104,14 +104,11 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 			policy.DeleteTag = deleteTag
 		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
-			wInt, err := workers.Int64()
+			wInt, err := parseWorkers(workers)
 			if err != nil {
-				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+				return 0, err
 			}
-			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 10.", workers)
-			}
-			policy.Workers = int(wInt)
+			policy.Workers = wInt
 		}
 
 		id, err = g.gcCtr.Start(ctx, policy, task.ExecutionTriggerManual)
@@ -131,14 +128,11 @@ func (g *gcAPI) kick(ctx context.Context, scheType string, cron string, paramete
 			policy.DeleteTag = deleteTag
 		}
 		if workers, ok := parameters["workers"].(json.Number); ok {
-			wInt, err := workers.Int64()
+			wInt, err := parseWorkers(workers)
 			if err != nil {
-				return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+				return 0, err
 			}
-			if !validateWorkers(int(wInt)) {
-				return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and less than or equal to 10.", workers)
-			}
-			policy.Workers = int(wInt)
+			policy.Workers = wInt
 		}
 		err = g.updateSchedule(ctx, scheType, cron, policy)
 	}
@@ -289,9 +283,31 @@ func (g *gcAPI) StopGC(ctx context.Context, params operation.StopGCParams) middl
 	return operation.NewStopGCOK()
 }
 
-func validateWorkers(workers int) bool {
-	if workers <= 0 || workers > 10 {
+// validateWorkers checks the requested worker count against the operator
+// configured upper limit. A maxWorkers of 0 means that no limit is configured.
+func validateWorkers(workers int, maxWorkers int) bool {
+	if workers <= 0 {
+		return false
+	}
+	if maxWorkers > 0 && workers > maxWorkers {
 		return false
 	}
 	return true
+}
+
+// parseWorkers reads and validates the workers parameter, honouring the
+// operator configured upper limit, if any.
+func parseWorkers(workers json.Number) (int, error) {
+	wInt, err := workers.Int64()
+	if err != nil {
+		return 0, errors.BadRequestError(fmt.Errorf("workers should be integer format"))
+	}
+	maxWorkers := config.GetGCMaxWorkers()
+	if !validateWorkers(int(wInt), maxWorkers) {
+		if maxWorkers > 0 {
+			return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0 and at most %d, the maximum configured for this deployment.", workers, maxWorkers)
+		}
+		return 0, errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("Error: Invalid number of workers:%s. Workers must be greater than 0.", workers)
+	}
+	return int(wInt), nil
 }
