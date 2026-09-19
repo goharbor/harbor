@@ -75,7 +75,7 @@ type artifactAPI struct {
 
 func (a *artifactAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
-		a.SendError(ctx, err)
+		return a.SendError(ctx, err)
 	}
 
 	return nil
