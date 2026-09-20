@@ -410,6 +410,7 @@ func (suite *gcTestSuite) TestSweepBlobNotFound() {
 	ctx.On("OPCommand").Return(job.NilCommand, false)
 	ctx.On("Checkin", `{"freed_space":0,"purged_blobs":1,"purged_manifests":0}`).Return(nil)
 
+	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
 	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
 
 	gc := &GarbageCollector{
