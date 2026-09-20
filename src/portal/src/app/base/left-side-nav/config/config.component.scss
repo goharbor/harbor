@@ -13,3 +13,17 @@
 .v-mid {
     vertical-align: middle;
 }
+
+ul.nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+@media screen and (max-width: 767px) {
+    .config-title {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+}
+
