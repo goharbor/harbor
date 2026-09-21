@@ -28,6 +28,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
+var (
+	errFileTooLarge = errors.New("The file is too large to be processed")
+)
+
 const (
 	// AdditionTypeVEX identifies the VEX document addition.
 	AdditionTypeVEX = "VEX"
@@ -35,6 +39,8 @@ const (
 	ArtifactTypeVEX = "VEX"
 	// ProcessorMediaTypeOpenVEX is the OCI artifact type for OpenVEX documents.
 	ProcessorMediaTypeOpenVEX = "application/vnd.openvex+json"
+	// defaultVEXFileSizeLimit caps VEX payload materialization in memory.
+	defaultVEXFileSizeLimit = 1024 * 1024 * 4 // 4MB
 )
 
 func init() {
@@ -76,14 +82,20 @@ func (p *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 	if len(vexManifest.Layers) != 1 {
 		return nil, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("The VEX document is not found")
 	}
+	if vexManifest.Layers[0].Size > defaultVEXFileSizeLimit {
+		return nil, errors.RequestEntityTooLargeError(errFileTooLarge)
+	}
 	_, blob, err := p.RegCli.PullBlob(art.RepositoryName, vexManifest.Layers[0].Digest.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to pull the blob")
 	}
 	defer blob.Close()
-	content, err := io.ReadAll(blob)
+	content, err := io.ReadAll(io.LimitReader(blob, defaultVEXFileSizeLimit+1))
 	if err != nil {
 		return nil, err
+	}
+	if int64(len(content)) > defaultVEXFileSizeLimit {
+		return nil, errors.RequestEntityTooLargeError(errFileTooLarge)
 	}
 	return &processor.Addition{Content: content, ContentType: "application/json"}, nil
 }

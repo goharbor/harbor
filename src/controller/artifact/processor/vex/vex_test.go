@@ -93,3 +93,40 @@ func TestAbstractAdditionPullBlobError(t *testing.T) {
 	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
 	require.Error(t, err)
 }
+
+func TestAbstractAdditionRejectsLargeDeclaredLayer(t *testing.T) {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(fmt.Sprintf(`{
+        "schemaVersion": 2,
+        "config": {"mediaType": "application/vnd.oci.empty.v1+json", "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b", "size": 2},
+        "layers": [{"mediaType": "application/json", "digest": "sha256:abc", "size": %d}]
+    }`, defaultVEXFileSizeLimit+1)))
+	require.NoError(t, err)
+
+	registryClient := &registrytesting.Client{}
+	registryClient.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "sha256:123", nil).Once()
+	processor := &Processor{ManifestProcessor: &base.ManifestProcessor{RegCli: registryClient}}
+
+	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
+	require.Error(t, err)
+	require.True(t, errors.IsErr(err, errors.RequestEntityTooLargeCode))
+	registryClient.AssertNotCalled(t, "PullBlob", mock.Anything, mock.Anything)
+}
+
+func TestAbstractAdditionRejectsLargeReadLayer(t *testing.T) {
+	manifest, _, err := distribution.UnmarshalManifest(v1.MediaTypeImageManifest, []byte(`{
+        "schemaVersion": 2,
+        "config": {"mediaType": "application/vnd.oci.empty.v1+json", "digest": "sha256:e91b9dfcbbb3b88bac94726f276b89de46e4460b55f6e6d6f876e666b150ec5b", "size": 2},
+        "layers": [{"mediaType": "application/json", "digest": "sha256:abc", "size": 42}]
+    }`))
+	require.NoError(t, err)
+
+	registryClient := &registrytesting.Client{}
+	registryClient.On("PullManifest", mock.Anything, mock.Anything).Return(manifest, "sha256:123", nil).Once()
+	registryClient.On("PullBlob", mock.Anything, mock.Anything).
+		Return(int64(42), io.NopCloser(strings.NewReader(strings.Repeat("x", int(defaultVEXFileSizeLimit+1)))), nil).Once()
+	processor := &Processor{ManifestProcessor: &base.ManifestProcessor{RegCli: registryClient}}
+
+	_, err = processor.AbstractAddition(context.Background(), &artifact.Artifact{}, AdditionTypeVEX)
+	require.Error(t, err)
+	require.True(t, errors.IsErr(err, errors.RequestEntityTooLargeCode))
+}
