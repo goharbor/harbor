@@ -66,6 +66,24 @@ func TestRebaseOnCore(t *testing.T) {
 			want:    "http://harbor-core:80" + hook,
 		},
 		{
+			name:    "unchanged when CORE_URL has no scheme",
+			coreURL: "//harbor-core:443",
+			raw:     "http://harbor-core:80" + hook,
+			want:    "http://harbor-core:80" + hook,
+		},
+		{
+			name:    "unchanged when CORE_URL carries a path prefix",
+			coreURL: "https://proxy/core",
+			raw:     "http://harbor-core:80" + hook,
+			want:    "http://harbor-core:80" + hook,
+		},
+		{
+			name:    "unchanged when the hook URL has no scheme",
+			coreURL: "https://harbor-core:443",
+			raw:     "//harbor-core:80" + hook,
+			want:    "//harbor-core:80" + hook,
+		},
+		{
 			name:    "unchanged when the hook URL is not absolute",
 			coreURL: "https://harbor-core:443",
 			raw:     hook,
@@ -76,6 +94,12 @@ func TestRebaseOnCore(t *testing.T) {
 			coreURL: "https://harbor-core:443",
 			raw:     "not a url",
 			want:    "not a url",
+		},
+		{
+			name:    "unchanged when the hook URL is not http or https",
+			coreURL: "https://harbor-core:443",
+			raw:     "ftp://harbor-core:80" + hook,
+			want:    "ftp://harbor-core:80" + hook,
 		},
 		{
 			name:    "unchanged when the path is not a core notification",
