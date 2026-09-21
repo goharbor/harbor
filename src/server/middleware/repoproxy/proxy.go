@@ -176,6 +176,7 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
 	if byteRange := r.Header.Get("Range"); len(r.Header.Values("Range")) == 1 && isSingleRange(byteRange) {
+		byteRange = strings.ToLower(byteRange)
 		resp, err := proxyCtl.ProxyBlobRange(ctx, p, art, byteRange, r.Header.Get("If-Range"))
 		if err != nil {
 			return err
@@ -194,10 +195,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 // isSingleRange accepts a single byte range with an explicit start offset.
 // Other range forms continue to use the full blob pull path.
 func isSingleRange(value string) bool {
-	if !strings.HasPrefix(value, "bytes=") {
+	unit, spec, ok := strings.Cut(value, "=")
+	if !ok || !strings.EqualFold(unit, "bytes") {
 		return false
 	}
-	first, last, ok := strings.Cut(strings.TrimPrefix(value, "bytes="), "-")
+	first, last, ok := strings.Cut(spec, "-")
 	if !ok || first == "" {
 		return false
 	}
@@ -220,23 +222,33 @@ func isSingleRange(value string) bool {
 }
 
 func serveBlobRange(w http.ResponseWriter, resp *http.Response) error {
+	size := resp.ContentLength
+	var err error
 	switch resp.StatusCode {
 	case http.StatusOK, http.StatusPartialContent:
+		size, err = blobRangeResponseLength(resp)
+		if err != nil {
+			return err
+		}
+	case http.StatusRequestedRangeNotSatisfiable:
+		// Content-Range describes the complete blob, not the error response body.
 	default:
 		return errors.Errorf("unexpected blob range response status: %d", resp.StatusCode)
-	}
-	size, err := blobRangeResponseLength(resp)
-	if err != nil {
-		return err
 	}
 	for _, name := range blobRangeHeaderNames {
 		if values := resp.Header.Values(name); len(values) > 0 {
 			w.Header()[http.CanonicalHeaderKey(name)] = values
 		}
 	}
-	w.Header().Set(contentLength, strconv.FormatInt(size, 10))
+	if size >= 0 {
+		w.Header().Set(contentLength, strconv.FormatInt(size, 10))
+	}
 	w.WriteHeader(resp.StatusCode)
-	_, err = io.CopyN(w, resp.Body, size)
+	if size >= 0 {
+		_, err = io.CopyN(w, resp.Body, size)
+	} else {
+		_, err = io.Copy(w, resp.Body)
+	}
 	if err != nil {
 		return fmt.Errorf("%w: %v", errBlobRangeStream, err)
 	}
@@ -250,30 +262,31 @@ func blobRangeResponseLength(resp *http.Response) (int64, error) {
 	if resp.StatusCode != http.StatusPartialContent {
 		return 0, errors.New("missing Content-Length in blob response")
 	}
+	errInvalidContentRange := errors.New("invalid Content-Range in blob response")
 	parts := strings.Fields(resp.Header.Get(contentRange))
-	if len(parts) != 2 || parts[0] != "bytes" {
-		return 0, errors.New("invalid Content-Range in blob response")
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "bytes") {
+		return 0, errInvalidContentRange
 	}
 	interval, total, ok := strings.Cut(parts[1], "/")
 	if !ok {
-		return 0, errors.New("invalid Content-Range in blob response")
+		return 0, errInvalidContentRange
 	}
 	first, last, ok := strings.Cut(interval, "-")
 	if !ok {
-		return 0, errors.New("invalid Content-Range in blob response")
+		return 0, errInvalidContentRange
 	}
 	start, err := strconv.ParseInt(first, 10, 64)
 	if err != nil || start < 0 {
-		return 0, errors.New("invalid Content-Range in blob response")
+		return 0, errInvalidContentRange
 	}
 	end, err := strconv.ParseInt(last, 10, 64)
 	if err != nil || end < start || end-start == int64(^uint64(0)>>1) {
-		return 0, errors.New("invalid Content-Range in blob response")
+		return 0, errInvalidContentRange
 	}
 	if total != "*" {
 		totalSize, err := strconv.ParseInt(total, 10, 64)
 		if err != nil || totalSize <= end {
-			return 0, errors.New("invalid Content-Range in blob response")
+			return 0, errInvalidContentRange
 		}
 	}
 	return end - start + 1, nil

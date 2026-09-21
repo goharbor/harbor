@@ -159,6 +159,41 @@ func TestProxyBlobRangeNotFound(t *testing.T) {
 	require.Nil(t, resp)
 }
 
+func TestProxyBlobRangeUnsatisfiable(t *testing.T) {
+	fullRequested := make(chan struct{}, 1)
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v2/" {
+			return
+		}
+		if r.Header.Get("Range") == "" {
+			fullRequested <- struct{}{}
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		assert.Equal(t, "bytes=10-", r.Header.Get("Range"))
+		w.Header().Set("Content-Range", "bytes */10")
+		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+		_, _ = io.WriteString(w, "out of range")
+	}))
+	defer upstream.Close()
+	project := setupRangeRegistry(t, upstream.URL)
+	ctl := &controller{}
+	art := lib.ArtifactInfo{ProjectName: "proxy", Repository: "proxy/test", Digest: "digest"}
+	resp, err := ctl.ProxyBlobRange(context.Background(), project, art, "bytes=10-", "")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusRequestedRangeNotSatisfiable, resp.StatusCode)
+	require.Equal(t, "bytes */10", resp.Header.Get("Content-Range"))
+	data, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equal(t, "out of range", string(data))
+	select {
+	case <-fullRequested:
+		t.Fatal("unsatisfiable range triggered a full blob download")
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
 // TestProxyBlobRangeBackgroundCache verifies that a slow complete download does not block
 // the ranged response or inherit its cancellation.
 func TestProxyBlobRangeBackgroundCache(t *testing.T) {

@@ -77,7 +77,7 @@ func TestPullBlobRangeErrors(t *testing.T) {
 		{http.StatusForbidden, errors.ForbiddenCode},
 		{http.StatusNotFound, errors.NotFoundCode},
 		{http.StatusTooManyRequests, errors.RateLimitCode},
-		{http.StatusRequestedRangeNotSatisfiable, errors.GeneralCode},
+		{http.StatusInternalServerError, errors.GeneralCode},
 	} {
 		t.Run(strconv.Itoa(tt.status), func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -88,6 +88,55 @@ func TestPullBlobRangeErrors(t *testing.T) {
 			resp, err := client.PullBlobRange(context.Background(), "test", "digest", "bytes=0-1", "")
 			require.Nil(t, resp)
 			require.True(t, errors.IsErr(err, tt.code), "%v", err)
+		})
+	}
+}
+
+func TestPullBlobRangeUnsatisfiable(t *testing.T) {
+	for _, tt := range []struct {
+		name    string
+		body    string
+		chunked bool
+	}{
+		{name: "known length", body: "range not satisfiable"},
+		{name: "chunked", body: "range not satisfiable", chunked: true},
+		{name: "empty"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodGet, r.Method)
+				w.Header().Set("Content-Range", "bytes */10")
+				w.Header().Set("Content-Type", "text/plain")
+				if !tt.chunked {
+					w.Header().Set("Content-Length", strconv.Itoa(len(tt.body)))
+				}
+				w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+				if tt.chunked {
+					w.(http.Flusher).Flush()
+				}
+				_, _ = io.WriteString(w, tt.body)
+			}))
+			defer server.Close()
+			client := NewClientWithAuthorizer(server.URL, nil, false, "")
+			resp, err := client.PullBlobRange(context.Background(), "test", "digest", "bytes=10-", "")
+			require.NoError(t, err)
+			defer resp.Body.Close()
+			require.Equal(t, http.StatusRequestedRangeNotSatisfiable, resp.StatusCode)
+			require.Equal(t, "bytes */10", resp.Header.Get("Content-Range"))
+			require.Equal(t, "text/plain", resp.Header.Get("Content-Type"))
+			if tt.chunked {
+				require.EqualValues(t, -1, resp.ContentLength)
+			} else {
+				require.EqualValues(t, len(tt.body), resp.ContentLength)
+			}
+			data, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			require.Equal(t, tt.body, string(data))
+
+			// Other registry requests still map 416 to an error.
+			_, reader, err := client.PullBlob("test", "digest")
+			require.Nil(t, reader)
+			require.True(t, errors.IsErr(err, errors.GeneralCode), "%v", err)
 		})
 	}
 }

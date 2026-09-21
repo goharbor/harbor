@@ -22,6 +22,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -401,7 +402,7 @@ func (c *client) PullBlobRange(
 	if ifRange != "" {
 		req.Header.Add("If-Range", ifRange)
 	}
-	resp, err := c.do(req)
+	resp, err := c.do(req, http.StatusRequestedRangeNotSatisfiable)
 	if err != nil {
 		return nil, err
 	}
@@ -683,7 +684,8 @@ func (c *client) Do(req *http.Request) (*http.Response, error) {
 	return c.do(req)
 }
 
-func (c *client) do(req *http.Request) (*http.Response, error) {
+// acceptedStatuses preserves non-2xx responses for the caller.
+func (c *client) do(req *http.Request, acceptedStatuses ...int) (*http.Response, error) {
 	for _, interceptor := range c.interceptors {
 		if err := interceptor.Intercept(req); err != nil {
 			return nil, err
@@ -699,7 +701,7 @@ func (c *client) do(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	if (resp.StatusCode < 200 || resp.StatusCode > 299) && !slices.Contains(acceptedStatuses, resp.StatusCode) {
 		defer resp.Body.Close()
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
