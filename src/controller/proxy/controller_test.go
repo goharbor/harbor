@@ -152,6 +152,26 @@ func (p *proxyControllerTestSuite) TestUseLocalManifest_429ToLocal() {
 	p.Assert().True(result)
 }
 
+func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_UnreachableToLocal() {
+	ctx := context.Background()
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, nil, errors.New("connection refused"))
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(&artifact.Artifact{}, nil)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
+	p.Assert().Nil(err)
+	p.Assert().True(result)
+}
+
+func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_UnreachableNoLocal() {
+	ctx := context.Background()
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
+	p.remote.On("ManifestExist", mock.Anything, mock.Anything).Return(false, nil, errors.New("connection refused"))
+	p.local.On("GetManifest", mock.Anything, mock.Anything).Return(nil, nil)
+	result, _, err := p.ctr.UseLocalManifest(ctx, art, p.remote, p.proj)
+	p.Assert().NotNil(err)
+	p.Assert().False(result)
+}
+
 func (p *proxyControllerTestSuite) TestUseLocalManifestWithTag_True() {
 	ctx := context.Background()
 	art := lib.ArtifactInfo{Repository: "library/hello-world", Tag: "latest"}
