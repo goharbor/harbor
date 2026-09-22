@@ -154,7 +154,7 @@ func (cc *CommonController) UserExists() {
 	securityCtx, ok := security.FromContext(ctx)
 	isAdmin := ok && securityCtx.IsSysAdmin()
 	if !flag && !isAdmin {
-		cc.CustomAbort(http.StatusPreconditionFailed, "self registration deactivated, only sysadmin can check user existence")
+		cc.CustomAbort(http.StatusPreconditionFailed, "Self-registration is deactivated; only a system administrator can check user existence.")
 	}
 
 	target := cc.GetString("target")

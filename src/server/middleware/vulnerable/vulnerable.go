@@ -96,8 +96,8 @@ func Middleware() func(http.Handler) http.Handler {
 				return nil
 			}
 			// If the artifact is scannable but there's no report, it's a violation.
-			msg := fmt.Sprintf(`current image without vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, projectSeverity)
+			msg := fmt.Sprintf(`The image has not been scanned for vulnerabilities and cannot be pulled due to configured policy 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+				`Ask a project administrator to scan the artifact, or to adjust the vulnerability prevention policy.`, projectSeverity)
 			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		} else if err != nil {
 			logger.Errorf("get vulnerability summary of the artifact %s@%s failed, error: %v", art.RepositoryName, art.Digest, err)
@@ -115,8 +115,8 @@ func Middleware() func(http.Handler) http.Handler {
 		}
 
 		if !vulnerable.IsScanSuccess() {
-			msg := fmt.Sprintf(`current image with "%s" status of vulnerability scanning cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
-				`To continue with pull, please contact your project administrator for help.`, vulnerable.ScanStatus, projectSeverity)
+			msg := fmt.Sprintf(`The image's vulnerability scan is in "%s" status and cannot be pulled due to configured policy 'Prevent images with vulnerability severity of "%s" or higher from running.' `+
+				`Ask a project administrator to re-run the scan and check the scanner status, or to adjust the vulnerability prevention policy.`, vulnerable.ScanStatus, projectSeverity)
 			return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION).WithMessage(msg)
 		}
 
