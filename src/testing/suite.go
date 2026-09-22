@@ -36,9 +36,6 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 var (
 	once sync.Once
