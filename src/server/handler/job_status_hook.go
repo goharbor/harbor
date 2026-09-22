@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	libhttp "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -37,11 +38,18 @@ type jobStatusHandler struct {
 func (j *jobStatusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	secCtx, ok := security.FromContext(r.Context())
+	if !ok || !secCtx.IsAuthenticated() || !secCtx.IsSolutionUser() {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	sc := &job.StatusChange{}
 	if err := json.NewDecoder(r.Body).Decode(sc); err != nil {
 		libhttp.SendError(w, err)
 		return
 	}
+
 	if err := j.handler.Handle(r.Context(), sc); err != nil {
 		// When the status hook comes, the execution/task database record may not insert yet
 		// because of that the transaction isn't committed
