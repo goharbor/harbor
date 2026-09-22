@@ -302,7 +302,7 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 	}
 
 	if len(l) == 0 {
-		return errors.PreconditionFailedError(nil).WithMessage("no scanner is configured, it's not possible to scan")
+		return errors.PreconditionFailedError(nil).WithMessage("No scanner is configured; scanning cannot be performed.")
 	}
 
 	return nil
