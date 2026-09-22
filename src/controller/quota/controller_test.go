@@ -184,6 +184,78 @@ func (suite *ControllerTestSuite) TestRequestResourceIsZero() {
 	suite.Nil(err)
 }
 
+func (suite *ControllerTestSuite) TestRequestUnlimitedSkipsReservation() {
+	// unlimited hard limit with async refresh enabled: Request must not
+	// write the quota usage at all
+	restore := asyncRefreshConfigured
+	asyncRefreshConfigured = true
+	defer func() { asyncRefreshConfigured = restore }()
+
+	q := &quota.Quota{
+		Hard: types.ResourceList{types.ResourceStorage: types.UNLIMITED}.String(),
+		Used: types.ResourceList{types.ResourceStorage: 0}.String(),
+	}
+	mock.OnAnything(suite.quotaMgr, "GetByRef").Return(q, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	called := false
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 100}, func() error {
+		called = true
+		return nil
+	})
+	suite.Nil(err)
+	suite.True(called)
+	suite.quotaMgr.AssertNotCalled(suite.T(), "Update")
+}
+
+func (suite *ControllerTestSuite) TestRequestUnlimitedReservesWhenAsyncDisabled() {
+	// without QUOTA_ASYNC_REFRESH_DURATION the fast path must stay off:
+	// even an unlimited quota goes through the reservation, keeping the
+	// stored usage synchronously visible exactly as before
+	restore := asyncRefreshConfigured
+	asyncRefreshConfigured = false
+	defer func() { asyncRefreshConfigured = restore }()
+
+	q := &quota.Quota{
+		Hard: types.ResourceList{types.ResourceStorage: types.UNLIMITED}.String(),
+		Used: types.ResourceList{types.ResourceStorage: 0}.String(),
+	}
+	suite.PrepareForUpdate(q, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 100}, func() error {
+		return nil
+	})
+	suite.Nil(err)
+	suite.quotaMgr.AssertCalled(suite.T(), "Update", mock.Anything, mock.Anything)
+}
+
+func (suite *ControllerTestSuite) TestRequestLimitedStillReserves() {
+	// finite hard limit: the reservation path must still run and write
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 10}, func() error {
+		return nil
+	})
+	suite.Nil(err)
+	suite.quotaMgr.AssertCalled(suite.T(), "Update", mock.Anything, mock.Anything)
+}
+
+func (suite *ControllerTestSuite) TestRequestLimitedDenies() {
+	// finite hard limit exceeded: the request must be denied before f runs
+	suite.PrepareForUpdate(suite.quota, nil)
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	called := false
+	err := suite.ctl.Request(ctx, suite.reference, uuid.New().String(), types.ResourceList{types.ResourceStorage: 1000}, func() error {
+		called = true
+		return nil
+	})
+	suite.Error(err)
+	suite.False(called)
+}
+
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, &ControllerTestSuite{})
 }
