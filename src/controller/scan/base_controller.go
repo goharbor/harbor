@@ -369,14 +369,19 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 		return errors.New("nil artifact to stop scan")
 	}
 	vendorType := sca.GetScanHandler(capType).JobVendorType()
-	query := q.New(q.KeyWords{"vendor_type": vendorType, "extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": capType})
+	query := q.New(q.KeyWords{
+		"vendor_type":                           vendorType,
+		"vendor_id":                             artifact.ID,
+		"extra_attrs.artifact.id":               fmt.Sprintf("%d", artifact.ID),
+		"extra_attrs.enabled_capabilities.type": capType,
+	})
 	executions, err := bc.execMgr.List(ctx, query)
 	if err != nil {
 		return err
 	}
 
 	if len(executions) == 0 {
-		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact digest=%v", artifact.Digest)
+		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact %s (id=%d)", artifact, artifact.ID)
 	}
 	execution := executions[0]
 	return bc.execMgr.Stop(ctx, execution.ID)
