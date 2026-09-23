@@ -81,6 +81,8 @@ paths:
       summary: Ping available ldap service.
       description: |
         This endpoint ping the available ldap service for test related configuration parameters.
+
+        Permissions required: system-level `configuration:read`
       parameters:
         - $ref: '#/parameters/requestId'
         - name: ldapconf
@@ -110,6 +112,8 @@ paths:
       summary: Search available ldap users.
       description: |
         This endpoint searches the available ldap users based on related configuration parameters. Support searched by input ldap configuration, load configuration from the system and specific filter.
+
+        Permissions required: system-level `ldap-user:list`
       parameters:
         - $ref: '#/parameters/requestId'
         - name: username
@@ -140,6 +144,8 @@ paths:
       summary: Import selected available ldap users.
       description: |
         This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. If have errors when import user, will return the list of importing failed uid and the failed reason.
+
+        Permissions required: system-level `ldap-user:create`
       parameters:
         - $ref: '#/parameters/requestId'
         - name: uid_list
@@ -173,6 +179,8 @@ paths:
       operationId: searchLdapGroup
       description: |
         This endpoint searches the available ldap groups based on related configuration parameters. support to search by groupname or groupdn.
+
+        Permissions required: system-level `ldap-user:list`
       parameters:
         - $ref: '#/parameters/requestId'
         - name: groupname
@@ -229,6 +237,8 @@ paths:
       operationId: getConfigurations
       description: |
         This endpoint is for retrieving system configurations that only provides for admin user.
+
+        Permissions required: system-level `configuration:read`
       tags:
         - configure
       parameters:
@@ -249,6 +259,8 @@ paths:
       operationId: updateConfigurations
       description: |
         This endpoint is for modifying system configurations that only provides for admin user.
+
+        Permissions required: system-level `configuration:update`
       tags:
         - configure
       parameters:
@@ -529,7 +541,10 @@ paths:
   '/projects/{project_name_or_id}/members':
     get:
       summary: Get all project member information
-      description: Get all project member information
+      description: |
+        Get all project member information
+
+        Permissions required: project-level `member:list`
       operationId: listProjectMembers
       parameters:
         - $ref: '#/parameters/requestId'
@@ -571,7 +586,10 @@ paths:
     post:
       summary: Create project member
       operationId: createProjectMember
-      description: 'Create project member relationship, the member can be one of the user_member and group_member,  The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id,  If does not exist in harbor DB, it will SearchAndOnBoard the user. The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group''s id,  If does not exist, it will SearchAndOnBoard the group. '
+      description: |
+        Create project member relationship, the member can be one of the user_member and group_member,  The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id,  If does not exist in harbor DB, it will SearchAndOnBoard the user. The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group's id,  If does not exist, it will SearchAndOnBoard the group.
+
+        Permissions required: project-level `member:create`
       tags:
         - member
       parameters:
@@ -602,7 +620,10 @@ paths:
   '/projects/{project_name_or_id}/members/{mid}':
     get:
       summary: Get the project member information
-      description: Get the project member information
+      description: |
+        Get the project member information
+
+        Permissions required: project-level `member:read`
       operationId: getProjectMember
       tags:
         - member
@@ -633,7 +654,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update project member
-      description: Update project member relationship
+      description: |
+        Update project member relationship
+
+        Permissions required: project-level `member:update`
       operationId: updateProjectMember
       tags:
         - member
@@ -666,7 +690,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete project member
-      description: Remove the specified project member from the project.
+      description: |
+        Remove the specified project member from the project.
+
+        Permissions required: project-level `member:delete`
       operationId: deleteProjectMember
       tags:
         - member
@@ -696,7 +723,10 @@ paths:
   '/projects/{project_name_or_id}/metadatas/':
     get:
       summary: Get the metadata of the specific project
-      description: Get the metadata of the specific project
+      description: |
+        Get the metadata of the specific project
+
+        Permissions required: project-level `metadata:list`
       operationId: listProjectMetadatas
       parameters:
         - $ref: '#/parameters/requestId'
@@ -724,7 +754,10 @@ paths:
     post:
       summary: Add metadata for the specific project
       operationId: addProjectMetadatas
-      description: Add metadata for the specific project
+      description: |
+        Add metadata for the specific project
+
+        Permissions required: project-level `metadata:create`
       tags:
         - projectMetadata
       parameters:
@@ -755,7 +788,10 @@ paths:
   '/projects/{project_name_or_id}/metadatas/{meta_name}':
     get:
       summary: Get the specific metadata of the specific project
-      description: Get the specific metadata of the specific project
+      description: |
+        Get the specific metadata of the specific project
+
+        Permissions required: project-level `metadata:read`
       operationId: getProjectMetadata
       parameters:
         - $ref: '#/parameters/requestId'
@@ -787,7 +823,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the specific metadata for the specific project
-      description: Update the specific metadata for the specific project
+      description: |
+        Update the specific metadata for the specific project
+
+        Permissions required: project-level `metadata:update`
       operationId: updateProjectMetadata
       tags:
         - projectMetadata
@@ -823,7 +862,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the specific metadata for the specific project
-      description: Delete the specific metadata for the specific project
+      description: |
+        Delete the specific metadata for the specific project
+
+        Permissions required: project-level `metadata:delete`
       operationId: deleteProjectMetadata
       tags:
         - projectMetadata
@@ -885,7 +927,10 @@ paths:
   /projects/{project_name}/repositories:
     get:
       summary: List repositories
-      description: List repositories of the specified project
+      description: |
+        List repositories of the specified project
+
+        Permissions required: project-level `repository:list`
       tags:
         - repository
       operationId: listRepositories
@@ -925,7 +970,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}:
     get:
       summary: Get repository
-      description: Get the repository specified by name
+      description: |
+        Get the repository specified by name
+
+        Permissions required: project-level `repository:read`
       tags:
         - repository
       operationId: getRepository
@@ -956,7 +1004,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update repository
-      description: Update the repository specified by name
+      description: |
+        Update the repository specified by name
+
+        Permissions required: project-level `repository:update`
       tags:
         - repository
       operationId: updateRepository
@@ -985,7 +1036,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete repository
-      description: Delete the repository specified by name
+      description: |
+        Delete the repository specified by name
+
+        Permissions required: project-level `repository:delete`
       tags:
         - repository
       operationId: deleteRepository
@@ -1023,7 +1077,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
-      description: List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "tags=v" to list artifact whose tag exactly matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
+      description: |
+        List artifacts under the specific project and repository. Except the basic properties, the other supported queries in "q" includes "tags=*" to list only tagged artifacts, "tags=nil" to list only untagged artifacts, "tags=~v" to list artifacts whose tag fuzzy matches "v", "tags=v" to list artifact whose tag exactly matches "v", "labels=(id1, id2)" to list artifacts that both labels with id1 and id2 are added to
+
+        Permissions required: project-level `artifact:list`
       tags:
         - artifact
       operationId: listArtifacts
@@ -1149,7 +1206,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
     get:
       summary: Get the specific artifact
-      description: Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+      description: |
+        Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+
+        Permissions required: project-level `artifact:read`
       tags:
         - artifact
       operationId: getArtifact
@@ -1233,7 +1293,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the specific artifact
-      description: Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag
+      description: |
+        Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag
+
+        Permissions required: project-level `artifact:delete`
       tags:
         - artifact
       operationId: deleteArtifact
@@ -1339,7 +1402,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
     get:
       summary: Get the log of the scan report
-      description: Get the log of the scan report
+      description: |
+        Get the log of the scan report
+
+        Permissions required: project-level `scan:read`
       tags:
         - scan
       operationId: getReportLog
@@ -1373,7 +1439,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
     post:
       summary: Create tag
-      description: Create a tag for the specified artifact
+      description: |
+        Create a tag for the specified artifact
+
+        Permissions required: project-level `tag:create`
       tags:
         - artifact
       operationId: createTag
@@ -1419,7 +1488,10 @@ paths:
           $ref: '#/responses/500'
     get:
       summary: List tags
-      description: List tags of the specific artifact
+      description: |
+        List tags of the specific artifact
+
+        Permissions required: project-level `tag:list`
       tags:
         - artifact
       operationId: listTags
@@ -1467,7 +1539,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
     delete:
       summary: Delete tag
-      description: Delete the tag of the specified artifact
+      description: |
+        Delete the tag of the specified artifact
+
+        Permissions required: project-level `tag:delete`
       tags:
         - artifact
       operationId: deleteTag
@@ -1497,7 +1572,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/accessories:
     get:
       summary: List accessories
-      description: List accessories of the specific artifact
+      description: |
+        List accessories of the specific artifact
+
+        Permissions required: project-level `accessory:list`
       tags:
         - artifact
       operationId: listAccessories
@@ -1537,7 +1615,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/vulnerabilities:
     get:
       summary: Get the vulnerabilities addition of the specific artifact
-      description: Get the vulnerabilities addition of the artifact specified by the reference under the project and repository.
+      description: |
+        Get the vulnerabilities addition of the artifact specified by the reference under the project and repository.
+
+        Permissions required: project-level `artifact-addition:read`
       tags:
         - artifact
       operationId: getVulnerabilitiesAddition
@@ -1569,7 +1650,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
     get:
       summary: Get the addition of the specific artifact
-      description: Get the addition of the artifact specified by the reference under the project and repository.
+      description: |
+        Get the addition of the artifact specified by the reference under the project and repository.
+
+        Permissions required: project-level `artifact-addition:read`
       tags:
         - artifact
       operationId: getAddition
@@ -1615,7 +1699,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
     post:
       summary: Add label to artifact
-      description: Add label to the specified artiact.
+      description: |
+        Add label to the specified artiact.
+
+        Permissions required: project-level `artifact-label:create`
       tags:
         - artifact
       operationId: addLabel
@@ -1648,7 +1735,10 @@ paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels/{label_id}:
     delete:
       summary: Remove label from artifact
-      description: Remove the label from the specified artiact.
+      description: |
+        Remove the label from the specified artiact.
+
+        Permissions required: project-level `artifact-label:delete`
       tags:
         - artifact
       operationId: removeLabel
@@ -1679,7 +1769,10 @@ paths:
   /projects/{project_name_or_id}/artifacts:
     get:
       summary: List artifacts
-      description: List artifacts of the specified project
+      description: |
+        List artifacts of the specified project
+
+        Permissions required: project-level `artifact:list`
       tags:
         - project
       operationId: listArtifactsOfProject
@@ -1769,7 +1862,10 @@ paths:
   '/projects/{project_name_or_id}/scanner':
     get:
       summary: Get project level scanner
-      description: Get the scanner registration of the specified project. If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
+      description: |
+        Get the scanner registration of the specified project. If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
+
+        Permissions required: project-level `scanner:read`
       tags:
         - project
       operationId: getScannerOfProject
@@ -1794,7 +1890,10 @@ paths:
           description: Internal server error happened
     put:
       summary: Configure scanner for the specified project
-      description: Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+      description: |
+        Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+
+        Permissions required: project-level `scanner:create`
       tags:
         - project
       operationId: setScannerOfProject
@@ -1823,7 +1922,10 @@ paths:
   '/projects/{project_name_or_id}/scanner/candidates':
     get:
       summary: Get scanner registration candidates for configurating project level scanner
-      description: Retrieve the system configured scanner registrations as candidates of setting project level scanner.
+      description: |
+        Retrieve the system configured scanner registrations as candidates of setting project level scanner.
+
+        Permissions required: project-level `scanner:create`
       tags:
         - project
       operationId: listScannerCandidatesOfProject
@@ -1930,6 +2032,8 @@ paths:
       summary: Get all event types of audit log
       description: |
         Get all event types of audit log
+
+        Permissions required: system-level `audit-log:list`
       tags:
         - auditlog
       operationId: listAuditLogEventTypes
@@ -1951,7 +2055,10 @@ paths:
   /projects/{project_name}/logs:
     get:
       summary: Get recent logs of the projects (deprecated)
-      description: Get recent logs of the projects, it only query the previous version's audit log
+      description: |
+        Get recent logs of the projects, it only query the previous version's audit log
+
+        Permissions required: project-level `log:list`
       tags:
         - project
       operationId: getLogs
@@ -1985,7 +2092,10 @@ paths:
   /projects/{project_name}/auditlog-exts:
     get:
       summary: Get recent logs of the projects
-      description: Get recent logs of the projects
+      description: |
+        Get recent logs of the projects
+
+        Permissions required: project-level `log:list`
       tags:
         - project
       operationId: getLogExts
@@ -2019,7 +2129,10 @@ paths:
   /p2p/preheat/providers:
     get:
       summary: List P2P providers
-      description: List P2P providers
+      description: |
+        List P2P providers
+
+        Permissions required: system-level `preheat-instance:list`
       tags:
         - preheat
       operationId: ListProviders
@@ -2047,6 +2160,8 @@ paths:
       summary: Ping status of a instance.
       description: |
         This endpoint checks status of a instance, the instance can be given by ID or Endpoint URL (together with credential)
+
+        Permissions required: system-level `preheat-instance:read`
       operationId: PingInstances
       parameters:
         - $ref: '#/parameters/requestId'
@@ -2072,7 +2187,10 @@ paths:
   /p2p/preheat/instances:
     get:
       summary: List P2P provider instances
-      description: List P2P provider instances
+      description: |
+        List P2P provider instances
+
+        Permissions required: system-level `preheat-instance:list`
       tags:
         - preheat
       operationId: ListInstances
@@ -2108,7 +2226,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Create p2p provider instances
-      description: Create p2p provider instances
+      description: |
+        Create p2p provider instances
+
+        Permissions required: system-level `preheat-instance:create`
       tags:
         - preheat
       operationId: CreateInstance
@@ -2138,7 +2259,10 @@ paths:
   /p2p/preheat/instances/{preheat_instance_name}:
     get:
       summary: Get a P2P provider instance
-      description: Get a P2P provider instance
+      description: |
+        Get a P2P provider instance
+
+        Permissions required: system-level `preheat-instance:read`
       tags:
         - preheat
       operationId: GetInstance
@@ -2162,7 +2286,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the specified P2P provider instance
-      description: Delete the specified P2P provider instance
+      description: |
+        Delete the specified P2P provider instance
+
+        Permissions required: system-level `preheat-instance:delete`
       tags:
         - preheat
       operationId: DeleteInstance
@@ -2189,6 +2316,8 @@ paths:
         (either sent in the request or left unchanged from the stored registration), the previously stored
         auth credentials are kept. Send a non-empty `auth_info` object to set or replace credentials.
         Set `auth_mode` to `NONE` to disable authentication without retaining the old credentials.
+
+        Permissions required: system-level `preheat-instance:update`
       tags:
         - preheat
       operationId: UpdateInstance
@@ -2217,7 +2346,10 @@ paths:
   /projects/{project_name}/preheat/policies:
     post:
       summary: Create a preheat policy under a project
-      description: Create a preheat policy under a project
+      description: |
+        Create a preheat policy under a project
+
+        Permissions required: project-level `preheat-policy:create`
       tags:
         - preheat
       operationId: CreatePolicy
@@ -2245,7 +2377,10 @@ paths:
           $ref: '#/responses/500'
     get:
       summary: List preheat policies
-      description: List preheat policies
+      description: |
+        List preheat policies
+
+        Permissions required: project-level `preheat-policy:list`
       tags:
         - preheat
       operationId: ListPolicies
@@ -2281,7 +2416,10 @@ paths:
   /projects/{project_name}/preheat/policies/{preheat_policy_name}:
     get:
       summary: Get a preheat policy
-      description: Get a preheat policy
+      description: |
+        Get a preheat policy
+
+        Permissions required: project-level `preheat-policy:read`
       tags:
         - preheat
       operationId: GetPolicy
@@ -2306,7 +2444,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update preheat policy
-      description: Update preheat policy
+      description: |
+        Update preheat policy
+
+        Permissions required: project-level `preheat-policy:update`
       tags:
         - preheat
       operationId: UpdatePolicy
@@ -2337,7 +2478,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Manual preheat
-      description: Manual preheat
+      description: |
+        Manual preheat
+
+        Permissions required: project-level `preheat-policy:read`
       tags:
         - preheat
       operationId: ManualPreheat
@@ -2366,7 +2510,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete a preheat policy
-      description: Delete a preheat policy
+      description: |
+        Delete a preheat policy
+
+        Permissions required: project-level `preheat-policy:delete`
       tags:
         - preheat
       operationId: DeletePolicy
@@ -2390,7 +2537,10 @@ paths:
   /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions:
     get:
       summary: List executions for the given policy
-      description: List executions for the given policy
+      description: |
+        List executions for the given policy
+
+        Permissions required: project-level `preheat-policy:list`
       tags:
         - preheat
       operationId: ListExecutions
@@ -2429,7 +2579,10 @@ paths:
   /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}:
     get:
       summary: Get a execution detail by id
-      description: Get a execution detail by id
+      description: |
+        Get a execution detail by id
+
+        Permissions required: project-level `preheat-policy:read`
       tags:
         - preheat
       operationId: GetExecution
@@ -2455,7 +2608,10 @@ paths:
           $ref: '#/responses/500'
     patch:
       summary: Stop a execution
-      description: Stop a execution
+      description: |
+        Stop a execution
+
+        Permissions required: project-level `preheat-policy:update`
       tags:
         - preheat
       operationId: StopExecution
@@ -2486,7 +2642,10 @@ paths:
   /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks:
     get:
       summary: List all the related tasks for the given execution
-      description: List all the related tasks for the given execution
+      description: |
+        List all the related tasks for the given execution
+
+        Permissions required: project-level `preheat-policy:list`
       tags:
         - preheat
       operationId: ListTasks
@@ -2526,7 +2685,10 @@ paths:
   /projects/{project_name}/preheat/policies/{preheat_policy_name}/executions/{execution_id}/tasks/{task_id}/logs:
     get:
       summary: Get the log text stream of the specified task for the given execution
-      description: Get the log text stream of the specified task for the given execution
+      description: |
+        Get the log text stream of the specified task for the given execution
+
+        Permissions required: project-level `preheat-policy:read`
       tags:
         - preheat
       operationId: GetPreheatLog
@@ -2560,7 +2722,10 @@ paths:
   /projects/{project_name}/preheat/providers:
     get:
       summary: Get all providers at project level
-      description: Get all providers at project level
+      description: |
+        Get all providers at project level
+
+        Permissions required: project-level `preheat-policy:list`
       tags:
         - preheat
       operationId: ListProvidersUnderProject
@@ -2589,6 +2754,8 @@ paths:
       summary: List all immutable tag rules of current project
       description: |
         This endpoint returns the immutable tag rules of a project
+
+        Permissions required: project-level `immutable-tag:list`
       tags:
         - immutable
       operationId: ListImmuRules
@@ -2626,6 +2793,8 @@ paths:
       summary: Add an immutable tag rule to current project
       description: |
         This endpoint add an immutable tag rule to the project
+
+        Permissions required: project-level `immutable-tag:create`
       tags:
         - immutable
       operationId: CreateImmuRule
@@ -2654,7 +2823,10 @@ paths:
   '/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}':
     put:
       summary: Update the immutable tag rule or enable or disable the rule
-      description: Update or toggle the specified immutable tag rule within the project. Returns 404 if the project or rule is not found.
+      description: |
+        Update or toggle the specified immutable tag rule within the project. Returns 404 if the project or rule is not found.
+
+        Permissions required: project-level `immutable-tag:update`
       tags:
         - immutable
       operationId: UpdateImmuRule
@@ -2683,7 +2855,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the immutable tag rule.
-      description: Delete the specified immutable tag rule from the project. Returns 404 if the project or rule is not found.
+      description: |
+        Delete the specified immutable tag rule from the project. Returns 404 if the project or rule is not found.
+
+        Permissions required: project-level `immutable-tag:delete`
       tags:
         - immutable
       operationId: DeleteImmuRule
@@ -2710,6 +2885,8 @@ paths:
       summary: List project webhook policies.
       description: |
         This endpoint returns webhook policies of a project.
+
+        Permissions required: project-level `notification-policy:list`
       tags:
         - webhook
       operationId: ListWebhookPoliciesOfProject
@@ -2747,6 +2924,8 @@ paths:
       summary: Create project webhook policy.
       description: |
         This endpoint create a webhook policy if the project does not have one.
+
+        Permissions required: project-level `notification-policy:create`
       tags:
         - webhook
       operationId: CreateWebhookPolicyOfProject
@@ -2783,6 +2962,8 @@ paths:
       summary: Get project webhook policy
       description: |
         This endpoint returns specified webhook policy of a project.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: GetWebhookPolicyOfProject
@@ -2810,6 +2991,8 @@ paths:
       summary: Update webhook policy of a project.
       description: |
         This endpoint is aimed to update the webhook policy of a project.
+
+        Permissions required: project-level `notification-policy:update`
       tags:
         - webhook
       operationId: UpdateWebhookPolicyOfProject
@@ -2841,6 +3024,8 @@ paths:
       summary: Delete webhook policy of a project
       description: |
         This endpoint is aimed to delete webhookpolicy of a project.
+
+        Permissions required: project-level `notification-policy:delete`
       tags:
         - webhook
       operationId: DeleteWebhookPolicyOfProject
@@ -2867,6 +3052,8 @@ paths:
       summary: List executions for a specific webhook policy
       description: |
         This endpoint returns the executions of a specific webhook policy.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: ListExecutionsOfWebhookPolicy
@@ -2908,6 +3095,8 @@ paths:
       summary: List tasks for a specific webhook execution
       description: |
         This endpoint returns the tasks of a specific webhook execution.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: ListTasksOfWebhookExecution
@@ -2950,6 +3139,8 @@ paths:
       summary: Get logs for a specific webhook task
       description: |
         This endpoint returns the logs of a specific webhook task.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: GetLogsOfWebhookTask
@@ -2987,6 +3178,8 @@ paths:
       summary: Get project webhook policy last trigger info
       description: |
         This endpoint returns last trigger information of project webhook policy.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: LastTrigger
@@ -3015,6 +3208,8 @@ paths:
       summary: List project webhook jobs
       description: |
         This endpoint returns webhook jobs of a project.
+
+        Permissions required: project-level `notification-policy:list`
       tags:
         - webhookjob
       operationId: ListWebhookJobs
@@ -3064,7 +3259,10 @@ paths:
   '/projects/{project_name_or_id}/webhook/events':
     get:
       summary: Get supported event types and notify types.
-      description: Get supported event types and notify types.
+      description: |
+        Get supported event types and notify types.
+
+        Permissions required: project-level `notification-policy:read`
       tags:
         - webhook
       operationId: GetSupportedEventTypes
@@ -3086,7 +3284,10 @@ paths:
   /usergroups:
     get:
       summary: Get all user groups information
-      description: Get all user groups information, it is open for system admin
+      description: |
+        Get all user groups information, it is open for system admin
+
+        Permissions required: system-level `user-group:list`
       operationId: listUserGroups
       tags:
         - usergroup
@@ -3126,7 +3327,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Create user group
-      description: Create user group information
+      description: |
+        Create user group information
+
+        Permissions required: system-level `user-group:create`
       operationId: createUserGroup
       tags:
         - usergroup
@@ -3193,7 +3397,10 @@ paths:
   '/usergroups/{group_id}':
     get:
       summary: Get user group information
-      description: Get user group information
+      description: |
+        Get user group information
+
+        Permissions required: system-level `user-group:read`
       operationId: getUserGroup
       tags:
         - usergroup
@@ -3222,7 +3429,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update group information
-      description: Update user group information
+      description: |
+        Update user group information
+
+        Permissions required: system-level `user-group:update`
       operationId: updateUserGroup
       tags:
         - usergroup
@@ -3254,7 +3464,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete user group
-      description: Delete user group
+      description: |
+        Delete user group
+
+        Permissions required: system-level `user-group:delete`
       operationId: deleteUserGroup
       tags:
         - usergroup
@@ -3368,7 +3581,10 @@ paths:
   '/quotas':
     get:
       summary: List quotas
-      description: List quotas
+      description: |
+        List quotas
+
+        Permissions required: system-level `quota:list`
       tags:
         - quota
       operationId: listQuotas
@@ -3417,7 +3633,10 @@ paths:
   '/quotas/{id}':
     get:
       summary: Get the specified quota
-      description: Get the specified quota
+      description: |
+        Get the specified quota
+
+        Permissions required: system-level `quota:read`
       tags:
         - quota
       operationId: getQuota
@@ -3443,7 +3662,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the specified quota
-      description: Update hard limits of the specified quota
+      description: |
+        Update hard limits of the specified quota
+
+        Permissions required: system-level `quota:update`
       tags:
         - quota
       operationId: updateQuota
@@ -3581,7 +3803,10 @@ paths:
   /replication/policies:
     get:
       summary: List replication policies
-      description: List replication policies
+      description: |
+        List replication policies
+
+        Permissions required: system-level `replication-policy:list`
       tags:
         - replication
       operationId: listReplicationPolicies
@@ -3618,7 +3843,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Create a replication policy
-      description: Create a replication policy
+      description: |
+        Create a replication policy
+
+        Permissions required: system-level `replication-policy:create`
       tags:
         - replication
       operationId: createReplicationPolicy
@@ -3646,7 +3874,10 @@ paths:
   /replication/policies/{id}:
     get:
       summary: Get the specific replication policy
-      description: Get the specific replication policy
+      description: |
+        Get the specific replication policy
+
+        Permissions required: system-level `replication-policy:read`
       tags:
         - replication
       operationId: getReplicationPolicy
@@ -3671,7 +3902,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the specific replication policy
-      description: Delete the specific replication policy
+      description: |
+        Delete the specific replication policy
+
+        Permissions required: system-level `replication-policy:delete`
       tags:
         - replication
       operationId: deleteReplicationPolicy
@@ -3698,7 +3932,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the replication policy
-      description: Update the replication policy
+      description: |
+        Update the replication policy
+
+        Permissions required: system-level `replication-policy:update`
       tags:
         - replication
       operationId: updateReplicationPolicy
@@ -3734,7 +3971,10 @@ paths:
   /replication/executions:
     get:
       summary: List replication executions
-      description: List replication executions
+      description: |
+        List replication executions
+
+        Permissions required: system-level `replication:list`
       tags:
         - replication
       operationId: listReplicationExecutions
@@ -3780,7 +4020,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Start one replication execution
-      description: Start one replication execution according to the policy
+      description: |
+        Start one replication execution according to the policy
+
+        Permissions required: system-level `replication:create`
       tags:
         - replication
       operationId: startReplication
@@ -3806,7 +4049,10 @@ paths:
   /replication/executions/{id}:
     get:
       summary: Get the specific replication execution
-      description: Get the replication execution specified by ID
+      description: |
+        Get the replication execution specified by ID
+
+        Permissions required: system-level `replication:read`
       tags:
         - replication
       operationId: getReplicationExecution
@@ -3833,7 +4079,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Stop the specific replication execution
-      description: Stop the replication execution specified by ID
+      description: |
+        Stop the replication execution specified by ID
+
+        Permissions required: system-level `replication:create`
       tags:
         - replication
       operationId: stopReplication
@@ -3859,7 +4108,10 @@ paths:
   /replication/executions/{id}/tasks:
     get:
       summary: List replication tasks for a specific execution
-      description: List replication tasks for a specific execution
+      description: |
+        List replication tasks for a specific execution
+
+        Permissions required: system-level `replication:list`
       tags:
         - replication
       operationId: listReplicationTasks
@@ -3907,7 +4159,10 @@ paths:
   /replication/executions/{id}/tasks/{task_id}/log:
     get:
       summary: Get the log of the specific replication task
-      description: Get the log of the specific replication task
+      description: |
+        Get the log of the specific replication task
+
+        Permissions required: system-level `replication:read`
       tags:
         - replication
       operationId: getReplicationLog
@@ -3947,7 +4202,10 @@ paths:
   /replication/adapters:
     get:
       summary: List registry adapters
-      description: List registry adapters
+      description: |
+        List registry adapters
+
+        Permissions required: system-level `replication-adapter:list`
       tags:
         - registry
       operationId: listRegistryProviderTypes
@@ -3969,7 +4227,10 @@ paths:
   /replication/adapterinfos:
     get:
       summary: List all registered registry provider information
-      description: List all registered registry provider information
+      description: |
+        List all registered registry provider information
+
+        Permissions required: system-level `replication-adapter:list`
       tags:
         - registry
       operationId: listRegistryProviderInfos
@@ -3991,7 +4252,10 @@ paths:
   /registries:
     post:
       summary: Create a registry
-      description: Create a registry
+      description: |
+        Create a registry
+
+        Permissions required: system-level `registry:create`
       tags:
         - registry
       operationId: createRegistry
@@ -4018,7 +4282,10 @@ paths:
           $ref: '#/responses/500'
     get:
       summary: List the registries
-      description: List the registries
+      description: |
+        List the registries
+
+        Permissions required: system-level `registry:list`
       tags:
         - registry
       operationId: listRegistries
@@ -4056,7 +4323,10 @@ paths:
   /registries/ping:
     post:
       summary: Check status of a registry
-      description: Check status of a registry
+      description: |
+        Check status of a registry
+
+        Permissions required: system-level `registry:read`
       tags:
         - registry
       operationId: pingRegistry
@@ -4084,7 +4354,10 @@ paths:
   /registries/{id}:
     get:
       summary: Get the specific registry
-      description: Get the specific registry
+      description: |
+        Get the specific registry
+
+        Permissions required: system-level `registry:read`
       tags:
         - registry
       operationId: getRegistry
@@ -4111,7 +4384,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete the specific registry
-      description: Delete the specific registry
+      description: |
+        Delete the specific registry
+
+        Permissions required: system-level `registry:delete`
       tags:
         - registry
       operationId: deleteRegistry
@@ -4138,7 +4414,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the registry
-      description: Update the registry
+      description: |
+        Update the registry
+
+        Permissions required: system-level `registry:update`
       tags:
         - registry
       operationId: updateRegistry
@@ -4174,7 +4453,10 @@ paths:
   /registries/{id}/info:
     get:
       summary: Get the registry info
-      description: Get the registry info
+      description: |
+        Get the registry info
+
+        Permissions required: system-level `registry:read`
       tags:
         - registry
       operationId: getRegistryInfo
@@ -4267,6 +4549,8 @@ paths:
       operationId: getVolumes
       description: |
         This endpoint is for retrieving system volume info that only provides for admin user.  Note that the response only reflects the storage status of local disk.
+
+        Permissions required: system-level `system-volumes:read`
       tags:
         - systeminfo
       parameters:
@@ -4314,6 +4598,8 @@ paths:
       summary: Test the OIDC endpoint.
       description: |
         Test the OIDC endpoint, the setting of the endpoint is provided in the request.  This API can only be called by system admin.
+
+        Permissions required: system-level `configuration:update`
       tags:
         - oidc
       operationId: pingOIDC
@@ -4346,7 +4632,10 @@ paths:
   /system/gc:
     get:
       summary: Get gc results.
-      description: This endpoint let user get gc execution history.
+      description: |
+        This endpoint let user get gc execution history.
+
+        Permissions required: system-level `garbage-collection:list`
       tags:
         - gc
       operationId: getGCHistory
@@ -4379,7 +4668,10 @@ paths:
   /system/gc/{gc_id}:
     get:
       summary: Get gc status.
-      description: This endpoint let user get gc status filtered by specific ID.
+      description: |
+        This endpoint let user get gc status filtered by specific ID.
+
+        Permissions required: system-level `garbage-collection:read`
       operationId: getGC
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4401,7 +4693,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Stop the specific GC execution
-      description: Stop the GC execution specified by ID
+      description: |
+        Stop the GC execution specified by ID
+
+        Permissions required: system-level `garbage-collection:stop`
       tags:
         - gc
       operationId: stopGC
@@ -4422,7 +4717,10 @@ paths:
   /system/gc/{gc_id}/log:
     get:
       summary: Get gc job log.
-      description: This endpoint let user get gc job logs filtered by specific ID.
+      description: |
+        This endpoint let user get gc job logs filtered by specific ID.
+
+        Permissions required: system-level `garbage-collection:read`
       operationId: getGCLog
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4449,7 +4747,10 @@ paths:
   /system/gc/schedule:
     get:
       summary: Get gc's schedule.
-      description: This endpoint is for get schedule of gc job.
+      description: |
+        This endpoint is for get schedule of gc job.
+
+        Permissions required: system-level `garbage-collection:read`
       operationId: getGCSchedule
       tags:
         - gc
@@ -4470,6 +4771,8 @@ paths:
       summary: Create a gc schedule.
       description: |
         This endpoint is for update gc schedule.
+
+        Permissions required: system-level `garbage-collection:create`
       operationId: createGCSchedule
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4498,6 +4801,8 @@ paths:
       summary: Update gc's schedule.
       description: |
         This endpoint is for update gc schedule.
+
+        Permissions required: system-level `garbage-collection:update`
       operationId: updateGCSchedule
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4523,7 +4828,10 @@ paths:
   /system/purgeaudit:
     get:
       summary: Get purge job results.
-      description: get purge job execution history.
+      description: |
+        get purge job execution history.
+
+        Permissions required: system-level `purge-audit:list`
       tags:
         - purge
       operationId: getPurgeHistory
@@ -4556,7 +4864,10 @@ paths:
   /system/purgeaudit/{purge_id}:
     get:
       summary: Get purge job status.
-      description: This endpoint let user get purge job status filtered by specific ID.
+      description: |
+        This endpoint let user get purge job status filtered by specific ID.
+
+        Permissions required: system-level `purge-audit:read`
       operationId: getPurgeJob
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4578,7 +4889,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Stop the specific purge audit log execution
-      description: Stop the purge audit log execution specified by ID
+      description: |
+        Stop the purge audit log execution specified by ID
+
+        Permissions required: system-level `purge-audit:stop`
       tags:
         - purge
       operationId: stopPurge
@@ -4599,7 +4913,10 @@ paths:
   /system/purgeaudit/{purge_id}/log:
     get:
       summary: Get purge job log.
-      description: This endpoint let user get purge job logs filtered by specific ID.
+      description: |
+        This endpoint let user get purge job logs filtered by specific ID.
+
+        Permissions required: system-level `purge-audit:read`
       operationId: getPurgeJobLog
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4626,7 +4943,10 @@ paths:
   /system/purgeaudit/schedule:
     get:
       summary: Get purge's schedule.
-      description: This endpoint is for get schedule of purge job.
+      description: |
+        This endpoint is for get schedule of purge job.
+
+        Permissions required: system-level `purge-audit:read`
       operationId: getPurgeSchedule
       tags:
         - purge
@@ -4647,6 +4967,8 @@ paths:
       summary: Create a purge job schedule.
       description: |
         This endpoint is for update purge job schedule.
+
+        Permissions required: system-level `purge-audit:create`
       operationId: createPurgeSchedule
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4677,6 +4999,8 @@ paths:
       summary: Update purge job's schedule.
       description: |
         This endpoint is for update purge job schedule.
+
+        Permissions required: system-level `purge-audit:update`
       operationId: updatePurgeSchedule
       parameters:
         - $ref: '#/parameters/requestId'
@@ -4724,8 +5048,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the system level allowlist of CVE.
-      description: This API overwrites the system level allowlist of CVE with the list in request body.  Only system Admin
-        has permission to call this API.
+      description: |
+        This API overwrites the system level allowlist of CVE with the list in request body.  Only system Admin has permission to call this API.
+
+        Permissions required: system-level `configuration:update`
       operationId: putSystemCVEAllowlist
       tags:
         - SystemCVEAllowlist
@@ -4847,7 +5173,10 @@ paths:
     get:
       operationId: getWorkerPools
       summary: Get worker pools
-      description: Get worker pools
+      description: |
+        Get worker pools
+
+        Permissions required: system-level `jobservice-monitor:list`
       tags:
         - jobservice
       parameters:
@@ -4869,7 +5198,10 @@ paths:
     get:
       operationId: getWorkers
       summary: Get workers
-      description: Get workers in current pool
+      description: |
+        Get workers in current pool
+
+        Permissions required: system-level `jobservice-monitor:list`
       tags:
         - jobservice
       parameters:
@@ -4898,7 +5230,10 @@ paths:
     put:
       operationId: stopRunningJob
       summary: Stop running job
-      description: Stop running job
+      description: |
+        Stop running job
+
+        Permissions required: system-level `jobservice-monitor:stop`
       tags:
         - jobservice
       parameters:
@@ -4923,7 +5258,10 @@ paths:
     get:
       operationId: actionGetJobLog
       summary: Get job log by job id
-      description: Get job log by job id, it is only used by administrator
+      description: |
+        Get job log by job id, it is only used by administrator
+
+        Permissions required: system-level `jobservice-monitor:list`
       produces:
         - text/plain
       tags:
@@ -4956,7 +5294,10 @@ paths:
     get:
       operationId: listJobQueues
       summary: list job queues
-      description: list job queue
+      description: |
+        list job queue
+
+        Permissions required: system-level `jobservice-monitor:list`
       tags:
         - jobservice
       parameters:
@@ -4980,7 +5321,10 @@ paths:
     put:
       operationId: actionPendingJobs
       summary: stop and clean, pause, resume pending jobs in the queue
-      description: stop and clean, pause, resume pending jobs in the queue
+      description: |
+        stop and clean, pause, resume pending jobs in the queue
+
+        Permissions required: system-level `jobservice-monitor:stop`
       tags:
         - jobservice
       parameters:
@@ -5012,7 +5356,10 @@ paths:
     get:
       operationId: listSchedules
       summary: List schedules
-      description: List schedules
+      description: |
+        List schedules
+
+        Permissions required: system-level `jobservice-monitor:list`
       tags:
         - schedule
       parameters:
@@ -5447,6 +5794,8 @@ paths:
       summary: List scanner registrations
       description: |
         Returns a list of currently configured scanner registrations.
+
+        Permissions required: system-level `scanner:list`
       tags:
         - scanner
       operationId: listScanners
@@ -5482,6 +5831,8 @@ paths:
       summary: Create a scanner registration
       description: |
         Creats a new scanner registration with the given data.
+
+        Permissions required: system-level `scanner:create`
       tags:
         - scanner
       operationId: createScanner
@@ -5513,6 +5864,8 @@ paths:
       summary: Tests scanner registration settings
       description: |
         Pings scanner adapter to test endpoint URL and authorization settings.
+
+        Permissions required: system-level `scanner:read`
       tags:
         - scanner
       operationId: pingScanner
@@ -5540,6 +5893,8 @@ paths:
       summary: Get a scanner registration details
       description: |
         Retruns the details of the specified scanner registration.
+
+        Permissions required: system-level `scanner:read`
       tags:
         - scanner
       operationId: getScanner
@@ -5571,6 +5926,8 @@ paths:
         If `access_credential` is omitted or empty in the request body and the registration still uses
         an authentication type that requires a credential (Basic, Bearer, or APIKey), the existing stored
         credential is left unchanged. Send a non-empty `access_credential` to set or rotate the secret.
+
+        Permissions required: system-level `scanner:update`
       tags:
         - scanner
       operationId: updateScanner
@@ -5602,6 +5959,8 @@ paths:
       summary: Delete a scanner registration
       description: |
         Deletes the specified scanner registration.
+
+        Permissions required: system-level `scanner:delete`
       tags:
         - scanner
       operationId: deleteScanner
@@ -5629,6 +5988,8 @@ paths:
       summary: Set system default scanner registration
       description: |
         Set the specified scanner registration as the system default one.
+
+        Permissions required: system-level `scanner:update`
       tags:
         - scanner
       operationId: setScannerAsDefault
@@ -5658,6 +6019,8 @@ paths:
       summary: Get the metadata of the specified scanner registration
       description: |
         Get the metadata of the specified scanner registration, including the capabilities and customized properties.
+
+        Permissions required: system-level `scanner:read`
       tags:
         - scanner
       operationId: getScannerMetadata
@@ -5682,7 +6045,10 @@ paths:
   /users:
     get:
       summary: List users
-      description: List users registered in Harbor. Requires system admin privileges.
+      description: |
+        List users registered in Harbor. Requires system admin privileges.
+
+        Permissions required: system-level `user:list`
       tags:
         - user
       operationId: listUsers
@@ -5901,7 +6267,10 @@ paths:
   /users/{user_id}/sysadmin:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
-      description: Promote or demote a registered user to/from Harbor system administrator. Requires system admin privileges.
+      description: |
+        Promote or demote a registered user to/from Harbor system administrator. Requires system admin privileges.
+
+        Permissions required: system-level `user:update`
       tags:
        - user
       operationId: setUserSysAdmin
@@ -6304,7 +6673,10 @@ paths:
   /security/summary:
     get:
       summary: Get vulnerability system summary
-      description: Retrieve the vulnerability summary of the system
+      description: |
+        Retrieve the vulnerability summary of the system
+
+        Permissions required: system-level `security-hub:read`
       tags:
         - securityhub
       operationId: getSecuritySummary
@@ -6351,6 +6723,8 @@ paths:
         package(exact match)
         tag(exact match)
         digest(exact match)
+
+        Permissions required: system-level `security-hub:list`
       tags:
         - securityhub
       operationId: ListVulnerabilities
