@@ -25,7 +25,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/common/list"
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 )
 
@@ -151,6 +153,41 @@ func (suite *TrackerTestSuite) TestTracker() {
 	st, err = t.Status()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), StoppedStatus, st)
+}
+
+// TestTrackerStatusWithoutJobStats covers job stats that expired or were
+// removed while the job still runs: Status must report it, not panic.
+func (suite *TrackerTestSuite) TestTrackerStatusWithoutJobStats() {
+	newTracker := func(jobID string) Tracker {
+		return NewBasicTrackerWithID(
+			context.TODO(),
+			jobID,
+			suite.namespace,
+			suite.pool,
+			func(hookURL string, change *StatusChange) error {
+				return nil
+			},
+			list.New(),
+		)
+	}
+
+	var err error
+
+	missing := newTracker(utils.MakeIdentifier())
+	require.NotPanics(suite.T(), func() { _, err = missing.Status() }, "status of a missing job stats key")
+	assert.True(suite.T(), errs.IsObjectNotFoundError(err), "missing job stats key: not found error expected but got %v", err)
+
+	jobID := utils.MakeIdentifier()
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+	_, err = conn.Do("HSET", rds.KeyJobStats(suite.namespace, jobID), "web_hook_url", "http://hook.url")
+	require.NoError(suite.T(), err)
+
+	noStatus := newTracker(jobID)
+	require.NotPanics(suite.T(), func() { _, err = noStatus.Status() }, "status of job stats without a status field")
+	assert.True(suite.T(), errs.IsObjectNotFoundError(err), "missing status field: not found error expected but got %v", err)
 }
 
 // TestPeriodicTracker tests tracker of periodic

@@ -224,6 +224,14 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	for i, mimeType := range mimeTypes {
 		go func(i int, m string) {
 			defer wg.Done()
+			// The runner's recover only guards the job goroutine. A panic here
+			// would bypass it and take jobservice down with every job in flight,
+			// so turn it into this job's error instead.
+			defer func() {
+				if r := recover(); r != nil {
+					errs[i] = errors.Errorf("scan job: panic while fetching report, mimetype %v: %v", m, r)
+				}
+			}()
 
 			// Log info
 			myLogger.Infof("Get report for mime type: %s", m)
