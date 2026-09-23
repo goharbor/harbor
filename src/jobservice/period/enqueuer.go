@@ -169,7 +169,14 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 	} else {
 		// schedule.Next returns time.Time{} for specs that can never fire.
 		// Without the IsZero check the loop runs indefinitely.
-		for t := schedule.Next(nowTime); !t.IsZero() && t.Before(horizon); t = schedule.Next(t) {
+		firstNext := schedule.Next(nowTime)
+		if firstNext.IsZero() {
+			e.lastEnqueueErr = fmt.Errorf("cron expression %q can never fire", p.CronSpec)
+			logger.Warningf("Skipping periodic policy %s (%s): cron expression %q can never fire",
+				p.ID, lib.TrimLineBreaks(p.JobName), p.CronSpec)
+			return
+		}
+		for t := firstNext; t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
 
 			// Clone parameters

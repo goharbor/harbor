@@ -219,8 +219,9 @@ func (bs *basicScheduler) clearDirtyJobs() {
 	nowEpoch := time.Now().Unix()
 	scope := nowEpoch - int64(enqueuerHorizon/time.Minute)*60
 
-	// Use math.MinInt64 as lower bound to include negative-epoch entries.
-	// Jobs with an unreachable cron spec get score time.Time{}.Unix() which is negative.
+	// Use math.MinInt64 as lower bound to clean up negative-epoch entries
+	// left by versions before the unreachable-cron fix, where
+	// time.Time{}.Unix() was used as the ZADD score.
 	jobScores, err := rds.GetZsetByScore(conn, rds.RedisKeyScheduled(bs.namespace), []int64{math.MinInt64, scope})
 	if err != nil {
 		logger.Errorf("Get dirty jobs error: %s", err)

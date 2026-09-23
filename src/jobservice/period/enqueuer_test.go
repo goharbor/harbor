@@ -134,28 +134,33 @@ func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
 	}()
 
 	key := rds.RedisKeyScheduled(suite.namespace)
-	before, err := redis.Int(conn.Do("ZCARD", key))
-	require.NoError(suite.T(), err)
 
 	workerConn := suite.pool.Get()
-	defer func() { _ = workerConn.Close() }()
 	done := make(chan struct{})
 	go func() {
+		defer close(done)
 		suite.enqueuer.scheduleNextJobs(p, workerConn)
-		close(done)
 	}()
 
 	select {
 	case <-done:
+		_ = workerConn.Close()
 		// returned promptly, as expected
 	case <-time.After(5 * time.Second):
-		suite.Fail("scheduleNextJobs did not return within 5s for unreachable cron")
-		return
+		_ = workerConn.Close()
+		suite.FailNow("scheduleNextJobs did not return within 5s for unreachable cron")
 	}
 
-	after, err := redis.Int(conn.Do("ZCARD", key))
+	// Check that no entries exist for this specific policy ID, rather than
+	// comparing total ZCARD which can race with the background enqueuer.
+	results, err := redis.Values(conn.Do("ZRANGEBYSCORE", key, "-inf", "+inf"))
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), before, after, "unreachable cron should not enqueue any jobs")
+	for _, raw := range results {
+		if b, ok := raw.([]byte); ok {
+			assert.NotContains(suite.T(), string(b), p.ID,
+				"unreachable cron policy should not appear in the scheduled set")
+		}
+	}
 }
 
 func (suite *EnqueuerTestSuite) prepare() {

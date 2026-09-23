@@ -329,12 +329,14 @@ func CronParser() cronlib.Parser {
 	return cronlib.NewParser(cronlib.Second | cronlib.Minute | cronlib.Hour | cronlib.Dom | cronlib.Month | cronlib.Dow)
 }
 
-// cronIsReachable reports whether the parsed schedule fires at least once
+// IsCronReachable reports whether the parsed schedule fires at least once
 // within a complete 400-year Gregorian cycle. robfig/cron only looks five
 // years ahead per Next call, so the cycle is probed in five-year windows to
-// avoid false positives on rare but valid schedules (e.g. Feb 29 falling on a
-// specific weekday whose next occurrence is more than five years away).
-func cronIsReachable(schedule cronlib.Schedule) bool {
+// avoid false negatives on rare but valid schedules. For example, "0 0 0 29 2 *"
+// (every Feb 29) is valid but after a non-leap century year (e.g. 2100) the
+// next Feb 29 is eight years away, exceeding a single five-year probe. Eighty
+// five-year windows cover 400 years at negligible cost (~1-3 ms).
+func IsCronReachable(schedule cronlib.Schedule) bool {
 	base := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 	for i := 0; i < 80; i++ {
 		if !schedule.Next(base).IsZero() {
@@ -343,12 +345,6 @@ func cronIsReachable(schedule cronlib.Schedule) bool {
 		base = base.AddDate(5, 0, 0)
 	}
 	return false
-}
-
-// IsCronReachable is the exported form of cronIsReachable for callers that
-// already hold a parsed Schedule and want to avoid a second parse.
-func IsCronReachable(schedule cronlib.Schedule) bool {
-	return cronIsReachable(schedule)
 }
 
 // ValidateCronString check whether it is a valid cron string and whether the 1st field (indicating Seconds of time) of the cron string is a fixed value of 0 or not
@@ -360,7 +356,7 @@ func ValidateCronString(cron string) error {
 	if err != nil {
 		return err
 	}
-	if !cronIsReachable(schedule) {
+	if !IsCronReachable(schedule) {
 		return fmt.Errorf("cron expression %q can never fire: no matching date exists", cron)
 	}
 	cronParts := strings.Split(cron, " ")

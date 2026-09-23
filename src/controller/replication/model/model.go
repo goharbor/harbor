@@ -112,7 +112,7 @@ func (p *Policy) Validate() error {
 			}
 			if !utils.IsCronReachable(sched) {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron)
+					WithMessagef("cron expression %q can never fire: no matching date exists", p.Trigger.Settings.Cron)
 			}
 			cronParts := strings.Split(p.Trigger.Settings.Cron, " ")
 			if cronParts[0] != "0" {

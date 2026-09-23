@@ -484,6 +484,13 @@ func TestValidateCronString(t *testing.T) {
 			input:       "0 0 3 30 2 *",
 			hasErr:      true,
 		},
+
+		// Feb 29 (leap day) is valid and reachable — fires every leap year
+		{
+			description: "test case 6 - Feb 29 leap day is reachable",
+			input:       "0 0 0 29 2 *",
+			hasErr:      false,
+		},
 	}
 
 	for _, tc := range testCases {

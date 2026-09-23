@@ -104,7 +104,7 @@ func (s *scheduler) Schedule(ctx context.Context, vendorType string, vendorID in
 	}
 	if !utils.IsCronReachable(parsedCron) {
 		return 0, errors.New(nil).WithCode(errors.BadRequestCode).
-			WithMessagef("invalid cron %s: expression can never fire", cron)
+			WithMessagef("cron expression %q can never fire: no matching date exists", cron)
 	}
 	if !callbackFuncExist(callbackFuncName) {
 		return 0, fmt.Errorf("callback function %s not found", callbackFuncName)
