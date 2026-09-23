@@ -77,7 +77,7 @@
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-prettier": "4.2.5",
     "express": "4.22.2",
-    "https-proxy-agent": "5.0.1",
+    "https-proxy-agent": "9.1.0",
     "jasmine-core": "5.13.0",
     "jasmine-spec-reporter": "7.0.0",
     "karma": "6.4.4",
