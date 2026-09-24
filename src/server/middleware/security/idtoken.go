@@ -28,6 +28,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/oidc"
 )
 
+var (
+	idTokenUserCtl    = user.Ctl
+	idTokenVerifyFn   = oidc.VerifyToken
+	idTokenUserInfoFn = oidc.UserInfoFromIDToken
+)
+
 type idToken struct{}
 
 func (i *idToken) Generate(req *http.Request) security.Context {
@@ -43,12 +49,12 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 	if len(token) == 0 {
 		return nil
 	}
-	claims, err := oidc.VerifyToken(ctx, token)
+	claims, err := idTokenVerifyFn(ctx, token)
 	if err != nil {
 		log.Warningf("failed to verify token: %v", err)
 		return nil
 	}
-	u, err := user.Ctl.GetBySubIss(ctx, claims.Subject, claims.Issuer)
+	u, err := idTokenUserCtl.GetBySubIss(ctx, claims.Subject, claims.Issuer)
 	if err != nil {
 		log.Warningf("failed to get user based on token claims: %v", err)
 		return nil
@@ -58,9 +64,13 @@ func (i *idToken) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get OIDC settings: %v", err)
 		return nil
 	}
-	info, err := oidc.UserInfoFromIDToken(ctx, &oidc.Token{RawIDToken: token}, *setting)
+	info, err := idTokenUserInfoFn(ctx, &oidc.Token{RawIDToken: token}, *setting)
 	if err != nil {
 		log.Errorf("Failed to get user info from ID token: %v", err)
+		return nil
+	}
+	if !oidc.IsLoginAllowed(info, *setting) {
+		log.Warningf("ID token login denied for user %s: not in any authorized group", u.Username)
 		return nil
 	}
 	oidc.InjectGroupsToUser(info, u)
