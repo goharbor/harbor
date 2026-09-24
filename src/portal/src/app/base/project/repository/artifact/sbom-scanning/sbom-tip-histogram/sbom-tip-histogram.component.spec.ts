@@ -20,6 +20,7 @@ import { SbomTipHistogramComponent } from './sbom-tip-histogram.component';
 import { of } from 'rxjs';
 import { Project } from '../../../../../../../app/base/project/project';
 import { Artifact } from 'ng-swagger-gen/models';
+import { SBOM_SCAN_STATUS } from '../../../../../../shared/units/utils';
 
 describe('SbomTipHistogramComponent', () => {
     let component: SbomTipHistogramComponent;
@@ -101,6 +102,32 @@ describe('SbomTipHistogramComponent', () => {
                 component.sbomSummary.end_time
             );
         });
+    });
+
+    it('Test showMultiArchSbom for multi-arch artifacts with a successful scan and no resolved sbomDigest', () => {
+        component.hasChild = true;
+        component.sbomSummary = { scan_status: SBOM_SCAN_STATUS.SUCCESS };
+        expect(component.showMultiArchSbom()).toBeTruthy();
+        expect(component.showNoSbom()).toBeFalsy();
+    });
+
+    it('Test showMultiArchSbom stays false when the scan has not succeeded, even for multi-arch artifacts', () => {
+        component.hasChild = true;
+        component.sbomSummary = { scan_status: SBOM_SCAN_STATUS.ERROR };
+        expect(component.showMultiArchSbom()).toBeFalsy();
+    });
+
+    it('Test showNoSbom still applies to single-arch artifacts', () => {
+        component.hasChild = false;
+        expect(component.showMultiArchSbom()).toBeFalsy();
+        expect(component.showNoSbom()).toBeTruthy();
+    });
+
+    it('Test goIntoMultiArchSbom emits viewMultiArchSbom', () => {
+        let emitted = false;
+        component.viewMultiArchSbom.subscribe(() => (emitted = true));
+        component.goIntoMultiArchSbom();
+        expect(emitted).toBeTruthy();
     });
 
     it('Test SbomTipHistogramComponent getScannerInfo', () => {

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SbomSummary } from '../../../../../../shared/services';
@@ -45,6 +45,8 @@ export class SbomTipHistogramComponent {
     @Input() artifactDigest: string = '';
     @Input() sbomDigest: string = '';
     @Input() accessories: Accessory[] = [];
+    @Input() hasChild: boolean = false;
+    @Output() viewMultiArchSbom: EventEmitter<void> = new EventEmitter<void>();
     constructor(
         private translate: TranslateService,
         private activatedRoute: ActivatedRoute,
@@ -91,8 +93,24 @@ export class SbomTipHistogramComponent {
         return this.sbomDigest && this.getSbomAccessories().length > 0;
     }
 
+    // multi-arch images (image index) never resolve their own sbomDigest,
+    // since the SBOM accessory is attached to the platform-specific child
+    // artifact rather than the index. When the scan_status is successful,
+    // SBOMs were generated for the child architectures, so show that instead
+    // of the misleading "No SBOM".
+    showMultiArchSbom(): boolean {
+        return (
+            this.hasChild &&
+            this.sbomSummary?.scan_status === SBOM_SCAN_STATUS.SUCCESS &&
+            !this.showSbomDetailLink()
+        );
+    }
+
     showNoSbom(): boolean {
-        return !this.sbomDigest || this.getSbomAccessories().length === 0;
+        return (
+            !this.hasChild &&
+            (!this.sbomDigest || this.getSbomAccessories().length === 0)
+        );
     }
 
     showTooltip() {
@@ -141,5 +159,11 @@ export class SbomTipHistogramComponent {
                 },
             });
         }
+    }
+
+    // navigate to the artifact's per-architecture child list, where each
+    // arch's own SBOM and vulnerability results are shown
+    goIntoMultiArchSbom(): void {
+        this.viewMultiArchSbom.emit();
     }
 }
