@@ -334,3 +334,34 @@ func (suite *MiddlewareTestSuite) TestIsNydusImage() {
 func TestMiddlewareTestSuite(t *testing.T) {
 	suite.Run(t, &MiddlewareTestSuite{})
 }
+
+func TestGetAccessoryTypeOpenVEX(t *testing.T) {
+	if actual := getAccessoryType(&ocispec.Manifest{ArtifactType: mediaTypeOpenVEX}); actual != accessorymodel.TypeOpenVEX {
+		t.Fatalf("expected %q, got %q", accessorymodel.TypeOpenVEX, actual)
+	}
+}
+
+func TestGetAccessoryType(t *testing.T) {
+	tests := []struct {
+		name     string
+		manifest ocispec.Manifest
+		expected string
+	}{
+		{name: "subject", manifest: ocispec.Manifest{}, expected: accessorymodel.TypeSubject},
+		{name: "harbor sbom", manifest: ocispec.Manifest{ArtifactType: mediaTypeHarborSBOM}, expected: accessorymodel.TypeHarborSBOM},
+		{name: "cosign", manifest: ocispec.Manifest{ArtifactType: mediaTypeCosignArtifactType}, expected: accessorymodel.TypeCosignSignature},
+		{name: "notation", manifest: ocispec.Manifest{ArtifactType: mediaTypeNotationLayer}, expected: accessorymodel.TypeNotationSignature},
+		{name: "nydus", manifest: ocispec.Manifest{
+			Config: ocispec.Descriptor{MediaType: ocispec.MediaTypeImageConfig},
+			Layers: []ocispec.Descriptor{{Annotations: map[string]string{layerAnnotationNydusBootstrap: "true"}}},
+		}, expected: accessorymodel.TypeNydusAccelerator},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if actual := getAccessoryType(&test.manifest); actual != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, actual)
+			}
+		})
+	}
+}
