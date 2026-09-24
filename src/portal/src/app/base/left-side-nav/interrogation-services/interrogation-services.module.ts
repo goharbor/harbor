@@ -19,6 +19,10 @@ import { ScannerMetadataComponent } from './scanner/scanner-metadata/scanner-met
 import { NewScannerFormComponent } from './scanner/new-scanner-form/new-scanner-form.component';
 import { RouterModule, Routes } from '@angular/router';
 import { ConfigurationScannerComponent } from './scanner/config-scanner.component';
+import { ConfigurationOptimizerComponent } from './optimizer/config-optimizer.component';
+import { NewOptimizerModalComponent } from './optimizer/new-optimizer-modal/new-optimizer-modal.component';
+import { NewOptimizerFormComponent } from './optimizer/new-optimizer-form/new-optimizer-form.component';
+import { OptimizerMetadataComponent } from './optimizer/optimizer-metadata/optimizer-metadata.component';
 import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-config.component';
 import { InterrogationServicesComponent } from './interrogation-services.component';
 import { ScanAllRepoService } from './vulnerability/scanAll.service';
@@ -39,6 +43,10 @@ const routes: Routes = [
             {
                 path: 'scanners',
                 component: ConfigurationScannerComponent,
+            },
+            {
+                path: 'optimizers',
+                component: ConfigurationOptimizerComponent,
             },
             {
                 path: 'vulnerability',
@@ -63,6 +71,10 @@ const routes: Routes = [
         NewScannerFormComponent,
         ScannerMetadataComponent,
         ConfigurationScannerComponent,
+        NewOptimizerModalComponent,
+        NewOptimizerFormComponent,
+        OptimizerMetadataComponent,
+        ConfigurationOptimizerComponent,
         InterrogationServicesComponent,
         VulnerabilityConfigComponent,
         VulnerabilityFilterComponent,
