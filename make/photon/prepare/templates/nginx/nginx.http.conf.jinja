@@ -1,5 +1,6 @@
 worker_processes auto;
 pid /tmp/nginx.pid;
+include /etc/nginx/conf.d/*.nginx.conf;
 
 events {
   worker_connections 3096;
