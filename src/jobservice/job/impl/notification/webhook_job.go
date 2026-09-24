@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -147,12 +146,7 @@ func (wj *WebhookJob) execute(ctx job.Context, params map[string]any) error {
 
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			wj.logger.Errorf("error to read response body, error: %s", err)
-		}
-
-		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
+		return errors.Errorf("abnormal response code: %d", resp.StatusCode)
 	}
 
 	return nil
