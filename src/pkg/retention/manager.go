@@ -17,10 +17,8 @@ package retention
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -87,9 +85,6 @@ func (d *DefaultManager) DeletePolicy(ctx context.Context, id int64) error {
 func (d *DefaultManager) GetPolicy(ctx context.Context, id int64) (*policy.Metadata, error) {
 	p1, err := dao.GetPolicy(ctx, id)
 	if err != nil {
-		if err == orm.ErrNoRows {
-			return nil, fmt.Errorf("no such Retention policy with id %v", id)
-		}
 		return nil, err
 	}
 	p := &policy.Metadata{}
