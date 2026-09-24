@@ -20,11 +20,19 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/cached"
 )
+
+// cleanupCacheTimeout bounds a single cache-eviction attempt after the
+// enclosing transaction has committed. Cache invalidation is best-effort:
+// any stale entry expires via the configured TTL, and the next read from
+// the database repopulates it. We must not sit spinning in a retry loop
+// for the full default timeout.
+const cleanupCacheTimeout = 3 * time.Second
 
 var _ CachedManager = &Manager{}
 
@@ -140,8 +148,14 @@ func (m *Manager) Delete(ctx context.Context, id int64) error {
 	if err := m.delegator.Delete(ctx, id); err != nil {
 		return err
 	}
-	// clean cache
-	m.cleanUp(ctx, art)
+	// Defer cache invalidation until after the enclosing transaction
+	// commits. Running Redis calls inside the transaction would keep the
+	// Postgres row locks held across network round-trips; on a canceled
+	// request ctx, the retry loop would spin for a full minute while the
+	// transaction sits idle in ClientRead, blocking concurrent deletes.
+	// When there is no enclosing transaction, AfterCommit runs the hook
+	// synchronously on the caller's goroutine.
+	m.scheduleCleanUp(ctx, art)
 	return nil
 }
 
@@ -150,8 +164,8 @@ func (m *Manager) Update(ctx context.Context, artifact *artifact.Artifact, props
 	if err := m.delegator.Update(ctx, artifact, props...); err != nil {
 		return err
 	}
-	// clean cache
-	m.cleanUp(ctx, artifact)
+	// Same rationale as Delete: cache eviction must not hold the tx open.
+	m.scheduleCleanUp(ctx, artifact)
 	return nil
 }
 
@@ -169,26 +183,53 @@ func (m *Manager) UpdatePullTime(ctx context.Context, id int64, pullTime time.Ti
 	return nil
 }
 
-// cleanUp cleans up data in cache.
-func (m *Manager) cleanUp(ctx context.Context, art *artifact.Artifact) {
+// scheduleCleanUp registers the cache invalidation for art to run after the
+// enclosing transaction commits. The closure captures a value copy of the
+// fields it needs so the hook is independent of the request context and any
+// mutations to art after registration.
+func (m *Manager) scheduleCleanUp(ctx context.Context, art *artifact.Artifact) {
+	// Capture by value — the caller's art pointer may be reused or mutated.
+	id := art.ID
+	repo := art.RepositoryName
+	digest := art.Digest
+	orm.AfterCommit(ctx, func() {
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), cleanupCacheTimeout)
+		defer cancel()
+		m.cleanUpKeys(cleanupCtx, id, repo, digest)
+	})
+}
+
+// cleanUpKeys best-effort deletes the cache entries for a given artifact.
+// Called after the enclosing transaction has committed with a detached
+// context, so it neither holds row locks nor observes a canceled request.
+func (m *Manager) cleanUpKeys(ctx context.Context, id int64, repo, digest string) {
 	// clean index by id
-	idIdx, err := m.keyBuilder.Format("id", art.ID)
+	idIdx, err := m.keyBuilder.Format("id", id)
 	if err != nil {
 		log.Errorf("format artifact id key error: %v", err)
 	} else {
-		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) }); err != nil {
-			log.Errorf("delete artifact cache key %s error: %v", idIdx, err)
+		// retry to avoid dirty data; capped retry + ctx-aware so we cannot
+		// block indefinitely on Redis hiccups.
+		if err = retry.Retry(
+			func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) },
+			retry.Context(ctx),
+			retry.Timeout(cleanupCacheTimeout),
+		); err != nil {
+			log.Warningf("delete artifact cache key %s error: %v", idIdx, err)
 		}
 	}
 
 	// clean index by digest
-	digestIdx, err := m.keyBuilder.Format("repository", art.RepositoryName, "digest", art.Digest)
+	digestIdx, err := m.keyBuilder.Format("repository", repo, "digest", digest)
 	if err != nil {
 		log.Errorf("format artifact digest key error: %v", err)
 	} else {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, digestIdx) }); err != nil {
-			log.Errorf("delete artifact cache key %s error: %v", digestIdx, err)
+		if err = retry.Retry(
+			func() error { return m.CacheClient(ctx).Delete(ctx, digestIdx) },
+			retry.Context(ctx),
+			retry.Timeout(cleanupCacheTimeout),
+		); err != nil {
+			log.Warningf("delete artifact cache key %s error: %v", digestIdx, err)
 		}
 	}
 }
@@ -201,9 +242,13 @@ func (m *Manager) refreshCache(ctx context.Context, art *artifact.Artifact) {
 	// no need to consider lock because we only have one goroutine do this work one by one.
 
 	// refreshCache includes 2 steps:
-	//   1. cleanUp
+	//   1. cleanUp keys synchronously (we're not holding a transaction here —
+	//      the UpdatePullTime pathway is called from a background goroutine,
+	//      not inside orm.WithTransaction)
 	//   2. re-get
-	m.cleanUp(ctx, art)
+	cleanupCtx, cancel := context.WithTimeout(context.Background(), cleanupCacheTimeout)
+	defer cancel()
+	m.cleanUpKeys(cleanupCtx, art.ID, art.RepositoryName, art.Digest)
 
 	var err error
 	// re-get by id
