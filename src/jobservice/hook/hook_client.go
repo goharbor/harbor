@@ -22,10 +22,12 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/lib/log"
 )
 
@@ -97,7 +99,7 @@ func (bc *basicClient) SendEvent(evt *Event) error {
 	}
 
 	// New post request
-	req, err := http.NewRequest(http.MethodPost, evt.URL, strings.NewReader(string(data)))
+	req, err := http.NewRequest(http.MethodPost, rebaseOnCore(evt.URL), strings.NewReader(string(data)))
 	if err != nil {
 		return err
 	}
@@ -126,4 +128,33 @@ func (bc *basicClient) SendEvent(evt *Event) error {
 	}
 
 	return nil
+}
+
+// rebaseOnCore swaps the scheme and host of a hook URL for core's current
+// address. The URL is frozen into the job record when the job is created, so it
+// goes stale whenever CORE_URL changes under a running instance, e.g. when
+// internalTLS is toggled and core moves from http:80 to https:443. Anything
+// that is not a plain absolute URL on either side is returned untouched.
+func rebaseOnCore(raw string) string {
+	core, err := url.Parse(config.GetCoreURL())
+	if err != nil || !isPlainOrigin(core) {
+		return raw
+	}
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || !strings.HasPrefix(u.Path, "/service/notifications/") {
+		return raw
+	}
+	u.Scheme, u.Host = core.Scheme, core.Host
+	if rebased := u.String(); rebased != raw {
+		log.Infof("hook URL %s rebased to %s: CORE_URL changed since the job was created", raw, rebased)
+		return rebased
+	}
+	return raw
+}
+
+// isPlainOrigin reports whether u is scheme://host[:port] with an http(s)
+// scheme and no path. CORE_URL always has that shape; a scheme-less or
+// path-prefixed value cannot be spliced onto the hook path correctly.
+func isPlainOrigin(u *url.URL) bool {
+	return (u.Scheme == "http" || u.Scheme == "https") && u.Host != "" && (u.Path == "" || u.Path == "/")
 }
