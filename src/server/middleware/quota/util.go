@@ -35,7 +35,7 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 	projectName := util.ParseProjectName(r)
 
 	if projectName == "" {
-		return "", "", fmt.Errorf("request %s not match any project", r.URL.Path)
+		return "", "", fmt.Errorf("request %s does not match any project", r.URL.Path)
 	}
 
 	project, err := projectController.GetByName(r.Context(), projectName)
