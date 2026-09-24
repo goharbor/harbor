@@ -495,6 +495,68 @@ func (suite *TestReportConverterSuite) TestGenericVulnReportSummaryAfterConversi
 	assert.Equal(suite.T(), 1, sevMapping[vuln.Medium])
 }
 
+// recordIDs returns the vulnerability record ids of the given records, so report associations
+// are compared by identity rather than by count.
+func recordIDs(records []*scan.VulnerabilityRecord) []int64 {
+	ids := make([]int64, 0, len(records))
+	for _, r := range records {
+		ids = append(ids, r.ID)
+	}
+	return ids
+}
+
+// TestConvertEmptyReportKeepsLastResult verifies that an empty raw report is rejected before any
+// database write, so the previous scan result on the reused report row stays intact.
+func (suite *TestReportConverterSuite) TestConvertEmptyReportKeepsLastResult() {
+	ctx := suite.Context()
+	rp := &scan.Report{
+		Digest:           "d1002",
+		RegistrationUUID: suite.registrationID,
+		MimeType:         v1.MimeTypeNativeReport,
+		Report:           sampleReport,
+		StartTime:        time.Now(),
+		EndTime:          time.Now().Add(1000),
+		UUID:             "reportUUIDEmpty",
+	}
+	suite.create(rp)
+
+	// Leave the row the way a successful scan would: associations plus severity counters.
+	_, _, err := suite.rc.ToRelationalSchema(ctx, rp.UUID, rp.RegistrationUUID, rp.Digest, sampleReport)
+	require.NoError(suite.T(), err)
+
+	before, err := suite.vulnerabilityRecordDao.GetForReport(ctx, rp.UUID)
+	require.NoError(suite.T(), err)
+	require.NotEmpty(suite.T(), before, "expected the seeded scan to associate vulnerability records")
+
+	rptsBefore, err := suite.reportDao.List(ctx, q.New(q.KeyWords{"UUID": rp.UUID}))
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 1, len(rptsBefore))
+	require.Equal(suite.T(), int64(1), rptsBefore[0].LowCnt)
+
+	uuid, summary, err := suite.rc.ToRelationalSchema(ctx, rp.UUID, rp.RegistrationUUID, rp.Digest, "")
+	if assert.Error(suite.T(), err, "an empty raw report must be rejected") {
+		assert.Contains(suite.T(), err.Error(), "empty vulnerability report")
+	}
+	assert.Empty(suite.T(), uuid)
+	assert.Empty(suite.T(), summary)
+
+	after, err := suite.vulnerabilityRecordDao.GetForReport(ctx, rp.UUID)
+	require.NoError(suite.T(), err)
+	assert.ElementsMatch(suite.T(), recordIDs(before), recordIDs(after), "vulnerability associations must survive an empty report")
+
+	rptsAfter, err := suite.reportDao.List(ctx, q.New(q.KeyWords{"UUID": rp.UUID}))
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 1, len(rptsAfter))
+	assert.Equal(suite.T(), rptsBefore[0].CriticalCnt, rptsAfter[0].CriticalCnt)
+	assert.Equal(suite.T(), rptsBefore[0].HighCnt, rptsAfter[0].HighCnt)
+	assert.Equal(suite.T(), rptsBefore[0].MediumCnt, rptsAfter[0].MediumCnt)
+	assert.Equal(suite.T(), rptsBefore[0].LowCnt, rptsAfter[0].LowCnt)
+	assert.Equal(suite.T(), rptsBefore[0].NoneCnt, rptsAfter[0].NoneCnt)
+	assert.Equal(suite.T(), rptsBefore[0].UnknownCnt, rptsAfter[0].UnknownCnt)
+	assert.Equal(suite.T(), rptsBefore[0].FixableCnt, rptsAfter[0].FixableCnt)
+	assert.Equal(suite.T(), rptsBefore[0].Report, rptsAfter[0].Report)
+}
+
 func (suite *TestReportConverterSuite) create(r *scan.Report) {
 	id, err := suite.reportDao.Create(orm.Context(), r)
 	require.NoError(suite.T(), err)
