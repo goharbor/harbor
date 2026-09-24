@@ -15,10 +15,13 @@
 package dao
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 )
@@ -94,6 +97,44 @@ func (s *DaoTestSuite) TestSearchByName() {
 	s.Equal(10, len(results2))
 	// the first one should be "group"
 	s.Equal("group", results2[0].GroupName)
+}
+
+// TestReadOrCreateKeepsTransactionUsable is the regression test for #22716.
+// Onboarding an LDAP group reads by ldap_group_dn, but user_group is unique on
+// group_name, so a group already onboarded under a different DN makes the
+// insert fail with a duplicate key. That error must stay contained: the caller
+// keeps a usable transaction instead of a PostgreSQL 25P02 on every following
+// statement.
+func (s *DaoTestSuite) TestReadOrCreateKeepsTransactionUsable() {
+	ctx := s.Context()
+
+	_, err := s.dao.Add(ctx, model.UserGroup{
+		GroupName:   "harbor_qa",
+		GroupType:   1,
+		LdapGroupDN: "cn=harbor_qa,ou=groups,dc=example,dc=com",
+	})
+	s.Require().NoError(err)
+
+	err = orm.WithTransaction(func(txCtx context.Context) error {
+		_, _, err := s.dao.ReadOrCreate(txCtx, &model.UserGroup{
+			GroupName:   "harbor_qa",
+			GroupType:   1,
+			LdapGroupDN: "cn=harbor_qa,ou=other,dc=example,dc=com",
+		}, "LdapGroupDN", "GroupType")
+		s.Require().Error(err)
+
+		_, err = s.dao.Add(txCtx, model.UserGroup{
+			GroupName:   "harbor_ops",
+			GroupType:   1,
+			LdapGroupDN: "cn=harbor_ops,ou=groups,dc=example,dc=com",
+		})
+		return err
+	})(ctx)
+	s.Require().NoError(err)
+
+	ugs, err := s.dao.Query(ctx, q.New(q.KeyWords{"GroupName": "harbor_ops"}))
+	s.Require().NoError(err)
+	s.Len(ugs, 1)
 }
 
 func TestDaoTestSuite(t *testing.T) {

@@ -41,6 +41,10 @@ func (foo *Foo) GetID() int64 {
 	return foo.ID
 }
 
+func init() {
+	RegisterModel(&Foo{})
+}
+
 func addFoo(ctx context.Context, foo Foo) (int64, error) {
 	o, err := FromContext(ctx)
 	if err != nil {
@@ -104,7 +108,6 @@ type OrmSuite struct {
 
 // SetupSuite ...
 func (suite *OrmSuite) SetupSuite() {
-	RegisterModel(&Foo{})
 	dao.PrepareTestForPostgresSQL()
 
 	o, err := FromContext(Context())
