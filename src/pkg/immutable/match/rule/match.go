@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/immutable"
 	"github.com/goharbor/harbor/src/lib/q"
 	iselector "github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/match"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
@@ -69,9 +70,13 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 			continue
 		}
 		tagSelector := r.TagSelectors[0]
-		// for immutable policy, should not keep untagged artifacts by default.
+		// this helps to exclude untagged artifacts for both matches and excludes tag selectors.
+		extra := "{\"untagged\": false}" // matches excludes untagged artifacts
+		if tagSelector.Decoration == doublestar.Excludes {
+			extra = "{\"untagged\": true}" // excludes includes untagged artifacts
+		}
 		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
-			tagSelector.Pattern, "{\"untagged\": false}")
+			tagSelector.Pattern, extra)
 		if err != nil {
 			return false, err
 		}
