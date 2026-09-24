@@ -146,6 +146,46 @@ func (suite *BasicSchedulerTestSuite) TestUnSchedule() {
 	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
 }
 
+// TestUnScheduleSharedScore tests that un-scheduling a policy keeps the other policies with the same score
+func (suite *BasicSchedulerTestSuite) TestUnScheduleSharedScore() {
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	// Policies scheduled in the same second can get the same score
+	score := time.Now().Unix()
+	ids := []string{"shared_score_policy_1", "shared_score_policy_2", "shared_score_policy_3"}
+	for _, id := range ids {
+		p := &Policy{
+			ID:       id,
+			JobName:  job.SampleJob,
+			CronSpec: "0 10 10 5 * *",
+		}
+		rawJSON, err := p.Serialize()
+		require.NoError(suite.T(), err)
+		_, err = conn.Do("ZADD", rds.KeyPeriodicPolicy(suite.namespace), score, rawJSON)
+		require.NoError(suite.T(), err)
+	}
+
+	err := suite.scheduler.UnSchedule(ids[0])
+	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
+
+	policies, err := Load(suite.namespace, conn)
+	require.NoError(suite.T(), err)
+	var remaining []string
+	for _, p := range policies {
+		if p.NumericID == score {
+			remaining = append(remaining, p.ID)
+		}
+	}
+	assert.ElementsMatch(suite.T(), ids[1:], remaining)
+
+	for _, id := range ids[1:] {
+		require.NoError(suite.T(), suite.scheduler.UnSchedule(id))
+	}
+}
+
 // setupDirtyJobs adds dirty jobs for testing dirty jobs clear method in the Start()
 func (suite *BasicSchedulerTestSuite) setupDirtyJobs() {
 	// Add one fake job for next testing
