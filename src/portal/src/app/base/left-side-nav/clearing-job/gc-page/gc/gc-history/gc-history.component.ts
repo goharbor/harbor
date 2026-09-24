@@ -53,17 +53,17 @@ import {
 export class GcHistoryComponent implements OnInit, OnDestroy {
     jobs: Array<GCHistory> = [];
     loading: boolean = true;
-    timerDelay: Subscription;
-    pageSize: number = getPageSizeFromLocalStorage(
+    timerDelay: Subscription | null = null;
+    pageSize: number | undefined = getPageSizeFromLocalStorage(
         PageSizeMapKeys.GC_HISTORY_COMPONENT,
         5
     );
     page: number = 1;
     total: number = 0;
-    state: ClrDatagridStateInterface;
+    state: ClrDatagridStateInterface | undefined;
     selectedRow: GCHistory[] = [];
     isStopOnGoing: boolean = false;
-    subscription: Subscription;
+    subscription: Subscription | null = null;
     protected readonly NO = NO;
     protected readonly YES = YES;
     constructor(
@@ -105,7 +105,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
         forkJoin(
             gCHistory.map(item => {
                 return this.gcService.stopGC({
-                    gcId: item.id,
+                    gcId: item.id!!,
                 });
             })
         )
@@ -137,13 +137,13 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                 this.pageSize
             );
         }
-        let q: string;
+        let q: string | undefined;
         if (state && state.filters && state.filters.length) {
             q = encodeURIComponent(
                 `${state.filters[0].property}=~${state.filters[0].value}`
             );
         }
-        let sort: string;
+        let sort: string | undefined;
         if (state && state.sort && state.sort.by) {
             sort = getSortingString(state);
         }
@@ -163,7 +163,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                 res => {
                     // Get total count
                     if (res.headers) {
-                        const xHeader: string =
+                        const xHeader: string | null =
                             res.headers.get('X-Total-Count');
                         if (xHeader) {
                             this.total = parseInt(xHeader, 0);
@@ -205,7 +205,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
                             if (count > 0) {
                                 this.getJobs(false, this.state);
                             } else {
-                                this.timerDelay.unsubscribe();
+                                this.timerDelay?.unsubscribe();
                                 this.timerDelay = null;
                             }
                         });
@@ -257,7 +257,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
         return '0';
     }
 
-    getLogLink(id): string {
+    getLogLink(id: any): string {
         return `${CURRENT_BASE_HREF}/system/gc/${id}/log`;
     }
     canStop(): boolean {
