@@ -33,7 +33,7 @@ var (
 		valueType: prometheus.GaugeValue,
 	}
 	harborComponentsHealth = typedDesc{
-		desc:      newDescWithLables("", "up", "Running status of harbor component", "component"),
+		desc:      newDescWithLabels("", "up", "Running status of harbor component", "component"),
 		valueType: prometheus.GaugeValue,
 	}
 )
