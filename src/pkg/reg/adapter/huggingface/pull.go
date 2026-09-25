@@ -99,7 +99,7 @@ func (a *adapter) PullBlobChunk(repository, dgst string, _, start, end int64) (i
 // ListTags ...
 func (a *adapter) ListTags(repository string) ([]string, error) {
 	ctx := context.Background()
-	refs, err := a.hub.Refs(ctx, a.locator.modelID(ctx, repository))
+	refs, err := a.refs(ctx, repository)
 	if err != nil {
 		return nil, err
 	}
@@ -146,15 +146,20 @@ func (a *adapter) resolve(ctx context.Context, repository, reference string) (*s
 }
 
 func (a *adapter) commitOf(ctx context.Context, repository, tag string) (string, error) {
-	var commit string
-	err := cache.FetchOrSave(ctx, a.locator.cache, a.locator.tagKey(repository, tag), &commit, func() (any, error) {
-		refs, err := a.hub.Refs(ctx, a.locator.modelID(ctx, repository))
-		if err != nil {
-			return nil, err
-		}
-		return newRefIndex(refs).commit(tag)
-	}, tagTTL)
-	return commit, err
+	refs, err := a.refs(ctx, repository)
+	if err != nil {
+		return "", err
+	}
+	return newRefIndex(refs).commit(tag)
+}
+
+// refs returns the refs of a repository, cached for refsTTL.
+func (a *adapter) refs(ctx context.Context, repository string) ([]hub.Ref, error) {
+	var refs []hub.Ref
+	err := cache.FetchOrSave(ctx, a.locator.cache, a.locator.refsKey(repository), &refs, func() (any, error) {
+		return a.hub.Refs(ctx, a.locator.modelID(ctx, repository))
+	}, refsTTL)
+	return refs, err
 }
 
 // artifact synthesizes the artifact of a commit, indexes its digests and returns it with the model ID.
@@ -218,7 +223,7 @@ func (a *adapter) contentDigests(ctx context.Context, s *hub.Snapshot) (map[stri
 // find locates a digest. On a cache miss it synthesizes the head of every ref of the
 // repository, main first, which makes it correct after cache loss. A digest only reachable from a
 // commit that is no longer a ref head is not found; the client re-requests by tag, which refills
-// the index. Not found results are cached briefly.
+// the index. A completed scan is remembered for refsTTL, so further misses cost no Hub call.
 func (a *adapter) find(ctx context.Context, repository string, d digest.Digest) (*location, error) {
 	loc, err := a.locator.locate(ctx, repository, d)
 	if err == nil {
@@ -228,28 +233,29 @@ func (a *adapter) find(ctx context.Context, repository string, d digest.Digest) 
 		return nil, err
 	}
 	notFound := errors.NotFoundError(fmt.Errorf("digest %s not found in any ref head of %s", d, repository))
-	if a.locator.knownMissing(ctx, repository, d) {
+	if a.locator.scanned(ctx, repository) {
 		return nil, notFound
 	}
-	refs, err := a.hub.Refs(ctx, a.locator.modelID(ctx, repository))
+	refs, err := a.refs(ctx, repository)
 	if err != nil {
 		return nil, err
 	}
 	for _, commit := range headsMainFirst(refs) {
 		art, modelID, err := a.artifact(ctx, repository, commit)
-		if err != nil {
-			if errors.IsRateLimitError(err) {
-				return nil, err
-			}
+		if errors.IsNotFoundErr(err) {
+			// The ref moved after the refs were listed; its old head is gone.
 			log.Warningf("skip commit %s of %s while locating %s: %v", commit, repository, d, err)
 			continue
+		}
+		if err != nil {
+			return nil, err
 		}
 		if loc := locationIn(art, modelID, commit, d); loc != nil {
 			a.locator.put(ctx, repository, d, loc)
 			return loc, nil
 		}
 	}
-	a.locator.markMissing(ctx, repository, d)
+	a.locator.markScanned(ctx, repository)
 	return nil, notFound
 }
 

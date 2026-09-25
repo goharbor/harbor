@@ -16,6 +16,7 @@ package huggingface
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -303,7 +304,7 @@ func TestDigestIndependentOfEndpoint(t *testing.T) {
 	assert.Contains(t, string(readAll(t, size, r, err)), `"sourceURL":"https://huggingface.co/Org/Tiny-Model"`)
 }
 
-func TestMissPathMainFirstAndNegativeCache(t *testing.T) {
+func TestMissPathMainFirst(t *testing.T) {
 	model := tinyModel()
 	h := hubtest.New(model)
 	defer h.Close()
@@ -318,22 +319,68 @@ func TestMissPathMainFirstAndNegativeCache(t *testing.T) {
 	size, r, err := a.PullBlob(repoTiny, readme.String())
 	readAll(t, size, r, err)
 	assert.Equal(t, 2, h.Calls("revision"), "one snapshot, doubled by the case redirect")
+}
 
-	// An unknown digest costs one pass over the ref heads, then nothing while it is cached as missing.
-	h.ResetCalls()
-	unknown := digest.FromString("unknown")
-	_, _, err = a.PullBlob(repoTiny, unknown.String())
-	assert.True(t, errors.IsNotFoundErr(err), err)
-	assert.Equal(t, 1, h.Calls("refs"))
-	assert.Equal(t, 2, h.Calls("revision"), "commitMain and commitV1; commitNew is cached")
-	h.ResetCalls()
-	for range 3 {
+func TestMissPathBoundedForDistinctUnknownDigests(t *testing.T) {
+	h := hubtest.New(tinyModel())
+	defer h.Close()
+	a := newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache())
+
+	const n = 20
+	for i := range n {
+		unknown := digest.FromString(fmt.Sprintf("unknown-%d", i))
+		_, _, err := a.PullBlob(repoTiny, unknown.String())
+		assert.True(t, errors.IsNotFoundErr(err), err)
 		exist, err := a.BlobExist(repoTiny, unknown.String())
 		assert.NoError(t, err)
 		assert.False(t, exist)
 	}
-	assert.Zero(t, h.Calls("refs"))
-	assert.Zero(t, h.Calls("revision"))
+	// One refs listing and one scan of the two ref heads, each doubled by the case redirect on
+	// the first call only, then nothing for the other 39 lookups.
+	assert.Equal(t, 2, h.Calls("refs"))
+	assert.Equal(t, 3, h.Calls("revision"))
+}
+
+func TestMissPathPropagatesUpstreamErrors(t *testing.T) {
+	model := tinyModel()
+	h := hubtest.New(model)
+	defer h.Close()
+	_, want := manifestOf(t, newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache()), repoTiny, "main")
+
+	a := newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache())
+	h.Fail("revision", 1)
+	exist, _, err := a.ManifestExist(repoTiny, want.String())
+	assert.False(t, exist)
+	require.Error(t, err)
+	assert.False(t, errors.IsNotFoundErr(err), "a 5xx must not become not found")
+	assert.Equal(t, errors.GeneralCode, errors.ErrCode(err))
+
+	// The failure was not cached: once the Hub recovers the same adapter and cache find it.
+	exist, desc, err := a.ManifestExist(repoTiny, want.String())
+	require.NoError(t, err)
+	assert.True(t, exist)
+	assert.Equal(t, want, desc.Digest)
+
+	b := newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache())
+	h.Fail("refs", 1)
+	_, _, err = b.PullBlob(repoTiny, digest.FromString("x").String())
+	assert.Equal(t, errors.GeneralCode, errors.ErrCode(err))
+	_, _, err = b.PullBlob(repoTiny, digest.FromString("x").String())
+	assert.True(t, errors.IsNotFoundErr(err), err)
+}
+
+func TestMissPathSkipsVanishedHead(t *testing.T) {
+	model := tinyModel()
+	h := hubtest.New(model)
+	defer h.Close()
+	_, want := manifestOf(t, newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache()), repoTiny, "main")
+
+	// v1 points at a commit the Hub no longer has; the main head is still found.
+	h.SetTag(model.ID, "v1", "dddddddddddddddddddddddddddddddddddddddd")
+	a := newTestAdapter(t, hubRegistry(h, 1, ""), newMemoryCache())
+	exist, _, err := a.ManifestExist(repoTiny, want.String())
+	require.NoError(t, err)
+	assert.True(t, exist)
 }
 
 func TestHeadsMainFirst(t *testing.T) {

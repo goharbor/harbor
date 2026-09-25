@@ -109,3 +109,20 @@ func TestSourceOnly(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, mount)
 }
+
+func TestTokenNeedsAccessID(t *testing.T) {
+	f, err := adp.GetFactory(model.RegistryTypeHuggingFace)
+	require.NoError(t, err)
+	_, err = f.Create(&model.Registry{Credential: &model.Credential{AccessSecret: "hf_token"}})
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode), err)
+	assert.ErrorContains(t, err, "needs a non-empty access ID")
+
+	for _, c := range []*model.Credential{
+		nil,
+		{},
+		{AccessKey: "user", AccessSecret: "hf_token"},
+	} {
+		_, err := f.Create(&model.Registry{Credential: c})
+		assert.NoError(t, err)
+	}
+}
