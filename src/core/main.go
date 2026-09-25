@@ -27,6 +27,7 @@ import (
 	"syscall"
 	"time"
 
+	beegoorm "github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/server/web"
 
 	"github.com/goharbor/harbor/src/common"
@@ -171,9 +172,6 @@ func main() {
 	if err := cache.Initialize(u.Scheme, redisHarborURL); err != nil {
 		log.Fatalf("failed to initialize cache: %v", err)
 	}
-	// when config/db init function is called, the cache is not ready,
-	// enable config cache explicitly when the cache is ready
-	dbCfg.EnableConfigCache()
 
 	web.AddTemplateExt("htm")
 
@@ -220,6 +218,12 @@ func main() {
 		log.Info("The database has been migrated successfully")
 	}
 
+	sqlDB, err := beegoorm.GetDB()
+	if err != nil {
+		log.Fatalf("failed to get the database handle: %v", err)
+	}
+	stopSettingsSync := dbCfg.StartSettingsSync(sqlDB)
+
 	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -252,7 +256,7 @@ func main() {
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
-	go gracefulShutdown(closing, done, shutdownTracerProvider)
+	go gracefulShutdown(closing, done, shutdownTracerProvider, stopSettingsSync)
 	// Start health checker for registries
 	go registry.Ctl.StartRegularHealthCheck(orm.Context(), closing, done)
 	// Init audit log
