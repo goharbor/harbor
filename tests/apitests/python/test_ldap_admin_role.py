@@ -28,7 +28,8 @@ class TestLdapAdminRole(unittest.TestCase):
             1. Set LDAP Auth configurations;
             2. Create a new public project(PA) by LDAP user mike;
             3. Check project is created successfully;
-            4. Check mike's SysAdminFlag is false, but AdminRoleInAuth should be true
+            4. Check mike's SysAdminFlag is synced to true since mike is an LDAP admin-group
+               member, and AdminRoleInAuth should be true
             5. Delete project(PA);
         """
 
@@ -41,7 +42,7 @@ class TestLdapAdminRole(unittest.TestCase):
 
         _user = self.user.get_user_current(**self.USER_MIKE)
         print( _user)
-        self.assertFalse(_user.sysadmin_flag)
+        self.assertTrue(_user.sysadmin_flag)
         self.assertTrue(_user.admin_role_in_auth)
 
 

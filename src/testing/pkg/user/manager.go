@@ -326,6 +326,24 @@ func (_m *Manager) SetSysAdminFlag(ctx context.Context, id int, admin bool) erro
 	return r0
 }
 
+// SyncSysAdminFlagFromAuth provides a mock function with given fields: ctx, id, adminRoleInAuth
+func (_m *Manager) SyncSysAdminFlagFromAuth(ctx context.Context, id int, adminRoleInAuth bool) error {
+	ret := _m.Called(ctx, id, adminRoleInAuth)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SyncSysAdminFlagFromAuth")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) error); ok {
+		r0 = rf(ctx, id, adminRoleInAuth)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdatePassword provides a mock function with given fields: ctx, id, newPassword
 func (_m *Manager) UpdatePassword(ctx context.Context, id int, newPassword string) error {
 	ret := _m.Called(ctx, id, newPassword)

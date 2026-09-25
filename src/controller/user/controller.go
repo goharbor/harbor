@@ -43,6 +43,9 @@ var (
 type Controller interface {
 	// SetSysAdmin ...
 	SetSysAdmin(ctx context.Context, id int, adminFlag bool) error
+	// SyncSysAdmin reconciles the sysadmin flag with the admin role granted by the LDAP/OIDC
+	// admin group at login time. It never overrides a flag that was explicitly set by an operator.
+	SyncSysAdmin(ctx context.Context, id int, adminRoleInAuth bool) error
 	// VerifyPassword ...
 	VerifyPassword(ctx context.Context, usernameOrEmail string, password string) (bool, error)
 	// UpdatePassword ...
@@ -242,6 +245,10 @@ func (c *controller) VerifyPassword(ctx context.Context, usernameOrEmail, passwo
 
 func (c *controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) error {
 	return c.mgr.SetSysAdminFlag(ctx, id, adminFlag)
+}
+
+func (c *controller) SyncSysAdmin(ctx context.Context, id int, adminRoleInAuth bool) error {
+	return c.mgr.SyncSysAdminFlagFromAuth(ctx, id, adminRoleInAuth)
 }
 
 func (c *controller) SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error) {
