@@ -31,12 +31,11 @@ import (
 const (
 	modelTTL    = 7 * 24 * time.Hour
 	snapshotTTL = 7 * 24 * time.Hour
-	// tagTTL bounds Hub calls: one proxied HEAD alone calls ManifestExist twice.
-	tagTTL    = 60 * time.Second
+	// refsTTL bounds Hub calls: one proxied HEAD alone calls ManifestExist twice, and every
+	// digest miss would otherwise list the refs again.
+	refsTTL   = 60 * time.Second
 	digestTTL = 7 * 24 * time.Hour
-	// notFoundTTL keeps probes for unknown digests from re-synthesizing every ref head.
-	notFoundTTL = 60 * time.Second
-	blobTTL     = 30 * 24 * time.Hour
+	blobTTL   = 30 * 24 * time.Hour
 
 	sweepInterval = 10 * time.Minute
 
@@ -104,16 +103,18 @@ func (l *locator) snapshotKey(repository, commit string) string {
 	return l.prefix() + "snapshot:" + repository + ":" + commit
 }
 
-func (l *locator) tagKey(repository, tag string) string {
-	return l.prefix() + "tag:" + repository + ":" + tag
+func (l *locator) refsKey(repository string) string {
+	return l.prefix() + "refs:" + repository
+}
+
+// scannedKey marks that every ref head of a repository was synthesized and indexed, so a digest
+// still missing from the index is not in any of them.
+func (l *locator) scannedKey(repository string) string {
+	return l.prefix() + "scanned:" + repository
 }
 
 func (l *locator) digestKey(repository string, d digest.Digest) string {
 	return l.prefix() + "digest:" + repository + ":" + d.String()
-}
-
-func (l *locator) notFoundKey(repository string, d digest.Digest) string {
-	return l.prefix() + "notfound:" + repository + ":" + d.String()
 }
 
 // blobKey is unscoped: the git blob id is content-addressed and the value is only its sha256.
@@ -152,13 +153,13 @@ func (l *locator) put(ctx context.Context, repository string, d digest.Digest, l
 	}
 }
 
-func (l *locator) knownMissing(ctx context.Context, repository string, d digest.Digest) bool {
-	return l.cache.Contains(ctx, l.notFoundKey(repository, d))
+func (l *locator) scanned(ctx context.Context, repository string) bool {
+	return l.cache.Contains(ctx, l.scannedKey(repository))
 }
 
-func (l *locator) markMissing(ctx context.Context, repository string, d digest.Digest) {
-	if err := l.cache.Save(ctx, l.notFoundKey(repository, d), true, notFoundTTL); err != nil {
-		log.Warningf("failed to save %s to cache: %v", l.notFoundKey(repository, d), err)
+func (l *locator) markScanned(ctx context.Context, repository string) {
+	if err := l.cache.Save(ctx, l.scannedKey(repository), true, refsTTL); err != nil {
+		log.Warningf("failed to save %s to cache: %v", l.scannedKey(repository), err)
 	}
 }
 

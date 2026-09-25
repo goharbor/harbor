@@ -43,7 +43,8 @@ func TestSweepScansAdapterKeys(t *testing.T) {
 
 func TestKeys(t *testing.T) {
 	l := &locator{registryID: 42}
-	assert.Equal(t, "huggingface:42:tag:org/m:main", l.tagKey("org/m", "main"))
+	assert.Equal(t, "huggingface:42:refs:org/m", l.refsKey("org/m"))
+	assert.Equal(t, "huggingface:42:scanned:org/m", l.scannedKey("org/m"))
 	assert.Equal(t, "huggingface:42:snapshot:org/m:c", l.snapshotKey("org/m", "c"))
 	assert.Equal(t, "huggingface:42:model:org/m", l.modelKey("org/m"))
 	assert.Equal(t, "huggingface:blob:abc", l.blobKey("abc"))

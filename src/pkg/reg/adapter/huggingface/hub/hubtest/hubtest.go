@@ -67,6 +67,7 @@ type Hub struct {
 	models    map[string]*Model
 	calls     map[string]int
 	rateLimit map[string]int
+	failures  map[string]int
 }
 
 // New starts a fake Hub.
@@ -76,6 +77,7 @@ func New(models ...*Model) *Hub {
 		models:    map[string]*Model{},
 		calls:     map[string]int{},
 		rateLimit: map[string]int{},
+		failures:  map[string]int{},
 	}
 	for _, m := range models {
 		h.models[strings.ToLower(m.ID)] = m
@@ -105,6 +107,20 @@ func (h *Hub) RateLimit(kind string, n int) {
 	h.rateLimit[kind] = n
 }
 
+// Fail makes the next n requests of an endpoint kind answer 500.
+func (h *Hub) Fail(kind string, n int) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.failures[kind] = n
+}
+
+// SetTag moves a tag of a model.
+func (h *Hub) SetTag(modelID, tag, commit string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.models[strings.ToLower(modelID)].Tags[tag] = commit
+}
+
 // SetBranch moves a branch of a model.
 func (h *Hub) SetBranch(modelID, branch, commit string) {
 	h.mu.Lock()
@@ -112,12 +128,19 @@ func (h *Hub) SetBranch(modelID, branch, commit string) {
 	h.models[strings.ToLower(modelID)].Branches[branch] = commit
 }
 
-func (h *Hub) count(kind string) bool {
+// count records a call and reports whether it was answered with an injected error.
+func (h *Hub) count(w http.ResponseWriter, kind string) bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.calls[kind]++
+	if h.failures[kind] > 0 {
+		h.failures[kind]--
+		hubError(w, http.StatusInternalServerError, "", "internal error")
+		return true
+	}
 	if h.rateLimit[kind] > 0 {
 		h.rateLimit[kind]--
+		tooMany(w)
 		return true
 	}
 	return false
@@ -133,8 +156,7 @@ func (h *Hub) serve(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.EscapedPath()
 	switch {
 	case p == "/api/whoami-v2":
-		if h.count("whoami") {
-			tooMany(w)
+		if h.count(w, "whoami") {
 			return
 		}
 		if h.Token == "" || r.Header.Get("Authorization") != "Bearer "+h.Token {
@@ -143,13 +165,14 @@ func (h *Hub) serve(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, map[string]string{"name": "tester"})
 	case p == "/api/models":
-		if h.count("list") {
-			tooMany(w)
+		if h.count(w, "list") {
 			return
 		}
 		h.list(w, r)
 	case strings.HasPrefix(p, "/api/organizations/") || strings.HasPrefix(p, "/api/users/"):
-		h.count("account")
+		if h.count(w, "account") {
+			return
+		}
 		h.account(w, p)
 	case strings.HasPrefix(p, "/api/models/"):
 		h.modelAPI(w, r, strings.TrimPrefix(p, "/api/models/"))
@@ -166,8 +189,7 @@ func (h *Hub) modelAPI(w http.ResponseWriter, r *http.Request, rest string) {
 	}
 	id := parts[0] + "/" + parts[1]
 	kind := parts[2]
-	if h.count(kind) {
-		tooMany(w)
+	if h.count(w, kind) {
 		return
 	}
 	m, ok := h.authorized(w, r, id)
@@ -245,8 +267,7 @@ func (h *Hub) resolve(w http.ResponseWriter, r *http.Request, rest string) {
 		hubError(w, http.StatusNotFound, "", "not found")
 		return
 	}
-	if h.count("resolve") {
-		tooMany(w)
+	if h.count(w, "resolve") {
 		return
 	}
 	id := parts[0] + "/" + parts[1]

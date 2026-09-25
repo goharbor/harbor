@@ -56,7 +56,9 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 
 // getAdapterPattern suggests the public Hub but accepts any URL, e.g. a mirror in an air-gapped
 // site. CredentialPattern stays nil: any credential pattern turns the secret field of the portal
-// into a JSON editor. The access secret is the Hub token, the access key is ignored.
+// into a JSON editor. The access secret is the Hub token. The access ID must be non-empty (the
+// Hugging Face username is the natural value) because Harbor stores a credential only when it
+// has an access key; the Hub itself only sees "Authorization: Bearer <token>".
 func getAdapterPattern() *model.AdapterPattern {
 	return &model.AdapterPattern{
 		EndpointPattern: &model.EndpointPattern{
@@ -89,6 +91,13 @@ func newAdapter(registry *model.Registry, c cache.Cache) (*adapter, error) {
 	}
 	var token string
 	if registry.Credential != nil {
+		// Registry create, update and ping all build the adapter first (controller/registry
+		// IsHealthy), so this error reaches the API caller before a token would be dropped on save.
+		if registry.Credential.AccessSecret != "" && registry.Credential.AccessKey == "" {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessage("the Hugging Face token needs a non-empty access ID, e.g. your Hugging Face username; " +
+					"Harbor does not store a credential without an access ID")
+		}
 		token = registry.Credential.AccessSecret
 	}
 	client, err := hub.New(endpoint, hub.Options{
