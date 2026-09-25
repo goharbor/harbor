@@ -50,7 +50,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 	}
 	al := accessList(req)
 	if len(al) == 0 {
-		return "", fmt.Errorf("un-recognized request: %s %s", req.Method, req.URL.Path)
+		return "", fmt.Errorf("unrecognized request: %s %s", req.Method, req.URL.Path)
 	}
 	for _, a := range al {
 		if a.target == login && !securityCtx.IsAuthenticated() {
@@ -64,7 +64,7 @@ func (rc *reqChecker) check(req *http.Request) (string, error) {
 		}
 		if a.target == repository && req.Header.Get(authHeader) == "" &&
 			(req.Method == http.MethodHead || req.Method == http.MethodGet) { // make sure 401 is returned for CLI HEAD, see #11271
-			return getChallenge(req, al), fmt.Errorf("authorize header needed to send HEAD to repository")
+			return getChallenge(req, al), fmt.Errorf("authorization header is required to send HEAD to repository")
 		} else if a.target == repository {
 			pn := strings.Split(a.name, "/")[0]
 			pid, err := rc.projectID(req.Context(), pn)
