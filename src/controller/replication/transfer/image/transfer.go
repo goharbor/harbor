@@ -256,7 +256,7 @@ func (t *transfer) copyArtifact(srcRepo, srcRef, dstRepo, dstRef string, overrid
 	return nil
 }
 
-// copy the content from source registry to destination according to its media type
+// copyContent copies the content from the source registry to the destination according to its media type
 func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string, opts *trans.Options) error {
 	digest := content.Digest.String()
 	switch content.MediaType {
@@ -287,7 +287,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, speed int32) error {
 	var err error
 	for i, backoff := 1, 2*time.Second; i <= blobRetryCnt; i, backoff = i+1, backoff*2 {
-		t.logger.Infof("copying the blob %s(the %dth running)...", digest, i)
+		t.logger.Infof("copying the blob %s(attempt %d)...", digest, i)
 		if err = t.copyBlob(srcRepo, dstRepo, digest, sizeFromDescriptor, speed); err == nil {
 			t.logger.Infof("copy the blob %s completed", digest)
 			return nil
@@ -311,7 +311,7 @@ func (t *transfer) copyChunkWithRetry(srcRepo, dstRepo, digest string, sizeFromD
 	)
 
 	for i, backoff := 1, 2*time.Second; i <= chunkRetryCnt; i, backoff = i+1, backoff*2 {
-		t.logger.Infof("copying the blob %s by chunk(chunkSize: %d)(the %dth running)...", digest, replicationChunkSize, i)
+		t.logger.Infof("copying the blob %s by chunk(chunkSize: %d)(attempt %d)...", digest, replicationChunkSize, i)
 		if err = t.copyBlobByChunk(srcRepo, dstRepo, digest, sizeFromDescriptor, &start, &end, &location, speed); err == nil {
 			t.logger.Infof("copy the blob %s by chunk completed", digest)
 			return nil
@@ -326,7 +326,7 @@ func (t *transfer) copyChunkWithRetry(srcRepo, dstRepo, digest string, sizeFromD
 	return err
 }
 
-// tryMountBlob try to check existence and mount, return true if mounted.
+// tryMountBlob tries to check the existence of the blob and mount it, returns true if mounted.
 func (t *transfer) tryMountBlob(_, dstRepo, digest string) (bool, error) {
 	if t.shouldStop() {
 		return false, errStopped
@@ -338,7 +338,7 @@ func (t *transfer) tryMountBlob(_, dstRepo, digest string) (bool, error) {
 	}
 	if exist {
 		t.logger.Infof("the blob %s already exists on the destination registry, skip", digest)
-		// we think the blob is mounted if it is existed.
+		// we think the blob is mounted if it exists.
 		return true, nil
 	}
 
@@ -366,7 +366,7 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor 
 	if err != nil {
 		return err
 	}
-	// return earlier if it is mounted
+	// return early if it is mounted
 	if mounted {
 		return nil
 	}
@@ -377,14 +377,14 @@ func (t *transfer) copyBlob(srcRepo, dstRepo, digest string, sizeFromDescriptor 
 func (t *transfer) copyBlobByMonolithic(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, speed int32) error {
 	size, data, err := t.src.PullBlob(srcRepo, digest)
 	if err != nil {
-		t.logger.Errorf("failed to pulling the blob %s: %v", digest, err)
+		t.logger.Errorf("failed to pull the blob %s: %v", digest, err)
 		return err
 	}
 	if speed > 0 {
 		data = lib.NewReader(data, speed)
 	}
 	defer data.Close()
-	// get size 0 from PullBlob, use size from distribution.Descriptor instead.
+	// got size 0 from PullBlob, use size from distribution.Descriptor instead.
 	if size == 0 {
 		size = sizeFromDescriptor
 		t.logger.Debugf("the blob size from remote registry is 0, use size %d from manifests instead", size)
@@ -393,7 +393,7 @@ func (t *transfer) copyBlobByMonolithic(srcRepo, dstRepo, digest string, sizeFro
 	t.logger.Debugf("the blob size is %d bytes", size)
 
 	if err = t.dst.PushBlob(dstRepo, digest, size, data); err != nil {
-		t.logger.Errorf("failed to pushing the blob %s, size %d: %v", digest, size, err)
+		t.logger.Errorf("failed to push the blob %s, size %d: %v", digest, size, err)
 		return err
 	}
 
@@ -407,7 +407,7 @@ func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDesc
 	if err != nil {
 		return err
 	}
-	// return earlier if it is mounted.
+	// return early if it is mounted
 	if mounted {
 		return nil
 	}
@@ -428,18 +428,18 @@ func (t *transfer) copyBlobByChunk(srcRepo, dstRepo, digest string, sizeFromDesc
 		t.logger.Infof("copying the blob chunk: %d-%d/%d", *start, *end, sizeFromDescriptor)
 		_, data, err := t.src.PullBlobChunk(srcRepo, digest, sizeFromDescriptor, *start, *end)
 		if err != nil {
-			t.logger.Errorf("failed to pulling the blob chunk: %d-%d/%d, error: %v", *start, *end, sizeFromDescriptor, err)
+			t.logger.Errorf("failed to pull the blob chunk: %d-%d/%d, error: %v", *start, *end, sizeFromDescriptor, err)
 			return err
 		}
 
 		if speed > 0 {
 			data = lib.NewReader(data, speed)
 		}
-		// failureEnd will only be used for adjusting content range when issue happened during push the chunk.
+		// failureEnd will only be used for adjusting content range when an issue happens during pushing the chunk.
 		var failureEnd int64
 		*location, failureEnd, err = t.dst.PushBlobChunk(dstRepo, digest, sizeFromDescriptor, data, *start, *end, *location)
 		if err != nil {
-			t.logger.Errorf("failed to pushing the blob chunk: %d-%d/%d, error: %v", *start, *end, sizeFromDescriptor, err)
+			t.logger.Errorf("failed to push the blob chunk: %d-%d/%d, error: %v", *start, *end, sizeFromDescriptor, err)
 			data.Close()
 			*end = failureEnd
 			return err
