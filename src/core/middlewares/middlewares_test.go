@@ -48,3 +48,25 @@ func Test_readonlySkipper(t *testing.T) {
 		})
 	}
 }
+
+func Test_dbTxSkippersConfigurationUpdates(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+	}{
+		{name: "public configuration", path: "/api/v2.0/configurations"},
+		{name: "internal configuration", path: "/api/internal/configurations"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPut, tt.path, nil)
+			for _, skipper := range dbTxSkippers {
+				if skipper(r) {
+					return
+				}
+			}
+			t.Fatalf("configuration update was not skipped by transaction middleware")
+		})
+	}
+}
