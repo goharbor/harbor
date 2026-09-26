@@ -65,6 +65,7 @@ func TestAuditLogsCleanupJobValidateParams(t *testing.T) {
 	userManager.On("GenerateCheckSum", validUsername).Return("hash")
 	manager.On("UpdateUsername", context.TODO(), validUsername, "hash").Return(nil)
 	extManger.On("UpdateUsername", context.TODO(), validUsername, "hash").Return(nil)
+	extManger.On("UpdateUsernameForUserResource", context.TODO(), validUsername, "hash").Return(nil)
 
 	err = rep.Run(ctx, validParams)
 	assert.Nil(t, err)

@@ -73,12 +73,17 @@ func (a AuditLogsDataMasking) Run(ctx job.Context, params job.Parameters) error 
 	if err != nil {
 		return err
 	}
-	logger.Infof("Masking log entries for a user: %s", username)
-	err = a.manager.UpdateUsername(ctx.SystemContext(), username, a.userManager.GenerateCheckSum(username))
+	maskedUsername := a.userManager.GenerateCheckSum(username)
+	logger.Infof("Masking log entries deleted user replacing the username with: %s", maskedUsername)
+	err = a.manager.UpdateUsername(ctx.SystemContext(), username, maskedUsername)
 	if err != nil {
 		return err
 	}
-	return a.extManager.UpdateUsername(ctx.SystemContext(), username, a.userManager.GenerateCheckSum(username))
+	err = a.extManager.UpdateUsername(ctx.SystemContext(), username, maskedUsername)
+	if err != nil {
+		return err
+	}
+	return a.extManager.UpdateUsernameForUserResource(ctx.SystemContext(), username, maskedUsername)
 }
 
 func (a AuditLogsDataMasking) parseParams(params job.Parameters) (string, error) {
