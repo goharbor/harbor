@@ -57,6 +57,7 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
 import { AddGroupComponent } from './add-group/add-group.component';
 import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
+import { getAllRoles } from '../../../shared/units/role-util';
 import { Role } from '../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -141,7 +142,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         this.currentUser = this.session.getCurrentUser();
         // get member permission rule
         this.getMemberPermissionRule(this.projectId);
-        this.roleService.ListRole({ page: 1, pageSize: 100 }).subscribe(res => {
+        getAllRoles(this.roleService).subscribe(res => {
             this.roles = res ?? [];
         });
         if (this.appConfigService.isLdapMode()) {
@@ -390,7 +391,14 @@ export class MemberComponent implements OnInit, OnDestroy {
     getMemberRoleDisplayName(member: ProjectMemberEntity): string {
         const role = this.roles.find(r => r.id === member.role_id);
         if (role) {
-            return this.getRoleDisplayName(role);
+            // Translate the i18n key for built-in roles here; custom role names
+            // are arbitrary strings and must render verbatim (never piped through
+            // translate, or a name matching a key like "BUTTON.DELETE" would be
+            // mis-rendered as that translation).
+            if (role.is_builtin) {
+                return this.translate.instant(this.getRoleDisplayName(role));
+            }
+            return role.name;
         }
         return member.role_name;
     }

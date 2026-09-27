@@ -40,7 +40,7 @@ describe('RolePermissionsPanelComponent', () => {
     });
 
     it('should render right mode', async () => {
-        component.robotPermissionsPanelComponent.modalOpen = true;
+        component.rolePermissionsPanelComponent.modalOpen = true;
         fixture.detectChanges();
         await fixture.whenStable();
         const table = fixture.nativeElement.querySelector('table');
@@ -58,27 +58,27 @@ describe('RolePermissionsPanelComponent', () => {
     });
 });
 
-// mock a TestHostComponent for RobotPermissionsPanelComponent
+// mock a TestHostComponent for RolePermissionsPanelComponent
 @Component({
     template: `
         <ng-container *ngIf="mode === PermissionSelectPanelModes.MODAL">
-            <robot-permissions-panel [mode]="mode">
+            <role-permissions-panel [mode]="mode">
                 <div>modal</div>
-            </robot-permissions-panel>
+            </role-permissions-panel>
         </ng-container>
         <ng-container *ngIf="mode === PermissionSelectPanelModes.DROPDOWN">
-            <robot-permissions-panel [mode]="mode">
+            <role-permissions-panel [mode]="mode">
                 <div>dropDown</div>
-            </robot-permissions-panel>
+            </role-permissions-panel>
         </ng-container>
         <ng-container *ngIf="mode === PermissionSelectPanelModes.NORMAL">
-            <robot-permissions-panel [mode]="mode"> </robot-permissions-panel>
+            <role-permissions-panel [mode]="mode"> </role-permissions-panel>
         </ng-container>
     `,
 })
 class TestHostComponent {
-    @ViewChild(RobotPermissionsPanelComponent)
-    robotPermissionsPanelComponent: RobotPermissionsPanelComponent;
+    @ViewChild(RolePermissionsPanelComponent)
+    rolePermissionsPanelComponent: RolePermissionsPanelComponent;
     mode = PermissionSelectPanelModes.NORMAL;
     protected readonly PermissionSelectPanelModes = PermissionSelectPanelModes;
 }

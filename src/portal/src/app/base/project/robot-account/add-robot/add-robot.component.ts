@@ -199,12 +199,22 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     }
     get filteredCandidatePermissions(): Permission[] {
         const all = this.robotMetadata?.project ?? [];
+        // Fail closed: an empty effective-permissions set (request still pending,
+        // an error, or a caller with no project grants) must not expose the whole
+        // robot catalog.
         if (!this.effectivePermissions?.length) {
-            return all;
+            return [];
         }
+        // /users/current/permissions?relative=true names the project root ".",
+        // while the robot catalog names it "project" — normalize before comparing
+        // so project-level grants are not filtered out.
+        const normalize = (resource: string): string =>
+            resource === 'project' || resource === '.' ? '.' : resource;
         return all.filter(p =>
             this.effectivePermissions.some(
-                e => e.resource === p.resource && e.action === p.action
+                e =>
+                    normalize(e.resource) === normalize(p.resource) &&
+                    e.action === p.action
             )
         );
     }

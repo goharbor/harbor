@@ -34,6 +34,7 @@ import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { getAllRoles } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 
@@ -84,10 +85,7 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     roleSub: Subscription;
 
     ngOnInit(): void {
-        this.roleSub = this.roleService.ListRole({
-                        page: 1,
-                        pageSize: 100
-                    }).subscribe(res => {
+        this.roleSub = getAllRoles(this.roleService).subscribe(res => {
             if (res) {
                 this.roles = res;
             }

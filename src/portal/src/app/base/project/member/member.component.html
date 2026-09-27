@@ -120,7 +120,7 @@
                     @if (ChangeRoleOngoing(m.id)) {
                     <span class="spinner spinner-inline"></span>
                     } @if (!ChangeRoleOngoing(m.id)) {
-                    <span>{{ getMemberRoleDisplayName(m) | translate }}</span>
+                    <span>{{ getMemberRoleDisplayName(m) }}</span>
                     }
                 </clr-dg-cell>
             </clr-dg-row>

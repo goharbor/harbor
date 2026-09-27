@@ -33,6 +33,7 @@ import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { getAllRoles } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 
@@ -80,84 +81,73 @@ export class AddMemberComponent implements OnInit, OnDestroy {
 
 
     ngOnInit(): void {
-        let resolverData = this.route.snapshot.parent.parent.data;
-        let hasProjectAdminRole: boolean;
-        if (resolverData) {
-            hasProjectAdminRole = (<Project>resolverData['projectResolver'])
-                .has_project_admin_role;
-        }
-        if (hasProjectAdminRole) {
-            
-            this.roleSub = this.roleService.ListRole({
-                                    page: 1,
-                                    pageSize: 100
-                                }).subscribe(res => {
-                        if (res) {
-                            this.roles = res;
+        // Initialize unconditionally. The parent page already gates opening this
+        // dialog on the effective member:create permission — which a custom role
+        // can grant, not only project admins — so this component must not re-gate
+        // on has_project_admin_role, which left such users with an empty picker.
+        this.roleSub = getAllRoles(this.roleService).subscribe(res => {
+            if (res) {
+                this.roles = res;
+            }
+        });
+
+        if (!this.searcherSub) {
+            this.searcherSub = this.searcher
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            return this.userService.searchUsers({
+                                page: 1,
+                                pageSize: 10,
+                                username: name,
+                            });
+                        } else {
+                            return of([]);
                         }
-                    });
-            
-            if (!this.searcherSub) {
-                this.searcherSub = this.searcher
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                return this.userService.searchUsers({
+                    })
+                )
+                .subscribe(res => {
+                    if (res) {
+                        this.searchedUserLists = res;
+                    }
+                });
+        }
+        if (!this.nameCheckerSub) {
+            this.nameCheckerSub = this.nameChecker
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            this.checkOnGoing = true;
+                            return this.memberService
+                                .listProjectMembers({
                                     page: 1,
                                     pageSize: 10,
-                                    username: name,
-                                });
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res) {
-                            this.searchedUserLists = res;
+                                    projectNameOrId: this.projectId.toString(),
+                                    entityname: name,
+                                })
+                                .pipe(
+                                    finalize(() => (this.checkOnGoing = false))
+                                );
+                        } else {
+                            return of([]);
                         }
-                    });
-            }
-            if (!this.nameCheckerSub) {
-                this.nameCheckerSub = this.nameChecker
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                this.checkOnGoing = true;
-                                return this.memberService
-                                    .listProjectMembers({
-                                        page: 1,
-                                        pageSize: 10,
-                                        projectNameOrId:
-                                            this.projectId.toString(),
-                                        entityname: name,
-                                    })
-                                    .pipe(
-                                        finalize(
-                                            () => (this.checkOnGoing = false)
-                                        )
-                                    );
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res && res.length) {
-                            if (
-                                res.filter(
-                                    m => m.entity_name === this.member.username
-                                ).length > 0
-                            ) {
-                                this.isMemberNameValid = false;
-                                this.memberTooltip =
-                                    'MEMBER.USERNAME_ALREADY_EXISTS';
-                            }
+                    })
+                )
+                .subscribe(res => {
+                    if (res && res.length) {
+                        if (
+                            res.filter(
+                                m => m.entity_name === this.member.username
+                            ).length > 0
+                        ) {
+                            this.isMemberNameValid = false;
+                            this.memberTooltip =
+                                'MEMBER.USERNAME_ALREADY_EXISTS';
                         }
-                    });
-            }
+                    }
+                });
         }
     }
 
