@@ -3,6 +3,7 @@ name: "Code scanning - action"
 on:
   push:
   pull_request:
+  merge_group:
   schedule:
     - cron: '0 16 * * 6'
 
