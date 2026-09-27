@@ -138,12 +138,12 @@ func (d *controller) Delete(ctx context.Context, id int64, _ ...*Option) error {
 	if rDelete.IsBuiltin {
 		return errors.ForbiddenError(nil).WithMessagef("cannot delete built-in role %d", id)
 	}
-	// A role assigned to project members cannot be deleted (project_member.role
-	// has no FK, so deleting would orphan those memberships). Re-check the count
-	// and delete the role + its permissions together in one transaction, so the
-	// guard and the delete are serialized and the permission rows never outlive
-	// the role. (A concurrent assignment is still possible without a DB-level FK;
-	// that is tracked as a follow-up.)
+	// A role assigned to project members cannot be deleted. The count guard below
+	// covers the common case; the fk_project_member_role foreign key (ON DELETE
+	// RESTRICT) is the authoritative backstop that also closes the count-then-delete
+	// race — a concurrent member assignment then makes the DB reject the delete,
+	// which is mapped to 412 below. Deleting the role + its permissions together in
+	// one transaction also keeps the permission rows from outliving the role.
 	if err := orm.WithTransaction(func(ctx context.Context) error {
 		assigned, err := d.memberMgr.GetTotalOfProjectMembersByRole(ctx, int(id))
 		if err != nil {
@@ -153,6 +153,11 @@ func (d *controller) Delete(ctx context.Context, id int64, _ ...*Option) error {
 			return errors.PreconditionFailedError(nil).WithMessagef("cannot delete role %d: it is still assigned to %d project member(s)", id, assigned)
 		}
 		if err := d.roleMgr.Delete(ctx, id); err != nil {
+			// A member assigned concurrently (after the count) trips the FK; surface
+			// it as a 412 precondition failure rather than a 500.
+			if e := orm.AsForeignKeyError(err, "cannot delete role %d: it is still assigned to project member(s)", id); e != nil {
+				return e
+			}
 			return err
 		}
 		// A custom role with no permission rows makes DeletePermissionsByRole

@@ -3435,6 +3435,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
 
@@ -3514,6 +3516,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
         '500':
           $ref: '#/responses/500'
 

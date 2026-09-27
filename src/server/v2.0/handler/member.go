@@ -205,6 +205,14 @@ func (m *memberAPI) checkNoEscalation(ctx context.Context, projectNameOrID any, 
 		}
 	}
 	for _, acc := range accesses {
+		// Deny entries restrict access rather than grant it, so the caller need
+		// not hold them; requiring them would wrongly block assigning a role that
+		// merely denies something. (Custom roles cannot carry deny today —
+		// validate() rejects any effect but "" / allow — this guards built-ins and
+		// any future deny support.)
+		if acc.Effect == types.EffectDeny {
+			continue
+		}
 		has, err := m.HasProjectPermission(ctx, projectNameOrID, acc.Action, acc.Resource)
 		if err != nil {
 			return err

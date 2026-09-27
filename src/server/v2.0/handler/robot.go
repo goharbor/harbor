@@ -274,13 +274,41 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 		return rAPI.SendError(ctx, err)
 	}
 
-	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, nil)
+	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, &robot.Option{
+		WithPermission: true,
+	})
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
 	if err := rAPI.requireAccess(ctx, r, rbac.ActionUpdate); err != nil {
 		return rAPI.SendError(ctx, err)
+	}
+
+	// Refreshing the secret hands the caller control of the robot, which is
+	// effectively the same as being granted the robot's permissions. Run the same
+	// no-escalation check as create/update, so a caller holding e.g. robot:update
+	// but not the robot's own permissions cannot take over a more-privileged robot.
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	var robotPerms []*models.RobotPermission
+	if err := lib.JSONCopy(&robotPerms, r.Permissions); err != nil {
+		log.Warningf("failed to call JSONCopy on robot permission when RefreshSec, error: %v", err)
+	}
+	switch s := sc.(type) {
+	case *local.SecurityContext:
+		if err := rAPI.validateNoEscalation(ctx, robotPerms); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
+	case *robotSc.SecurityContext:
+		if s.User() == nil {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
+		}
+		if !isValidPermissionScope(robotPerms, s.User().Permissions) {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED))
+		}
 	}
 
 	var secret string

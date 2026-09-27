@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -168,6 +169,42 @@ func (suite *ControllerTestSuite) TestCreateCustomRole() {
 	})
 	suite.Nil(err)
 	suite.Equal(int64(7), id)
+}
+
+// Failure injection: a permission insert failing must fail the whole Create
+// (the transaction propagates the error) rather than leaving a named role with
+// no permissions. Guards against silently dropping the transaction.
+func (suite *ControllerTestSuite) TestCreateCustomRolePermissionFailure() {
+	suite.roleMgr.On("Create", mock.Anything, mock.Anything).Return(int64(7), nil)
+	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).
+		Return(int64(0), errors.New("insert failed"))
+
+	_, err := suite.c.Create(suite.ctx, &Role{
+		Role: model.Role{Name: "boom"},
+		Permissions: []*Permission{
+			{Access: []*types.Policy{{Resource: "repository", Action: "pull"}}},
+		},
+	})
+	suite.Require().NotNil(err)
+}
+
+// A member assigned concurrently (after the count) makes the DB reject the role
+// delete via the FK; the controller must surface that as a 412, not a 500.
+func (suite *ControllerTestSuite) TestDeleteCustomRoleForeignKeyRace() {
+	suite.roleMgr.On("Get", mock.Anything, int64(9)).Return(&model.Role{
+		ID:        9,
+		Name:      "racy",
+		IsBuiltin: false,
+	}, nil)
+	suite.memberMgr.On("GetTotalOfProjectMembersByRole", mock.Anything, 9).Return(0, nil)
+	suite.roleMgr.On("Delete", mock.Anything, int64(9)).
+		Return(&pgconn.PgError{Code: "23503"}) // foreign_key_violation
+
+	err := suite.c.Delete(suite.ctx, int64(9))
+	suite.Require().NotNil(err)
+	// The FK violation is surfaced as a foreign-key-constraint error, which maps
+	// to HTTP 412 (same as the count guard's PreconditionFailed).
+	suite.True(errors.IsErr(err, errors.ViolateForeignKeyConstraintCode))
 }
 
 func TestControllerTestSuite(t *testing.T) {

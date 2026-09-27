@@ -47,3 +47,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_role_name ON role (lower(name));
 -- Mark all roles seeded by migrations as built-in (immutable).
 UPDATE role SET is_builtin = TRUE
 WHERE name IN ('projectAdmin', 'developer', 'guest', 'maintainer', 'limitedGuest');
+
+-- Referential integrity between a project member and its role. ON DELETE RESTRICT
+-- makes the database reject deleting a role that is still assigned to a member,
+-- closing the count-then-delete race in the role Delete controller (a concurrent
+-- member assignment can no longer leave a dangling project_member.role).
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'fk_project_member_role'
+    ) THEN
+        ALTER TABLE project_member
+            ADD CONSTRAINT fk_project_member_role
+            FOREIGN KEY (role) REFERENCES role (role_id) ON DELETE RESTRICT;
+    END IF;
+END $$;
