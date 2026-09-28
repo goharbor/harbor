@@ -181,7 +181,7 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 			if errors.IsNotFoundErr(err) {
 				return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference)))
 			}
-			return r.SendError(ctx, errors.BadRequestError(err))
+			return r.SendError(ctx, err)
 		}
 	default:
 		return r.SendError(ctx, errors.BadRequestError(fmt.Errorf("scope %s is not supported", p.Scope.Level)))

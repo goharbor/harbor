@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/retention"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	retentiontesting "github.com/goharbor/harbor/src/testing/controller/retention"
 	metadatatesting "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 )
@@ -185,4 +186,47 @@ func TestUpdateRetentionReturnsNotFoundForMissingPolicy(t *testing.T) {
 
 	require.Equal(t, http.StatusNotFound, recorder.Code, recorder.Body.String())
 	require.Contains(t, recorder.Body.String(), errors.NotFoundCode)
+}
+
+func TestCreateRetentionPreservesProjectLookupErrors(t *testing.T) {
+	for _, testCase := range []struct {
+		name       string
+		err        error
+		statusCode int
+		bodyText   string
+	}{
+		{
+			name:       "missing project is invalid input",
+			err:        errors.New("project not found").WithCode(errors.NotFoundCode),
+			statusCode: http.StatusBadRequest,
+			bodyText:   "invalid Project id 1",
+		},
+		{
+			name:       "unexpected lookup error",
+			err:        stderrors.New("database unavailable"),
+			statusCode: http.StatusInternalServerError,
+			bodyText:   "internal server error",
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			projectCtl := projecttesting.NewController(t)
+			projectCtl.On("Get", mock.Anything, int64(1)).Return(nil, testCase.err).Once()
+			securityCtx := securitytesting.NewContext(t)
+			securityCtx.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+			api := &retentionAPI{projectCtl: projectCtl}
+			ctx := security.NewContext(context.Background(), securityCtx)
+			responder := api.CreateRetention(ctx, operation.CreateRetentionParams{
+				HTTPRequest: httptest.NewRequest(http.MethodPost, "/api/v2.0/retentions", nil),
+				Policy: &models.RetentionPolicy{
+					Scope: &models.RetentionPolicyScope{Level: "project", Ref: 1},
+				},
+			})
+			recorder := httptest.NewRecorder()
+			responder.WriteResponse(recorder, runtime.JSONProducer())
+
+			require.Equal(t, testCase.statusCode, recorder.Code, recorder.Body.String())
+			require.Contains(t, recorder.Body.String(), testCase.bodyText)
+		})
+	}
 }
