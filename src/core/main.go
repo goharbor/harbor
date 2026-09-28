@@ -70,6 +70,7 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/login"
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/member"
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/project"
+	_ "github.com/goharbor/harbor/src/pkg/auditext/event/role"
 	_ "github.com/goharbor/harbor/src/pkg/auditext/event/user"
 	dbCfg "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
