@@ -39,7 +39,7 @@ func (q *qcloudAuthCredential) Modify(r *http.Request) (err error) {
 		}
 	}
 	r.SetBasicAuth(q.cacheTokener.username, q.cacheTokener.token)
-	log.Debugf("[qcloudAuthCredential.Modify]Host: %v, header: %#v", r.Host, r.Header)
+	log.Debugf("[qcloudAuthCredential.Modify]Host: %v", r.Host)
 	return
 }
 
@@ -89,7 +89,7 @@ func (q *qcloudAuthCredential) getTempInstanceToken() (err error) {
 
 	q.cacheTokener = &temporaryTokener{*resp.Response.Username, *resp.Response.Token}
 	q.cacheTokenExpiredAt = time.Unix(*resp.Response.ExpTime/1e3, *resp.Response.ExpTime%1e3)
-	log.Debugf("[qcloudAuthCredential.getTempInstanceToken]Update temp token=%#v, cacheTokenExpiredAt=%s, unix=%v", q.cacheTokener,
+	log.Debugf("[qcloudAuthCredential.getTempInstanceToken]Update temp token for user=%s, cacheTokenExpiredAt=%s, unix=%v", q.cacheTokener.username,
 		q.cacheTokenExpiredAt.UTC().String(), *resp.Response.ExpTime)
 
 	return

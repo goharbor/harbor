@@ -43,30 +43,6 @@ func (n nopCloser) Close() error {
 	return nil
 }
 
-func copyBody(body io.ReadCloser) io.ReadCloser {
-	// check if body was already read and converted into our nopCloser
-	if nc, ok := body.(nopCloser); ok {
-		_, _ = nc.Seek(0, io.SeekStart)
-		return body
-	}
-
-	defer body.Close()
-
-	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, body)
-
-	return nopCloser{bytes.NewReader(buf.Bytes())}
-}
-
-// NopCloseRequest makes r.Body re-readable so it can be consumed more than once.
-func NopCloseRequest(r *http.Request) *http.Request {
-	if r != nil && r.Body != nil {
-		r.Body = copyBody(r.Body)
-	}
-
-	return r
-}
-
 // ReadRequestBody reads and returns r.Body while enforcing an optional size
 // limit. When limit > 0 and the body is larger than limit, a
 // RequestEntityTooLargeError is returned so callers surface a 413 instead of

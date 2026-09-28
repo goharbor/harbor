@@ -102,6 +102,28 @@ func TestEnsureScanners(t *testing.T) {
 		mgr.AssertExpectations(t)
 	})
 
+	t.Run("Should not update scanners when URL only differs in host case", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		mgr.On("List", mock.Anything, &q.Query{
+			Keywords: map[string]any{
+				"name__in": []string{
+					"trivy",
+				},
+			},
+		}).Return([]*scanner.Registration{
+			{Name: "trivy", URL: "http://trivy:8080"},
+		}, nil)
+
+		err := EnsureScanners(context.TODO(), []scanner.Registration{
+			{Name: "trivy", URL: "http://TRIVY:8080"},
+		})
+
+		assert.NoError(t, err)
+		mgr.AssertExpectations(t)
+	})
+
 }
 
 func TestEnsureDefaultScanner(t *testing.T) {

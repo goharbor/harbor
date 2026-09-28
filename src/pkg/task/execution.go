@@ -15,6 +15,7 @@
 package task
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"sync"
@@ -356,7 +357,9 @@ func (e *executionManager) populateExecution(ctx context.Context, execution *dao
 
 	if len(execution.ExtraAttrs) > 0 {
 		extras := map[string]any{}
-		if err := json.Unmarshal([]byte(execution.ExtraAttrs), &extras); err != nil {
+		d := json.NewDecoder(bytes.NewReader([]byte(execution.ExtraAttrs)))
+		d.UseNumber()
+		if err := d.Decode(&extras); err != nil {
 			log.Errorf("failed to unmarshal the extra attributes of execution %d: %v", execution.ID, err)
 		} else {
 			exec.ExtraAttrs = extras

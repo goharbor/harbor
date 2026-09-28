@@ -113,6 +113,18 @@ func (m *Manager) Update(ctx context.Context, projectID int64, meta map[string]s
 	if err := m.delegator.Update(ctx, projectID, meta); err != nil {
 		return err
 	}
+	return m.cleanUpAll(ctx, projectID)
+}
+
+// UpdateWithValidation atomically validates and updates metadata, then invalidates its cache.
+func (m *Manager) UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate metadata.Validator) error {
+	if err := m.delegator.UpdateWithValidation(ctx, projectID, meta, validate); err != nil {
+		return err
+	}
+	return m.cleanUpAll(ctx, projectID)
+}
+
+func (m *Manager) cleanUpAll(ctx context.Context, projectID int64) error {
 	// clean cache
 	prefix, err := m.keyBuilder.Format("projectID", projectID)
 	if err != nil {

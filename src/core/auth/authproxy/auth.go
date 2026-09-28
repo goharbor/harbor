@@ -29,6 +29,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -209,7 +210,11 @@ func (a *Auth) fillInModel(u *models.User) error {
 		return fmt.Errorf("username cannot be empty")
 	}
 	u.Realname = u.Username
-	u.Password = "1234567ab"
+	pwd, err := utils.GenerateRandomStringOrError()
+	if err != nil {
+		return fmt.Errorf("failed to generate random password: %w", err)
+	}
+	u.Password = pwd
 	u.Comment = userEntryComment
 	if strings.Contains(u.Username, "@") {
 		u.Email = u.Username

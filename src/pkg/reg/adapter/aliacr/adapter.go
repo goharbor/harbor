@@ -56,7 +56,7 @@ func init() {
 
 // example:
 // https://cr.%s.aliyuncs.com
-var regACRServiceURL = regexp.MustCompile(`https://cr\.([\w\-]+)\.aliyuncs\.com`)
+var regACRServiceURL = regexp.MustCompile(`(?i)https://cr\.([\w\-]+)\.aliyuncs\.com`)
 
 func getRegistryURL(url string) (string, error) {
 	if url == "" {
@@ -66,7 +66,7 @@ func getRegistryURL(url string) (string, error) {
 	if rs == nil {
 		return url, nil
 	}
-	return fmt.Sprintf(registryEndpointTpl, rs[1]), nil
+	return fmt.Sprintf(registryEndpointTpl, strings.ToLower(rs[1])), nil
 }
 
 // example:

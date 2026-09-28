@@ -133,10 +133,14 @@ func (r *registryAPI) UpdateRegistry(ctx context.Context, params operation.Updat
 	if err := r.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceRegistry); err != nil {
 		return r.SendError(ctx, err)
 	}
+	if params.ID == 0 {
+		return r.SendError(ctx, errors.New(nil).WithCode(errors.NotFoundCode).WithMessage("registry 0 not found"))
+	}
 	registry, err := r.ctl.Get(ctx, params.ID)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
+	storedURL := registry.URL
 	if params.Registry != nil {
 		if params.Registry.Name != nil {
 			registry.Name = *params.Registry.Name
@@ -168,6 +172,15 @@ func (r *registryAPI) UpdateRegistry(ctx context.Context, params operation.Updat
 		}
 		if params.Registry.AccessSecret != nil {
 			registry.Credential.AccessSecret = *params.Registry.AccessSecret
+		}
+		if registry.URL != storedURL && params.Registry.AccessSecret == nil {
+			normalizedURL, err := lib.NormalizeAndValidateHTTPURL(registry.URL)
+			if err != nil {
+				return r.SendError(ctx, err)
+			}
+			if normalizedURL != storedURL && registry.Credential != nil {
+				registry.Credential.AccessSecret = ""
+			}
 		}
 	}
 	if err := r.ctl.Update(ctx, registry); err != nil {
@@ -243,7 +256,7 @@ func (r *registryAPI) PingRegistry(ctx context.Context, params operation.PingReg
 		// authoritative; ignore url/insecure/ca overrides so the ping (and the saved
 		// credentials it sends) can't be redirected to or MITM'd via an untrusted endpoint
 		if params.Registry.URL != nil && params.Registry.ID == nil {
-			url, err := lib.ValidateHTTPURL(*params.Registry.URL)
+			url, err := lib.NormalizeAndValidateHTTPURL(*params.Registry.URL)
 			if err != nil {
 				return r.SendError(ctx, err)
 			}

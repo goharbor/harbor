@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/task"
+	taskdao "github.com/goharbor/harbor/src/pkg/task/dao"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
@@ -171,10 +172,46 @@ func (suite *CallbackTestSuite) TestScanAllCallback() {
 func (suite *CallbackTestSuite) makeExtraAttrs(artifactID, robotID int64) map[string]any {
 	b, _ := json.Marshal(map[string]any{artifactIDKey: artifactID, robotIDKey: robotID})
 
-	extraAttrs := map[string]any{}
-	json.Unmarshal(b, &extraAttrs)
+	daoTask := &taskdao.Task{
+		ExtraAttrs: string(b),
+	}
+	tsk := &task.Task{}
+	tsk.From(daoTask)
 
-	return extraAttrs
+	return tsk.ExtraAttrs
+}
+
+func TestGetRobotID_LargeID(t *testing.T) {
+	largeID := int64(9007199254740993)
+
+	b, _ := json.Marshal(map[string]any{robotIDKey: largeID, artifactIDKey: largeID})
+	daoTask := &taskdao.Task{
+		ExtraAttrs: string(b),
+	}
+	tsk := &task.Task{}
+	tsk.From(daoTask)
+
+	gotRobotID := getRobotID(tsk.ExtraAttrs)
+	if gotRobotID != largeID {
+		t.Errorf("getRobotID() = %d, want %d", gotRobotID, largeID)
+	}
+
+	gotArtifactID := getArtifactID(tsk.ExtraAttrs)
+	if gotArtifactID != largeID {
+		t.Errorf("getArtifactID() = %d, want %d", gotArtifactID, largeID)
+	}
+}
+
+func TestGetRobotID_LegacyFloat64(t *testing.T) {
+	// old data decoded without UseNumber comes in as float64
+	extraAttrs := map[string]any{robotIDKey: float64(12345), artifactIDKey: float64(67890)}
+
+	if got := getRobotID(extraAttrs); got != 12345 {
+		t.Errorf("getRobotID() = %d, want 12345", got)
+	}
+	if got := getArtifactID(extraAttrs); got != 67890 {
+		t.Errorf("getArtifactID() = %d, want 67890", got)
+	}
 }
 
 func TestCallbackTestSuite(t *testing.T) {

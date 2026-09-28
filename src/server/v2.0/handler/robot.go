@@ -164,16 +164,22 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 	var level string
 	// GET /api/v2.0/robots or GET /api/v2.0/robots?q=Level=system to get all of system level robots.
 	// GET /api/v2.0/robots?q=Level=project,ProjectID=1
-	if _, ok := query.Keywords["Level"]; ok {
-		if !isValidLevel(query.Keywords["Level"].(string)) {
+	if lv, ok := query.Keywords["Level"]; ok {
+		levelStr, ok := lv.(string)
+		if !ok || !isValidLevel(levelStr) {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("bad request error level input").WithCode(errors.BadRequestCode))
 		}
-		level = query.Keywords["Level"].(string)
+		level = levelStr
 		if level == robot.LEVELPROJECT {
-			if _, ok := query.Keywords["ProjectID"]; !ok {
-				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project robots"))
+			pv, ok := query.Keywords["ProjectID"]
+			if !ok {
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("Project ID must be specified when querying project robots"))
 			}
-			pid, err := strconv.ParseInt(query.Keywords["ProjectID"].(string), 10, 64)
+			pidStr, ok := pv.(string)
+			if !ok {
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("ProjectID must be a positive integer"))
+			}
+			pid, err := strconv.ParseInt(pidStr, 10, 64)
 			if err != nil || pid <= 0 {
 				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("ProjectID must be a positive integer"))
 			}
@@ -328,18 +334,26 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	}
 
 	if len(permissions) == 0 {
-		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Permission list cannot be empty").WithCode(errors.BadRequestCode)
 	}
 
 	for _, perm := range permissions {
+		if perm == nil {
+			return errors.New(nil).WithMessage("Permission list cannot be empty").WithCode(errors.BadRequestCode)
+		}
 		if len(perm.Access) == 0 {
-			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("Access list cannot be empty").WithCode(errors.BadRequestCode)
+		}
+		for _, acc := range perm.Access {
+			if acc == nil {
+				return errors.New(nil).WithMessage("Access list cannot be empty").WithCode(errors.BadRequestCode)
+			}
 		}
 	}
 
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
-		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Project robot account cannot be assigned permissions for multiple projects").WithCode(errors.BadRequestCode)
 	}
 
 	provider := rbac.GetPermissionProvider()
@@ -429,7 +443,7 @@ func validateName(name string) error {
 	robotNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
 	legal := regexp.MustCompile(robotNameReg).MatchString(name)
 	if !legal {
-		return errors.BadRequestError(nil).WithMessage("robot name is not in lower case or contains illegal characters")
+		return errors.BadRequestError(nil).WithMessage("Robot name must be lowercase and cannot contain invalid characters")
 	}
 	return nil
 }

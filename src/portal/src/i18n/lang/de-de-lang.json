@@ -242,15 +242,25 @@
         "PROXY_CACHE_TOOLTIP": "Die Aktivierung der Funktion erlaubt es dem Projekt, als Cache für eine andere Registry Instanz zu dienen.",
         "ENDPOINT": "Endpunkt",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpunkt",
+        "PROXY_CACHE_RETENTION_DAYS": "Aufbewahrungsdauer (Tage)",
+        "PROXY_CACHE_RETENTION_DAYS_TOOLTIP": "Bewahren Sie Artefakte aus allen Repositorys auf, die in den letzten N Tagen abgerufen wurden. Die Richtlinie wird täglich ausgeführt. Geben Sie 0 ein, damit alle zwischengespeicherten Artefakte gelöscht werden können. Sie können die Richtlinie nach der Erstellung unter Tag Retention bearbeiten.",
+        "PROXY_CACHE_RETENTION_DAYS_INVALID": "Geben Sie eine ganze Zahl von 0 bis 18250 ein.",
         "CONNECTION_LIMIT": "Max. Verbindungen zur Upstream-Registry",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "Die maximale Anzahl der Verbindungen zur Upstream-Registry für dieses Proxy-Cache-Projekt. -1 bedeutet keine Begrenzung",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Bitte geben Sie -1 oder eine Ganzzahl größer als 0 ein.",
-        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Veraltete Inhalte bereitstellen, wenn der Upstream nicht verfügbar ist",
-        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Aktivieren Sie diese Option, damit dieses Projekt weiterhin zwischengespeicherte Inhalte bereitstellt, auch wenn das Artefakt im Upstream-Registry nicht gefunden wird oder das Upstream-Registry nicht verfügbar ist. Dies kann dazu führen, dass veraltete Inhalte bereitgestellt werden, wenn das Upstream-Registry nicht verfügbar ist.",
-        "NO_PROJECT": "Es konnte kein Projekt gefunden werden",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Veraltete Inhalte lokal bereitstellen",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Aktivieren Sie diese Option, damit dieses Projekt weiterhin zwischengespeicherte Inhalte bereitstellt, auch wenn das Artefakt im Upstream-Registry nicht gefunden wird. Dies kann dazu führen, dass veraltete Inhalte bereitgestellt werden.",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Repository-Filter",
+        "REPOSITORY_FILTER_TOOLTIP": "Optionaler Filter zur Begrenzung der aus dem Upstream-Registry gecachten Repositories. 'Doublestar' (Standard) verwendet Glob-Muster mit ** Unterstützung (z. B. library/**). 'Regex' verwendet reguläre Ausdrücke, das Muster muss mit dem vollständigen Repository-Pfad übereinstimmen (z. B. ^library/.*). Gilt nur für aktuelle Proxy-Cache-Projekte.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "z. B. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "REPOSITORY_FILTER_REGEX_INVALID": "Das reguläre Ausdrucksmuster ist ungültig.",
+        "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "Das Doublestar-Muster hat unausgeglichene Klammern oder geschweifte Klammern.",
+        "NO_PROJECT": "Es konnte kein Projekt gefunden werden"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Zusammenfassung",
@@ -1046,6 +1056,7 @@
         "COPY_ERROR": "Kopieren fehlgeschlagen, bitte die Befehlsreferenz manuell kopieren."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Abgeleitet von der Signatur des übergeordneten Index. Dieses Artefakt ist nicht direkt signiert.",
         "FILTER_FOR_ARTIFACTS": "Filter Artefakte",
         "ADDITIONS": "Hinzufügungen",
         "ANNOTATION": "Annotationen",

@@ -243,15 +243,25 @@
         "PROXY_CACHE_TOOLTIP": "Habilite esta opción para permitir que este proyecto actúe como caché proxy para una instancia de registro de destino en particular.",
         "ENDPOINT": "Endpoint",
         "PROXY_CACHE_ENDPOINT": "Proxy Cache Endpoint",
+        "PROXY_CACHE_RETENTION_DAYS": "Período de retención (días)",
+        "PROXY_CACHE_RETENTION_DAYS_TOOLTIP": "Conserve los artefactos descargados en los últimos N días en todos los repositorios. La política se ejecuta diariamente. Introduzca 0 para que todos los artefactos en caché puedan eliminarse. Puede editar la política en Retención de Tag después de crear el proyecto.",
+        "PROXY_CACHE_RETENTION_DAYS_INVALID": "Introduzca un número entero entre 0 y 18250.",
         "CONNECTION_LIMIT": "Conexión máxima al registro de origen",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_TIP": "La conexión máxima al registro de origen para este proyecto de caché de proxy, si es -1, entonces no hay límite",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP": "Por favor, ingrese -1 o un número entero mayor que 0.",
         "PROXY_CACHE_MAX_UPSTREAM_CONN_PLACEHOLDER": "Por favor, ingrese -1 o un número entero mayor que 0.",
-        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir contenido en caché cuando el registro de origen no está disponible",
-        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opción para permitir que este proyecto continúe sirviendo contenido en caché incluso si el artefacto no se encuentra en el registro de origen o si el registro de origen no está disponible. Esto puede provocar que se sirva contenido obsoleto si el registro de origen no está disponible.",
-        "NO_PROJECT": "No pudimos encontrar ningún proyecto",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND": "Servir contenido obsoleto localmente",
+        "PROXY_CACHE_LOCAL_ON_NOT_FOUND_TOOLTIP": "Habilite esta opción para permitir que este proyecto continúe sirviendo contenido en caché incluso si el artefacto no se encuentra en el registro de origen. Esto puede provocar que se sirva contenido obsoleto.",
         "PROXY_REFERRER_API_TIP": "Enable this to proxy OCI 1.1 referrer API requests to the upstream registry.",
-        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API"
+        "PROXY_REFERRER_API_LABEL": "Enable proxy for referrer API",
+        "REPOSITORY_FILTER": "Filtro de repositorio",
+        "REPOSITORY_FILTER_TOOLTIP": "Filtro opcional para limitar qué repositorios se almacenan en caché del registro de origen. 'Doublestar' (predeterminado) usa patrones glob con soporte ** (ej. library/**). 'Regex' usa expresiones regulares, el patrón debe coincidir con la ruta completa del repositorio (ej. ^library/.*). Solo se aplica a proyectos de caché proxy actuales.",
+        "REPOSITORY_FILTER_PLACEHOLDER": "ej. library/**",
+        "FILTER_KIND_REGEX": "Regex",
+        "FILTER_KIND_DOUBLESTAR": "Doublestar",
+        "REPOSITORY_FILTER_REGEX_INVALID": "El patrón de expresión regular no es válido.",
+        "REPOSITORY_FILTER_DOUBLESTAR_INVALID": "El patrón doublestar tiene corchetes o llaves no balanceados.",
+        "NO_PROJECT": "No pudimos encontrar ningún proyecto"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Resumen",
@@ -1049,6 +1059,7 @@
         "COPY_ERROR": "Copiar fallido, por favor intenta copiar manualmente las referencias del comando."
     },
     "ARTIFACT": {
+        "INHERITED_SIGNATURE": "Derivada de la firma del índice padre. Este artefacto no está firmado directamente.",
         "FILTER_FOR_ARTIFACTS": "Filtrar Artifacts",
         "ADDITIONS": "Adiciones",
         "ANNOTATION": "Anotaciones",

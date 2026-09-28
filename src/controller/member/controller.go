@@ -120,6 +120,10 @@ func (c *controller) Get(ctx context.Context, projectNameOrID any, memberID int)
 }
 
 func (c *controller) Create(ctx context.Context, projectNameOrID any, req Request) (int, error) {
+	if req.MemberUser.UserID <= 0 && len(req.MemberUser.Username) == 0 &&
+		req.MemberGroup.ID <= 0 && len(req.MemberGroup.GroupName) == 0 && len(req.MemberGroup.LdapGroupDN) == 0 {
+		return 0, errors.BadRequestError(nil).WithMessage("at least one of member_user or member_group must be provided")
+	}
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return 0, err

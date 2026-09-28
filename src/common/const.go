@@ -254,6 +254,9 @@ const (
 	// manifests are sub-MiB in practice, so 4MiB is a generous ceiling.
 	MaxManifestBodySize = 4 << 20
 
+	// MaxAuditLogPayloadSize bounds the audit log payload size.
+	MaxAuditLogPayloadSize = 4 << 20
+
 	// Global Leeway used for token validation
 	JwtLeeway = 60 * time.Second
 
