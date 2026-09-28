@@ -94,7 +94,7 @@ func (m *memberAPI) GetProjectMember(ctx context.Context, params operation.GetPr
 	}
 
 	if params.Mid == 0 {
-		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("the member id can not be empty!"))
+		return m.SendError(ctx, errors.BadRequestError(nil).WithMessage("Member ID cannot be empty"))
 	}
 
 	member, err := m.ctl.Get(ctx, projectNameOrID, int(params.Mid))
