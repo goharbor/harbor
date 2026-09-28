@@ -67,6 +67,9 @@ func init() {
 	_ = notifier.Subscribe(event.TopicDeleteTag, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicCreateRobot, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicDeleteRobot, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicCreateRole, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicDeleteRole, &auditlog.Handler{})
+	_ = notifier.Subscribe(event.TopicUpdateRole, &auditlog.Handler{})
 	_ = notifier.Subscribe(event.TopicCommonEvent, &auditlog.Handler{})
 
 	// internal
