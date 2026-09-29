@@ -8388,14 +8388,16 @@ definitions:
       created_at:
         type: string
         format: date-time
-        description: When the role was created
+        x-nullable: true
+        description: When the role was created. Absent for the roles Harbor ships, which a migration creates rather than a user.
       modified_by:
         type: string
         description: Username of the admin who last modified the role
       modified_at:
         type: string
         format: date-time
-        description: When the role was last modified
+        x-nullable: true
+        description: When the role was last modified. Absent until the role is modified.
   RoleCreate:
     type: object
     description: The request for role creation.
