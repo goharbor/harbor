@@ -15,389 +15,57 @@
 package project
 
 import (
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/rbac"
-	rolectl "github.com/goharbor/harbor/src/controller/role"
+	"path"
+	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/permission/policy"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
-var (
-	rolePoliciesMap = map[string][]*types.Policy{
-		"projectAdmin": {
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
-
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
-
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
-
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionStop},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
-
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
-			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionRead},
-			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourcePreatPolicy, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
-		},
-
-		"maintainer": {
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
-
-			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceScan, Action: rbac.ActionStop},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionStop},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
-			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
-		},
-
-		"developer": {
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
-
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
-			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
-			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
-
-			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
-
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceExportCVE, Action: rbac.ActionList},
-		},
-
-		"guest": {
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
-			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
-			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
-		},
-
-		"limitedGuest": {
-			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-
-			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceSBOM, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
-
-			{Resource: rbac.ResourceTag, Action: rbac.ActionList},
-			{Resource: rbac.ResourceAccessory, Action: rbac.ActionList},
-
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
-			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
-		},
-	}
-)
-
-// projectRBACRole implement the RBACRole interface
+// projectRBACRole is one role a visitor holds in one project.
+//
+// It carries the role id project_member stores and the project the membership
+// is in. What the role grants is not here: it is in the database, and the
+// policy store holds it in memory for the life of the process.
 type projectRBACRole struct {
 	projectID int64
-	roleID    int
-	// custom is set only for custom (non-built-in) roles; its permissions are
-	// loaded from the database. Built-in roles leave it nil and resolve their
-	// policies from rolePoliciesMap, exactly as before the custom-roles feature.
-	custom *rolectl.Role
+	roleID    int64
 }
 
-// GetRoleName returns role name for the visitor role
-func (role *projectRBACRole) GetRoleName() string {
-	if role.custom != nil {
-		return role.custom.Name
-	}
-	switch role.roleID {
-	case common.RoleProjectAdmin:
-		return "projectAdmin"
-	case common.RoleMaintainer:
-		return "maintainer"
-	case common.RoleDeveloper:
-		return "developer"
-	case common.RoleGuest:
-		return "guest"
-	case common.RoleLimitedGuest:
-		return "limitedGuest"
-	default:
-		return ""
-	}
+// GetRoleName returns how this role appears to the policy store.
+//
+// There is no switch on the role id here and no list of the ids Harbor happens
+// to ship. A role id is looked up the same way whether it is 1 or 4001.
+func (r *projectRBACRole) GetRoleName() string {
+	return policy.Subject(r.roleID)
 }
 
-// GetPolicies returns policies for the visitor role
-func (role *projectRBACRole) GetPolicies() []*types.Policy {
-	policies := []*types.Policy{}
-
-	// Custom role: permissions are loaded from the database. Baseline project
-	// visibility (self:read) is not added here — it is granted to any project
-	// member in rbacUser.GetPolicies, so built-in and custom roles obtain it the
-	// same way.
-	if role.custom != nil {
-		namespace := NewNamespace(role.projectID)
-		for _, permission := range role.custom.Permissions {
-			for _, policy := range permission.Access {
-				policies = append(policies, &types.Policy{
-					Resource: namespace.Resource(policy.Resource),
-					Action:   policy.Action,
-					Effect:   policy.Effect,
-				})
-			}
-		}
-		return policies
+// PolicyObject maps a resource in this project into the object space the
+// role's grants are written against.
+//
+// A role grants the same thing in every project it is held in, so the grant is
+// stored against /project/:pid and the question is asked against /project/:pid
+// too. A resource belonging to a different project is out of this membership's
+// reach and is refused here rather than being left to the matcher.
+func (r *projectRBACRole) PolicyObject(resource types.Resource) (types.Resource, bool) {
+	relative, err := resource.RelativeTo(NewNamespace(r.projectID).Resource())
+	if err != nil {
+		return "", false
 	}
-
-	roleName := role.GetRoleName()
-	if roleName == "" {
-		return policies
+	if relative == "." {
+		return types.Resource(policy.Namespace), true
 	}
-
-	namespace := NewNamespace(role.projectID)
-	for _, policy := range rolePoliciesMap[roleName] {
-		policies = append(policies, &types.Policy{
-			Resource: namespace.Resource(policy.Resource),
-			Action:   policy.Action,
-			Effect:   policy.Effect,
-		})
+	// Subresource joins, and joining cleans the path, so a ".." here would
+	// climb back out of the project the membership is in and land on another
+	// one. Only a path that is already canonical is mapped.
+	if rel := relative.String(); rel != path.Clean(rel) || rel == ".." || strings.HasPrefix(rel, "../") {
+		return "", false
 	}
-
-	return policies
+	return types.Resource(policy.Namespace).Subresource(relative), true
 }
 
-// isBuiltinProjectRole reports whether roleID is one of the fixed built-in
-// project roles, whose policies are resolved from rolePoliciesMap without a
-// database lookup. Any other role ID denotes a custom role stored in the DB.
-func isBuiltinProjectRole(roleID int) bool {
-	switch roleID {
-	case common.RoleProjectAdmin, common.RoleMaintainer, common.RoleDeveloper,
-		common.RoleGuest, common.RoleLimitedGuest:
-		return true
-	default:
-		return false
-	}
-}
-
-// BuiltinRolePolicies returns the (un-namespaced) project policies granted by the
-// built-in role with the given ID (1-5), or nil if roleID is not a built-in role.
-// Built-in permissions live only in the compile-time rolePoliciesMap — there are
-// no role_permission rows for them — so callers that need a built-in role's
-// permission set (e.g. anti-escalation checks) must use this rather than a DB
-// lookup, which would report a built-in role as permissionless.
-func BuiltinRolePolicies(roleID int) []*types.Policy {
-	if !isBuiltinProjectRole(roleID) {
-		return nil
-	}
-	return rolePoliciesMap[(&projectRBACRole{roleID: roleID}).GetRoleName()]
+// GetPolicies is not on the permission path any more. It stays for the
+// interface and for the APIs that report what a role grants.
+func (r *projectRBACRole) GetPolicies() []*types.Policy {
+	return nil
 }

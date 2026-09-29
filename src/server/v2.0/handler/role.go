@@ -22,7 +22,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
@@ -152,7 +151,6 @@ func (rAPI *roleAPI) ListRole(ctx context.Context, params operation.ListRolePara
 
 	var results []*models.Role
 	for _, r := range roles {
-		fillBuiltinPermissions(r)
 		results = append(results, model.NewRole(r).ToSwagger())
 	}
 
@@ -173,31 +171,8 @@ func (rAPI *roleAPI) GetRoleByID(ctx context.Context, params operation.GetRoleBy
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
-	fillBuiltinPermissions(r)
 
 	return operation.NewGetRoleByIDOK().WithPayload(model.NewRole(r).ToSwagger())
-}
-
-// fillBuiltinPermissions populates a built-in role's permissions from the
-// compile-time rolePoliciesMap. Built-in roles have no role_permission rows in
-// the database (that is the whole point of the hybrid design), so the DB-backed
-// controller reports them as permissionless; the read API must resolve them
-// from code so GET /roles(/{id}) shows a built-in's real permission set instead
-// of an empty one. Custom roles are left untouched — their permissions come
-// from the database via the controller.
-func fillBuiltinPermissions(r *role.Role) {
-	if r == nil || !r.IsBuiltin {
-		return
-	}
-	policies := rbacProject.BuiltinRolePolicies(int(r.ID))
-	if len(policies) == 0 {
-		return
-	}
-	r.Permissions = []*role.Permission{{
-		Kind:      role.LEVELROLE,
-		Namespace: "*",
-		Access:    policies,
-	}}
 }
 
 func (rAPI *roleAPI) UpdateRole(ctx context.Context, params operation.UpdateRoleParams) middleware.Responder {

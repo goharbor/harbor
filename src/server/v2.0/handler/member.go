@@ -22,7 +22,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common/rbac"
-	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/controller/member"
 	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
@@ -187,22 +186,16 @@ func (m *memberAPI) UpdateProjectMember(ctx context.Context, params operation.Up
 
 // checkNoEscalation rejects role assignments where the target role has permissions the caller lacks.
 func (m *memberAPI) checkNoEscalation(ctx context.Context, projectNameOrID any, roleID int64) error {
-	// Collect the (resource, action) pairs the target role grants. Built-in roles
-	// (IDs 1-5) have no role_permission rows — their permissions live only in the
-	// compile-time policy map — so they must be synthesized here. Reading them from
-	// the DB would report a built-in role as permissionless and let a caller assign
-	// e.g. projectAdmin without holding its permissions.
+	// Collect the (resource, action) pairs the target role grants. Every role
+	// has role_permission rows now, the five Harbor ships included, so there is
+	// one way to ask what a role grants.
 	var accesses []*types.Policy
-	if builtin := rbacProject.BuiltinRolePolicies(int(roleID)); builtin != nil {
-		accesses = builtin
-	} else {
-		r, err := m.roleCtl.Get(ctx, roleID, &roleCtl.Option{WithPermission: true})
-		if err != nil {
-			return err
-		}
-		for _, perm := range r.Permissions {
-			accesses = append(accesses, perm.Access...)
-		}
+	r, err := m.roleCtl.Get(ctx, roleID, &roleCtl.Option{WithPermission: true})
+	if err != nil {
+		return err
+	}
+	for _, perm := range r.Permissions {
+		accesses = append(accesses, perm.Access...)
 	}
 	for _, acc := range accesses {
 		// Deny entries restrict access rather than grant it, so the caller need
