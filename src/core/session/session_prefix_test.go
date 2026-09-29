@@ -47,6 +47,22 @@ func TestSessionKeyPrefix(t *testing.T) {
 	exist, _ := p.SessionExist(ctx, "prefix-001")
 	require.True(t, exist)
 
+	// SessionReleaseIfPresent (SetXX) updates the prefixed key when present...
+	require.NoError(t, store.Set(ctx, "k2", "v2"))
+	store.SessionReleaseIfPresent(ctx, nil)
+	store, err = p.SessionRead(ctx, "prefix-001")
+	require.NoError(t, err)
+	require.Equal(t, "v2", store.Get(ctx, "k2"))
+	require.EqualValues(t, 0, raw.Exists(ctx, "prefix-001").Val())
+
+	// ...and writes nothing when the session is absent.
+	absent, err := p.SessionRead(ctx, "prefix-002")
+	require.NoError(t, err)
+	require.NoError(t, absent.Set(ctx, "k", "v"))
+	absent.SessionReleaseIfPresent(ctx, nil)
+	require.EqualValues(t, 0, raw.Exists(ctx, "harbor:session:prefix-002").Val())
+	require.EqualValues(t, 0, raw.Exists(ctx, "prefix-002").Val())
+
 	// SessionRegenerate renames through the raw client as well.
 	store, err = p.SessionRegenerate(ctx, "prefix-001", "prefix-002")
 	require.NoError(t, err)
