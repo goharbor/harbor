@@ -1619,6 +1619,8 @@
     "PURGE_AUDIT": "Очистка Аудита",
     "JOBSERVICE_MONITOR": "Мониторинг заданий",
     "TAG_RETENTION": "Сохранение тегов",
+    "CONFIGURATION": "Конфигурация",
+    "OPERATE": "Выполнить",
     "SCANNER": "Сканер",
     "LABEL": "Метка",
     "EXPORT_CVE": "Экспорт CVE",

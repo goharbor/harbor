@@ -377,6 +377,8 @@
         "PURGE_AUDIT": "퍼지 감사",
         "JOBSERVICE_MONITOR": "작업 서비스 모니터링",
         "TAG_RETENTION": "태그 유지",
+        "CONFIGURATION": "설정",
+        "OPERATE": "실행",
         "SCANNER": "스캐너",
         "LABEL": "라벨",
         "EXPORT_CVE": "CVE 내보내기",
