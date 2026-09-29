@@ -18,7 +18,9 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gocraft/work"
 	"go.opentelemetry.io/otel/attribute"
@@ -30,14 +32,16 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/metric"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
 
 const (
-	maxTrackRetries = 6
-	tracerName      = "goharbor/harbor/src/jobservice/runner/redis"
+	maxTrackRetries    = 6
+	tracerName         = "goharbor/harbor/src/jobservice/runner/redis"
+	maxLogLinesExtract = 3
 )
 
 // RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis worker.
@@ -124,7 +128,8 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 			metric.JobserviceTotalTask.WithLabelValues(j.Name, "fail").Inc()
 			metric.JobservieTaskProcessTimeSummary.WithLabelValues(j.Name, "fail").Observe(time.Since(now).Seconds())
 			tracelib.RecordError(span, err, "job failed with err")
-			if er := tracker.Fail(); er != nil {
+			errMsg := extractLastLinesFromLog(jID, maxLogLinesExtract, err)
+			if er := tracker.Fail(errMsg); er != nil {
 				logger.Errorf("Error occurred when marking the status of job %s:%s to failure: %s", j.Name, j.ID, er)
 				span.RecordError(err)
 			}
@@ -272,3 +277,78 @@ func backoff(x int) int {
 
 	return y
 }
+
+func cleanErrorMessage(errMsg string) string {
+	msg := strings.TrimSpace(errMsg)
+	if len(msg) == 0 {
+		return ""
+	}
+	fields := strings.Fields(msg)
+	msg = strings.Join(fields, " ")
+	const maxLen = 512
+	return lib.TruncateUTF8(msg, maxLen)
+}
+
+func extractLastLinesFromLog(jobID string, maxLines int, runErr error) string {
+	if len(jobID) > 0 && maxLines > 0 {
+		if logBytes, err := logger.Retrieve(jobID); err == nil && len(logBytes) > 0 {
+			if logMsg := extractLastLogLines(logBytes, maxLines); len(logMsg) > 0 {
+				return logMsg
+			}
+		}
+	}
+	if runErr != nil {
+		return cleanErrorMessage(runErr.Error())
+	}
+	return ""
+}
+
+func extractLastLogLines(logBytes []byte, maxLines int) string {
+	if len(logBytes) == 0 || maxLines <= 0 {
+		return ""
+	}
+
+	content := strings.ToValidUTF8(string(logBytes), "")
+	content = strings.ReplaceAll(content, "\r\n", "\n")
+	content = strings.ReplaceAll(content, "\r", "\n")
+	rawLines := strings.Split(content, "\n")
+
+	var lines []string
+	for i := len(rawLines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(rawLines[i])
+		if len(line) == 0 {
+			continue
+		}
+		lines = append(lines, line)
+		if len(lines) >= maxLines {
+			break
+		}
+	}
+
+	if len(lines) == 0 {
+		return ""
+	}
+
+	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {
+		lines[i], lines[j] = lines[j], lines[i]
+	}
+
+	res := strings.Join(lines, "\n")
+	const maxLen = 4096
+	if len(res) > maxLen {
+		target := maxLen - 3
+		start := len(res) - target
+		for start < len(res) && !utf8.RuneStart(res[start]) {
+			start++
+		}
+		tail := res[start:]
+		if idx := strings.Index(tail, "\n"); idx != -1 {
+			res = "..." + tail[idx:]
+		} else {
+			res = "..." + tail
+		}
+	}
+	return res
+}
+
+

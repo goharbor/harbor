@@ -23,6 +23,18 @@ body {
     word-wrap: break-word;
 }
 
+.status-message-tooltip {
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 250px;
+    overflow-y: auto;
+    display: block;
+    text-align: left;
+    font-family: monospace;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
 .modal-header {
     padding: 0;
 }

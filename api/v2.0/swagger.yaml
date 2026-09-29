@@ -8043,6 +8043,9 @@ definitions:
       status:
         type: string
         description: The status of the task
+      status_message:
+        type: string
+        description: The status message of the task
       job_id:
         type: string
         description: The ID of the underlying job that the task related to
