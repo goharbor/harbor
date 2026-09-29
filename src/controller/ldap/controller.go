@@ -64,7 +64,7 @@ func (c *controller) Session(ctx context.Context) (*ldap.Session, error) {
 func (c *controller) Ping(ctx context.Context, cfg models.LdapConf) (bool, error) {
 	// an empty request means "test the configuration currently saved in the system",
 	// so load it instead of pinging with an empty URL
-	if len(cfg.URL) == 0 {
+	if cfg == (models.LdapConf{}) {
 		sysCfg, err := config.LDAPConf(ctx)
 		if err != nil {
 			return false, err
