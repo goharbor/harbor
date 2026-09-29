@@ -518,7 +518,7 @@ Test Case - Replication Triggered By Events
     Go Into Repo  project${d}  ${image2}
     Should Not Be Signed  ${tag2}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Inherited Signed  ${image2_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -531,7 +531,7 @@ Test Case - Replication Triggered By Events
     Go Into Repo  project_dest${d}  ${image2}
     Should Not Be Signed  ${tag2}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Inherited Signed  ${image2_short_sha256}
     Logout Harbor
     # delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
