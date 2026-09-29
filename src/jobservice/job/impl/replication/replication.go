@@ -39,6 +39,8 @@ import (
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/gitlab"
 	// import googlegcr adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegcr"
+	// import googlegar adapter
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/googlegar"
 	// import harbor adapter
 	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/harbor"
 	// import huawei adapter
