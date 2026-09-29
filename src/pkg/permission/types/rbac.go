@@ -20,6 +20,12 @@ type RBACRole interface {
 	GetRoleName() string
 	// GetPolicies returns the policies of the role
 	GetPolicies() []*Policy
+	// PolicyObject maps a resource into the object space this role's grants are
+	// written against, and reports false when the resource is out of the role's
+	// reach. A project role holds the same grants in every project it is held
+	// in, so it maps /project/57/repository to /project/*/repository and
+	// refuses a resource belonging to any other project.
+	PolicyObject(Resource) (Resource, bool)
 }
 
 // RBACUser the interface of rbac user

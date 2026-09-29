@@ -19,12 +19,13 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/permission/policy"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
 // TestScopeRoleCatalogMatchesProjectAdmin guards against drift between the
-// hand-written ScopeRole catalog (common/rbac/const.go) and the projectAdmin
-// built-in role: a custom role's permission ceiling is exactly what a project
+// hand-written ScopeRole catalog (common/rbac/const.go) and what the roles
+// Harbor ships grant between them: a custom role's permission ceiling is exactly what a project
 // admin can hold, minus self:{read,update,delete} (project view/edit/delete,
 // which are never selectable custom-role permissions — baseline visibility is
 // granted by membership instead). If a new project resource is added to
@@ -42,7 +43,7 @@ func TestScopeRoleCatalogMatchesProjectAdmin(t *testing.T) {
 	}
 
 	projectAdmin := map[string]bool{}
-	for _, p := range rolePoliciesMap["projectAdmin"] {
+	for _, p := range policy.ProjectPolicies() {
 		if p.Resource == rbac.ResourceSelf {
 			continue
 		}

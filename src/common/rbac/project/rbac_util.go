@@ -16,6 +16,7 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/permission/policy"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
 
@@ -77,17 +78,5 @@ func GetPoliciesOfProject(projectID int64) []*types.Policy {
 }
 
 func computeSubPoliciesForProject() []*types.Policy {
-	var results []*types.Policy
-
-	mp := map[string]bool{}
-	for _, policies := range rolePoliciesMap {
-		for _, policy := range policies {
-			if !mp[policy.String()] {
-				results = append(results, policy)
-				mp[policy.String()] = true
-			}
-		}
-	}
-
-	return results
+	return policy.ProjectPolicies()
 }

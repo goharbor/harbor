@@ -23,7 +23,7 @@ import (
 type rbacUser struct {
 	project      *models.Project
 	username     string
-	projectRoles []*projectRBACRole
+	projectRoles []int
 	policies     []*types.Policy
 }
 
@@ -36,12 +36,10 @@ func (pru *rbacUser) GetUserName() string {
 func (pru *rbacUser) GetPolicies() []*types.Policy {
 	policies := pru.policies
 
-	// Any member of the project — i.e. a user assigned at least one role in it —
-	// can view the project itself (self:read gates GetProject/RequireProjectAccess).
-	// Built-in roles also carry self:read in rolePoliciesMap; granting it here
-	// makes baseline visibility a property of membership, so custom roles (whose
-	// self:* is intentionally not selectable in the ScopeRole catalog) obtain it
-	// too, without seeding anything into the database.
+	// Visibility that comes with membership rather than with a role: anyone
+	// holding at least one role in a project can see the project exists. From
+	// #23804, where it stopped a custom role being unable to view the project
+	// it is scoped to.
 	if len(pru.projectRoles) > 0 {
 		policies = append(policies, &types.Policy{
 			Resource: NewNamespace(pru.project.ProjectID).Resource(rbac.ResourceSelf),
@@ -59,8 +57,8 @@ func (pru *rbacUser) GetPolicies() []*types.Policy {
 // GetRoles returns roles of the visitor
 func (pru *rbacUser) GetRoles() []types.RBACRole {
 	roles := []types.RBACRole{}
-	for _, r := range pru.projectRoles {
-		roles = append(roles, r)
+	for _, roleID := range pru.projectRoles {
+		roles = append(roles, &projectRBACRole{projectID: pru.project.ProjectID, roleID: int64(roleID)})
 	}
 
 	return roles
