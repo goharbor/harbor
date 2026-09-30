@@ -8397,7 +8397,7 @@ definitions:
         type: string
         format: date-time
         x-nullable: true
-        description: When the role was last modified. Absent until the role is modified.
+        description: When the role was last modified. Absent when no modification timestamp has been recorded.
   RoleCreate:
     type: object
     description: The request for role creation.
