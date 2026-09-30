@@ -140,3 +140,22 @@ func TestTheShippedRolesGrantWhatTheyAlwaysDid(t *testing.T) {
 	assert.Equal(t, 53, counts[4], "maintainer")
 	assert.Equal(t, 14, counts[5], "limitedGuest")
 }
+
+// A deny stored in permission_policy has to stay a deny. The loader reads the
+// effect column, so a row the seeder never wrote cannot arrive as an allow.
+func TestADenyGrantIsNotTurnedIntoAnAllow(t *testing.T) {
+	store, err := policy.NewInMemory([]policy.Grant{
+		{RoleID: 1, Resource: "repository", Action: "pull"},
+		{RoleID: 1, Resource: "repository", Action: "push"},
+		{RoleID: 1, Resource: "repository", Action: "push", Effect: "deny"},
+	})
+	require.NoError(t, err)
+
+	granted, err := store.Enforce(policy.Subject(1), policy.Object("repository"), "pull")
+	require.NoError(t, err)
+	assert.True(t, granted, "an allow with no deny beside it still grants")
+
+	granted, err = store.Enforce(policy.Subject(1), policy.Object("repository"), "push")
+	require.NoError(t, err)
+	assert.False(t, granted, "the deny wins over the allow on the same permission")
+}
