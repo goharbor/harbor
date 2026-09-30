@@ -1935,7 +1935,7 @@
         "LIST": "List",
         "READ": "Read",
         "STOP": "Stop",
-        "ROLE_NAV": "User Roles",
+        "ROLE_NAV": "Roles",
         "NAME": "Name",
         "PERMISSIONS": "Permissions",
         "TOKEN": "Secret",
