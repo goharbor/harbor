@@ -23,9 +23,7 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AppConfigService } from '../../../../services/app-config.service';
-import {
-    GroupType,
-} from '../../../../shared/entities/shared.const';
+import { GroupType } from '../../../../shared/entities/shared.const';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { UsergroupService } from '../../../../../../ng-swagger-gen/services/usergroup.service';
 import { of, Subject, Subscription } from 'rxjs';
@@ -36,7 +34,6 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
 import { getAllRoles } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
-
 
 @Component({
     selector: 'add-group',
@@ -91,7 +88,6 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             }
         });
 
-        
         if (!this.groupCheckerSub) {
             this.groupCheckerSub = this.groupChecker
                 .pipe(

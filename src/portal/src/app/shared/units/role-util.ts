@@ -43,7 +43,9 @@ export function getAllRoles(roleService: RoleService): Observable<Role[]> {
                         roleService.ListRole({ page, pageSize: ROLE_PAGE_SIZE })
                     );
                 }
-                return forkJoin(rest).pipe(map(pages => first.concat(...pages)));
+                return forkJoin(rest).pipe(
+                    map(pages => first.concat(...pages))
+                );
             })
         );
 }
