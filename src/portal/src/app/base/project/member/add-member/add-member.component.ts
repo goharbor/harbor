@@ -36,7 +36,6 @@ import { RoleService } from '../../../../../../ng-swagger-gen/services/role.serv
 import { getAllRoles } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
-
 @Component({
     selector: 'add-member',
     templateUrl: 'add-member.component.html',
@@ -68,7 +67,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
 
     roles: Role[];
 
-
     constructor(
         private roleService: RoleService,
         private memberService: MemberService,
@@ -76,9 +74,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         private messageHandlerService: MessageHandlerService,
         private route: ActivatedRoute
     ) {}
-
-
-
 
     ngOnInit(): void {
         // Initialize unconditionally. The parent page already gates opening this
@@ -200,9 +195,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.nameChecker.next(username);
         this.searchedUserLists = [];
     }
-
-
-
 
     onCancel() {
         this.addMemberOpened = false;
