@@ -16,6 +16,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -31,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/pushcount"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tagmodel "github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -38,6 +40,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	artMock "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	projectMock "github.com/goharbor/harbor/src/testing/pkg/project"
+	pushCountMock "github.com/goharbor/harbor/src/testing/pkg/project/pushcount"
 	reportMock "github.com/goharbor/harbor/src/testing/pkg/scan/report"
 	taskMock "github.com/goharbor/harbor/src/testing/pkg/task"
 )
@@ -114,8 +117,27 @@ func (suite *ArtifactHandlerTestSuite) TestDefaultAsyncFlushDuration() {
 
 // TestOnPush tests handle push events.
 func (suite *ArtifactHandlerTestSuite) TestOnPush() {
-	err := suite.handler.onPush(suite.ctx, &event.ArtifactEvent{Artifact: &artifact.Artifact{ProjectID: 1}})
+	defer common_dao.GetOrmer().Raw("DELETE FROM project_push_count WHERE project_id = 1").Exec()
+
+	before, err := pushcount.Mgr.Get(suite.ctx, 1)
+	suite.Nil(err)
+	err = suite.handler.onPush(suite.ctx, &event.ArtifactEvent{Artifact: &artifact.Artifact{ProjectID: 1}})
 	suite.Nil(err, "onPush should return nil")
+	// push count should be increased synchronously
+	after, err := pushcount.Mgr.Get(suite.ctx, 1)
+	suite.Nil(err)
+	suite.Equal(before+1, after, "onPush should increase the project push count")
+}
+
+// TestOnPushCountError tests that a push count failure does not fail the push handling.
+func (suite *ArtifactHandlerTestSuite) TestOnPushCountError() {
+	pushCountMgr := &pushCountMock.Manager{}
+	pushCountMgr.On("Add", mock.Anything, int64(2), uint64(1)).Return(errors.New("db unavailable")).Once()
+	handler := &ArtifactEventHandler{execMgr: suite.execMgr, reportMgr: suite.reportMgr, artMgr: suite.artMgr, pushCountMgr: pushCountMgr}
+
+	err := handler.onPush(suite.ctx, &event.ArtifactEvent{Artifact: &artifact.Artifact{ProjectID: 2}})
+	suite.Nil(err, "onPush should return nil even if the push count update fails")
+	pushCountMgr.AssertExpectations(suite.T())
 }
 
 // TestOnPull tests handler pull events.

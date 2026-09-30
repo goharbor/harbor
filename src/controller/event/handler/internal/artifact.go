@@ -36,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	pkgArt "github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/project/pushcount"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/sbom"
@@ -79,6 +80,8 @@ type ArtifactEventHandler struct {
 	sbomReportMgr sbom.Manager
 	// artMgr for managing artifacts
 	artMgr pkgArt.Manager
+	// pushCountMgr for managing project push counts
+	pushCountMgr pushcount.Manager
 
 	once sync.Once
 	// pullCountStore caches the pull count group by repository
@@ -286,6 +289,15 @@ func (a *ArtifactEventHandler) asyncFlushPullCount(ctx context.Context) {
 }
 
 func (a *ArtifactEventHandler) onPush(ctx context.Context, event *event.ArtifactEvent) error {
+	pushCountMgr := pushcount.Mgr
+	// for UT mock
+	if a.pushCountMgr != nil {
+		pushCountMgr = a.pushCountMgr
+	}
+	if err := pushCountMgr.Add(ctx, event.Artifact.ProjectID, 1); err != nil {
+		log.Warningf("failed to add push count for project %d, %v", event.Artifact.ProjectID, err)
+	}
+
 	go func() {
 		if event.Operator != "" {
 			ctx = context.WithValue(ctx, operator.ContextKey{}, event.Operator)
