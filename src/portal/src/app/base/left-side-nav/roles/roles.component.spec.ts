@@ -22,12 +22,8 @@ import { Role } from '../../../../../ng-swagger-gen/models/role';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { OperationService } from '../../../shared/components/operation/operation.service';
 import { ConfirmationDialogService } from '../../global-confirmation-dialog/confirmation-dialog.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
-import { ClarityModule } from '@clr/angular';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateService } from '@ngx-translate/core';
+import { SharedTestingModule } from '../../../shared/shared.module';
 import { SysteminfoService } from '../../../../../ng-swagger-gen/services/systeminfo.service';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 
@@ -65,14 +61,7 @@ describe('RolesComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [
-                TranslateModule.forRoot(),
-                CommonModule,
-                ClarityModule,
-                HttpClientTestingModule,
-                RouterTestingModule,
-                BrowserAnimationsModule,
-            ],
+            imports: [SharedTestingModule],
             declarations: [RolesComponent],
             providers: [
                 TranslateService,
@@ -130,48 +119,54 @@ describe('RolesComponent', () => {
     });
 
     describe('action button disabled state', () => {
-        it('edit button is disabled when a built-in role is selected', async () => {
-            fixture.autoDetectChanges();
-            await fixture.whenStable();
-            component.selectedRows = [builtinRole];
+        // The ACTION menu is behind *clrIfOpen, so its buttons do not exist in
+        // the DOM until the dropdown has been opened.
+        async function actionButton(id: string): Promise<HTMLButtonElement> {
             fixture.detectChanges();
-            const editBtn: HTMLButtonElement = fixture.nativeElement
-                .querySelector('#system-robot-edit')
-                ?.closest('button');
-            expect(editBtn?.disabled).toBeTrue();
+            await fixture.whenStable();
+            const trigger: HTMLElement =
+                fixture.nativeElement.querySelector('clr-dropdown');
+            expect(trigger).withContext('ACTION dropdown').toBeTruthy();
+            trigger.click();
+            fixture.detectChanges();
+            await fixture.whenStable();
+            fixture.detectChanges();
+
+            // Clarity renders the open menu in an overlay on document.body,
+            // not inside the fixture's own element.
+            const button = document
+                .querySelector(`#${id}`)
+                ?.closest('button') as HTMLButtonElement;
+            expect(button).withContext(`#${id}`).toBeTruthy();
+            return button;
+        }
+
+        it('edit button is disabled when a built-in role is selected', async () => {
+            component.selectedRows = [builtinRole];
+            expect(
+                (await actionButton('system-robot-edit')).disabled
+            ).toBeTrue();
         });
 
         it('edit button is enabled when a custom role is selected', async () => {
-            fixture.autoDetectChanges();
-            await fixture.whenStable();
             component.selectedRows = [customRole];
-            fixture.detectChanges();
-            const editBtn: HTMLButtonElement = fixture.nativeElement
-                .querySelector('#system-robot-edit')
-                ?.closest('button');
-            expect(editBtn?.disabled).toBeFalse();
+            expect(
+                (await actionButton('system-robot-edit')).disabled
+            ).toBeFalse();
         });
 
         it('delete button is disabled when a built-in role is selected', async () => {
-            fixture.autoDetectChanges();
-            await fixture.whenStable();
             component.selectedRows = [builtinRole];
-            fixture.detectChanges();
-            const deleteBtn: HTMLButtonElement = fixture.nativeElement
-                .querySelector('#system-robot-delete')
-                ?.closest('button');
-            expect(deleteBtn?.disabled).toBeTrue();
+            expect(
+                (await actionButton('system-robot-delete')).disabled
+            ).toBeTrue();
         });
 
         it('delete button is disabled when a mix of built-in and custom roles is selected', async () => {
-            fixture.autoDetectChanges();
-            await fixture.whenStable();
             component.selectedRows = [builtinRole, customRole];
-            fixture.detectChanges();
-            const deleteBtn: HTMLButtonElement = fixture.nativeElement
-                .querySelector('#system-robot-delete')
-                ?.closest('button');
-            expect(deleteBtn?.disabled).toBeTrue();
+            expect(
+                (await actionButton('system-robot-delete')).disabled
+            ).toBeTrue();
         });
     });
 });
