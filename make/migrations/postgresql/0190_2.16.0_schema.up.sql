@@ -19,3 +19,14 @@ ALTER SEQUENCE robot_id_seq AS bigint MAXVALUE 9007199254740991;
 
 CREATE INDEX IF NOT EXISTS idx_sbom_report_sbom_digest
   ON sbom_report (mime_type, ((report::jsonb ->> 'sbom_digest')));
+
+/*
+Per-project push counter backing the harbor_artifact_pushed_total metric, issue #23200.
+The artifact table only holds current state, so an independent counter is needed
+to stay monotonic across artifact and repository deletions.
+*/
+CREATE TABLE IF NOT EXISTS project_push_count (
+  project_id int PRIMARY KEY REFERENCES project(project_id) ON DELETE CASCADE,
+  push_count bigint NOT NULL DEFAULT 0,
+  update_time timestamp DEFAULT CURRENT_TIMESTAMP
+);

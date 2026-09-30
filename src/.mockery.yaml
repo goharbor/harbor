@@ -224,6 +224,11 @@ packages:
       Manager:
         config:
           dir: testing/pkg/project/metadata
+  github.com/goharbor/harbor/src/pkg/project/pushcount:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/project/pushcount
   github.com/goharbor/harbor/src/pkg/quota:
     interfaces:
       Manager:
