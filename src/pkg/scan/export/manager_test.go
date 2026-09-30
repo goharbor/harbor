@@ -125,6 +125,7 @@ func (suite *ExportManagerSuite) TestExport() {
 		suite.Equal(10, len(data))
 		for _, datum := range data {
 			suite.Equal("{\"CVSS\": {\"nvd\": {\"V2Score\": \"4.3\"}}}", datum.AdditionalData)
+			suite.Equal("latest", datum.Tags)
 		}
 	}
 }
@@ -139,7 +140,152 @@ func (suite *ExportManagerSuite) TestExportWithCVEFilter() {
 		suite.NoError(err)
 		suite.Equal(1, len(data))
 		suite.Equal(p.CVEIds, data[0].CVEId)
+		suite.Equal("latest", data[0].Tags)
 	}
+}
+
+func (suite *ExportManagerSuite) TestExportWithMultipleTags() {
+	// Add a second tag to artifact 1
+	repoId := suite.testDataId.repositoryId[0]
+	artId := suite.testDataId.artifactId[0]
+	secondTag := &tag.Tag{
+		RepositoryID: repoId,
+		ArtifactID:   artId,
+		Name:         "alpha",
+		PushTime:     time.Time{},
+		PullTime:     time.Time{},
+	}
+	secondTagId, err := suite.tagDao.Create(suite.Context(), secondTag)
+	suite.NoError(err)
+	defer func() {
+		_ = suite.tagDao.Delete(suite.Context(), secondTagId)
+	}()
+
+	p := Params{
+		ArtifactIDs: []int64{artId},
+		CVEIds:      "CVE-ID2",
+	}
+	data, err := suite.exportManager.Fetch(suite.Context(), p)
+	suite.NoError(err)
+	suite.Equal(1, len(data))
+	// Deterministic tag ordering: "alpha,latest"
+	suite.Equal("alpha,latest", data[0].Tags)
+}
+
+func (suite *ExportManagerSuite) TestExportWithUntaggedArtifact() {
+	repoId := suite.testDataId.repositoryId[0]
+	untaggedDigest := "sha256:untaggedartifactdigest1234567890abcdef"
+
+	// Create an artifact without any tag
+	art := &artifactDao.Artifact{
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.docker.container.image.v1+json",
+		ManifestMediaType: "application/vnd.docker.distribution.manifest.v2+json",
+		ProjectID:         1,
+		RepositoryID:      repoId,
+		RepositoryName:    "library/ubuntu",
+		Digest:            untaggedDigest,
+		Size:              1024,
+	}
+	artId, err := suite.artifactDao.Create(suite.Context(), art)
+	suite.NoError(err)
+	defer func() {
+		_ = suite.artifactDao.Delete(suite.Context(), artId)
+	}()
+
+	// Create scan report and vulnerability record for the untagged artifact
+	reportUUID := "untaggedReportUUID"
+	r := &daoscan.Report{
+		UUID:             reportUUID,
+		Digest:           untaggedDigest,
+		RegistrationUUID: RegistrationUUID,
+		MimeType:         v1.MimeTypeGenericVulnerabilityReport,
+		Status:           job.PendingStatus.String(),
+	}
+	_, err = suite.scanDao.Create(suite.Context(), r)
+	suite.NoError(err)
+	defer func() {
+		_, _ = suite.scanDao.DeleteMany(suite.Context(), q.Query{Keywords: q.KeyWords{"uuid": reportUUID}})
+		_, _ = suite.vulnDao.DeleteForReport(suite.Context(), reportUUID)
+	}()
+
+	vuln := &daoscan.VulnerabilityRecord{
+		CVEID:            "CVE-UNTAGGED-1",
+		Package:          "untagged-pkg",
+		PackageVersion:   "1.0",
+		Severity:         "Low",
+		RegistrationUUID: RegistrationUUID,
+	}
+	suite.insertVulnRecordForReport(reportUUID, vuln)
+
+	// Fetch export data for untagged artifact
+	p := Params{
+		ArtifactIDs: []int64{artId},
+	}
+	data, err := suite.exportManager.Fetch(suite.Context(), p)
+	suite.NoError(err)
+	// Verify LEFT JOIN does NOT drop untagged artifacts, and Tags is empty string
+	suite.Equal(1, len(data))
+	suite.Equal("CVE-UNTAGGED-1", data[0].CVEId)
+	suite.Equal("", data[0].Tags)
+}
+
+func (suite *ExportManagerSuite) TestExportWithMultipleArtifactReferencesAndTags() {
+	repoId := suite.testDataId.repositoryId[0]
+	artId := suite.testDataId.artifactId[0]
+
+	// Add second tag "beta"
+	secondTag := &tag.Tag{
+		RepositoryID: repoId,
+		ArtifactID:   artId,
+		Name:         "beta",
+	}
+	secondTagId, err := suite.tagDao.Create(suite.Context(), secondTag)
+	suite.NoError(err)
+	defer func() {
+		_ = suite.tagDao.Delete(suite.Context(), secondTagId)
+	}()
+
+	// Create a parent artifact (e.g. index/manifest list) referencing artId
+	parentArt := &artifactDao.Artifact{
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.index.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.index.v1+json",
+		ProjectID:         1,
+		RepositoryID:      repoId,
+		RepositoryName:    "library/ubuntu",
+		Digest:            "sha256:parentmanifestindex1234567890abcdef",
+		Size:              2048,
+	}
+	parentArtId, err := suite.artifactDao.Create(suite.Context(), parentArt)
+	suite.NoError(err)
+	defer func() {
+		_ = suite.artifactDao.Delete(suite.Context(), parentArtId)
+	}()
+
+	// Add a second artifact reference pointing to artId
+	secondArtRef := &artifactDao.ArtifactReference{
+		ParentID:    parentArtId, // Parent referencing the child artifact
+		ChildID:     artId,
+		ChildDigest: "sha256:e3d7ff9efd8431d9ef39a144c45992df5502c995b9ba3c53ff70c5b52a848d9c",
+		Platform:    `{"architecture":"arm64","os":"linux"}`,
+	}
+	secondRefId, err := suite.artifactDao.CreateReference(suite.Context(), secondArtRef)
+	suite.NoError(err)
+	defer func() {
+		_ = suite.artifactDao.DeleteReference(suite.Context(), secondRefId)
+	}()
+
+	p := Params{
+		ArtifactIDs: []int64{artId},
+		CVEIds:      "CVE-ID2",
+	}
+	data, err := suite.exportManager.Fetch(suite.Context(), p)
+	suite.NoError(err)
+	// Verify: no row multiplication occurred despite multiple artifact_references and multiple tags
+	suite.Equal(1, len(data))
+	// Verify: DISTINCT in string_agg prevents duplicate tag entries ("beta,latest")
+	suite.Equal("beta,latest", data[0].Tags)
 }
 
 func (suite *ExportManagerSuite) registerScanner(registrationUUID string) {
