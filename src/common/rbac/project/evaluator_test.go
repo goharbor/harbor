@@ -283,3 +283,26 @@ func BenchmarkProjectEvaluatorParallel(b *testing.B) {
 		}
 	})
 }
+
+// A resource naming another project is out of a membership's reach, including
+// when it reaches that project through ".." segments that mapping the resource
+// into the role's object space would otherwise clean away.
+func TestTraversalDoesNotReachAnotherProject(t *testing.T) {
+	policytesting.Seed(t)
+	assert := assert.New(t)
+
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(public, nil)
+	mock.OnAnything(ctl, "ListRoles").Return([]int{common.RoleProjectAdmin}, nil)
+
+	user := &models.User{UserID: 1, Username: "username"}
+	evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl))
+
+	ctx := context.TODO()
+	assert.True(evaluator.HasPermission(ctx,
+		NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository), rbac.ActionPush))
+	assert.False(evaluator.HasPermission(ctx,
+		types.Resource("/project/1/../../project/2/repository"), rbac.ActionPush))
+	assert.False(evaluator.HasPermission(ctx,
+		types.Resource("/project/1/../2/repository"), rbac.ActionPush))
+}

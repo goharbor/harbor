@@ -248,3 +248,53 @@ func TestIntegrationAReplicaThatWasNeverToldStillConverges(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, changed, "nothing changed, so nothing is reloaded")
 }
+
+// Both tables are shared with robot accounts, and a robot is written one row
+// per grant. If those writes bumped the version, every core in the fleet would
+// reload the project-role policy each time anyone created a robot.
+func TestIntegrationARobotWriteLeavesTheFleetAlone(t *testing.T) {
+	conn := dsn(t)
+	writer := open(t, conn, "test-robot-writer")
+	reader := replica(t, conn, "test-robot-reader")
+	require.NoError(t, reader.EnsureSeeded(context.Background()))
+
+	var policyID int64
+	require.NoError(t, writer.QueryRow(
+		`INSERT INTO permission_policy (scope, resource, action, effect)
+		 VALUES ('/project/*', 'repository', 'stop', 'allow')
+		 ON CONFLICT ON CONSTRAINT unique_rbac_policy
+		 DO UPDATE SET scope = EXCLUDED.scope
+		 RETURNING id`).Scan(&policyID))
+
+	version := reader.AppliedVersion()
+	generation := reader.Generation()
+
+	// A robot's own link, and a second write to the policy row behind it.
+	_, err := writer.Exec(
+		`INSERT INTO role_permission (role_type, role_id, permission_policy_id) VALUES ('robot', 4242, $1)`,
+		policyID)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = writer.Exec(`DELETE FROM role_permission WHERE role_type = 'robot' AND role_id = 4242`)
+	})
+	_, err = writer.Exec(`UPDATE permission_policy SET effect = 'allow' WHERE id = $1`, policyID)
+	require.NoError(t, err)
+
+	time.Sleep(500 * time.Millisecond)
+
+	var current int64
+	require.NoError(t, writer.QueryRow(`SELECT version FROM policy_version WHERE only_row`).Scan(&current))
+	assert.Equal(t, version, current, "a robot write does not move the policy version")
+	assert.Equal(t, generation, reader.Generation(), "and no replica reloaded")
+
+	// The same policy row linked to a project role does reach the fleet.
+	_, err = writer.Exec(
+		`INSERT INTO role_permission (role_type, role_id, permission_policy_id) VALUES ($1, 3, $2)`,
+		policy.RoleType, policyID)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = writer.Exec(
+			`DELETE FROM role_permission WHERE role_id = 3 AND permission_policy_id = $1`, policyID)
+	})
+	waitFor(t, 5*time.Second, func() bool { return reader.Generation() > generation })
+}
