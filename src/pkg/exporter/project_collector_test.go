@@ -17,9 +17,12 @@ import (
 	"github.com/goharbor/harbor/src/pkg/member"
 	memberModels "github.com/goharbor/harbor/src/pkg/member/models"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/project/pushcount"
 	qtypes "github.com/goharbor/harbor/src/pkg/quota/types"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/user"
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -111,6 +114,10 @@ func setupTest(t *testing.T) {
 	if err != nil {
 		t.Errorf("add repo error %v", err)
 	}
+	// Record pushes; the counter must not follow the current artifact count
+	if err = pushcount.Mgr.Add(ctx, testPro1.ProjectID, 3); err != nil {
+		t.Errorf("add push count error %v", err)
+	}
 	// Add member to project
 	pmIDs = make([]int, 0)
 	alice.UserID, bob.UserID, eve.UserID = int(aliceID), int(bobID), int(eveID)
@@ -136,6 +143,7 @@ func tearDownTest(t *testing.T) {
 	dao.GetOrmer().Raw("delete from project_metadata where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from quota where reference=\"project\" and reference_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from quota_usage where reference=\"project\" and reference_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
+	dao.GetOrmer().Raw("delete from project_push_count where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from project where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from artifact where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
 	dao.GetOrmer().Raw("delete from repository where project_id in (?, ?, ?)", []int64{testPro1.ProjectID, testPro2.ProjectID, testPro3.ProjectID}).Exec()
@@ -153,6 +161,7 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	updateProjectMemberInfo(pMap)
 	updateProjectRepoInfo(pMap)
 	updateProjectArtifactInfo(pMap)
+	updateProjectPushInfo(pMap)
 
 	c.Equalf(testPro1.ProjectID, pMap[testPro1.ProjectID].ProjectID, "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].ProjectID, testPro1.ProjectID, "pMap %v", pMap)
@@ -162,6 +171,7 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro1.ProjectID].Usage, "{\"storage\": 0}", "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].MemberTotal, float64(2), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	c.Equalf(pMap[testPro1.ProjectID].PushTotal, float64(3), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 	c.Equalf(pMap[testPro1.ProjectID].Artifact["IMAGE"].ArtifactType, "IMAGE", "pMap %v", pMap)
 
@@ -172,6 +182,8 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(pMap[testPro2.ProjectID].Usage, "{\"storage\": 0}", "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].MemberTotal, float64(3), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].PullTotal, float64(0), "pMap %v", pMap)
+	// no pushes recorded yet, the counter defaults to 0
+	c.Equalf(pMap[testPro2.ProjectID].PushTotal, float64(0), "pMap %v", pMap)
 	c.Equalf(pMap[testPro2.ProjectID].Artifact["IMAGE"].ArtifactTotal, float64(1), "pMap %v", pMap)
 
 	// testPro3 has no quota records (simulates quota_per_project_enable=false).
@@ -186,4 +198,30 @@ func (c *ProjectCollectorTestSuite) TestProjectCollector() {
 	c.Equalf(getQuotaValue(pMap[testPro3.ProjectID].Quota), float64(-1), "unlimited quota should parse to -1")
 	c.Equalf(pMap[testPro3.ProjectID].Usage, "{}", "project without quota record should have empty usage")
 
+}
+
+func (c *ProjectCollectorTestSuite) TestCollectArtifactPushed() {
+	ch := make(chan prometheus.Metric, 1024)
+	NewProjectCollector().Collect(ch)
+	close(ch)
+
+	pushed := make(map[string]*dto.Metric)
+	for m := range ch {
+		if m.Desc() != artifactPushTotal.Desc() {
+			continue
+		}
+		d := &dto.Metric{}
+		c.Require().NoError(m.Write(d))
+		c.Require().Len(d.Label, 1)
+		c.Equal("project_name", d.Label[0].GetName())
+		pushed[d.Label[0].GetValue()] = d
+	}
+
+	// every live project exposes the series, including those without pushes
+	for name, want := range map[string]float64{testPro1.Name: 3, testPro2.Name: 0, testPro3.Name: 0} {
+		if c.Containsf(pushed, name, "missing artifact_pushed_total for project %s", name) {
+			c.NotNilf(pushed[name].Counter, "artifact_pushed_total of %s should be a counter", name)
+			c.Equalf(want, pushed[name].GetCounter().GetValue(), "artifact_pushed_total of %s", name)
+		}
+	}
 }

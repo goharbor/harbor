@@ -49,6 +49,9 @@ var (
 	FROM project INNER JOIN artifact ON project.project_id=artifact.project_id
 	WHERE project.deleted=FALSE
 	GROUP BY artifact.project_id, type;`
+	projectPushSQL = `SELECT project_push_count.project_id, project_push_count.push_count AS push_total
+	FROM project INNER JOIN project_push_count ON project.project_id=project_push_count.project_id
+	WHERE project.deleted=FALSE;`
 )
 var (
 	projectTotal = typedDesc{
@@ -76,6 +79,10 @@ var (
 		desc:      newDescWithLables("", "artifact_pulled", "The pull number of an artifact", "project_name"),
 		valueType: prometheus.GaugeValue,
 	}
+	artifactPushTotal = typedDesc{
+		desc:      newDescWithLables("", "artifact_pushed_total", "Total number of artifact pushes into a project, unaffected by deletions", "project_name"),
+		valueType: prometheus.CounterValue,
+	}
 	projectArtifactTotal = typedDesc{
 		desc:      newDescWithLables("", "project_artifact_total", "Total project artifacts number", "project_name", "public", "artifact_type"),
 		valueType: prometheus.GaugeValue,
@@ -100,6 +107,7 @@ func (hc *ProjectCollector) Describe(c chan<- *prometheus.Desc) {
 	c <- projectRepoTotal.Desc()
 	c <- projectMemberTotal.Desc()
 	c <- artifactPullTotal.Desc()
+	c <- artifactPushTotal.Desc()
 	c <- projectArtifactTotal.Desc()
 }
 
@@ -115,6 +123,7 @@ func (hc *ProjectCollector) Collect(c chan<- prometheus.Metric) {
 		c <- projectMemberTotal.MustNewConstMetric(p.MemberTotal, p.Name)
 		c <- projectRepoTotal.MustNewConstMetric(p.RepoTotal, p.Name, getPublicValue(p.Public))
 		c <- artifactPullTotal.MustNewConstMetric(p.PullTotal, p.Name)
+		c <- artifactPushTotal.MustNewConstMetric(p.PushTotal, p.Name)
 		for _, a := range p.Artifact {
 			c <- projectArtifactTotal.MustNewConstMetric(a.ArtifactTotal, p.Name, getPublicValue(p.Public), a.ArtifactType)
 		}
@@ -145,6 +154,7 @@ type projectInfo struct {
 	MemberTotal float64 `orm:"column(member_total)"`
 	RepoTotal   float64 `orm:"column(repo_total)"`
 	PullTotal   float64 `orm:"column(pull_total)"`
+	PushTotal   float64 `orm:"column(push_total)"`
 	Artifact    map[string]artifactInfo
 }
 type artifactInfo struct {
@@ -190,6 +200,7 @@ func getProjectInfo() *projectOverviewInfo {
 	updateProjectMemberInfo(pMap)
 	updateProjectRepoInfo(pMap)
 	updateProjectArtifactInfo(pMap)
+	updateProjectPushInfo(pMap)
 
 	overview.projectTotals = pc
 	overview.ProjectMap = pMap
@@ -247,6 +258,19 @@ func updateProjectArtifactInfo(projectMap map[int64]*projectInfo) {
 			projectMap[a.ProjectID].Artifact[a.ArtifactType] = a
 		} else {
 			log.Errorf("%v, ID %d", errProjectNotFound, a.ProjectID)
+		}
+	}
+}
+
+func updateProjectPushInfo(projectMap map[int64]*projectInfo) {
+	pList := make([]projectInfo, 0)
+	_, err := dao.GetOrmer().Raw(projectPushSQL).QueryRows(&pList)
+	checkErr(err, "get project push data from DB failure")
+	for _, p := range pList {
+		if _, ok := projectMap[p.ProjectID]; ok {
+			projectMap[p.ProjectID].PushTotal = p.PushTotal
+		} else {
+			log.Errorf("%v, ID %d", errProjectNotFound, p.ProjectID)
 		}
 	}
 }
