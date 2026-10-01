@@ -157,9 +157,8 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		}
 	}
 
-	// REM from redis db
-	// Accurately remove the item with the specified score
-	removed, err := redis.Int64(conn.Do("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
+	// Policies registered at the same time can share the numeric ID, so only the member with this policy ID is removed.
+	removed, err := redis.Int64(rds.RemovePolicyScript.Do(conn, rds.KeyPeriodicPolicy(bs.namespace), numericID, policyID))
 	if err != nil {
 		return errors.Wrap(err, "unschedule periodic job error")
 	}
