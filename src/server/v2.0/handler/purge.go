@@ -156,10 +156,10 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 		return p.SendError(ctx, err)
 	}
 	query, err := p.BuildQuery(ctx, params.Q, params.Sort, params.Page, params.PageSize)
-	query.Keywords["VendorType"] = job.PurgeAuditVendorType
 	if err != nil {
 		return p.SendError(ctx, err)
 	}
+	query.Keywords["VendorType"] = job.PurgeAuditVendorType
 	total, err := p.executionCtl.Count(ctx, query)
 	if err != nil {
 		return p.SendError(ctx, err)
