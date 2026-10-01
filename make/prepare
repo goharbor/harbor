@@ -49,6 +49,7 @@ fi
 # Create secret dir
 secret_dir=${data_path}/secret
 config_dir=$harbor_prepare_path/common/config
+mkdir -p "$config_dir"
 
 # Set the prepare base dir, for mac, it should be $HOME, for linux, it should be /
 # The certificate and the data directory in harbor.yaml should be sub directories of $HOME when installing Harbor in MacOS
@@ -58,13 +59,34 @@ if [ "$(uname)" == "Darwin" ]; then
 fi
 
 # Run prepare script
-docker run --rm -v $input_dir:/input \
-                    -v $data_path:/data \
-                    -v $harbor_prepare_path:/compose_location \
-                    -v $config_dir:/config \
-                    -v ${prepare_base_dir}:/hostfs${prepare_base_dir} \
+container_runtime=${CONTAINER_RUNTIME:-}
+if [ -z "$container_runtime" ]; then
+    if command -v docker >/dev/null 2>&1; then
+        container_runtime=docker
+    elif command -v podman >/dev/null 2>&1; then
+        container_runtime=podman
+    else
+        echo "Docker or Podman is required to prepare Harbor."
+        exit 1
+    fi
+fi
+
+runtime_options=()
+if [ "$container_runtime" = "podman" ]; then
+    # The prepare container needs the host root for certificate and data paths.
+    # Disable SELinux separation for this privileged, short-lived container
+    # instead of relabeling the host root filesystem.
+    runtime_options+=(--security-opt label=disable)
+fi
+
+"$container_runtime" run --rm "${runtime_options[@]}" \
+                    -v "$input_dir:/input" \
+                    -v "$data_path:/data" \
+                    -v "$harbor_prepare_path:/compose_location" \
+                    -v "$config_dir:/config" \
+                    -v "${prepare_base_dir}:/hostfs${prepare_base_dir}" \
                     --privileged \
-                    goharbor/prepare:dev prepare $@
+                    goharbor/prepare:dev prepare "$@"
 
 echo "Clean up the input dir"
 # Clean up input dir

@@ -39,7 +39,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
 * **Auditing**: All the operations to the repositories are tracked through logs.
 * **RESTful API**: RESTful APIs are provided to facilitate administrative operations, and are easy to use for integration with external systems. An embedded Swagger UI is available for exploring and testing the API.
-* **Easy deployment**: Harbor can be deployed via Docker compose as well Helm Chart, and a Harbor Operator was added recently as well.
+* **Easy deployment**: Harbor can be deployed via Docker Compose or Podman Compose, as well as with the Helm chart or Harbor Operator.
 
 ## Architecture
 
@@ -53,13 +53,34 @@ For learning the architecture design of Harbor, check the document [Architecture
 ## Install & Run
 **System requirements:**
 
-**On a Linux host:** docker 20.10.10-ce+ and docker-compose 1.18.0+.
+**On a Linux host:** Docker 20.10.10-ce+ with Docker Compose 1.18.0+, or Podman with Podman Compose.
 
 Download binaries of **[Harbor release ](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](https://goharbor.io/docs/latest/install-config/)** to install Harbor.
 
 If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
 
 Refer to the **[documentation](https://goharbor.io/docs/)** for more details on how to use Harbor.
+
+### Installing with Podman
+
+The installer detects Docker first, then Podman. To select Podman explicitly, run
+`sudo CONTAINER_RUNTIME=podman ./install.sh` (add `--with-trivy` to enable scanning).
+Install `podman-compose` first; the installer also accepts a configured `podman compose` provider.
+This uses Podman directly, without a Docker compatibility wrapper. Rootless installation is not validated.
+
+On SELinux hosts, generated bind mounts use the shared `z` label, including the
+long-form Compose equivalent `bind.selinux: z`. Harbor services share files such as
+`common/config/shared/trust-certificates`; a private `Z` label can prevent another
+service from accessing those same files when containers use different SELinux labels.
+Shared relabeling keeps those paths accessible to the containers that mount them,
+while SELinux remains enabled on the host. Use dedicated Harbor directories: `z`
+does not provide per-container SELinux isolation for their shared contents.
+
+The short-lived, already-privileged `prepare` container is different: it mounts the
+host root at `/hostfs` to resolve configured certificate and data paths. For Podman,
+it uses `--security-opt label=disable` for that container only; it must not recursively
+relabel the host root with `z` or `Z`.
+
 ### Verifying Release Signatures
 Starting with v2.15.0, Harbor release artifacts are cryptographically signed using Cosign to ensure authenticity and integrity.
 
