@@ -47,7 +47,9 @@ func (h *Handler) Handle(ctx context.Context, value any) error {
 	case *event.PushArtifactEvent, *event.DeleteArtifactEvent,
 		*event.DeleteRepositoryEvent, *event.CreateProjectEvent, *event.DeleteProjectEvent,
 		*event.DeleteTagEvent, *event.CreateTagEvent,
-		*event.CreateRobotEvent, *event.DeleteRobotEvent, *evtModel.CommonEvent:
+		*event.CreateRobotEvent, *event.DeleteRobotEvent,
+		*event.CreateRoleEvent, *event.UpdateRoleEvent, *event.DeleteRoleEvent,
+		*evtModel.CommonEvent:
 		addAuditLog = true
 	case *event.PullArtifactEvent:
 		addAuditLog = !config.PullAuditLogDisable(ctx)
