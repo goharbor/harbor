@@ -3,7 +3,9 @@
 package proxy
 
 import (
+	context "context"
 	io "io"
+	http "net/http"
 
 	distribution "github.com/docker/distribution"
 	mock "github.com/stretchr/testify/mock"
@@ -51,6 +53,36 @@ func (_m *RemoteInterface) BlobReader(repo string, dig string) (int64, io.ReadCl
 	}
 
 	return r0, r1, r2
+}
+
+// BlobReaderRange provides a mock function with given fields: ctx, repo, dig, byteRange, ifRange
+func (_m *RemoteInterface) BlobReaderRange(ctx context.Context, repo string, dig string, byteRange string, ifRange string) (*http.Response, error) {
+	ret := _m.Called(ctx, repo, dig, byteRange, ifRange)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BlobReaderRange")
+	}
+
+	var r0 *http.Response
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) (*http.Response, error)); ok {
+		return rf(ctx, repo, dig, byteRange, ifRange)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) *http.Response); ok {
+		r0 = rf(ctx, repo, dig, byteRange, ifRange)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*http.Response)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string) error); ok {
+		r1 = rf(ctx, repo, dig, byteRange, ifRange)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // ListReferrers provides a mock function with given fields: repo, digest, rawQuery
