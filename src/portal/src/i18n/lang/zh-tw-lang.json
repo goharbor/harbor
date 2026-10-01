@@ -377,6 +377,8 @@
         "PURGE_AUDIT": "清除稽核記錄",
         "JOBSERVICE_MONITOR": "工作服務監控器",
         "TAG_RETENTION": "標籤保留",
+        "CONFIGURATION": "組態設定",
+        "OPERATE": "操作",
         "SCANNER": "掃描器",
         "LABEL": "標籤",
         "EXPORT_CVE": "匯出 CVE",
