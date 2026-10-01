@@ -219,6 +219,7 @@ func (s *Session) Open() error {
 		tc := &tls.Config{
 			ServerName:         host,
 			InsecureSkipVerify: !s.basicCfg.VerifyCert,
+			MinVersion:         tls.VersionTLS12,
 		}
 		ldap, err := goldap.DialURL(ldapURL, goldap.DialWithTLSConfig(tc))
 		if err != nil {
