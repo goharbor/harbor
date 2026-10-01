@@ -71,4 +71,22 @@ describe('ArtifactAdditionsComponent', () => {
             fixture.nativeElement.querySelector('#vulnerability');
         expect(tabButton).toBeTruthy();
     });
+
+    it('should render VEX tab and set it active by default when vex is the only addition', async () => {
+        component.tab = '';
+        component.activeTab = '';
+        component.additionLinks = {
+            vex: {
+                absolute: false,
+                href: CURRENT_BASE_HREF + '/vex',
+            },
+        };
+        component.ngOnInit();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.currentTabLinkId).toBe('vex');
+        const tabButton: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#vex');
+        expect(tabButton).toBeTruthy();
+    });
 });
