@@ -293,17 +293,24 @@ func (_m *mockTaskDAO) Update(ctx context.Context, _a1 *dao.Task, props ...strin
 	return r0
 }
 
-// UpdateStatus provides a mock function with given fields: ctx, id, status, statusRevision
-func (_m *mockTaskDAO) UpdateStatus(ctx context.Context, id int64, status string, statusRevision int64) error {
-	ret := _m.Called(ctx, id, status, statusRevision)
+// UpdateStatus provides a mock function with given fields: ctx, id, status, statusRevision, statusMessage
+func (_m *mockTaskDAO) UpdateStatus(ctx context.Context, id int64, status string, statusRevision int64, statusMessage ...string) error {
+	_va := make([]interface{}, len(statusMessage))
+	for _i := range statusMessage {
+		_va[_i] = statusMessage[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, id, status, statusRevision)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateStatus")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string, int64) error); ok {
-		r0 = rf(ctx, id, status, statusRevision)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, int64, ...string) error); ok {
+		r0 = rf(ctx, id, status, statusRevision, statusMessage...)
 	} else {
 		r0 = ret.Error(0)
 	}

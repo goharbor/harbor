@@ -216,7 +216,7 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 				// Mark job status to be error
 				// If this happened, the job stats is definitely becoming dirty data at job service side.
 				// For the consumer side, the retrying of web hook may fix the problem.
-				if err := eTracker.Fail(); err != nil {
+				if err := eTracker.Fail(fmt.Sprintf("put execution of periodic job to queue error: %s", err)); err != nil {
 					e.lastEnqueueErr = err
 					logger.Errorf("Mark execution '%s' to failure status error: %s", execution.Info.JobID, err)
 				}

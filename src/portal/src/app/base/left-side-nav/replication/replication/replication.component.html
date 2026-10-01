@@ -149,9 +149,11 @@
                             }
                             <clr-tooltip-content
                                 [clrPosition]="'left'"
-                                clrSize="md"
+                                clrSize="lg"
                                 *clrIfOpen>
-                                <span>{{ j.status_text }}</span>
+                                <span class="status-message-tooltip">{{
+                                    j.status_text
+                                }}</span>
                             </clr-tooltip-content>
                         </clr-tooltip>
                     </clr-dg-cell>

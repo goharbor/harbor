@@ -174,7 +174,7 @@ func (r *reaper) syncOutdatedStats() error {
 				if time.Unix(t.Job().Info.UpdateTime, 0).Add(config.MaxUpdateDuration()).Before(time.Now()) {
 					// Status hung
 					// Mark job status to error state
-					if err = t.Fail(); err != nil {
+					if err = t.Fail("job hung for longer than max allowed duration"); err != nil {
 						return
 					}
 

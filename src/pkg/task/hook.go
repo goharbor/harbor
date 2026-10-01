@@ -98,7 +98,15 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 	}
 
 	// update task status
-	if err = h.taskDAO.UpdateStatus(ctx, task.ID, sc.Status, sc.Metadata.Revision); err != nil {
+	statusMessage := sc.StatusMessage
+	if len(statusMessage) == 0 && sc.Metadata != nil {
+		statusMessage = sc.Metadata.StatusMessage
+	}
+	var statusMsgArgs []string
+	if len(statusMessage) > 0 || sc.Status == job.ErrorStatus.String() {
+		statusMsgArgs = append(statusMsgArgs, statusMessage)
+	}
+	if err = h.taskDAO.UpdateStatus(ctx, task.ID, sc.Status, sc.Metadata.Revision, statusMsgArgs...); err != nil {
 		return err
 	}
 	// run the status change post function

@@ -222,6 +222,44 @@ func (t *taskDAOTestSuite) TestUpdateStatus() {
 	t.Equal(job.RunningStatus.Code(), task.StatusCode)
 	t.Equal(statusRevision, task.StatusRevision)
 	t.Equal(time.Time{}, task.EndTime)
+
+	// update status to error with status message
+	status = job.ErrorStatus.String()
+	errMsg := "413 Quota Exceeded"
+	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
+	t.Require().Nil(err)
+
+	task, err = t.taskDAO.Get(t.ctx, t.taskID)
+	t.Require().Nil(err)
+	t.Equal(status, task.Status)
+	t.Equal(job.ErrorStatus.Code(), task.StatusCode)
+	t.Equal(errMsg, task.StatusMessage)
+
+	// update status to error with empty message (stale message should be cleared)
+	status = job.ErrorStatus.String()
+	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, "")
+	t.Require().Nil(err)
+
+	task, err = t.taskDAO.Get(t.ctx, t.taskID)
+	t.Require().Nil(err)
+	t.Equal(status, task.Status)
+	t.Equal(job.ErrorStatus.Code(), task.StatusCode)
+	t.Equal("", task.StatusMessage)
+
+	// update status to error with message again
+	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision, errMsg)
+	t.Require().Nil(err)
+	task, err = t.taskDAO.Get(t.ctx, t.taskID)
+	t.Require().Nil(err)
+	t.Equal(errMsg, task.StatusMessage)
+
+	// update status to success (message should be cleared)
+	status = job.SuccessStatus.String()
+	err = t.taskDAO.UpdateStatus(t.ctx, t.taskID, status, statusRevision)
+	t.Require().Nil(err)
+	task, err = t.taskDAO.Get(t.ctx, t.taskID)
+	t.Require().Nil(err)
+	t.Equal("", task.StatusMessage)
 }
 
 func (t *taskDAOTestSuite) TestDelete() {
