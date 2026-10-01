@@ -16,6 +16,7 @@ package gc
 
 import (
 	"context"
+	"os"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -80,7 +81,20 @@ func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (
 	para["delete_tag"] = policy.DeleteTag
 	para["dry_run"] = policy.DryRun
 	para["workers"] = policy.Workers
-	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
+	// Prefer the current redis URL from the environment over the value in
+	// policy.ExtraAttrs: for a scheduled GC, ExtraAttrs is the policy that was
+	// JSON-marshaled into the schedule at creation time, so it can go stale if
+	// the redis endpoint changes later. Start runs in the core process, which
+	// is where _REDIS_URL_REG is defined (see src/lib/redis/client.go). Fall
+	// back to the persisted value if the environment variable isn't set, e.g.
+	// when Start is invoked outside the standard core deployment.
+	redisURL := os.Getenv("_REDIS_URL_REG")
+	if redisURL == "" && policy.ExtraAttrs != nil {
+		if v, ok := policy.ExtraAttrs["redis_url_reg"].(string); ok {
+			redisURL = v
+		}
+	}
+	para["redis_url_reg"] = redisURL
 	para["time_window"] = policy.ExtraAttrs["time_window"]
 
 	execID, err := c.exeMgr.Create(ctx, job.GarbageCollectionVendorType, -1, trigger, para)
