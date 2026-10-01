@@ -32,6 +32,9 @@ import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
+import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
+import { getAllRoles } from '../../../../shared/units/role-util';
+import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
     selector: 'add-member',
@@ -56,12 +59,16 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     searcher: Subject<string> = new Subject<string>();
     nameCheckerSub: Subscription;
     searcherSub: Subscription;
+    roleSub: Subscription;
     checkOnGoing: boolean = false;
     searchedUserLists: UserResp[] = [];
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     roleId: number = 1; // default value is 1(project admin)
 
+    roles: Role[];
+
     constructor(
+        private roleService: RoleService,
         private memberService: MemberService,
         private userService: UserService,
         private messageHandlerService: MessageHandlerService,
@@ -69,74 +76,73 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        let resolverData = this.route.snapshot.parent.parent.data;
-        let hasProjectAdminRole: boolean;
-        if (resolverData) {
-            hasProjectAdminRole = (<Project>resolverData['projectResolver'])
-                .has_project_admin_role;
+        // Initialize unconditionally. The parent page already gates opening this
+        // dialog on the effective member:create permission — which a custom role
+        // can grant, not only project admins — so this component must not re-gate
+        // on has_project_admin_role, which left such users with an empty picker.
+        this.roleSub = getAllRoles(this.roleService).subscribe(res => {
+            if (res) {
+                this.roles = res;
+            }
+        });
+
+        if (!this.searcherSub) {
+            this.searcherSub = this.searcher
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            return this.userService.searchUsers({
+                                page: 1,
+                                pageSize: 10,
+                                username: name,
+                            });
+                        } else {
+                            return of([]);
+                        }
+                    })
+                )
+                .subscribe(res => {
+                    if (res) {
+                        this.searchedUserLists = res;
+                    }
+                });
         }
-        if (hasProjectAdminRole) {
-            if (!this.searcherSub) {
-                this.searcherSub = this.searcher
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                return this.userService.searchUsers({
+        if (!this.nameCheckerSub) {
+            this.nameCheckerSub = this.nameChecker
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            this.checkOnGoing = true;
+                            return this.memberService
+                                .listProjectMembers({
                                     page: 1,
                                     pageSize: 10,
-                                    username: name,
-                                });
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res) {
-                            this.searchedUserLists = res;
+                                    projectNameOrId: this.projectId.toString(),
+                                    entityname: name,
+                                })
+                                .pipe(
+                                    finalize(() => (this.checkOnGoing = false))
+                                );
+                        } else {
+                            return of([]);
                         }
-                    });
-            }
-            if (!this.nameCheckerSub) {
-                this.nameCheckerSub = this.nameChecker
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                this.checkOnGoing = true;
-                                return this.memberService
-                                    .listProjectMembers({
-                                        page: 1,
-                                        pageSize: 10,
-                                        projectNameOrId:
-                                            this.projectId.toString(),
-                                        entityname: name,
-                                    })
-                                    .pipe(
-                                        finalize(
-                                            () => (this.checkOnGoing = false)
-                                        )
-                                    );
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res && res.length) {
-                            if (
-                                res.filter(
-                                    m => m.entity_name === this.member.username
-                                ).length > 0
-                            ) {
-                                this.isMemberNameValid = false;
-                                this.memberTooltip =
-                                    'MEMBER.USERNAME_ALREADY_EXISTS';
-                            }
+                    })
+                )
+                .subscribe(res => {
+                    if (res && res.length) {
+                        if (
+                            res.filter(
+                                m => m.entity_name === this.member.username
+                            ).length > 0
+                        ) {
+                            this.isMemberNameValid = false;
+                            this.memberTooltip =
+                                'MEMBER.USERNAME_ALREADY_EXISTS';
                         }
-                    });
-            }
+                    }
+                });
         }
     }
 
@@ -148,6 +154,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         if (this.searcherSub) {
             this.searcherSub.unsubscribe();
             this.searcherSub = null;
+        }
+        if (this.roleSub) {
+            this.roleSub.unsubscribe();
+            this.roleSub = null;
         }
     }
 
@@ -225,5 +235,19 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.isMemberNameValid &&
             !this.checkOnGoing
         );
+    }
+
+    getRoleDisplayName(role: Role): string {
+        if (!role.is_builtin) {
+            return role.name;
+        }
+        const keys: Record<string, string> = {
+            projectAdmin: 'MEMBER.PROJECT_ADMIN',
+            maintainer: 'MEMBER.PROJECT_MAINTAINER',
+            developer: 'MEMBER.DEVELOPER',
+            guest: 'MEMBER.GUEST',
+            limitedGuest: 'MEMBER.LIMITED_GUEST',
+        };
+        return keys[role.name] ?? role.name;
     }
 }

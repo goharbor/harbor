@@ -49,6 +49,18 @@ clr-datagrid {
 
 .dropdown-header {
     text-transform: none;
-    font-size: 13px; 
+    font-size: 13px;
+}
+
+.role-list-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.role-builtin-badge {
+    font-size: 10px;
+    padding: 1px 4px;
+    margin-left: 4px;
+    vertical-align: middle;
 }
 

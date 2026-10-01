@@ -51,6 +51,7 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { PermissionSelectPanelModes } from '../../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
+import { Permission } from '../../../../../../ng-swagger-gen/models/permission';
 
 const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 
@@ -82,6 +83,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
     @Input()
     robotMetadata: Permissions;
+
+    @Input()
+    effectivePermissions: Permission[] = [];
 
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
@@ -192,6 +196,28 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         this.isNameExisting = false;
         this._nameSubject.next('');
     }
+    get filteredCandidatePermissions(): Permission[] {
+        const all = this.robotMetadata?.project ?? [];
+        // Fail closed: an empty effective-permissions set (request still pending,
+        // an error, or a caller with no project grants) must not expose the whole
+        // robot catalog.
+        if (!this.effectivePermissions?.length) {
+            return [];
+        }
+        // /users/current/permissions?relative=true names the project root ".",
+        // while the robot catalog names it "project" — normalize before comparing
+        // so project-level grants are not filtered out.
+        const normalize = (resource: string): string =>
+            resource === 'project' || resource === '.' ? '.' : resource;
+        return all.filter(p =>
+            this.effectivePermissions.some(
+                e =>
+                    normalize(e.resource) === normalize(p.resource) &&
+                    e.action === p.action
+            )
+        );
+    }
+
     disabled(): boolean {
         if (!this.isEditMode) {
             return !this.canAdd();
