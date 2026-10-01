@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
 	testifymock "github.com/stretchr/testify/mock"
 
@@ -17,9 +18,11 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 	projectModels "github.com/goharbor/harbor/src/pkg/project/models"
+	robotModel "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	robottesting "github.com/goharbor/harbor/src/testing/controller/robot"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
 
@@ -606,4 +609,47 @@ func TestValidateNoEscalation_ProjectResourceMappedToSelf(t *testing.T) {
 
 	err := (&robotAPI{}).validateNoEscalation(newCtxWithSecurity(sc), robotPerm("testproject", "project", "read"))
 	assert.NoError(t, err)
+}
+
+// ---------------------------------------------------------------------------
+// RefreshSec escalation guard (default case)
+// ---------------------------------------------------------------------------
+
+// RefreshSec hands the caller control of the robot, so it runs the same
+// no-escalation switch as create/update. A security context that is neither a
+// human (*local) nor a robot (*robot) must not fall through that switch and skip
+// the check: the default case rejects it before the secret is refreshed. Without
+// the default arm, an unknown context would reach robotCtl.Update unchecked.
+//
+// The human- and robot-caller escalation logic itself is covered directly by the
+// TestValidateNoEscalation_* and TestValidPermissionScope cases above; this test
+// covers the previously-unguarded default path.
+func TestRefreshSec_UnknownSecurityContextRejected(t *testing.T) {
+	sc := &securitytesting.Context{}
+	sc.On("IsAuthenticated").Return(true)
+	sc.On("IsSysAdmin").Return(false)
+	// Caller may update robots, so requireAccess(ActionUpdate) passes...
+	sc.On("Can", testifymock.Anything, rbac.ActionUpdate,
+		projectResource(rbac.ResourceRobot)).Return(true)
+
+	rc := &robottesting.Controller{}
+	rc.On("Get", testifymock.Anything, int64(5), testifymock.Anything).Return(&robot.Robot{
+		Robot: robotModel.Robot{ProjectID: testProjectID},
+		Level: robot.LEVELPROJECT,
+		Permissions: []*robot.Permission{{
+			Kind:      "project",
+			Namespace: "1",
+			Access:    []*types.Policy{{Resource: rbac.ResourceRepository, Action: rbac.ActionPush}},
+		}},
+	}, nil)
+
+	rAPI := &robotAPI{robotCtl: rc}
+	params := operation.RefreshSecParams{RobotID: 5, RobotSec: &models.RobotSec{}}
+	resp := rAPI.RefreshSec(newCtxWithSecurity(sc), params)
+
+	rr := httptest.NewRecorder()
+	resp.WriteResponse(rr, runtime.JSONProducer())
+	assert.NotEqual(t, http.StatusOK, rr.Code, "unknown security context must be rejected")
+	// The secret must never be refreshed for a context that skipped the escalation check.
+	rc.AssertNotCalled(t, "Update", testifymock.Anything, testifymock.Anything, testifymock.Anything)
 }
