@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -187,4 +188,25 @@ func (suite *EnqueuerTestSuite) prepare() {
 
 	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
 	assert.Nil(suite.T(), err, "prepare policy: nil error expected but got %s", err)
+}
+
+// TestFireTimesStopsAtZeroNext covers a reachable spec whose Next returns
+// time.Time{} mid-loop: after 2096-02-29 the next Feb 29 is 2104-02-29,
+// beyond robfig/cron's five-year search window.
+func TestFireTimesStopsAtZeroNext(t *testing.T) {
+	schedule, err := comUtils.CronParser().Parse("0 0 0 29 2 *")
+	require.NoError(t, err)
+
+	from := time.Date(2096, 2, 28, 23, 58, 0, 0, time.UTC)
+	horizon := from.Add(enqueuerHorizon)
+
+	done := make(chan []time.Time, 1)
+	go func() { done <- fireTimes(schedule, from, horizon) }()
+
+	select {
+	case times := <-done:
+		assert.Equal(t, []time.Time{time.Date(2096, 2, 29, 0, 0, 0, 0, time.UTC)}, times)
+	case <-time.After(5 * time.Second):
+		t.Fatal("fireTimes did not return within 5s")
+	}
 }

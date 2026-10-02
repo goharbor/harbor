@@ -23,6 +23,7 @@ import (
 
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron/v3"
 
 	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
@@ -167,16 +168,13 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 		e.lastEnqueueErr = err
 		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", lib.TrimLineBreaks(p.JobName), p.ID, err)
 	} else {
-		// schedule.Next returns time.Time{} for specs that can never fire.
-		// Without the IsZero check the loop runs indefinitely.
-		firstNext := schedule.Next(nowTime)
-		if firstNext.IsZero() {
-			e.lastEnqueueErr = fmt.Errorf("cron expression %q can never fire", p.CronSpec)
-			logger.Warningf("Skipping periodic policy %s (%s): cron expression %q can never fire",
+		if schedule.Next(nowTime).IsZero() {
+			e.lastEnqueueErr = fmt.Errorf("cron expression %q has no occurrence within the cron search window", p.CronSpec)
+			logger.Warningf("Skipping periodic policy %s (%s): cron expression %q has no occurrence within the cron search window",
 				p.ID, lib.TrimLineBreaks(p.JobName), p.CronSpec)
 			return
 		}
-		for t := firstNext; t.Before(horizon); t = schedule.Next(t) {
+		for _, t := range fireTimes(schedule, nowTime, horizon) {
 			epoch := t.Unix()
 
 			// Clone parameters
@@ -318,4 +316,17 @@ func cloneParameters(params job.Parameters, epoch int64) job.Parameters {
 	p[PeriodicExecutionMark] = fmt.Sprintf("%d", epoch)
 
 	return p
+}
+
+// fireTimes returns the fire times of schedule after from and before horizon.
+// schedule.Next returns time.Time{} when robfig/cron finds no match within its
+// five-year search window, which also happens to reachable specs: a Feb 29 spec
+// finds nothing after 2096-02-29 because the next one is 2104-02-29. Without the
+// IsZero check the loop never terminates, since time.Time{} is before any horizon.
+func fireTimes(schedule cron.Schedule, from, horizon time.Time) []time.Time {
+	var times []time.Time
+	for t := schedule.Next(from); !t.IsZero() && t.Before(horizon); t = schedule.Next(t) {
+		times = append(times, t)
+	}
+	return times
 }
