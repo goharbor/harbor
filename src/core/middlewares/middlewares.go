@@ -55,6 +55,10 @@ var (
 	dbTxSkippers = []middleware.Skipper{
 		middleware.MethodAndPathSkipper(http.MethodPatch, distribution.BlobUploadURLRegexp),
 		middleware.MethodAndPathSkipper(http.MethodPut, distribution.BlobUploadURLRegexp),
+		// Configuration updates validate and connect to external services before
+		// persisting values; do not hold a database transaction during that work.
+		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/v2.0/configurations")),
+		middleware.MethodAndPathSkipper(http.MethodPut, match("^/api/internal/configurations")),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/token")),
 		func(r *http.Request) bool { // skip tx for GET, HEAD and Options requests
 			m := r.Method
