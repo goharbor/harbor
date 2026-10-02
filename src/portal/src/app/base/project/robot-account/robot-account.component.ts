@@ -29,7 +29,6 @@ import {
 import { PermissionsKinds } from '../../left-side-nav/system-robot-accounts/system-robot-util';
 import {
     clone,
-    CURRENT_BASE_HREF,
     getPageSizeFromLocalStorage,
     getSortingString,
     PageSizeMapKeys,
@@ -65,7 +64,6 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
 import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
-import { HttpClient } from '@angular/common/http';
 import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
 @Component({
@@ -115,8 +113,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         private translate: TranslateService,
         private sanitizer: DomSanitizer,
         private systemInfoService: SysteminfoService,
-        private permissionService: PermissionsService,
-        private http: HttpClient
+        private permissionService: PermissionsService
     ) {}
     ngOnInit() {
         this.getCurrenTime();
@@ -198,23 +195,35 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
 
     getRobotPermissions() {
         this.loadingMetadata = true;
+        // GET /permissions is restricted to system and built-in project admins, so
+        // a custom role granting robot:create gets a 403 here. The editor then
+        // falls back to the caller's own permissions as the candidate catalog.
         this.permissionService
             .getPermissions()
             .pipe(finalize(() => (this.loadingMetadata = false)))
-            .subscribe(res => {
-                this.robotMetadata = res;
-                // The current user's effective permissions in this project drive
-                // the anti-escalation filtering of what a robot can be granted.
-                // The dedicated /permissions/effective endpoint was removed on the
-                // backend; use the current-user permissions endpoint with a
-                // project scope and relative (resource-name) form instead.
-                this.http
-                    .get<Permission[]>(
-                        `${CURRENT_BASE_HREF}/users/current/permissions?scope=/project/${this.projectId}&relative=true`
-                    )
-                    .subscribe(perms => {
-                        this.effectivePermissions = perms ?? [];
-                    });
+            .subscribe({
+                next: res => {
+                    this.robotMetadata = res;
+                },
+                error: () => {
+                    this.robotMetadata = undefined;
+                },
+            });
+        // The caller's effective permissions in this project drive the
+        // anti-escalation filtering of what a robot can be granted. Load them
+        // independently of the admin-only catalog above. The dedicated
+        // /permissions/effective endpoint was removed on the backend; this reads
+        // the cached current-user permissions for the project scope instead.
+        this.userPermissionService
+            .getProjectPermissions(this.projectId)
+            .subscribe({
+                next: perms => {
+                    this.effectivePermissions = perms ?? [];
+                },
+                error: err => {
+                    this.effectivePermissions = [];
+                    this.msgHandler.error(err);
+                },
             });
     }
 
@@ -261,12 +270,17 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         forkJoin(...permissionsList).subscribe(
             Rules => {
                 this.hasRobotCreatePermission = Rules[0] as boolean;
-                if (this.hasRobotCreatePermission) {
-                    this.getRobotPermissions();
-                }
                 this.hasRobotUpdatePermission = Rules[1] as boolean;
                 this.hasRobotDeletePermission = Rules[2] as boolean;
                 this.hasRobotReadPermission = Rules[3] as boolean;
+                // A custom role can grant robot:update without robot:create, and
+                // the editor needs the permission catalog in both cases.
+                if (
+                    this.hasRobotCreatePermission ||
+                    this.hasRobotUpdatePermission
+                ) {
+                    this.getRobotPermissions();
+                }
             },
             error => this.msgHandler.error(error)
         );

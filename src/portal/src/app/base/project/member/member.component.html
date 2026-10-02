@@ -151,6 +151,12 @@
     </div>
     <add-member
         [projectId]="projectId"
+        [roles]="roles"
+        [rolesLoaded]="rolesLoaded"
         (added)="addedMember($event)"></add-member>
-    <add-group [projectId]="projectId" (added)="addedGroup($event)"></add-group>
+    <add-group
+        [projectId]="projectId"
+        [roles]="roles"
+        [rolesLoaded]="rolesLoaded"
+        (added)="addedGroup($event)"></add-group>
 </div>

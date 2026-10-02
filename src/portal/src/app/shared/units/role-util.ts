@@ -18,6 +18,26 @@ import { Role } from '../../../../ng-swagger-gen/models/role';
 
 const ROLE_PAGE_SIZE = 100;
 
+const BUILTIN_ROLE_I18N_KEYS: Record<string, string> = {
+    projectAdmin: 'MEMBER.PROJECT_ADMIN',
+    maintainer: 'MEMBER.PROJECT_MAINTAINER',
+    developer: 'MEMBER.DEVELOPER',
+    guest: 'MEMBER.GUEST',
+    limitedGuest: 'MEMBER.LIMITED_GUEST',
+};
+
+/**
+ * Returns the i18n key of a built-in role, or the verbatim name of a custom one.
+ * Custom names are arbitrary strings, so a caller must never pipe the result
+ * through translate without checking is_builtin first.
+ */
+export function roleDisplayName(role: Role): string {
+    if (!role?.is_builtin) {
+        return role?.name;
+    }
+    return BUILTIN_ROLE_I18N_KEYS[role.name] ?? role.name;
+}
+
 /**
  * Fetches every page of roles. Custom-role creation is not capped at 100, so the
  * member/group role pickers must aggregate all pages rather than treating the

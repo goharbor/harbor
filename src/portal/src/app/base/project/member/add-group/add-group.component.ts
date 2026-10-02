@@ -31,8 +31,7 @@ import { UserGroup } from 'ng-swagger-gen/models/user-group';
 import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
-import { getAllRoles } from '../../../../shared/units/role-util';
+import { roleDisplayName } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -42,7 +41,6 @@ import { Role } from '../../../../../../ng-swagger-gen/models/role';
     standalone: false,
 })
 export class AddGroupComponent implements OnInit, OnDestroy {
-    //projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
     memberGroup: UserGroup = {
         group_name: '',
     };
@@ -58,6 +56,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     inlineAlert: InlineAlertComponent;
 
     @Input() projectId: number;
+    // Shared with the add-member dialog by the parent page, which loads the role
+    // list once for both.
+    @Input() roles: Role[] = [];
+    @Input() rolesLoaded: boolean = false;
     @Output() added = new EventEmitter<boolean>();
 
     checkOnGoing: boolean = false;
@@ -71,23 +73,13 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     groupTooltip: string = 'MEMBER.GROUP_NAME_REQUIRED';
     isNameChecked: boolean = false; // this is only for LDAP mode
     constructor(
-        private roleService: RoleService,
         private memberService: MemberService,
         private appConfigService: AppConfigService,
         private messageHandlerService: MessageHandlerService,
         private userGroupService: UsergroupService
     ) {}
 
-    roles: Role[];
-    roleSub: Subscription;
-
     ngOnInit(): void {
-        this.roleSub = getAllRoles(this.roleService).subscribe(res => {
-            if (res) {
-                this.roles = res;
-            }
-        });
-
         if (!this.groupCheckerSub) {
             this.groupCheckerSub = this.groupChecker
                 .pipe(
@@ -180,10 +172,6 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.groupSearcherSub.unsubscribe();
             this.groupSearcherSub = null;
         }
-        if (this.roleSub) {
-            this.roleSub.unsubscribe();
-            this.roleSub = null;
-        }
     }
 
     createGroupAsMember() {
@@ -252,22 +240,20 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.isGroupNameValid &&
             this.currentForm &&
             this.currentForm.valid &&
-            !this.checkOnGoing
+            !this.checkOnGoing &&
+            // The picker is empty until the roles arrive while roleId still holds
+            // its default, so submitting early would silently create a project
+            // admin.
+            this.hasValidRole()
         );
     }
 
+    hasValidRole(): boolean {
+        return this.rolesLoaded && this.roles.some(r => r.id === this.roleId);
+    }
+
     getRoleDisplayName(role: Role): string {
-        if (!role.is_builtin) {
-            return role.name;
-        }
-        const keys: Record<string, string> = {
-            projectAdmin: 'MEMBER.PROJECT_ADMIN',
-            maintainer: 'MEMBER.PROJECT_MAINTAINER',
-            developer: 'MEMBER.DEVELOPER',
-            guest: 'MEMBER.GUEST',
-            limitedGuest: 'MEMBER.LIMITED_GUEST',
-        };
-        return keys[role.name] ?? role.name;
+        return roleDisplayName(role);
     }
 
     selectGroup(groupName) {

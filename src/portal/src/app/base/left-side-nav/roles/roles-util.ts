@@ -179,14 +179,7 @@ export const NEW_EMPTY_ROLE: Role = {
 };
 
 export function getRoleAccess(r: Role): Access[] {
-    let systemPermissions: RolePermission[] = [];
-    systemPermissions = r.permissions;
-    /*    if (r?.permissions?.length) {
-        systemPermissions = r.permissions.filter(
-            item => item.kind === PermissionsKinds.ROLE
-        );
-    }
-*/
+    const systemPermissions: RolePermission[] = r.permissions;
     if (systemPermissions?.length) {
         const map = {};
         systemPermissions.forEach(p => {

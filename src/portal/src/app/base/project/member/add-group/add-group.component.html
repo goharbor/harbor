@@ -64,7 +64,10 @@
                 }}</label>
 
                 <div class="clr-control-container">
-                    <div class="role-radio-list">
+                    <span
+                        *ngIf="!rolesLoaded"
+                        class="spinner spinner-inline"></span>
+                    <div class="role-radio-list" *ngIf="rolesLoaded">
                         @for (r of roles; track r.id) {
                         <clr-radio-wrapper>
                             <input

@@ -30,8 +30,10 @@
                                 clrCheckbox
                                 [disabled]="true"
                                 [ngModel]="getCheckBoxValue(resource, action)"
-                                (ngModelChange)="
-                                    setCheckBoxValue(resource, action, $event)
+                                [attr.aria-label]="
+                                    (convertKey(resource) | translate) +
+                                    ' ' +
+                                    (convertKey(action) | translate)
                                 " />
                         </td>
                     </tr>
@@ -89,6 +91,11 @@
                                 [ngModel]="getCheckBoxValue(resource, action)"
                                 (ngModelChange)="
                                     setCheckBoxValue(resource, action, $event)
+                                "
+                                [attr.aria-label]="
+                                    (convertKey(resource) | translate) +
+                                    ' ' +
+                                    (convertKey(action) | translate)
                                 " />
                         </td>
                     </tr>
@@ -133,6 +140,11 @@
                         [ngModel]="getCheckBoxValue(resource, action)"
                         (ngModelChange)="
                             setCheckBoxValue(resource, action, $event)
+                        "
+                        [attr.aria-label]="
+                            (convertKey(resource) | translate) +
+                            ' ' +
+                            (convertKey(action) | translate)
                         " />
                 </td>
             </tr>

@@ -41,6 +41,22 @@ const customRole: Role = {
     permissions: [],
 };
 
+const roleWithPermissions: Role = {
+    id: 11,
+    name: 'readOnly',
+    is_builtin: false,
+    permissions: [
+        {
+            kind: 'project-role',
+            namespace: '*',
+            access: [
+                { resource: 'repository', action: 'pull' },
+                { resource: '', action: 'read' },
+            ],
+        },
+    ],
+};
+
 const fakedRoleService = {
     ListRoleResponse() {
         const res: HttpResponse<Array<Role>> = new HttpResponse<Array<Role>>({
@@ -96,6 +112,22 @@ describe('RolesComponent', () => {
         expect(component).toBeTruthy();
     });
 
+    it('renders the permission summary of a role that has access', async () => {
+        // The grid loads its own page on init; wait for that before replacing the
+        // rows, or the response overwrites them.
+        fixture.detectChanges();
+        await fixture.whenStable();
+        component.roles = [roleWithPermissions];
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const panel = fixture.nativeElement.querySelector(
+            'role-permissions-panel'
+        );
+        expect(panel).withContext('permissions panel').toBeTruthy();
+        expect(panel.textContent).toContain('2');
+    });
+
     describe('isBuiltinSelected', () => {
         it('returns false when nothing is selected', () => {
             component.selectedRows = [];
@@ -143,30 +175,22 @@ describe('RolesComponent', () => {
 
         it('edit button is disabled when a built-in role is selected', async () => {
             component.selectedRows = [builtinRole];
-            expect(
-                (await actionButton('system-robot-edit')).disabled
-            ).toBeTrue();
+            expect((await actionButton('role-edit')).disabled).toBeTrue();
         });
 
         it('edit button is enabled when a custom role is selected', async () => {
             component.selectedRows = [customRole];
-            expect(
-                (await actionButton('system-robot-edit')).disabled
-            ).toBeFalse();
+            expect((await actionButton('role-edit')).disabled).toBeFalse();
         });
 
         it('delete button is disabled when a built-in role is selected', async () => {
             component.selectedRows = [builtinRole];
-            expect(
-                (await actionButton('system-robot-delete')).disabled
-            ).toBeTrue();
+            expect((await actionButton('role-delete')).disabled).toBeTrue();
         });
 
         it('delete button is disabled when a mix of built-in and custom roles is selected', async () => {
             component.selectedRows = [builtinRole, customRole];
-            expect(
-                (await actionButton('system-robot-delete')).disabled
-            ).toBeTrue();
+            expect((await actionButton('role-delete')).disabled).toBeTrue();
         });
     });
 });

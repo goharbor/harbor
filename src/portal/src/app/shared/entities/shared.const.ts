@@ -56,7 +56,6 @@ export const enum ConfirmationTargets {
     SCANNER,
     REPLICATION,
     ROBOT_ACCOUNT_ENABLE_OR_DISABLE,
-    ROLE_ENABLE_OR_DISABLE,
     INSTANCE,
     P2P_PROVIDER,
     P2P_PROVIDER_STOP,

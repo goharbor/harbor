@@ -231,6 +231,17 @@
             'ROBOT_ACCOUNT.SELECT_PERMISSIONS' | translate
         }}</ng-template>
         <inline-alert></inline-alert>
+        <clr-alert
+            *ngIf="nonGrantableGrants.length"
+            [clrAlertType]="'warning'"
+            [clrAlertClosable]="false">
+            <clr-alert-item>
+                <span class="alert-text">{{
+                    'SYSTEM_ROBOT.NOT_GRANTABLE'
+                        | translate : { param: nonGrantableGrantNames }
+                }}</span>
+            </clr-alert-item>
+        </clr-alert>
         <form class="clr-form clr-form-horizontal mt-1">
             <section class="form-block">
                 <robot-permissions-panel

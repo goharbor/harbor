@@ -21,6 +21,7 @@ import {
     ViewChild,
 } from '@angular/core';
 import {
+    catchError,
     debounceTime,
     distinctUntilChanged,
     filter,
@@ -30,6 +31,7 @@ import {
 } from 'rxjs/operators';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
 import {
+    NAMESPACE_ALL_PROJECTS,
     NEW_EMPTY_ROLE,
     onlyHasPushPermission,
     PermissionsKinds,
@@ -37,7 +39,7 @@ import {
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 import { NgForm } from '@angular/forms';
 import { ClrLoadingState, ClrWizard } from '@clr/angular';
-import { Subject, Subscription } from 'rxjs';
+import { of, Subject, Subscription } from 'rxjs';
 import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
 import { OperationService } from '../../../../shared/components/operation/operation.service';
 import { clone, isSameArrayValue } from '../../../../shared/units/utils';
@@ -50,6 +52,7 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { PermissionSelectPanelModes } from '../../../../shared/components/role-permissions-panel/role-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
+import { getAllRoles } from '../../../../shared/units/role-util';
 
 @Component({
     standalone: false,
@@ -58,8 +61,6 @@ import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions
     styleUrls: ['./add-role.component.scss'],
 })
 export class AddRoleComponent implements OnInit, OnDestroy {
-    @Input() projectId: number;
-    @Input() projectName: string;
     isEditMode: boolean = false;
     originalRoleForEdit: Role;
     @Output()
@@ -121,21 +122,27 @@ export class AddRoleComponent implements OnInit, OnDestroy {
                     switchMap(name => {
                         this.isNameExisting = false;
                         this.checkNameOnGoing = true;
-                        return this.roleService
-                            .ListRole({
-                                q: encodeURIComponent(
-                                    `Level=${PermissionsKinds.ROLE},ProjectID=${this.projectId},name=${name}`
-                                ),
-                            })
-                            .pipe(
-                                finalize(() => (this.checkNameOnGoing = false))
-                            );
+                        // Compare names client side: `q` is a fuzzy/exact filter
+                        // expression that the backend decodes before parsing, so a
+                        // name such as `dev` would match `developer` and one
+                        // holding a comma would be a malformed query.
+                        return getAllRoles(this.roleService).pipe(
+                            map(roles =>
+                                (roles ?? []).some(r => r.name === name)
+                            ),
+                            // Recover here, not in the subscriber: an error that
+                            // reaches it would complete the subscription and leave
+                            // every later edit unchecked.
+                            catchError(error => {
+                                this.msgHandler.error(error);
+                                return of(false);
+                            }),
+                            finalize(() => (this.checkNameOnGoing = false))
+                        );
                     })
                 )
-                .subscribe(res => {
-                    if (res && res.length > 0) {
-                        this.isNameExisting = true;
-                    }
+                .subscribe(exists => {
+                    this.isNameExisting = exists;
                 });
         }
     }
@@ -205,7 +212,9 @@ export class AddRoleComponent implements OnInit, OnDestroy {
     save() {
         const role: Role = clone(this.role);
         role.permissions[0].kind = PermissionsKinds.ROLE;
-        role.permissions[0].namespace = this.projectName;
+        // Custom roles are definitions, not project-scoped grants; the backend
+        // stores and returns them with the all-projects namespace.
+        role.permissions[0].namespace = NAMESPACE_ALL_PROJECTS;
         if (onlyHasPushPermission(role.permissions[0].access)) {
             this.inlineAlertComponent.showInlineError(
                 'ROLE.PUSH_PERMISSION_TOOLTIP'
@@ -250,7 +259,7 @@ export class AddRoleComponent implements OnInit, OnDestroy {
             opeMessage.name = 'ROLE.ADD_ROLE';
             opeMessage.data.id = role.id;
             opeMessage.state = OperationState.progressing;
-            opeMessage.data.name = `${this.projectName}+${role.name}`;
+            opeMessage.data.name = role.name;
             this.operationService.publishInfo(opeMessage);
             this.roleService.CreateRole({ role }).subscribe(
                 res => {

@@ -22,18 +22,15 @@ import {
     ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { of, Subject, Subscription } from 'rxjs';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Project } from '../../project';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
-import { RoleService } from '../../../../../../ng-swagger-gen/services/role.service';
-import { getAllRoles } from '../../../../shared/units/role-util';
+import { roleDisplayName } from '../../../../shared/units/role-util';
 import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -52,6 +49,11 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
     @Input() projectId: number;
+    // The parent page loads the role list once and shares it with both the member
+    // and the group dialog, so opening the page issues a single paginated role
+    // fetch instead of one per dialog.
+    @Input() roles: Role[] = [];
+    @Input() rolesLoaded: boolean = false;
     @Output() added = new EventEmitter<boolean>();
     isMemberNameValid: boolean = true;
     memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
@@ -59,33 +61,18 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     searcher: Subject<string> = new Subject<string>();
     nameCheckerSub: Subscription;
     searcherSub: Subscription;
-    roleSub: Subscription;
     checkOnGoing: boolean = false;
     searchedUserLists: UserResp[] = [];
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     roleId: number = 1; // default value is 1(project admin)
 
-    roles: Role[];
-
     constructor(
-        private roleService: RoleService,
         private memberService: MemberService,
         private userService: UserService,
-        private messageHandlerService: MessageHandlerService,
-        private route: ActivatedRoute
+        private messageHandlerService: MessageHandlerService
     ) {}
 
     ngOnInit(): void {
-        // Initialize unconditionally. The parent page already gates opening this
-        // dialog on the effective member:create permission — which a custom role
-        // can grant, not only project admins — so this component must not re-gate
-        // on has_project_admin_role, which left such users with an empty picker.
-        this.roleSub = getAllRoles(this.roleService).subscribe(res => {
-            if (res) {
-                this.roles = res;
-            }
-        });
-
         if (!this.searcherSub) {
             this.searcherSub = this.searcher
                 .pipe(
@@ -154,10 +141,6 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         if (this.searcherSub) {
             this.searcherSub.unsubscribe();
             this.searcherSub = null;
-        }
-        if (this.roleSub) {
-            this.roleSub.unsubscribe();
-            this.roleSub = null;
         }
     }
 
@@ -233,21 +216,19 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.currentForm &&
             this.currentForm.valid &&
             this.isMemberNameValid &&
-            !this.checkOnGoing
+            !this.checkOnGoing &&
+            // Without a loaded role list the picker is empty while roleId still
+            // holds its default, so submitting would silently create a project
+            // admin. Wait for the roles and for a selection that exists in them.
+            this.hasValidRole()
         );
     }
 
+    hasValidRole(): boolean {
+        return this.rolesLoaded && this.roles.some(r => r.id === this.roleId);
+    }
+
     getRoleDisplayName(role: Role): string {
-        if (!role.is_builtin) {
-            return role.name;
-        }
-        const keys: Record<string, string> = {
-            projectAdmin: 'MEMBER.PROJECT_ADMIN',
-            maintainer: 'MEMBER.PROJECT_MAINTAINER',
-            developer: 'MEMBER.DEVELOPER',
-            guest: 'MEMBER.GUEST',
-            limitedGuest: 'MEMBER.LIMITED_GUEST',
-        };
-        return keys[role.name] ?? role.name;
+        return roleDisplayName(role);
     }
 }

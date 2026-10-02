@@ -8,7 +8,7 @@
                     [width]="240"
                     [withDivider]="true"
                     filterPlaceholder="{{
-                        'SYSTEM_ROBOT.SEARCH_BY_NAME' | translate
+                        'ROLE.SEARCH_BY_NAME' | translate
                     }}"></hbr-filter>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
@@ -19,7 +19,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-dg-action-bar>
             <button
-                [disabled]="loadingData || loadingMetadata"
+                [disabled]="loadingData"
                 [clrLoading]="addBtnState"
                 class="btn btn-secondary"
                 (click)="openNewRoleModal(false)">
@@ -47,7 +47,7 @@
                         clrDropdownItem
                         (click)="openNewRoleModal(true)">
                         <clr-icon shape="edit" size="16"></clr-icon>&nbsp;
-                        <span id="system-robot-edit">{{
+                        <span id="role-edit">{{
                             'BUTTON.EDIT' | translate
                         }}</span>
                     </button>
@@ -62,7 +62,7 @@
                         (click)="openDeleteRolesDialog()">
                         <clr-icon shape="window-close" size="16"></clr-icon
                         >&nbsp;
-                        <span id="system-robot-delete">{{
+                        <span id="role-delete">{{
                             'BUTTON.DELETE' | translate
                         }}</span>
                     </button>
@@ -94,7 +94,7 @@
             <clr-dg-column>{{ 'ROLE.CREATED_AT' | translate }}</clr-dg-column>
             <clr-dg-column>{{ 'ROLE.MODIFIED_AT' | translate }}</clr-dg-column>
             <clr-dg-placeholder>{{
-                'SYSTEM_ROBOT.NOT_FOUND' | translate
+                'ROLE.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
             @for (r of roles; track r.id) {
             <clr-dg-row [clrDgItem]="r">
@@ -115,21 +115,21 @@
                     <span *ngIf="!getRoleAccess(r)?.length">
                         {{ 'SCHEDULE.NONE' | translate }}
                     </span>
-                    <robot-permissions-panel
+                    <role-permissions-panel
                         *ngIf="getRoleAccess(r)?.length"
                         [mode]="PermissionSelectPanelModes.MODAL"
                         [permissionsModel]="getRoleAccess(r)"
                         [candidatePermissions]="getRoleAccess(r)">
                         <button class="btn btn-link btn-sm m-0 p-0" modal>
                             {{ getRoleAccess(r)?.length }}
-                            {{ 'SYSTEM_ROBOT.PERMISSIONS' | translate }}
+                            {{ 'ROLE.PERMISSIONS' | translate }}
                             <clr-icon
                                 class="icon"
                                 size="12"
                                 shape="caret"
                                 direction="down"></clr-icon>
                         </button>
-                    </robot-permissions-panel>
+                    </role-permissions-panel>
                 </clr-dg-cell>
 
                 <clr-dg-cell>{{ r.created_by || '–' }}</clr-dg-cell>
@@ -181,5 +181,3 @@
 <add-role
     (addSuccess)="addSuccess($event)"
     [roleMetadata]="roleMetadata"></add-role>
-
-<view-token (refreshSuccess)="refresh()"></view-token>

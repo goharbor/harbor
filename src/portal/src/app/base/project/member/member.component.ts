@@ -57,7 +57,7 @@ import { ClrDatagridStateInterface } from '@clr/angular';
 import { ProjectMemberEntity } from '../../../../../ng-swagger-gen/models/project-member-entity';
 import { AddGroupComponent } from './add-group/add-group.component';
 import { RoleService } from '../../../../../ng-swagger-gen/services/role.service';
-import { getAllRoles } from '../../../shared/units/role-util';
+import { getAllRoles, roleDisplayName } from '../../../shared/units/role-util';
 import { Role } from '../../../../../ng-swagger-gen/models/role';
 
 @Component({
@@ -88,6 +88,9 @@ export class MemberComponent implements OnInit, OnDestroy {
     isHttpAuthMode: boolean;
     isOidcMode: boolean;
     roles: Role[] = [];
+    rolesLoaded: boolean = false;
+    builtinRoles: Role[] = [];
+    customRoles: Role[] = [];
     @ViewChild(AddMemberComponent)
     addMemberComponent: AddMemberComponent;
     @ViewChild(AddGroupComponent)
@@ -142,8 +145,17 @@ export class MemberComponent implements OnInit, OnDestroy {
         this.currentUser = this.session.getCurrentUser();
         // get member permission rule
         this.getMemberPermissionRule(this.projectId);
-        getAllRoles(this.roleService).subscribe(res => {
-            this.roles = res ?? [];
+        getAllRoles(this.roleService).subscribe({
+            next: res => {
+                this.roles = res ?? [];
+                this.builtinRoles = this.roles.filter(r => r.is_builtin);
+                this.customRoles = this.roles.filter(r => !r.is_builtin);
+                this.rolesLoaded = true;
+            },
+            error: err => {
+                this.rolesLoaded = false;
+                this.errorHandlerEntity.error(err);
+            },
         });
         if (this.appConfigService.isLdapMode()) {
             this.isLdapMode = true;
@@ -403,26 +415,8 @@ export class MemberComponent implements OnInit, OnDestroy {
         return member.role_name;
     }
 
-    get builtinRoles(): Role[] {
-        return this.roles.filter(r => r.is_builtin);
-    }
-
-    get customRoles(): Role[] {
-        return this.roles.filter(r => !r.is_builtin);
-    }
-
     getRoleDisplayName(role: Role): string {
-        if (!role.is_builtin) {
-            return role.name;
-        }
-        const keys: Record<string, string> = {
-            projectAdmin: 'MEMBER.PROJECT_ADMIN',
-            maintainer: 'MEMBER.PROJECT_MAINTAINER',
-            developer: 'MEMBER.DEVELOPER',
-            guest: 'MEMBER.GUEST',
-            limitedGuest: 'MEMBER.LIMITED_GUEST',
-        };
-        return keys[role.name] ?? role.name;
+        return roleDisplayName(role);
     }
 
     getMemberPermissionRule(projectId: number): void {

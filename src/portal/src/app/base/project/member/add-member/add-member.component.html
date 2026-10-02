@@ -63,8 +63,11 @@
                 </label>
 
                 <div class="clr-control-container">
-                    <div class="role-radio-list">
-                        <div *ngFor="let r of roles; let i = index">
+                    <span
+                        *ngIf="!rolesLoaded"
+                        class="spinner spinner-inline"></span>
+                    <div class="role-radio-list" *ngIf="rolesLoaded">
+                        <div *ngFor="let r of roles">
                             <clr-radio-wrapper>
                                 <input
                                     clrRadio
