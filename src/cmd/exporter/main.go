@@ -15,6 +15,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"strings"
@@ -99,7 +100,7 @@ func main() {
 		exporterOpt.CacheCleanInterval,
 	)
 	prometheus.MustRegister(harborExporter)
-	if err := harborExporter.ListenAndServe(); err != nil {
+	if err := harborExporter.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Errorf("Error starting Harbor exporter %s", err)
 		os.Exit(1)
 	}
