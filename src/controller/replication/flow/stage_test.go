@@ -116,20 +116,12 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 }
 
 func (s *stageTestSuite) TestReplaceNamespace() {
-	// empty namespace
+	// replace count <0, repository contains no "/"
 	var (
 		repository   string = "c"
-		namespace    string = ""
-		replaceCount int8   = 0
+		namespace    string = "n"
+		replaceCount int8   = -1
 	)
-	result, err := replaceNamespace(repository, namespace, replaceCount, "")
-	s.Require().Nil(err)
-	s.Equal("c", result)
-
-	// replace count <0, repository contains no "/"
-	repository = "c"
-	namespace = "n"
-	replaceCount = -1
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().Nil(err)
 	s.Equal("n/c", result)
@@ -195,6 +187,54 @@ func (s *stageTestSuite) TestReplaceNamespace() {
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().Nil(err)
 	s.Equal("n/a", result)
+
+	// replace count = 0 with empty namespace
+	repository = "a/b/c"
+	namespace = ""
+	replaceCount = 0
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("a/b/c", result)
+	
+	// replace count = 1 with empty namespace
+	repository = "a/b/c"
+	namespace = ""
+	replaceCount = 1
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("b/c", result)
+
+	// replace count = 2 with empty namespace
+	repository = "a/b/c"
+	namespace = ""
+	replaceCount = 2
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("c", result)
+
+	// replace count <0, repository contains no "/" with empty namespace
+	repository = "c"
+	namespace = ""
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("c", result)
+
+	// replace count <0, repository contains only one "/" with empty namespace
+	repository = "b/c"
+	namespace = ""
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("c", result)
+
+	// replace count <0, repository contains more than one "/" with empty namespace
+	repository = "a/b/c"
+	namespace = ""
+	replaceCount = -1
+	result, err = replaceNamespace(repository, namespace, replaceCount, "")
+	s.Require().Nil(err)
+	s.Equal("c", result)
 }
 
 func TestStage(t *testing.T) {
