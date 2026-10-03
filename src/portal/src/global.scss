@@ -1,5 +1,11 @@
 body {
-    overflow-y: hidden;
+    @media screen and (min-width: 1025px) {
+        overflow-y: hidden;
+    }
+
+    @media screen and (max-width: 1024px) {
+        overflow-y: auto;
+    }
 }
 
 :root,
@@ -451,3 +457,62 @@ a {
     color: var(--clr-link-color);
     text-decoration: none;
 }
+
+/* Global Responsive Styles */
+@media screen and (max-width: 1024px) {
+    /* stylelint-disable selector-class-pattern */
+    .rightPos {
+        position: static !important;
+        right: auto !important;
+        top: auto !important;
+        margin-top: 1rem !important;
+        width: 100% !important;
+        flex-wrap: wrap;
+        justify-content: center !important;
+    }
+    /* stylelint-enable selector-class-pattern */
+
+    .flex-end {
+        justify-content: center !important;
+    }
+
+    clr-datagrid {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-dialog {
+        max-width: 95vw !important;
+        width: auto !important;
+        margin: 0.5rem auto !important;
+    }
+
+    .modal-body {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .clr-form-control {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+
+        .clr-control-label {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-bottom: 0.25rem;
+        }
+
+        .clr-control-container {
+            width: 100% !important;
+        }
+    }
+
+    .clr-input,
+    .clr-select {
+        width: 100% !important;
+    }
+}
+

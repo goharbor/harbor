@@ -143,3 +143,19 @@
     align-items: center;
     justify-content: center;
 }
+
+@media screen and (max-width: 1024px) {
+    .rightPos {
+        position: static !important;
+        right: auto !important;
+        top: auto !important;
+        margin-top: 1rem !important;
+        width: 100%;
+        justify-content: flex-start !important;
+    }
+
+    .toolbar {
+        overflow: visible;
+    }
+}
+
