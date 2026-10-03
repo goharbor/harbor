@@ -287,7 +287,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 func (t *transfer) copyBlobWithRetry(srcRepo, dstRepo, digest string, sizeFromDescriptor int64, speed int32) error {
 	var err error
 	for i, backoff := 1, 2*time.Second; i <= blobRetryCnt; i, backoff = i+1, backoff*2 {
-		t.logger.Infof("copying the blob %s(attempt %d)...", digest, i)
+		t.logger.Infof("copying the blob %s (attempt %d)...", digest, i)
 		if err = t.copyBlob(srcRepo, dstRepo, digest, sizeFromDescriptor, speed); err == nil {
 			t.logger.Infof("copy the blob %s completed", digest)
 			return nil
@@ -311,7 +311,7 @@ func (t *transfer) copyChunkWithRetry(srcRepo, dstRepo, digest string, sizeFromD
 	)
 
 	for i, backoff := 1, 2*time.Second; i <= chunkRetryCnt; i, backoff = i+1, backoff*2 {
-		t.logger.Infof("copying the blob %s by chunk(chunkSize: %d)(attempt %d)...", digest, replicationChunkSize, i)
+		t.logger.Infof("copying the blob %s by chunk (chunkSize: %d) (attempt %d)...", digest, replicationChunkSize, i)
 		if err = t.copyBlobByChunk(srcRepo, dstRepo, digest, sizeFromDescriptor, &start, &end, &location, speed); err == nil {
 			t.logger.Infof("copy the blob %s by chunk completed", digest)
 			return nil
