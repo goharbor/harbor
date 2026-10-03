@@ -18,10 +18,12 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -119,6 +121,42 @@ func (m *managerTestSuite) TestFlushAll() {
 	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	err := m.cachedManager.FlushAll(m.ctx)
 	m.NoError(err)
+}
+
+// TestCleanUpKeys_DoesNotSpinOnCanceledContext: under the old retry.Retry a
+// canceled context would keep the loop spinning for the full default timeout
+// while the enclosing DB transaction sat open holding row locks. Under the fix,
+// retry observes context.Canceled as terminal and cleanUpKeys returns promptly.
+func (m *managerTestSuite) TestCleanUpKeys_DoesNotSpinOnCanceledContext() {
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(context.Canceled)
+
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mgr := m.cachedManager.(*Manager)
+	start := time.Now()
+	mgr.cleanUpKeys(canceled, 100)
+	elapsed := time.Since(start)
+
+	m.Less(elapsed.Seconds(), 1.0, "cleanUpKeys must return promptly on canceled ctx, elapsed=%s", elapsed)
+}
+
+// TestScheduleCleanUp_DefersViaAfterCommit verifies that when a hooks sink is on
+// the context (as WithTransaction sets up), Delete registers cache invalidation
+// via orm.AfterCommit instead of calling cache.Delete inline.
+func (m *managerTestSuite) TestScheduleCleanUp_DefersViaAfterCommit() {
+	ctx, drainHooks := orm.ContextWithAfterCommitHooksForTest(context.Background())
+
+	m.projectMetaMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	err := m.cachedManager.Delete(ctx, 100)
+	m.NoError(err)
+
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+
+	drainHooks()
+	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
 func TestManager(t *testing.T) {

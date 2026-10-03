@@ -18,10 +18,12 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/repository/model"
 	testcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -187,6 +189,48 @@ func (m *managerTestSuite) TestFlushAll() {
 	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
 	err := m.cachedManager.FlushAll(m.ctx)
 	m.NoError(err)
+}
+
+// TestCleanUpKeys_DoesNotSpinOnCanceledContext is the repository-side analogue
+// of the artifact regression test for https://github.com/goharbor/harbor/issues/21062:
+// under the old retry.Retry a canceled context would keep the loop spinning for
+// the full default timeout while the enclosing DB transaction sat open holding
+// row locks. Under the fix, retry observes context.Canceled as terminal and
+// cleanUpKeys returns immediately.
+func (m *managerTestSuite) TestCleanUpKeys_DoesNotSpinOnCanceledContext() {
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(context.Canceled)
+
+	canceled, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	mgr := m.cachedManager.(*Manager)
+	start := time.Now()
+	mgr.cleanUpKeys(canceled, 100, "repo")
+	elapsed := time.Since(start)
+
+	m.Less(elapsed.Seconds(), 1.0, "cleanUpKeys must return promptly on canceled ctx, elapsed=%s", elapsed)
+}
+
+// TestScheduleCleanUp_DefersViaAfterCommit verifies the in-transaction deferral
+// contract: when the caller already has a hooks sink (normally set up by
+// WithTransaction), Delete must register cache invalidation via orm.AfterCommit
+// rather than calling cache.Delete inline.
+func (m *managerTestSuite) TestScheduleCleanUp_DefersViaAfterCommit() {
+	ctx, drainHooks := orm.ContextWithAfterCommitHooksForTest(context.Background())
+
+	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	m.repoMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+	m.cache.On("Delete", mock.Anything, mock.Anything).Return(nil)
+
+	err := m.cachedManager.Delete(ctx, 100)
+	m.NoError(err)
+
+	// The hook is still pending in the sink — cache.Delete must not have run yet.
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+
+	// Simulate a successful commit: run the queued hooks.
+	drainHooks()
+	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
 func TestManager(t *testing.T) {
