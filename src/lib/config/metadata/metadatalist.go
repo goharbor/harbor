@@ -74,6 +74,8 @@ var (
 
 		{Name: common.TrivyAdapterURL, Scope: SystemScope, Group: TrivyGroup, EnvKey: "TRIVY_ADAPTER_URL", DefaultValue: "http://trivy-adapter:8080", ItemType: &StringType{}, Editable: false},
 
+		{Name: common.SleekoAdapterURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "SLEEKO_ADAPTER_URL", DefaultValue: "http://sleeko:8080", ItemType: &StringType{}, Editable: false},
+
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.DatabaseType, Scope: SystemScope, Group: BasicGroup, EnvKey: "DATABASE_TYPE", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
@@ -150,6 +152,7 @@ var (
 		{Name: common.OIDCLogout, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}, Description: `Enable OIDC logout to log out user session from the identity provider.`},
 
 		{Name: common.WithTrivy, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_TRIVY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		{Name: common.WithSleeko, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_SLEEKO", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "30", ItemType: &IntType{}, Editable: true, Description: `The robot account token duration in days`},
 		{Name: common.RobotNamePrefix, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_NAME_PREFIX", DefaultValue: "robot$", ItemType: &NonEmptyStringType{}, Editable: true, Description: `The robot account name prefix`},
