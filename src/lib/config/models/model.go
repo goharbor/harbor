@@ -40,6 +40,7 @@ type OIDCSetting struct {
 	GroupsClaim        string            `json:"groups_claim"`
 	AdminGroup         string            `json:"admin_group"`
 	GroupFilter        string            `json:"group_filter"`
+	LoginGroups        string            `json:"login_groups"`
 	RedirectURL        string            `json:"redirect_url"`
 	Scope              []string          `json:"scope"`
 	UserClaim          string            `json:"user_claim"`
