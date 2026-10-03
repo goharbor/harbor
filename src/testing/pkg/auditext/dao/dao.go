@@ -177,6 +177,31 @@ func (_m *DAO) Purge(ctx context.Context, retentionHour int, includeOperations [
 	return r0, r1
 }
 
+// Update provides a mock function with given fields: ctx, audit, props
+func (_m *DAO) Update(ctx context.Context, audit *model.AuditLogExt, props ...string) error {
+	_va := make([]interface{}, len(props))
+	for _i := range props {
+		_va[_i] = props[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, audit)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *model.AuditLogExt, ...string) error); ok {
+		r0 = rf(ctx, audit, props...)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateUsername provides a mock function with given fields: ctx, username, usernameReplace
 func (_m *DAO) UpdateUsername(ctx context.Context, username string, usernameReplace string) error {
 	ret := _m.Called(ctx, username, usernameReplace)
