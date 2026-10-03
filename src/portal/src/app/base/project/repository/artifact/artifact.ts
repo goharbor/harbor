@@ -21,7 +21,7 @@ export interface ArtifactFront extends Artifact {
     platform?: Platform;
     showImage?: string;
     pullCommand?: string;
-    annotationsArray?: Array<{ [key: string]: any }>;
+    annotationsArray?: string[];
     tagNumber?: number;
     signed?: string;
     sbomDigest?: string;
