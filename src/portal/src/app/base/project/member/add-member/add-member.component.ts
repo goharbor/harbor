@@ -11,7 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { debounceTime, finalize, switchMap } from 'rxjs/operators';
+import {
+    catchError,
+    debounceTime,
+    finalize,
+    switchMap,
+    takeUntil,
+} from 'rxjs/operators';
 import {
     Component,
     EventEmitter,
@@ -32,6 +38,7 @@ import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
+import { calculatePage } from 'src/app/shared/units/utils';
 
 @Component({
     selector: 'add-member',
@@ -58,8 +65,14 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     searcherSub: Subscription;
     checkOnGoing: boolean = false;
     searchedUserLists: UserResp[] = [];
+    userSearchPageSize: number = 10;
+    userSearchPage: number = 1;
+    userSearchTotalCount: number = 0;
+    userSearchName: string = '';
+    loadingMoreUsers: boolean = false;
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     roleId: number = 1; // default value is 1(project admin)
+    destroy$: Subject<void> = new Subject<void>();
 
     constructor(
         private memberService: MemberService,
@@ -81,20 +94,34 @@ export class AddMemberComponent implements OnInit, OnDestroy {
                     .pipe(
                         debounceTime(500),
                         switchMap(name => {
+                            this.userSearchName = name;
+                            this.userSearchPage = 1;
+                            this.searchedUserLists = [];
+                            this.userSearchTotalCount = 0;
                             if (name) {
-                                return this.userService.searchUsers({
-                                    page: 1,
-                                    pageSize: 10,
+                                return this.userService.searchUsersResponse({
+                                    page: this.userSearchPage,
+                                    pageSize: this.userSearchPageSize,
                                     username: name,
                                 });
                             } else {
-                                return of([]);
+                                return of(null);
                             }
+                        }),
+                        catchError((err, caught) => {
+                            this.messageHandlerService.handleError(err);
+                            return caught;
                         })
                     )
                     .subscribe(res => {
                         if (res) {
-                            this.searchedUserLists = res;
+                            this.searchedUserLists = res.body || [];
+                            this.userSearchTotalCount = Number(
+                                res.headers.get('X-Total-Count')
+                            );
+                        } else {
+                            this.searchedUserLists = [];
+                            this.userSearchTotalCount = 0;
                         }
                     });
             }
@@ -121,6 +148,10 @@ export class AddMemberComponent implements OnInit, OnDestroy {
                             } else {
                                 return of([]);
                             }
+                        }),
+                        catchError((err, caught) => {
+                            this.messageHandlerService.handleError(err);
+                            return caught;
                         })
                     )
                     .subscribe(res => {
@@ -149,6 +180,8 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.searcherSub.unsubscribe();
             this.searcherSub = null;
         }
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     onSubmit(): void {
@@ -204,6 +237,49 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.isMemberNameValid = true;
         this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
         this.searchedUserLists = [];
+        this.userSearchPage = 1;
+        this.userSearchTotalCount = 0;
+        this.userSearchName = '';
+    }
+
+    loadNextUserPage(): void {
+        if (this.loadingMoreUsers) {
+            return;
+        }
+        if (this.searchedUserLists.length >= this.userSearchTotalCount) {
+            return;
+        }
+        this.loadingMoreUsers = true;
+        this.userService
+            .searchUsersResponse({
+                page: this.userSearchPage + 1,
+                pageSize: this.userSearchPageSize,
+                username: this.userSearchName,
+            })
+            .pipe(
+                finalize(() => (this.loadingMoreUsers = false)),
+                catchError((err, caught) => {
+                    this.messageHandlerService.handleError(err);
+                    return caught;
+                }),
+                takeUntil(this.destroy$)
+            )
+            .subscribe(res => {
+                this.userSearchPage++;
+                this.searchedUserLists = this.searchedUserLists.concat(
+                    res.body || []
+                );
+                this.userSearchTotalCount = Number(
+                    res.headers.get('X-Total-Count')
+                );
+            });
+    }
+
+    onUserListScroll(event: Event): void {
+        const target = event.target as HTMLElement;
+        if (target.scrollHeight - target.scrollTop - target.clientHeight < 10) {
+            this.loadNextUserPage();
+        }
     }
 
     handleValidation(): void {
@@ -211,6 +287,8 @@ export class AddMemberComponent implements OnInit, OnDestroy {
         this.searcher.next(this.member.username);
         if (!this.member.username) {
             this.searchedUserLists = [];
+            this.userSearchPage = 1;
+            this.userSearchTotalCount = 0;
             this.isMemberNameValid = false;
             this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
         } else {
