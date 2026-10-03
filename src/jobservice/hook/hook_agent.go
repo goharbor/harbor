@@ -150,7 +150,17 @@ func (ba *basicAgent) retry(evt *Event) {
 			}
 		}
 
-		return ba.client.SendEvent(evt)
+		if err := ba.client.SendEvent(evt); err != nil {
+			return err
+		}
+
+		// ACK the event as Trigger does, otherwise the reaper resends it.
+		if err := ba.ack(evt); err != nil {
+			// Just log error
+			logger.Error(errors.Wrap(err, "hook event ack error"))
+		}
+
+		return nil
 	}, bf, func(e error, d time.Duration) {
 		logger.Errorf("Retry: sending hook event error: %s, evt=%s->%s, duration=%v", e.Error(), evt.Message, evt.URL, d)
 	})
