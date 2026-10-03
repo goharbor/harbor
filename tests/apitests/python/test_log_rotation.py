@@ -56,16 +56,22 @@ class TestLogRotation(unittest.TestCase, object):
         # so we wait in a loop.
         self.assertIn(job_status, ["Stopped", "Success"])
         # 4. Create a purge audit log job
+        # Record previous job ID to avoid a race condition in the polling loop below.
+        # Without this check, get_latest_purge_job() might fetch the previously stopped dry-run job
+        # if the asynchronous creation of the new job is still in progress, causing the test to fail
+        # with 'Stopped' != 'Success'.
+        prev_job_id = latest_job.id if latest_job else 0
         self.purge.create_purge_schedule(type="Manual", cron=None, dry_run=False, audit_retention_hour=1)
         # 5. Verify purge audit log job status is Success
         job_status = None
         job_id = None
-        for i in range(20):
+        for i in range(30):
             print("wait for the job to finish:", i)
-            if job_id == None:
+            if job_id is None:
                 latest_job = self.purge.get_latest_purge_job()
-                job_status = latest_job.job_status
-                job_id = latest_job.id
+                if latest_job and latest_job.id != prev_job_id:
+                    job_status = latest_job.job_status
+                    job_id = latest_job.id
             else:
                 job_status = self.purge.get_purge_job(job_id).job_status
             if job_status == "Success":
