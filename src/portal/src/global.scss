@@ -451,3 +451,17 @@ a {
     color: var(--clr-link-color);
     text-decoration: none;
 }
+
+.refresh-btn {
+    cursor: pointer;
+
+    &:hover {
+        color: #007cbb;
+    }
+
+    clr-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
