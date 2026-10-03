@@ -207,7 +207,7 @@ func ManifestMiddleware() func(http.Handler) http.Handler {
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		if err := handleManifest(w, r, next); err != nil {
 			if errors.IsNotFoundErr(err) {
-				httpLib.SendError(w, err)
+				httpLib.SendError(w, errors.AsManifestUnknownError(err))
 				return
 			}
 			if errors.IsRateLimitError(err) {
