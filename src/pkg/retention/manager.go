@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -28,7 +29,44 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
+
+// normalizeRuleParams converts snake_case parameter keys to the camelCase
+// format expected by the rule evaluators. The REST API accepts snake_case
+// (e.g. "n_days_since_last_pull") but the jobservice checks parameters using
+// the camelCase constant defined in each rule package (e.g. "nDaysSinceLastPull").
+func normalizeRuleParams(p *policy.Metadata) {
+	if p == nil {
+		return
+	}
+	for i := range p.Rules {
+		r := &p.Rules[i]
+		if r.Parameters == nil {
+			continue
+		}
+		normalized := make(rule.Parameters, len(r.Parameters))
+		for k, v := range r.Parameters {
+			normalized[toCamelCase(k)] = v
+		}
+		r.Parameters = normalized
+	}
+}
+
+// toCamelCase converts a snake_case string to camelCase.
+func toCamelCase(s string) string {
+	parts := strings.Split(s, "_")
+	if len(parts) == 1 {
+		return s
+	}
+	result := parts[0]
+	for i := 1; i < len(parts); i++ {
+		if len(parts[i]) > 0 {
+			result += strings.ToUpper(parts[i][:1]) + parts[i][1:]
+		}
+	}
+	return result
+}
 
 // Manager defines operations of managing policy
 type Manager interface {
@@ -52,6 +90,7 @@ type DefaultManager struct {
 
 // CreatePolicy Create Policy
 func (d *DefaultManager) CreatePolicy(ctx context.Context, p *policy.Metadata) (int64, error) {
+	normalizeRuleParams(p)
 	p1 := &models.RetentionPolicy{}
 	p1.ScopeLevel = p.Scope.Level
 	p1.ScopeReference = p.Scope.Reference
@@ -65,6 +104,7 @@ func (d *DefaultManager) CreatePolicy(ctx context.Context, p *policy.Metadata) (
 
 // UpdatePolicy Update Policy
 func (d *DefaultManager) UpdatePolicy(ctx context.Context, p *policy.Metadata) error {
+	normalizeRuleParams(p)
 	p1 := &models.RetentionPolicy{}
 	p1.ID = p.ID
 	p1.ScopeLevel = p.Scope.Level
@@ -125,3 +165,4 @@ func (d *DefaultManager) ListPolicyIDs(ctx context.Context, query *q.Query) ([]i
 func NewManager() Manager {
 	return &DefaultManager{}
 }
+
