@@ -76,10 +76,15 @@ func TestPeriodicHealthChecker(t *testing.T) {
 
 	checker := PeriodicHealthChecker(health.CheckFunc(checkFunc), 1*time.Second)
 	assert.Equal(t, "unknown status", checker.Check().Error())
-	time.Sleep(3 * time.Second)
-	assert.Equal(t, nil, checker.Check())
-	time.Sleep(3 * time.Second)
-	assert.Equal(t, "unhealthy", checker.Check().Error())
+	
+	assert.Eventually(t, func() bool {
+		return checker.Check() == nil
+	}, 10*time.Second, 100*time.Millisecond, "health checker should eventually return nil status")
+
+	assert.Eventually(t, func() bool {
+		err := checker.Check()
+		return err != nil && err.Error() == "unhealthy"
+	}, 10*time.Second, 100*time.Millisecond, "health checker should eventually return unhealthy status")
 }
 
 func TestCoreHealthChecker(t *testing.T) {
