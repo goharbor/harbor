@@ -142,6 +142,9 @@ type RegistryInfo struct {
 	SupportedTriggers                    []string       `json:"supported_triggers"`
 	SupportedRepositoryPathComponentType string         `json:"supported_repository_path_component_type"` // how many path components are allowed in the repository name
 	SupportedCopyByChunk                 bool           `json:"supported_copy_by_chunk,omitempty"`
+	// SupportedCreateRepoConfig indicates the adapter honors the
+	// "create repository if not exists" toggle so the UI knows when to show it.
+	SupportedCreateRepoConfig bool `json:"supported_create_repo_config,omitempty"`
 }
 
 // AdapterPattern provides base info and capability declarations of the registry
