@@ -26,6 +26,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -45,6 +46,66 @@ func (c *clientTestSuite) TestPing() {
 
 	err := NewClient(server.URL, "", "", true).Ping()
 	c.Require().Nil(err)
+}
+
+// A non-registry endpoint can answer /v2/ with 200 and a page, and must not be
+// accepted as healthy. A registry that sets no API version header must still be
+// accepted: the OCI distribution spec does not define that header.
+func (c *clientTestSuite) TestPingResponseValidation() {
+	cases := []struct {
+		name        string
+		contentType string
+		body        []byte
+		headers     map[string]string
+		rejected    bool
+	}{
+		{name: "html page", contentType: "text/html; charset=utf-8", body: []byte("<!doctype html><html></html>"), rejected: true},
+		{name: "xhtml page", contentType: "application/xhtml+xml", body: []byte("<html/>"), rejected: true},
+		{name: "json body", contentType: "application/json", body: []byte("{}")},
+		{name: "empty body with html type", contentType: "text/html", body: nil},
+		// Deliberately accepted: a server that sets no Content-Type has one
+		// sniffed for it, so text/plain is not evidence of a non-registry.
+		{name: "plain text", contentType: "text/plain", body: []byte("hello")},
+		{name: "no content type", body: []byte("anything")},
+		{
+			// A positive hint must not override direct evidence that the body
+			// is a page rather than a registry response.
+			name:        "html body is rejected even with api version header",
+			contentType: "text/html",
+			body:        []byte("<html/>"),
+			headers:     map[string]string{"Docker-Distribution-Api-Version": "registry/2.0"},
+			rejected:    true,
+		},
+	}
+
+	for _, tc := range cases {
+		c.Run(tc.name, func() {
+			headers := map[string]string{}
+			for k, v := range tc.headers {
+				headers[k] = v
+			}
+			if tc.contentType != "" {
+				headers["Content-Type"] = tc.contentType
+			}
+			headers["Content-Length"] = strconv.Itoa(len(tc.body))
+
+			server := test.NewServer(
+				&test.RequestHandlerMapping{
+					Method:  http.MethodGet,
+					Pattern: "/v2/",
+					Handler: test.Handler(&test.Response{Headers: headers, Body: tc.body}),
+				})
+			defer server.Close()
+
+			err := NewClient(server.URL, "", "", true).Ping()
+			if tc.rejected {
+				c.Require().NotNil(err)
+				c.True(errors.IsErr(err, errors.BadRequestCode))
+				return
+			}
+			c.Require().Nil(err)
+		})
+	}
 }
 
 func (c *clientTestSuite) TestCatalog() {
@@ -323,6 +384,53 @@ func (c *clientTestSuite) TestPullBlob() {
 	b, err := io.ReadAll(blob)
 	c.Require().Nil(err)
 	c.EqualValues(data, b)
+}
+
+// An upstream answering a blob URL with a web page is rejected before any
+// bytes are committed downstream. This is a fast path only; blob integrity is
+// enforced by digest verification in the proxy controller.
+func (c *clientTestSuite) TestPullBlobNonBlobContentType() {
+	for _, contentType := range []string{"text/html; charset=utf-8", "application/xhtml+xml"} {
+		page := []byte("<!doctype html><html><body>not a blob</body></html>")
+		server := test.NewServer(
+			&test.RequestHandlerMapping{
+				Method:  http.MethodGet,
+				Pattern: "/v2/library/hello-world/blobs/digest",
+				Handler: test.Handler(&test.Response{
+					Headers: map[string]string{
+						"Content-Type":   contentType,
+						"Content-Length": strconv.Itoa(len(page)),
+					},
+					Body: page,
+				}),
+			})
+
+		_, _, err := NewClient(server.URL, "", "", true).PullBlob("library/hello-world", "digest")
+		c.Require().NotNil(err, contentType)
+		c.True(errors.IsErr(err, errors.BadGatewayCode), contentType)
+		server.Close()
+	}
+}
+
+func (c *clientTestSuite) TestPullBlobChunkNonBlobContentType() {
+	page := []byte("<!doctype html><html><body>not a blob</body></html>")
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/v2/library/hello-world/blobs/digest",
+			Handler: test.Handler(&test.Response{
+				Headers: map[string]string{
+					"Content-Type":   "text/html; charset=utf-8",
+					"Content-Length": strconv.Itoa(len(page)),
+				},
+				Body: page,
+			}),
+		})
+	defer server.Close()
+
+	_, _, err := NewClient(server.URL, "", "", true).PullBlobChunk("library/hello-world", "digest", 0, 0, 10)
+	c.Require().NotNil(err)
+	c.True(errors.IsErr(err, errors.BadGatewayCode))
 }
 
 func (c *clientTestSuite) TestPushBlob() {
