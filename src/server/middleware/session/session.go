@@ -16,6 +16,7 @@ package session
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
@@ -33,9 +34,19 @@ const (
 func Middleware() func(http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Determine if the external endpoint utilizes TLS (HTTPS)
+			secure := true
+			ep, err := config.ExtEndpoint()
+			if err == nil && strings.HasPrefix(strings.ToLower(ep), "http://") {
+				secure = false
+			}
+			if secure {
+				r.URL.Scheme = "https"
+			}
+
 			// We can check the cookie directly b/c the filter and controllerRegistry is executed after middleware, so no session
 			// cookie is added by beego.
-			_, err := r.Cookie(config.SessionCookieName)
+			_, err = r.Cookie(config.SessionCookieName)
 			if err == nil {
 				r = r.WithContext(lib.WithCarrySession(r.Context(), true))
 			}
