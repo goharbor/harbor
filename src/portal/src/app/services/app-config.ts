@@ -32,6 +32,7 @@ export class AppConfig {
     banner_message: string;
     current_time: string;
     oidc_provider_name: string;
+    gc_max_workers?: number;
 
     constructor() {
         // Set default value

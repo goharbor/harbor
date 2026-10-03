@@ -1251,7 +1251,10 @@
         "DRY_RUN_SUCCESS": "모의 테스트가 성공적으로 실행됐습니다",
         "DELETE_DETAIL": "{{blob}} blob(s) and {{manifest}} manifest(s) deleted, {{size}} space freed up",
         "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) and {{manifest}} manifest(s) could be deleted, {{size}} space could be freed up",
-        "WORKERS_TOOLTIP": "가비지 컬렉션 작업을 병렬로 실행할 수 있는 작업자 수를 설정합니다. 기본값은 1입니다."
+        "WORKERS_TOOLTIP": "가비지 컬렉션 작업을 병렬로 실행할 수 있는 작업자 수를 설정합니다. 기본값은 1입니다.",
+        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts.",
+        "WORKERS_HELPER_LIMIT": "Max: {{max}} Worker. Set by GC_MAX_WORKERS env var",
+        "WORKERS_HELPER_LIMIT_UNKNOWN": "Saving may enforce an upper limit configured by your deployment operator."
     },
     "RETAG": {
         "MSG_SUCCESS": "아티팩트를 성공적으로 복사했습니다.",

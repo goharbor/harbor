@@ -107,6 +107,10 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		res.ReadOnly = &d.Protected.ReadOnly
 		res.RegistryStorageProviderName = &d.Protected.RegistryStorageProviderName
 		res.NotificationEnable = &d.Protected.NotificationEnable
+		if d.Protected.GCMaxWorkers > 0 {
+			gcMaxWorkers := int64(d.Protected.GCMaxWorkers)
+			res.GcMaxWorkers = &gcMaxWorkers
+		}
 		currentTime := strfmt.DateTime(d.Protected.CurrentTime)
 		res.CurrentTime = &currentTime
 	}
