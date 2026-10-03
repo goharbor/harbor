@@ -37,6 +37,17 @@ type Abstractor interface {
 // The batch is validated before anything is written, since a half-applied batch
 // would make dispatch depend on the order of the media types.
 func Register(abstractor Abstractor, mediaTypes ...string) error {
+	// Get treats any present entry as usable, so a nil stored here would panic on
+	// the next artifact of that media type instead of failing at registration.
+	if abstractor == nil {
+		return errors.New("refusing to register a nil manifest abstractor")
+	}
+	// Registering nothing would otherwise succeed and only surface as an
+	// unsupported media type at dispatch, far from the faulty call.
+	if len(mediaTypes) == 0 {
+		return errors.New("no manifest media types given to register")
+	}
+
 	seen := make(map[string]struct{}, len(mediaTypes))
 	for _, mediaType := range mediaTypes {
 		if _, exist := Registry[mediaType]; exist {
