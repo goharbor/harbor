@@ -16,6 +16,7 @@ package registry
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -233,6 +234,108 @@ func (r *registryTestSuite) TestGetWhitelistedAdapters() {
 			result := getWhitelistedAdapters(context.TODO())
 			r.Equal(tt.expected, result)
 		})
+	}
+}
+
+func (r *registryTestSuite) TestCheckRegistry() {
+	ctx := context.TODO()
+
+	// Case 1: Registry was Healthy, IsHealthy returns (true, nil) -> status unchanged, no Update call
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Healthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(r.adapter, nil)
+		mock.OnAnything(r.adapter, "HealthCheck").Return(model.Healthy, nil)
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Healthy, reg.Status)
+		r.regMgr.AssertNotCalled(r.T(), "Update", mock.Anything, mock.Anything, mock.Anything)
+	}
+
+	// Case 2: Registry was Healthy, IsHealthy returns (false, nil) -> status updated to Unhealthy
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Healthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(r.adapter, nil)
+		mock.OnAnything(r.adapter, "HealthCheck").Return(model.Unhealthy, nil)
+		mock.OnAnything(r.regMgr, "Update").Return(nil)
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Unhealthy, reg.Status)
+		r.regMgr.AssertCalled(r.T(), "Update", ctx, reg, "Status")
+	}
+
+	// Case 3: Registry was Healthy, adapter creation fails with error -> status updated to Unhealthy (fixes Issue #24033)
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Healthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(nil, errors.New("connection timeout"))
+		mock.OnAnything(r.regMgr, "Update").Return(nil)
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Unhealthy, reg.Status)
+		r.regMgr.AssertCalled(r.T(), "Update", ctx, reg, "Status")
+	}
+
+	// Case 4: Registry was Healthy, adapter HealthCheck returns error -> status updated to Unhealthy
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Healthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(r.adapter, nil)
+		mock.OnAnything(r.adapter, "HealthCheck").Return(model.Unhealthy, errors.New("upstream unreachable"))
+		mock.OnAnything(r.regMgr, "Update").Return(nil)
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Unhealthy, reg.Status)
+		r.regMgr.AssertCalled(r.T(), "Update", ctx, reg, "Status")
+	}
+
+	// Case 5: Registry was already Unhealthy, adapter creation fails -> status remains Unhealthy, no redundant Update call
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Unhealthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(nil, errors.New("connection timeout"))
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Unhealthy, reg.Status)
+		r.regMgr.AssertNotCalled(r.T(), "Update", mock.Anything, mock.Anything, mock.Anything)
+	}
+
+	// Case 6: Registry was Unhealthy, recovers to Healthy -> status updated to Healthy
+	{
+		r.SetupTest()
+		reg := &model.Registry{
+			ID:     1,
+			Status: model.Unhealthy,
+		}
+		mock.OnAnything(r.regMgr, "CreateAdapter").Return(r.adapter, nil)
+		mock.OnAnything(r.adapter, "HealthCheck").Return(model.Healthy, nil)
+		mock.OnAnything(r.regMgr, "Update").Return(nil)
+
+		r.ctl.checkRegistry(ctx, reg)
+
+		r.Equal(model.Healthy, reg.Status)
+		r.regMgr.AssertCalled(r.T(), "Update", ctx, reg, "Status")
 	}
 }
 
