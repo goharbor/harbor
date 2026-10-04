@@ -62,7 +62,6 @@
     // Clarity UI. Required
     "@cds/core": "6.4.2",
     "@clr/angular": "15.4.0",
-    "@clr/icons": "13.0.2",
     "@clr/ui": "15.4.0",
 
     // For Harbor i18n functionality. Required
