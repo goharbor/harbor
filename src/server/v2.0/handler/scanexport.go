@@ -330,7 +330,7 @@ func (se *scanDataExportAPI) requireProjectsAccess(ctx context.Context, pids []i
 func (se *scanDataExportAPI) validateScanExportParams(ctx context.Context, params operation.ExportScanDataParams) error {
 	// check if the MIME type for the export is the Generic vulnerability data
 	if params.XScanDataType != v1.MimeTypeGenericVulnerabilityReport {
-		return errors.BadRequestError(errors.Errorf("Unsupported MIME type : %s", params.XScanDataType))
+		return errors.BadRequestError(errors.Errorf("Unsupported MIME type: %s", params.XScanDataType))
 	}
 
 	criteria := params.Criteria
@@ -340,7 +340,7 @@ func (se *scanDataExportAPI) validateScanExportParams(ctx context.Context, param
 
 	// validate project id, currently we only support single project
 	if len(criteria.Projects) != 1 {
-		return errors.BadRequestError(errors.Errorf("only support export single project, invalid value: %v", criteria.Projects))
+		return errors.BadRequestError(errors.Errorf("Only exporting a single project is supported; invalid value: %v", criteria.Projects))
 	}
 
 	// check whether the project exists
