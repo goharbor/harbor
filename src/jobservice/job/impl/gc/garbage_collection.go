@@ -429,6 +429,9 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 				// for the foreign layer, as it's not stored in the storage, no need to call the delete api and count size, but still have to delete the DB record.
 				if !blob.IsForeignLayer() {
 					gc.logger.Infof("[%s][%d/%d] delete blob from storage: %s", uid, localIndex, total, blob.Digest)
+					// a not found error is ignored to keep the GC going, but such a blob is not removed by this run,
+					// so its size must not be counted as freed space.
+					notFound := false
 					if err := retry.Retry(func() error {
 						return ignoreNotFound(func() error {
 							err := gc.registryCtlClient.DeleteBlob(blob.Digest)
@@ -436,6 +439,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 							if err == readonly.Err {
 								return retry.Abort(err)
 							}
+							notFound = errors.IsNotFoundErr(err)
 							return err
 						})
 					}, retry.Callback(func(err error, sleep time.Duration) {
@@ -454,7 +458,11 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 						}
 						continue
 					}
-					atomic.AddInt64(&sweepSize, blob.Size)
+					if notFound {
+						gc.logger.Warningf("[%s][%d/%d] blob not found in storage, its size is not counted as freed space: %s", uid, localIndex, total, blob.Digest)
+					} else {
+						atomic.AddInt64(&sweepSize, blob.Size)
+					}
 				}
 
 				gc.logger.Infof("[%s][%d/%d] delete blob record from database: %d, %s", uid, localIndex, total, blob.ID, blob.Digest)
