@@ -11,7 +11,7 @@ RUN case "$(dpkg --print-architecture)" in \
     echo "Spectral version: $SPECTRAL_VERSION" && \
     URL="https://github.com/stoplightio/spectral/releases/download/$SPECTRAL_VERSION/spectral-linux-$ARCH" && \
     echo "URL: $URL" && \
-    curl -fsSL -o /usr/bin/spectral $URL && chmod +x /usr/bin/spectral
+    curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors -o /usr/bin/spectral $URL && chmod +x /usr/bin/spectral
 
 ENTRYPOINT ["/usr/bin/spectral"]
 CMD ["--version"]
