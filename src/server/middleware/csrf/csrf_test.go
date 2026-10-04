@@ -59,7 +59,7 @@ const host = "harbor.example.com"
 // TestMiddlewareAllows covers the traffic that must keep working. Note that no
 // case names a configured endpoint: each request is judged on the origin the
 // client actually used, which is what lets one Harbor answer on several
-// ingresses, over either scheme, behind a proxy that rewrites Host.
+// ingresses, over either scheme, on any port.
 func TestMiddlewareAllows(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -92,21 +92,15 @@ func TestMiddlewareAllows(t *testing.T) {
 			headers: map[string]string{"Origin": "https://" + host},
 		},
 		{
-			name:    "same-origin browser write over plain HTTP behind a Host-rewriting proxy",
-			method:  http.MethodPost,
-			host:    host,
-			headers: map[string]string{"Origin": "http://" + host + ":8099"},
-		},
-		{
 			name:    "plain HTTP, proxy preserves the port, Origin matches exactly",
 			method:  http.MethodPost,
 			host:    host + ":8099",
 			headers: map[string]string{"Origin": "http://" + host + ":8099"},
 		},
 		{
-			name:    "IPv6 literal, port dropped by the proxy",
+			name:    "plain HTTP to an IPv6 literal, Origin matches exactly",
 			method:  http.MethodPost,
-			host:    "[::1]",
+			host:    "[::1]:8099",
 			headers: map[string]string{"Origin": "http://[::1]:8099"},
 		},
 		{
@@ -162,6 +156,10 @@ func TestMiddlewareRejects(t *testing.T) {
 			headers: map[string]string{"Origin": "http://evil." + host + ":8099"},
 		},
 		{
+			name:    "no Sec-Fetch-Site, same host on another port",
+			headers: map[string]string{"Origin": "http://" + host + ":8099"},
+		},
+		{
 			name:    "no Sec-Fetch-Site, a look-alike host that only suffixes the real one",
 			headers: map[string]string{"Origin": "http://" + host + ".evil.example.com:8099"},
 		},
@@ -209,6 +207,14 @@ func TestMiddlewareSessionCarryingWrite(t *testing.T) {
 		map[string]string{"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example.com"}, true)
 	assert.Equal(t, http.StatusForbidden, code)
 	assert.False(t, called, "cross-origin session-carrying write must be refused")
+
+	// Cookies do not isolate by port, so another service on the same host
+	// would carry the session. Over plain HTTP there is no Sec-Fetch-Site and
+	// the port is all that tells the two origins apart.
+	code, called = serve(t, http.MethodPost, host+":8099", "/api/v2.0/projects",
+		map[string]string{"Origin": "http://" + host + ":9000"}, true)
+	assert.Equal(t, http.StatusForbidden, code)
+	assert.False(t, called, "same-host, different-port session-carrying write must be refused")
 }
 
 // TestCsrfSkipper pins which routes the check applies to. Anything not carrying
