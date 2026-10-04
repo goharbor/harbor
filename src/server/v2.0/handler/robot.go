@@ -171,7 +171,7 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 		level = query.Keywords["Level"].(string)
 		if level == robot.LEVELPROJECT {
 			if _, ok := query.Keywords["ProjectID"]; !ok {
-				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project robots"))
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("Project ID must be specified when querying project robots"))
 			}
 			pid, err := strconv.ParseInt(query.Keywords["ProjectID"].(string), 10, 64)
 			if err != nil || pid <= 0 {
@@ -328,18 +328,18 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	}
 
 	if len(permissions) == 0 {
-		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Permission list cannot be empty").WithCode(errors.BadRequestCode)
 	}
 
 	for _, perm := range permissions {
 		if len(perm.Access) == 0 {
-			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("Access list cannot be empty").WithCode(errors.BadRequestCode)
 		}
 	}
 
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
-		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Project robot account cannot be assigned permissions for multiple projects").WithCode(errors.BadRequestCode)
 	}
 
 	provider := rbac.GetPermissionProvider()
@@ -429,7 +429,7 @@ func validateName(name string) error {
 	robotNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
 	legal := regexp.MustCompile(robotNameReg).MatchString(name)
 	if !legal {
-		return errors.BadRequestError(nil).WithMessage("robot name is not in lower case or contains illegal characters")
+		return errors.BadRequestError(nil).WithMessage("Robot name must be lowercase and cannot contain invalid characters")
 	}
 	return nil
 }
