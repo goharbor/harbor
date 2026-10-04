@@ -124,7 +124,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
-	enableCADownload := caStatErr == nil && strings.HasPrefix(extURL, "https://")
+	enableCADownload := caStatErr == nil && strings.HasPrefix(strings.ToLower(extURL), "https://")
 	res.Protected = &protectedData{
 		CurrentTime:                 time.Now(),
 		ReadOnly:                    config.ReadOnly(ctx),

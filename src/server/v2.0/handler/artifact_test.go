@@ -15,6 +15,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,13 +25,16 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/lib/errors"
 	accessorymodel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	basemodel "github.com/goharbor/harbor/src/pkg/accessory/model/base"
 	pkg_art "github.com/goharbor/harbor/src/pkg/artifact"
+	repomodel "github.com/goharbor/harbor/src/pkg/repository/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
+	repositorytesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	scantesting "github.com/goharbor/harbor/src/testing/controller/scan"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
@@ -93,6 +97,7 @@ type ArtifactTestSuite struct {
 
 	artCtl  *artifacttesting.Controller
 	scanCtl *scantesting.Controller
+	repoCtl *repositorytesting.Controller
 
 	report1 *scan.Report
 	report2 *scan.Report
@@ -101,11 +106,13 @@ type ArtifactTestSuite struct {
 func (suite *ArtifactTestSuite) SetupSuite() {
 	suite.artCtl = &artifacttesting.Controller{}
 	suite.scanCtl = &scantesting.Controller{}
+	suite.repoCtl = &repositorytesting.Controller{}
 
 	suite.Config = &restapi.Config{
 		ArtifactAPI: &artifactAPI{
 			artCtl:  suite.artCtl,
 			scanCtl: suite.scanCtl,
+			repoCtl: suite.repoCtl,
 		},
 	}
 
@@ -286,6 +293,64 @@ func (suite *ArtifactTestSuite) TestGetArtifactInheritedAccessories() {
 		// a consumer can see this signature does not verify against the requested digest
 		suite.Equal("sha256:parent", acc["subject_artifact_digest"])
 		suite.NotEqual(child, acc["subject_artifact_digest"])
+	}
+}
+
+func (suite *ArtifactTestSuite) TestListArtifacts() {
+	times := 3
+	suite.Security.On("IsAuthenticated").Return(true).Times(times)
+	suite.Security.On("IsSysAdmin").Return(true).Times(times)
+	mock.OnAnything(suite.Security, "Can").Return(true).Times(times)
+
+	url := "/projects/library/repositories/photon/artifacts"
+
+	{
+		// the repository does not exist: 404 with the standard error payload, and no artifact query
+		suite.repoCtl.On("GetByName", mock.Anything, "library/photon").
+			Return(nil, errors.NotFoundError(nil).WithMessage("repository library/photon not found")).Once()
+
+		res, err := suite.Get(url)
+		suite.NoError(err)
+		suite.Equal(404, res.StatusCode)
+		var body map[string]any
+		suite.NoError(json.NewDecoder(res.Body).Decode(&body))
+		errs, ok := body["errors"].([]any)
+		suite.Require().True(ok)
+		suite.Require().Len(errs, 1)
+		suite.Equal(errors.NotFoundCode, errs[0].(map[string]any)["code"])
+		suite.artCtl.AssertNotCalled(suite.T(), "Count", mock.Anything, mock.Anything)
+		suite.artCtl.AssertNotCalled(suite.T(), "List", mock.Anything, mock.Anything, mock.Anything)
+	}
+
+	{
+		// the repository exists but holds no artifacts: still an empty 200 list
+		suite.repoCtl.On("GetByName", mock.Anything, "library/photon").
+			Return(&repomodel.RepoRecord{RepositoryID: 1, Name: "library/photon"}, nil).Once()
+		suite.artCtl.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil).Once()
+		suite.artCtl.On("List", mock.Anything, mock.Anything, mock.Anything).Return([]*artifact.Artifact{}, nil).Once()
+
+		var body []any
+		res, err := suite.GetJSON(url, &body)
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+		suite.Empty(body)
+		suite.Equal("0", res.Header.Get("X-Total-Count"))
+	}
+
+	{
+		// any other lookup failure is propagated, not turned into a 404 or an empty list
+		suite.repoCtl.On("GetByName", mock.Anything, "library/photon").
+			Return(nil, errors.New("database unavailable")).Once()
+
+		res, err := suite.Get(url)
+		suite.NoError(err)
+		suite.Equal(500, res.StatusCode)
+		var body map[string]any
+		suite.NoError(json.NewDecoder(res.Body).Decode(&body))
+		errs, ok := body["errors"].([]any)
+		suite.Require().True(ok)
+		suite.Require().Len(errs, 1)
+		suite.Equal(errors.GeneralCode, errs[0].(map[string]any)["code"])
 	}
 }
 

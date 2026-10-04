@@ -92,7 +92,7 @@ func (c *controller) validate(ctx context.Context, registry *model.Registry) err
 	if len(registry.Name) > 64 {
 		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the max length of name is 64")
 	}
-	url, err := lib.ValidateHTTPURL(registry.URL)
+	url, err := lib.NormalizeAndValidateHTTPURL(registry.URL)
 	if err != nil {
 		return err
 	}

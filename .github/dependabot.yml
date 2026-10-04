@@ -23,6 +23,17 @@ updates:
     reviewers:
       - "OrlinVasilev"
     groups:
+      # codeql-analysis.yml runs codeql-action/init and codeql-action/analyze
+      # in one job. init writes a config file stamped with its version and
+      # analyze rejects it from any other version, so both must be bumped
+      # in the same pull request.
+      codeql-action:
+        patterns:
+          - "github/codeql-action*"
+      codeql-action-security:
+        applies-to: security-updates
+        patterns:
+          - "github/codeql-action*"
       patch-updates:
         patterns:
           - "*"
@@ -100,6 +111,19 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
+    # Angular majors are a migration, not a bump: the new major pins a new
+    # TypeScript major, changes the ng-swagger-gen output and needs the wrapper
+    # libraries (ngx-markdown, @clr/*) to follow. Keep the group on the current
+    # major; upgrade Angular in a dedicated PR. See #23854 and #23856.
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-devkit/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       # The Angular packages pin each other with exact peer dependencies, and
       # @angular-devkit/build-angular and @angular/core pin typescript and
@@ -133,6 +157,19 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "release-note/bump-version"
+    # Angular majors are a migration, not a bump: the new major pins a new
+    # TypeScript major, changes the ng-swagger-gen output and needs the wrapper
+    # libraries (ngx-markdown, @clr/*) to follow. Keep the group on the current
+    # major; upgrade Angular in a dedicated PR. See #23854 and #23856.
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-devkit/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-eslint/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       angular:
         patterns:
