@@ -454,7 +454,7 @@ Export CVEs
     Retry Text Input  ${export_cve_filter_tag_input}  ${tags}
     Select Filter Label For CVE Export  @{labels}
     Retry Text Input  ${export_cve_filter_cveid_input}  ${cve_ids}
-    Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Trigger exporting CVEs successfully!
+    Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Triggered exporting CVEs successfully!
 
 Should Not Be Export CVEs
      Retry Element Click  ${project_action_xpath}

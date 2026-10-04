@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
+	testingMeta "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
@@ -194,6 +195,77 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().NotNil(err)
 	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
 	s.Require().Nil(p1)
+}
+
+func (s *ControllerTestSuite) TestDeleteRetentionByProject() {
+	const projectID = int64(2)
+
+	projectMetaMgr := &testingMeta.Manager{}
+	execMgr := &testingTask.ExecutionManager{}
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{}, nil)
+	projectMetaMgr.On("Delete", mock.Anything, projectID, "retention_id").Return(nil)
+
+	c := defaultController{
+		manager:        retention.NewManager(),
+		execMgr:        execMgr,
+		taskMgr:        &testingTask.Manager{},
+		launcher:       &fakeLauncher{},
+		projectManager: &project.Manager{},
+		projectMetaMgr: projectMetaMgr,
+		repositoryMgr:  &repository.Manager{},
+		scheduler:      &fakeRetentionScheduler{},
+	}
+
+	ctx := orm.Context()
+	id, err := c.CreateRetention(ctx, &policy.Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Template: "latestPushedK",
+				Parameters: rule.Parameters{
+					"latestPushedK": 10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "**",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &policy.Trigger{
+			Kind: "Schedule",
+			Settings: map[string]any{
+				"cron": "0 22 11 * * *",
+			},
+		},
+		Scope: &policy.Scope{
+			Level:     "project",
+			Reference: projectID,
+		},
+	})
+	s.Require().Nil(err)
+	s.Require().True(id > 0)
+
+	s.Require().Nil(c.DeleteRetentionByProject(ctx, projectID))
+
+	p, err := c.GetRetention(ctx, id)
+	s.Require().NotNil(err)
+	s.Require().Nil(p)
+
+	projectMetaMgr.AssertCalled(s.T(), "Delete", mock.Anything, projectID, "retention_id")
 }
 
 func (s *ControllerTestSuite) TestExecution() {

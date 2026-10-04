@@ -31,6 +31,7 @@ on:
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
+  merge_group:
   push:
     # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
