@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
@@ -400,6 +401,38 @@ func (suite *gcTestSuite) TestSweep() {
 
 	mock.OnAnything(gc.registryCtlClient, "DeleteBlob").Return(nil)
 	suite.Nil(gc.sweep(ctx))
+}
+
+func (suite *gcTestSuite) TestSweepBlobNotFound() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
+	ctx.On("Checkin", `{"freed_space":0,"purged_blobs":1,"purged_manifests":0}`).Return(nil)
+
+	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
+	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
+
+	gc := &GarbageCollector{
+		artCtl:            suite.artifactCtl,
+		artrashMgr:        suite.artrashMgr,
+		blobMgr:           suite.blobMgr,
+		registryCtlClient: suite.registryCtlClient,
+		deleteSet: []*pkg_blob.Blob{
+			{
+				ID:          1,
+				Digest:      suite.DigestString(),
+				ContentType: schema2.MediaTypeLayer,
+				Size:        1234,
+			},
+		},
+		workers: 3,
+	}
+
+	// the blob is missing from the storage: the GC must still succeed, but must not count its size as freed
+	mock.OnAnything(gc.registryCtlClient, "DeleteBlob").Return(errors.NotFoundError(nil))
+	suite.Nil(gc.sweep(ctx))
+	ctx.AssertCalled(suite.T(), "Checkin", `{"freed_space":0,"purged_blobs":1,"purged_manifests":0}`)
 }
 
 func (suite *gcTestSuite) TestSaveRes() {

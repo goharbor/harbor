@@ -266,8 +266,8 @@ func (oc *OIDCController) RedirectLogout() {
 		return
 	}
 	if oidcSettings == nil {
-		log.Error("OIDC settings is missing.")
-		oc.SendInternalServerError(fmt.Errorf("OIDC settings is missing"))
+		log.Error("OIDC settings are missing.")
+		oc.SendInternalServerError(fmt.Errorf("OIDC settings are missing"))
 		return
 	}
 	if !oidcSettings.Logout {
