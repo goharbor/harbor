@@ -119,7 +119,7 @@ var (
 		"ResourceReplicationPolicy":  rbac.ResourceReplicationPolicy,
 		"ResourceSystemVolumes":      rbac.ResourceSystemVolumes, "ResourcePurgeAuditLog": rbac.ResourcePurgeAuditLog,
 		"ResourceExportCVE": rbac.ResourceExportCVE, "ResourceJobServiceMonitor": rbac.ResourceJobServiceMonitor,
-		"ResourceSecurityHub": rbac.ResourceSecurityHub,
+		"ResourceSecurityHub": rbac.ResourceSecurityHub, "ResourceRole": rbac.ResourceRole,
 	}
 )
 

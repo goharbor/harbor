@@ -3616,7 +3616,10 @@ paths:
           $ref: '#/responses/500'
     post:
       summary: Create a role
-      description: Create a role
+      description: |
+        Create a role
+
+        Permissions required: system-level `role:create`
       tags:
         - role
       operationId: CreateRole
@@ -3681,7 +3684,10 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update a role account
-      description: This endpoint updates specific role information by role ID.
+      description: |
+        This endpoint updates specific role information by role ID.
+
+        Permissions required: system-level `role:update`
       tags:
         - role
       operationId: UpdateRole
@@ -3711,7 +3717,10 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete a role account
-      description: This endpoint deletes specific role information by role ID.
+      description: |
+        This endpoint deletes specific role information by role ID.
+
+        Permissions required: system-level `role:delete`
       tags:
         - role
       operationId: DeleteRole
