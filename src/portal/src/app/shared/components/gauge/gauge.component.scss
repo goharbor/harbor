@@ -63,6 +63,7 @@
     .esxc-gauge-circle-fill {
         height: 60px;
         border-radius: 30px;
+        /* stylelint-disable-next-line property-no-deprecated */
         clip: rect(30px, 60px, 60px, 0);
     }
 
@@ -149,6 +150,7 @@
      .esxc-gauge-circle-fill {
         height: 130px;
         border-radius: 130px;
+        /* stylelint-disable-next-line property-no-deprecated */
         clip: rect(65px, 130px, 130px, 0);
     }
     
@@ -223,6 +225,7 @@
     .esxc-gauge-circle-fill {
         height: 260px;
         border-radius: 130px;
+        /* stylelint-disable-next-line property-no-deprecated */
         clip: rect(130px, 260px, 260px, 0);
     }
     
