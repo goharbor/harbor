@@ -186,6 +186,16 @@ func (suite *BasicSchedulerTestSuite) TestUnScheduleSharedScore() {
 	}
 }
 
+// TestRemovePolicyError tests that a redis error while looking up the policy is returned
+func (suite *BasicSchedulerTestSuite) TestRemovePolicyError() {
+	conn := suite.pool.Get()
+	require.NoError(suite.T(), conn.Close())
+
+	removed, err := removePolicy(conn, suite.namespace, "closed_conn_policy", time.Now().Unix())
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), int64(0), removed)
+}
+
 // setupDirtyJobs adds dirty jobs for testing dirty jobs clear method in the Start()
 func (suite *BasicSchedulerTestSuite) setupDirtyJobs() {
 	// Add one fake job for next testing
