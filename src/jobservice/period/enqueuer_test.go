@@ -136,11 +136,14 @@ func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
 
 	key := rds.RedisKeyScheduled(suite.namespace)
 
+	ctx := context.WithValue(context.Background(), utils.NodeID, "fake_node_ID")
+	localEnqueuer := newEnqueuer(ctx, suite.namespace, suite.pool, suite.enqueuer.ctl)
+
 	workerConn := suite.pool.Get()
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		suite.enqueuer.scheduleNextJobs(p, workerConn)
+		localEnqueuer.scheduleNextJobs(p, workerConn)
 	}()
 
 	select {
