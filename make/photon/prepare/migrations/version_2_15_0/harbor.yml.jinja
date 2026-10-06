@@ -643,6 +643,16 @@ proxy:
     - trivy
 {% endif %}
 
+# Outbound webhook and Slack notification requests reject private, loopback, link-local, and
+# cloud-metadata (169.254.169.254) addresses by default (CWE-918). Enable this only when Harbor
+# must deliver webhooks to a trusted internal endpoint; it weakens SSRF protection.
+network:
+{% if network is defined and network.allow_private_network_access is defined %}
+  allow_private_network_access: {{ (network.allow_private_network_access or false) | lower }}
+{% else %}
+  allow_private_network_access: false
+{% endif %}
+
 {% if metric is defined %}
 metric:
   enabled: {{ metric.enabled | lower }}
