@@ -47,8 +47,13 @@ type Registration struct {
 
 	// Authentication settings
 	// "","Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key" can be supported
-	Auth             string `orm:"column(auth);size(16)" json:"auth"`
-	AccessCredential string `orm:"column(access_cred);null;size(512)" json:"access_credential,omitempty"`
+	Auth string `orm:"column(auth);size(16)" json:"auth"`
+	// filter:"false" keeps access_cred out of the generic q= ORM filter builder: it holds the
+	// Authorization value Harbor presents to the scanner adapter, and a filterable secret column
+	// is a blind boolean oracle, matching reg.access_secret. New writes are "<enc-v1>" ciphertext
+	// (manager.encryptCredential), but rows saved before that and never updated stay plaintext,
+	// since there is no data migration and DecryptSecret passes unprefixed values through.
+	AccessCredential string `orm:"column(access_cred);null;size(512)" filter:"false" json:"access_credential,omitempty"`
 
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
