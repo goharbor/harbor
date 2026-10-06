@@ -252,7 +252,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 			days = int(*req.RetentionDays)
 		}
 		plc := policy.WithNDaysSinceLastPull(projectID, days)
-		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
+		retentionCtx, err := a.retentionContext(ctx, secCtx, ownerID)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		retentionID, err := a.retentionCtl.CreateRetention(retentionCtx, plc)
 		if err != nil {
 			return a.SendError(ctx, err)
 		}
@@ -270,6 +274,23 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	}
 
 	return operation.NewCreateProjectCreated().WithLocation(location)
+}
+
+func (a *projectAPI) retentionContext(
+	ctx context.Context,
+	secCtx security.Context,
+	ownerID int,
+) (context.Context, error) {
+	_, isRobot := secCtx.(*robotSec.SecurityContext)
+	if !isRobot && !secCtx.IsSolutionUser() {
+		return ctx, nil
+	}
+
+	owner, err := a.userCtl.Get(ctx, ownerID, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load proxy project owner %d: %w", ownerID, err)
+	}
+	return security.NewContext(ctx, local.NewSecurityContext(owner)), nil
 }
 
 func (a *projectAPI) DeleteProject(ctx context.Context, params operation.DeleteProjectParams) middleware.Responder {
@@ -433,7 +454,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 }
 
 func (a *projectAPI) HeadProject(ctx context.Context, params operation.HeadProjectParams) middleware.Responder {
-	if err := a.RequireAuthenticated(ctx); err != nil {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 

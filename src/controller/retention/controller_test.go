@@ -16,6 +16,7 @@ package retention
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -24,16 +25,26 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
+	localSecurity "github.com/goharbor/harbor/src/common/security/local"
+	robotSecurity "github.com/goharbor/harbor/src/common/security/robot"
+	projectCtl "github.com/goharbor/harbor/src/controller/project"
+	robotCtl "github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
+	projectmodels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	robotmodel "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	projectcontrollertesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	testingMeta "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
@@ -171,7 +182,11 @@ func (s *ControllerTestSuite) TestPolicy() {
 		},
 	}
 
-	ctx := orm.Context()
+	ctx := security.NewContext(orm.Context(), localSecurity.NewSecurityContext(&models.User{
+		UserID:       1,
+		Username:     "admin",
+		SysAdminFlag: true,
+	}))
 	id, err := c.CreateRetention(ctx, p1)
 	s.Require().Nil(err)
 	s.Require().True(id > 0)
@@ -216,7 +231,11 @@ func (s *ControllerTestSuite) TestDeleteRetentionByProject() {
 		scheduler:      &fakeRetentionScheduler{},
 	}
 
-	ctx := orm.Context()
+	ctx := security.NewContext(orm.Context(), localSecurity.NewSecurityContext(&models.User{
+		UserID:       1,
+		Username:     "admin",
+		SysAdminFlag: true,
+	}))
 	id, err := c.CreateRetention(ctx, &policy.Metadata{
 		Algorithm: "or",
 		Rules: []rule.Metadata{
@@ -266,6 +285,104 @@ func (s *ControllerTestSuite) TestDeleteRetentionByProject() {
 	s.Require().Nil(p)
 
 	projectMetaMgr.AssertCalled(s.T(), "Delete", mock.Anything, projectID, "retention_id")
+}
+
+func (s *ControllerTestSuite) TestExecutionPrincipalPersistence() {
+	execMgr := &testingTask.ExecutionManager{}
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{}, nil)
+	c := &defaultController{
+		manager:   retention.NewManager(),
+		execMgr:   execMgr,
+		scheduler: &fakeRetentionScheduler{},
+	}
+
+	localCtx := security.NewContext(orm.Context(), localSecurity.NewSecurityContext(&models.User{
+		UserID: 1, Username: "admin", SysAdminFlag: true,
+	}))
+	proxyID, err := c.CreateRetention(localCtx, policy.WithNDaysSinceLastPull(2, 7))
+	s.Require().NoError(err)
+	stored := s.requireExecutionPrincipal(c, localCtx, proxyID, `"type":"local","id":1`)
+
+	updaterCtx := security.NewContext(orm.Context(), localSecurity.NewSecurityContext(&models.User{
+		UserID: 2, Username: "maintainer", SysAdminFlag: true,
+	}))
+	s.Require().NoError(c.UpdateRetention(updaterCtx, stored))
+	s.requireExecutionPrincipal(c, updaterCtx, proxyID, `"type":"local","id":2`)
+	s.Require().NoError(c.DeleteRetention(updaterCtx, proxyID))
+
+	robotCtx := security.NewContext(orm.Context(), robotSecurity.NewSecurityContext(&robotCtl.Robot{
+		Robot: robotmodel.Robot{ID: 42, Name: "proxy-cleaner"},
+	}))
+	robotID, err := c.CreateRetention(robotCtx, policy.WithNDaysSinceLastPull(3, 7))
+	s.Require().NoError(err)
+	stored = s.requireExecutionPrincipal(c, robotCtx, robotID, `"type":"robot","id":42`)
+
+	updaterRobotCtx := security.NewContext(
+		orm.Context(),
+		robotSecurity.NewSecurityContext(&robotCtl.Robot{
+			Robot: robotmodel.Robot{ID: 43, Name: "new-proxy-cleaner"},
+		}),
+	)
+	s.Require().NoError(c.UpdateRetention(updaterRobotCtx, stored))
+	s.requireExecutionPrincipal(c, updaterRobotCtx, robotID, `"type":"robot","id":43`)
+	s.Require().NoError(c.DeleteRetention(updaterRobotCtx, robotID))
+
+	_, err = c.CreateRetention(orm.Context(), policy.WithNDaysSinceLastPull(4, 7))
+	s.Require().ErrorContains(err, "authenticated principal required")
+	unsupportedContext := &securitytesting.Context{}
+	unsupportedContext.On("IsAuthenticated").Return(true).Once()
+	unsupportedContext.On("Name").Return("secret").Once()
+	_, err = c.CreateRetention(
+		security.NewContext(orm.Context(), unsupportedContext),
+		policy.WithNDaysSinceLastPull(4, 7),
+	)
+	s.Require().ErrorContains(err, `unsupported principal type "secret"`)
+
+	originalProjectCtl := projectCtl.Ctl
+	projects := &projectcontrollertesting.Controller{}
+	projectCtl.Ctl = projects
+	s.T().Cleanup(func() {
+		projectCtl.Ctl = originalProjectCtl
+	})
+	projects.On("Get", mock.Anything, int64(4), mock.Anything).
+		Return(&projectmodels.Project{ProjectID: 4}, nil).Once()
+	projects.On("ListRoles", mock.Anything, int64(4), mock.Anything).
+		Return([]int{}, nil).Once()
+	externalAdminCtx := security.NewContext(
+		orm.Context(),
+		localSecurity.NewSecurityContext(&models.User{
+			UserID:          5,
+			Username:        "external-admin",
+			AdminRoleInAuth: true,
+		}),
+	)
+	_, err = c.CreateRetention(externalAdminCtx, policy.WithNDaysSinceLastPull(4, 7))
+	s.Require().ErrorContains(err, "cannot revalidate external group or admin permissions")
+
+	inactivePolicy := policy.WithNDaysSinceLastPull(4, 7)
+	inactivePolicy.Trigger.Settings[policy.TriggerSettingsCron] = ""
+	inactiveID, err := c.CreateRetention(orm.Context(), inactivePolicy)
+	s.Require().NoError(err)
+	storedInactivePolicy, err := c.GetRetention(orm.Context(), inactiveID)
+	s.Require().NoError(err)
+	serialized, err := json.Marshal(storedInactivePolicy)
+	s.Require().NoError(err)
+	s.NotContains(string(serialized), "execution_principal")
+	s.Require().NoError(c.DeleteRetention(orm.Context(), inactiveID))
+}
+
+func (s *ControllerTestSuite) requireExecutionPrincipal(
+	c *defaultController,
+	ctx context.Context,
+	policyID int64,
+	want string,
+) *policy.Metadata {
+	stored, err := c.GetRetention(ctx, policyID)
+	s.Require().NoError(err)
+	serialized, err := json.Marshal(stored)
+	s.Require().NoError(err)
+	s.Contains(string(serialized), want)
+	return stored
 }
 
 func (s *ControllerTestSuite) TestExecution() {
@@ -354,7 +471,11 @@ func (s *ControllerTestSuite) TestExecution() {
 		},
 	}
 
-	ctx := orm.Context()
+	ctx := security.NewContext(orm.Context(), localSecurity.NewSecurityContext(&models.User{
+		UserID:       1,
+		Username:     "admin",
+		SysAdminFlag: true,
+	}))
 	policyID, err := m.CreateRetention(ctx, p1)
 	s.Require().Nil(err)
 	s.Require().True(policyID > 0)
