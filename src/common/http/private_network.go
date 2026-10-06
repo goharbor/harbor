@@ -16,6 +16,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -172,35 +173,41 @@ func ValidatePublicNetworkTarget(ctx context.Context, resolver NetworkResolver, 
 	if privateNetworkAccessAllowed() {
 		return nil
 	}
+	_, err := resolvePublicNetworkTarget(ctx, resolver, host)
+	return err
+}
+
+// resolvePublicNetworkTarget returns the first address of a host whose addresses are all public.
+func resolvePublicNetworkTarget(ctx context.Context, resolver NetworkResolver, host string) (netip.Addr, error) {
 	host = strings.TrimSuffix(strings.ToLower(host), ".")
 	if host == "" {
-		return fmt.Errorf("target must include a hostname")
+		return netip.Addr{}, fmt.Errorf("target must include a hostname")
 	}
 	if isBlockedTargetHostname(host) {
-		return fmt.Errorf("target hostname %q is not public", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q is not public", host)
 	}
 
 	address, err := netip.ParseAddr(host)
 	if err == nil {
 		if !isPublicNetworkAddress(address) {
-			return fmt.Errorf("target address %q is not public", host)
+			return netip.Addr{}, fmt.Errorf("target address %q is not public", host)
 		}
-		return nil
+		return address, nil
 	}
 
 	if resolver == nil {
-		return fmt.Errorf("target hostname %q cannot be resolved", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q cannot be resolved", host)
 	}
 	addresses, err := resolver.LookupNetIP(ctx, "ip", host)
 	if err != nil || len(addresses) == 0 {
-		return fmt.Errorf("target hostname %q cannot be resolved", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q cannot be resolved", host)
 	}
 	for _, address := range addresses {
 		if !isPublicNetworkAddress(address) {
-			return fmt.Errorf("target hostname %q resolves to a non-public address", host)
+			return netip.Addr{}, fmt.Errorf("target hostname %q resolves to a non-public address", host)
 		}
 	}
-	return nil
+	return addresses[0].Unmap(), nil
 }
 
 func isBlockedTargetHostname(host string) bool {
@@ -215,16 +222,11 @@ func isBlockedTargetHostname(host string) bool {
 	return false
 }
 
-// WithPublicNetworkOnly blocks connections to non-public destinations. Intended for the
-// notification (webhook/slack) HTTP clients, whose targets are attacker-controlled. Direct
-// connections are checked at dial time on the resolved address. When the transport's proxy
+// withPublicNetworkOnly blocks connections to non-public destinations. Direct connections are
+// checked at dial time on the resolved address. When the transport's proxy
 // (HTTP_PROXY/HTTPS_PROXY/NO_PROXY) applies, the dial goes to the operator's proxy instead, so
 // the target host is validated before the request is handed to it. Honors the
 // HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS escape hatch.
-func WithPublicNetworkOnly() func(*http.Transport) {
-	return withPublicNetworkOnly(net.DefaultResolver)
-}
-
 func withPublicNetworkOnly(resolver NetworkResolver) func(*http.Transport) {
 	return func(transport *http.Transport) {
 		guard := &publicNetworkGuard{resolver: resolver, upstreamProxy: transport.Proxy}
@@ -236,6 +238,108 @@ func withPublicNetworkOnly(resolver NetworkResolver) func(*http.Transport) {
 			transport.Proxy = guard.proxy
 		}
 		transport.DialContext = guard.dialContext
+	}
+}
+
+// NewPublicNetworkTransport returns a transport that only reaches public destinations, for the
+// notification (webhook/slack) clients. On top of the dial-time guard it pins proxied requests
+// to the address Harbor validated: the proxy receives that IP instead of the hostname, so it
+// cannot resolve the name again to a private address (DNS rebinding). HTTPS tunnels to the IP
+// and still sends the original Host and verifies the certificate against the hostname. Plain
+// HTTP through a proxy sends the IP as Host, because the proxy reads the target from it.
+func NewPublicNetworkTransport(opts ...func(*http.Transport)) http.RoundTripper {
+	return newPublicNetworkTransport(net.DefaultResolver, opts...)
+}
+
+func newPublicNetworkTransport(resolver NetworkResolver, opts ...func(*http.Transport)) http.RoundTripper {
+	transport := newDefaultTransport()
+	for _, opt := range opts {
+		opt(transport)
+	}
+	upstreamProxy := transport.Proxy
+	withPublicNetworkOnly(resolver)(transport)
+	return &pinnedProxyTransport{base: transport, upstreamProxy: upstreamProxy, resolver: resolver}
+}
+
+type pinnedProxyTransport struct {
+	base          *http.Transport
+	upstreamProxy func(*http.Request) (*url.URL, error)
+	resolver      NetworkResolver
+	// tlsTransports holds a clone of base per HTTPS hostname, with ServerName set so the
+	// certificate is verified against the hostname while the tunnel goes to the pinned IP.
+	tlsTransports sync.Map
+}
+
+func (pinned *pinnedProxyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if pinned.upstreamProxy == nil || privateNetworkAccessAllowed() {
+		return pinned.base.RoundTrip(req)
+	}
+	proxyURL, err := pinned.upstreamProxy(req)
+	if err != nil {
+		closeRequestBody(req)
+		return nil, err
+	}
+	hostname := req.URL.Hostname()
+	if _, err := netip.ParseAddr(hostname); proxyURL == nil || err == nil {
+		// direct requests are checked at dial time, and a literal IP has nothing to rebind
+		return pinned.base.RoundTrip(req)
+	}
+
+	address, err := resolvePublicNetworkTarget(req.Context(), pinned.resolver, hostname)
+	if err != nil {
+		closeRequestBody(req)
+		return nil, err
+	}
+	pinnedReq := req.Clone(req.Context())
+	switch port := req.URL.Port(); {
+	case port != "":
+		pinnedReq.URL.Host = net.JoinHostPort(address.String(), port)
+	case address.Is6():
+		pinnedReq.URL.Host = "[" + address.String() + "]"
+	default:
+		pinnedReq.URL.Host = address.String()
+	}
+	transport := pinned.base
+	if strings.EqualFold(req.URL.Scheme, "https") {
+		// the tunnel goes to the IP; the request inside it keeps the original Host
+		if pinnedReq.Host == "" {
+			pinnedReq.Host = req.URL.Host
+		}
+		transport = pinned.tlsTransport(hostname)
+	} else {
+		// a plain HTTP proxy request carries Host in its absolute URI, which the proxy would
+		// resolve again, so the target sees the IP as Host
+		pinnedReq.Host = pinnedReq.URL.Host
+	}
+	resp, err := transport.RoundTrip(pinnedReq)
+	if resp != nil {
+		resp.Request = req
+	}
+	return resp, err
+}
+
+// Base returns the guarded transport underneath the pinning, for inspection.
+func (pinned *pinnedProxyTransport) Base() *http.Transport {
+	return pinned.base
+}
+
+func (pinned *pinnedProxyTransport) tlsTransport(hostname string) *http.Transport {
+	if transport, ok := pinned.tlsTransports.Load(hostname); ok {
+		return transport.(*http.Transport)
+	}
+	transport := pinned.base.Clone()
+	if transport.TLSClientConfig == nil {
+		transport.TLSClientConfig = &tls.Config{}
+	}
+	transport.TLSClientConfig.ServerName = hostname
+	actual, _ := pinned.tlsTransports.LoadOrStore(hostname, transport)
+	return actual.(*http.Transport)
+}
+
+// closeRequestBody honours the RoundTripper contract of closing the body on error.
+func closeRequestBody(req *http.Request) {
+	if req.Body != nil {
+		_ = req.Body.Close()
 	}
 }
 
