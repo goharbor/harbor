@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/notification"
 	"github.com/goharbor/harbor/src/server/middleware/orm"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/regpath"
 	"github.com/goharbor/harbor/src/server/middleware/requestid"
 	"github.com/goharbor/harbor/src/server/middleware/security"
 	"github.com/goharbor/harbor/src/server/middleware/session"
@@ -87,6 +88,7 @@ func MiddleWares() []web.MiddleWare {
 	return []web.MiddleWare{
 		url.Middleware(),
 		mergeslash.Middleware(),
+		regpath.Middleware(),
 		trace.Middleware(),
 		metric.Middleware(),
 		requestid.Middleware(),
