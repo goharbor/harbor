@@ -1951,7 +1951,7 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
-    /projects/{project_name}/logs:
+  /projects/{project_name}/logs:
     get:
       summary: Get legacy project audit logs (deprecated)
       description: |

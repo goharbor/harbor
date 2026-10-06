@@ -483,6 +483,7 @@
         "DELETION_SUMMARY": "確定要刪除群組成員 {{param}} 嗎？"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "此頁面顯示 Harbor v2.13 之前版本的稽核日誌。若要查看較新的活動，請開啟稽核日誌頁面。",
         "USERNAME": "使用者名稱",
         "TAGS": "標籤",
         "OPERATION": "操作",

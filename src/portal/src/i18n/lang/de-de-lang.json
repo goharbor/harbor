@@ -483,6 +483,7 @@
         "DELETION_SUMMARY": "Sollen die Gruppenmitglieder {{param}} gelöscht werden?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "Diese Seite zeigt Audit-Protokolle aus Harbor-Versionen vor v2.13. Öffnen Sie die Audit-Protokolle, um neuere Aktivitäten anzuzeigen.",
         "USERNAME": "Nutzername",
         "TAGS": "Tags",
         "OPERATION": "Operation",

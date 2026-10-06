@@ -484,6 +484,7 @@
         "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "Bu sayfa, v2.13 öncesi Harbor sürümlerinin denetim günlüklerini gösterir. Daha yeni etkinlikleri görüntülemek için Denetim Günlüklerini açın.",
         "USERNAME": "Kullanıcı Adı",
         "TAGS": "Etiketler",
         "OPERATION": "Operasyon",
