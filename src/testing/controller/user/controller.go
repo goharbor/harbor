@@ -302,6 +302,24 @@ func (_m *Controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) e
 	return r0
 }
 
+// SyncSysAdmin provides a mock function with given fields: ctx, id, adminRoleInAuth
+func (_m *Controller) SyncSysAdmin(ctx context.Context, id int, adminRoleInAuth bool) error {
+	ret := _m.Called(ctx, id, adminRoleInAuth)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SyncSysAdmin")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, bool) error); ok {
+		r0 = rf(ctx, id, adminRoleInAuth)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateOIDCMeta provides a mock function with given fields: ctx, ou, cols
 func (_m *Controller) UpdateOIDCMeta(ctx context.Context, ou *models.OIDCUser, cols ...string) error {
 	_va := make([]interface{}, len(cols))

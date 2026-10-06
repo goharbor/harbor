@@ -42,9 +42,88 @@ func (m *mgrTestSuite) TestSetAdminFlag() {
 	id := 9
 	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
 		func(u *models.User) bool {
-			return u.UserID == 9 && u.SysAdminFlag
-		}), "sysadmin_flag").Return(nil)
+			return u.UserID == 9 && u.SysAdminFlag && u.SysAdminFlagSource == sysAdminFlagSourceManual
+		}), "sysadmin_flag", "sysadmin_flag_source").Return(nil)
 	err := m.mgr.SetSysAdminFlag(context.Background(), id, true)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_PromotesWhenNotManual() {
+	id := 10
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: false, SysAdminFlagSource: ""},
+	}, nil)
+	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
+		func(u *models.User) bool {
+			return u.UserID == id && u.SysAdminFlag && u.SysAdminFlagSource == sysAdminFlagSourceSync
+		}), "sysadmin_flag", "sysadmin_flag_source").Return(nil)
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, true)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_RevokesWhenSyncOwnedAndNoLongerInGroup() {
+	id := 11
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: true, SysAdminFlagSource: sysAdminFlagSourceSync},
+	}, nil)
+	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
+		func(u *models.User) bool {
+			return u.UserID == id && !u.SysAdminFlag && u.SysAdminFlagSource == sysAdminFlagSourceSync
+		}), "sysadmin_flag", "sysadmin_flag_source").Return(nil)
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, false)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_NeverOverridesManualGrant() {
+	id := 12
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: true, SysAdminFlagSource: sysAdminFlagSourceManual},
+	}, nil)
+	// no Update call expected: a manual decision must never be touched by auth sync,
+	// regardless of the live admin-group membership
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, false)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_NeverOverridesManualRevocation() {
+	id := 13
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: false, SysAdminFlagSource: sysAdminFlagSourceManual},
+	}, nil)
+	// still in the admin group, but an operator explicitly revoked it manually - must stick
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, true)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_NoOpWhenAlreadyInSync() {
+	id := 14
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: true, SysAdminFlagSource: sysAdminFlagSourceSync},
+	}, nil)
+	// already true and already sync-owned: no Update call expected
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, true)
+	m.Nil(err)
+	m.dao.AssertExpectations(m.T())
+}
+
+func (m *mgrTestSuite) TestSyncSysAdminFlagFromAuth_StampsSourceEvenWhenValueUnchanged() {
+	id := 15
+	// an ordinary non-admin user: value already matches, but source was never confirmed live
+	// (empty). The write must still happen so the source becomes "sync", letting the Users
+	// list report a confirmed "No" instead of "Unknown" for them going forward.
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*models.User{
+		{UserID: id, SysAdminFlag: false, SysAdminFlagSource: ""},
+	}, nil)
+	m.dao.On("Update", mock.Anything, testifymock.MatchedBy(
+		func(u *models.User) bool {
+			return u.UserID == id && !u.SysAdminFlag && u.SysAdminFlagSource == sysAdminFlagSourceSync
+		}), "sysadmin_flag", "sysadmin_flag_source").Return(nil)
+	err := m.mgr.SyncSysAdminFlagFromAuth(context.Background(), id, false)
 	m.Nil(err)
 	m.dao.AssertExpectations(m.T())
 }
