@@ -1,10 +1,20 @@
 <div>
+    <clr-alert [clrAlertType]="'info'" [clrAlertClosable]="false">
+        <clr-alert-item>
+            <span class="alert-text">
+                {{ 'AUDIT_LOG.LEGACY_LOG_NOTICE' | translate }}
+            </span>
+            <div class="alert-actions">
+                <a routerLink="../audit-log" class="alert-action">
+                    {{ 'SIDE_NAV.AUDIT_LOGS' | translate }}
+                </a>
+            </div>
+        </clr-alert-item>
+    </clr-alert>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
-            <div
-                class="select filter-tag clr-select-wrapper"
-                [hidden]="!isOpenFilterTag">
+            <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
                 <select id="selectKey" (change)="selectFilterKey($event)">
                     <option value="username">
                         {{ 'AUDIT_LOG.USERNAME' | translate | lowercase }}
@@ -20,22 +30,13 @@
                     </option>
                 </select>
             </div>
-            <hbr-filter
-                [withDivider]="true"
-                filterPlaceholder="{{
+            <hbr-filter [withDivider]="true" filterPlaceholder="{{
                     'AUDIT_LOG.FILTER_PLACEHOLDER' | translate
-                }}"
-                (filterEvt)="doFilter($event)"
-                (openFlag)="openFilter($event)"
+                }}" (filterEvt)="doFilter($event)" (openFlag)="openFilter($event)"
                 [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
-                <clr-icon
-                    shape="refresh"
-                    [hidden]="inProgress"
-                    ng-disabled="inProgress"></clr-icon>
-                <span
-                    class="spinner spinner-inline"
-                    [hidden]="!inProgress"></span>
+                <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
+                <span class="spinner spinner-inline" [hidden]="!inProgress"></span>
             </span>
         </div>
     </div>
@@ -43,22 +44,22 @@
         <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
             <clr-dg-column>{{
                 'AUDIT_LOG.USERNAME' | translate
-            }}</clr-dg-column>
+                }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.RESOURCE' | translate
-            }}</clr-dg-column>
+                }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.RESOURCE_TYPE' | translate
-            }}</clr-dg-column>
+                }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.OPERATION' | translate
-            }}</clr-dg-column>
+                }}</clr-dg-column>
             <clr-dg-column>{{
                 'AUDIT_LOG.TIMESTAMP' | translate
-            }}</clr-dg-column>
+                }}</clr-dg-column>
             <clr-dg-placeholder>{{
                 'AUDIT_LOG.NOT_FOUND' | translate
-            }}</clr-dg-placeholder>
+                }}</clr-dg-placeholder>
             @for (l of recentLogs; track l) {
             <clr-dg-row>
                 <clr-dg-cell>{{ l.username }}</clr-dg-cell>
@@ -67,28 +68,20 @@
                 <clr-dg-cell>{{ l.operation }}</clr-dg-cell>
                 <clr-dg-cell>{{
                     l.op_time | harborDatetime : 'short'
-                }}</clr-dg-cell>
+                    }}</clr-dg-cell>
             </clr-dg-row>
             }
             <clr-dg-footer>
-                <clr-dg-pagination
-                    #pagination
-                    [(clrDgPage)]="currentPage"
-                    [clrDgPageSize]="pageSize"
+                <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize"
                     [clrDgTotalItems]="totalCount">
-                    <clr-dg-page-size
-                        [clrPageSizeOptions]="clrPageSizeOptions"
-                        >{{
-                            'PAGINATION.PAGE_SIZE' | translate
-                        }}</clr-dg-page-size
-                    >
+                    <clr-dg-page-size [clrPageSizeOptions]="clrPageSizeOptions">{{
+                        'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size>
                     @if (totalCount) {
-                    <span
-                        >{{ pagination.firstItem + 1 }} -
+                    <span>{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'AUDIT_LOG.OF' | translate }} {{ totalCount }}
-                        {{ 'AUDIT_LOG.ITEMS' | translate }}</span
-                    >
+                        {{ 'AUDIT_LOG.ITEMS' | translate }}</span>
                     }
                 </clr-dg-pagination>
             </clr-dg-footer>
