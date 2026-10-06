@@ -170,6 +170,11 @@ func (r *retentionAPI) CreateRetention(ctx context.Context, params operation.Cre
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
+	if p.HasActiveSchedule() {
+		if err := r.requireAccess(ctx, p, rbac.ActionDelete, rbac.ResourceArtifact); err != nil {
+			return r.SendError(ctx, err)
+		}
+	}
 
 	switch p.Scope.Level {
 	case policy.ScopeLevelProject:
@@ -226,6 +231,15 @@ func (r *retentionAPI) UpdateRetention(ctx context.Context, params operation.Upd
 	if err := r.requirePolicyAccess(ctx, p); err != nil {
 		return r.SendError(ctx, err)
 	}
+	current, err := r.retentionCtl.GetRetention(ctx, params.ID)
+	if err != nil {
+		return r.SendError(ctx, errors.BadRequestError(err))
+	}
+	if current.HasActiveSchedule() || p.HasActiveSchedule() {
+		if err := r.requireAccess(ctx, p, rbac.ActionDelete, rbac.ResourceArtifact); err != nil {
+			return r.SendError(ctx, err)
+		}
+	}
 
 	if err := r.retentionCtl.UpdateRetention(ctx, p); err != nil {
 		return r.SendError(ctx, err)
@@ -275,6 +289,11 @@ func (r *retentionAPI) TriggerRetentionExecution(ctx context.Context, params ope
 	err = r.requireAccess(ctx, p, rbac.ActionUpdate)
 	if err != nil {
 		return r.SendError(ctx, err)
+	}
+	if !params.Body.DryRun {
+		if err := r.requireAccess(ctx, p, rbac.ActionDelete, rbac.ResourceArtifact); err != nil {
+			return r.SendError(ctx, err)
+		}
 	}
 
 	eid, err := r.retentionCtl.TriggerRetentionExec(ctx, params.ID, task.ExecutionTriggerManual, params.Body.DryRun)

@@ -433,7 +433,7 @@ func (a *projectAPI) GetProjectSummary(ctx context.Context, params operation.Get
 }
 
 func (a *projectAPI) HeadProject(ctx context.Context, params operation.HeadProjectParams) middleware.Responder {
-	if err := a.RequireAuthenticated(ctx); err != nil {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead); err != nil {
 		return a.SendError(ctx, err)
 	}
 
