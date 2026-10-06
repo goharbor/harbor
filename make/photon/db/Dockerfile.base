@@ -1,3 +1,13 @@
+# postgresql14-server (only used by pg_upgrade) is no longer in the pinned
+# photon-snapshot repo and can't share one libxml2 with pg15, so build it in
+# its own stage and copy it into the pg15 image.
+FROM goharbor/photon:5.0 AS pg14
+
+RUN sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
+    && tdnf clean all \
+    && tdnf makecache \
+    && tdnf install -y postgresql14-server
+
 FROM goharbor/photon:5.0
 
 ENV PGDATA /var/lib/postgresql/data
@@ -6,7 +16,6 @@ RUN tdnf install -y shadow >> /dev/null \
     && groupadd -r postgres --gid=999 \
     && useradd -m -r -g postgres --uid=999 postgres
 
-RUN tdnf install -y postgresql14-server >> /dev/null
 RUN tdnf install -y gzip postgresql15-server findutils bc >> /dev/null \
     && mkdir -p /docker-entrypoint-initdb.d \
     && mkdir -p /run/postgresql \
@@ -16,5 +25,10 @@ RUN tdnf install -y gzip postgresql15-server findutils bc >> /dev/null \
     && sed -i "s|#listen_addresses = 'localhost'.*|listen_addresses = '*'|g" /usr/pgsql/15/share/postgresql/postgresql.conf.sample \
     && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/pgsql/15/share/postgresql/postgresql.conf.sample \
     && tdnf clean all
+
+# Copy pg14 and its libxml2.so.2 / ICU 72 libraries. Their sonames differ from
+# the pg15 ones (libxml2.so.16 / ICU 76), so both versions coexist here.
+COPY --from=pg14 /usr/pgsql/14 /usr/pgsql/14
+COPY --from=pg14 /usr/lib/libxml2.so.2* /usr/lib/libicudata.so.72* /usr/lib/libicui18n.so.72* /usr/lib/libicuuc.so.72* /usr/lib/
 
 RUN tdnf install -y util-linux
