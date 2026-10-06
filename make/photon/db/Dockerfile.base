@@ -1,14 +1,14 @@
 # postgresql14-server (only used by pg_upgrade) is no longer in the pinned
 # photon-snapshot repo and can't share one libxml2 with pg15, so build it in
 # its own stage and copy it into the pg15 image.
-FROM goharbor/photon:5.0 AS pg14
+FROM goharbor/photon:5.0-v2.14 AS pg14
 
 RUN sed -i '/^snapshot/d' /etc/yum.repos.d/photon-snapshot.repo \
     && tdnf clean all \
     && tdnf makecache \
     && tdnf install -y postgresql14-server
 
-FROM goharbor/photon:5.0
+FROM goharbor/photon:5.0-v2.14
 
 ENV PGDATA /var/lib/postgresql/data
 
