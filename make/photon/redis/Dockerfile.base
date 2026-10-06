@@ -3,4 +3,9 @@ FROM goharbor/photon:5.0
 RUN tdnf install -y shadow >> /dev/null \
     && groupadd -g 999 redis \
     && useradd -u 999 -g 999 -c "Redis Database Server" -d /var/lib/redis -s /sbin/nologin -m redis
-RUN tdnf install -y redis && tdnf clean all
+# redis is no longer in the pinned photon-snapshot repo, so un-pin the
+# snapshot to install it. Pin 7.2.6: the unversioned "redis" package now
+# resolves to Valkey.
+RUN sed -i "/^snapshot/d" /etc/yum.repos.d/photon-snapshot.repo \
+    && tdnf makecache >> /dev/null \
+    && tdnf install -y redis-7.2.6-5.ph5 && tdnf clean all
