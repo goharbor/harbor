@@ -174,3 +174,26 @@ func mustHost(t *testing.T, raw string) string {
 	}
 	return u.Host
 }
+
+// TestResolveNextLinkErrorRedactsSecrets keeps credentials and tokens carried in a rejected
+// Link out of the returned error, which callers log. Go's parse error quotes the whole input,
+// so a malformed Link is covered too.
+func TestResolveNextLinkErrorRedactsSecrets(t *testing.T) {
+	base, err := url.Parse("https://reg.example.com/v2/_catalog?n=100")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, link := range []string{
+		"https://user:s3cr3t-pass@reg.example.com/v2/_catalog",
+		"https://evil.example/v2/_catalog?token=s3cr3t-token",
+		"/v2/%zz?token=s3cr3t-token",
+	} {
+		_, err := resolveNextLink(base, link)
+		if err == nil {
+			t.Fatalf("expected rejection for %q", link)
+		}
+		if strings.Contains(err.Error(), "s3cr3t") {
+			t.Fatalf("error leaks secret from Link %q: %v", link, err)
+		}
+	}
+}

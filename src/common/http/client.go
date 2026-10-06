@@ -258,18 +258,41 @@ func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 func resolveNextLink(base *url.URL, link string) (*url.URL, error) {
 	ref, err := url.Parse(link)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pagination Link is not a valid URL: %w", RedactedURLError(err))
 	}
 	// userinfo has no legitimate use in a pagination link and is the vector that turns a
 	// same-origin-looking value into a cross-origin host.
 	if ref.User != nil {
-		return nil, fmt.Errorf("pagination Link must not contain userinfo: %q", link)
+		return nil, fmt.Errorf("pagination Link must not contain userinfo: %q", RedactedURL(ref))
 	}
 	next := base.ResolveReference(ref)
 	if !SameOrigin(base, next) {
-		return nil, fmt.Errorf("pagination Link %q resolves to a different origin than %q", link, base.Redacted())
+		return nil, fmt.Errorf("pagination Link %q resolves to a different origin than %q", RedactedURL(next), RedactedURL(base))
 	}
 	return next, nil
+}
+
+// RedactedURL renders u for error messages without userinfo, query or fragment. Pagination
+// and upload URLs come from remote registries, which may carry credentials or signed tokens
+// there, and callers log these errors.
+func RedactedURL(u *url.URL) string {
+	r := *u
+	r.User = nil
+	r.RawQuery = ""
+	r.ForceQuery = false
+	r.Fragment = ""
+	r.RawFragment = ""
+	return r.String()
+}
+
+// RedactedURLError strips the input from a URL parse error, which quotes it verbatim, and keeps
+// only the reason.
+func RedactedURLError(err error) error {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		return urlErr.Err
+	}
+	return err
 }
 
 // SameOrigin reports whether a and b share scheme, host and effective port.
