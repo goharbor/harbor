@@ -803,7 +803,7 @@ func resolveUploadLocation(endpoint, location string) (*url.URL, error) {
 	// userinfo turns a same-origin-looking value into a cross-origin host and has no legitimate use
 	// in an upload Location.
 	if ref.User != nil {
-		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", redactUploadLocation(ref))
 	}
 	// Distribution in relativeurls mode answers "/v2/..." without the path prefix the endpoint is
 	// served under, so a root-relative path is appended to the endpoint rather than resolved, which
@@ -815,9 +815,21 @@ func resolveUploadLocation(endpoint, location string) (*url.URL, error) {
 	}
 	next := base.ResolveReference(ref)
 	if !sameRegistryOrigin(base, next) {
-		return nil, fmt.Errorf("registry upload Location %q resolves to a different origin than %q", location, base.Redacted())
+		return nil, fmt.Errorf("registry upload Location %q resolves to a different origin than %q", redactUploadLocation(next), base.Redacted())
 	}
 	return next, nil
+}
+
+// redactUploadLocation renders a Location for error messages without userinfo, query or fragment,
+// since registries may put credentials or signed upload tokens there and callers log these errors.
+func redactUploadLocation(u *url.URL) string {
+	r := *u
+	r.User = nil
+	r.RawQuery = ""
+	r.ForceQuery = false
+	r.Fragment = ""
+	r.RawFragment = ""
+	return r.String()
 }
 
 func sameRegistryOrigin(a, b *url.URL) bool {
