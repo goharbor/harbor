@@ -116,9 +116,9 @@ func TestNotificationClientsBlockRedirect(t *testing.T) {
 // jobservice HTTP_PROXY/HTTPS_PROXY/NO_PROXY settings instead of always dialing directly.
 func TestNotificationClientsKeepProxy(t *testing.T) {
 	for name, client := range httpHelper.clients {
-		transport, ok := client.Transport.(*http.Transport)
-		require.True(t, ok, "client %q must use *http.Transport", name)
-		assert.NotNil(t, transport.Proxy, "client %q must honour the proxy environment", name)
+		pinned, ok := client.Transport.(interface{ Base() *http.Transport })
+		require.True(t, ok, "client %q must use the public-network transport", name)
+		assert.NotNil(t, pinned.Base().Proxy, "client %q must honour the proxy environment", name)
 	}
 }
 
