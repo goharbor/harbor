@@ -16,6 +16,7 @@ package commonevent
 
 import (
 	"context"
+	"net/url"
 	"regexp"
 	"sync"
 
@@ -39,9 +40,23 @@ func RegisterResolver(urlPattern string, resolver Resolver) {
 	mu.Unlock()
 }
 
-// Resolvers get map of resolvers
+// UnregisterResolver removes the resolver registered for a URL pattern
+func UnregisterResolver(urlPattern string) {
+	mu.Lock()
+	delete(urlResolvers, urlPattern)
+	mu.Unlock()
+}
+
+// Resolvers returns a snapshot of the registered resolvers, safe to range over
+// while resolvers are registered or unregistered concurrently
 func Resolvers() map[string]Resolver {
-	return urlResolvers
+	mu.Lock()
+	defer mu.Unlock()
+	snapshot := make(map[string]Resolver, len(urlResolvers))
+	for urlPattern, resolver := range urlResolvers {
+		snapshot[urlPattern] = resolver
+	}
+	return snapshot
 }
 
 // Metadata the raw data of event
@@ -73,22 +88,33 @@ type Metadata struct {
 
 // Resolve parse the audit information from CommonEventMetadata
 func (c *Metadata) Resolve(event *event.Event) error {
-	for url, r := range Resolvers() {
-		p := regexp.MustCompile(url)
-		if p.MatchString(c.RequestURL) {
-			return r.Resolve(c, event)
-		}
+	resolver, metadata, ok := c.resolver()
+	if !ok {
+		return nil
 	}
-	return nil
+	return resolver.Resolve(metadata, event)
 }
 
 // PreCheck check if current event is matched and return the prefetched resource name when it is delete operation
 func (c *Metadata) PreCheckMetadata() (bool, string) {
-	for urlPattern, r := range Resolvers() {
-		p := regexp.MustCompile(urlPattern)
-		if p.MatchString(c.RequestURL) {
-			return r.PreCheck(c.Ctx, c.RequestURL, c.RequestMethod)
-		}
+	resolver, metadata, ok := c.resolver()
+	if ok {
+		return resolver.PreCheck(metadata.Ctx, metadata.RequestURL, metadata.RequestMethod)
 	}
 	return false, ""
+}
+
+func (c *Metadata) resolver() (Resolver, *Metadata, bool) {
+	metadata := *c
+	if requestURL, err := url.Parse(c.RequestURL); err == nil {
+		metadata.RequestURL = requestURL.Path
+	}
+
+	for urlPattern, resolver := range Resolvers() {
+		match := regexp.MustCompile(urlPattern).FindStringIndex(metadata.RequestURL)
+		if match != nil && match[0] == 0 && match[1] == len(metadata.RequestURL) {
+			return resolver, &metadata, true
+		}
+	}
+	return nil, &metadata, false
 }
