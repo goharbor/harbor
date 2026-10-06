@@ -164,14 +164,13 @@ func (c *client) Catalog() ([]string, error) {
 		}
 		repositories = append(repositories, repos...)
 
-		url = next
 		// no next page, end the loop
-		if len(url) == 0 {
+		if len(next) == 0 {
 			break
 		}
-		// relative URL
-		if !strings.Contains(url, "://") {
-			url = c.url + url
+		url, err = nextPageURL(c.url, next)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return repositories, nil
@@ -211,14 +210,13 @@ func (c *client) ListTags(repository string) ([]string, error) {
 		}
 		tags = append(tags, tgs...)
 
-		url = next
 		// no next page, end the loop
-		if len(url) == 0 {
+		if len(next) == 0 {
 			break
 		}
-		// relative URL
-		if !strings.Contains(url, "://") {
-			url = c.url + url
+		url, err = nextPageURL(c.url, next)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return tags, nil
@@ -719,6 +717,30 @@ func next(link string) string {
 		}
 	}
 	return ""
+}
+
+// nextPageURL builds the URL of the next page from a registry-provided Link value exactly as
+// before (relative values are appended to the endpoint, absolute values are used as is) and
+// rejects the result unless it stays on the endpoint's origin with the endpoint's userinfo.
+// The Link value is controlled by the remote registry, and some adapters' authorizers attach
+// credentials to every request regardless of host, so following it elsewhere leaks them.
+func nextPageURL(endpoint, link string) (string, error) {
+	next := link
+	if !strings.Contains(next, "://") {
+		next = endpoint + next
+	}
+	base, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+	u, err := url.Parse(next)
+	if err != nil {
+		return "", err
+	}
+	if u.User.String() != base.User.String() || !commonhttp.SameOrigin(base, u) {
+		return "", fmt.Errorf("pagination Link %q leaves the registry origin %q", link, base.Redacted())
+	}
+	return next, nil
 }
 
 func buildPingURL(endpoint string) string {
