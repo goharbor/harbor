@@ -102,16 +102,8 @@ func RemoveImmutableScanners(ctx context.Context, names []string) error {
 	}
 	query := q.New(q.KeyWords{"immutable": true, "name__in": names})
 
-	// TODO Instead of executing 1 to N SQL queries we might want to delete multiple rows with scannerManager.DeleteByImmutableAndURLIn(true, []string{})
-	registrations, err := scannerManager.List(ctx, query)
-	if err != nil {
-		return errors.Errorf("listing scanners: %v", err)
-	}
-
-	for _, reg := range registrations {
-		if err := scannerManager.Delete(ctx, reg.UUID); err != nil {
-			return errors.Errorf("deleting scanner: %s: %v", reg.UUID, err)
-		}
+	if _, err := scannerManager.DeleteBy(ctx, query); err != nil {
+		return errors.Errorf("deleting scanners: %v", err)
 	}
 
 	return nil

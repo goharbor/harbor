@@ -113,6 +113,18 @@ func DeleteRegistration(ctx context.Context, UUID string) error {
 	return nil
 }
 
+// DeleteRegistrations deletes the registrations according to the query.
+func DeleteRegistrations(ctx context.Context, query *q.Query) (int64, error) {
+	query = q.MustClone(query)
+
+	qs, err := orm.QuerySetter(ctx, &Registration{}, query)
+	if err != nil {
+		return 0, err
+	}
+
+	return qs.Delete()
+}
+
 // ListRegistrations lists all the existing registrations
 func ListRegistrations(ctx context.Context, query *q.Query) ([]*Registration, error) {
 	query = q.MustClone(query)
