@@ -100,10 +100,7 @@ func privateNetworkAccessAllowed() bool {
 		return true
 	}
 	allowed, err := strconv.ParseBool(val)
-	if err != nil {
-		return true
-	}
-	return allowed
+	return err == nil && allowed
 }
 
 // blockPrivateNetwork is a net.Dialer.Control callback. It runs after DNS resolution and on
