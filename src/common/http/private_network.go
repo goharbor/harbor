@@ -260,7 +260,7 @@ func (guard *publicNetworkGuard) proxy(req *http.Request) (*url.URL, error) {
 		if _, isProxy := guard.proxyAddrs.Load(canonicalAddr(req.URL)); isProxy {
 			return nil, fmt.Errorf("connections to private network address %s are blocked", req.URL.Host)
 		}
-		return nil, nil //nolint:nilnil // http.Transport.Proxy reads a nil URL and nil error as "no proxy"
+		return nil, nil // nolint:nilnil // http.Transport.Proxy reads a nil URL and nil error as "no proxy"
 	}
 	// The proxy, not this process, resolves and connects to the target, so the dial-time check
 	// cannot see it. Validate the target before handing it over.
