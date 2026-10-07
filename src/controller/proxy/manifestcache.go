@@ -126,25 +126,39 @@ func (m *ManifestListCache) updateManifestList(ctx context.Context, repo string,
 }
 
 func (m *ManifestListCache) push(ctx context.Context, repo, reference string, man distribution.Manifest) error {
-	// For manifest list, it might include some different manifest
-	// it will wait and check for 30 mins, if all depend manifests are ready then push it
-	// if time exceed, then push a updated manifest list which contains existing manifest
-	var newMan distribution.Manifest
-	var err error
+	// A manifest list references child manifests for several platforms, but a
+	// client usually pulls only one of them. We materialize the list locally as
+	// soon as any referenced child is present and re-push it whenever more
+	// arrive, keeping at most maxManifestListWait rounds to let the remaining
+	// children land.
+	pushedRefs := -1
 	for range maxManifestListWait {
-		log.Debugf("waiting for the manifest ready, repo %v, tag:%v", repo, reference)
-		time.Sleep(sleepIntervalSec * time.Second)
-		newMan, err = m.updateManifestList(ctx, repo, man)
+		newMan, err := m.updateManifestList(ctx, repo, man)
 		if err != nil {
 			return err
+		}
+		if refs := len(newMan.References()); refs > 0 && refs > pushedRefs {
+			if err := m.pushManifestList(ctx, repo, reference, newMan); err != nil {
+				return err
+			}
+			pushedRefs = refs
 		}
 		if len(newMan.References()) == len(man.References()) {
 			break
 		}
+		log.Debugf("waiting for more child manifests to be ready, repo %v, ref:%v", repo, reference)
+		time.Sleep(sleepInterval)
 	}
-	if len(newMan.References()) == 0 {
+	if pushedRefs <= 0 {
 		return libErrors.New("manifest list doesn't contain any pushed manifest")
 	}
+	return nil
+}
+
+// pushManifestList writes the (trimmed) manifest list to the local registry
+// under reference, updating the cached trimmed digest and the artifact pull
+// time. It is a no-op when the reference already resolves to the same digest.
+func (m *ManifestListCache) pushManifestList(ctx context.Context, repo, reference string, newMan distribution.Manifest) error {
 	_, pl, err := newMan.Payload()
 	if err != nil {
 		log.Errorf("failed to get payload, error %v", err)
@@ -166,8 +180,7 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	if strings.HasPrefix(reference, "sha256:") {
 		reference = string(newDig)
 	}
-	err = m.local.PushManifest(repo, reference, newMan)
-	if err != nil {
+	if err := m.local.PushManifest(repo, reference, newMan); err != nil {
 		log.Errorf("failed to push manifest list, error: %v", err)
 		return err
 	}
@@ -190,7 +203,7 @@ type ManifestCache struct {
 func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, r RemoteInterface, _ string) {
 	var waitBlobs []distribution.Descriptor
 	for n := range maxManifestWait {
-		time.Sleep(sleepIntervalSec * time.Second)
+		time.Sleep(sleepInterval)
 		waitBlobs = m.local.CheckDependencies(ctx, art.Repository, man)
 		if len(waitBlobs) == 0 {
 			break
