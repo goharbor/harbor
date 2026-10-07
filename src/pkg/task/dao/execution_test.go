@@ -409,6 +409,34 @@ func (e *executionDAOTestSuite) TestScanAndRefreshOutdateStatus() {
 	e.Equal(job.ErrorStatus.String(), exec2.Status)
 }
 
+func (e *executionDAOTestSuite) TestListWithNonExactExtraAttrsPattern() {
+	// only the exact match pattern can be bound as a parameter of the extra attrs SQL
+	for _, pattern := range []string{
+		"ExtraAttrs.key=~value",
+		"ExtraAttrs.key=[1~2]",
+		"ExtraAttrs.key={value1 value2}",
+		"ExtraAttrs.key=(value1 value2)",
+	} {
+		query, err := q.Build(pattern, "", 0, 0)
+		e.Require().Nil(err)
+
+		_, err = e.executionDAO.Count(e.ctx, query)
+		e.Require().NotNil(err, pattern)
+		e.True(errors.IsErr(err, errors.BadRequestCode), pattern)
+
+		_, err = e.executionDAO.List(e.ctx, query)
+		e.Require().NotNil(err, pattern)
+		e.True(errors.IsErr(err, errors.BadRequestCode), pattern)
+	}
+
+	// the exact match pattern isn't affected
+	query, err := q.Build("VendorType=test,ExtraAttrs.key=value", "", 0, 0)
+	e.Require().Nil(err)
+	count, err := e.executionDAO.Count(e.ctx, query)
+	e.Require().Nil(err)
+	e.Equal(int64(1), count)
+}
+
 func TestExecutionDAOSuite(t *testing.T) {
 	suite.Run(t, &executionDAOTestSuite{})
 }
