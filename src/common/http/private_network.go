@@ -29,9 +29,8 @@ import (
 	"time"
 )
 
-// privateNetworkAccessEnv opts every Harbor outbound HTTP client that installs the
-// public-network guard back into reaching private/loopback/link-local destinations.
-// Default (unset/false) fails closed. See make/harbor.yml.tmpl network.allow_private_network_access.
+// privateNetworkAccessEnv allows toggling private network access for outbound webhook and Slack notifications.
+// Defaults to true (allowed) to avoid regressions for existing on-premise and Kubernetes deployments.
 const privateNetworkAccessEnv = "HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS"
 
 // Exceptions and denials follow the IANA IPv4/IPv6 special-purpose address registries.
@@ -93,10 +92,18 @@ func newGuardedDialer() *net.Dialer {
 	}
 }
 
-// privateNetworkAccessAllowed reports whether the operator opted back into private egress.
+// privateNetworkAccessAllowed reports whether private egress is permitted.
+// Defaults to true when unset or empty to prevent regression on existing internal webhook targets.
 func privateNetworkAccessAllowed() bool {
-	allowed, err := strconv.ParseBool(os.Getenv(privateNetworkAccessEnv))
-	return err == nil && allowed
+	val := strings.TrimSpace(os.Getenv(privateNetworkAccessEnv))
+	if val == "" {
+		return true
+	}
+	allowed, err := strconv.ParseBool(val)
+	if err != nil {
+		return true
+	}
+	return allowed
 }
 
 // blockPrivateNetwork is a net.Dialer.Control callback. It runs after DNS resolution and on
