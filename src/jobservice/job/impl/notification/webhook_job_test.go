@@ -59,6 +59,7 @@ func TestRun(t *testing.T) {
 			assert.Equal(t, string(body), `{"key": "value"}`)
 		}))
 	defer ts.Close()
+	useTestHTTPClient(t, ts.Client())
 	params := map[string]any{
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,

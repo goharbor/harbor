@@ -38,8 +38,7 @@ hr {
 
 .level-border>div{
     display: inline-flex;
-    align-items: center;
-    justify-items: center;
+    place-items: center center;
     border-radius: 50%;
     height: 26px;
     width: 26px;

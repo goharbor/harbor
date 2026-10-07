@@ -380,3 +380,59 @@ func Test_getPolicyResource(t *testing.T) {
 		})
 	}
 }
+
+// Test_getPolicyResource_coverAllProject checks that the project resource of a "cover all projects"
+// robot does not stay the "/project/*" wildcard, which keyMatch2 expands to "^/project/.*$" and so
+// matches every sub-resource. It must resolve to a single-segment matcher so that it authorizes only
+// the bare project resource, mirroring a single-project scope.
+func Test_getPolicyResource_coverAllProject(t *testing.T) {
+	perm := &robot.Permission{
+		Kind:      "project",
+		Namespace: "*",
+		Scope:     robot.SCOPEALLPROJECT,
+		Access: []*types.Policy{
+			{Resource: rbac.ResourceProject, Action: rbac.ActionUpdate},
+		},
+	}
+	got := getPolicyResource(perm, &types.Policy{Resource: rbac.ResourceProject, Action: rbac.ActionUpdate})
+	assert.Equal(t, "/project/:id", got)
+	assert.NotEqual(t, robot.SCOPEALLPROJECT, got, "cover-all project scope must not stay a bare /project/* wildcard")
+}
+
+// TestCoverAllProjectRobotCannotReachSubresource is the end-to-end regression for the cover-all scope.
+// A system robot whose only permission is project:update at the cover-all scope must be able to act on
+// the bare project resource in every project, but must NOT reach sub-resources such as /project/N/robot.
+// Without the single-segment matcher the sub-resource check returns true, letting the robot act on
+// project sub-resources it was never granted.
+func TestCoverAllProjectRobotCannotReachSubresource(t *testing.T) {
+	r := &robot.Robot{
+		Level: "system",
+		Robot: model.Robot{Name: "cover-all-update"},
+		Permissions: []*robot.Permission{
+			{
+				Kind:      "project",
+				Namespace: "*",
+				Scope:     robot.SCOPEALLPROJECT,
+				Access: []*types.Policy{
+					{Resource: rbac.ResourceProject, Action: rbac.ActionUpdate},
+				},
+			},
+		},
+	}
+
+	ctl := &projecttesting.Controller{}
+	mock.OnAnything(ctl, "Get").Return(private, nil)
+
+	ctx := NewSecurityContext(r)
+	ctx.ctl = ctl
+
+	// Legitimate: acting on the bare project resource in any project is still allowed.
+	bare := project.NewNamespace(private.ProjectID).Resource()
+	assert.True(t, ctx.Can(context.TODO(), rbac.ActionUpdate, bare),
+		"cover-all project:update must still authorize the bare project resource")
+
+	// Escalation: the robot sub-resource must NOT be reachable.
+	robotSub := project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRobot)
+	assert.False(t, ctx.Can(context.TODO(), rbac.ActionUpdate, robotSub),
+		"cover-all project:update must not reach /project/N/robot")
+}
