@@ -3,6 +3,8 @@ package handler
 import (
 	"context"
 	"fmt"
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -132,6 +134,49 @@ func (uts *UserTestSuite) TestGetRandomSecret() {
 		rSec, err := getRandomSecret()
 		uts.NoError(err)
 		uts.NoError(requireValidSecret(rSec))
+	}
+}
+
+func (uts *UserTestSuite) TestSearchUsersPagination() {
+	all := []*commonmodels.User{
+		{UserID: 1, Username: "u1"}, {UserID: 2, Username: "u2"},
+		{UserID: 3, Username: "u3"}, {UserID: 4, Username: "u4"},
+	}
+	cases := []struct {
+		page     int64
+		offset   int
+		expected []string
+		searched bool
+	}{
+		{1, 0, []string{"u1", "u2"}, true},
+		{2, 2, []string{"u3", "u4"}, true},
+		// a non-positive page number is the first page
+		{0, 0, []string{"u1", "u2"}, true},
+		{-1, 0, []string{"u1", "u2"}, true},
+		{math.MinInt64, 0, []string{"u1", "u2"}, true},
+		// pages past the end are answered without querying the database, even if the page number would overflow
+		{3, 4, []string{}, false},
+		{math.MaxInt64, 0, []string{}, false},
+	}
+	for _, c := range cases {
+		uts.uCtl.ExpectedCalls = nil
+		uts.uCtl.On("Count", mock.Anything, mock.Anything).Return(int64(len(all)), nil)
+		// the handler has to pass the page size as limit and the start of the page as offset
+		if c.searched {
+			uts.uCtl.On("SearchByName", mock.Anything, "u", 2, c.offset).Return(all[min(c.offset, len(all)):min(c.offset+2, len(all))], nil).Once()
+		}
+
+		var result []*models.UserSearchRespItem
+		res, err := uts.GetJSON(fmt.Sprintf("/users/search?username=u&page=%d&page_size=2", c.page), &result)
+		uts.NoError(err)
+		uts.Equal(200, res.StatusCode)
+		names := []string{}
+		for _, r := range result {
+			names = append(names, r.Username)
+		}
+		uts.Equal(c.expected, names, "page %d", c.page)
+		uts.Equal(strconv.Itoa(len(all)), res.Header.Get("X-Total-Count"), "page %d", c.page)
+		uts.uCtl.AssertExpectations(uts.T())
 	}
 }
 

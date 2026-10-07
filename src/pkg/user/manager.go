@@ -66,7 +66,7 @@ type Manager interface {
 	// GenerateCheckSum generates truncated crc32 checksum from a given string
 	GenerateCheckSum(in string) string
 	// SearchByName searches users by names with fuzzy search
-	SearchByName(ctx context.Context, name string, limitSize int) (commonmodels.Users, error)
+	SearchByName(ctx context.Context, name string, limitSize, offset int) (commonmodels.Users, error)
 }
 
 // New returns a default implementation of Manager
@@ -250,6 +250,6 @@ func injectPasswd(u *commonmodels.User, password string) {
 	u.PasswordVersion = utils.PBKDF2SHA256
 }
 
-func (m *manager) SearchByName(ctx context.Context, name string, limitSize int) (commonmodels.Users, error) {
-	return m.dao.SearchByName(ctx, name, limitSize)
+func (m *manager) SearchByName(ctx context.Context, name string, limitSize, offset int) (commonmodels.Users, error) {
+	return m.dao.SearchByName(ctx, name, limitSize, offset)
 }

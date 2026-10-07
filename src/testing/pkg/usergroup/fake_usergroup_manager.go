@@ -197,9 +197,9 @@ func (_m *Manager) Populate(ctx context.Context, userGroups []model.UserGroup) (
 	return r0, r1
 }
 
-// SearchByName provides a mock function with given fields: ctx, name, limitSize
-func (_m *Manager) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
-	ret := _m.Called(ctx, name, limitSize)
+// SearchByName provides a mock function with given fields: ctx, name, limitSize, offset
+func (_m *Manager) SearchByName(ctx context.Context, name string, limitSize int, offset int) ([]*model.UserGroup, error) {
+	ret := _m.Called(ctx, name, limitSize, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SearchByName")
@@ -207,19 +207,19 @@ func (_m *Manager) SearchByName(ctx context.Context, name string, limitSize int)
 
 	var r0 []*model.UserGroup
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, int) ([]*model.UserGroup, error)); ok {
-		return rf(ctx, name, limitSize)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*model.UserGroup, error)); ok {
+		return rf(ctx, name, limitSize, offset)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, int) []*model.UserGroup); ok {
-		r0 = rf(ctx, name, limitSize)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int, int) []*model.UserGroup); ok {
+		r0 = rf(ctx, name, limitSize, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*model.UserGroup)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
-		r1 = rf(ctx, name, limitSize)
+	if rf, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
+		r1 = rf(ctx, name, limitSize, offset)
 	} else {
 		r1 = ret.Error(1)
 	}

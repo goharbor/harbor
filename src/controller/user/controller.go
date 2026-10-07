@@ -72,7 +72,7 @@ type Controller interface {
 	// if the onboard process is successful the input parm of user model will be populated with user id
 	OnboardOIDCUser(ctx context.Context, u *commonmodels.User) error
 	// SearchByName search user by name with fuzzy search
-	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
+	SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*commonmodels.User, error)
 }
 
 // NewController ...
@@ -244,6 +244,6 @@ func (c *controller) SetSysAdmin(ctx context.Context, id int, adminFlag bool) er
 	return c.mgr.SetSysAdminFlag(ctx, id, adminFlag)
 }
 
-func (c *controller) SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error) {
-	return c.mgr.SearchByName(ctx, name, limitSize)
+func (c *controller) SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*commonmodels.User, error) {
+	return c.mgr.SearchByName(ctx, name, limitSize, offset)
 }

@@ -202,7 +202,11 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 	if total == 0 {
 		return operation.NewSearchUserGroupsOK().WithXTotalCount(0).WithPayload([]*models.UserGroupSearchItem{})
 	}
-	ug, err := u.ctl.SearchByName(ctx, params.Groupname, int(*params.PageSize))
+	// no need to query the database for a page past the end
+	if pastLastPage(query, total) {
+		return operation.NewSearchUserGroupsOK().WithXTotalCount(total).WithPayload([]*models.UserGroupSearchItem{})
+	}
+	ug, err := u.ctl.SearchByName(ctx, params.Groupname, int(query.PageSize), searchOffset(query))
 	if err != nil {
 		return u.SendError(ctx, err)
 	}

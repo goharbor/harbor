@@ -36,7 +36,7 @@ type DAO interface {
 	// Delete delete user
 	Delete(ctx context.Context, userID int) error
 	// SearchByName search users by names with fuzzy search
-	SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error)
+	SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*commonmodels.User, error)
 }
 
 // New returns an instance of the default DAO
@@ -125,16 +125,17 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*commonmodels.User, e
 	return retUsers, nil
 }
 
-func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*commonmodels.User, error) {
+func (d *dao) SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*commonmodels.User, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 	var users []*User
-	// use raw sql to return the most matched user first, then by alphabetic order
-	sql := "select * from harbor_user where username like ? and deleted = false order by length(username), username asc limit ?"
-	likePattern := "%" + name + "%"
-	_, err = o.Raw(sql, likePattern, limitSize).QueryRows(&users)
+	// use raw sql to return the exact match first, then the most matched user, then by alphabetic order
+	sql := "select * from harbor_user where username ilike ? and deleted = false order by (username = ?) desc, length(username), username asc limit ? offset ?"
+	// match like Count does, case insensitive with the wildcards escaped
+	likePattern := "%" + orm.Escape(name) + "%"
+	_, err = o.Raw(sql, likePattern, name, limitSize, offset).QueryRows(&users)
 	if err != nil {
 		return nil, err
 	}

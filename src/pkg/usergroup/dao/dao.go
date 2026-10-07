@@ -50,7 +50,7 @@ type DAO interface {
 	// ReadOrCreate create a user group or read existing one from db
 	ReadOrCreate(ctx context.Context, g *model.UserGroup, keyAttribute string, combinedKeyAttributes ...string) (bool, int64, error)
 	// Search search user groups by names with fuzzy search
-	SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error)
+	SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*model.UserGroup, error)
 }
 
 type dao struct {
@@ -165,16 +165,17 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return qs.Count()
 }
 
-func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
+func (d *dao) SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*model.UserGroup, error) {
 	o, err := orm.FromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 	var usergroups []*model.UserGroup
-	// use raw sql to return the most matched user first, then by alphabetic order
-	sql := "select id, group_name, group_type, ldap_group_dn, creation_time, update_time from user_group where group_name like ? order by length(group_name), group_name asc limit ?"
-	likePattern := "%" + name + "%"
-	_, err = o.Raw(sql, likePattern, limitSize).QueryRows(&usergroups)
+	// use raw sql to return the exact match first, then the most matched group, then by alphabetic order
+	sql := "select id, group_name, group_type, ldap_group_dn, creation_time, update_time from user_group where group_name ilike ? order by (group_name = ?) desc, length(group_name), group_name asc, id asc limit ? offset ?"
+	// match like Count does, case insensitive with the wildcards escaped
+	likePattern := "%" + orm.Escape(name) + "%"
+	_, err = o.Raw(sql, likePattern, name, limitSize, offset).QueryRows(&usergroups)
 	if err != nil {
 		return nil, err
 	}

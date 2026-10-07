@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -131,4 +132,18 @@ func getProjectID(ctx context.Context, projectNameOrID any) (int64, error) {
 		return projectID, nil
 	}
 	return 0, errors.New("unknown project identifier type")
+}
+
+// searchOffset returns the offset of the first record of the requested page, a non-positive page number means the first page
+func searchOffset(query *q.Query) int {
+	if query.PageNumber <= 0 {
+		return 0
+	}
+	return int((query.PageNumber - 1) * query.PageSize)
+}
+
+// pastLastPage returns true if the requested page starts after the last of the total records,
+// the division keeps huge page numbers from overflowing
+func pastLastPage(query *q.Query, total int64) bool {
+	return query.PageSize > 0 && query.PageNumber > (total+query.PageSize-1)/query.PageSize
 }

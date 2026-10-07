@@ -278,7 +278,11 @@ func (u *usersAPI) SearchUsers(ctx context.Context, params operation.SearchUsers
 	if total == 0 {
 		return operation.NewSearchUsersOK().WithXTotalCount(0).WithPayload([]*models.UserSearchRespItem{})
 	}
-	l, err := u.ctl.SearchByName(ctx, params.Username, int(*params.PageSize))
+	// no need to query the database for a page past the end
+	if pastLastPage(query, total) {
+		return operation.NewSearchUsersOK().WithXTotalCount(total).WithPayload([]*models.UserSearchRespItem{})
+	}
+	l, err := u.ctl.SearchByName(ctx, params.Username, int(query.PageSize), searchOffset(query))
 	if err != nil {
 		return u.SendError(ctx, err)
 	}

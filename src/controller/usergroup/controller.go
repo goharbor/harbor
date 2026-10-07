@@ -50,7 +50,7 @@ type Controller interface {
 	// Count user group count
 	Count(ctx context.Context, q *q.Query) (int64, error)
 	// SearchByName user groups by names with fuzzy search
-	SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error)
+	SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*model.UserGroup, error)
 }
 
 type controller struct {
@@ -119,6 +119,6 @@ func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
 	return c.mgr.Count(ctx, query)
 }
 
-func (c *controller) SearchByName(ctx context.Context, name string, limitSize int) ([]*model.UserGroup, error) {
-	return c.mgr.SearchByName(ctx, name, limitSize)
+func (c *controller) SearchByName(ctx context.Context, name string, limitSize, offset int) ([]*model.UserGroup, error) {
+	return c.mgr.SearchByName(ctx, name, limitSize, offset)
 }

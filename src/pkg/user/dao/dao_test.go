@@ -212,12 +212,64 @@ func (suite *DaoTestSuite) TestSearchByName() {
 	suite.appendClearSQL(id)
 
 	// search by name, the first 10 records should be returned
-	users, err := suite.dao.SearchByName(ctx, "searchbyname", 10)
+	users, err := suite.dao.SearchByName(ctx, "searchbyname", 10, 0)
 	suite.Nil(err)
 	suite.Len(users, 10)
 
 	// the first record should be the target user
 	suite.Equal("searchbyname", users[0].Username)
+
+	// the following pages should continue after the previous one without overlap
+	seen := map[string]bool{}
+	for _, u := range users {
+		seen[u.Username] = true
+	}
+	for offset, expected := range map[int]int{10: 10, 20: 1, 30: 0} {
+		page, err := suite.dao.SearchByName(ctx, "searchbyname", 10, offset)
+		suite.Nil(err)
+		suite.Len(page, expected, "offset %d", offset)
+		for _, u := range page {
+			suite.False(seen[u.Username], "%s returned twice", u.Username)
+			seen[u.Username] = true
+		}
+	}
+	suite.Len(seen, 21)
+
+	// the search is case insensitive and matches wildcard characters literally, like Count
+	upper, err := suite.dao.SearchByName(ctx, "SEARCHBYNAME", 10, 0)
+	suite.Nil(err)
+	suite.Len(upper, 10)
+	for _, name := range []string{"wild_card_user", "wildXcard_user", "wild%card_user"} {
+		id, err := suite.dao.Create(ctx, &commonmodels.User{Username: name, Realname: "search by name test"})
+		suite.Nil(err)
+		suite.appendClearSQL(id)
+	}
+	// the exact match comes first even if there are more case variants than a page holds
+	for mask := 0; mask < 16; mask++ {
+		variant := []rune{}
+		for i, r := range "abcd" {
+			if mask&(1<<i) != 0 {
+				r = r - 'a' + 'A'
+			}
+			variant = append(variant, r)
+		}
+		id, err := suite.dao.Create(ctx, &commonmodels.User{Username: "case_" + string(variant), Realname: "search by name test"})
+		suite.Nil(err)
+		suite.appendClearSQL(id)
+	}
+	exact, err := suite.dao.SearchByName(ctx, "case_aBcD", 10, 0)
+	suite.Nil(err)
+	suite.Len(exact, 10)
+	suite.Equal("case_aBcD", exact[0].Username)
+
+	wild, err := suite.dao.SearchByName(ctx, "wild_card", 10, 0)
+	suite.Nil(err)
+	suite.Len(wild, 1)
+	suite.Equal("wild_card_user", wild[0].Username)
+	wild, err = suite.dao.SearchByName(ctx, "wild%card", 10, 0)
+	suite.Nil(err)
+	suite.Len(wild, 1)
+	suite.Equal("wild%card_user", wild[0].Username)
 
 }
 
