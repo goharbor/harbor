@@ -57,6 +57,13 @@ const (
 	authorizationBearer = "Bearer"
 	authorizationBasic  = "Basic"
 
+	// maxBearerTokenResponseSize bounds the body read from the internal token
+	// service. Token responses are a few hundred bytes; the cap keeps a
+	// misbehaving or on-path-tampered endpoint from forcing an unbounded read.
+	maxBearerTokenResponseSize = 1 << 20 // 1 MiB
+	// bearerTokenRequestTimeout bounds the whole token round-trip.
+	bearerTokenRequestTimeout = 30 * time.Second
+
 	service = "harbor-registry"
 )
 
@@ -578,8 +585,15 @@ func makeBearerAuthorization(robotAccount *model.Robot, tokenURL string, reposit
 	auth, _ := makeBasicAuthorization(robotAccount)
 	req.Header.Set("Authorization", auth)
 
+	// The token endpoint is Harbor's own core (core_url + /service/token), which
+	// carries the scan robot's Basic credentials. Verify its TLS certificate:
+	// under internal TLS core_url is https and the default transport presents the
+	// internal client cert and validates the server, exactly like every other
+	// intra-Harbor call. Disabling verification here silently downgraded that and
+	// exposed the credentials to an on-path attacker (CWE-295).
 	client := &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
+		Transport: commonhttp.GetHTTPTransport(),
+		Timeout:   bearerTokenRequestTimeout,
 	}
 
 	resp, err := client.Do(req)
@@ -588,9 +602,12 @@ func makeBearerAuthorization(robotAccount *model.Robot, tokenURL string, reposit
 	}
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	data, err := io.ReadAll(io.LimitReader(resp.Body, maxBearerTokenResponseSize+1))
 	if err != nil {
 		return "", err
+	}
+	if len(data) > maxBearerTokenResponseSize {
+		return "", errors.Errorf("bearer token response exceeds %d bytes", maxBearerTokenResponseSize)
 	}
 
 	if resp.StatusCode != http.StatusOK {

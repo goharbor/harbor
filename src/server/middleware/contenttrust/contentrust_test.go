@@ -18,10 +18,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -187,13 +189,18 @@ func (suite *ContentTrustMiddlewareTestSuite) TestScannerPulling() {
 	suite.Equal(rr.Code, http.StatusOK)
 }
 
-func (suite *ContentTrustMiddlewareTestSuite) TestCosignPulling() {
+// A push-capable principal must NOT skip the content-trust policy by
+// spoofing "User-Agent: cosign". With the exemption removed and the opt-in hatch off, the
+// unsigned image is rejected regardless of the User-Agent.
+func (suite *ContentTrustMiddlewareTestSuite) TestSpoofedCosignUserAgentBlocked() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "false")
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
 	securityCtx := &securitytesting.Context{}
 	mock.OnAnything(securityCtx, "Name").Return("v2token")
-	mock.OnAnything(securityCtx, "Can").Return(true, nil)
+	securityCtx.On("Can", mock.Anything, rbac.ActionScannerPull, mock.Anything).Return(false)
+	securityCtx.On("Can", mock.Anything, rbac.ActionPush, mock.Anything).Return(true)
 	mock.OnAnything(securityCtx, "IsAuthenticated").Return(true)
 
 	req := suite.makeRequest(true)
@@ -201,7 +208,68 @@ func (suite *ContentTrustMiddlewareTestSuite) TestCosignPulling() {
 	rr := httptest.NewRecorder()
 
 	ContentTrust()(suite.next).ServeHTTP(rr, req)
-	suite.Equal(rr.Code, http.StatusOK)
+	suite.Equal(http.StatusPreconditionFailed, rr.Code)
+}
+
+// The opt-in legacy bootstrap (CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED=true) restores the
+// pull-before-first-signature exemption for content-trust, for operators who need it.
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacySignerPullOptIn() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "true")
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	securityCtx := &securitytesting.Context{}
+	mock.OnAnything(securityCtx, "Name").Return("v2token")
+	securityCtx.On("Can", mock.Anything, rbac.ActionScannerPull, mock.Anything).Return(false)
+	securityCtx.On("Can", mock.Anything, rbac.ActionPush, mock.Anything).Return(true)
+	mock.OnAnything(securityCtx, "IsAuthenticated").Return(true)
+
+	req := suite.makeRequest(true)
+	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
+	rr := httptest.NewRecorder()
+
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(http.StatusOK, rr.Code)
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) serveLegacySignerPull(userAgent string, canPush bool) int {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	securityCtx := &securitytesting.Context{}
+	mock.OnAnything(securityCtx, "Name").Return("v2token")
+	securityCtx.On("Can", mock.Anything, rbac.ActionScannerPull, mock.Anything).Return(false)
+	securityCtx.On("Can", mock.Anything, rbac.ActionPush, mock.Anything).Return(canPush)
+	mock.OnAnything(securityCtx, "IsAuthenticated").Return(true)
+
+	req := suite.makeRequest()
+	req.Header.Set("User-Agent", userAgent)
+	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
+	rr := httptest.NewRecorder()
+
+	ContentTrust()(suite.next).ServeHTTP(rr, req)
+	return rr.Code
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacySignerPullDisabledWhenUnset() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "")
+	os.Unsetenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED")
+	suite.Equal(http.StatusPreconditionFailed, suite.serveLegacySignerPull("cosign/2.4.0", true))
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacySignerPullOptInNotation() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "true")
+	suite.Equal(http.StatusOK, suite.serveLegacySignerPull("notation/1.2.0", true))
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacySignerPullOptInRequiresSignerUserAgent() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "true")
+	suite.Equal(http.StatusPreconditionFailed, suite.serveLegacySignerPull("docker/24.0", true))
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacySignerPullOptInRequiresPush() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "true")
+	suite.Equal(http.StatusPreconditionFailed, suite.serveLegacySignerPull("cosign/2.4.0", false))
 }
 
 // pull a public project a un-signed image when policy checker is enabled.

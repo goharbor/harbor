@@ -17,6 +17,7 @@ package util
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 
@@ -62,15 +63,18 @@ func ParseProjectName(r *http.Request) string {
 func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
 	secCtx, ok := security.FromContext(r.Context())
 
-	// 1, scanner pull access can bypass.
-	// 2, cosign/notation pull can bypass, it needs to pull the manifest before pushing the signature.
-	// 3, pull cosign/notation signature can bypass.
+	// Scanner pull is authorised by the scanner-pull RBAC action, which is carried in the
+	// signed bearer token's scope and cannot be forged, so it may bypass the policy.
+	//
+	// The former cosign/notation exemptions here were gated on the request User-Agent, a
+	// fully client-controlled string (CWE-807): any push-capable
+	// principal could skip both the content-trust and the vulnerability-prevention policy by
+	// sending "User-Agent: cosign". They have been removed. A genuinely signed artifact is
+	// still recognised below by its actual signature accessory, not by any client header.
+	// The pull-before-first-signature bootstrap for content-trust is preserved, opt-in only,
+	// by the content-trust middleware via LegacySignerBootstrapPull.
 	if ok && secCtx.Name() == "v2token" {
-		if secCtx.Can(r.Context(), rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) ||
-			(secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) &&
-				strings.Contains(r.UserAgent(), "cosign")) ||
-			(secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) &&
-				strings.Contains(r.UserAgent(), "notation")) {
+		if secCtx.Can(r.Context(), rbac.ActionScannerPull, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) {
 			return true, nil
 		}
 	}
@@ -84,4 +88,34 @@ func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
 	}
 
 	return false, nil
+}
+
+// LegacySignerPullEnabled reports whether the operator has opted in to the legacy,
+// User-Agent-based signer-pull exemption for the content-trust policy. It is off by default.
+//
+// The exemption exists so a signing client (cosign/notation) can pull an as-yet unsigned
+// subject manifest in order to create its first signature under an enabled content-trust
+// policy. Its only signal is the client-supplied User-Agent, which is spoofable (CWE-807);
+// it is therefore honoured only when an operator explicitly sets
+// CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED=true, and never for the vulnerability-prevention
+// policy.
+func LegacySignerPullEnabled() bool {
+	return os.Getenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED") == "true"
+}
+
+// LegacySignerBootstrapPull reports whether the request looks like a push-capable signing
+// client fetching a subject manifest before pushing its first signature. The decision
+// includes the client-supplied User-Agent and is therefore spoofable, so callers must gate
+// it behind LegacySignerPullEnabled and must never use it for the vulnerability-prevention
+// policy.
+func LegacySignerBootstrapPull(r *http.Request, projectID int64) bool {
+	secCtx, ok := security.FromContext(r.Context())
+	if !ok || secCtx.Name() != "v2token" {
+		return false
+	}
+	if !secCtx.Can(r.Context(), rbac.ActionPush, project.NewNamespace(projectID).Resource(rbac.ResourceRepository)) {
+		return false
+	}
+	ua := r.UserAgent()
+	return strings.Contains(ua, "cosign") || strings.Contains(ua, "notation")
 }
