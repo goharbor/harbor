@@ -48,7 +48,9 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		if len(repositorySelectors) < 1 {
 			continue
 		}
-		matched, err := dimensionSelects(repositorySelectors, "", &c)
+		// Repository selectors only read the repository and namespace, which are
+		// the same for every tag, so evaluate them once instead of per tag.
+		matched, err := selectsOne(repositorySelectors, "", &c)
 		if err != nil {
 			return false, err
 		}
@@ -75,11 +77,11 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 	return false, nil
 }
 
-// dimensionSelects reports whether a rule dimension (repository or tag) puts
-// the candidate in scope. The selectors must behave like the portal's single
-// `{a,b}` pattern: inclusion selectors are alternatives (any may match) and an
-// exclusion selector removes whatever it matches, so every exclusion selector
-// has to select the candidate. A dimension holding only exclusions starts from
+// dimensionSelects reports whether a rule dimension puts the candidate in
+// scope. The selectors must behave like the portal's single `{a,b}` pattern:
+// inclusion selectors are alternatives (any may match) and an exclusion
+// selector removes whatever it matches, so every exclusion selector has to
+// select the candidate. A dimension holding only exclusions starts from
 // everything.
 //
 // A multi-tag candidate is evaluated per tag because a doublestar selector
