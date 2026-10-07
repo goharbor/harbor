@@ -34,7 +34,7 @@ func (a *artifactEventTestSuite) TestResolveOfPushArtifactEventMetadata() {
 	metadata := &PushArtifactEventMetadata{
 		Ctx:      context.Background(),
 		Artifact: &artifact.Artifact{ID: 1},
-		Tag:      "latest",
+		Tags:     []string{"latest", "1.0"},
 	}
 	err := metadata.Resolve(e)
 	a.Require().Nil(err)
@@ -43,7 +43,9 @@ func (a *artifactEventTestSuite) TestResolveOfPushArtifactEventMetadata() {
 	data, ok := e.Data.(*event2.PushArtifactEvent)
 	a.Require().True(ok)
 	a.Equal(int64(1), data.Artifact.ID)
+	a.Require().Len(data.Tags, 2)
 	a.Equal("latest", data.Tags[0])
+	a.Equal("1.0", data.Tags[1])
 }
 
 func (a *artifactEventTestSuite) TestResolveOfPullArtifactEventMetadata() {
