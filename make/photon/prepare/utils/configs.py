@@ -210,8 +210,9 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     network_config = configs.get('network') or {}
+    allow_private_network_access = network_config.get('allow_private_network_access')
     config_dict['allow_private_network_access'] = (
-        network_config.get('allow_private_network_access') or False
+        'true' if allow_private_network_access is None else str(allow_private_network_access).lower()
     )
 
     # Trivy configs, optional

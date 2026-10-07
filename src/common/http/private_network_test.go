@@ -104,13 +104,29 @@ func TestValidatePublicNetworkTarget(t *testing.T) {
 	}
 }
 
-// TestValidatePublicNetworkTargetEscapeHatch proves the HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS
-// opt-out lets an operator keep webhooking to internal targets (backward-compat contract).
+// TestValidatePublicNetworkTargetEscapeHatch proves HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS keeps
+// internal webhook targets working unless it is explicitly false (backward-compat contract), and
+// that a malformed value fails closed.
 func TestValidatePublicNetworkTargetEscapeHatch(t *testing.T) {
-	t.Setenv(privateNetworkAccessEnv, "false")
-	require.Error(t, ValidatePublicNetworkTarget(context.Background(), nil, "127.0.0.1"))
-	t.Setenv(privateNetworkAccessEnv, "true")
-	require.NoError(t, ValidatePublicNetworkTarget(context.Background(), nil, "127.0.0.1"))
+	for value, allowed := range map[string]bool{
+		"":      true,
+		" ":     true,
+		"true":  true,
+		"1":     true,
+		"false": false,
+		"0":     false,
+		"flase": false,
+	} {
+		t.Run(value, func(t *testing.T) {
+			t.Setenv(privateNetworkAccessEnv, value)
+			err := ValidatePublicNetworkTarget(context.Background(), nil, "127.0.0.1")
+			if allowed {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
 }
 
 func TestWithPublicNetworkOnly(t *testing.T) {
