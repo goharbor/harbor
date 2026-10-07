@@ -104,8 +104,9 @@ func privateNetworkAccessAllowed() bool {
 }
 
 // blockPrivateNetwork is a net.Dialer.Control callback. It runs after DNS resolution and on
-// every dial (including redirect hops), so it defeats DNS rebinding. It fails closed unless
-// HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS is set.
+// every dial (including redirect hops), so it defeats DNS rebinding. It permits private-network
+// access by default, and blocks non-public destinations when HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS
+// is explicitly set to false (or a malformed value).
 func blockPrivateNetwork(_ string, address string, _ syscall.RawConn) error {
 	if privateNetworkAccessAllowed() {
 		return nil
