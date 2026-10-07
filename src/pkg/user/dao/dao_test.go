@@ -221,6 +221,28 @@ func (suite *DaoTestSuite) TestSearchByName() {
 
 }
 
+func (suite *DaoTestSuite) TestSearchByNameEscapesLikeWildcards() {
+	ctx := orm.Context()
+	for _, name := range []string{"wildcard_user", "wildcardXuser"} {
+		id, err := suite.dao.Create(ctx, &commonmodels.User{
+			Username: name,
+			Realname: "search by name test",
+		})
+		suite.Nil(err)
+		suite.appendClearSQL(id)
+	}
+
+	// the "_" must be matched literally, the same way Count() does via q.FuzzyMatchValue
+	total, err := suite.dao.Count(ctx, q.New(q.KeyWords{"username": &q.FuzzyMatchValue{Value: "wildcard_user"}}))
+	suite.Nil(err)
+	suite.Equal(int64(1), total)
+
+	users, err := suite.dao.SearchByName(ctx, "wildcard_user", 10)
+	suite.Nil(err)
+	suite.Len(users, 1)
+	suite.Equal("wildcard_user", users[0].Username)
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }
