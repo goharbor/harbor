@@ -186,6 +186,12 @@ func WithTrivy() bool {
 	return DefaultMgr().Get(backgroundCtx, common.WithTrivy).GetBool()
 }
 
+// WithSleeko returns a bool value to indicate if Harbor's deployed with the
+// sleeko optimizer adapter.
+func WithSleeko() bool {
+	return DefaultMgr().Get(backgroundCtx, common.WithSleeko).GetBool()
+}
+
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	return DefaultMgr().Get(backgroundCtx, common.ExtEndpoint).GetString(), nil
@@ -278,6 +284,11 @@ func InternalTokenServiceEndpoint() string {
 // TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.
 func TrivyAdapterURL() string {
 	return DefaultMgr().Get(backgroundCtx, common.TrivyAdapterURL).GetString()
+}
+
+// SleekoAdapterURL returns the endpoint URL of the sleeko optimizer adapter instance.
+func SleekoAdapterURL() string {
+	return DefaultMgr().Get(backgroundCtx, common.SleekoAdapterURL).GetString()
 }
 
 // Metric returns the overall metric settings

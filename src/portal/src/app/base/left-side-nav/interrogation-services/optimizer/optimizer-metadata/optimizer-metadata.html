@@ -1,0 +1,68 @@
+<div [clrLoading]="loading" class="ml-2">
+    <div class="clr-control-label">
+        {{ 'OPTIMIZER.OPTIMIZER_COLON' | translate }}
+    </div>
+    <div class="ml-1">
+        <span>{{ 'OPTIMIZER.NAME_COLON' | translate }}</span>
+        <span id="optimizerMetadata-name" class="ml-1">{{
+            optimizerMetadata?.optimizer?.name
+        }}</span>
+    </div>
+    <div class="ml-1">
+        <span>{{ 'OPTIMIZER.VENDOR_COLON' | translate }}</span>
+        <span class="ml-1">{{ optimizerMetadata?.optimizer?.vendor }}</span>
+    </div>
+    <div class="ml-1">
+        <span>{{ 'OPTIMIZER.VERSION_COLON' | translate }}</span>
+        <span class="ml-1">{{ optimizerMetadata?.optimizer?.version }}</span>
+    </div>
+    <div class="clr-control-label">
+        {{ 'OPTIMIZER.CAPABILITIES' | translate }}
+    </div>
+    <div
+        class="ml-1"
+        *ngFor="let item of optimizerMetadata?.capabilities; let i = index">
+        {{ i }}:
+        <div class="ml-1">
+            <span>{{ 'OPTIMIZER.CONSUMES_MIME_TYPES_COLON' | translate }}</span>
+            <span
+                class="ml-1"
+                [innerHTML]="
+                    toString(
+                        optimizerMetadata?.capabilities[i]?.consumes_mime_types
+                    )
+                "></span>
+        </div>
+        <div class="ml-1">
+            <span>{{ 'OPTIMIZER.PRODUCTS_MIME_TYPES_COLON' | translate }}</span>
+            <span
+                class="ml-1"
+                [innerHTML]="
+                    toString(
+                        optimizerMetadata?.capabilities[i]?.produces_mime_types
+                    )
+                "></span>
+        </div>
+        <div class="ml-1" *ngIf="optimizerMetadata?.capabilities[i]?.type">
+            <span>{{ 'OPTIMIZER.CAPABILITIES_TYPE' | translate }}</span>
+            <span class="ml-1">
+                {{
+                    (optimizerMetadata?.capabilities[i]?.type === 'sbom'
+                        ? 'OPTIMIZER.SBOM'
+                        : optimizerMetadata?.capabilities[i]?.type ===
+                          'vulnerability'
+                        ? 'OPTIMIZER.VULNERABILITY'
+                        : optimizerMetadata?.capabilities[i]?.type
+                    ) | translate
+                }}
+            </span>
+        </div>
+    </div>
+    <div class="clr-control-label">{{ 'OPTIMIZER.PROPERTIES' | translate }}</div>
+    <div
+        class="ml-1"
+        *ngFor="let item of optimizerMetadata?.properties | keyvalue">
+        <span>{{ item?.key }}:</span>
+        <span class="ml-1">{{ parseDate(item) }}</span>
+    </div>
+</div>
