@@ -318,6 +318,21 @@ func (s *MatchTestSuite) TestImmuMatchMultiExcludeSelector() {
 			repo: "redis", tags: []string{"dev-1", "release-1"}, want: true,
 		},
 		{
+			name: "repoExcludes: multi-tag artifact in an excluded repository stays mutable",
+			repoSels: []*model.Selector{
+				{Kind: "doublestar", Decoration: "repoExcludes", Pattern: "redis"},
+				{Kind: "doublestar", Decoration: "repoExcludes", Pattern: "mysql"},
+			},
+			tagSels: []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
+			repo:    "mysql", tags: []string{"1.0", "latest"}, want: false,
+		},
+		{
+			name:     "repoMatches: multi-tag artifact in a matching repository is immutable",
+			repoSels: []*model.Selector{{Kind: "doublestar", Decoration: "repoMatches", Pattern: "redis"}},
+			tagSels:  []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
+			repo:     "redis", tags: []string{"1.0", "latest"}, want: true,
+		},
+		{
 			name: "mixed: exclusion carves out of a matches selector",
 			repoSels: []*model.Selector{
 				{Kind: "doublestar", Decoration: "repoMatches", Pattern: "**"},
