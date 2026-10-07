@@ -616,9 +616,18 @@ func getStatus(conn redis.Conn, key string) (Status, error) {
 	}
 
 	if len(values) == 1 {
-		st := Status(values[0].([]byte))
-		if st.Validate() == nil {
-			return st, nil
+		// HMGET answers a missing key or field with a nil entry, not an error.
+		// The job stats can expire or be removed while the job still runs, and
+		// asserting that nil to []byte panicked every caller of Status.
+		if values[0] == nil {
+			return "", errs.NoObjectFoundError(key)
+		}
+
+		if raw, ok := values[0].([]byte); ok {
+			st := Status(raw)
+			if st.Validate() == nil {
+				return st, nil
+			}
 		}
 	}
 
