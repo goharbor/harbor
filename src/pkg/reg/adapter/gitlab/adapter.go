@@ -175,7 +175,8 @@ func (a *adapter) findRepository(repository string) (int64, int64, error) {
 		if err != nil {
 			return 0, 0, err
 		}
-		if project.FullPath != path || project.ID <= 0 {
+		// GitLab preserves project-path case, but registry paths are lowercase.
+		if !strings.EqualFold(project.FullPath, path) || project.ID <= 0 {
 			return 0, 0, fmt.Errorf("GitLab project does not match requested path %q", path)
 		}
 		repositories, err := a.clientGitlabAPI.getRepositories(project.ID)

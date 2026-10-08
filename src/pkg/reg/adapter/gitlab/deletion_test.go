@@ -76,15 +76,15 @@ func deletionAdapter(t *testing.T, responses map[string]deletionResponse) (*adap
 	}))
 	t.Cleanup(server.Close)
 	return &adapter{
-		Adapter: native.NewAdapterWithAuthorizer(&model.Registry{URL: server.URL}, nil),
-		clientGitlabAPI: &Client{
-			url: server.URL, token: "test-token", client: common_http.NewClient(server.Client()),
-		},
-	}, func() []string {
-		mu.Lock()
-		defer mu.Unlock()
-		return append([]string(nil), requests...)
-	}
+			Adapter: native.NewAdapterWithAuthorizer(&model.Registry{URL: server.URL}, nil),
+			clientGitlabAPI: &Client{
+				url: server.URL, token: "test-token", client: common_http.NewClient(server.Client()),
+			},
+		}, func() []string {
+			mu.Lock()
+			defer mu.Unlock()
+			return append([]string(nil), requests...)
+		}
 }
 
 func deletionRoutes() map[string]deletionResponse {
@@ -117,6 +117,57 @@ func TestGitLabDeleteTag(t *testing.T) {
 			require.NoError(t, err)
 			require.Len(t, requests(), 5)
 			require.Equal(t, "DELETE /api/v4/projects/7/registry/repositories/11/tags/v1.0", requests()[4])
+		})
+	}
+}
+
+func TestGitLabDeleteTagProjectPathCase(t *testing.T) {
+	for _, projectPath := range []string{
+		"Team/SubGroup/project",
+		"team/subgroup/Project",
+		"Team/SubGroup/Project",
+	} {
+		t.Run(projectPath, func(t *testing.T) {
+			routes := deletionRoutes()
+			routes["GET /api/v4/projects/team%2Fsubgroup%2Fproject"] = deletionResponse{
+				code: 200, body: fmt.Sprintf(`{"id":7,"path_with_namespace":%q}`, projectPath),
+			}
+			routes["DELETE /api/v4/projects/7/registry/repositories/11/tags/latest"] = deletionResponse{code: 204}
+			a, requests := deletionAdapter(t, routes)
+
+			require.NoError(t, a.DeleteTag("team/subgroup/project/image", "latest"))
+			require.Equal(t, []string{
+				"GET /api/v4/projects/team%2Fsubgroup%2Fproject%2Fimage",
+				"GET /api/v4/projects/team%2Fsubgroup%2Fproject",
+				"GET /api/v4/projects/7/registry/repositories?per_page=50",
+				"GET /api/v4/projects/7/registry/repositories?page=2&per_page=50",
+				"DELETE /api/v4/projects/7/registry/repositories/11/tags/latest",
+			}, requests())
+		})
+	}
+}
+
+func TestGitLabDeletionRejectsDifferentProjectPath(t *testing.T) {
+	for _, projectPath := range []string{
+		"Other/SubGroup/Project",
+		"Team/Other/Project",
+		"Team/SubGroup/Other",
+		"Team/SubGroup/ProjectExtra",
+		"Team/SubGroup/Project/Image",
+	} {
+		t.Run(projectPath, func(t *testing.T) {
+			routes := deletionRoutes()
+			routes["GET /api/v4/projects/team%2Fsubgroup%2Fproject"] = deletionResponse{
+				code: 200, body: fmt.Sprintf(`{"id":7,"path_with_namespace":%q}`, projectPath),
+			}
+			a, requests := deletionAdapter(t, routes)
+
+			err := a.DeleteTag("team/subgroup/project/image", "latest")
+			require.EqualError(t, err, `GitLab project does not match requested path "team/subgroup/project"`)
+			require.Equal(t, []string{
+				"GET /api/v4/projects/team%2Fsubgroup%2Fproject%2Fimage",
+				"GET /api/v4/projects/team%2Fsubgroup%2Fproject",
+			}, requests())
 		})
 	}
 }
