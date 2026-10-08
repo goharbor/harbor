@@ -24,6 +24,7 @@ def prepare_docker_compose(configs, with_trivy):
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
         'with_trivy': with_trivy,
+        'podman': os.environ.get('CONTAINER_RUNTIME') == 'podman',
     }
 
     # if configs.get('registry_custom_ca_bundle_path'):

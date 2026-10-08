@@ -23,6 +23,14 @@ docker() {
             ;;
         run*)
             case " $* " in
+                *" -e CONTAINER_RUNTIME=docker "*)
+                    ;;
+                *)
+                    echo "Docker prepare did not receive its runtime selection." >&2
+                    return 1
+                    ;;
+            esac
+            case " $* " in
                 *" --security-opt label=disable "*)
                     echo "Docker prepare unexpectedly disabled SELinux separation." >&2
                     return 1
@@ -49,7 +57,7 @@ podman() {
             ;;
         run)
             case " $* " in
-                *" --security-opt label=disable "*" --privileged goharbor/prepare:dev prepare "*)
+                *" --security-opt label=disable -e CONTAINER_RUNTIME=podman "*" --privileged goharbor/prepare:dev prepare "*)
                     ;;
                 *)
                     echo "Unexpected prepare invocation: $*" >&2

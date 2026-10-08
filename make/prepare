@@ -80,6 +80,7 @@ if [ "$container_runtime" = "podman" ]; then
 fi
 
 "$container_runtime" run --rm "${runtime_options[@]}" \
+                    -e "CONTAINER_RUNTIME=$container_runtime" \
                     -v "$input_dir:/input" \
                     -v "$data_path:/data" \
                     -v "$harbor_prepare_path:/compose_location" \
