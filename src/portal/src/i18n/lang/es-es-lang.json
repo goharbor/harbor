@@ -378,6 +378,8 @@
         "PURGE_AUDIT": "Purgar Auditoria",
         "JOBSERVICE_MONITOR": "Job Service Monitor",
         "TAG_RETENTION": "Tag de Retención",
+        "CONFIGURATION": "Configuración",
+        "OPERATE": "Operar",
         "SCANNER": "Escaner",
         "LABEL": "Etiqueta",
         "EXPORT_CVE": "Exportar CVE",

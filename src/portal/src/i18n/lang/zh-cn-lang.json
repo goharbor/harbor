@@ -378,6 +378,8 @@
         "PURGE_AUDIT": "日志清除",
         "JOBSERVICE_MONITOR": "任务监视器",
         "TAG_RETENTION": "Tag 保留",
+        "CONFIGURATION": "配置",
+        "OPERATE": "操作",
         "SCANNER": "扫描器",
         "LABEL": "标签",
         "EXPORT_CVE": "导出 CVE",
