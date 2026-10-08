@@ -11,7 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { debounceTime, finalize, switchMap } from 'rxjs/operators';
+import {
+    catchError,
+    debounceTime,
+    finalize,
+    switchMap,
+    takeUntil,
+} from 'rxjs/operators';
 import {
     Component,
     EventEmitter,
@@ -67,10 +73,16 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     groupSearcher: Subject<string> = new Subject<string>();
     groupCheckerSub: Subscription;
     groupSearcherSub: Subscription;
+    groupSearchPageSize: number = 10;
+    groupSearchPage: number = 1;
+    groupSearchTotalCount: number = 0;
+    groupSearchName: string = '';
+    loadingMoreGroups: boolean = false;
     btnStatus: ClrLoadingState = ClrLoadingState.DEFAULT;
     isGroupNameValid: boolean = true;
     groupTooltip: string = 'MEMBER.GROUP_NAME_REQUIRED';
     isNameChecked: boolean = false; // this is only for LDAP mode
+    destroy$: Subject<void> = new Subject<void>();
     constructor(
         private memberService: MemberService,
         private appConfigService: AppConfigService,
@@ -101,6 +113,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
                         } else {
                             return of([]);
                         }
+                    }),
+                    catchError((err, caught) => {
+                        this.messageHandlerService.handleError(err);
+                        return caught;
                     })
                 )
                 .subscribe(res => {
@@ -123,20 +139,36 @@ export class AddGroupComponent implements OnInit, OnDestroy {
                 .pipe(
                     debounceTime(500),
                     switchMap(name => {
+                        this.groupSearchName = name;
+                        this.groupSearchPage = 1;
+                        this.searchedGroups = [];
+                        this.groupSearchTotalCount = 0;
                         if (name) {
-                            return this.userGroupService.searchUserGroups({
-                                page: 1,
-                                pageSize: 10,
-                                groupname: name,
-                            });
+                            return this.userGroupService.searchUserGroupsResponse(
+                                {
+                                    page: this.groupSearchPage,
+                                    pageSize: this.groupSearchPageSize,
+                                    groupname: name,
+                                }
+                            );
                         } else {
-                            return of([]);
+                            return of(null);
                         }
+                    }),
+                    catchError((err, caught) => {
+                        this.messageHandlerService.handleError(err);
+                        return caught;
                     })
                 )
                 .subscribe(res => {
                     if (res) {
-                        this.searchedGroups = res;
+                        this.searchedGroups = res.body || [];
+                        this.groupSearchTotalCount = Number(
+                            res.headers.get('X-Total-Count')
+                        );
+                    } else {
+                        this.searchedGroups = [];
+                        this.groupSearchTotalCount = 0;
                     }
                     // for LDAP mode, if input group name is not found from search result, then show "Group name does not exists" error
                     if (
@@ -171,6 +203,8 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.groupSearcherSub.unsubscribe();
             this.groupSearcherSub = null;
         }
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     createGroupAsMember() {
@@ -228,6 +262,9 @@ export class AddGroupComponent implements OnInit, OnDestroy {
         this.isGroupNameValid = true;
         this.groupTooltip = 'MEMBER.GROUP_NAME_REQUIRED';
         this.searchedGroups = [];
+        this.groupSearchPage = 1;
+        this.groupSearchTotalCount = 0;
+        this.groupSearchName = '';
     }
     isValid(): boolean {
         if (this.appConfigService.isLdapMode()) {
@@ -257,6 +294,46 @@ export class AddGroupComponent implements OnInit, OnDestroy {
         this.searchedGroups = [];
     }
 
+    loadNextGroupPage(): void {
+        if (this.loadingMoreGroups) {
+            return;
+        }
+        if (this.searchedGroups.length >= this.groupSearchTotalCount) {
+            return;
+        }
+        this.loadingMoreGroups = true;
+        this.userGroupService
+            .searchUserGroupsResponse({
+                page: this.groupSearchPage + 1,
+                pageSize: this.groupSearchPageSize,
+                groupname: this.groupSearchName,
+            })
+            .pipe(
+                finalize(() => (this.loadingMoreGroups = false)),
+                catchError((err, caught) => {
+                    this.messageHandlerService.handleError(err);
+                    return caught;
+                }),
+                takeUntil(this.destroy$)
+            )
+            .subscribe(res => {
+                this.groupSearchPage++;
+                this.searchedGroups = this.searchedGroups.concat(
+                    res.body || []
+                );
+                this.groupSearchTotalCount = Number(
+                    res.headers.get('X-Total-Count')
+                );
+            });
+    }
+
+    onGroupListScroll(event: Event): void {
+        const target = event.target as HTMLElement;
+        if (target.scrollHeight - target.scrollTop - target.clientHeight < 10) {
+            this.loadNextGroupPage();
+        }
+    }
+
     input() {
         if (this.appConfigService.isLdapMode()) {
             this.isNameChecked = false;
@@ -265,6 +342,8 @@ export class AddGroupComponent implements OnInit, OnDestroy {
         this.groupSearcher.next(this.memberGroup.group_name);
         if (!this.memberGroup.group_name) {
             this.searchedGroups = [];
+            this.groupSearchPage = 1;
+            this.groupSearchTotalCount = 0;
             this.isGroupNameValid = false;
             this.groupTooltip = 'MEMBER.GROUP_NAME_REQUIRED';
         } else {
