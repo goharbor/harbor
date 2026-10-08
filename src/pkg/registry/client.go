@@ -457,7 +457,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 
 	// the range is from 0 to (blobSize-1), so (end == blobSize-1) means it is last chunk
 	lastChunk := end == blobSize-1
-	url, err := buildChunkBlobUploadURL(c.url, location, digest, lastChunk)
+	url, err := buildChunkBlobUploadURL(location, digest, lastChunk)
 	if err != nil {
 		return location, end, err
 	}
@@ -487,7 +487,11 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 
 	defer resp.Body.Close()
 	// return the location for next chunk upload
-	return resp.Header.Get("Location"), end, nil
+	next, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return location, end, err
+	}
+	return next, end, nil
 }
 
 func (c *client) getUploadStatus(location string) (string, int64, error) {
@@ -508,7 +512,11 @@ func (c *client) getUploadStatus(location string) (string, int64, error) {
 		return location, -1, err
 	}
 
-	return resp.Header.Get("Location"), end, nil
+	next, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return location, -1, err
+	}
+	return next, end, nil
 }
 
 func parseContentRange(cr string) (int64, int64, error) {
@@ -539,11 +547,26 @@ func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 		return "", "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get("Location"), resp.Header.Get("Docker-Upload-UUID"), nil
+	location, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return "", "", err
+	}
+	return location, resp.Header.Get("Docker-Upload-UUID"), nil
+}
+
+// uploadLocation extracts the upload Location header from an upload-session response and validates it
+// against the request that produced it (req.URL as sent, i.e. after the authorizer ran), see
+// resolveUploadLocation.
+func (c *client) uploadLocation(req *http.Request, resp *http.Response) (string, error) {
+	location := resp.Header.Get("Location")
+	if location == "" {
+		return "", nil
+	}
+	return resolveUploadLocation(c.url, req.URL, location)
 }
 
 func (c *client) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
-	url, err := buildMonolithicBlobUploadURL(c.url, location, digest)
+	url, err := buildMonolithicBlobUploadURL(location, digest)
 	if err != nil {
 		return err
 	}
@@ -759,8 +782,8 @@ func buildInitiateBlobUploadURL(endpoint, repository string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repository)
 }
 
-func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {
-	u, err := resolveUploadLocation(endpoint, location)
+func buildChunkBlobUploadURL(location, digest string, lastChunk bool) (string, error) {
+	u, err := parseUploadLocation(location)
 	if err != nil {
 		return "", err
 	}
@@ -772,8 +795,8 @@ func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) 
 	return u.String(), nil
 }
 
-func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {
-	u, err := resolveUploadLocation(endpoint, location)
+func buildMonolithicBlobUploadURL(location, digest string) (string, error) {
+	u, err := parseUploadLocation(location)
 	if err != nil {
 		return "", err
 	}
@@ -783,41 +806,72 @@ func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, er
 	return u.String(), nil
 }
 
-// resolveUploadLocation validates a registry-provided upload Location header and resolves it against
-// the configured registry endpoint. A compromised or malicious upstream registry (e.g. a replication
-// push target) could answer an upload request with an absolute Location pointing at an unrelated host
-// such as an internal service or the cloud metadata endpoint; reusing that value verbatim for the
-// follow-up PATCH/PUT would send blob bytes — and the Authorization header the client attaches to
-// every request via c.do — to the attacker-chosen host (CWE-918 SSRF / CWE-601). Relative Location
-// values are resolved against the endpoint (the registry's "relativeurls" mode); absolute values are
-// accepted only when their scheme, host and port match the endpoint. Fails closed.
-func resolveUploadLocation(endpoint, location string) (*url.URL, error) {
-	base, err := url.Parse(endpoint)
+// parseUploadLocation parses an upload location that has already been validated by
+// resolveUploadLocation (every location handed to the build functions originates from
+// uploadLocation) and only re-checks the cheap structural invariants.
+func parseUploadLocation(location string) (*url.URL, error) {
+	if location == "" {
+		return nil, errors.New(nil).WithMessage("empty registry upload Location")
+	}
+	u, err := url.Parse(location)
 	if err != nil {
 		return nil, err
 	}
+	if u.User != nil {
+		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+	}
+	if !u.IsAbs() || u.Host == "" {
+		return nil, fmt.Errorf("registry upload Location must be an absolute URL: %q", location)
+	}
+	return u, nil
+}
+
+// resolveUploadLocation validates a registry-provided upload Location header and resolves it to an
+// absolute URL. A compromised or malicious upstream registry (e.g. a replication push target) could
+// answer an upload request with an absolute Location pointing at an unrelated host such as an internal
+// service or the cloud metadata endpoint; reusing that value verbatim for the follow-up PATCH/PUT would
+// send blob bytes — and the Authorization header the client attaches to every request via c.do — to the
+// attacker-chosen host (CWE-918 SSRF / CWE-601).
+//
+// The invariant enforced is "the Location must be same-origin with the server that issued it". That
+// server is identified by origin, the URL of the request that produced the response *after* the
+// authorizer ran, not by the configured endpoint: adapters such as AWS ECR are configured with
+// https://api.ecr.<region>.amazonaws.com but their authorizer rewrites every request to the real
+// registry host <account>.dkr.ecr.<region>.amazonaws.com, which is then also the host in the Location.
+// Comparing against the endpoint would reject every legitimate ECR upload.
+//
+// Root-relative Location values (distribution's "relativeurls" mode, "/v2/..." without the path prefix
+// the endpoint is served under) are appended to the endpoint, which keeps the prefix and trivially
+// targets a host we chose. Other values are resolved against origin and must keep its scheme, host
+// and port. Fails closed.
+func resolveUploadLocation(endpoint string, origin *url.URL, location string) (string, error) {
 	ref, err := url.Parse(location)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	// userinfo turns a same-origin-looking value into a cross-origin host and has no legitimate use
 	// in an upload Location.
 	if ref.User != nil {
-		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+		return "", fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
 	}
-	// Distribution in relativeurls mode answers "/v2/..." without the path prefix the endpoint is
-	// served under, so a root-relative path is appended to the endpoint rather than resolved, which
-	// would drop the prefix. "//host" is a network-path reference and goes through resolution.
+	// "//host" is a network-path reference and goes through origin resolution below.
 	if ref.Scheme == "" && ref.Host == "" && strings.HasPrefix(location, "/") && !strings.HasPrefix(location, "//") {
-		if ref, err = url.Parse(endpoint + location); err != nil {
-			return nil, err
+		u, err := url.Parse(endpoint + location)
+		if err != nil {
+			return "", err
+		}
+		return u.String(), nil
+	}
+	if origin == nil {
+		if origin, err = url.Parse(endpoint); err != nil {
+			return "", err
 		}
 	}
-	next := base.ResolveReference(ref)
-	if !sameRegistryOrigin(base, next) {
-		return nil, fmt.Errorf("registry upload Location %q resolves to a different origin than %q", location, base.Redacted())
+	next := origin.ResolveReference(ref)
+	if !sameRegistryOrigin(origin, next) {
+		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", location, origin.Redacted())
 	}
-	return next, nil
+	return next.String(), nil
 }
 
 func sameRegistryOrigin(a, b *url.URL) bool {
