@@ -74,6 +74,73 @@ func TestPushBlobChunkRejectsCrossHostLocation(t *testing.T) {
 	}
 }
 
+// TestPushBlobChunkFollowsSameOriginRedirect covers a registry that answers the upload POST with a
+// same-origin 307 to a different path and then returns a path-relative Location. The Location must
+// resolve against the URL that actually answered (the redirect target), not the original request URL.
+func TestPushBlobChunkFollowsSameOriginRedirect(t *testing.T) {
+	var paths []string
+	registry := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.RequestURI())
+		switch {
+		case r.Method == http.MethodPost && r.URL.Path == "/v2/repo/blobs/uploads/":
+			http.Redirect(w, r, "/sessions/uuid", http.StatusTemporaryRedirect)
+		case r.Method == http.MethodPost && r.URL.Path == "/sessions/uuid":
+			w.Header().Set("Location", "?_state=s") // path-relative: must resolve against /sessions/uuid
+			w.WriteHeader(http.StatusAccepted)
+		case r.Method == http.MethodPatch:
+			w.Header().Set("Location", r.URL.Path+"?_state=s2")
+			w.WriteHeader(http.StatusAccepted)
+		default:
+			w.WriteHeader(http.StatusCreated)
+		}
+	}))
+	defer registry.Close()
+
+	c := NewClientWithAuthorizer(registry.URL, nil, true, "")
+	loc, _, err := c.PushBlobChunk("repo", "sha256:deadbeef", 4, strings.NewReader("AB"), 0, 1, "")
+	if err != nil {
+		t.Fatalf("first chunk: %v", err)
+	}
+	if _, _, err = c.PushBlobChunk("repo", "sha256:deadbeef", 4, strings.NewReader("CD"), 2, 3, loc); err != nil {
+		t.Fatalf("last chunk: %v", err)
+	}
+	want := []string{
+		"/v2/repo/blobs/uploads/",
+		"/sessions/uuid",
+		"/sessions/uuid?_state=s",
+		"/sessions/uuid?_state=s2&digest=sha256%3Adeadbeef",
+	}
+	if strings.Join(paths, "\n") != strings.Join(want, "\n") {
+		t.Fatalf("request sequence mismatch:\n got: %q\nwant: %q", paths, want)
+	}
+}
+
+// TestPushBlobChunkRejectsCrossOriginRedirect: a redirect that moves the upload to another origin must
+// not turn that origin into a trusted upload destination.
+func TestPushBlobChunkRejectsCrossOriginRedirect(t *testing.T) {
+	var otherHits int64
+	other := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt64(&otherHits, 1)
+		w.Header().Set("Location", "/v2/repo/blobs/uploads/uuid")
+		w.WriteHeader(http.StatusAccepted)
+	}))
+	defer other.Close()
+	registry := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, other.URL+"/v2/repo/blobs/uploads/", http.StatusTemporaryRedirect)
+	}))
+	defer registry.Close()
+
+	c := NewClientWithAuthorizer(registry.URL, nil, true, "")
+	_, _, err := c.PushBlobChunk("repo", "sha256:deadbeef", 4, strings.NewReader("AB"), 0, 1, "")
+	if err == nil || !strings.Contains(err.Error(), "different origin") {
+		t.Fatalf("cross-origin redirect must be rejected, got %v", err)
+	}
+	// Go follows the redirect (one hit) but the Location it returned must never be used.
+	if got := atomic.LoadInt64(&otherHits); got > 1 {
+		t.Fatalf("other origin contacted %d times; must not be used as upload destination", got)
+	}
+}
+
 // hostRewritingAuthorizer mimics the AWS ECR authorizer (pkg/reg/adapter/awsecr/auth.go): the adapter
 // is configured with the API endpoint but every request is rewritten to the real registry host.
 type hostRewritingAuthorizer struct{ host string }

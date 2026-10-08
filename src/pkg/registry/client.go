@@ -529,14 +529,24 @@ func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 }
 
 // uploadLocation extracts the upload Location header from an upload-session response and validates it
-// against the request that produced it (req.URL as sent, i.e. after the authorizer ran), see
-// resolveUploadLocation.
+// against the request that produced it, see resolveUploadLocation. The origin is req.URL as sent
+// (after the authorizer ran); when the HTTP client followed redirects, the final request URL is used
+// instead so that path-relative Location values resolve against the URL that actually answered, but
+// a redirect that changed the origin is rejected so an arbitrary redirect target can never become a
+// trusted, credential-bearing upload destination.
 func (c *client) uploadLocation(req *http.Request, resp *http.Response) (string, error) {
 	location := resp.Header.Get("Location")
 	if location == "" {
 		return "", nil
 	}
-	return resolveUploadLocation(c.url, req.URL, location)
+	origin := req.URL
+	if resp.Request != nil && resp.Request.URL != nil {
+		if !sameRegistryOrigin(origin, resp.Request.URL) {
+			return "", fmt.Errorf("registry upload response redirected to a different origin than %q", origin.Redacted())
+		}
+		origin = resp.Request.URL
+	}
+	return resolveUploadLocation(c.url, origin, location)
 }
 
 func (c *client) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
