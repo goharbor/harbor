@@ -528,12 +528,10 @@ func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 	return location, resp.Header.Get("Docker-Upload-UUID"), nil
 }
 
-// uploadLocation extracts the upload Location header from an upload-session response and validates it
-// against the request that produced it, see resolveUploadLocation. The origin is req.URL as sent
-// (after the authorizer ran); when the HTTP client followed redirects, the final request URL is used
-// instead so that path-relative Location values resolve against the URL that actually answered, but
-// a redirect that changed the origin is rejected so an arbitrary redirect target can never become a
-// trusted, credential-bearing upload destination.
+// uploadLocation returns the upload Location header of resp resolved to an absolute URL, see
+// resolveUploadLocation. The origin is the URL the request was sent to; when the HTTP client followed
+// redirects, the final request URL is used so that relative values resolve against the URL that
+// actually answered. A redirect that moved to a different origin is rejected.
 func (c *client) uploadLocation(req *http.Request, resp *http.Response) (string, error) {
 	location := resp.Header.Get("Location")
 	if location == "" {
@@ -836,9 +834,8 @@ func buildMonolithicBlobUploadURL(location, digest string) (string, error) {
 	return u.String(), nil
 }
 
-// parseUploadLocation parses an upload location that has already been validated by
-// resolveUploadLocation (every location handed to the build functions originates from
-// uploadLocation) and only re-checks the cheap structural invariants.
+// parseUploadLocation parses an upload location already resolved by resolveUploadLocation and only
+// re-checks that it is a plain absolute URL.
 func parseUploadLocation(location string) (*url.URL, error) {
 	if location == "" {
 		return nil, errors.New(nil).WithMessage("empty registry upload Location")
@@ -856,35 +853,25 @@ func parseUploadLocation(location string) (*url.URL, error) {
 	return u, nil
 }
 
-// resolveUploadLocation validates a registry-provided upload Location header and resolves it to an
-// absolute URL. A compromised or malicious upstream registry (e.g. a replication push target) could
-// answer an upload request with an absolute Location pointing at an unrelated host such as an internal
-// service or the cloud metadata endpoint; reusing that value verbatim for the follow-up PATCH/PUT would
-// send blob bytes — and the Authorization header the client attaches to every request via c.do — to the
-// attacker-chosen host (CWE-918 SSRF / CWE-601).
+// resolveUploadLocation resolves the upload Location header returned by the registry to an absolute
+// URL and makes sure it stays on the same origin (scheme, host, port) as the request that produced it.
 //
-// The invariant enforced is "the Location must be same-origin with the server that issued it". That
-// server is identified by origin, the URL of the request that produced the response *after* the
-// authorizer ran, not by the configured endpoint: adapters such as AWS ECR are configured with
-// https://api.ecr.<region>.amazonaws.com but their authorizer rewrites every request to the real
-// registry host <account>.dkr.ecr.<region>.amazonaws.com, which is then also the host in the Location.
-// Comparing against the endpoint would reject every legitimate ECR upload.
+// origin is the URL of that request after the authorizer ran, not the configured endpoint: some
+// adapters (e.g. AWS ECR, configured with api.ecr.<region> but served from <account>.dkr.ecr.<region>)
+// rewrite the request host, and the Location then follows the rewritten host.
 //
-// Root-relative Location values (distribution's "relativeurls" mode, "/v2/..." without the path prefix
-// the endpoint is served under) are appended to the endpoint, which keeps the prefix and trivially
-// targets a host we chose. Other values are resolved against origin and must keep its scheme, host
-// and port. Fails closed.
+// Root-relative values ("/v2/...", distribution's relativeurls mode) are appended to the endpoint so
+// that a path prefix the registry is served under is preserved.
 func resolveUploadLocation(endpoint string, origin *url.URL, location string) (string, error) {
 	ref, err := url.Parse(location)
 	if err != nil {
 		return "", err
 	}
-	// userinfo turns a same-origin-looking value into a cross-origin host and has no legitimate use
-	// in an upload Location.
+	// userinfo has no legitimate use in an upload Location and makes the host ambiguous.
 	if ref.User != nil {
 		return "", fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
 	}
-	// "//host" is a network-path reference and goes through origin resolution below.
+	// "//host/..." is a network-path reference and is resolved against origin below.
 	if ref.Scheme == "" && ref.Host == "" && strings.HasPrefix(location, "/") && !strings.HasPrefix(location, "//") {
 		u, err := url.Parse(endpoint + location)
 		if err != nil {
