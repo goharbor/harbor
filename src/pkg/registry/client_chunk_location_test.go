@@ -156,3 +156,22 @@ func TestBuildBlobUploadURL_EndpointPathPrefix(t *testing.T) {
 		}
 	}
 }
+
+// TestResolveUploadLocation_ErrorRedactsSecrets keeps credentials and signed upload tokens carried
+// in a rejected Location out of the returned error, which replication logs verbatim.
+func TestResolveUploadLocation_ErrorRedactsSecrets(t *testing.T) {
+	const endpoint = "http://good-registry.example:5000"
+	for _, location := range []string{
+		"http://evil.attacker.com/steal?token=s3cr3t-token",
+		"http://user:s3cr3t-pass@evil.attacker.com/steal",
+		"http://good-registry.example:5000@evil.attacker.com/steal?token=s3cr3t-token",
+	} {
+		_, err := resolveUploadLocation(endpoint, location)
+		if err == nil {
+			t.Fatalf("expected rejection for %q", location)
+		}
+		if msg := err.Error(); strings.Contains(msg, "s3cr3t") {
+			t.Fatalf("error leaks secret from Location %q: %s", location, msg)
+		}
+	}
+}
