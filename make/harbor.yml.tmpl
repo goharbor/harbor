@@ -258,6 +258,13 @@ proxy:
     - registry
     - trivy
 
+# Lets a cosign/notation client pull the still-unsigned manifest it is about to sign while the
+# project has a content trust policy enabled. The client must already hold push permission on
+# the project; its User-Agent only narrows that authorization, and it is spoofable, so set this
+# to false if you would rather such a client could not read unsigned manifests.
+content_trust:
+  legacy_signer_pull_enabled: true
+
 # metric:
 #   enabled: false
 #   port: 9090
