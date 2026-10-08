@@ -17,6 +17,7 @@ package registry
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -102,8 +103,12 @@ func TestBuildChunkBlobUploadURL_LocationOrigin(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if !strings.Contains(got, tc.wantHost) {
-				t.Fatalf("resolved URL %q does not target expected host %q", got, tc.wantHost)
+			u, err := url.Parse(got)
+			if err != nil {
+				t.Fatalf("resolved URL %q does not parse: %v", got, err)
+			}
+			if u.Host != tc.wantHost {
+				t.Fatalf("resolved URL %q targets host %q, want %q", got, u.Host, tc.wantHost)
 			}
 		})
 	}
