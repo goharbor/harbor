@@ -81,6 +81,15 @@ host root at `/hostfs` to resolve configured certificate and data paths. For Pod
 it uses `--security-opt label=disable` for that container only; it must not recursively
 relabel the host root with `z` or `Z`.
 
+Podman writes service container output to the host's `journald` log driver because
+Podman does not support the Compose `syslog` driver used by the Docker install.
+After installation, inspect a service with `podman logs harbor-core` or query the
+host journal by `CONTAINER_NAME=harbor-core`. Docker installs still send container
+output to Harbor's `harbor-log` container. On Podman, container output is not
+forwarded to `harbor-log`; configure host journal retention and forwarding
+separately if you need those features. This does not change Harbor's own file-based
+logs or the external syslog endpoint configured for `harbor-log`.
+
 ### Verifying Release Signatures
 Starting with v2.15.0, Harbor release artifacts are cryptographically signed using Cosign to ensure authenticity and integrity.
 
