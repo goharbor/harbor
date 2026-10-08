@@ -24,6 +24,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/q"
+	"github.com/goharbor/harbor/src/pkg"
 )
 
 // Handler ...
@@ -89,9 +91,6 @@ func (p *Handler) handlePushArtifact(ctx context.Context, event *event.PushArtif
 }
 
 func (p *Handler) handleImageScanned(ctx context.Context, event *event.ScanImageEvent) error {
-	// TODO: If the scan is targeting an manifest list, here the artifacts we get are all the children
-	//  artifacts of the manifest list. The children artifacts are high probably untagged ones that
-	//  will be definitely ignored by the tag filter. We need to find a way to resolve this issue.
 	log.Debugf("preheat: image scanned %s:%s", event.Artifact.Repository, event.Artifact.Tag)
 	art, err := artifact.Ctl.GetByReference(ctx, event.Artifact.Repository, event.Artifact.Digest,
 		&artifact.Option{
@@ -101,6 +100,32 @@ func (p *Handler) handleImageScanned(ctx context.Context, event *event.ScanImage
 	if err != nil {
 		return err
 	}
+
+	if len(art.Tags) == 0 {
+		parents, err := pkg.ArtifactMgr.ListReferences(ctx, q.New(q.KeyWords{"ChildID": art.ID}))
+		if err != nil {
+			log.Errorf("failed to list parent references of artifact %d: %v", art.ID, err)
+		} else if len(parents) > 0 {
+			var lastErr error
+			for _, parent := range parents {
+				parentArt, err := artifact.Ctl.Get(ctx, parent.ParentID, &artifact.Option{
+					WithTag:   true,
+					WithLabel: true,
+				})
+				if err != nil {
+					log.Errorf("failed to get parent artifact %d: %v", parent.ParentID, err)
+					lastErr = err
+					continue
+				}
+				if _, err = preheat.Enf.PreheatArtifact(ctx, parentArt); err != nil {
+					log.Errorf("failed to preheat parent artifact %d: %v", parent.ParentID, err)
+					lastErr = err
+				}
+			}
+			return lastErr
+		}
+	}
+
 	_, err = preheat.Enf.PreheatArtifact(ctx, art)
 	return err
 }
