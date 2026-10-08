@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package policy
 
 import (
 	"math/rand"
@@ -51,11 +51,11 @@ func (s *regexpStore) Purge() {
 }
 
 var (
-	store = &regexpStore{}
+	matchStore = &regexpStore{}
 )
 
 func init() {
-	startRegexpStorePurging(store, time.Hour*24)
+	startRegexpStorePurging(matchStore, time.Hour*24)
 }
 
 func startRegexpStorePurging(s *regexpStore, intervalDuration time.Duration) {
@@ -91,10 +91,11 @@ func keyMatch2Build(key2 string) *regexp.Regexp {
 // keyMatch2 determines whether key1 matches the pattern of key2, its behavior most likely the builtin KeyMatch2
 // except that the match of ("/project/1/robot", "/project/1") will return false
 func keyMatch2(key1 string, key2 string) bool {
-	return store.Get(key2, keyMatch2Build).MatchString(key1)
+	return matchStore.Get(key2, keyMatch2Build).MatchString(key1)
 }
 
-func keyMatch2Func(args ...any) (any, error) {
+// KeyMatch2Func is keyMatch2 in the shape casbin wants a matcher function.
+func KeyMatch2Func(args ...any) (any, error) {
 	name1 := args[0].(string)
 	name2 := args[1].(string)
 
