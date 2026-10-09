@@ -91,7 +91,7 @@ type Tracker interface {
 	Stop() error
 
 	// Switch the status to error
-	Fail() error
+	Fail(message ...string) error
 
 	// Switch the status to success
 	Succeed() error
@@ -268,7 +268,13 @@ func (bt *basicTracker) Stop() error {
 // Fail job
 // Fail is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
-func (bt *basicTracker) Fail() error {
+func (bt *basicTracker) Fail(message ...string) error {
+	if len(message) > 0 && len(message[0]) > 0 {
+		if bt.jobStats != nil && bt.jobStats.Info != nil {
+			bt.jobStats.Info.StatusMessage = message[0]
+		}
+		_ = bt.Update("status_message", message[0])
+	}
 	if err := bt.setStatus(ErrorStatus); err != nil {
 		return errors.Wrap(err, "fail")
 	}
@@ -325,6 +331,10 @@ func (bt *basicTracker) Save() (err error) {
 	}
 	if stats.Info.DieAt > 0 {
 		args = append(args, "die_at", stats.Info.DieAt)
+	}
+
+	if !utils.IsEmptyStr(stats.Info.StatusMessage) {
+		args = append(args, "status_message", stats.Info.StatusMessage)
 	}
 
 	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
@@ -422,6 +432,8 @@ func (bt *basicTracker) Reset() error {
 	bt.jobStats.Info.UpdateTime = now
 	bt.jobStats.Info.CheckIn = ""
 	bt.jobStats.Info.CheckInAt = 0
+	bt.jobStats.Info.StatusMessage = ""
+	_ = bt.Update("status_message", "")
 
 	return nil
 }
@@ -476,6 +488,9 @@ func (bt *basicTracker) fireHookEvent(status Status, checkIn ...string) error {
 		JobID:    bt.jobID,
 		Status:   status.String(),
 		Metadata: bt.jobStats.Info,
+	}
+	if bt.jobStats != nil && bt.jobStats.Info != nil {
+		change.StatusMessage = bt.jobStats.Info.StatusMessage
 	}
 
 	if len(checkIn) > 0 {
@@ -561,6 +576,8 @@ func (bt *basicTracker) retrieve() error {
 			res.Info.IsUnique = v
 		case "status":
 			res.Info.Status = value
+		case "status_message":
+			res.Info.StatusMessage = value
 		case "ref_link":
 			res.Info.RefLink = value
 		case "enqueue_time":

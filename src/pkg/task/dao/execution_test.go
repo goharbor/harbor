@@ -16,8 +16,10 @@ package dao
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -493,3 +495,95 @@ func Test_buildExecStatusOutdateMember(t *testing.T) {
 		t.Errorf("buildExecStatusOutdateMember() = %v, want %v", got, "123:GARBAGE_COLLECTION")
 	}
 }
+
+func TestAggregateTaskStatusMessages(t *testing.T) {
+	// empty tasks
+	if got := aggregateTaskStatusMessages(nil); got != "" {
+		t.Errorf("expected empty string, got %v", got)
+	}
+	if got := aggregateTaskStatusMessages([]*Task{{StatusMessage: ""}, {StatusMessage: "   "}}); got != "" {
+		t.Errorf("expected empty string, got %v", got)
+	}
+
+	// 1 task
+	t1 := []*Task{{StatusMessage: "413 Quota Exceeded"}}
+	if got := aggregateTaskStatusMessages(t1); got != "413 Quota Exceeded" {
+		t.Errorf("expected '413 Quota Exceeded', got %v", got)
+	}
+
+	// multiple tasks with same message
+	tSame := []*Task{
+		{StatusMessage: "413 Quota Exceeded"},
+		{StatusMessage: "413 Quota Exceeded"},
+	}
+	expectedSame := "2 tasks failed with error: 413 Quota Exceeded"
+	if got := aggregateTaskStatusMessages(tSame); got != expectedSame {
+		t.Errorf("expected %q, got %q", expectedSame, got)
+	}
+
+	// multiple tasks with same multiline message
+	tSameMulti := []*Task{
+		{StatusMessage: "line 1\nline 2"},
+		{StatusMessage: "line 1\nline 2"},
+	}
+	expectedSameMulti := "2 tasks failed with error:\nline 1\nline 2"
+	if got := aggregateTaskStatusMessages(tSameMulti); got != expectedSameMulti {
+		t.Errorf("expected %q, got %q", expectedSameMulti, got)
+	}
+
+	// multiple tasks with distinct single-line messages
+	tDiffSingle := []*Task{
+		{StatusMessage: "error A"},
+		{StatusMessage: "error B"},
+	}
+	expectedDiffSingle := "2 tasks failed:\n- error A\n- error B"
+	if got := aggregateTaskStatusMessages(tDiffSingle); got != expectedDiffSingle {
+		t.Errorf("expected %q, got %q", expectedDiffSingle, got)
+	}
+
+	// multiple tasks with distinct multiline messages
+	tDiffMulti := []*Task{
+		{StatusMessage: "log A1\nlog A2"},
+		{StatusMessage: "log B1\nlog B2"},
+	}
+	expectedDiffMulti := "2 tasks failed with 2 distinct errors:\nlog A1\nlog A2\n---\nlog B1\nlog B2"
+	if got := aggregateTaskStatusMessages(tDiffMulti); got != expectedDiffMulti {
+		t.Errorf("expected %q, got %q", expectedDiffMulti, got)
+	}
+
+	// length truncation
+	longMsg := strings.Repeat("x", 5000)
+	tLong := []*Task{{StatusMessage: longMsg}}
+	gotLong := aggregateTaskStatusMessages(tLong)
+	if len(gotLong) > 4096 || !strings.HasSuffix(gotLong, "...") {
+		t.Errorf("expected truncated string <= 4096 ending with ..., got length %d", len(gotLong))
+	}
+
+	// UTF-8 length truncation
+	longUTF8 := strings.Repeat("复制镜像失败：配额超限。\n", 200) // ~7800 bytes
+	tLongUTF8 := []*Task{{StatusMessage: longUTF8}}
+	gotLongUTF8 := aggregateTaskStatusMessages(tLongUTF8)
+	if len(gotLongUTF8) > 4096 || !strings.HasSuffix(gotLongUTF8, "...") {
+		t.Errorf("expected truncated string <= 4096 ending with ..., got length %d", len(gotLongUTF8))
+	}
+	if !utf8.ValidString(gotLongUTF8) {
+		t.Errorf("expected valid UTF-8 string, but got invalid UTF-8")
+	}
+
+	// bounded query sampling with totalCount > len(tasks)
+	expectedTotalSame := "100 tasks failed with error: 413 Quota Exceeded"
+	if got := aggregateTaskStatusMessages(tSame, 100); got != expectedTotalSame {
+		t.Errorf("expected %q, got %q", expectedTotalSame, got)
+	}
+
+	expectedTotalSample := "100 tasks failed (showing 2 error samples):\n- error A\n- error B"
+	if got := aggregateTaskStatusMessages(tDiffSingle, 100); got != expectedTotalSample {
+		t.Errorf("expected %q, got %q", expectedTotalSample, got)
+	}
+
+	expectedTotalMulti := "100 tasks failed with at least 2 distinct errors:\nlog A1\nlog A2\n---\nlog B1\nlog B2"
+	if got := aggregateTaskStatusMessages(tDiffMulti, 100); got != expectedTotalMulti {
+		t.Errorf("expected %q, got %q", expectedTotalMulti, got)
+	}
+}
+

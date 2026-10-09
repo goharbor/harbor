@@ -15,10 +15,14 @@ package runner
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
@@ -237,3 +241,52 @@ func (j *fakePanicJob) Validate(params job.Parameters) error {
 func (j *fakePanicJob) Run(ctx job.Context, params job.Parameters) error {
 	panic("for testing")
 }
+
+func TestCleanErrorMessage(t *testing.T) {
+	assert.Equal(t, "", cleanErrorMessage(""))
+	assert.Equal(t, "failed with error", cleanErrorMessage("  failed \n with \t error \n "))
+
+	longMsg := strings.Repeat("a", 600)
+	cleaned := cleanErrorMessage(longMsg)
+	assert.Equal(t, 512, len(cleaned))
+	assert.True(t, strings.HasSuffix(cleaned, "..."))
+
+	// UTF-8 multibyte characters truncation
+	longUTF8 := strings.Repeat("错误", 200) // 1200 bytes
+	cleanedUTF8 := cleanErrorMessage(longUTF8)
+	assert.True(t, len(cleanedUTF8) <= 512)
+	assert.True(t, utf8.ValidString(cleanedUTF8))
+	assert.True(t, strings.HasSuffix(cleanedUTF8, "..."))
+}
+
+func TestExtractLastLogLines(t *testing.T) {
+	assert.Equal(t, "", extractLastLogLines(nil, 3))
+	assert.Equal(t, "", extractLastLogLines([]byte(""), 3))
+	assert.Equal(t, "", extractLastLogLines([]byte("   \n\n  "), 3))
+
+	// fewer than 3 lines
+	log2 := []byte("line 1\nline 2\n")
+	assert.Equal(t, "line 1\nline 2", extractLastLogLines(log2, 3))
+
+	// more than 3 lines (5 lines)
+	var allLines []string
+	for i := 1; i <= 5; i++ {
+		allLines = append(allLines, fmt.Sprintf("log line %d", i))
+	}
+	log5 := []byte(strings.Join(allLines, "\r\n") + "\n\n")
+	expected := strings.Join(allLines[2:], "\n")
+	assert.Equal(t, expected, extractLastLogLines(log5, 3))
+
+	// UTF-8 log lines truncation exceeding 4096 bytes (last 3 lines exceed 4096 bytes)
+	// ~3000 bytes per line
+	longLine := strings.Repeat("这是一段包含中文字符的日志内容。", 50) + "\n"
+	longLogUTF8 := []byte(strings.Repeat(longLine, 3))
+	resUTF8 := extractLastLogLines(longLogUTF8, 3)
+	assert.True(t, len(resUTF8) <= 4096)
+	assert.True(t, utf8.ValidString(resUTF8))
+	assert.True(t, strings.HasPrefix(resUTF8, "..."))
+
+	// fallback when job not found
+	assert.Equal(t, "run error: some failure", extractLastLinesFromLog("", 3, errors.New("run error: some failure")))
+}
+
