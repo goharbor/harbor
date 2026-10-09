@@ -51,6 +51,8 @@ import { InlineAlertComponent } from '../../../../shared/components/inline-alert
 import { errorHandler } from '../../../../shared/units/shared.utils';
 import { PermissionSelectPanelModes } from '../../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { Permissions } from '../../../../../../ng-swagger-gen/models/permissions';
+import { Permission } from '../../../../../../ng-swagger-gen/models/permission';
+import { Access } from '../../../../../../ng-swagger-gen/models/access';
 
 const MINI_SECONDS_ONE_DAY: number = 60 * 24 * 60 * 1000;
 
@@ -82,6 +84,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
 
     @Input()
     robotMetadata: Permissions;
+
+    @Input()
+    effectivePermissions: Permission[] = [];
 
     @ViewChild('wizard') wizard: ClrWizard;
     constructor(
@@ -192,6 +197,80 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         this.isNameExisting = false;
         this._nameSubject.next('');
     }
+    // /users/current/permissions?relative=true names the project root ".", while
+    // the robot catalog names it "project". Compare on one spelling.
+    private static sameResource(a: string, b: string): boolean {
+        const normalize = (resource: string): string =>
+            resource === 'project' || resource === '.' ? '.' : resource;
+        return normalize(a) === normalize(b);
+    }
+
+    private static matches(a: Permission | Access, b: Permission | Access) {
+        return (
+            AddRobotComponent.sameResource(a.resource, b.resource) &&
+            a.action === b.action
+        );
+    }
+
+    /** What the caller may hand to a robot: the catalog narrowed to their own permissions. */
+    get grantablePermissions(): Permission[] {
+        // Fail closed: an empty effective-permissions set (request still pending,
+        // an error, or a caller with no project grants) must not expose the whole
+        // robot catalog.
+        if (!this.effectivePermissions?.length) {
+            return [];
+        }
+        const catalog = this.robotMetadata?.project;
+        if (!catalog?.length) {
+            // GET /permissions is admin-only, so a custom role that grants
+            // robot:create has no catalog. The caller's own permissions are the
+            // candidate set in that case — the filter below reduces the catalog to
+            // exactly them anyway — spelled the way the robot API names them.
+            return this.effectivePermissions.map(p => ({
+                resource: p.resource === '.' ? 'project' : p.resource,
+                action: p.action,
+            }));
+        }
+        return catalog.filter(p =>
+            this.effectivePermissions.some(e => AddRobotComponent.matches(e, p))
+        );
+    }
+
+    /** Grants the robot already holds that the caller could not grant themselves. */
+    get nonGrantableGrants(): Access[] {
+        if (!this.isEditMode) {
+            return [];
+        }
+        const grantable = this.grantablePermissions;
+        return (this.robot?.permissions?.[0]?.access ?? []).filter(
+            access => !grantable.some(p => AddRobotComponent.matches(p, access))
+        );
+    }
+
+    get nonGrantableGrantNames(): string {
+        return this.nonGrantableGrants
+            .map(access => `${access.resource}:${access.action}`)
+            .join(', ');
+    }
+
+    get filteredCandidatePermissions(): Permission[] {
+        const grantable = this.grantablePermissions;
+        if (!this.isEditMode) {
+            return grantable;
+        }
+        // save() submits the whole access array, so a grant that is hidden here is
+        // still sent and still fails the backend's no-escalation check. Show the
+        // robot's existing grants too, so what blocks the save is on screen and
+        // can be removed.
+        return [
+            ...grantable,
+            ...this.nonGrantableGrants.map(access => ({
+                resource: access.resource,
+                action: access.action,
+            })),
+        ];
+    }
+
     disabled(): boolean {
         if (!this.isEditMode) {
             return !this.canAdd();
@@ -206,6 +285,12 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     }
     canEdit() {
         if (!this.canAdd()) {
+            return false;
+        }
+        // The backend rejects an update whose access array holds a permission the
+        // caller does not have, even an unchanged one, so saving cannot succeed
+        // until those grants are removed.
+        if (this.nonGrantableGrants.length) {
             return false;
         }
         // eslint-disable-next-line eqeqeq

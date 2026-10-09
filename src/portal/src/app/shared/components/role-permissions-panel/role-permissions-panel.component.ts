@@ -28,17 +28,17 @@ import {
     convertKey,
     hasPermission,
     isCandidate,
-} from '../../../base/left-side-nav/system-robot-accounts/system-robot-util';
+} from '../../../base/left-side-nav/roles/roles-util';
 import { Access } from '../../../../../ng-swagger-gen/models/access';
 import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
 @Component({
-    selector: 'robot-permissions-panel',
-    templateUrl: './robot-permissions-panel.component.html',
-    styleUrls: ['./robot-permissions-panel.component.scss'],
     standalone: false,
+    selector: 'role-permissions-panel',
+    templateUrl: './role-permissions-panel.component.html',
+    styleUrls: ['./role-permissions-panel.component.scss'],
 })
-export class RobotPermissionsPanelComponent implements OnChanges, DoCheck {
+export class RolePermissionsPanelComponent implements OnChanges, DoCheck {
     modalOpen: boolean = false;
 
     @Input()
