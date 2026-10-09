@@ -110,6 +110,7 @@ export class Configuration {
     storage_per_project: NumberValueItem;
     cfg_expiration: NumberValueItem;
     oidc_groups_claim: StringValueItem;
+    oidc_login_groups: StringValueItem;
     oidc_admin_group: StringValueItem;
     oidc_group_filter: StringValueItem;
     audit_log_forward_endpoint: StringValueItem;
@@ -185,6 +186,7 @@ export class Configuration {
         this.oidc_auto_onboard = new BoolValueItem(false, true);
         this.oidc_scope = new StringValueItem('', true);
         this.oidc_groups_claim = new StringValueItem('', true);
+        this.oidc_login_groups = new StringValueItem('', true);
         this.oidc_admin_group = new StringValueItem('', true);
         this.oidc_group_filter = new StringValueItem('', true);
         this.oidc_user_claim = new StringValueItem('', true);
