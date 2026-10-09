@@ -142,6 +142,9 @@ jobservice:
   max_job_workers: 10
   # Maximum hours of task duration in job service, default 24
   max_job_duration_hours: 24
+  # The maximum number of workers an administrator is allowed to configure for
+  # garbage collection. When unset, no upper limit is enforced.
+  # gc_max_workers: 8
   # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
   job_loggers:
     - STD_OUTPUT

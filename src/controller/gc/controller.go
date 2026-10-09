@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -82,6 +83,11 @@ func (c *controller) Start(ctx context.Context, policy Policy, trigger string) (
 	para["workers"] = policy.Workers
 	para["redis_url_reg"] = policy.ExtraAttrs["redis_url_reg"]
 	para["time_window"] = policy.ExtraAttrs["time_window"]
+	// resolved at execution time so that schedules created before the limit was
+	// configured are clamped as well
+	if maxWorkers := config.GetGCMaxWorkers(); maxWorkers > 0 {
+		para["max_workers"] = maxWorkers
+	}
 
 	execID, err := c.exeMgr.Create(ctx, job.GarbageCollectionVendorType, -1, trigger, para)
 	if err != nil {

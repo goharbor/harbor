@@ -1255,7 +1255,10 @@
         "DRY_RUN_SUCCESS": "Activación de dry run satisfactorio",
         "DELETE_DETAIL": "{{blob}} blob(s) y {{manifest}} manifest(s) eliminados, {{size}} espacio liberado",
         "DELETE_DETAIL_DRY_RUN": "{{blob}} blob(s) y {{manifest}} manifest(s) pueden ser eliminados, {{size}} espacio puede ser liberado",
-        "WORKERS_TOOLTIP": "Configurar el número de workers que pueden ejecutar tareas GC en paralelo, el valor default es 1."
+        "WORKERS_TOOLTIP": "Configurar el número de workers que pueden ejecutar tareas GC en paralelo, el valor default es 1.",
+        "WORKERS_HELPER": "Defaults to 1; increase based on available system resources to parallelize blob removal. Depending on the backend (e.g. S3) threads become IO bound, which makes higher worker counts safe to run even with lower core counts.",
+        "WORKERS_HELPER_LIMIT": "Max: {{max}} Worker. Set by GC_MAX_WORKERS env var",
+        "WORKERS_HELPER_LIMIT_UNKNOWN": "Saving may enforce an upper limit configured by your deployment operator."
     },
     "RETAG": {
         "MSG_SUCCESS": "Copiar artefacto satisfactorio",
