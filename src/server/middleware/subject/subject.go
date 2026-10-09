@@ -51,6 +51,8 @@ var (
 
 	// media type of harbor sbom
 	mediaTypeHarborSBOM = "application/vnd.goharbor.harbor.sbom.v1"
+	// media type of OpenVEX documents
+	mediaTypeOpenVEX = "application/vnd.openvex+json"
 
 	// source of accessory artifact is local, means the accessory is created by harbor itself
 	sourceLocal = "local"
@@ -151,24 +153,7 @@ func Middleware() func(http.Handler) http.Handler {
 				Size:              art.Size,
 				Digest:            art.Digest,
 			}
-			accData.Type = model.TypeSubject
-			// since oci-spec 1.1, image type may from artifactType if presents, otherwise would be Config.MediaType
-			fromType := mf.Config.MediaType
-			if mf.ArtifactType != "" {
-				fromType = mf.ArtifactType
-			}
-			switch fromType {
-			case ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig:
-				if isNydusImage(mf) {
-					accData.Type = model.TypeNydusAccelerator
-				}
-			case mediaTypeNotationLayer:
-				accData.Type = model.TypeNotationSignature
-			case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
-				accData.Type = model.TypeCosignSignature
-			case mediaTypeHarborSBOM:
-				accData.Type = model.TypeHarborSBOM
-			}
+			accData.Type = getAccessoryType(mf)
 			if subjectArt != nil {
 				accData.SubArtifactID = subjectArt.ID
 			}
@@ -224,6 +209,29 @@ func Middleware() func(http.Handler) http.Handler {
 
 		return nil
 	})
+}
+
+func getAccessoryType(manifest *ocispec.Manifest) string {
+	// Since OCI spec 1.1, the image type may come from artifactType; otherwise it is Config.MediaType.
+	mediaType := manifest.Config.MediaType
+	if manifest.ArtifactType != "" {
+		mediaType = manifest.ArtifactType
+	}
+	switch mediaType {
+	case ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig:
+		if isNydusImage(manifest) {
+			return model.TypeNydusAccelerator
+		}
+	case mediaTypeNotationLayer:
+		return model.TypeNotationSignature
+	case mediaTypeCosignConfig, mediaTypeCosignArtifactType:
+		return model.TypeCosignSignature
+	case mediaTypeHarborSBOM:
+		return model.TypeHarborSBOM
+	case mediaTypeOpenVEX:
+		return model.TypeOpenVEX
+	}
+	return model.TypeSubject
 }
 
 // isNydusImage checks if the image is a nydus image.
