@@ -309,6 +309,11 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 		if !isValidPermissionScope(robotPerms, s.User().Permissions) {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED))
 		}
+	default:
+		// A context that is neither a human nor a robot must not skip the
+		// escalation check by falling through the switch; reject it, matching
+		// what CreateRobot does at the create path.
+		return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context"))
 	}
 
 	var secret string
