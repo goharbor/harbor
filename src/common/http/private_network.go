@@ -117,7 +117,6 @@ func newGuardedDialer() *net.Dialer {
 	return &net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
-		DualStack: true,
 	}
 }
 
@@ -464,7 +463,7 @@ func (guard *egressGuard) proxy(req *http.Request) (*url.URL, error) {
 				return nil, err
 			}
 		}
-		return nil, nil
+		return nil, nil // nolint:nilnil // http.Transport.Proxy reads a nil URL and nil error as "no proxy"
 	}
 	// The proxy, not this process, resolves and connects to the target, so the dial-time check
 	// cannot see it. Validate the target before handing it over.
