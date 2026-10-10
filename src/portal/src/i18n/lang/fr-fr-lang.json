@@ -485,6 +485,7 @@
         "DELETION_SUMMARY": "Voulez-vous supprimer le(s) membre(s) du groupe {{param}} ?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "Cette page affiche les journaux d’audit des versions de Harbor antérieures à v2.13. Pour consulter les activités plus récentes, ouvrez les journaux d’audit.",
         "USERNAME": "Nom d'utilisateur",
         "TAGS": "Etiquettes",
         "OPERATION": "Opération",

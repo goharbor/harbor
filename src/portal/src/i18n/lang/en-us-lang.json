@@ -483,6 +483,7 @@
         "DELETION_SUMMARY": "Do you want to delete group member(s) {{param}}?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "This page shows audit logs from Harbor versions earlier than v2.13. To view newer activity, open Audit Logs.",
         "USERNAME": "Username",
         "TAGS": "Tags",
         "OPERATION": "Operation",

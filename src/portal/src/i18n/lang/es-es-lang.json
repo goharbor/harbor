@@ -484,6 +484,7 @@
         "DELETION_SUMMARY": "Quieres borrar los miembros del Grupo {{param}}?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "Esta página muestra registros de auditoría de versiones de Harbor anteriores a v2.13. Para ver la actividad más reciente, abra Registros de auditoría.",
         "USERNAME": "Nombre de usuario",
         "TAGS": "Etiquetas",
         "OPERATION": "Operación",

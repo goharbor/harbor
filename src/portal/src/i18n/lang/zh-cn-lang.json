@@ -483,6 +483,7 @@
         "DELETION_SUMMARY": "确认删除组成员 {{param}}?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "此页面显示 Harbor v2.13 之前版本的审计日志。要查看较新的活动，请打开审计日志页面。",
         "USERNAME": "用户名",
         "TAGS": "Tags",
         "OPERATION": "操作",

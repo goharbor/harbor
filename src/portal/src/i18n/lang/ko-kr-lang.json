@@ -483,6 +483,7 @@
         "DELETION_SUMMARY": "그룹 구성원(들){{param}}을 정말 삭제하시겠습니까?"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "이 페이지에는 v2.13 이전 Harbor 버전의 감사 로그가 표시됩니다. 최신 활동을 보려면 감사 로그를 여세요.",
         "USERNAME": "사용자 이름",
         "TAGS": "태그",
         "OPERATION": "작업",

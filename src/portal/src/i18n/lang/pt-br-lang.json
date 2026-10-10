@@ -483,6 +483,7 @@
         "SLACK_RATE_LIMIT": "Please be aware of Slack Rate Limits"
     },
     "AUDIT_LOG": {
+        "LEGACY_LOG_NOTICE": "Esta página mostra logs de auditoria de versões do Harbor anteriores à v2.13. Para ver atividades mais recentes, abra Logs de Auditoria.",
         "USERNAME": "Nome do usuário",
         "TAGS": "Tags",
         "OPERATION": "Operação",
