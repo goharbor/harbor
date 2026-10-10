@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier/event"
 )
 
@@ -37,7 +38,7 @@ const (
 )
 
 // ResolveIDToNameFunc is the function to resolve the resource name from resource id
-type ResolveIDToNameFunc func(string) string
+type ResolveIDToNameFunc func(ctx context.Context, id string) string
 
 type Resolver struct {
 	ResourceType string
@@ -64,7 +65,7 @@ func (e *Resolver) PreCheck(ctx context.Context, url string, method string) (cap
 		re := regexp.MustCompile(e.ResourceIDPattern)
 		m := re.FindStringSubmatch(url)
 		if len(m) >= 2 && e.IDToNameFunc != nil {
-			resName = e.IDToNameFunc(m[1])
+			resName = e.IDToNameFunc(ctx, m[1])
 		}
 	}
 	return true, resName
@@ -99,7 +100,9 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 			}
 			evt.ResourceName = m[1]
 			if e.IDToNameFunc != nil {
-				resourceName = e.IDToNameFunc(m[1])
+				// Resolve runs asynchronously after the request transaction has completed, so the
+				// ormer in ce.Ctx cannot be reused here; only PreCheck runs inside the request
+				resourceName = e.IDToNameFunc(orm.Context(), m[1])
 			}
 		}
 		if e.ShouldResolveName && resourceName != "" {
@@ -125,7 +128,7 @@ func (e *Resolver) Resolve(ce *commonevent.Metadata, event *event.Event) error {
 		}
 		evt.ResourceName = m[1]
 		if e.IDToNameFunc != nil {
-			resourceName = e.IDToNameFunc(m[1])
+			resourceName = e.IDToNameFunc(orm.Context(), m[1])
 		}
 		if e.ShouldResolveName && resourceName != "" {
 			evt.ResourceName = resourceName
