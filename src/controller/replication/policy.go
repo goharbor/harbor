@@ -22,8 +22,10 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
+	regmodel "github.com/goharbor/harbor/src/pkg/reg/model"
 	pkgmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
@@ -188,8 +190,13 @@ func (c *controller) validatePolicy(ctx context.Context, policy *model.Policy) e
 		}
 	}
 	if policy.DestRegistry != nil {
-		if _, err := c.regMgr.Get(ctx, policy.DestRegistry.ID); err != nil {
+		dest, err := c.regMgr.Get(ctx, policy.DestRegistry.ID)
+		if err != nil {
 			return err
+		}
+		if dest != nil && dest.Type == regmodel.RegistryTypeHuggingFace {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("the %s registry %s can only be a replication source", dest.Type, dest.Name)
 		}
 	}
 	return nil

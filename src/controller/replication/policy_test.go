@@ -18,6 +18,7 @@ import (
 	"context"
 
 	repmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	replicationmodel "github.com/goharbor/harbor/src/pkg/replication/model"
 	"github.com/goharbor/harbor/src/testing/mock"
@@ -88,6 +89,21 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 	r.repMgr.AssertExpectations(r.T())
 	r.regMgr.AssertExpectations(r.T())
 	r.scheduler.AssertExpectations(r.T())
+}
+
+func (r *replicationTestSuite) TestCreatePolicyHuggingFaceDestination() {
+	r.regMgr.On("Get", mock.Anything, int64(0)).Return(&model.Registry{ID: 0, Type: model.RegistryTypeHarbor}, nil)
+	r.regMgr.On("Get", mock.Anything, int64(2)).Return(&model.Registry{ID: 2, Name: "hf", Type: model.RegistryTypeHuggingFace}, nil)
+	_, err := r.ctl.CreatePolicy(context.TODO(), &repmodel.Policy{
+		Name:         "push-to-hf",
+		SrcRegistry:  &model.Registry{ID: 0},
+		DestRegistry: &model.Registry{ID: 2},
+		Enabled:      true,
+	})
+	r.Require().NotNil(err)
+	r.True(errors.IsErr(err, errors.BadRequestCode))
+	r.Contains(err.Error(), "can only be a replication source")
+	r.repMgr.AssertNotCalled(r.T(), "Create", mock.Anything, mock.Anything)
 }
 
 func (r *replicationTestSuite) TestUpdatePolicy() {
