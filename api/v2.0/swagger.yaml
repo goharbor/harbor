@@ -5319,6 +5319,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     put:
@@ -5350,6 +5352,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     delete:
@@ -5376,6 +5380,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 
@@ -5413,6 +5419,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     get:
@@ -5460,6 +5468,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 
@@ -5500,6 +5510,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 
@@ -5555,6 +5567,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 
@@ -5596,6 +5610,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 
