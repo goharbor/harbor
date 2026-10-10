@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/url"
 	"strings"
 	"time"
 
@@ -427,8 +428,9 @@ func (n *webhookAPI) normalizeAndValidateTargets(ctx context.Context, policy *po
 		if err := n.validateTargetHost(validationCtx, url.Hostname(), validatedHosts); err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
 		}
-		// Prevent SSRF security issue #3755 and normalize host per RFC 1035
-		target.Address = url.Scheme + "://" + strings.ToLower(url.Host) + url.Path
+		// Prevent SSRF security issue #3755 and normalize host per RFC 1035. Write through the
+		// slice, since target is a copy; keep the query, which some receivers authenticate with.
+		policy.Targets[i].Address = normalizeTargetAddress(url)
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
@@ -452,6 +454,16 @@ func (n *webhookAPI) normalizeAndValidateTargets(ctx context.Context, policy *po
 
 // validateTargetHost rejects a webhook target hostname that resolves to a non-public address.
 // Hosts already validated in the same call are skipped, and the number of distinct hosts is
+// normalizeTargetAddress rebuilds a webhook target from scheme, lowercased host, path and query,
+// dropping userinfo.
+func normalizeTargetAddress(u *url.URL) string {
+	address := u.Scheme + "://" + strings.ToLower(u.Host) + u.Path
+	if u.RawQuery != "" {
+		address += "?" + u.RawQuery
+	}
+	return address
+}
+
 // capped so a single policy cannot force an unbounded number of DNS lookups.
 func (n *webhookAPI) validateTargetHost(ctx context.Context, host string, validatedHosts map[string]struct{}) error {
 	host = strings.TrimSuffix(strings.ToLower(host), ".")
