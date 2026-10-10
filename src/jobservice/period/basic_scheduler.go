@@ -158,8 +158,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	// REM from redis db
-	// Accurately remove the item with the specified score
-	removed, err := redis.Int64(conn.Do("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
+	removed, err := removePolicy(conn, bs.namespace, policyID, numericID)
 	if err != nil {
 		return errors.Wrap(err, "unschedule periodic job error")
 	}
@@ -169,6 +168,32 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	return nil
+}
+
+// removePolicy removes the policy with the given ID from the periodic policy set.
+// Policies scheduled within a few seconds of each other can get the same score,
+// so only the member of this policy is removed, not every member with its score.
+func removePolicy(conn redis.Conn, namespace string, policyID string, numericID int64) (int64, error) {
+	key := rds.KeyPeriodicPolicy(namespace)
+	members, err := redis.ByteSlices(conn.Do("ZRANGEBYSCORE", key, numericID, numericID))
+	if err != nil {
+		return 0, err
+	}
+
+	var removed int64
+	for _, rawJSON := range members {
+		p := &Policy{}
+		if err := p.DeSerialize(rawJSON); err != nil || p.ID != policyID {
+			continue
+		}
+		n, err := redis.Int64(conn.Do("ZREM", key, rawJSON))
+		if err != nil {
+			return removed, err
+		}
+		removed += n
+	}
+
+	return removed, nil
 }
 
 // Locate the policy and return the numeric ID.
