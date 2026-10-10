@@ -13,6 +13,8 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/selector"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/doublestar"
+	"github.com/goharbor/harbor/src/lib/selector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutable/model"
 )
 
@@ -318,6 +320,21 @@ func (s *MatchTestSuite) TestImmuMatchMultiExcludeSelector() {
 			repo: "redis", tags: []string{"dev-1", "release-1"}, want: true,
 		},
 		{
+			name: "repoExcludes: multi-tag artifact in an excluded repository stays mutable",
+			repoSels: []*model.Selector{
+				{Kind: "doublestar", Decoration: "repoExcludes", Pattern: "redis"},
+				{Kind: "doublestar", Decoration: "repoExcludes", Pattern: "mysql"},
+			},
+			tagSels: []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
+			repo:    "mysql", tags: []string{"1.0", "latest"}, want: false,
+		},
+		{
+			name:     "repoMatches: multi-tag artifact in a matching repository is immutable",
+			repoSels: []*model.Selector{{Kind: "doublestar", Decoration: "repoMatches", Pattern: "redis"}},
+			tagSels:  []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
+			repo:     "redis", tags: []string{"1.0", "latest"}, want: true,
+		},
+		{
 			name: "mixed: exclusion carves out of a matches selector",
 			repoSels: []*model.Selector{
 				{Kind: "doublestar", Decoration: "repoMatches", Pattern: "**"},
@@ -334,6 +351,20 @@ func (s *MatchTestSuite) TestImmuMatchMultiExcludeSelector() {
 			},
 			tagSels: []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
 			repo:    "prod/app", tags: []string{"1.0"}, want: true,
+		},
+		{
+			// Nothing stops a tag decoration being stored in the repository
+			// dimension, and there it reads a field that varies between the
+			// tags of one candidate. Evaluating such a dimension once for the
+			// whole candidate would make this artifact immutable, because each
+			// exclusion selects it on the strength of a different tag.
+			name: "scope dimension holding tag decorations keeps the per-tag result",
+			repoSels: []*model.Selector{
+				{Kind: "doublestar", Decoration: "excludes", Pattern: "dev-**"},
+				{Kind: "doublestar", Decoration: "excludes", Pattern: "test-**"},
+			},
+			tagSels: []*model.Selector{{Kind: "doublestar", Decoration: "matches", Pattern: "**"}},
+			repo:    "redis", tags: []string{"dev-1", "test-1"}, want: false,
 		},
 	}
 
@@ -422,6 +453,82 @@ func (s *MatchTestSuite) TearDownSuite() {
 
 	err = s.ctr.DeleteImmutableRule(orm.Context(), s.ruleID2)
 	require.NoError(s.T(), err, "delete immutable")
+}
+
+// countingKind is a selector kind registered only for this package's tests, so
+// that a test can count how often the matcher evaluates one dimension.
+const countingKind = "immutable-match-counting-test"
+
+// noMatchPattern makes a countingSelector select nothing, which is the case
+// that costs an evaluation per tag when a dimension is walked per tag: a
+// selector that selects the candidate ends the walk on the first tag, while one
+// that selects nothing is asked about every tag.
+const noMatchPattern = "no-match"
+
+// countingSelector counts its own evaluations.
+type countingSelector struct {
+	calls   *int
+	selects bool
+}
+
+func (c *countingSelector) Select(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
+	*c.calls++
+	if !c.selects {
+		return nil, nil
+	}
+	return artifacts, nil
+}
+
+func registerCountingSelector(calls *int) {
+	index.Register(countingKind,
+		[]string{doublestar.RepoMatches, doublestar.Excludes},
+		func(_ string, pattern any, _ string) selector.Selector {
+			p, _ := pattern.(string)
+			return &countingSelector{calls: calls, selects: p != noMatchPattern}
+		})
+}
+
+func countingCandidate() *selector.Candidate {
+	return &selector.Candidate{
+		NamespaceID: 1, Namespace: "library", Repository: "redis",
+		Tags: []string{"1.0", "1.1", "latest"}, Kind: selector.Image,
+	}
+}
+
+// TestScopeSelectsEvaluatesRepositorySelectorsOnce is the regression test for
+// the work this saves. A repository decoration reads the same fields for every
+// tag of a candidate, so a candidate carrying many tags must cost one
+// evaluation. Asserting only the verdict would not catch a return to per-tag
+// evaluation, because both spellings agree on the verdict.
+func TestScopeSelectsEvaluatesRepositorySelectorsOnce(t *testing.T) {
+	calls := 0
+	registerCountingSelector(&calls)
+
+	c := countingCandidate()
+	matched, err := scopeSelects([]*model.Selector{
+		{Kind: countingKind, Decoration: doublestar.RepoMatches, Pattern: noMatchPattern},
+	}, c)
+
+	require.NoError(t, err)
+	assert.False(t, matched)
+	assert.Equal(t, 1, calls, "a repository selector must be evaluated once for the whole candidate")
+}
+
+// TestScopeSelectsFallsBackForTagDecorations pins the other half. A decoration
+// that reads the tags is evaluated per tag, so the dimension's result does not
+// depend on which tags happen to be grouped into one candidate.
+func TestScopeSelectsFallsBackForTagDecorations(t *testing.T) {
+	calls := 0
+	registerCountingSelector(&calls)
+
+	c := countingCandidate()
+	matched, err := scopeSelects([]*model.Selector{
+		{Kind: countingKind, Decoration: doublestar.Excludes, Pattern: noMatchPattern},
+	}, c)
+
+	require.NoError(t, err)
+	assert.False(t, matched)
+	assert.Equal(t, len(c.Tags), calls, "a tag decoration must be evaluated once per tag")
 }
 
 func TestMain(m *testing.M) {
