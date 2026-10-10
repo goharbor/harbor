@@ -152,3 +152,17 @@ func TestNextPageURL(t *testing.T) {
 		})
 	}
 }
+
+// TestNextPageURLErrorRedactsSecrets keeps credentials and tokens carried in a rejected Link
+// out of the returned error, which replication logs.
+func TestNextPageURLErrorRedactsSecrets(t *testing.T) {
+	for _, link := range []string{
+		"https://user:s3cr3t-pass@reg.example.com/v2/_catalog",
+		"https://evil.example/v2/_catalog?token=s3cr3t-token",
+		"@evil.example/v2/_catalog?token=s3cr3t-token",
+	} {
+		_, err := nextPageURL("https://reg.example.com", link)
+		require.Error(t, err, link)
+		assert.NotContains(t, err.Error(), "s3cr3t", link)
+	}
+}
