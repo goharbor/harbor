@@ -180,7 +180,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.9
+GOBUILDIMAGE=golang:1.27.2
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -533,7 +533,7 @@ misspell:
 	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.13.0
 GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
 GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
 lint:
