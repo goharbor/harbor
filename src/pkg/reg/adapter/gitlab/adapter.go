@@ -15,9 +15,16 @@
 package gitlab
 
 import (
+	"errors"
+	"fmt"
+	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
+	"github.com/opencontainers/go-digest"
+
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -47,8 +54,9 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 }
 
 var (
-	_ adp.Adapter          = (*adapter)(nil)
-	_ adp.ArtifactRegistry = (*adapter)(nil)
+	_               adp.Adapter          = (*adapter)(nil)
+	_               adp.ArtifactRegistry = (*adapter)(nil)
+	gitlabTagRegexp                      = regexp.MustCompile(`^[\w][\w.-]{0,127}$`)
 )
 
 type adapter struct {
@@ -94,6 +102,100 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+// DeleteTag deletes only the specified tag using the GitLab API.
+func (a *adapter) DeleteTag(repository, tag string) error {
+	if !gitlabTagRegexp.MatchString(tag) {
+		return fmt.Errorf("invalid GitLab tag %q", tag)
+	}
+	projectID, repositoryID, err := a.findRepository(repository)
+	if err != nil {
+		return err
+	}
+	return a.clientGitlabAPI.deleteTag(projectID, repositoryID, tag)
+}
+
+// DeleteManifest deletes a tag or all tags referencing the specified digest.
+// GitLab's API removes tags; unreferenced blobs are reclaimed by GitLab GC.
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	if _, err := digest.Parse(reference); err != nil {
+		return a.DeleteTag(repository, reference)
+	}
+	projectID, repositoryID, err := a.findRepository(repository)
+	if err != nil {
+		return err
+	}
+	tags, err := a.clientGitlabAPI.getTags(projectID, repositoryID)
+	if err != nil {
+		return err
+	}
+	var candidates []string
+	for _, tag := range tags {
+		tagDigest, err := a.clientGitlabAPI.getTagDigest(projectID, repositoryID, tag.Name)
+		if isNotFound(err) {
+			continue // A tag can disappear between listing and fetching details.
+		}
+		if err != nil {
+			return err
+		}
+		if tagDigest == reference {
+			candidates = append(candidates, tag.Name)
+		}
+	}
+	if len(candidates) == 0 {
+		return &common_http.Error{Code: http.StatusNotFound, Message: "no GitLab tags reference the requested digest"}
+	}
+	for _, tag := range candidates {
+		if err := a.clientGitlabAPI.deleteTag(projectID, repositoryID, tag); err != nil && !isNotFound(err) {
+			return err
+		}
+	}
+	return nil
+}
+
+// findRepository resolves the owning project without assuming namespace depth
+// or using the first result from a fuzzy project search.
+func (a *adapter) findRepository(repository string) (int64, int64, error) {
+	parts := strings.Split(repository, "/")
+	if len(parts) < 2 {
+		return 0, 0, fmt.Errorf("invalid GitLab repository %q", repository)
+	}
+	for _, part := range parts {
+		if part == "" || part == "." || part == ".." {
+			return 0, 0, fmt.Errorf("invalid GitLab repository %q", repository)
+		}
+	}
+	for n := len(parts); n >= 2; n-- {
+		path := strings.Join(parts[:n], "/")
+		project, err := a.clientGitlabAPI.getProject(path)
+		if isNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return 0, 0, err
+		}
+		// GitLab preserves project-path case, but registry paths are lowercase.
+		if !strings.EqualFold(project.FullPath, path) || project.ID <= 0 {
+			return 0, 0, fmt.Errorf("GitLab project does not match requested path %q", path)
+		}
+		repositories, err := a.clientGitlabAPI.getRepositories(project.ID)
+		if err != nil {
+			return 0, 0, err
+		}
+		for _, repo := range repositories {
+			if repo.Path == repository && repo.ID > 0 {
+				return project.ID, repo.ID, nil
+			}
+		}
+		break
+	}
+	return 0, 0, &common_http.Error{Code: http.StatusNotFound, Message: "GitLab repository not found"}
+}
+
+func isNotFound(err error) bool {
+	var httpErr *common_http.Error
+	return errors.As(err, &httpErr) && httpErr.Code == http.StatusNotFound
 }
 
 // FetchArtifacts fetches images

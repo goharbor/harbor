@@ -86,6 +86,53 @@ func (c *Client) getProjects() ([]*Project, error) {
 	return projects, nil
 }
 
+func (c *Client) getProject(path string) (*Project, error) {
+	project := &Project{}
+	endpoint := fmt.Sprintf("%s/api/v4/projects/%s", c.url, url.PathEscape(path))
+	if err := c.request(http.MethodGet, endpoint, project); err != nil {
+		return nil, err
+	}
+	return project, nil
+}
+
+func (c *Client) getTagDigest(projectID, repositoryID int64, tag string) (string, error) {
+	details := struct {
+		Digest string `json:"digest"`
+	}{}
+	endpoint := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d/tags/%s", c.url, projectID, repositoryID, url.PathEscape(tag))
+	if err := c.request(http.MethodGet, endpoint, &details); err != nil {
+		return "", err
+	}
+	return details.Digest, nil
+}
+
+func (c *Client) deleteTag(projectID, repositoryID int64, tag string) error {
+	endpoint := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d/tags/%s", c.url, projectID, repositoryID, url.PathEscape(tag))
+	return c.request(http.MethodDelete, endpoint, nil)
+}
+
+func (c *Client) request(method, endpoint string, result any) error {
+	req, err := c.newRequest(method, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return &common_http.Error{
+			Code:    resp.StatusCode,
+			Message: fmt.Sprintf("GitLab API %s request failed", method),
+		}
+	}
+	if result == nil {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(result)
+}
+
 func (c *Client) getProjectsByName(name string) ([]*Project, error) {
 	var projects []*Project
 	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=true&search_namespaces=true&per_page=50", c.url, name)
