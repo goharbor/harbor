@@ -192,6 +192,26 @@ redis.call('hset', KEYS[2], ARGV[1], 2)
 // StatusResetScript is lua script to reset the job stats
 var StatusResetScript = redis.NewScript(2, statusResetScriptText)
 
+// Used to remove one periodic policy from the policy set.
+// The numeric ID (score) is not unique, so members at that score are matched by policy ID.
+//
+// KEYS[1]: key of periodic policy set
+// ARGV[1]: numeric ID (score) of the policy
+// ARGV[2]: policy ID
+var removePolicyScriptText = `
+local n = 0
+for _, m in ipairs(redis.call('zrangebyscore', KEYS[1], ARGV[1], ARGV[1])) do
+  local ok, p = pcall(cjson.decode, m)
+  if ok and type(p) == 'table' and p['id'] == ARGV[2] then
+    n = n + redis.call('zrem', KEYS[1], m)
+  end
+end
+return n
+`
+
+// RemovePolicyScript is lua script to remove a periodic policy by its ID atomically
+var RemovePolicyScript = redis.NewScript(1, removePolicyScriptText)
+
 // Copy from upstream worker framework
 // Used by the reaper to re-enqueue jobs that were in progress
 //
