@@ -15,20 +15,30 @@
 package handler
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	apiModels "github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
+	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
+	repositorytesting "github.com/goharbor/harbor/src/testing/controller/repository"
 	scannertesting "github.com/goharbor/harbor/src/testing/controller/scanner"
+	usertesting "github.com/goharbor/harbor/src/testing/controller/user"
 	"github.com/goharbor/harbor/src/testing/mock"
 	htesting "github.com/goharbor/harbor/src/testing/server/v2.0/handler"
 )
@@ -260,6 +270,146 @@ func (suite *ProjectTestSuite) TestSetScannerOfProject() {
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
 	}
+}
+
+func (suite *ProjectTestSuite) TestHeadProjectAuthorization() {
+	api, ok := suite.Config.ProjectAPI.(*projectAPI)
+	suite.Require().True(ok)
+
+	originalProjectCtl := api.projectCtl
+	originalBaseProjectCtl := baseProjectCtl
+	originalSecurity := suite.Security
+	suite.T().Cleanup(func() {
+		api.projectCtl = originalProjectCtl
+		baseProjectCtl = originalBaseProjectCtl
+		suite.Security = originalSecurity
+	})
+
+	testCases := []struct {
+		name        string
+		projectName string
+		project     *models.Project
+		lookupErr   error
+		projectID   int64
+	}{
+		{
+			name:        "existing project",
+			projectName: suite.project.Name,
+			project:     suite.project,
+			projectID:   suite.project.ProjectID,
+		},
+		{
+			name:        "missing project",
+			projectName: "missing",
+			lookupErr:   errors.NotFoundError(nil),
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			baseCtl := projecttesting.NewController(suite.T())
+			handlerCtl := projecttesting.NewController(suite.T())
+			securityCtx := securitytesting.NewContext(suite.T())
+			baseProjectCtl = baseCtl
+			api.projectCtl = handlerCtl
+			suite.Security = securityCtx
+
+			baseCtl.On("GetByName", mock.Anything, tc.projectName).
+				Return(tc.project, tc.lookupErr).Twice()
+			handlerCtl.On("GetByName", mock.Anything, tc.projectName).
+				Return(tc.project, tc.lookupErr).Maybe()
+			securityCtx.On(
+				"Can",
+				mock.Anything,
+				rbac.ActionRead,
+				rbac_project.NewNamespace(tc.projectID).Resource(),
+			).Return(false).Twice()
+			securityCtx.On("IsAuthenticated").Return(true).Twice()
+
+			headResponse, err := suite.DoReq(
+				http.MethodHead,
+				"/projects?project_name="+tc.projectName,
+				nil,
+			)
+			suite.Require().NoError(err)
+			suite.Equal(http.StatusForbidden, headResponse.StatusCode)
+			suite.NoError(headResponse.Body.Close())
+
+			getResponse, err := suite.Get("/projects/" + tc.projectName)
+			suite.Require().NoError(err)
+			suite.Equal(http.StatusForbidden, getResponse.StatusCode)
+			suite.NoError(getResponse.Body.Close())
+		})
+	}
+}
+
+func (suite *ProjectTestSuite) TestHeadProjectPublicAccess() {
+	api, ok := suite.Config.ProjectAPI.(*projectAPI)
+	suite.Require().True(ok)
+
+	originalProjectCtl := api.projectCtl
+	originalRepositoryCtl := api.repositoryCtl
+	originalBaseProjectCtl := baseProjectCtl
+	originalSecurity := suite.Security
+	suite.T().Cleanup(func() {
+		api.projectCtl = originalProjectCtl
+		api.repositoryCtl = originalRepositoryCtl
+		baseProjectCtl = originalBaseProjectCtl
+		suite.Security = originalSecurity
+	})
+
+	baseCtl := projecttesting.NewController(suite.T())
+	handlerCtl := projecttesting.NewController(suite.T())
+	repositoryCtl := repositorytesting.NewController(suite.T())
+	securityCtx := securitytesting.NewContext(suite.T())
+	baseProjectCtl = baseCtl
+	api.projectCtl = handlerCtl
+	api.repositoryCtl = repositoryCtl
+	suite.Security = securityCtx
+
+	baseCtl.On("GetByName", mock.Anything, suite.project.Name).
+		Return(suite.project, nil).Twice()
+	handlerCtl.On("GetByName", mock.Anything, suite.project.Name).
+		Return(suite.project, nil).Once()
+	handlerCtl.On("Get", mock.Anything, suite.project.Name, mock.Anything, mock.Anything).
+		Return(suite.project, nil).Once()
+	repositoryCtl.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil).Once()
+	securityCtx.On(
+		"Can",
+		mock.Anything,
+		rbac.ActionRead,
+		rbac_project.NewNamespace(suite.project.ProjectID).Resource(),
+	).Return(true).Twice()
+	securityCtx.On("IsAuthenticated").Return(false).Maybe()
+
+	headResponse, err := suite.DoReq(
+		http.MethodHead,
+		"/projects?project_name="+suite.project.Name,
+		nil,
+	)
+	suite.Require().NoError(err)
+	suite.Equal(http.StatusOK, headResponse.StatusCode)
+	suite.NoError(headResponse.Body.Close())
+
+	getResponse, err := suite.Get("/projects/" + suite.project.Name)
+	suite.Require().NoError(err)
+	suite.Equal(http.StatusOK, getResponse.StatusCode)
+	suite.NoError(getResponse.Body.Close())
+}
+
+func (suite *ProjectTestSuite) TestRetentionContextForSolutionUser() {
+	secCtx := &securitytesting.Context{}
+	secCtx.On("IsSolutionUser").Return(true).Once()
+	owner := &commonmodels.User{UserID: 7, Username: "proxy-owner", SysAdminFlag: true}
+	userCtl := &usertesting.Controller{}
+	userCtl.On("Get", mock.Anything, 7, mock.Anything).Return(owner, nil).Once()
+	api := &projectAPI{userCtl: userCtl}
+
+	ctx, err := api.retentionContext(context.Background(), secCtx, owner.UserID)
+	suite.Require().NoError(err)
+	resolved, ok := security.FromContext(ctx)
+	suite.Require().True(ok)
+	suite.Equal(owner.Username, resolved.GetUsername())
 }
 
 func TestProjectTestSuite(t *testing.T) {

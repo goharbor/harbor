@@ -39,7 +39,19 @@ const (
 
 	// ScopeLevelProject project
 	ScopeLevelProject = "project"
+
+	// ExecutionPrincipalTypeLocal identifies a Harbor user principal.
+	ExecutionPrincipalTypeLocal = "local"
+
+	// ExecutionPrincipalTypeRobot identifies a Harbor robot principal.
+	ExecutionPrincipalTypeRobot = "robot"
 )
+
+// ExecutionPrincipal identifies the account authorized to run a scheduled retention policy.
+type ExecutionPrincipal struct {
+	Type string `json:"type"`
+	ID   int64  `json:"id"`
+}
 
 // Metadata of policy
 type Metadata struct {
@@ -58,6 +70,9 @@ type Metadata struct {
 
 	// Which scope the policy will be applied to
 	Scope *Scope `json:"scope" valid:"Required"`
+
+	// ExecutionPrincipal is the account whose current permissions authorize scheduled execution.
+	ExecutionPrincipal *ExecutionPrincipal `json:"execution_principal,omitempty"`
 }
 
 // ValidateRetentionPolicy validate the retention policy
