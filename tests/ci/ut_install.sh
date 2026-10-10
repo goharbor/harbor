@@ -20,8 +20,8 @@ set -e
 # cd ../
 # binary will be $(go env GOPATH)/bin/golangci-lint
 # go get installation aren't guaranteed to work. We recommend using binary installation.
-if ! "${GOBIN_DIR}/golangci-lint" --version 2>/dev/null | grep -q ' 2\.9\.0 '; then
-  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "${GOBIN_DIR}" v2.9.0
+if ! "${GOBIN_DIR}/golangci-lint" --version 2>/dev/null | grep -q ' 2\.13\.0 '; then
+  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | sh -s -- -b "${GOBIN_DIR}" v2.13.0
 fi
 sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
