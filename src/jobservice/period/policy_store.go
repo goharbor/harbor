@@ -65,8 +65,12 @@ func (p *Policy) Validate() error {
 		}
 	}
 
-	if _, err := comUtils.CronParser().Parse(p.CronSpec); err != nil {
+	sched, err := comUtils.CronParser().Parse(p.CronSpec)
+	if err != nil {
 		return err
+	}
+	if !comUtils.IsCronReachable(sched) {
+		return fmt.Errorf("cron expression %q can never fire: no matching date exists", p.CronSpec)
 	}
 
 	return nil
