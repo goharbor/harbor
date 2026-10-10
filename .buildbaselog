@@ -8,6 +8,9 @@
 *   Add date here... Add signature here...
 -   Add your reason here...
 
+*   Oct 09 2026 <yan-yw.wang@broadcom.com>
+-   Refresh base image, pin photon:5.0-20260214 and bump go to 1.26.9
+
 *   May 18 2026 <aaron.an@broadcom.com>
 -   Refresh base image
 
