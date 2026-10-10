@@ -16,7 +16,9 @@ package image
 
 import (
 	"bytes"
+	"context"
 	"io"
+	"net/http"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -90,6 +92,9 @@ func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
 func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
 	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
+}
+func (f *fakeRegistry) PullBlobRange(context.Context, string, string, string, string) (*http.Response, error) {
+	panic("unexpected ranged blob pull during replication")
 }
 func (f *fakeRegistry) PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error) {
 	r := io.NopCloser(bytes.NewReader([]byte{'a'}))

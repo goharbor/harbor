@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/docker/distribution"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -32,6 +33,8 @@ import (
 type RemoteInterface interface {
 	// BlobReader create a reader for remote blob
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
+	// BlobReaderRange creates a reader for a remote blob range and preserves the response metadata.
+	BlobReaderRange(ctx context.Context, repo, dig, byteRange, ifRange string) (*http.Response, error)
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 	// ManifestExist checks manifest exist, if exist, returns digest
@@ -98,6 +101,19 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 		bReader = lib.NewReader(bReader, r.opts.Speed)
 	}
 	return sz, bReader, err
+}
+
+func (r *remoteHelper) BlobReaderRange(
+	ctx context.Context, repo, dig, byteRange, ifRange string,
+) (*http.Response, error) {
+	resp, err := r.registry.PullBlobRange(ctx, repo, dig, byteRange, ifRange)
+	if err != nil {
+		return nil, err
+	}
+	if r.opts != nil && r.opts.Speed > 0 {
+		resp.Body = lib.NewReader(resp.Body, r.opts.Speed)
+	}
+	return resp, nil
 }
 
 func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {

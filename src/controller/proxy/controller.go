@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -62,6 +63,10 @@ type Controller interface {
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
 	// art is the ArtifactInfo which includes the digest of the blob
 	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
+	// ProxyBlobRange proxies a ranged blob request and caches the complete blob in the background.
+	ProxyBlobRange(
+		ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, byteRange, ifRange string,
+	) (*http.Response, error)
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
 	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
@@ -305,14 +310,41 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 	return size, bReader, nil
 }
 
+func (c *controller) ProxyBlobRange(
+	ctx context.Context, p *proModels.Project, art lib.ArtifactInfo, byteRange, ifRange string,
+) (*http.Response, error) {
+	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
+	if err != nil {
+		return nil, err
+	}
+	remoteRepo := GetRemoteRepo(art)
+	resp, err := rHelper.BlobReaderRange(ctx, remoteRepo, art.Digest, byteRange, ifRange)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusPartialContent {
+		go func() {
+			// The ranged response length is not the size of the complete blob.
+			desc := distribution.Descriptor{Size: -1, Digest: digest.Digest(art.Digest)}
+			if err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper); err != nil {
+				log.Errorf("error while putting blob to local repo, %v", err)
+			}
+		}()
+	}
+	return resp, nil
+}
+
 func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
 	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
+	size, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
 	if err != nil {
 		log.Errorf("failed to create blob reader, error %v", err)
 		return err
 	}
 	defer bReader.Close()
+	if desc.Size < 0 {
+		desc.Size = size
+	}
 	err = c.local.PushBlob(localRepo, desc, bReader)
 	return err
 }
