@@ -123,10 +123,10 @@ func TestNotificationClientsKeepProxy(t *testing.T) {
 }
 
 // TestNotificationClientsGuardRestrictedTargets asserts the production notification clients carry
-// the egress dial guard: with the default policy, which allows private networks, a loopback target
+// the egress dial guard: under block_restricted, which allows private networks, a loopback target
 // is still refused before any request reaches it.
 func TestNotificationClientsGuardRestrictedTargets(t *testing.T) {
-	t.Setenv("HARBOR_WEBHOOK_EGRESS_POLICY", "")
+	t.Setenv("HARBOR_WEBHOOK_EGRESS_POLICY", "block_restricted")
 	t.Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "")
 	t.Setenv("HARBOR_WEBHOOK_EGRESS_ALLOWLIST", "")
 
