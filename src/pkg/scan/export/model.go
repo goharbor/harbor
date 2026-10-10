@@ -25,6 +25,7 @@ import (
 type Data struct {
 	Repository     string `orm:"column(repository_name)" csv:"Repository"`
 	ArtifactDigest string `orm:"column(artifact_digest)" csv:"Artifact Digest"`
+	Tags           string `orm:"column(tags)" csv:"Tags"`
 	CVEId          string `orm:"column(cve_id)" csv:"CVE"`
 	Package        string `orm:"column(package)" csv:"Package"`
 	Version        string `orm:"column(package_version)" csv:"Current Version"`

