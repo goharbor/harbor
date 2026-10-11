@@ -238,19 +238,19 @@ func TestRemoveImmutableScanners(t *testing.T) {
 		mgr.AssertExpectations(t)
 	})
 
-	t.Run("Should return error when listing scanners fails", func(t *testing.T) {
+	t.Run("Should return error when deleting scanners fails", func(t *testing.T) {
 		mgr := &mocks.Manager{}
 		scannerManager = mgr
 
-		mgr.On("List", mock.Anything, &q.Query{
+		mgr.On("DeleteBy", mock.Anything, &q.Query{
 			Keywords: map[string]any{
 				"immutable": true,
 				"name__in":  []string{"scanner"},
 			},
-		}).Return(nil, errors.New("DB error"))
+		}).Return(int64(0), errors.New("DB error"))
 
 		err := RemoveImmutableScanners(context.TODO(), []string{"scanner"})
-		assert.EqualError(t, err, "listing scanners: DB error")
+		assert.EqualError(t, err, "deleting scanners: DB error")
 		mgr.AssertExpectations(t)
 	})
 
@@ -258,19 +258,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 		mgr := &mocks.Manager{}
 		scannerManager = mgr
 
-		registrations := []*scanner.Registration{
-			{
-				Name: "scanner-1",
-				UUID: "uuid-1",
-				URL:  "http://scanner-1",
-			},
-			{
-				Name: "scanner-2",
-				UUID: "uuid-2",
-				URL:  "http://scanner-2",
-			}}
-
-		mgr.On("List", mock.Anything, &q.Query{
+		mgr.On("DeleteBy", mock.Anything, &q.Query{
 			Keywords: map[string]any{
 				"immutable": true,
 				"name__in": []string{
@@ -278,9 +266,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 					"scanner-2",
 				},
 			},
-		}).Return(registrations, nil)
-		mgr.On("Delete", mock.Anything, "uuid-1").Return(nil)
-		mgr.On("Delete", mock.Anything, "uuid-2").Return(nil)
+		}).Return(int64(2), nil)
 
 		err := RemoveImmutableScanners(context.TODO(), []string{
 			"scanner-1",
@@ -294,19 +280,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 		mgr := &mocks.Manager{}
 		scannerManager = mgr
 
-		registrations := []*scanner.Registration{
-			{
-				Name: "scanner-1",
-				UUID: "uuid-1",
-				URL:  "http://scanner-1",
-			},
-			{
-				Name: "scanner-2",
-				UUID: "uuid-2",
-				URL:  "http://scanner-2",
-			}}
-
-		mgr.On("List", mock.Anything, &q.Query{
+		mgr.On("DeleteBy", mock.Anything, &q.Query{
 			Keywords: map[string]any{
 				"immutable": true,
 				"name__in": []string{
@@ -314,15 +288,13 @@ func TestRemoveImmutableScanners(t *testing.T) {
 					"scanner-2",
 				},
 			},
-		}).Return(registrations, nil)
-		mgr.On("Delete", mock.Anything, "uuid-1").Return(nil)
-		mgr.On("Delete", mock.Anything, "uuid-2").Return(errors.New("DB error"))
+		}).Return(int64(0), errors.New("DB error"))
 
 		err := RemoveImmutableScanners(context.TODO(), []string{
 			"scanner-1",
 			"scanner-2",
 		})
-		assert.EqualError(t, err, "deleting scanner: uuid-2: DB error")
+		assert.EqualError(t, err, "deleting scanners: DB error")
 		mgr.AssertExpectations(t)
 	})
 
