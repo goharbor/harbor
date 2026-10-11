@@ -349,7 +349,7 @@ func (bt *basicTracker) Save() (err error) {
 	if stats.Info.HookAck != nil {
 		ack := stats.Info.HookAck.JSON()
 		if len(ack) > 0 {
-			args = append(args, "ack")
+			args = append(args, "ack", ack)
 		}
 	}
 
