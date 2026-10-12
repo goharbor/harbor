@@ -68,20 +68,17 @@ func init() {
 		clients: map[string]*http.Client{},
 	}
 
-	secureOptions := []func(*http.Transport){commonhttp.WithEgressGuard()}
+	var secureOptions []func(*http.Transport)
 	if commonhttp.InternalTLSEnabled() {
 		secureOptions = append(secureOptions, commonhttp.WithInternalTLSConfig())
 	}
 	httpHelper.clients[secure] = &http.Client{
-		Transport:     commonhttp.NewTransport(secureOptions...),
+		Transport:     commonhttp.NewEgressGuardedTransport(secureOptions...),
 		Timeout:       timeout,
 		CheckRedirect: blockRedirect,
 	}
 	httpHelper.clients[insecure] = &http.Client{
-		Transport: commonhttp.NewTransport(
-			commonhttp.WithInsecureSkipVerify(true),
-			commonhttp.WithEgressGuard(),
-		),
+		Transport:     commonhttp.NewEgressGuardedTransport(commonhttp.WithInsecureSkipVerify(true)),
 		Timeout:       timeout,
 		CheckRedirect: blockRedirect,
 	}

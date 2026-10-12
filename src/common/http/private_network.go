@@ -16,6 +16,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -45,6 +46,12 @@ const webhookEgressAllowlistEnv = "HARBOR_WEBHOOK_EGRESS_ALLOWLIST"
 // privateNetworkAccessEnv is the deprecated boolean from 2.15. When the policy is not set it keeps
 // its meaning: true allows everything, false allows public destinations only.
 const privateNetworkAccessEnv = "HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS"
+
+// webhookPinProxiedTargetsEnv, when true, makes the notification clients hand an HTTP proxy the
+// address Harbor validated instead of the hostname, so a proxy whose DNS answers differ from
+// Harbor's cannot be steered to a blocked address. Off by default: a proxy that filters by domain
+// (a Squid dstdomain allowlist, for example) rejects connections to a bare IP.
+const webhookPinProxiedTargetsEnv = "HARBOR_WEBHOOK_PIN_PROXIED_TARGETS"
 
 // Exceptions and denials follow the IANA IPv4/IPv6 special-purpose address registries.
 // A destination is "public" only when it is global-unicast, not private, and not in any
@@ -151,28 +158,47 @@ type egressPolicy struct {
 	allowedPrefixes []netip.Prefix
 	// allowedHosts holds exact hostnames; entries starting with "." match any subdomain.
 	allowedHosts []string
+	// pinProxiedTargets sends proxies the validated address rather than the hostname.
+	pinProxiedTargets bool
 }
 
 var egressPolicyCache struct {
 	sync.Mutex
-	loaded                    bool
-	policyEnv, legacyEnv, raw string
-	policy                    egressPolicy
+	loaded                            bool
+	policyEnv, legacyEnv, raw, pinEnv string
+	policy                            egressPolicy
 }
 
 // currentEgressPolicy reads the policy from the environment, re-parsing only when it changed so
 // that invalid and deprecated values are logged once rather than on every dial.
 func currentEgressPolicy() egressPolicy {
 	policyEnv, legacyEnv, allowlist := os.Getenv(webhookEgressPolicyEnv), os.Getenv(privateNetworkAccessEnv), os.Getenv(webhookEgressAllowlistEnv)
+	pinEnv := os.Getenv(webhookPinProxiedTargetsEnv)
 	egressPolicyCache.Lock()
 	defer egressPolicyCache.Unlock()
 	cache := &egressPolicyCache
-	if !cache.loaded || cache.policyEnv != policyEnv || cache.legacyEnv != legacyEnv || cache.raw != allowlist {
+	if !cache.loaded || cache.policyEnv != policyEnv || cache.legacyEnv != legacyEnv || cache.raw != allowlist || cache.pinEnv != pinEnv {
 		cache.policy = parseEgressPolicy(policyEnv, legacyEnv, allowlist)
-		cache.policyEnv, cache.legacyEnv, cache.raw = policyEnv, legacyEnv, allowlist
+		cache.policy.pinProxiedTargets = parsePinProxiedTargets(pinEnv)
+		cache.policyEnv, cache.legacyEnv, cache.raw, cache.pinEnv = policyEnv, legacyEnv, allowlist, pinEnv
 		cache.loaded = true
 	}
 	return cache.policy
+}
+
+// parsePinProxiedTargets treats an unset or invalid value as off, so a typo never changes what
+// the proxy receives.
+func parsePinProxiedTargets(value string) bool {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return false
+	}
+	pin, err := strconv.ParseBool(value)
+	if err != nil {
+		log.Warningf("invalid %s=%q, sending proxies the hostname", webhookPinProxiedTargetsEnv, value)
+		return false
+	}
+	return pin
 }
 
 func parseEgressPolicy(policyEnv, legacyEnv, allowlist string) egressPolicy {
@@ -363,46 +389,49 @@ func ValidateNetworkTarget(ctx context.Context, resolver NetworkResolver, host s
 	if policy.level == egressAllowAll {
 		return nil
 	}
-	if err := validateNetworkTarget(ctx, resolver, policy, host); err != nil {
+	if _, err := validateNetworkTarget(ctx, resolver, policy, host); err != nil {
 		policy.logBlocked(host, err)
 		return err
 	}
 	return nil
 }
 
-func validateNetworkTarget(ctx context.Context, resolver NetworkResolver, policy egressPolicy, host string) error {
+// validateNetworkTarget returns the address a proxied request may be pinned to: the literal
+// address, or the first resolved one. An allowlisted hostname returns an invalid address, since
+// it is trusted wherever DNS points.
+func validateNetworkTarget(ctx context.Context, resolver NetworkResolver, policy egressPolicy, host string) (netip.Addr, error) {
 	host = strings.TrimSuffix(strings.ToLower(host), ".")
 	if host == "" {
-		return fmt.Errorf("target must include a hostname")
+		return netip.Addr{}, fmt.Errorf("target must include a hostname")
 	}
 	if policy.allowsHost(host) {
-		return nil
+		return netip.Addr{}, nil
 	}
 	if isBlockedTargetHostname(host) {
-		return fmt.Errorf("target hostname %q is restricted", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q is restricted", host)
 	}
 
 	address, err := netip.ParseAddr(host)
 	if err == nil {
 		if err := policy.checkAddress(address); err != nil {
-			return fmt.Errorf("target address %q is blocked: %w", host, err)
+			return netip.Addr{}, fmt.Errorf("target address %q is blocked: %w", host, err)
 		}
-		return nil
+		return address, nil
 	}
 
 	if resolver == nil {
-		return fmt.Errorf("target hostname %q cannot be resolved", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q cannot be resolved", host)
 	}
 	addresses, err := resolver.LookupNetIP(ctx, "ip", host)
 	if err != nil || len(addresses) == 0 {
-		return fmt.Errorf("target hostname %q cannot be resolved", host)
+		return netip.Addr{}, fmt.Errorf("target hostname %q cannot be resolved", host)
 	}
 	for _, address := range addresses {
 		if err := policy.checkAddress(address); err != nil {
-			return fmt.Errorf("target hostname %q resolves to a blocked address: %w", host, err)
+			return netip.Addr{}, fmt.Errorf("target hostname %q resolves to a blocked address: %w", host, err)
 		}
 	}
-	return nil
+	return addresses[0].Unmap(), nil
 }
 
 func isBlockedTargetHostname(host string) bool {
@@ -452,6 +481,12 @@ type egressGuard struct {
 }
 
 func (guard *egressGuard) proxy(req *http.Request) (*url.URL, error) {
+	if proxyURL, ok := req.Context().Value(pinnedProxyKey{}).(*url.URL); ok {
+		// pinnedProxyTransport validated the target and chose the proxy for the original URL;
+		// evaluating NO_PROXY again against the pinned address could change the route
+		guard.proxyAddrs.Store(canonicalAddr(proxyURL), struct{}{})
+		return proxyURL, nil
+	}
 	proxyURL, err := guard.upstreamProxy(req)
 	if err != nil || currentEgressPolicy().level == egressAllowAll {
 		return proxyURL, err
@@ -484,6 +519,114 @@ func (guard *egressGuard) dialContext(ctx context.Context, network, address stri
 		return guard.unguardedDial(ctx, network, address)
 	}
 	return guard.guardedDial(ctx, network, address)
+}
+
+// NewEgressGuardedTransport returns the transport for the notification (webhook/slack) clients:
+// the egress guard of WithEgressGuard plus, when HARBOR_WEBHOOK_PIN_PROXIED_TARGETS is true, pinning
+// of proxied requests to the address Harbor validated. The proxy then receives that IP instead
+// of the hostname, so it cannot resolve the name again to a blocked address (DNS rebinding
+// between Harbor's lookup and the proxy's). HTTPS tunnels to the IP and still sends the original
+// Host and verifies the certificate against the hostname; plain HTTP carries the IP as Host too.
+// Requests through an HTTPS proxy are not pinned: the transport's TLS settings apply to the proxy
+// hop too, which leaves no way to verify the tunnelled certificate against the hostname.
+func NewEgressGuardedTransport(opts ...func(*http.Transport)) http.RoundTripper {
+	return newEgressGuardedTransport(net.DefaultResolver, opts...)
+}
+
+func newEgressGuardedTransport(resolver NetworkResolver, opts ...func(*http.Transport)) http.RoundTripper {
+	transport := newDefaultTransport()
+	for _, opt := range opts {
+		opt(transport)
+	}
+	upstreamProxy := transport.Proxy
+	withEgressGuard(resolver)(transport)
+	return &pinnedProxyTransport{base: transport, upstreamProxy: upstreamProxy, resolver: resolver}
+}
+
+type pinnedProxyTransport struct {
+	base          *http.Transport
+	upstreamProxy func(*http.Request) (*url.URL, error)
+	resolver      NetworkResolver
+}
+
+// pinnedProxyKey carries the proxy chosen for the original URL through the pinned request.
+type pinnedProxyKey struct{}
+
+func (pinned *pinnedProxyTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	policy := currentEgressPolicy()
+	if pinned.upstreamProxy == nil || !policy.pinProxiedTargets || policy.level == egressAllowAll {
+		return pinned.base.RoundTrip(req)
+	}
+	proxyURL, err := pinned.upstreamProxy(req)
+	if err != nil {
+		closeRequestBody(req)
+		return nil, err
+	}
+	hostname := req.URL.Hostname()
+	if _, err := netip.ParseAddr(hostname); proxyURL == nil || err == nil || strings.EqualFold(proxyURL.Scheme, "https") {
+		// direct requests are checked at dial time, a literal IP has nothing to rebind, and an
+		// HTTPS proxy cannot be given a separate ServerName for the tunnel
+		return pinned.base.RoundTrip(req)
+	}
+
+	address, err := validateNetworkTarget(req.Context(), pinned.resolver, policy, hostname)
+	if err != nil {
+		policy.logBlocked(hostname, err)
+		closeRequestBody(req)
+		return nil, err
+	}
+	if !address.IsValid() {
+		// allowlisted hostnames are trusted wherever DNS points
+		return pinned.base.RoundTrip(req)
+	}
+	pinnedReq := req.Clone(context.WithValue(req.Context(), pinnedProxyKey{}, proxyURL))
+	pinnedReq.URL.Host = joinAddrPort(address, req.URL.Port())
+	transport := pinned.base
+	if strings.EqualFold(req.URL.Scheme, "https") {
+		// the tunnel goes to the IP while the request inside it keeps the original Host, and
+		// the certificate check needs the hostname. The clone serves this request only and
+		// closes its connection afterwards, so nothing is retained per target.
+		if pinnedReq.Host == "" {
+			pinnedReq.Host = req.URL.Host
+		}
+		transport = pinned.base.Clone()
+		if transport.TLSClientConfig == nil {
+			transport.TLSClientConfig = &tls.Config{}
+		}
+		transport.TLSClientConfig.ServerName = hostname
+		transport.DisableKeepAlives = true
+	} else {
+		// a plain request to a proxy names the target in its absolute URI, which net/http
+		// builds from Host, so the proxy and the target both see the address
+		pinnedReq.Host = pinnedReq.URL.Host
+	}
+	resp, err := transport.RoundTrip(pinnedReq)
+	if resp != nil {
+		resp.Request = req
+	}
+	return resp, err
+}
+
+// Base returns the guarded transport underneath the pinning, for inspection.
+func (pinned *pinnedProxyTransport) Base() *http.Transport {
+	return pinned.base
+}
+
+func joinAddrPort(address netip.Addr, port string) string {
+	if port != "" {
+		return net.JoinHostPort(address.String(), port)
+	}
+	if address.Is6() {
+		return "[" + address.String() + "]"
+	}
+	return address.String()
+}
+
+// closeRequestBody honours the RoundTripper contract of closing the body on error.
+func closeRequestBody(req *http.Request) {
+	if req.Body != nil {
+		_ = req.Body.Close()
+	}
 }
 
 var defaultPorts = map[string]string{"http": "80", "https": "443", "socks5": "1080", "socks5h": "1080"}
