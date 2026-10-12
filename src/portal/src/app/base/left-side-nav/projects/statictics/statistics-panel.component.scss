@@ -45,3 +45,23 @@
 .stat-value {
   text-align: right;
 }
+
+@media screen and (max-width: 1024px) {
+  .flex-end {
+    justify-content: center !important;
+    width: 100%;
+  }
+
+  .card {
+    margin: 0.5rem !important;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .card {
+    width: 100% !important;
+    max-width: 22rem;
+    margin: 0.5rem auto !important;
+  }
+}
+
