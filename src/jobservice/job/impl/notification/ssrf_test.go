@@ -122,10 +122,13 @@ func TestNotificationClientsKeepProxy(t *testing.T) {
 	}
 }
 
-// TestNotificationClientsGuardPrivateTargets asserts the production notification clients carry
-// the public-network dial guard: a loopback target is refused before any request reaches it.
-func TestNotificationClientsGuardPrivateTargets(t *testing.T) {
-	t.Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "false")
+// TestNotificationClientsGuardRestrictedTargets asserts the production notification clients carry
+// the egress dial guard: with the default policy, which allows private networks, a loopback target
+// is still refused before any request reaches it.
+func TestNotificationClientsGuardRestrictedTargets(t *testing.T) {
+	t.Setenv("HARBOR_WEBHOOK_EGRESS_POLICY", "")
+	t.Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "")
+	t.Setenv("HARBOR_WEBHOOK_EGRESS_ALLOWLIST", "")
 
 	var hits atomic.Int32
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -142,9 +145,9 @@ func TestNotificationClientsGuardPrivateTargets(t *testing.T) {
 		if resp != nil {
 			_ = resp.Body.Close()
 		}
-		assert.ErrorContains(t, err, "private network address", "client %q must refuse a loopback target", name)
+		assert.ErrorContains(t, err, "restricted network address", "client %q must refuse a loopback target", name)
 	}
-	assert.Zero(t, hits.Load(), "no request may reach a private target")
+	assert.Zero(t, hits.Load(), "no request may reach a restricted target")
 }
 
 // TestWebhookJobReusesConnectionOnErrorResponse asserts a non-2xx response body is drained
