@@ -44,6 +44,8 @@ type DAO interface {
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
 	// UpdateUsername replaces username in matched records
 	UpdateUsername(ctx context.Context, username string, usernameReplace string) error
+	// Update updates the audit log ext. Only the properties specified by "props" will be updated if set
+	Update(ctx context.Context, audit *model.AuditLogExt, props ...string) error
 }
 
 // New returns an instance of the default DAO
@@ -136,6 +138,16 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return errors.NotFoundError(nil).WithMessagef("access %d not found", id)
 	}
 	return nil
+}
+
+// Update updates the audit log ext record
+func (d *dao) Update(ctx context.Context, audit *model.AuditLogExt, props ...string) error {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = o.Update(audit, props...)
+	return err
 }
 
 // Purge delete expired audit log ext
