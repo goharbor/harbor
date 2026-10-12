@@ -119,6 +119,8 @@ var insecureTransport = &http.Transport{
 type Token struct {
 	oauth2.Token
 	RawIDToken string `json:"id_token,omitempty"`
+	// UserInfo is the last user info resolved with the token, it is used when the token can no longer be refreshed
+	UserInfo *UserInfo `json:"user_info,omitempty"`
 }
 
 // UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
