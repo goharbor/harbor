@@ -304,6 +304,42 @@ func TestUserInfoFromClaims(t *testing.T) {
 				AdminGroupMember:    false,
 			},
 		},
+		{
+			input: map[string]any{
+				"name":   "ada",
+				"email":  "ada@example.com",
+				"groups": "harbor-admin",
+			},
+			setting: cfgModels.OIDCSetting{
+				Name:        "t5",
+				GroupsClaim: "groups",
+				AdminGroup:  "harbor-admin",
+			},
+			expect: &UserInfo{
+				Username:         "ada",
+				Email:            "ada@example.com",
+				Groups:           []string{"harbor-admin"},
+				AdminGroupMember: true,
+				hasGroupClaim:    true,
+			},
+		},
+		{
+			input: map[string]any{
+				"name":   "ada",
+				"groups": []any{" Harbor-Admin "},
+			},
+			setting: cfgModels.OIDCSetting{
+				Name:        "t6",
+				GroupsClaim: "groups",
+				AdminGroup:  " harbor-admin ",
+			},
+			expect: &UserInfo{
+				Username:         "ada",
+				Groups:           []string{" Harbor-Admin "},
+				AdminGroupMember: true,
+				hasGroupClaim:    true,
+			},
+		},
 	}
 	for _, tc := range s {
 		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.setting)

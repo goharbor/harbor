@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -373,10 +372,23 @@ func UserInfoFromIDToken(ctx context.Context, token *Token, setting cfgModels.OI
 	return userInfoFromClaims(idt, setting)
 }
 
+type baseUserClaims struct {
+	Issuer   string `json:"iss"`
+	Subject  string `json:"sub"`
+	Username string `json:"name"`
+	Email    string `json:"email"`
+}
+
 func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserInfo, error) {
-	res := &UserInfo{}
-	if err := c.Claims(res); err != nil {
+	base := &baseUserClaims{}
+	if err := c.Claims(base); err != nil {
 		return nil, err
+	}
+	res := &UserInfo{
+		Issuer:   base.Issuer,
+		Subject:  base.Subject,
+		Username: base.Username,
+		Email:    base.Email,
 	}
 	if setting.UserClaim != "" {
 		allClaims := make(map[string]any)
@@ -394,12 +406,21 @@ func userInfoFromClaims(c claimsProvider, setting cfgModels.OIDCSetting) (*UserI
 		}
 	}
 	res.Groups, res.hasGroupClaim = groupsFromClaims(c, setting.GroupsClaim)
-	if len(setting.AdminGroup) > 0 {
-		if slices.Contains(res.Groups, setting.AdminGroup) {
-			res.AdminGroupMember = true
+	res.AdminGroupMember = inAdminGroup(res.Groups, setting.AdminGroup)
+	return res, nil
+}
+
+func inAdminGroup(groups []string, adminGroup string) bool {
+	adminGroup = strings.TrimSpace(adminGroup)
+	if adminGroup == "" {
+		return false
+	}
+	for _, group := range groups {
+		if strings.EqualFold(strings.TrimSpace(group), adminGroup) {
+			return true
 		}
 	}
-	return res, nil
+	return false
 }
 
 // groupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
