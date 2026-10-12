@@ -534,9 +534,29 @@ misspell:
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.14.0
+GOLANGCI_LINT_VERSION := v2.14.0
 GOPATH_BIN := $(firstword $(subst :, ,$(shell go env GOPATH)))/bin
 GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
-lint:
+
+check_golangci_lint:
+	@if ! command -v $(GOLANGCI_LINT) >/dev/null 2>&1 && [ ! -x "$(GOLANGCI_LINT)" ]; then \
+		echo "Error: $(GOLANGCI_LINT) is not installed or not executable." >&2; \
+		echo "Please install it with:" >&2; \
+		echo "  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | sh -s -- -b $(GOPATH_BIN) $(GOLANGCI_LINT_VERSION)" >&2; \
+		exit 1; \
+	fi
+	@current_version=$$($(GOLANGCI_LINT) --version 2>/dev/null); \
+	expected_version="$(patsubst v%,%,$(GOLANGCI_LINT_VERSION))"; \
+	if ! echo "$$current_version" | grep -qE "( |v)$${expected_version}( |$$)"; then \
+		echo "Error: $(GOLANGCI_LINT) version mismatch." >&2; \
+		echo "Expected: $(GOLANGCI_LINT_VERSION)" >&2; \
+		echo "Current:  $$current_version" >&2; \
+		echo "Please update or reinstall it with:" >&2; \
+		echo "  curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/main/install.sh | sh -s -- -b $(GOPATH_BIN) $(GOLANGCI_LINT_VERSION)" >&2; \
+		exit 1; \
+	fi
+
+lint: check_golangci_lint
 	@echo checking lint
 	@echo $(GOLANGCI_LINT)
 	@cd ./src/; $(GOLANGCI_LINT) cache clean; $(GOLANGCI_LINT) -v run ./... --timeout=10m;
