@@ -29,6 +29,9 @@ type Query struct {
 	PageNumber int64
 	// Page size
 	PageSize int64
+	// ExtraLimit is used to fetch additional records beyond PageSize (e.g. +1 to detect next page)
+	// without altering the offset calculation.
+	ExtraLimit int64
 	// Deprecate, use "Sorts" instead
 	Sorting string
 }
@@ -58,6 +61,7 @@ func MustClone(query *Query) *Query {
 	if query != nil {
 		q.PageNumber = query.PageNumber
 		q.PageSize = query.PageSize
+		q.ExtraLimit = query.ExtraLimit
 		maps.Copy(q.Keywords, query.Keywords)
 
 		for _, sort := range query.Sorts {
