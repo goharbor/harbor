@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/lib/config"
 )
 
 func TestMain(m *testing.M) {
@@ -32,6 +34,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestSecurity(t *testing.T) {
+	// Seed a loadable auth mode so config.AuthMode succeeds; the middleware now
+	// rejects the request when the lookup fails.
+	origMgr := config.DefaultCfgManager
+	t.Cleanup(func() { config.DefaultCfgManager = origMgr })
+	config.InitWithSettings(map[string]any{common.AUTHMode: common.DBAuth})
 	var ctx security.Context
 	var exist bool
 	generators = []generator{&unauthorized{}}

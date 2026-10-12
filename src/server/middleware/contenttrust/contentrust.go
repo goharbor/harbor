@@ -83,6 +83,17 @@ func signatureChecking(ctx context.Context, r *http.Request, af lib.ArtifactInfo
 		return nil
 	}
 
+	// Content-trust bootstrap: allow a push-capable signing client to pull the
+	// (still unsigned) subject manifest so it can create the first cosign/notation signature.
+	// This User-Agent-based exemption is enabled by default to prevent breaking existing signing
+	// workflows on upgrade. Operators can set CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED=false
+	// to strictly enforce content-trust on all manifest pulls; a malformed value fails closed.
+	// It never affects the vulnerability-prevention policy.
+	if util.LegacySignerPullEnabled() && util.LegacySignerBootstrapPull(r, projectID) {
+		logger.Debugf("legacy signer bootstrap pull of artifact %s@%s, content-trust check skipped", af.Repository, af.Digest)
+		return nil
+	}
+
 	if len(art.Accessories) == 0 {
 		return errors.New(nil).WithCode(errors.PROJECTPOLICYVIOLATION)
 	}

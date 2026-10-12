@@ -339,6 +339,13 @@ func (u *usersAPI) SetUserSysAdmin(ctx context.Context, params operation.SetUser
 	if err := u.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourceUser); err != nil {
 		return u.SendError(ctx, err)
 	}
+	secCtx, err := u.GetSecurityContext(ctx)
+	if err != nil {
+		return u.SendError(ctx, err)
+	}
+	if !secCtx.IsSysAdmin() {
+		return u.SendError(ctx, errors.ForbiddenError(nil))
+	}
 	if err := u.ctl.SetSysAdmin(ctx, id, params.SysadminFlag.SysadminFlag); err != nil {
 		return u.SendError(ctx, err)
 	}

@@ -105,6 +105,28 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	}
 }
 
+func (uts *UserTestSuite) TestSetUserSysAdminRequiresSysAdmin() {
+	body := map[string]bool{"sysadmin_flag": true}
+
+	uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	uts.Security.On("IsSysAdmin").Return(false).Once()
+	uts.uCtl.On("SetSysAdmin", mock.Anything, 2, true).Return(nil)
+
+	res, err := uts.Suite.PutJSON("/users/2/sysadmin", body)
+	uts.NoError(err)
+	uts.Equal(403, res.StatusCode)
+	uts.uCtl.AssertNotCalled(uts.T(), "SetSysAdmin", mock.Anything, 2, true)
+
+	uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	uts.Security.On("IsSysAdmin").Return(true).Once()
+	uts.uCtl.On("SetSysAdmin", mock.Anything, 3, true).Return(nil).Once()
+
+	res, err = uts.Suite.PutJSON("/users/3/sysadmin", body)
+	uts.NoError(err)
+	uts.Equal(200, res.StatusCode)
+	uts.uCtl.AssertCalled(uts.T(), "SetSysAdmin", mock.Anything, 3, true)
+}
+
 func (uts *UserTestSuite) TestGetRandomSecret() {
 	for i := 1; i < 5; i++ {
 		rSec, err := getRandomSecret()
