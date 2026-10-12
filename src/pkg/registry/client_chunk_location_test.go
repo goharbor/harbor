@@ -291,3 +291,39 @@ func TestBuildBlobUploadURL(t *testing.T) {
 		}
 	}
 }
+
+// TestUploadLocationErrorsRedactSecrets keeps credentials and signed upload tokens carried in a
+// rejected Location out of the returned error, which replication logs verbatim. Go's URL parse
+// error quotes the whole input, so malformed Locations are covered too.
+func TestUploadLocationErrorsRedactSecrets(t *testing.T) {
+	const endpoint = "http://good-registry.example:5000"
+	origin, _ := url.Parse(endpoint + "/v2/repo/blobs/uploads/")
+	for _, location := range []string{
+		"http://evil.attacker.com/steal?token=s3cr3t-token",
+		"http://user:s3cr3t-pass@evil.attacker.com/steal",
+		"http://good-registry.example:5000@evil.attacker.com/steal?token=s3cr3t-token",
+		"http://evil.attacker.com/%zz?token=s3cr3t-token",
+		"/v2/repo/%zz?token=s3cr3t-token",
+	} {
+		_, err := resolveUploadLocation(endpoint, origin, location)
+		if err == nil {
+			t.Fatalf("resolve: expected rejection for %q", location)
+		}
+		if msg := err.Error(); strings.Contains(msg, "s3cr3t") {
+			t.Fatalf("resolve: error leaks secret from Location %q: %s", location, msg)
+		}
+	}
+	for _, location := range []string{
+		"/v2/relative?token=s3cr3t-token",
+		"https://user:s3cr3t-pass@evil.attacker.com/steal",
+		"https://evil.attacker.com/%zz?token=s3cr3t-token",
+	} {
+		_, err := parseUploadLocation(location)
+		if err == nil {
+			t.Fatalf("parse: expected rejection for %q", location)
+		}
+		if msg := err.Error(); strings.Contains(msg, "s3cr3t") {
+			t.Fatalf("parse: error leaks secret from Location %q: %s", location, msg)
+		}
+	}
+}
