@@ -18,10 +18,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/lib"
@@ -223,19 +225,71 @@ func (c *Client) GetAndIteratePagination(endpoint string, v any) error {
 		links := lib.ParseLinks(resp.Header.Get("Link"))
 		for _, link := range links {
 			if link.Rel == "next" {
-				endpoint = url.Scheme + "://" + url.Host + link.URL
-				url, err = url.Parse(endpoint)
+				next, err := resolveNextLink(url, link.URL)
 				if err != nil {
 					return err
 				}
 				// encode the query parameters to avoid bad request
 				// e.g. ?q=name={p1 p2 p3} need to be encoded to ?q=name%3D%7Bp1+p2+p3%7D
-				url.RawQuery = url.Query().Encode()
-				endpoint = url.String()
+				next.RawQuery = next.Query().Encode()
+				url = next
+				endpoint = next.String()
 				break
 			}
 		}
 	}
 	rv.Elem().Set(resources)
 	return nil
+}
+
+// resolveNextLink resolves an RFC 5988 Link rel="next" target against the base URL of
+// the current page and enforces that pagination never leaves the base URL's origin.
+//
+// The Link value is attacker-controlled (it comes verbatim from an upstream registry's
+// response header during replication). The previous implementation built the next URL by
+// string-concatenating scheme+host+link and re-parsing it, so a value such as
+// "@evil.example/x" produced "scheme://host@evil.example/x", which net/url re-parses with
+// evil.example as the network host and host as userinfo. Because the client re-runs its
+// auth modifiers on every request, the configured registry credentials were then sent to
+// that attacker-chosen host (SSRF plus credential disclosure).
+//
+// Resolving the link as a proper URL reference and requiring the same origin keeps
+// legitimate relative pagination working while failing closed on any cross-origin target.
+func resolveNextLink(base *url.URL, link string) (*url.URL, error) {
+	ref, err := url.Parse(link)
+	if err != nil {
+		return nil, err
+	}
+	// userinfo has no legitimate use in a pagination link and is the vector that turns a
+	// same-origin-looking value into a cross-origin host.
+	if ref.User != nil {
+		return nil, fmt.Errorf("pagination Link must not contain userinfo: %q", link)
+	}
+	next := base.ResolveReference(ref)
+	if !SameOrigin(base, next) {
+		return nil, fmt.Errorf("pagination Link %q resolves to a different origin than %q", link, base.Redacted())
+	}
+	return next, nil
+}
+
+// SameOrigin reports whether a and b share scheme, host and effective port.
+func SameOrigin(a, b *url.URL) bool {
+	return strings.EqualFold(a.Scheme, b.Scheme) &&
+		strings.EqualFold(a.Hostname(), b.Hostname()) &&
+		effectivePort(a) == effectivePort(b)
+}
+
+// effectivePort returns the URL's port, substituting the scheme's default when none is set,
+// so that an alternate-port target is treated as a different origin.
+func effectivePort(u *url.URL) string {
+	if p := u.Port(); p != "" {
+		return p
+	}
+	switch strings.ToLower(u.Scheme) {
+	case "https":
+		return "443"
+	case "http":
+		return "80"
+	}
+	return ""
 }

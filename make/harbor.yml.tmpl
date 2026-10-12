@@ -258,6 +258,19 @@ proxy:
     - registry
     - trivy
 
+# Destinations webhook and Slack notifications may reach (CWE-918).
+# webhook_egress:
+#   # allow_all: no checks
+#   # block_restricted (default): private networks allowed; loopback, link-local and cloud
+#   #   metadata blocked
+#   # public_only: public addresses only
+#   policy: block_restricted
+#   # Always allowed, whatever the policy: IPs, CIDRs, hostnames and "*.domain" suffixes.
+#   # Allowlisted hostnames are trusted wherever DNS points them.
+#   allowlist:
+#     - 10.20.0.0/16
+#     - "*.svc.cluster.local"
+
 # metric:
 #   enabled: false
 #   port: 9090
