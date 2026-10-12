@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
@@ -56,6 +57,12 @@ func (suite *HookClientTestSuite) SetupSuite() {
 
 		if change.JobID == "job_ID_failed" {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if change.JobID == "job_ID_not_found" {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = fmt.Fprintln(w, `{"errors":[{"code":"NOT_FOUND","message":"task with job ID job_ID_not_found not found"}]}`)
 			return
 		}
 
@@ -104,4 +111,24 @@ func (suite *HookClientTestSuite) TestReportStatusFailed() {
 
 	err := suite.client.SendEvent(evt)
 	assert.NotNil(suite.T(), err, "send event: expected non nil error but got nil")
+}
+
+// TestSendEventNotFound asserts that a 404 NOT_FOUND response (e.g. the task
+// was removed by the execution/task sweep while its hook was pending) surfaces
+// as a typed object-not-found error so callers can give up retrying.
+func (suite *HookClientTestSuite) TestSendEventNotFound() {
+	changeData := &job.StatusChange{
+		JobID:  "job_ID_not_found",
+		Status: "running",
+	}
+	evt := &Event{
+		URL:       suite.mockServer.URL,
+		Data:      changeData,
+		Message:   fmt.Sprintf("Status of job %s changed to: %s", changeData.JobID, changeData.Status),
+		Timestamp: time.Now().Unix(),
+	}
+
+	err := suite.client.SendEvent(evt)
+	assert.NotNil(suite.T(), err, "send event: expected non nil error but got nil")
+	assert.True(suite.T(), errs.IsObjectNotFoundError(err), "expected object not found error but got %s", err)
 }

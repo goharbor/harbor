@@ -185,8 +185,27 @@ func (r *reaper) syncOutdatedStats() error {
 				// Exit as it is still a valid ongoing job
 			}
 		} else if diff > 0 {
-			// The hook event of current job status is not ACKed
-			// Resend hook event by set the status again
+			// The hook event of current job status is not ACKed.
+			// Resend hook event by set the status again.
+			//
+			// If the status change happened more than MaxUpdateDuration
+			// ago and the hook is still not ACKed, the hook can never be
+			// delivered (e.g. the task row was removed by the
+			// execution/task sweep while a status-change hook was pending).
+			// Give up re-firing it so the hourly loop does not retry the
+			// same dead hook forever (see #23785).
+			if time.Unix(t.Job().Info.UpdateTime, 0).Add(config.MaxUpdateDuration()).Before(time.Now()) {
+				logger.Infof(
+					"Reaper: give up re-firing hook for job %s as status change is not ACKed within %s",
+					t.Job().Info.JobID,
+					config.MaxUpdateDuration(),
+				)
+				if err = r.unTrackInProgress(t.Job().Info.JobID); err != nil {
+					return
+				}
+				return nil
+			}
+
 			if err = t.FireHook(); err != nil {
 				return
 			}
