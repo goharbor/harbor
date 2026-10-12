@@ -152,6 +152,31 @@ func TestCheckNoEscalation_CallerLacksPermission(t *testing.T) {
 	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err), "expected ForbiddenError, got: %v", err)
 }
 
+// A deny entry reduces access rather than granting it, so the caller need not
+// hold it — requiring it would wrongly block assigning a role that merely denies
+// something. checkNoEscalation must skip deny accesses without ever calling Can().
+func TestCheckNoEscalation_DenyEffectSkipped(t *testing.T) {
+	sc := &securityMock.Context{}
+	sc.On("IsSysAdmin").Return(false)
+	// Can() must never be consulted: the sole access is a deny entry.
+
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(80), testifymock.Anything).
+		Return(&roleCtl.Role{
+			Permissions: []*roleCtl.Permission{{
+				Access: []*types.Policy{{
+					Resource: rbac.ResourceRepository,
+					Action:   rbac.ActionPush,
+					Effect:   types.EffectDeny,
+				}},
+			}},
+		}, nil)
+
+	err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, 80)
+	assert.NoError(t, err)
+	sc.AssertNotCalled(t, "Can")
+}
+
 // A built-in role's permissions live in the compile-time policy map, not the DB.
 // Assigning a built-in role (e.g. projectAdmin) must still be blocked when the
 // caller lacks its permissions — the previous DB-only lookup reported built-in
