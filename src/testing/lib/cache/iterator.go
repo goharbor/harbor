@@ -49,6 +49,18 @@ func (_m *Iterator) Val() string {
 	return r0
 }
 
+// Err provides a mock function with no fields
+func (_m *Iterator) Err() error {
+	ret := _m.Called()
+	if len(ret) == 0 {
+		return nil
+	}
+	if rf, ok := ret.Get(0).(func() error); ok {
+		return rf()
+	}
+	return ret.Error(0)
+}
+
 // NewIterator creates a new instance of Iterator. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewIterator(t interface {
