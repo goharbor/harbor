@@ -62,3 +62,20 @@ BEGIN
             FOREIGN KEY (role) REFERENCES role (role_id) ON DELETE RESTRICT;
     END IF;
 END $$;
+
+/*
+Scheduled retention runs as the policy's execution_principal. Policies scheduled
+before that field existed have none and would stop running, so give them the
+project owner. The callback still re-checks that the owner can delete artifacts
+in the project each time the schedule fires.
+*/
+UPDATE retention_policy rp
+SET data = jsonb_set(rp.data::jsonb, '{execution_principal}',
+                     jsonb_build_object('type', 'local', 'id', u.user_id, 'sysadmin', u.sysadmin_flag))::text
+FROM project p
+         JOIN harbor_user u ON u.user_id = p.owner_id
+WHERE rp.scope_level = 'project'
+  AND p.project_id = rp.scope_reference
+  AND rp.data::jsonb #>> '{trigger,kind}' = 'Schedule'
+  AND COALESCE(rp.data::jsonb #>> '{trigger,settings,cron}', '') <> ''
+  AND COALESCE(rp.data::jsonb -> 'execution_principal', 'null'::jsonb) = 'null'::jsonb;
