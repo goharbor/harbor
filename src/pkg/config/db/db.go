@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/config/db/dao"
 )
@@ -34,15 +35,19 @@ type Database struct {
 
 // Load - load config from database, only user setting will be load from database.
 func (d *Database) Load(ctx context.Context) (map[string]any, error) {
-	resultMap := map[string]any{}
 	configEntries, err := d.cfgDAO.GetConfigEntries(ctx)
 	if err != nil {
-		return resultMap, err
+		return map[string]any{}, err
 	}
+	return userSettingsFrom(configEntries), nil
+}
+
+func userSettingsFrom(configEntries []*models.ConfigEntry) map[string]any {
+	resultMap := map[string]any{}
 	for _, item := range configEntries {
 		itemMetadata, ok := metadata.Instance().GetByName(item.Key)
 		if !ok {
-			log.Debugf("failed to get metadata, key:%v, error:%v, skip to load item", item.Key, err)
+			log.Debugf("failed to get metadata, key:%v, skip to load item", item.Key)
 			continue
 		}
 		if itemMetadata.Scope == metadata.SystemScope {
@@ -58,7 +63,7 @@ func (d *Database) Load(ctx context.Context) (map[string]any, error) {
 		}
 		resultMap[itemMetadata.Name] = item.Value
 	}
-	return resultMap, nil
+	return resultMap
 }
 
 // Save - Only save user config items in the cfgs map
@@ -84,7 +89,13 @@ func (d *Database) Save(ctx context.Context, cfgs map[string]any) error {
 			log.Errorf("failed to get metadata, skip to save key:%v", key)
 		}
 	}
-	return d.cfgDAO.SaveConfigEntries(ctx, configEntries)
+	// a failed announcement must not leave the settings saved and other instances stale
+	return orm.WithTransaction(func(ctx context.Context) error {
+		if err := d.cfgDAO.SaveConfigEntries(ctx, configEntries); err != nil {
+			return err
+		}
+		return d.cfgDAO.PublishConfigurationChanged(ctx)
+	})(ctx)
 }
 
 // Get - Get config item from db

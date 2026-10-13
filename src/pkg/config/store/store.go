@@ -20,19 +20,36 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"strconv"
 	"sync"
+	"sync/atomic"
+
+	beegoorm "github.com/beego/beego/v2/client/orm"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
+type valueMap = map[string]metadata.ConfigureValue
+
 // ConfigStore - the config data store
+//
+// The value map is replaced as a whole so readers never mix old and new settings.
 type ConfigStore struct {
 	cfgDriver Driver
-	cfgValues sync.Map
+	mu        sync.Mutex // serializes writers
+	cfgValues atomic.Pointer[valueMap]
+	// only grows, so a slow Load cannot replace newer values
+	mergedRevision atomic.Uint64
+	// a Save forces the next Load to merge again, undoing a failed or rolled-back save
+	localWrites  atomic.Uint64
+	mergedWrites atomic.Uint64
+	// a Load that read the driver while an Update was published may hold older values
+	publishedUpdates atomic.Uint64
 }
 
 // NewConfigStore create config store
@@ -40,13 +57,27 @@ func NewConfigStore(cfgDriver Driver) *ConfigStore {
 	return &ConfigStore{cfgDriver: cfgDriver}
 }
 
+func (c *ConfigStore) values() valueMap {
+	if m := c.cfgValues.Load(); m != nil {
+		return *m
+	}
+	return nil
+}
+
+// Callers must hold c.mu.
+func (c *ConfigStore) update(fn func(next valueMap)) {
+	next := maps.Clone(c.values())
+	if next == nil {
+		next = valueMap{}
+	}
+	fn(next)
+	c.cfgValues.Store(&next)
+}
+
 // Get - Get config data from current store
 func (c *ConfigStore) Get(key string) (*metadata.ConfigureValue, error) {
-	if value, ok := c.cfgValues.Load(key); ok {
-		if result, ok := value.(metadata.ConfigureValue); ok {
-			return &result, nil
-		}
-		return nil, errors.New("data in config store is not a ConfigureValue type")
+	if value, ok := c.values()[key]; ok {
+		return &value, nil
 	}
 	return nil, metadata.ErrValueNotSet
 }
@@ -65,18 +96,17 @@ func (c *ConfigStore) GetFromDriver(ctx context.Context, key string) (map[string
 
 // GetAnyType get any type for config items
 func (c *ConfigStore) GetAnyType(key string) (any, error) {
-	if value, ok := c.cfgValues.Load(key); ok {
-		if result, ok := value.(metadata.ConfigureValue); ok {
-			return result.GetAnyType()
-		}
-		return nil, errors.New("data in config store is not a ConfigureValue type")
+	if value, ok := c.values()[key]; ok {
+		return value.GetAnyType()
 	}
 	return nil, metadata.ErrValueNotSet
 }
 
 // Set - Set configure value in store, not saved to config driver
 func (c *ConfigStore) Set(key string, value metadata.ConfigureValue) error {
-	c.cfgValues.Store(key, value)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.update(func(next valueMap) { next[key] = value })
 	return nil
 }
 
@@ -85,10 +115,20 @@ func (c *ConfigStore) Load(ctx context.Context) error {
 	if c.cfgDriver == nil {
 		return errors.New("failed to load store, cfgDriver is nil")
 	}
+	var revision uint64
+	if r, ok := c.cfgDriver.(Revisioned); ok {
+		revision = r.Revision()
+	}
+	writes := c.localWrites.Load()
+	if revision != 0 && revision == c.mergedRevision.Load() && writes == c.mergedWrites.Load() {
+		return nil
+	}
+	updates := c.publishedUpdates.Load()
 	cfgs, err := c.cfgDriver.Load(ctx)
 	if err != nil {
 		return err
 	}
+	loaded := make(valueMap, len(cfgs))
 	for key, value := range cfgs {
 		strValue, err := ToString(value)
 		if err != nil {
@@ -101,37 +141,50 @@ func (c *ConfigStore) Load(ctx context.Context) error {
 			log.Errorf("error when loading data item, key %v, value %v, error %v", key, value, err)
 			continue
 		}
-		c.cfgValues.Store(key, cfgValue)
+		loaded[key] = cfgValue
 	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if revision != 0 && revision < c.mergedRevision.Load() {
+		// a concurrent Load already published newer values
+		return nil
+	}
+	if updates != c.publishedUpdates.Load() {
+		// the next Load merges again
+		return nil
+	}
+	c.update(func(next valueMap) { maps.Copy(next, loaded) })
+	c.mergedRevision.Store(revision)
+	c.mergedWrites.Store(writes)
 	return nil
 }
 
 // Save - Save all data in current store
 func (c *ConfigStore) Save(ctx context.Context) error {
 	cfgMap := map[string]any{}
-	c.cfgValues.Range(func(key, value any) bool {
-		keyStr := fmt.Sprintf("%v", key)
-		if configValue, ok := value.(metadata.ConfigureValue); ok {
-			valueStr := configValue.Value
-			if _, ok := metadata.Instance().GetByName(keyStr); ok {
-				cfgMap[keyStr] = valueStr
-			} else {
-				log.Errorf("failed to get metadata for key %v", keyStr)
-			}
+	for keyStr, configValue := range c.values() {
+		if _, ok := metadata.Instance().GetByName(keyStr); ok {
+			cfgMap[keyStr] = configValue.Value
+		} else {
+			log.Errorf("failed to get metadata for key %v", keyStr)
 		}
-		return true
-	})
+	}
 
 	if c.cfgDriver == nil {
 		return errors.New("failed to save store, cfgDriver is nil")
 	}
 
-	return c.cfgDriver.Save(ctx, cfgMap)
+	err := c.cfgDriver.Save(ctx, cfgMap)
+	c.localWrites.Add(1)
+	return err
 }
 
 // Update - Only update specified settings in cfgMap in store and driver
+//
+// Inside a transaction the values arrive through the commit announcement so readers
+// never see rolled-back settings.
 func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]any) error {
-	// Update to store
+	updated := valueMap{}
 	for key, value := range cfgMap {
 		configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
 		if err != nil {
@@ -139,13 +192,28 @@ func (c *ConfigStore) Update(ctx context.Context, cfgMap map[string]any) error {
 			delete(cfgMap, key)
 			continue
 		}
-		if err := c.Set(key, *configValue); err != nil {
-			log.Warningf("failed to update configure item, key=%s, error: %v", key, err)
-			continue
-		}
+		updated[key] = *configValue
 	}
-	// Update to driver
-	return c.cfgDriver.Save(ctx, cfgMap)
+	if err := c.cfgDriver.Save(ctx, cfgMap); err != nil {
+		return err
+	}
+	if inTransaction(ctx) {
+		return nil
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.update(func(next valueMap) { maps.Copy(next, updated) })
+	c.publishedUpdates.Add(1)
+	return nil
+}
+
+func inTransaction(ctx context.Context) bool {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return false
+	}
+	_, ok := o.(beegoorm.TxOrmer)
+	return ok
 }
 
 // ToString ...
