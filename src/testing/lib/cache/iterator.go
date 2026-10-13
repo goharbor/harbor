@@ -52,13 +52,19 @@ func (_m *Iterator) Val() string {
 // Err provides a mock function with no fields
 func (_m *Iterator) Err() error {
 	ret := _m.Called()
+
 	if len(ret) == 0 {
-		return nil
+		panic("no return value specified for Err")
 	}
+
+	var r0 error
 	if rf, ok := ret.Get(0).(func() error); ok {
-		return rf()
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
 	}
-	return ret.Error(0)
+
+	return r0
 }
 
 // NewIterator creates a new instance of Iterator. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
