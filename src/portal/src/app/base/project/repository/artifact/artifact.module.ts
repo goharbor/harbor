@@ -29,6 +29,7 @@ import { ArtifactVulnerabilitiesComponent } from './artifact-additions/artifact-
 import { ArtifactFilesComponent } from './artifact-additions/files/files.component';
 import { ArtifactLicenseComponent } from './artifact-additions/license/license.component';
 import { ArtifactSbomComponent } from './artifact-additions/artifact-sbom/artifact-sbom.component';
+import { DockerfileOptimizationComponent } from './artifact-additions/dockerfile-optimization/dockerfile-optimization.component';
 import { ArtifactDefaultService, ArtifactService } from './artifact.service';
 import { ArtifactDetailRoutingResolverService } from '../../../../services/routing-resolvers/artifact-detail-routing-resolver.service';
 import { ResultBarChartComponent } from './vulnerability-scanning/result-bar-chart.component';
@@ -102,6 +103,7 @@ const routes: Routes = [
         BuildHistoryComponent,
         ArtifactSbomComponent,
         ArtifactVulnerabilitiesComponent,
+        DockerfileOptimizationComponent,
         ResultBarChartComponent,
         ResultSbomComponent,
         SbomTipHistogramComponent,

@@ -56,6 +56,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/metric"
 	redislib "github.com/goharbor/harbor/src/lib/redis"
+	"github.com/goharbor/harbor/src/pkg/optimizer"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat"
 	"github.com/goharbor/harbor/src/pkg/queuestatus"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -333,6 +334,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SystemArtifactCleanupVendorType:  (*systemartifact.Cleanup)(nil),
 			job.ExecSweepVendorType:              (*task.SweepJob)(nil),
 			job.AuditLogsGDPRCompliantVendorType: (*gdpr.AuditLogsDataMasking)(nil),
+			job.OptimizeArtifactVendorType:       (*optimizer.Job)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
