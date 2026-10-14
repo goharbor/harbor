@@ -68,6 +68,10 @@ func ReadRequestBody(r *http.Request, limit int64) ([]byte, error) {
 
 	data, err := io.ReadAll(reader)
 	if err != nil {
+		var maxBytesError *http.MaxBytesError
+		if errors.As(err, &maxBytesError) {
+			return nil, errors.RequestEntityTooLargeError(err)
+		}
 		return nil, err
 	}
 	if limit > 0 && int64(len(data)) > limit {
