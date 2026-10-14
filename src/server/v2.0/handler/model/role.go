@@ -15,6 +15,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/controller/role"
@@ -49,10 +51,20 @@ func (r *Role) ToSwagger() *models.Role {
 		Description: r.Description,
 		Modified:    r.Modified,
 		CreatedBy:   r.CreatedBy,
-		CreatedAt:   strfmt.DateTime(r.CreatedAt),
+		CreatedAt:   timestamp(r.CreatedAt),
 		ModifiedBy:  r.ModifiedBy,
-		ModifiedAt:  strfmt.DateTime(r.ModifiedAt),
+		ModifiedAt:  timestamp(r.ModifiedAt),
 	}
+}
+
+// timestamp returns nil for a time nobody set, so that a role without one is
+// sent without the field rather than as the year 1.
+func timestamp(t time.Time) *strfmt.DateTime {
+	if t.IsZero() {
+		return nil
+	}
+	d := strfmt.DateTime(t)
+	return &d
 }
 
 // NewRole ...
