@@ -57,8 +57,25 @@ func (h *HookHandler) init() {
 	})
 }
 
-// Handle the job status changing webhook
+// Handle processes legacy callbacks by job ID; their route IDs are not task IDs.
 func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
+	return h.handle(ctx, 0, sc)
+}
+
+// HandleForTask handles a callback bound to its task record.
+// Resolve the route-selected task first, then verify the callback belongs to it
+// before either updating status or dispatching a check-in processor.
+func (h *HookHandler) HandleForTask(ctx context.Context, taskID int64, sc *job.StatusChange) error {
+	if taskID <= 0 {
+		return errors.BadRequestError(nil).WithMessage("invalid task ID")
+	}
+	return h.handle(ctx, taskID, sc)
+}
+
+func (h *HookHandler) handle(ctx context.Context, taskID int64, sc *job.StatusChange) error {
+	if sc == nil || sc.Metadata == nil || sc.JobID == "" {
+		return errors.BadRequestError(nil).WithMessage("job ID and metadata are required")
+	}
 	logger := log.GetLogger(ctx)
 
 	h.init()
@@ -68,19 +85,31 @@ func (h *HookHandler) Handle(ctx context.Context, sc *job.StatusChange) error {
 	if len(sc.Metadata.UpstreamJobID) > 0 {
 		jobID = sc.Metadata.UpstreamJobID
 	}
-	tasks, err := h.taskDAO.List(ctx, &q.Query{
-		Keywords: map[string]any{
-			"JobID": jobID,
-		},
-	})
-	if err != nil {
-		return err
+	var task *dao.Task
+	if taskID > 0 {
+		// JobID and UpstreamJobID describe the job, but must not select a different
+		// task from the one addressed by the callback URL.
+		var err error
+		task, err = h.taskDAO.Get(ctx, taskID)
+		if err != nil {
+			return err
+		}
+		if task == nil {
+			return errors.NotFoundError(nil).WithMessagef("task %d not found", taskID)
+		}
+		if task.JobID != jobID {
+			return errors.BadRequestError(nil).WithMessage("job ID does not match the task")
+		}
+	} else {
+		tasks, err := h.taskDAO.List(ctx, &q.Query{Keywords: map[string]any{"JobID": jobID}})
+		if err != nil {
+			return err
+		}
+		if len(tasks) == 0 {
+			return errors.NotFoundError(nil).WithMessagef("task with job ID %s not found", jobID)
+		}
+		task = tasks[0]
 	}
-	if len(tasks) == 0 {
-		return errors.New(nil).WithCode(errors.NotFoundCode).
-			WithMessagef("task with job ID %s not found", sc.JobID)
-	}
-	task := tasks[0]
 	execution, err := h.executionDAO.Get(ctx, task.ExecutionID)
 	if err != nil {
 		return err
