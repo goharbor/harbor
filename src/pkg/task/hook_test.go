@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 )
 
@@ -57,6 +58,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 		VendorType: "test",
 	}, nil)
 	sc := &job.StatusChange{
+		JobID:    "test-job",
 		CheckIn:  "data",
 		Metadata: &job.StatsInfo{},
 	}
@@ -85,6 +87,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 	{
 		h.execDAO.On("AsyncRefreshStatus", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 		sc = &job.StatusChange{
+			JobID:  "test-job",
 			Status: job.SuccessStatus.String(),
 			Metadata: &job.StatsInfo{
 				Revision: time.Now().Unix(),
@@ -95,6 +98,67 @@ func (h *hookHandlerTestSuite) TestHandle() {
 		h.taskDAO.AssertExpectations(h.T())
 		h.execDAO.AssertExpectations(h.T())
 	}
+}
+
+func (h *hookHandlerTestSuite) TestHandleForTask() {
+	for _, periodic := range []bool{false, true} {
+		h.SetupTest()
+		sc := &job.StatusChange{JobID: "parent-job", Status: job.SuccessStatus.String(), Metadata: &job.StatsInfo{Revision: 1}}
+		if periodic {
+			sc.JobID = "parent-job@1605104520"
+			sc.Metadata.UpstreamJobID = "parent-job"
+			sc.CheckIn = "checkin"
+		}
+		h.taskDAO.On("Get", mock.Anything, int64(1)).Return(&dao.Task{ID: 1, JobID: "parent-job", ExecutionID: 2}, nil).Once()
+		h.execDAO.On("Get", mock.Anything, int64(2)).Return(&dao.Execution{ID: 2, VendorType: "test"}, nil).Once()
+		if periodic {
+			called := false
+			checkInProcessorRegistry["test"] = func(_ context.Context, task *Task, change *job.StatusChange) error {
+				called = true
+				h.Equal(int64(1), task.ID)
+				h.Same(sc, change)
+				return nil
+			}
+			h.NoError(h.handler.HandleForTask(context.Background(), 1, sc))
+			delete(checkInProcessorRegistry, "test")
+			h.True(called)
+		} else {
+			h.taskDAO.On("UpdateStatus", mock.Anything, int64(1), job.SuccessStatus.String(), int64(1)).Return(nil).Once()
+			h.execDAO.On("AsyncRefreshStatus", mock.Anything, int64(2), "").Return(nil).Once()
+			h.NoError(h.handler.HandleForTask(context.Background(), 1, sc))
+		}
+		h.taskDAO.AssertNotCalled(h.T(), "List", mock.Anything, mock.Anything)
+		h.taskDAO.AssertExpectations(h.T())
+		h.execDAO.AssertExpectations(h.T())
+	}
+}
+
+func (h *hookHandlerTestSuite) TestHandleForTaskMismatch() {
+	for _, checkIn := range []string{"", "checkin"} {
+		h.SetupTest()
+		h.taskDAO.On("Get", mock.Anything, int64(1)).Return(&dao.Task{ID: 1, JobID: "expected-job", ExecutionID: 2}, nil).Once()
+		sc := &job.StatusChange{JobID: "other-job", CheckIn: checkIn, Metadata: &job.StatsInfo{}}
+		err := h.handler.HandleForTask(context.Background(), 1, sc)
+		h.Require().Error(err)
+		h.True(errors.IsErr(err, errors.BadRequestCode))
+		h.taskDAO.AssertNotCalled(h.T(), "UpdateStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		h.execDAO.AssertNotCalled(h.T(), "Get", mock.Anything, mock.Anything)
+	}
+}
+
+func (h *hookHandlerTestSuite) TestHandleForTaskNotFound() {
+	h.taskDAO.On("Get", mock.Anything, int64(1)).Return(nil, errors.NotFoundError(nil)).Once()
+	err := h.handler.HandleForTask(context.Background(), 1, &job.StatusChange{JobID: "test-job", Metadata: &job.StatsInfo{}})
+	h.True(errors.IsNotFoundErr(err))
+	h.execDAO.AssertNotCalled(h.T(), "Get", mock.Anything, mock.Anything)
+}
+
+func (h *hookHandlerTestSuite) TestHandleInvalidPayload() {
+	for _, sc := range []*job.StatusChange{nil, {}, {JobID: "test-job"}, {Metadata: &job.StatsInfo{}}} {
+		err := h.handler.Handle(context.Background(), sc)
+		h.True(errors.IsErr(err, errors.BadRequestCode))
+	}
+	h.taskDAO.AssertNotCalled(h.T(), "List", mock.Anything, mock.Anything)
 }
 
 func TestHookHandlerTestSuite(t *testing.T) {
