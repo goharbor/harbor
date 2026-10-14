@@ -17,6 +17,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"flag"
 	"net/http"
 	"os"
@@ -86,7 +87,7 @@ func (s *RegistryCtl) Start() {
 		err = regCtl.ListenAndServe()
 	}
 	<-shutdown
-	if err != nil {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 }
