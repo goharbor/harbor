@@ -1910,10 +1910,16 @@ paths:
           description: Success
           headers:
             X-Total-Count:
-              description: The total count of auditlogs
+              description: |
+                A pagination count indicator for audit logs. To prevent expensive full-table COUNT(*) queries on large datasets, this value is derived without counting the total table records:
+                - When additional records exist beyond the requested page (as indicated by the "next" Link header relation), this value is calculated as (page * page_size + 1) to enable forward pagination in UI components.
+                - When no additional records exist beyond the requested page, this value is calculated as ((page - 1) * page_size + count_of_records_on_current_page).
+                - For unbounded requests (page_size <= 0), this value equals the number of records returned in the response payload.
+                Because full-table counts are omitted, this header should not be relied upon as an exact total count of matching database records. Automated clients should use the RFC Link header ("next" and "prev" relations) for reliable pagination and termination.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: |
+                RFC 5988/8288 link header relations for pagination. Includes rel="next" when additional records exist beyond the current page, and rel="prev" when page > 1 to allow navigating backwards.
               type: string
           schema:
             type: array
@@ -2001,10 +2007,16 @@ paths:
           description: Success
           headers:
             X-Total-Count:
-              description: The total count of auditlogs
+              description: |
+                A pagination count indicator for audit logs. To prevent expensive full-table COUNT(*) queries on large datasets, this value is derived without counting the total table records:
+                - When additional records exist beyond the requested page (as indicated by the "next" Link header relation), this value is calculated as (page * page_size + 1) to enable forward pagination in UI components.
+                - When no additional records exist beyond the requested page, this value is calculated as ((page - 1) * page_size + count_of_records_on_current_page).
+                - For unbounded requests (page_size <= 0), this value equals the number of records returned in the response payload.
+                Because full-table counts are omitted, this header should not be relied upon as an exact total count of matching database records. Automated clients should use the RFC Link header ("next" and "prev" relations) for reliable pagination and termination.
               type: integer
             Link:
-              description: Link refers to the previous page and next page
+              description: |
+                RFC 5988/8288 link header relations for pagination. Includes rel="next" when additional records exist beyond the current page, and rel="prev" when page > 1 to allow navigating backwards.
               type: string
           schema:
             type: array
