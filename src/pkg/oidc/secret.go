@@ -19,8 +19,10 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sync"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -115,28 +117,98 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, username string, sec
 	}
 	if !token.Valid() {
 		log.Debug("Refreshing token")
-		token, err = refreshToken(ctx, token)
+		refreshed, err := refreshTokenFn(ctx, token)
 		if err != nil {
-			return nil, fmt.Errorf("failed to refresh token, username: %s, error: %v", username, err)
+			// The CLI secret is a user-owned credential, its lifetime is not bound to the IdP session.
+			// Keep the stored token and use the last known user info.
+			warnRefreshFailure(username, err)
+			if token.UserInfo != nil {
+				return token.UserInfo, nil
+			}
+			info, err := userInfoFromStoredTokenFn(ctx, token)
+			if err != nil {
+				return nil, verifyError(err)
+			}
+			return info, nil
 		}
-		tb, err := json.Marshal(token)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode the refreshed token, error: %v", err)
+		refreshFailures.Delete(username)
+		// a refresh response may omit the ID token, keep the previous one
+		if refreshed.RawIDToken == "" {
+			refreshed.RawIDToken = token.RawIDToken
 		}
-		encToken, _ := utils.ReversibleEncrypt(string(tb), key)
-		oidcUser.Token = encToken
-		// only updates the token column of the record
-		err = dm.metaDao.Update(ctx, oidcUser, "token")
-		if err != nil {
-			log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
-		}
+		refreshed.UserInfo = token.UserInfo
+		token = refreshed
+		dm.persistToken(ctx, oidcUser, token, key)
 		log.Debug("Token refreshed and persisted")
 	}
-	info, err := UserInfoFromToken(ctx, token)
+	info, err := userInfoFromTokenFn(ctx, token)
 	if err != nil {
 		return nil, verifyError(err)
 	}
+	if !sameAuthorization(token.UserInfo, info) {
+		token.UserInfo = info
+		dm.persistToken(ctx, oidcUser, token, key)
+	}
 	return info, nil
+}
+
+// persistToken only updates the token column of the record
+func (dm *defaultManager) persistToken(ctx context.Context, oidcUser *models.OIDCUser, token *Token, key string) {
+	tb, err := json.Marshal(token)
+	if err != nil {
+		log.Errorf("Failed to encode token, user id: %d, error: %v", oidcUser.UserID, err)
+		return
+	}
+	encToken, err := utils.ReversibleEncrypt(string(tb), key)
+	if err != nil {
+		log.Errorf("Failed to encrypt token, user id: %d, error: %v", oidcUser.UserID, err)
+		return
+	}
+	oidcUser.Token = encToken
+	if err := dm.metaDao.Update(ctx, oidcUser, "token"); err != nil {
+		log.Errorf("Failed to persist token, user id: %d, error: %v", oidcUser.UserID, err)
+	}
+}
+
+// sameAuthorization reports whether the stored user info grants the same groups and admin status
+func sameAuthorization(stored, current *UserInfo) bool {
+	return stored != nil && current != nil && stored.AdminGroupMember == current.AdminGroupMember &&
+		slices.Equal(stored.Groups, current.Groups)
+}
+
+var (
+	refreshTokenFn            = refreshToken
+	userInfoFromTokenFn       = UserInfoFromToken
+	userInfoFromStoredTokenFn = userInfoFromStoredToken
+	// refreshFailures records the users whose token refresh failed, so the failure is logged once per user
+	// instead of once per request.  An entry is removed when a refresh for that user succeeds.
+	refreshFailures sync.Map
+)
+
+func warnRefreshFailure(username string, err error) {
+	if _, logged := refreshFailures.LoadOrStore(username, struct{}{}); logged {
+		log.Debugf("Failed to refresh the OIDC token, keep using the stored token, username: %s, error: %v", username, err)
+		return
+	}
+	log.Warningf("Failed to refresh the OIDC token, keep using the stored token until a refresh succeeds, username: %s, error: %v", username, err)
+}
+
+// userInfoFromStoredToken resolves the user from the ID token stored with the secret, without calling the
+// userinfo endpoint of the OIDC provider, because the access token is expired and could not be refreshed.
+// It is only used when no user info was stored with the token.
+func userInfoFromStoredToken(ctx context.Context, token *Token) (*UserInfo, error) {
+	if token.RawIDToken == "" {
+		return nil, fmt.Errorf("the stored token is expired and has no ID token")
+	}
+	// preload the provider, in case it was not previously loaded by the UI
+	if _, err := provider.get(ctx); err != nil {
+		return nil, err
+	}
+	setting, err := config.OIDCSetting(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return UserInfoFromIDToken(ctx, token, *setting)
 }
 
 // VerifySecret calls the manager to verify the secret.
