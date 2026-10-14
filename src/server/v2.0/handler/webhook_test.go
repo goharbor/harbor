@@ -293,16 +293,21 @@ func TestNormalizeAndValidateTargetsStoresNormalizedAddress(t *testing.T) {
 		Targets: []policyModel.EventTarget{
 			{Type: "http", Address: "http://user:pass@WEBHOOK-TARGET.CORP.LOCAL:8080/events?token=abc"},
 			{Type: "slack", Address: "https://Hooks.Example.com/services/T0/B0"},
+			{Type: "http", Address: "https://hooks.example.com/hooks/a%2Fb%20c?x=1"},
 		},
 	}
 	ok, err := api.normalizeAndValidateTargets(context.Background(), policy)
 	if !ok || err != nil {
 		t.Fatalf("unexpected validation failure: %v", err)
 	}
-	if got, want := policy.Targets[0].Address, "http://webhook-target.corp.local:8080/events?token=abc"; got != want {
-		t.Errorf("address = %q, want %q", got, want)
+	want := []string{
+		"http://webhook-target.corp.local:8080/events?token=abc",
+		"https://hooks.example.com/services/T0/B0",
+		"https://hooks.example.com/hooks/a%2Fb%20c?x=1",
 	}
-	if got, want := policy.Targets[1].Address, "https://hooks.example.com/services/T0/B0"; got != want {
-		t.Errorf("address = %q, want %q", got, want)
+	for i, target := range policy.Targets {
+		if target.Address != want[i] {
+			t.Errorf("targets[%d].Address = %q, want %q", i, target.Address, want[i])
+		}
 	}
 }
