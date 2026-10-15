@@ -73,15 +73,23 @@ func (r *replicationTestSuite) TestStart() {
 	r.Require().NotNil(err)
 
 	// got error when running the replication flow
+	done1 := make(chan struct{})
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
-	r.execMgr.On("StopAndWaitWithError", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.execMgr.On("StopAndWaitWithError", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		close(done1)
+	})
 	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(fmt.Errorf("error"))
 	r.ormCreator.On("Create").Return(nil)
+
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	select {
+	case <-done1:
+	case <-time.After(2 * time.Second):
+		r.FailNow("timed out waiting for replication flow execution")
+	}
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -90,14 +98,21 @@ func (r *replicationTestSuite) TestStart() {
 	r.SetupTest()
 
 	// got no error when running the replication flow
+	done2 := make(chan struct{})
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
-	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		close(done2)
+	})
 	r.ormCreator.On("Create").Return(nil)
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	select {
+	case <-done2:
+	case <-time.After(2 * time.Second):
+		r.FailNow("timed out waiting for replication flow execution")
+	}
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -111,7 +126,6 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
 	r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 0)
 	r.execMgr.AssertNumberOfCalls(r.T(), "MarkError", 1) // Ensure execution marked as final status error
 	r.execMgr.AssertExpectations(r.T())
@@ -121,15 +135,25 @@ func (r *replicationTestSuite) TestStart() {
 	r.SetupTest()
 
 	// no error when running the replication flow with SingleActiveReplication
+	done4 := make(chan struct{})
 	r.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	r.execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{}, nil)
-	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	r.flowCtl.On("Start", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+		close(done4)
+	})
 	r.ormCreator.On("Create").Return(nil)
 	r.execMgr.On("Count", mock.Anything, mock.Anything).Return(int64(0), nil) // Simulate no running execution
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	select {
+	case <-done4:
+	case <-time.After(2 * time.Second):
+		r.FailNow("timed out waiting for replication flow execution")
+	}
+	r.execMgr.AssertExpectations(r.T())
+	r.flowCtl.AssertExpectations(r.T())
+	r.ormCreator.AssertExpectations(r.T())
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
