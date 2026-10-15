@@ -100,11 +100,15 @@ func (suite *DaoTestSuite) TestDeleteArtifactAndBlobByArtifactShared() {
 	sharedDigest := suite.DigestString()
 	blobDigest := suite.DigestString()
 
-	suite.WithProject(func(projectID1 int64, _ string) {
-		suite.WithProject(func(projectID2 int64, _ string) {
-			sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
-			suite.ExecSQL(sql, sharedDigest, projectID1, 10)
-			suite.ExecSQL(sql, sharedDigest, projectID2, 11)
+	suite.WithProject(func(projectID1 int64, projectName1 string) {
+		suite.WithProject(func(projectID2 int64, projectName2 string) {
+			// Use the project IDs as repository IDs to guarantee uniqueness
+			// for unique_artifact (repository_id, digest). See #23803.
+			repo1 := projectName1 + "/app"
+			repo2 := projectName2 + "/app"
+			sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, ?, 'artifact_type')`
+			suite.ExecSQL(sql, sharedDigest, projectID1, projectID1, repo1)
+			suite.ExecSQL(sql, sharedDigest, projectID2, projectID2, repo2)
 			defer suite.ExecSQL(`DELETE FROM artifact WHERE digest = ?`, sharedDigest)
 
 			_, err := suite.dao.CreateArtifactAndBlob(ctx, sharedDigest, blobDigest)
