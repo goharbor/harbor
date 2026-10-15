@@ -104,7 +104,7 @@ func (suite *DaoTestSuite) TestDeleteArtifactAndBlobByArtifactShared() {
 		suite.WithProject(func(projectID2 int64, _ string) {
 			sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name, artifact_type) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world', 'artifact_type')`
 			suite.ExecSQL(sql, sharedDigest, projectID1, 10)
-			suite.ExecSQL(sql, sharedDigest, projectID2, 10)
+			suite.ExecSQL(sql, sharedDigest, projectID2, 11)
 			defer suite.ExecSQL(`DELETE FROM artifact WHERE digest = ?`, sharedDigest)
 
 			_, err := suite.dao.CreateArtifactAndBlob(ctx, sharedDigest, blobDigest)
