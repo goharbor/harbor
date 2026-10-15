@@ -341,7 +341,7 @@ func (r *reaper) requeueInProgressJobs(poolID string, jobTypes []string) error {
 	// Keep moving jobs until all queues are empty
 	for {
 		values, err := redis.Values(redisRequeueScript.Do(conn, scriptArgs...))
-		if err == redis.ErrNil {
+		if errors.Is(err, redis.ErrNil) {
 			return nil
 		} else if err != nil {
 			return err
