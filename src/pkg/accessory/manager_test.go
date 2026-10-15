@@ -49,6 +49,25 @@ func (m *managerTestSuite) TestEnsure() {
 	m.Require().Nil(err)
 }
 
+// The dedupe key is the accessory side alone, ignoring the subject. The
+// artifact copy path relies on this: it re-offers an already-linked accessory
+// under the root artifact as subject, and only this check keeps that from
+// re-attaching the accessory to the wrong artifact.
+func (m *managerTestSuite) TestEnsureDedupesByAccessoryIgnoringSubject() {
+	existing := &dao.Accessory{
+		ID:                1,
+		ArtifactID:        3,
+		SubjectArtifactID: 2,
+		Digest:            "sha256:acc",
+		Type:              model.TypeInTotoAttestation,
+	}
+	m.dao.On("List", mock.Anything, mock.Anything).Return([]*dao.Accessory{existing}, nil)
+
+	err := m.mgr.Ensure(nil, "sha256:other-subject", "library/repo", int64(9), int64(3), int64(1), "sha256:acc", model.TypeInTotoAttestation)
+	m.Require().Nil(err)
+	m.dao.AssertNotCalled(m.T(), "Create", mock.Anything, mock.Anything)
+}
+
 func (m *managerTestSuite) TestList() {
 	acc := &dao.Accessory{
 		ID:   1,
