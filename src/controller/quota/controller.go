@@ -349,7 +349,12 @@ func (c *controller) updateUsageWithRetry(ctx context.Context, reference, refere
 
 	options := []retry.Option{
 		retry.Timeout(defaultRetryTimeout),
-		retry.Backoff(false),
+		// Exponential backoff with jitter (the retry package default). With
+		// backoff disabled, every optimistic-lock loser re-reads and re-CASes
+		// the same quota_usage row in a zero-delay loop for up to
+		// defaultRetryTimeout, so N concurrent pushes to one project turn a
+		// single conflict into a synchronized retry storm on the database.
+		retry.Backoff(true),
 		retry.Callback(func(err error, _ time.Duration) {
 			log.G(ctx).Debugf("failed to update the quota usage for %s %s, error: %v", reference, referenceID, err)
 		}),
@@ -458,7 +463,9 @@ func (c *controller) Update(ctx context.Context, u *quota.Quota) error {
 
 	options := []retry.Option{
 		retry.Timeout(defaultRetryTimeout),
-		retry.Backoff(false),
+		// See updateUsageWithRetry: backoff+jitter desynchronizes writers
+		// contending on the single quota row.
+		retry.Backoff(true),
 	}
 
 	return retry.Retry(f, options...)

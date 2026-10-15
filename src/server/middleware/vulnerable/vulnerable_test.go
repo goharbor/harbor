@@ -23,6 +23,7 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/artifact/processor/image"
@@ -208,6 +209,31 @@ func (suite *MiddlewareTestSuite) TestScannerPulling() {
 
 	Middleware()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
+}
+
+// A push-capable principal must NOT skip the vulnerability-prevention
+// policy by spoofing "User-Agent: cosign". The scanner-pull action is the only bypass; a
+// non-scanner push caller with a cosign User-Agent is still subject to the policy, so an
+// unscanned image is rejected, even with the opt-in content-trust hatch enabled.
+func (suite *MiddlewareTestSuite) TestSpoofedUserAgentDoesNotSkipVulnerable() {
+	suite.T().Setenv("CONTENT_TRUST_LEGACY_SIGNER_PULL_ENABLED", "true")
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{}, nil)
+	securityCtx := &securitytesting.Context{}
+	mock.OnAnything(securityCtx, "Name").Return("v2token")
+	securityCtx.On("Can", mock.Anything, rbac.ActionScannerPull, mock.Anything).Return(false)
+	securityCtx.On("Can", mock.Anything, rbac.ActionPush, mock.Anything).Return(true)
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
+
+	req := suite.makeRequest()
+	req.Header.Set("User-Agent", "cosign/2.4.0")
+	req = req.WithContext(security.NewContext(req.Context(), securityCtx))
+	rr := httptest.NewRecorder()
+
+	Middleware()(suite.next).ServeHTTP(rr, req)
+	suite.Equal(http.StatusPreconditionFailed, rr.Code)
 }
 
 func (suite *MiddlewareTestSuite) TestCheckIsScannableFailed() {

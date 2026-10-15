@@ -14,6 +14,8 @@
 
 package auth
 
+import "fmt"
+
 const (
 	// AuthModeNone means no auth required
 	AuthModeNone = "NONE"
@@ -34,4 +36,17 @@ type Credential struct {
 	// If authMode is 'OAUTH', then 'token' is stored'
 	// If authMode is 'CUSTOM', then 'header_key' with corresponding header value are stored.
 	Data map[string]string
+}
+
+// String implements fmt.Stringer to prevent cleartext credentials from being printed or logged.
+func (c *Credential) String() string {
+	if c == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("{Mode:%s Data:<redacted>}", c.Mode)
+}
+
+// GoString prevents Go-syntax formatting from exposing credential data.
+func (c *Credential) GoString() string {
+	return c.String()
 }

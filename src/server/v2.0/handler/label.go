@@ -104,10 +104,17 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 	if name != "" {
 		query.Keywords["name"] = &q.FuzzyMatchValue{Value: name}
 	}
+	// Global labels are shared across projects, so listing them requires a signed-in
+	// caller rather than access to a particular project or a system-admin role.
+	if scope == common.LabelScopeGlobal {
+		if err := lAPI.RequireAuthenticated(ctx); err != nil {
+			return lAPI.SendError(ctx, err)
+		}
+	}
 	if scope == common.LabelScopeProject {
 		pid := lib.Int64Value(params.ProjectID)
 		if pid == 0 {
-			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project labels"))
+			return lAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("Project ID must be specified when querying project labels"))
 		}
 		if err := lAPI.RequireProjectAccess(ctx, pid, rbac.ActionList, rbac.ResourceLabel); err != nil {
 			return lAPI.SendError(ctx, err)
