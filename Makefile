@@ -82,7 +82,8 @@ EXPORTERFLAG=false
 HTTPPROXY=
 BUILDREG=true
 BUILDTRIVYADP=true
-NPM_REGISTRY=https://registry.npmjs.org
+NPM_REGISTRY ?= https://registry.npmjs.org
+PIP_INDEX_URL ?= https://pypi.org/simple
 # Override when Maven Central returns 429 (rate limit), e.g. a mirror or cached URL:
 #   make swagger_client OPENAPI_GENERATOR_CLI_URL=https://...
 #   export OPENAPI_GENERATOR_CLI_URL=https://... ; make swagger_client
