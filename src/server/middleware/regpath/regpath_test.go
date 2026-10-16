@@ -27,9 +27,14 @@ type probe struct {
 	path   string
 }
 
-func (p *probe) ServeHTTP(_ http.ResponseWriter, r *http.Request) {
+// probeStatus is deliberately not 200, so a pass-through assertion proves the
+// next handler's response reached the client rather than the recorder default.
+const probeStatus = http.StatusAccepted
+
+func (p *probe) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.called = true
 	p.path = r.URL.Path
+	w.WriteHeader(probeStatus)
 }
 
 func TestMiddleware(t *testing.T) {
@@ -67,7 +72,40 @@ func TestMiddleware(t *testing.T) {
 				assert.Equal(t, http.StatusBadRequest, rec.Code, "want 400 for %q", tt.path)
 			} else {
 				assert.True(t, p.called, "next handler must run for %q", tt.path)
-				assert.Equal(t, http.StatusOK, rec.Code, "want pass-through for %q", tt.path)
+				assert.Equal(t, probeStatus, rec.Code, "want pass-through for %q", tt.path)
+			}
+		})
+	}
+}
+
+// Percent-encoded dot segments are decoded by net/url before the middleware
+// sees r.URL.Path, so they must be rejected exactly like literal ones. These
+// requests go through httptest.NewRequest without overriding Path, which is the
+// same url.Parse path the server uses.
+func TestMiddlewareEncodedDotSegments(t *testing.T) {
+	cases := []struct {
+		name        string
+		target      string
+		wantBlocked bool
+	}{
+		{"encoded dot", "/v2/pub/%2e/blobs/uploads/", true},
+		{"encoded dotdot lowercase", "/v2/pub/x/manifests/x/%2e%2e/%2e%2e/%2e%2e/%2e%2e/priv/secret/manifests/1.0.0", true},
+		{"encoded dotdot uppercase", "/v2/pub/x/manifests/x/%2E%2E/%2E%2E/%2E%2E/%2E%2E/priv/secret/manifests/1.0.0", true},
+		{"mixed case and half encoded", "/v2/pub/x/manifests/x/%2E%2e/.%2e/%2e./%2E%2E/priv/secret/manifests/1.0.0", true},
+		{"encoded dots inside a tag are fine", "/v2/library/ubuntu/manifests/1%2e0%2e0", false},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &probe{}
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "http://harbor.local"+tt.target, nil)
+			Middleware()(p).ServeHTTP(rec, req)
+			if tt.wantBlocked {
+				assert.False(t, p.called, "next handler must not run for %q (decoded %q)", tt.target, req.URL.Path)
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+			} else {
+				assert.True(t, p.called, "next handler must run for %q", tt.target)
+				assert.Equal(t, probeStatus, rec.Code)
 			}
 		})
 	}
