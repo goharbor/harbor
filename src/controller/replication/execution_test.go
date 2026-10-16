@@ -20,11 +20,13 @@ import (
 	"testing"
 	"time"
 
+	testifyMock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/pkg/task/dao"
 	"github.com/goharbor/harbor/src/testing/lib/orm"
@@ -286,6 +288,60 @@ func (r *replicationTestSuite) TestGetTaskLog() {
 	r.Require().Nil(err)
 	r.Equal([]byte{'a'}, data)
 	r.taskMgr.AssertExpectations(r.T())
+}
+
+func (r *replicationTestSuite) TestEventExecutionAndTasks() {
+	// Verify event-triggered replication execution preserves vendor_type = REPLICATION and trigger = EVENT
+	r.execMgr.On("List", mock.Anything, testifyMock.MatchedBy(func(query *q.Query) bool {
+		return query.Keywords["VendorType"] == job.ReplicationVendorType
+	})).Return([]*task.Execution{
+		{
+			ID:         100,
+			VendorType: job.ReplicationVendorType,
+			VendorID:   1,
+			Status:     job.SuccessStatus.String(),
+			Metrics: &dao.Metrics{
+				TaskCount:        1,
+				SuccessTaskCount: 1,
+			},
+			Trigger:   task.ExecutionTriggerEvent,
+			StartTime: time.Time{},
+			EndTime:   time.Time{},
+		},
+	}, nil).Once()
+
+	executions, err := r.ctl.ListExecutions(nil, nil)
+	r.Require().Nil(err)
+	r.Require().Len(executions, 1)
+	r.Equal(int64(100), executions[0].ID)
+	r.Equal(task.ExecutionTriggerEvent, executions[0].Trigger)
+
+	// Verify task listing for event execution
+	r.taskMgr.On("List", mock.Anything, testifyMock.MatchedBy(func(query *q.Query) bool {
+		return query.Keywords["VendorType"] == job.ReplicationVendorType
+	})).Return([]*task.Task{
+		{
+			ID:          200,
+			ExecutionID: 100,
+			VendorType:  job.ReplicationVendorType,
+			Status:      job.SuccessStatus.String(),
+			ExtraAttrs: map[string]any{
+				"resource_type":        "artifact",
+				"source_resource":      "library/event-app",
+				"destination_resource": "library/event-app",
+				"references":           "v1",
+				"operation":            "copy",
+			},
+		},
+	}, nil).Once()
+
+	tasks, err := r.ctl.ListTasks(nil, nil)
+	r.Require().Nil(err)
+	r.Require().Len(tasks, 1)
+	r.Equal(int64(200), tasks[0].ID)
+	r.Equal(int64(100), tasks[0].ExecutionID)
+	r.Equal("library/event-app", tasks[0].SourceResource)
+	r.Equal("copy", tasks[0].Operation)
 }
 
 func TestReplicationTestSuite(t *testing.T) {
