@@ -16,6 +16,7 @@ package user
 
 import (
 	"net/http"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,4 +51,14 @@ func TestResolvePutUsersCollectionNilData(t *testing.T) {
 		err := r.Resolve(ce, evt)
 		assert.NoError(t, err)
 	})
+}
+
+func TestURLPatternMatchesOnlyV2Users(t *testing.T) {
+	re := regexp.MustCompile(urlPattern)
+	for _, url := range []string{"/api/v2.0/users/123", "/api/v2.0/users/123/password", "/api/v2.0/users/123/sysadmin"} {
+		assert.True(t, re.MatchString(url), url)
+	}
+	for _, url := range []string{"/api/v2X0/users/123", "/prefix/api/v2.0/users/123", "/api/v2.0/users/123/extra"} {
+		assert.False(t, re.MatchString(url), url)
+	}
 }
