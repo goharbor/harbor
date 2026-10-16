@@ -842,13 +842,13 @@ func parseUploadLocation(location string) (*url.URL, error) {
 	}
 	u, err := url.Parse(location)
 	if err != nil {
-		return nil, err
+		return nil, uploadLocationParseError(err)
 	}
 	if u.User != nil {
-		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", redactUploadLocation(u))
 	}
 	if !u.IsAbs() || u.Host == "" {
-		return nil, fmt.Errorf("registry upload Location must be an absolute URL: %q", location)
+		return nil, fmt.Errorf("registry upload Location must be an absolute URL: %q", redactUploadLocation(u))
 	}
 	return u, nil
 }
@@ -865,17 +865,17 @@ func parseUploadLocation(location string) (*url.URL, error) {
 func resolveUploadLocation(endpoint string, origin *url.URL, location string) (string, error) {
 	ref, err := url.Parse(location)
 	if err != nil {
-		return "", err
+		return "", uploadLocationParseError(err)
 	}
 	// userinfo has no legitimate use in an upload Location and makes the host ambiguous.
 	if ref.User != nil {
-		return "", fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+		return "", fmt.Errorf("registry upload Location must not contain userinfo: %q", redactUploadLocation(ref))
 	}
 	// "//host/..." is a network-path reference and is resolved against origin below.
 	if ref.Scheme == "" && ref.Host == "" && strings.HasPrefix(location, "/") && !strings.HasPrefix(location, "//") {
 		u, err := url.Parse(endpoint + location)
 		if err != nil {
-			return "", err
+			return "", uploadLocationParseError(err)
 		}
 		return u.String(), nil
 	}
@@ -886,9 +886,29 @@ func resolveUploadLocation(endpoint string, origin *url.URL, location string) (s
 	}
 	next := origin.ResolveReference(ref)
 	if !sameRegistryOrigin(origin, next) {
-		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", location, origin.Redacted())
+		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", redactUploadLocation(next), origin.Redacted())
 	}
 	return next.String(), nil
+}
+
+// redactUploadLocation renders a Location for error messages without userinfo, query or fragment,
+// since registries may put credentials or signed upload tokens there and callers log these errors.
+func redactUploadLocation(u *url.URL) string {
+	r := *u
+	r.User = nil
+	r.RawQuery = ""
+	r.ForceQuery = false
+	r.Fragment = ""
+	r.RawFragment = ""
+	return r.String()
+}
+
+// uploadLocationParseError drops the Location from a parse error, which quotes it verbatim.
+func uploadLocationParseError(err error) error {
+	if urlErr, ok := err.(*url.Error); ok {
+		err = urlErr.Err
+	}
+	return fmt.Errorf("registry upload Location is not a valid URL: %w", err)
 }
 
 func sameRegistryOrigin(a, b *url.URL) bool {
