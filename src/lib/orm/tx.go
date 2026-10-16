@@ -63,11 +63,13 @@ func (o *ormerTx) rollbackToSavepoint() error {
 	return err
 }
 
-func (o *ormerTx) Begin() error {
+// Begin starts the transaction with ctx so that database/sql rolls it back
+// automatically when ctx is canceled, e.g. when the client disconnects.
+func (o *ormerTx) Begin(ctx context.Context) error {
 	if o.TxOrmer != nil {
 		return o.createSavepoint()
 	}
-	txOrmer, err := o.Ormer.Begin()
+	txOrmer, err := o.Ormer.BeginWithCtx(ctx)
 	if err != nil {
 		return err
 	}
