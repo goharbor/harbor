@@ -238,11 +238,13 @@ export class CreateEditEndpointComponent
                     // Keep data cache
                     this.initVal = clone(target);
                     this.initVal.credential.access_secret =
-                        this.target.type === 'google-gcr'
+                        this.target.type === 'google-gcr' ||
+                        this.target.type === 'google-gar'
                             ? FAKE_JSON_KEY
                             : FAKE_PASSWORD;
                     this.target.credential.access_secret =
-                        this.target.type === 'google-gcr'
+                        this.target.type === 'google-gcr' ||
+                        this.target.type === 'google-gar'
                             ? FAKE_JSON_KEY
                             : FAKE_PASSWORD;
 
