@@ -47,12 +47,10 @@ import (
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/pattern"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/lib/redis"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	accModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
-	"github.com/goharbor/harbor/src/pkg/proxy/connection"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -137,29 +135,31 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	if p.MaxUpstreamConnection() > 0 {
-		client, err := redis.GetHarborClient()
-		if err != nil {
-			return errors.NewErrs(err)
-		}
-		key := upstreamRegistryConnectionKey(art)
-		log.Debugf("handle blob, upstream registry connection limit key: %s", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
-			return tooManyRequestsError
-		}
-		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	access, release, err := acquireUpstreamSlot(ctx, p, art, func() bool { return proxyCtl.UseLocalBlob(ctx, art) })
+	if err != nil {
+		return err
+	}
+	if access == serveLocal {
+		next.ServeHTTP(w, r)
+		return nil
 	}
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
 	}
-	size, reader, err := proxyCtl.ProxyBlob(ctx, p, art)
+	size, reader, stored, err := proxyCtl.ProxyBlob(ctx, p, art)
 	if err != nil {
+		release()
 		return err
 	}
 	defer reader.Close()
+	// Hold the slot until the blob is in the local registry, not merely until
+	// this client has it: a waiter let through earlier would find no local
+	// copy and fetch the blob from upstream a second time.
+	go func() {
+		<-stored
+		release()
+	}()
 	return serveBlob(w, reader, size, art.Digest)
 }
 
@@ -349,20 +349,13 @@ func handleManifest(w http.ResponseWriter, r *http.Request, next http.Handler) e
 		next.ServeHTTP(w, r)
 		return nil
 	}
-	if p.MaxUpstreamConnection() > 0 {
-		client, err := redis.GetHarborClient()
-		if err != nil {
-			return errors.NewErrs(err)
-		}
-		key := upstreamRegistryConnectionKey(art)
-		log.Debugf("handle manifest key %v", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
-			return tooManyRequestsError
-		}
-		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	// A manifest is only cached locally once all its blobs are, so waiting for
+	// a local copy is not an option; waiters take their turn upstream instead.
+	_, release, err := acquireUpstreamSlot(ctx, p, art, func() bool { return false })
+	if err != nil {
+		return err
 	}
+	defer release()
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()

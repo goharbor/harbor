@@ -60,8 +60,10 @@ type Controller interface {
 	// UseLocalManifest check manifest should use local copy
 	UseLocalManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface, p *proModels.Project) (bool, *ManifestList, error)
 	// ProxyBlob proxy the blob request to the remote server, p is the proxy project
-	// art is the ArtifactInfo which includes the digest of the blob
-	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error)
+	// art is the ArtifactInfo which includes the digest of the blob.
+	// The returned channel is closed once the blob has been stored in the local
+	// registry, or storing it has failed.
+	ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, <-chan struct{}, error)
 	// ProxyManifest proxy the manifest request to the remote server, p is the proxy project,
 	// art is the ArtifactInfo which includes the tag or digest of the manifest
 	ProxyManifest(ctx context.Context, art lib.ArtifactInfo, remote RemoteInterface) (distribution.Manifest, error)
@@ -282,27 +284,32 @@ func (c *controller) HeadManifest(_ context.Context, art lib.ArtifactInfo, remot
 	return remote.ManifestExist(remoteRepo, ref)
 }
 
-func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, error) {
+func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (int64, io.ReadCloser, <-chan struct{}, error) {
 	remoteRepo := GetRemoteRepo(art)
 	log.Debugf("The blob doesn't exist, proxy the request to the target server, url:%v", remoteRepo)
 	rHelper, err := NewRemoteHelper(ctx, p.RegistryID, WithSpeed(p.ProxyCacheSpeed()))
 	if err != nil {
-		return 0, nil, err
+		return 0, nil, nil, err
 	}
+	return c.proxyBlobFrom(rHelper, remoteRepo, art.Repository, art.Digest)
+}
 
-	size, bReader, err := rHelper.BlobReader(remoteRepo, art.Digest)
+func (c *controller) proxyBlobFrom(remote RemoteInterface, remoteRepo, localRepo, dig string) (int64, io.ReadCloser, <-chan struct{}, error) {
+	size, bReader, err := remote.BlobReader(remoteRepo, dig)
 	if err != nil {
 		log.Errorf("failed to pull blob, error %v", err)
-		return 0, nil, err
+		return 0, nil, nil, err
 	}
-	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
+	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(dig)}
+	stored := make(chan struct{})
 	go func() {
-		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
+		defer close(stored)
+		err := c.putBlobToLocal(remoteRepo, localRepo, desc, remote)
 		if err != nil {
 			log.Errorf("error while putting blob to local repo, %v", err)
 		}
 	}()
-	return size, bReader, nil
+	return size, bReader, stored, nil
 }
 
 func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
