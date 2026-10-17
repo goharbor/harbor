@@ -26,5 +26,5 @@ ${project_member_search_text_xpath}  //project-detail//hbr-filter/span/input
 ${project_member_add_confirmation_ok_xpath}  //project-detail//add-member//button[2]
 ${project_member_search_button_xpath2}  //button[contains(.,'New')]
 ${project_member_add_button_xpath2}  //project-detail//add-member//button[2]
-${project_member_guest_radio_checkbox}  //project-detail//form//input[@id='checkrads_guest']
+${project_member_guest_radio_checkbox}  //add-member//div[contains(@class, 'role-radio-list')]//input[@id='add-member-role-3']
 ${project_member_delete_button_xpath}  //button[contains(.,'REMOVE')]

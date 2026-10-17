@@ -413,6 +413,10 @@ Should Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
 
+Should Be Inherited Signed
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed-inherited')]
+
 Should Not Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
