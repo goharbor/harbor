@@ -381,6 +381,21 @@ func TestMatch(t *testing.T) {
 			"http://abc.com:443",
 			false,
 		},
+		{
+			"abc.com",
+			"HTTPS://abc.com:443",
+			true,
+		},
+		{
+			"abc.com:443",
+			"HTTPS://abc.com",
+			true,
+		},
+		{
+			"abc.com:80",
+			"HTTP://abc.com",
+			true,
+		},
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.expect, match(context.Background(), c.reqHost, c.rawURL))
