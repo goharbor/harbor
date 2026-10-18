@@ -491,6 +491,29 @@ func TestValidateCronString(t *testing.T) {
 			input:       "0 0 0 29 2 *",
 			hasErr:      false,
 		},
+
+		// the parser splits on any run of whitespace, so the Seconds field is still
+		// the first one when the fields are separated by more than a single space
+		{
+			description: "test case 7 - seconds is not 0, fields separated by two spaces",
+			input:       "1  0 0 1 1 0",
+			hasErr:      true,
+		},
+		{
+			description: "test case 8 - seconds is not 0, fields separated by a tab",
+			input:       "1\t0 0 1 1 0",
+			hasErr:      true,
+		},
+		{
+			description: "test case 9 - seconds is not 0, leading space",
+			input:       " 1 0 0 1 1 0",
+			hasErr:      true,
+		},
+		{
+			description: "test case 10 - valid cron string with a leading space",
+			input:       " 0 1 2 1 1 *",
+			hasErr:      false,
+		},
 	}
 
 	for _, tc := range testCases {
