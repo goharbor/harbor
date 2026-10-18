@@ -23,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
-	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/cached"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/project/models"
@@ -147,8 +146,7 @@ func (m *Manager) cleanUp(ctx context.Context, p *models.Project) {
 	if err != nil {
 		log.Errorf("format project id key error: %v", err)
 	} else {
-		// retry to avoid dirty data
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, idIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, idIdx); err != nil {
 			log.Errorf("delete project cache key %s error: %v", idIdx, err)
 		}
 	}
@@ -158,7 +156,7 @@ func (m *Manager) cleanUp(ctx context.Context, p *models.Project) {
 	if err != nil {
 		log.Errorf("format project name key error: %v", err)
 	} else {
-		if err = retry.Retry(func() error { return m.CacheClient(ctx).Delete(ctx, nameIdx) }); err != nil {
+		if err = m.DeleteCache(ctx, nameIdx); err != nil {
 			log.Errorf("delete project cache key %s error: %v", nameIdx, err)
 		}
 	}

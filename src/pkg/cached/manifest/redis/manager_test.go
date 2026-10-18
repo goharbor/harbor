@@ -65,6 +65,15 @@ func (m *managerTestSuite) TestDelete() {
 	m.NoError(err)
 }
 
+func (m *managerTestSuite) TestDeleteContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := m.cachedManager.Delete(ctx, m.digest)
+	m.ErrorIs(err, context.Canceled)
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
 func (m *managerTestSuite) TestResourceType() {
 	t := m.cachedManager.ResourceType(m.ctx)
 	m.Equal("manifest", t)

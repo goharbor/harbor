@@ -21,7 +21,13 @@ import (
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/retry"
 )
+
+// cacheDeleteRetryTimeout bounds DeleteCache's retries. Callers run this inside
+// a request-scoped DB transaction and treat failures as non-fatal, so it must
+// not hold that transaction open much longer than the delete itself needs.
+var cacheDeleteRetryTimeout = 3 * time.Second
 
 // innerCache is the default cache client,
 // actually it is a wrapper for cache.LayerCache().
@@ -114,7 +120,13 @@ func (bm *BaseManager) CountCache(ctx context.Context) (int64, error) {
 
 // DeleteCache deletes specific cache by key.
 func (bm *BaseManager) DeleteCache(ctx context.Context, key string) error {
-	return bm.CacheClient(ctx).Delete(ctx, key)
+	return retry.Retry(func() error {
+		// earlier abort if context is error such as context canceled
+		if ctx.Err() != nil {
+			return retry.Abort(ctx.Err())
+		}
+		return bm.CacheClient(ctx).Delete(ctx, key)
+	}, retry.Timeout(cacheDeleteRetryTimeout))
 }
 
 // FlushAll flush this resource's all cache.

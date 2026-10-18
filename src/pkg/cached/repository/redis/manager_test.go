@@ -96,6 +96,17 @@ func (m *managerTestSuite) TestDelete() {
 	m.cache.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
+func (m *managerTestSuite) TestDeleteContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	m.repoMgr.On("Delete", mock.Anything, mock.Anything).Return(nil).Once()
+	m.cache.On("Fetch", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	err := m.cachedManager.Delete(ctx, 100)
+	m.NoError(err, "delete itself still succeeds, cache cleanup is best-effort")
+	m.cache.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
 func (m *managerTestSuite) TestUpdate() {
 	// update from repoMgr error
 	errUpdate := errors.New("update failed")
