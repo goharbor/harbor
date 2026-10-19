@@ -6,6 +6,7 @@ import (
 	context "context"
 
 	artifact "github.com/goharbor/harbor/src/pkg/artifact"
+
 	mock "github.com/stretchr/testify/mock"
 )
 

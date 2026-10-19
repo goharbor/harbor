@@ -34,8 +34,7 @@ func TestAuthorizeRequestInvalid(t *testing.T) {
 
 	authenticator := NewSecretHandler(map[string]string{"secret1": "incorrect"})
 	err = authenticator.AuthorizeRequest(req)
-	assert.Equal(t, err, ErrInvalidCredential)
-
+	assert.Equal(t, ErrInvalidCredential, err)
 }
 
 func TestAuthorizeRequestValid(t *testing.T) {
@@ -49,21 +48,12 @@ func TestAuthorizeRequestValid(t *testing.T) {
 	authenticator := NewSecretHandler(map[string]string{"secret1": "correct"})
 	err = authenticator.AuthorizeRequest(req)
 	assert.Nil(t, err)
-
 }
 
 func TestNilRequest(t *testing.T) {
-	secret := "Correct"
-	req, err := http.NewRequest("", "", nil)
-	req = nil
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	_ = commonsecret.AddToRequest(req, secret)
-
 	authenticator := NewSecretHandler(map[string]string{"secret1": "correct"})
-	err = authenticator.AuthorizeRequest(req)
-	assert.Equal(t, err, ErrNoSecret)
+	err := authenticator.AuthorizeRequest(nil)
+	assert.Equal(t, ErrNoSecret, err)
 }
 
 func TestNoSecret(t *testing.T) {
@@ -76,7 +66,45 @@ func TestNoSecret(t *testing.T) {
 
 	authenticator := NewSecretHandler(map[string]string{})
 	err = authenticator.AuthorizeRequest(req)
-	assert.Equal(t, err, ErrNoSecret)
+	assert.Equal(t, ErrNoSecret, err)
+}
+
+func TestEmptySecret(t *testing.T) {
+	secret := ""
+	req, err := http.NewRequest("", "", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	_ = commonsecret.AddToRequest(req, secret)
+
+	authenticator := NewSecretHandler(map[string]string{"secret1": ""})
+	err = authenticator.AuthorizeRequest(req)
+	assert.Equal(t, ErrNoSecret, err)
+}
+
+func TestMultipleSecretsIncludingEmpty(t *testing.T) {
+	authenticator := NewSecretHandler(map[string]string{
+		"secret1": "",
+		"secret2": "valid_key",
+	})
+
+	// Request with empty secret
+	reqEmpty, err := http.NewRequest("", "", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	_ = commonsecret.AddToRequest(reqEmpty, "")
+	err = authenticator.AuthorizeRequest(reqEmpty)
+	assert.Equal(t, ErrInvalidCredential, err)
+
+	// Request with valid secret
+	reqValid, err := http.NewRequest("", "", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	_ = commonsecret.AddToRequest(reqValid, "valid_key")
+	err = authenticator.AuthorizeRequest(reqValid)
+	assert.Nil(t, err)
 }
 
 func TestIncorrectHarborSecret(t *testing.T) {
@@ -91,5 +119,5 @@ func TestIncorrectHarborSecret(t *testing.T) {
 	req.Header.Set("Authorization", fmt.Sprintf("%s%s", "WrongPrefix", secret))
 	authenticator := NewSecretHandler(map[string]string{"secret1": "correct"})
 	err = authenticator.AuthorizeRequest(req)
-	assert.Equal(t, err, ErrInvalidCredential)
+	assert.Equal(t, ErrInvalidCredential, err)
 }

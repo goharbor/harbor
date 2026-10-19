@@ -55,7 +55,7 @@ type WebhookTestSuite struct {
 }
 
 func (suite *WebhookTestSuite) SetupSuite() {
-	suite.T().Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "false")
+	suite.T().Setenv("HARBOR_WEBHOOK_EGRESS_POLICY", "public_only")
 	suite.webhookCtl = &webhook.Controller{}
 	suite.execCtl = &task.ExecutionController{}
 	suite.taskCtl = &task.Controller{}
