@@ -394,7 +394,7 @@
         "ARTIFACT_ADDITION": "Artifact 额外信息",
         "ARTIFACT_LABEL": "Artifact 标签",
         "PREHEAT_POLICY": "预热策略",
-        "IMMUTABLE_TAG": "不可变 Tag",
+        "IMMUTABLE_TAG": "不可变的Tag",
         "LOG": "日志",
         "NOTIFICATION_POLICY": "Webhook 策略",
         "BACK": "上一步",

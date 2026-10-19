@@ -393,7 +393,7 @@
         "ARTIFACT_ADDITION": "Artifact 附加資料",
         "ARTIFACT_LABEL": "Artifact 標籤",
         "PREHEAT_POLICY": "預熱原則",
-        "IMMUTABLE_TAG": "不可變標籤",
+        "IMMUTABLE_TAG": "標籤不可變性",
         "LOG": "日誌",
         "NOTIFICATION_POLICY": "通知原則",
         "QUOTA": "配額",
