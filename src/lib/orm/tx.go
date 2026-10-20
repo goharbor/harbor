@@ -107,8 +107,8 @@ func WithAfterCommit(ctx context.Context) (context.Context, func() error) {
 	return context.WithValue(ctx, afterCommitKey{}, callbacks), callbacks.run
 }
 
-// AfterCommit registers hook for the current request transaction, or runs it
-// immediately when the context is not managed by transaction middleware.
+// AfterCommit registers hook for the current transaction, or runs it
+// immediately when the context has no after-commit callback collector.
 func AfterCommit(ctx context.Context, hook func() error) error {
 	if callbacks, ok := ctx.Value(afterCommitKey{}).(*afterCommitCallbacks); ok {
 		callbacks.mu.Lock()

@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"maps"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -208,6 +207,17 @@ func TestWritesInvalidateMetadataViews(t *testing.T) {
 				_, err := manager.Get(ctx, 1, names...)
 				require.NoError(t, err)
 			}
+			iter, err := client.Scan(ctx, "project_metadata:projectID:1:meta:")
+			require.NoError(t, err)
+			var cachedViewKeys []string
+			for iter.Next(ctx) {
+				cachedViewKeys = append(cachedViewKeys, iter.Val())
+			}
+			require.NoError(t, iter.Err())
+			require.Len(t, cachedViewKeys, len(views))
+			for _, key := range cachedViewKeys {
+				require.Contains(t, key, ":version:")
+			}
 			otherKey := "project_metadata:projectID:11:meta:"
 			require.NoError(t, client.Save(ctx, otherKey, map[string]string{"public": "true"}))
 			switch operation {
@@ -223,9 +233,10 @@ func TestWritesInvalidateMetadataViews(t *testing.T) {
 				err = manager.Delete(ctx, 1)
 			}
 			require.NoError(t, err)
-			for _, names := range views {
-				key := "project_metadata:projectID:1:meta:" + strings.Join(names, ",")
+			for _, key := range cachedViewKeys {
 				require.False(t, client.Contains(ctx, key), "stale metadata view %s", key)
+			}
+			for _, names := range views {
 				actual, err := manager.Get(ctx, 1, names...)
 				require.NoError(t, err)
 				expected, err := store.Get(ctx, 1, names...)
@@ -235,6 +246,22 @@ func TestWritesInvalidateMetadataViews(t *testing.T) {
 			require.True(t, client.Contains(ctx, otherKey), "another project's metadata must remain cached")
 		})
 	}
+}
+
+func TestWriteReportsTerminalCacheScanFailure(t *testing.T) {
+	client := &testcache.Cache{}
+	iterator := &testcache.Iterator{}
+	scanErr := errors.New("cache iterator failed")
+	client.On("Save", mock.Anything, "project_metadata:projectID:1:version:", mock.Anything, mock.Anything).Return(nil).Once()
+	client.On("Scan", mock.Anything, "project_metadata:projectID:1:meta:").Return(iterator, nil).Once()
+	iterator.On("Next", mock.Anything).Return(false).Once()
+	iterator.On("Err").Return(scanErr).Once()
+
+	manager := NewManager(&metadataStateManager{values: map[string]string{}})
+	manager.WithCacheClient(client)
+	err := manager.Add(context.Background(), 1, map[string]string{"public": "true"})
+	require.ErrorIs(t, err, scanErr)
+	client.AssertExpectations(t)
 }
 
 func TestWriteReportsCacheScanFailure(t *testing.T) {
