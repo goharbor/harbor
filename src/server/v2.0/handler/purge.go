@@ -166,7 +166,7 @@ func (p *purgeAPI) GetPurgeHistory(ctx context.Context, params purge.GetPurgeHis
 	}
 	execs, err := p.executionCtl.List(ctx, query)
 	if err != nil {
-		p.SendError(ctx, err)
+		return p.SendError(ctx, err)
 	}
 
 	var hs []*model.ExecHistory
