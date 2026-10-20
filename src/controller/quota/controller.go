@@ -141,6 +141,9 @@ func flushQuota(ctx context.Context) {
 			log.Debugf("successfully refreshed quota: %s", key)
 		}
 	}
+	if err := iter.Err(); err != nil {
+		log.Errorf("failed to scan out the quota records from redis: %v", err)
+	}
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
