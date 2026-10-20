@@ -307,6 +307,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 ) (worker.Interface, error) {
 	redisWorker := cworker.NewWorker(ctx, ns, workers, redisPool, lcmCtl)
 	workerPoolID = redisWorker.GetPoolID()
+	// The worker reads MaxCurrency() during RegisterJobs, so set the cap first
+	scan.SetBulkMaxConcurrency(config.DefaultConfig.ScanAllMaxConcurrency)
 
 	// Register jobs here
 	if err := redisWorker.RegisterJobs(
@@ -315,6 +317,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJobVendorType:      (*scan.Job)(nil),
+			job.ImageScanBulkJobVendorType:  (*scan.BulkJob)(nil),
 			job.PurgeAuditVendorType:        (*purge.Job)(nil),
 			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
 			job.ReplicationVendorType:       (*replication.Replication)(nil),
