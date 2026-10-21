@@ -16,7 +16,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -158,6 +157,7 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
+	token.UserInfo = info
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -286,17 +286,8 @@ func (oc *OIDCController) RedirectLogout() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	if token.RefreshToken != "" {
-		sessionType, err := getSessionType(token.RefreshToken)
-		if err == nil {
-			// If the session is offline, try best to revoke the refresh token.
-			if strings.ToLower(sessionType) == "offline" && oidc.EndpointsClaims.RevokeURL != "" {
-				if err := oidc.RevokeOIDCRefreshToken(oidc.EndpointsClaims.RevokeURL, token.RefreshToken, oidcSettings.ClientID, oidcSettings.ClientSecret, oidcSettings.VerifyCert); err != nil {
-					log.Warningf("Failed to revoke the offline session: %v", err)
-				}
-			}
-		}
-	}
+	// The refresh token of the session is not revoked: it is the same token stored with the user's CLI secret,
+	// revoking it would invalidate the CLI secret on every UI logout.
 	if token.RawIDToken == "" {
 		log.Warning("Empty ID token for offline session.")
 		oc.Controller.Redirect("/account/sign-in", http.StatusFound)
@@ -418,25 +409,4 @@ func secretAndToken(tokenBytes []byte) (string, string, error) {
 		return "", "", err
 	}
 	return secret, token, nil
-}
-
-// getSessionType determines if the session is offline by decoding the refresh token or not
-func getSessionType(refreshToken string) (string, error) {
-	parts := strings.Split(refreshToken, ".")
-	if len(parts) != 3 {
-		return "", errors.Errorf("invalid refresh token")
-	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", errors.Errorf("failed to decode refresh token: %v", err)
-	}
-	var claims map[string]any
-	if err := json.Unmarshal(payload, &claims); err != nil {
-		return "", errors.Errorf("failed to unmarshal refresh token: %v", err)
-	}
-	typ, ok := claims["typ"].(string)
-	if !ok {
-		return "", errors.New("missing 'typ' claim in refresh token")
-	}
-	return typ, nil
 }
