@@ -183,6 +183,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	dc.endpoint = url
 	tc := &tls.Config{
 		InsecureSkipVerify: cfg.SkipTLSVerify,
+		MinVersion:         tls.VersionTLS12,
 	}
 	if !cfg.SkipTLSVerify && len(cfg.CARootPath) > 0 {
 		if _, err := os.Stat(cfg.CARootPath); !os.IsNotExist(err) {

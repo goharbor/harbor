@@ -89,6 +89,7 @@ func NewClient(url, authType, accessCredential string, skipCertVerify bool) (Cli
 		MaxIdleConnsPerHost: 100,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: skipCertVerify,
+			MinVersion:         tls.VersionTLS12,
 		},
 	}
 
