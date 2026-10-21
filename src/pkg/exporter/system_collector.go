@@ -33,7 +33,7 @@ const (
 
 var (
 	harborSysInfo = typedDesc{
-		desc: newDescWithLables("", "system_info", "Information of Harbor system",
+		desc: newDescWithLabels("", "system_info", "Information of Harbor system",
 			"auth_mode",
 			"harbor_version",
 			"self_registration"),
