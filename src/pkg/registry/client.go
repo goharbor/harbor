@@ -762,14 +762,14 @@ func nextPageURL(endpoint, link string) (string, error) {
 	}
 	base, err := url.Parse(endpoint)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("registry endpoint is not a valid URL: %w", commonhttp.RedactedURLError(err))
 	}
 	u, err := url.Parse(next)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("pagination Link is not a valid URL: %w", commonhttp.RedactedURLError(err))
 	}
 	if u.User.String() != base.User.String() || !commonhttp.SameOrigin(base, u) {
-		return "", fmt.Errorf("pagination Link %q leaves the registry origin %q", link, base.Redacted())
+		return "", fmt.Errorf("pagination Link %q leaves the registry origin %q", commonhttp.RedactedURL(u), commonhttp.RedactedURL(base))
 	}
 	return next, nil
 }
