@@ -133,7 +133,7 @@ func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*
 	var users []*User
 	// use raw sql to return the most matched user first, then by alphabetic order
 	sql := "select * from harbor_user where username like ? and deleted = false order by length(username), username asc limit ?"
-	likePattern := "%" + name + "%"
+	likePattern := "%" + orm.Escape(name) + "%"
 	_, err = o.Raw(sql, likePattern, limitSize).QueryRows(&users)
 	if err != nil {
 		return nil, err
