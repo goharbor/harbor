@@ -105,7 +105,7 @@ func (suite *ConfigurationTestSuite) TestScanAllMaxConcurrencyFromEnv() {
 	require.NoError(suite.T(), cfg.Load("../config_test.yml", true))
 	assert.Equal(suite.T(), uint(6), cfg.ScanAllMaxConcurrency)
 
-	// invalid and negative values shuold be ignored
+	// invalid and negative values should be ignored
 	for _, v := range []string{"abc", "-1"} {
 		suite.T().Setenv("JOB_SERVICE_SCAN_ALL_MAX_CONCURRENCY", v)
 		cfg = &Configuration{}
