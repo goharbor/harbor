@@ -115,7 +115,7 @@ export class CreateProjectComponent
 
     registries: Registry[] = [];
     supportedRegistryTypeQueryString: string =
-        'type={docker-hub harbor azure-acr ali-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
+        'type={docker-hub harbor azure-acr ali-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory huggingface}';
 
     // **Added property for bandwidth error message**
     bandwidthError: string | null = null;
