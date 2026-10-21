@@ -291,3 +291,40 @@ func TestBuildBlobUploadURL(t *testing.T) {
 		}
 	}
 }
+
+// TestParseUploadLocation_ErrorRedactsSecrets keeps query tokens out of the non-absolute rejection error.
+func TestParseUploadLocation_ErrorRedactsSecrets(t *testing.T) {
+	for _, location := range []string{
+		"/v2/foo/blobs/uploads/uuid?token=s3cr3t-token#s3cr3t-frag",
+		"v2/foo?token=s3cr3t-token",
+		"http://user:s3cr3t-pass@good-registry.example:5000/v2/foo",
+	} {
+		_, err := parseUploadLocation(location)
+		if err == nil {
+			t.Fatalf("expected rejection for %q", location)
+		}
+		if msg := err.Error(); strings.Contains(msg, "s3cr3t") {
+			t.Fatalf("error leaks secret from Location %q: %s", location, msg)
+		}
+	}
+}
+
+// TestResolveUploadLocation_ErrorRedactsSecrets keeps credentials and signed upload tokens carried
+// in a rejected Location out of the returned error, which replication logs verbatim.
+func TestResolveUploadLocation_ErrorRedactsSecrets(t *testing.T) {
+	const endpoint = "http://good-registry.example:5000"
+	origin, _ := url.Parse(endpoint + "/v2/foo/blobs/uploads/")
+	for _, location := range []string{
+		"http://evil.attacker.com/steal?token=s3cr3t-token",
+		"http://user:s3cr3t-pass@evil.attacker.com/steal",
+		"http://good-registry.example:5000@evil.attacker.com/steal?token=s3cr3t-token",
+	} {
+		_, err := resolveUploadLocation(endpoint, origin, location)
+		if err == nil {
+			t.Fatalf("expected rejection for %q", location)
+		}
+		if msg := err.Error(); strings.Contains(msg, "s3cr3t") {
+			t.Fatalf("error leaks secret from Location %q: %s", location, msg)
+		}
+	}
+}
