@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
@@ -55,18 +56,23 @@ const ociManifest = `{
 
 type CacheTestSuite struct {
 	suite.Suite
-	mCache     *ManifestCache
-	mListCache *ManifestListCache
-	local      localInterfaceMock
+	mCache        *ManifestCache
+	mListCache    *ManifestListCache
+	local         localInterfaceMock
+	origSleepIval time.Duration
 }
 
 func (suite *CacheTestSuite) SetupSuite() {
 	suite.local = localInterfaceMock{}
 	suite.mListCache = &ManifestListCache{local: &suite.local}
 	suite.mCache = &ManifestCache{local: &suite.local}
+	// Skip the inter-round delay so the wait loops don't stretch tests to minutes.
+	suite.origSleepIval = sleepInterval
+	sleepInterval = 0
 }
 
 func (suite *CacheTestSuite) TearDownSuite() {
+	sleepInterval = suite.origSleepIval
 }
 func (suite *CacheTestSuite) TestUpdateManifestList() {
 	ctx := context.Background()
@@ -174,6 +180,45 @@ func (suite *CacheTestSuite) TestPushManifestList() {
 
 	err = suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
 	suite.Require().Nil(err)
+}
+
+func (suite *CacheTestSuite) TestPushMaterializesTagWithPartialManifestList() {
+	// A single-platform pull of a multi-arch image: only one child manifest ever
+	// becomes present locally. push() must still materialize the tag (exactly
+	// once) rather than leaving it unresolvable until the full wait elapses, so
+	// the cached image stays pullable if the upstream later becomes unavailable.
+	ctx := context.Background()
+	amdDig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	armDig := "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
+	manList := &manifestlist.DeserializedManifestList{
+		ManifestList: manifestlist.ManifestList{
+			Versioned: manifest.Versioned{SchemaVersion: 2, MediaType: manifestlist.MediaTypeManifestList},
+			Manifests: []manifestlist.ManifestDescriptor{
+				{
+					Descriptor: distribution.Descriptor{Digest: digest.Digest(amdDig), Size: 3253, MediaType: schema2.MediaTypeManifest},
+					Platform:   manifestlist.PlatformSpec{Architecture: "amd64", OS: "linux"},
+				}, {
+					Descriptor: distribution.Descriptor{Digest: digest.Digest(armDig), Size: 3253, MediaType: schema2.MediaTypeManifest},
+					Platform:   manifestlist.PlatformSpec{Architecture: "arm64", OS: "linux"},
+				},
+			},
+		},
+	}
+	repo := "library/hello-world"
+
+	// A fresh mock so the shared suite mock's handlers don't interfere.
+	local := &localInterfaceMock{}
+	mListCache := &ManifestListCache{local: local}
+	// only the amd64 child is ever cached locally; arm64 never arrives
+	local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Digest: amdDig}).Return(&artifact.Artifact{}, nil)
+	local.On("GetManifest", ctx, mock.Anything).Return(nil, nil)
+	local.On("PushManifest", repo, "3.9.0", mock.Anything).Return(nil)
+	local.On("UpdatePullTime", ctx, mock.Anything).Return(nil)
+
+	err := mListCache.push(ctx, repo, "3.9.0", manList)
+	suite.Require().NoError(err)
+	local.AssertCalled(suite.T(), "PushManifest", repo, "3.9.0", mock.Anything)
+	local.AssertNumberOfCalls(suite.T(), "PushManifest", 1)
 }
 
 func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
