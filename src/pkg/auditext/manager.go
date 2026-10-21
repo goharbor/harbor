@@ -43,6 +43,8 @@ type Manager interface {
 	Purge(ctx context.Context, retentionHour int, includeOperations []string, dryRun bool) (int64, error)
 	// UpdateUsername Replace all log records username with its hash
 	UpdateUsername(ctx context.Context, username string, replaceWith string) error
+	// Update the audit log. Only the properties specified by "props" will be updated if set
+	Update(ctx context.Context, audit *model.AuditLogExt, props ...string) error
 }
 
 // New returns a default implementation of Manager
@@ -99,4 +101,8 @@ func (m *manager) Purge(ctx context.Context, retentionHour int, includeOperation
 // Delete ...
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
+}
+
+func (m *manager) Update(ctx context.Context, audit *model.AuditLogExt, props ...string) error {
+	return m.dao.Update(ctx, audit, props...)
 }
