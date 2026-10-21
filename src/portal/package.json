@@ -41,7 +41,7 @@
     "@clr/addons": "18.0.0",
     "@clr/angular": "18.0.0",
     "@clr/icons": "13.0.2",
-    "@clr/ui": "18.0.0",
+    "@clr/ui": "18.3.0",
     "@ngx-translate/core": "17.0.0",
     "@ngx-translate/http-loader": "17.0.0",
     "cron-validator": "1.4.0",
