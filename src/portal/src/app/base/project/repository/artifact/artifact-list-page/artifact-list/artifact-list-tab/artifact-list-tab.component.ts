@@ -446,6 +446,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                                         platFormAttr[index].platform
                                     );
                                 });
+                                this.populateAnnotations(this.artifactList);
                                 this.getArtifactTagsAsync(this.artifactList);
                                 this.getAccessoriesAsync(this.artifactList);
                                 this.checkCosignAndSbom(this.artifactList);
@@ -486,6 +487,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                             }
                         }
                         this.artifactList = res.body;
+                        this.populateAnnotations(this.artifactList);
                         this.getArtifactTagsAsync(this.artifactList);
                         this.getAccessoriesAsync(this.artifactList);
                         this.checkCosignAndSbomAsync(this.artifactList);
@@ -1314,5 +1316,19 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     }
     isEllipsisActive(ele: HTMLSpanElement): boolean {
         return ele?.offsetWidth < ele?.scrollWidth;
+    }
+    populateAnnotations(artifacts: ArtifactFront[]) {
+        if (artifacts && artifacts.length) {
+            artifacts.forEach(artifact => {
+                if (artifact.annotations) {
+                    artifact.annotationsArray = [];
+                    for (const key of Object.keys(artifact.annotations)) {
+                        artifact.annotationsArray.push(
+                            `${key}: ${artifact.annotations[key]}`
+                        );
+                    }
+                }
+            });
+        }
     }
 }
