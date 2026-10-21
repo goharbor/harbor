@@ -157,8 +157,6 @@ _build_trivy_adapter:
 	@if [ "$(TRIVYFLAG)" = "true" ] ; then \
 		$(call _build_base,$(TRIVY_ADAPTER),$(DOCKERFILEPATH_TRIVY_ADAPTER)) ; \
 		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary ; \
-		echo "Downloading Trivy scanner $(TRIVYVERSION)..." ; \
-		$(call _extract_archive, $(TRIVY_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
 		if [ "$(BUILDTRIVYADP)" != "true" ] ; then \
 			echo "Downloading Trivy adapter $(TRIVYADAPTERVERSION)..." ; \
 			$(call _extract_archive, $(TRIVY_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
@@ -166,9 +164,11 @@ _build_trivy_adapter:
 			echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
 			cd $(DOCKERFILEPATH_TRIVY_ADAPTER) && $(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) $(GOBUILDIMAGE) $(DOCKERNETWORK) && cd - ; \
 		fi ; \
-		echo "Building Trivy adapter container for photon..." ; \
+		echo "Building Trivy adapter container for photon (Trivy scanner $(TRIVYVERSION) is built from source in a builder stage)..." ; \
 		$(DOCKERBUILD_WITH_PULL_PARA) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
 			--build-arg harbor_base_namespace=$(BASEIMAGENAMESPACE) \
+			--build-arg golang_image=$(GOBUILDIMAGE) \
+			--build-arg TARGETARCH=$(TARGETARCH) \
 			--build-arg trivy_version=$(TRIVYVERSION) \
 			-f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) \
 			-t $(DOCKERIMAGENAME_TRIVY_ADAPTER):$(VERSIONTAG) . ; \
