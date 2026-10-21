@@ -170,6 +170,29 @@ func TestCheckNoEscalation_BuiltinRoleSynthesized(t *testing.T) {
 	rc.AssertNotCalled(t, "Get")
 }
 
+// Every built-in role resolves from the policy map: a caller lacking its
+// permissions is refused, a caller holding them is allowed, and the role
+// controller is never asked.
+func TestCheckNoEscalation_AllBuiltinRoles(t *testing.T) {
+	roles := []int{common.RoleProjectAdmin, common.RoleMaintainer, common.RoleDeveloper, common.RoleGuest, common.RoleLimitedGuest}
+	for _, roleID := range roles {
+		for _, callerCan := range []bool{false, true} {
+			sc := &securityMock.Context{}
+			sc.On("IsSysAdmin").Return(false)
+			sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(callerCan)
+			rc := &stubRoleCtl{}
+
+			err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, int64(roleID))
+			if callerCan {
+				assert.NoError(t, err, "role %d", roleID)
+			} else {
+				assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err), "role %d", roleID)
+			}
+			rc.AssertNotCalled(t, "Get")
+		}
+	}
+}
+
 func TestCheckNoEscalation_FirstPermissionPassesSecondFails(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsSysAdmin").Return(false)
