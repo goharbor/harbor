@@ -23,15 +23,21 @@ import { GcHistoryComponent } from './gc-history/gc-history.component';
 import {
     JOB_STATUS,
     REFRESH_STATUS_TIME_DIFFERENCE,
-    WORKER_OPTIONS,
 } from '../../clearing-job-interfact';
-import { clone } from '../../../../../shared/units/utils';
 import {
     SkipSessionRenewalService,
     skipSessionRenewal,
 } from '../../../../../services/skip-session-renewal.service';
+import { AppConfigService } from '../../../../../services/app-config.service';
 
 const ONE_MINUTE = 60000;
+
+const EMPTY_CRON: () => OriginCron = () => {
+    return {
+        type: ScheduleType.NONE,
+        cron: '',
+    };
+};
 
 @Component({
     selector: 'gc-config',
@@ -40,29 +46,38 @@ const ONE_MINUTE = 60000;
     standalone: false,
 })
 export class GcComponent implements OnInit, OnDestroy {
-    originCron: OriginCron;
+    originCron: OriginCron = EMPTY_CRON();
+
     disableGC: boolean = false;
     getLabelCurrent = 'GC.CURRENT_SCHEDULE';
     loadingGcStatus = false;
-    @ViewChild(CronScheduleComponent)
-    cronScheduleComponent: CronScheduleComponent;
-    shouldDeleteUntagged: boolean;
-    shouldDeleteTag: boolean;
-    workerNum: number = 1;
-    workerOptions: number[] = clone(WORKER_OPTIONS);
-    dryRunOnGoing: boolean = false;
 
-    lastCompletedTime: string;
+    shouldDeleteUntagged: boolean = false;
+    shouldDeleteTag: boolean = false;
+    workerNum: number = 1;
+    dryRunOnGoing: boolean = false;
+    lastCompletedTime: string | undefined;
     loadingLastCompletedTime: boolean = false;
     isDryRun: boolean = false;
-    nextScheduledTime: string;
+    nextScheduledTime: string | null = null;
     statusTimeout: any;
-    @ViewChild(GcHistoryComponent) gcHistoryComponent: GcHistoryComponent;
+
+    @ViewChild(CronScheduleComponent)
+    cronScheduleComponent: CronScheduleComponent | undefined;
+
+    @ViewChild(GcHistoryComponent)
+    gcHistoryComponent: GcHistoryComponent | undefined;
+
     constructor(
         private gcService: GcService,
         private errorHandler: ErrorHandler,
-        private skipSessionRenewalService: SkipSessionRenewalService
+        private skipSessionRenewalService: SkipSessionRenewalService,
+        private appConfigService: AppConfigService
     ) {}
+
+    get maxWorkers(): number | undefined {
+        return this.appConfigService.getConfig()?.gc_max_workers || undefined;
+    }
 
     ngOnInit() {
         this.getCurrentSchedule(true);
@@ -87,8 +102,10 @@ export class GcComponent implements OnInit, OnDestroy {
             .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .subscribe(res => {
                 if (res?.length) {
-                    this.isDryRun = JSON.parse(res[0]?.job_parameters).dry_run;
+                    const params = JSON.parse(res[0]?.job_parameters ?? '{}');
+                    this.isDryRun = params.dry_run;
                     this.lastCompletedTime = res[0]?.update_time;
+
                     if (
                         res[0]?.job_status === JOB_STATUS.RUNNING ||
                         res[0]?.job_status === JOB_STATUS.PENDING
@@ -102,6 +119,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 this.loadingLastCompletedTime = false;
             });
     }
+
     getCurrentSchedule(withLoading: boolean) {
         if (withLoading) {
             this.loadingGcStatus = true;
@@ -113,24 +131,26 @@ export class GcComponent implements OnInit, OnDestroy {
                     this.loadingGcStatus = false;
                 })
             )
-            .subscribe(
-                schedule => {
+            .subscribe({
+                next: schedule => {
                     this.initSchedule(schedule);
                 },
-                error => {
+                error: error => {
                     this.errorHandler.error(error);
-                }
-            );
+                },
+            });
     }
 
-    private initSchedule(gcHistory: GCHistory) {
+    private initSchedule(gcHistory: GCHistory | null) {
         this.nextScheduledTime = gcHistory?.schedule?.next_scheduled_time
             ? gcHistory?.schedule?.next_scheduled_time
             : null;
         if (gcHistory && gcHistory.schedule) {
+            const { type, cron } = gcHistory.schedule;
+
             this.originCron = {
-                type: gcHistory.schedule.type,
-                cron: gcHistory.schedule.cron,
+                type: type ? type : ScheduleType.NONE,
+                cron: cron ? cron : '',
             };
         } else {
             this.originCron = {
@@ -174,12 +194,13 @@ export class GcComponent implements OnInit, OnDestroy {
                 },
             })
             .subscribe({
-                next: response => {
+                next: () => {
                     this.errorHandler.info('GC.MSG_SUCCESS');
                     this.refresh();
                 },
                 error: error => {
                     this.errorHandler.error(error);
+                    this.enableGc();
                 },
             });
     }
@@ -237,7 +258,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 .subscribe(
                     response => {
                         this.errorHandler.info('GC.MSG_SCHEDULE_RESET');
-                        this.cronScheduleComponent.resetSchedule();
+                        this.cronScheduleComponent?.resetSchedule();
                         this.getCurrentSchedule(false); // refresh schedule
                     },
                     error => {
@@ -263,7 +284,7 @@ export class GcComponent implements OnInit, OnDestroy {
                 .subscribe(
                     response => {
                         this.errorHandler.info('GC.MSG_SCHEDULE_RESET');
-                        this.cronScheduleComponent.resetSchedule();
+                        this.cronScheduleComponent?.resetSchedule();
                         this.getCurrentSchedule(false); // refresh schedule
                     },
                     error => {
