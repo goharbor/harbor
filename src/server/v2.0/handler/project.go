@@ -50,6 +50,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/audit"
 	"github.com/goharbor/harbor/src/pkg/auditext"
+	auditextmodel "github.com/goharbor/harbor/src/pkg/auditext/model"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	pkgModels "github.com/goharbor/harbor/src/pkg/project/models"
@@ -1056,16 +1057,42 @@ func (a *projectAPI) GetLogExts(ctx context.Context, params operation.GetLogExts
 	}
 	query.Keywords["ProjectID"] = pro.ProjectID
 
-	total, err := a.auditextMgr.Count(ctx, query)
-	if err != nil {
-		return a.SendError(ctx, err)
+	pageNumber := query.PageNumber
+	if pageNumber <= 0 {
+		pageNumber = 1
 	}
-	logs, err := a.auditextMgr.List(ctx, query)
-	if err != nil {
-		return a.SendError(ctx, err)
+
+	var (
+		total   int64
+		hasNext bool
+		logs    []*auditextmodel.AuditLogExt
+	)
+
+	if query.PageSize > 0 {
+		listQuery := q.MustClone(query)
+		listQuery.ExtraLimit = 1
+		logs, err = a.auditextMgr.List(ctx, listQuery)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		if int64(len(logs)) > query.PageSize {
+			hasNext = true
+			logs = logs[:query.PageSize]
+			total = pageNumber*query.PageSize + 1
+		} else {
+			hasNext = false
+			total = (pageNumber-1)*query.PageSize + int64(len(logs))
+		}
+	} else {
+		logs, err = a.auditextMgr.List(ctx, query)
+		if err != nil {
+			return a.SendError(ctx, err)
+		}
+		total = int64(len(logs))
 	}
+
 	return operation.NewGetLogExtsOK().
 		WithXTotalCount(total).
-		WithLink(a.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithLink(a.PaginationLinks(ctx, params.HTTPRequest.URL, pageNumber, query.PageSize, hasNext).String()).
 		WithPayload(convertToModelAuditLogExt(logs))
 }

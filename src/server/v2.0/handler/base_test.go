@@ -122,6 +122,54 @@ func (b *baseHandlerTestSuite) TestLinks() {
 	b.Equal("http://localhost/api/library%252Fhello-world/artifacts?page=3&page_size=1&q=a=~b", links[1].URL)
 }
 
+func (b *baseHandlerTestSuite) TestPaginationLinks() {
+	// page 1 with hasNext = true (only next)
+	u, err := url.Parse("http://localhost/api/artifacts?page=1&page_size=10")
+	b.Require().Nil(err)
+	links := b.base.PaginationLinks(nil, u, 1, 10, true)
+	b.Require().Len(links, 1)
+	b.Equal("next", links[0].Rel)
+	b.Equal("http://localhost/api/artifacts?page=2&page_size=10", links[0].URL)
+
+	// page 2 with hasNext = true (both prev and next)
+	links = b.base.PaginationLinks(nil, u, 2, 10, true)
+	b.Require().Len(links, 2)
+	b.Equal("prev", links[0].Rel)
+	b.Equal("http://localhost/api/artifacts?page=1&page_size=10", links[0].URL)
+	b.Equal("next", links[1].Rel)
+	b.Equal("http://localhost/api/artifacts?page=3&page_size=10", links[1].URL)
+
+	// page 3 with hasNext = false (last page, only prev)
+	links = b.base.PaginationLinks(nil, u, 3, 10, false)
+	b.Require().Len(links, 1)
+	b.Equal("prev", links[0].Rel)
+	b.Equal("http://localhost/api/artifacts?page=2&page_size=10", links[0].URL)
+
+	// page 5 with hasNext = false (out-of-bounds page, still has prev to navigate back)
+	links = b.base.PaginationLinks(nil, u, 5, 10, false)
+	b.Require().Len(links, 1)
+	b.Equal("prev", links[0].Rel)
+	b.Equal("http://localhost/api/artifacts?page=4&page_size=10", links[0].URL)
+
+	// page 1 with hasNext = false (single page fit, no links)
+	links = b.base.PaginationLinks(nil, u, 1, 10, false)
+	b.Empty(links)
+
+	// pageSize = 0 (no links)
+	links = b.base.PaginationLinks(nil, u, 1, 0, true)
+	b.Empty(links)
+
+	// query parameters preservation (e.g. q and sort)
+	uWithParams, err := url.Parse("http://localhost/api/artifacts?page=2&page_size=10&q=project_id%3D3&sort=-op_time")
+	b.Require().Nil(err)
+	links = b.base.PaginationLinks(nil, uWithParams, 2, 10, true)
+	b.Require().Len(links, 2)
+	b.Equal("prev", links[0].Rel)
+	b.Equal("http://localhost/api/artifacts?page=1&page_size=10&q=project_id=3&sort=-op_time", links[0].URL)
+	b.Equal("next", links[1].Rel)
+	b.Equal("http://localhost/api/artifacts?page=3&page_size=10&q=project_id=3&sort=-op_time", links[1].URL)
+}
+
 func TestBaseHandler(t *testing.T) {
 	suite.Run(t, &baseHandlerTestSuite{})
 }
