@@ -37,6 +37,12 @@ import (
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
+type dummyTestingT struct{}
+
+func (d *dummyTestingT) Logf(format string, args ...interface{})   {}
+func (d *dummyTestingT) Errorf(format string, args ...interface{}) {}
+func (d *dummyTestingT) FailNow()                                  {}
+
 type replicationTestSuite struct {
 	suite.Suite
 	ctl        *controller
@@ -83,7 +89,10 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		dt := &dummyTestingT{}
+		return r.execMgr.AssertExpectations(dt) && r.flowCtl.AssertExpectations(dt) && r.ormCreator.AssertExpectations(dt)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -99,7 +108,10 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		dt := &dummyTestingT{}
+		return r.execMgr.AssertExpectations(dt) && r.flowCtl.AssertExpectations(dt) && r.ormCreator.AssertExpectations(dt)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
@@ -113,7 +125,10 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		dt := &dummyTestingT{}
+		return r.execMgr.AssertNumberOfCalls(dt, "MarkError", 1) && r.execMgr.AssertExpectations(dt)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.flowCtl.AssertNumberOfCalls(r.T(), "Start", 0)
 	r.execMgr.AssertNumberOfCalls(r.T(), "MarkError", 1) // Ensure execution marked as final status error
 	r.execMgr.AssertExpectations(r.T())
@@ -131,7 +146,10 @@ func (r *replicationTestSuite) TestStart() {
 	id, err = r.ctl.Start(context.Background(), &repctlmodel.Policy{Enabled: true, SingleActiveReplication: true}, nil, task.ExecutionTriggerManual)
 	r.Require().Nil(err)
 	r.Equal(int64(1), id)
-	time.Sleep(1 * time.Second) // wait the functions called in the goroutine
+	r.Eventually(func() bool {
+		dt := &dummyTestingT{}
+		return r.execMgr.AssertExpectations(dt) && r.flowCtl.AssertExpectations(dt) && r.ormCreator.AssertExpectations(dt)
+	}, 2*time.Second, 10*time.Millisecond)
 	r.execMgr.AssertExpectations(r.T())
 	r.flowCtl.AssertExpectations(r.T())
 	r.ormCreator.AssertExpectations(r.T())
