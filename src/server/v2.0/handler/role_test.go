@@ -181,6 +181,45 @@ func TestValidate_ValidPermission(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// Writing or running tag retention deletes artifacts, so a role that holds it
+// must hold artifact:delete as well.
+func TestValidate_RetentionWriteRequiresArtifactDelete(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{
+			{Resource: "tag-retention", Action: "create"},
+			{Resource: "tag-retention", Action: "update"},
+			{Resource: "artifact", Action: "read"},
+		}},
+	})
+	assert.Error(t, err)
+	assert.Equal(t, errors.BadRequestCode, errors.ErrCode(err))
+	assert.Contains(t, err.Error(), "tag-retention:create requires artifact:delete")
+	assert.Contains(t, err.Error(), "tag-retention:update requires artifact:delete")
+}
+
+func TestValidate_RetentionWriteWithArtifactDelete(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{
+			{Resource: "tag-retention", Action: "create"},
+			{Resource: "tag-retention", Action: "update"},
+			{Resource: "tag-retention", Action: "delete"},
+			{Resource: "tag-retention", Action: "operate"},
+			{Resource: "artifact", Action: "delete"},
+		}},
+	})
+	assert.NoError(t, err)
+}
+
+func TestValidate_RetentionReadNeedsNoArtifactDelete(t *testing.T) {
+	err := (&roleAPI{}).validate([]*models.RolePermission{
+		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{
+			{Resource: "tag-retention", Action: "read"},
+			{Resource: "tag-retention", Action: "list"},
+		}},
+	})
+	assert.NoError(t, err)
+}
+
 func TestValidate_EmptyEffectAllowed(t *testing.T) {
 	err := (&roleAPI{}).validate([]*models.RolePermission{
 		{Kind: roleCtl.LEVELROLE, Access: []*models.Access{{Resource: "member", Action: "create", Effect: ""}}},
