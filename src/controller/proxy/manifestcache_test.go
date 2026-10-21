@@ -17,6 +17,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -28,6 +29,7 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
+	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
 	"github.com/goharbor/harbor/src/testing/mock"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -249,6 +251,36 @@ func (suite *CacheTestSuite) TestManifestCache_push_fails() {
 	suite.Assert().Len(errs, 2)
 	suite.Assert().Contains(errs, digestErr)
 	suite.Assert().Contains(errs, tagErr)
+}
+
+func (suite *CacheTestSuite) TestManifestCache_putBlobToLocal_ResumesAfterInterruption() {
+	withShortBlobRetryBackoff(suite.T())
+	content := []byte("dependency blob content")
+	dig := digest.FromBytes(content)
+	desc := distribution.Descriptor{Size: int64(len(content)), Digest: dig}
+
+	first := &stubReader{data: content[:7], err: io.ErrUnexpectedEOF}
+	second := &stubReader{data: content[7:]}
+	remote := &testproxy.RemoteInterface{}
+	remote.On("BlobReader", "library/hello-world", string(dig)).Return(desc.Size, io.ReadCloser(first), nil)
+	remote.On("BlobReaderAt", "library/hello-world", string(dig), desc.Size, int64(7)).Return(io.ReadCloser(second), nil)
+
+	err := suite.mCache.putBlobToLocal("library/hello-world", "proxy/library/hello-world", desc, remote)
+	suite.Assert().NoError(err)
+	remote.AssertExpectations(suite.T())
+}
+
+func (suite *CacheTestSuite) TestManifestCache_putBlobToLocal_RejectsDigestMismatch() {
+	content := []byte("dependency blob content")
+	wrongDigest := digest.FromBytes([]byte("something else"))
+	desc := distribution.Descriptor{Size: int64(len(content)), Digest: wrongDigest}
+
+	remote := &testproxy.RemoteInterface{}
+	remote.On("BlobReader", "library/hello-world", string(wrongDigest)).Return(desc.Size, io.ReadCloser(&stubReader{data: content}), nil)
+
+	err := suite.mCache.putBlobToLocal("library/hello-world", "proxy/library/hello-world", desc, remote)
+	suite.Assert().Error(err)
+	remote.AssertExpectations(suite.T())
 }
 
 func TestCacheTestSuite(t *testing.T) {
