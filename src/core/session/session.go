@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -34,6 +35,11 @@ import (
 const (
 	// HarborProviderName is the harbor session provider name
 	HarborProviderName = "harbor"
+
+	// keyPrefixEnv names the environment variable holding the prefix of the
+	// session keys. Empty (the default) keeps the historical bare session ids,
+	// so existing sessions stay valid on upgrade.
+	keyPrefixEnv = "_REDIS_SESSION_KEY_PREFIX"
 )
 
 var harborpder = &Provider{}
@@ -41,6 +47,7 @@ var harborpder = &Provider{}
 // Store redis session store
 type Store struct {
 	c           cache.Cache
+	prefix      string
 	sid         string
 	lock        sync.RWMutex
 	values      map[any]any
@@ -107,13 +114,15 @@ func (rs *Store) releaseSession(ctx context.Context, _ http.ResponseWriter, requ
 	}
 
 	if rdb, ok := rs.c.(*redis.Cache); ok {
+		// The raw client bypasses the cache's key prefix: add it here.
+		key := rs.prefix + rs.sid
 		if requirePresent {
-			cmd := rdb.Client.SetXX(ctx, rs.sid, string(b), exp)
+			cmd := rdb.Client.SetXX(ctx, key, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
 		} else {
-			cmd := rdb.Client.Set(ctx, rs.sid, string(b), exp)
+			cmd := rdb.Client.Set(ctx, key, string(b), exp)
 			if cmd.Err() != nil {
 				log.Debugf("release session error: %v", err)
 			}
@@ -135,13 +144,15 @@ func (rs *Store) SessionReleaseIfPresent(ctx context.Context, w http.ResponseWri
 // Provider redis session provider
 type Provider struct {
 	maxlifetime int64
+	prefix      string
 	c           cache.Cache
 }
 
 // SessionInit init redis session
 func (rp *Provider) SessionInit(ctx context.Context, maxlifetime int64, url string) (err error) {
 	rp.maxlifetime = maxlifetime * int64(time.Second)
-	rp.c, err = redis.New(cache.Options{Address: url, Codec: codec})
+	rp.prefix = os.Getenv(keyPrefixEnv)
+	rp.c, err = redis.New(cache.Options{Address: url, Codec: codec, Prefix: rp.prefix})
 	if err != nil {
 		return err
 	}
@@ -163,7 +174,7 @@ func (rp *Provider) SessionRead(ctx context.Context, sid string) (session.Store,
 		return nil, err
 	}
 
-	rs := &Store{c: rp.c, sid: sid, values: kv, maxlifetime: rp.maxlifetime}
+	rs := &Store{c: rp.c, prefix: rp.prefix, sid: sid, values: kv, maxlifetime: rp.maxlifetime}
 	return rs, nil
 }
 
@@ -188,9 +199,10 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 		}
 	} else {
 		if rdb, ok := rp.c.(*redis.Cache); ok {
-			// redis has rename command
-			rdb.Rename(ctx, oldsid, sid)
-			rdb.Expire(ctx, sid, maxlifetime)
+			// redis has rename command; the raw client bypasses the cache's
+			// key prefix, so it is added here.
+			rdb.Rename(ctx, rp.prefix+oldsid, rp.prefix+sid)
+			rdb.Expire(ctx, rp.prefix+sid, maxlifetime)
 		} else {
 			kv := make(map[any]any)
 			err := rp.c.Fetch(ctx, oldsid, &kv)
