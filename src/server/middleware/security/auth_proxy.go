@@ -86,6 +86,10 @@ func (a *authProxy) Generate(req *http.Request) security.Context {
 		log.Errorf("failed to get user information from token review status: %v", err)
 		return nil
 	}
+	// Clear the local record's sysadmin flag: in http_auth mode admin authority must derive solely
+	// from AdminRoleInAuth (the reviewed identity vs the configured admin set), never from a local
+	// account that merely shares the reviewed name (e.g. the seeded local admin).
+	user.SysAdminFlag = false
 	user.GroupIDs = u2.GroupIDs
 	user.AdminRoleInAuth = u2.AdminRoleInAuth
 	log.Debugf("an auth proxy security context generated for request %s %s", req.Method, req.URL.Path)
