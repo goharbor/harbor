@@ -42,6 +42,7 @@ func (m *managerTestSuite) SetupTest() {
 	m.projectMgr = &testProject.Manager{}
 	m.cache = &testcache.Cache{}
 	m.iterator = &testcache.Iterator{}
+	m.iterator.On("Err").Return(nil).Maybe()
 	m.cachedManager = NewManager(m.projectMgr)
 	m.cachedManager.(*Manager).WithCacheClient(m.cache)
 	m.ctx = context.TODO()
