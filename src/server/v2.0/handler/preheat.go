@@ -420,7 +420,9 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 
 // ManualPreheat is manual preheat
 func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.ManualPreheatParams) middleware.Responder {
-	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourcePreatPolicy); err != nil {
+	// Starting preheat creates executions and launches jobs. Require Update, as
+	// StopExecution does, so permission to inspect a policy does not also run it.
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionUpdate, rbac.ResourcePreatPolicy); err != nil {
 		return api.SendError(ctx, err)
 	}
 

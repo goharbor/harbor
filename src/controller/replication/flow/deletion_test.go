@@ -22,8 +22,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	taskModel "github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/task"
 )
 
@@ -45,7 +47,9 @@ func (d *deletionFlowTestSuite) TestRun() {
 	}, nil)
 
 	taskMgr := &task.Manager{}
-	taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	taskMgr.On("Create", mock.Anything, mock.Anything, mock.MatchedBy(func(j *taskModel.Job) bool {
+		return j.Name == job.ReplicationVendorType
+	}), mock.Anything).Return(int64(1), nil)
 
 	policy := &repctlmodel.Policy{
 		SrcRegistry: &model.Registry{
@@ -73,6 +77,64 @@ func (d *deletionFlowTestSuite) TestRun() {
 		executionID: 1,
 		policy:      policy,
 		taskMgr:     taskMgr,
+		resources:   resources,
+	}
+	err := flow.Run(context.Background())
+	d.Require().Nil(err)
+}
+
+func (d *deletionFlowTestSuite) TestRunEventTriggered() {
+	adp := &mockAdapter{}
+	factory := &mockFactory{}
+	factory.On("AdapterPattern").Return(nil)
+	factory.On("Create", mock.Anything).Return(adp, nil)
+	adapter.RegisterFactory("TEST_FOR_DELETION_FLOW_EVENT", factory)
+
+	adp.On("Info").Return(&model.RegistryInfo{
+		SupportedResourceTypes: []string{
+			model.ResourceTypeArtifact,
+		},
+	}, nil)
+
+	execMgr := &task.ExecutionManager{}
+	execMgr.On("Get", mock.Anything, int64(2)).Return(&taskModel.Execution{
+		ID:      2,
+		Status:  job.RunningStatus.String(),
+		Trigger: taskModel.ExecutionTriggerEvent,
+	}, nil)
+
+	taskMgr := &task.Manager{}
+	taskMgr.On("Create", mock.Anything, int64(2), mock.MatchedBy(func(j *taskModel.Job) bool {
+		return j.Name == job.EventReplicationVendorType
+	}), mock.Anything).Return(int64(1), nil).Once()
+
+	policy := &repctlmodel.Policy{
+		SrcRegistry: &model.Registry{
+			Type: "TEST_FOR_DELETION_FLOW_EVENT",
+		},
+		DestRegistry: &model.Registry{
+			Type: "TEST_FOR_DELETION_FLOW_EVENT",
+		},
+	}
+	resources := []*model.Resource{
+		{
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "library/hello-world",
+				},
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
+			},
+		},
+	}
+	flow := &deletionFlow{
+		executionID:  2,
+		policy:       policy,
+		executionMgr: execMgr,
+		taskMgr:      taskMgr,
 		resources:   resources,
 	}
 	err := flow.Run(context.Background())
