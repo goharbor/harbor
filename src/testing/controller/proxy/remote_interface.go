@@ -54,6 +54,41 @@ func (_m *RemoteInterface) BlobReader(repo string, dig string) (int64, io.ReadCl
 	return r0, r1, r2
 }
 
+// BlobStat provides a mock function with given fields: repo, dig
+func (_m *RemoteInterface) BlobStat(repo string, dig string) (bool, int64, error) {
+	ret := _m.Called(repo, dig)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BlobStat")
+	}
+
+	var r0 bool
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(string, string) (bool, int64, error)); ok {
+		return rf(repo, dig)
+	}
+	if rf, ok := ret.Get(0).(func(string, string) bool); ok {
+		r0 = rf(repo, dig)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string) int64); ok {
+		r1 = rf(repo, dig)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(string, string) error); ok {
+		r2 = rf(repo, dig)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 // ListReferrers provides a mock function with given fields: repo, digest, rawQuery
 func (_m *RemoteInterface) ListReferrers(repo string, digest string, rawQuery string) (*v1.Index, map[string][]string, error) {
 	ret := _m.Called(repo, digest, rawQuery)

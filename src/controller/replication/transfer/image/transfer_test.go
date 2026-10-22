@@ -87,6 +87,9 @@ func (f *fakeRegistry) DeleteManifest(repository, reference string) error {
 func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
 	return false, nil
 }
+func (f *fakeRegistry) BlobStat(repository, digest string) (bool, int64, error) {
+	return false, 0, nil
+}
 func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
 	r := io.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
