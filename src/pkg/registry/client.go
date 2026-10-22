@@ -164,14 +164,13 @@ func (c *client) Catalog() ([]string, error) {
 		}
 		repositories = append(repositories, repos...)
 
-		url = next
 		// no next page, end the loop
-		if len(url) == 0 {
+		if len(next) == 0 {
 			break
 		}
-		// relative URL
-		if !strings.Contains(url, "://") {
-			url = c.url + url
+		url, err = nextPageURL(c.url, next)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return repositories, nil
@@ -211,14 +210,13 @@ func (c *client) ListTags(repository string) ([]string, error) {
 		}
 		tags = append(tags, tgs...)
 
-		url = next
 		// no next page, end the loop
-		if len(url) == 0 {
+		if len(next) == 0 {
 			break
 		}
-		// relative URL
-		if !strings.Contains(url, "://") {
-			url = c.url + url
+		url, err = nextPageURL(c.url, next)
+		if err != nil {
+			return nil, err
 		}
 	}
 	return tags, nil
@@ -433,7 +431,7 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 
 	// the range is from 0 to (blobSize-1), so (end == blobSize-1) means it is last chunk
 	lastChunk := end == blobSize-1
-	url, err := buildChunkBlobUploadURL(c.url, location, digest, lastChunk)
+	url, err := buildChunkBlobUploadURL(location, digest, lastChunk)
 	if err != nil {
 		return location, end, err
 	}
@@ -463,7 +461,11 @@ func (c *client) PushBlobChunk(repository, digest string, blobSize int64, chunk 
 
 	defer resp.Body.Close()
 	// return the location for next chunk upload
-	return resp.Header.Get("Location"), end, nil
+	next, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return location, end, err
+	}
+	return next, end, nil
 }
 
 func (c *client) getUploadStatus(location string) (string, int64, error) {
@@ -484,7 +486,11 @@ func (c *client) getUploadStatus(location string) (string, int64, error) {
 		return location, -1, err
 	}
 
-	return resp.Header.Get("Location"), end, nil
+	next, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return location, -1, err
+	}
+	return next, end, nil
 }
 
 func parseContentRange(cr string) (int64, int64, error) {
@@ -515,11 +521,34 @@ func (c *client) initiateBlobUpload(repository string) (string, string, error) {
 		return "", "", err
 	}
 	defer resp.Body.Close()
-	return resp.Header.Get("Location"), resp.Header.Get("Docker-Upload-UUID"), nil
+	location, err := c.uploadLocation(req, resp)
+	if err != nil {
+		return "", "", err
+	}
+	return location, resp.Header.Get("Docker-Upload-UUID"), nil
+}
+
+// uploadLocation returns the upload Location header of resp resolved to an absolute URL, see
+// resolveUploadLocation. The origin is the URL the request was sent to; when the HTTP client followed
+// redirects, the final request URL is used so that relative values resolve against the URL that
+// actually answered. A redirect that moved to a different origin is rejected.
+func (c *client) uploadLocation(req *http.Request, resp *http.Response) (string, error) {
+	location := resp.Header.Get("Location")
+	if location == "" {
+		return "", nil
+	}
+	origin := req.URL
+	if resp.Request != nil && resp.Request.URL != nil {
+		if !sameRegistryOrigin(origin, resp.Request.URL) {
+			return "", fmt.Errorf("registry upload response redirected to a different origin than %q", origin.Redacted())
+		}
+		origin = resp.Request.URL
+	}
+	return resolveUploadLocation(c.url, origin, location)
 }
 
 func (c *client) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
-	url, err := buildMonolithicBlobUploadURL(c.url, location, digest)
+	url, err := buildMonolithicBlobUploadURL(location, digest)
 	if err != nil {
 		return err
 	}
@@ -721,6 +750,30 @@ func next(link string) string {
 	return ""
 }
 
+// nextPageURL builds the URL of the next page from a registry-provided Link value exactly as
+// before (relative values are appended to the endpoint, absolute values are used as is) and
+// rejects the result unless it stays on the endpoint's origin with the endpoint's userinfo.
+// The Link value is controlled by the remote registry, and some adapters' authorizers attach
+// credentials to every request regardless of host, so following it elsewhere leaks them.
+func nextPageURL(endpoint, link string) (string, error) {
+	next := link
+	if !strings.Contains(next, "://") {
+		next = endpoint + next
+	}
+	base, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+	u, err := url.Parse(next)
+	if err != nil {
+		return "", err
+	}
+	if u.User.String() != base.User.String() || !commonhttp.SameOrigin(base, u) {
+		return "", fmt.Errorf("pagination Link %q leaves the registry origin %q", link, base.Redacted())
+	}
+	return next, nil
+}
+
 func buildPingURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/", endpoint)
 }
@@ -757,34 +810,102 @@ func buildReferrersURL(endpoint, repository, digest, rawQuery string) string {
 	return url
 }
 
-func buildChunkBlobUploadURL(endpoint, location, digest string, lastChunk bool) (string, error) {
-	url, err := url.Parse(location)
+func buildChunkBlobUploadURL(location, digest string, lastChunk bool) (string, error) {
+	u, err := parseUploadLocation(location)
 	if err != nil {
 		return "", err
 	}
-	q := url.Query()
+	q := u.Query()
 	if lastChunk {
 		q.Set("digest", digest)
 	}
-	url.RawQuery = q.Encode()
-	if url.IsAbs() {
-		return url.String(), nil
-	}
-	// the "relativeurls" is enabled in registry
-	return endpoint + url.String(), nil
+	u.RawQuery = q.Encode()
+	return u.String(), nil
 }
 
-func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {
-	url, err := url.Parse(location)
+func buildMonolithicBlobUploadURL(location, digest string) (string, error) {
+	u, err := parseUploadLocation(location)
 	if err != nil {
 		return "", err
 	}
-	q := url.Query()
+	q := u.Query()
 	q.Set("digest", digest)
-	url.RawQuery = q.Encode()
-	if url.IsAbs() {
-		return url.String(), nil
+	u.RawQuery = q.Encode()
+	return u.String(), nil
+}
+
+// parseUploadLocation parses an upload location already resolved by resolveUploadLocation and only
+// re-checks that it is a plain absolute URL.
+func parseUploadLocation(location string) (*url.URL, error) {
+	if location == "" {
+		return nil, errors.New(nil).WithMessage("empty registry upload Location")
 	}
-	// the "relativeurls" is enabled in registry
-	return endpoint + url.String(), nil
+	u, err := url.Parse(location)
+	if err != nil {
+		return nil, err
+	}
+	if u.User != nil {
+		return nil, fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+	}
+	if !u.IsAbs() || u.Host == "" {
+		return nil, fmt.Errorf("registry upload Location must be an absolute URL: %q", location)
+	}
+	return u, nil
+}
+
+// resolveUploadLocation resolves the upload Location header returned by the registry to an absolute
+// URL and makes sure it stays on the same origin (scheme, host, port) as the request that produced it.
+//
+// origin is the URL of that request after the authorizer ran, not the configured endpoint: some
+// adapters (e.g. AWS ECR, configured with api.ecr.<region> but served from <account>.dkr.ecr.<region>)
+// rewrite the request host, and the Location then follows the rewritten host.
+//
+// Root-relative values ("/v2/...", distribution's relativeurls mode) are appended to the endpoint so
+// that a path prefix the registry is served under is preserved.
+func resolveUploadLocation(endpoint string, origin *url.URL, location string) (string, error) {
+	ref, err := url.Parse(location)
+	if err != nil {
+		return "", err
+	}
+	// userinfo has no legitimate use in an upload Location and makes the host ambiguous.
+	if ref.User != nil {
+		return "", fmt.Errorf("registry upload Location must not contain userinfo: %q", location)
+	}
+	// "//host/..." is a network-path reference and is resolved against origin below.
+	if ref.Scheme == "" && ref.Host == "" && strings.HasPrefix(location, "/") && !strings.HasPrefix(location, "//") {
+		u, err := url.Parse(endpoint + location)
+		if err != nil {
+			return "", err
+		}
+		return u.String(), nil
+	}
+	if origin == nil {
+		if origin, err = url.Parse(endpoint); err != nil {
+			return "", err
+		}
+	}
+	next := origin.ResolveReference(ref)
+	if !sameRegistryOrigin(origin, next) {
+		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", location, origin.Redacted())
+	}
+	return next.String(), nil
+}
+
+func sameRegistryOrigin(a, b *url.URL) bool {
+	return strings.EqualFold(a.Scheme, b.Scheme) &&
+		strings.EqualFold(a.Hostname(), b.Hostname()) &&
+		effectiveRegistryPort(a) == effectiveRegistryPort(b)
+}
+
+func effectiveRegistryPort(u *url.URL) string {
+	if p := u.Port(); p != "" {
+		return p
+	}
+	switch strings.ToLower(u.Scheme) {
+	case "https":
+		return "443"
+	case "http":
+		return "80"
+	}
+	return ""
 }
