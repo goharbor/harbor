@@ -1,8 +1,12 @@
 ARG golang_image
 FROM ${golang_image}
+ARG version=dev
+ARG commit=none
+ARG build_date=unknown
 
 ADD .   /go/src/github.com/goharbor/harbor-scanner-trivy/
 WORKDIR /go/src/github.com/goharbor/harbor-scanner-trivy/
 
 RUN export GOOS=linux GO111MODULE=on CGO_ENABLED=0 && \
-	go build -o scanner-trivy cmd/scanner-trivy/main.go
+	go build -ldflags "-X main.version=${version} -X main.commit=${commit} -X main.date=${build_date}" \
+	-o scanner-trivy cmd/scanner-trivy/main.go

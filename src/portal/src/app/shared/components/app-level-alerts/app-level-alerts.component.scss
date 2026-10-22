@@ -17,5 +17,6 @@
 
 .banner-message {
   min-width: 0;
+  /* stylelint-disable-next-line declaration-property-value-keyword-no-deprecated */
   word-break: break-word;
 }
