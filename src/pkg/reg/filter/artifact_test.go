@@ -74,11 +74,12 @@ func TestArtifactTypeFilterNoDuplicates(t *testing.T) {
 }
 
 func TestArtifactResourceFiltersWithAccessories(t *testing.T) {
+	// Accessories already have their subject's type here; the Harbor v2 adapter tests cover inheritance.
 	artifacts := []*model.Artifact{
 		{Type: "IMAGE", Tags: []string{"1.0"}},
 		// Direct accessory of the image (e.g. signature or sbom)
 		{Type: "IMAGE", Digest: "sha256:acc1", IsAcc: true, ParentTags: []string{"1.0"}},
-		// Multi-tier accessory of the image (e.g. signature of sbom)
+		// Nested accessory with the image's type already assigned (e.g. signature of an SBOM)
 		{Type: "IMAGE", Digest: "sha256:subacc1", IsAcc: true, ParentTags: []string{"1.0"}},
 		{Type: "CHART", Tags: []string{"1.0"}},
 		// Accessory of the chart
@@ -96,4 +97,3 @@ func TestArtifactResourceFiltersWithAccessories(t *testing.T) {
 	require.Equal(t, "sha256:acc1", result[1].Digest)
 	require.Equal(t, "sha256:subacc1", result[2].Digest)
 }
-
