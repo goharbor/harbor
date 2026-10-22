@@ -33,7 +33,7 @@ import (
 )
 
 // webhookEgressPolicyEnv selects which destinations the webhook and Slack notification clients
-// may reach: allow_all, block_restricted (the default) or public_only. See egressLevel.
+// may reach: allow_all (the default), block_restricted or public_only. See egressLevel.
 const webhookEgressPolicyEnv = "HARBOR_WEBHOOK_EGRESS_POLICY"
 
 // webhookEgressAllowlistEnv lists destinations the notification clients may always reach, whatever
@@ -216,7 +216,7 @@ func parseEgressLevel(policyEnv, legacyEnv string) egressLevel {
 	}
 	value := strings.TrimSpace(legacyEnv)
 	if value == "" {
-		return egressBlockRestricted
+		return egressAllowAll
 	}
 	allowed, err := strconv.ParseBool(value)
 	switch {
