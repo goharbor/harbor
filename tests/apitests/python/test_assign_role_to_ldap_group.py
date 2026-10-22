@@ -76,8 +76,8 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
             artifacts = self.artifact.list_artifacts(project_name, USER_DEV["repo"], **USER_DEV)
             self.assertTrue(len(artifacts) == 1)
             push_self_build_image_to_project(project_name, harbor_server, USER_GUEST["username"], USER_GUEST["password"], USER_GUEST["repo"], "latest", expected_error_message = "unauthorized to access repository")
-            artifacts = self.artifact.list_artifacts(project_name, USER_GUEST["repo"], **USER_GUEST)
-            self.assertTrue(len(artifacts) == 0)
+            # the guest push was rejected, so the repository was never created and listing it is a 404
+            self.artifact.list_artifacts(project_name, USER_GUEST["repo"], expect_status_code=404, **USER_GUEST)
 
             self.assertTrue(self.project.query_user_logs(project_name, **USER_ADMIN)>0, "admin user can see logs")
             self.assertTrue(self.project.query_user_logs(project_name, status_code=403, **USER_DEV)==0, "dev user can not see any logs")

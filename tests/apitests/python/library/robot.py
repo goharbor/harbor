@@ -128,5 +128,4 @@ class Robot(base.Base, object):
         data, status_code, _ = self._get_client(**kwargs).refresh_sec_with_http_info(robot_id, robot_sec)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
-        print("Refresh new secret:", data)
         return data

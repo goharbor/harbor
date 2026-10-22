@@ -35,6 +35,9 @@ type Controller interface {
 	// Update metadatas
 	Update(ctx context.Context, projectID int64, meta map[string]string) error
 
+	// UpdateWithValidation atomically validates and updates metadatas.
+	UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate metadata.Validator) error
+
 	// Get metadatas whose keys are specified in parameter meta, if it is absent, get all
 	Get(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
 }
@@ -60,6 +63,10 @@ func (c *controller) Delete(ctx context.Context, projectID int64, meta ...string
 
 func (c *controller) Update(ctx context.Context, projectID int64, meta map[string]string) error {
 	return c.mgr.Update(ctx, projectID, meta)
+}
+
+func (c *controller) UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate metadata.Validator) error {
+	return c.mgr.UpdateWithValidation(ctx, projectID, meta, validate)
 }
 
 func (c *controller) Get(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {

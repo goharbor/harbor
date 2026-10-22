@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSec "github.com/goharbor/harbor/src/common/security/robot"
@@ -62,8 +63,11 @@ import (
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
 )
 
-// for the proxy cache type project, we will create a 7 days retention policy for it by default
-const defaultDaysToRetentionForProxyCacheProject = 7
+const (
+	// for the proxy cache type project, we will create a 7 days retention policy for it by default
+	defaultDaysToRetentionForProxyCacheProject = 7
+	maxDaysToRetentionForProxyCacheProject     = 18250 // 50 years, matching the API and portal limit
+)
 
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
@@ -178,7 +182,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.EnableContentTrust = nil
 	}
 
-	// validate the RetentionID, RegistryID and StorageLimit in the body of the request
+	// validate the retention settings, RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -244,7 +248,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// RegistryID is provided in the request body and it's valid,
 	// create a default retention policy for proxy project
 	if req.RegistryID != nil {
-		plc := policy.WithNDaysSinceLastPull(projectID, defaultDaysToRetentionForProxyCacheProject)
+		days := defaultDaysToRetentionForProxyCacheProject
+		if req.RetentionDays != nil {
+			days = int(*req.RetentionDays)
+		}
+		plc := policy.WithNDaysSinceLastPull(projectID, days)
 		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
 		if err != nil {
 			return a.SendError(ctx, err)
@@ -551,9 +559,13 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		return a.SendError(ctx, err)
 	}
 
-	p, err := a.projectCtl.Get(ctx, projectNameOrID, project.Metadata(false))
+	p, err := a.projectCtl.Get(ctx, projectNameOrID)
 	if err != nil {
 		return a.SendError(ctx, err)
+	}
+
+	if params.Project.RetentionDays != nil {
+		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project"))
 	}
 
 	if params.Project.CVEAllowlist != nil {
@@ -582,7 +594,7 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 	// see https://github.com/goharbor/harbor/issues/12940 to get more info
 	if params.Project.Metadata != nil && p.IsProxy() {
 		params.Project.Metadata.EnableContentTrust = nil
-		if err := validateProxyCacheRepositoryFilter(params.Project.Metadata); err != nil {
+		if err := validateProxyCacheRepositoryFilterUpdate(params.Project.Metadata, p.Metadata); err != nil {
 			return a.SendError(ctx, err)
 		}
 	}
@@ -661,9 +673,18 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 		return a.SendError(ctx, err)
 	}
 
+	hasAdminPermission := false
+	if secCtx, err := a.GetSecurityContext(ctx); err == nil && secCtx != nil {
+		hasAdminPermission = secCtx.IsSysAdmin() || secCtx.Can(ctx, rbac.ActionList, system.NewNamespace().Resource(rbac.ResourceScanner))
+	}
+
 	payload := make([]*models.ScannerRegistration, len(scanners))
 	for i, scanner := range scanners {
-		payload[i] = model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		s := model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		if s != nil && !hasAdminPermission {
+			s.URL = ""
+		}
+		payload[i] = s
 	}
 
 	return operation.NewListScannerCandidatesOfProjectOK().
@@ -799,6 +820,15 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, option
 }
 
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
+	if req.RetentionDays != nil {
+		if req.RegistryID == nil {
+			return errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project")
+		}
+		if *req.RetentionDays < 0 || *req.RetentionDays > maxDaysToRetentionForProxyCacheProject {
+			return errors.BadRequestError(nil).WithMessagef("retention_days must be between 0 and %d", maxDaysToRetentionForProxyCacheProject)
+		}
+	}
+
 	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
 		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
 	}
@@ -863,9 +893,8 @@ func validateProxyCacheRepositoryFilter(metadata *models.ProjectMetadata) error 
 		return nil
 	}
 
-	if filterKind != pattern.KindRegex && filterKind != pattern.KindDoublestar {
-		return errors.BadRequestError(nil).
-			WithMessagef("metadata.proxy_cache_filter_kind should be %q or %q, but got: %q", pattern.KindDoublestar, pattern.KindRegex, filterKind)
+	if err := pattern.ValidateKind(filterKind); err != nil {
+		return errors.BadRequestError(nil).WithMessagef("metadata.proxy_cache_filter_kind: %v", err)
 	}
 
 	if err := pattern.ValidateRepositoryFilter(filterPattern, filterKind); err != nil {
@@ -873,6 +902,26 @@ func validateProxyCacheRepositoryFilter(metadata *models.ProjectMetadata) error 
 			WithMessagef("metadata.proxy_cache_filter_pattern is invalid for kind %q: %v", filterKind, err)
 	}
 	return nil
+}
+
+func validateProxyCacheRepositoryFilterUpdate(metadata *models.ProjectMetadata, stored map[string]string) error {
+	if metadata == nil {
+		return nil
+	}
+
+	filterPattern := stored[pkgModels.ProMetaProxyCacheFilterPattern]
+	if metadata.ProxyCacheFilterPattern != nil {
+		filterPattern = *metadata.ProxyCacheFilterPattern
+	}
+	filterKind := stored[pkgModels.ProMetaProxyCacheFilterKind]
+	if metadata.ProxyCacheFilterKind != nil {
+		filterKind = *metadata.ProxyCacheFilterKind
+	}
+
+	return validateProxyCacheRepositoryFilter(&models.ProjectMetadata{
+		ProxyCacheFilterPattern: &filterPattern,
+		ProxyCacheFilterKind:    &filterKind,
+	})
 }
 
 func (a *projectAPI) populateProperties(ctx context.Context, p *project.Project) error {

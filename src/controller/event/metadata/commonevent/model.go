@@ -58,6 +58,9 @@ type Metadata struct {
 	ResponseCode int
 	// RequestURL request URL
 	RequestURL string
+	// IsResourceName indicates the request declared, via the X-Is-Resource-Name
+	// header, that name/ID path parameters are resource names
+	IsResourceName bool
 	// IPAddress IP address of the request
 	IPAddress string
 	// ResponseLocation response location

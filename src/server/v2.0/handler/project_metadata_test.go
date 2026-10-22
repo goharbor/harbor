@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/project/metadata"
 	"github.com/goharbor/harbor/src/lib/pattern"
+	pkgmetadata "github.com/goharbor/harbor/src/pkg/project/metadata"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project_metadata"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
@@ -31,8 +32,16 @@ import (
 
 type fakeMetadataController struct {
 	metadata.Controller
-	getFunc func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
-	deleteFunc func(ctx context.Context, projectID int64, meta ...string) error
+	getFunc                  func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
+	deleteFunc               func(ctx context.Context, projectID int64, meta ...string) error
+	updateWithValidationFunc func(ctx context.Context, projectID int64, meta map[string]string, validate pkgmetadata.Validator) error
+}
+
+func (f *fakeMetadataController) UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate pkgmetadata.Validator) error {
+	if f.updateWithValidationFunc != nil {
+		return f.updateWithValidationFunc(ctx, projectID, meta, validate)
+	}
+	return nil
 }
 
 func (f *fakeMetadataController) Get(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
@@ -111,80 +120,32 @@ func TestValidate(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			name:      "ProxyCacheFilterPattern with KindDoublestar (valid)",
+			name:      "ProxyCacheFilterPattern on proxy project",
 			metas:     map[string]string{proModels.ProMetaProxyCacheFilterPattern: "**"},
 			expectErr: false,
 			setup: func() {
 				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 					return &proModels.Project{RegistryID: 1}, nil
 				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindDoublestar}, nil
-				}
 			},
 		},
 		{
-			name:      "ProxyCacheFilterPattern with KindDoublestar (invalid)",
-			metas:     map[string]string{proModels.ProMetaProxyCacheFilterPattern: "[invalid"},
-			expectErr: true,
-			setup: func() {
-				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
-					return &proModels.Project{RegistryID: 1}, nil
-				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindDoublestar}, nil
-				}
-			},
-		},
-		{
-			name:      "ProxyCacheFilterPattern with KindRegex (valid)",
-			metas:     map[string]string{proModels.ProMetaProxyCacheFilterPattern: "^foo/.*$"},
-			expectErr: false,
-			setup: func() {
-				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
-					return &proModels.Project{RegistryID: 1}, nil
-				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindRegex}, nil
-				}
-			},
-		},
-		{
-			name:      "ProxyCacheFilterPattern with KindRegex (invalid)",
-			metas:     map[string]string{proModels.ProMetaProxyCacheFilterPattern: "[invalid"},
-			expectErr: true,
-			setup: func() {
-				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
-					return &proModels.Project{RegistryID: 1}, nil
-				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindRegex}, nil
-				}
-			},
-		},
-		{
-			name:      "ProxyCacheFilterKind with valid existing pattern",
+			name:      "Valid ProxyCacheFilterKind on proxy project",
 			metas:     map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindRegex},
 			expectErr: false,
 			setup: func() {
 				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 					return &proModels.Project{RegistryID: 1}, nil
 				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterPattern: "^foo/.*$"}, nil
-				}
 			},
 		},
 		{
-			name:      "ProxyCacheFilterKind with invalid existing pattern for doublestar",
-			metas:     map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindDoublestar},
+			name:      "Invalid ProxyCacheFilterKind",
+			metas:     map[string]string{proModels.ProMetaProxyCacheFilterKind: "invalid"},
 			expectErr: true,
 			setup: func() {
 				fakeProCtl.getFunc = func(ctx context.Context, projectIDOrName any, options ...project.Option) (*proModels.Project, error) {
 					return &proModels.Project{RegistryID: 1}, nil
-				}
-				fakeCtl.getFunc = func(ctx context.Context, projectID int64, meta ...string) (map[string]string, error) {
-					return map[string]string{proModels.ProMetaProxyCacheFilterPattern: "[invalid"}, nil
 				}
 			},
 		},
@@ -225,6 +186,66 @@ func TestValidate(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, result)
+			}
+		})
+	}
+}
+
+func TestProjectMetadataUpdateValidatesEffectiveFilter(t *testing.T) {
+	tests := []struct {
+		name    string
+		stored  map[string]string
+		update  map[string]string
+		wantErr bool
+	}{
+		{
+			name: "reject kind-only update incompatible with stored pattern",
+			stored: map[string]string{
+				proModels.ProMetaProxyCacheFilterPattern: "*",
+				proModels.ProMetaProxyCacheFilterKind:    pattern.KindDoublestar,
+			},
+			update:  map[string]string{proModels.ProMetaProxyCacheFilterKind: pattern.KindRegex},
+			wantErr: true,
+		},
+		{
+			name: "reject pattern-only update incompatible with stored kind",
+			stored: map[string]string{
+				proModels.ProMetaProxyCacheFilterPattern: "^foo/.*$",
+				proModels.ProMetaProxyCacheFilterKind:    pattern.KindRegex,
+			},
+			update:  map[string]string{proModels.ProMetaProxyCacheFilterPattern: "*"},
+			wantErr: true,
+		},
+		{
+			name: "accept compatible pattern-only update",
+			stored: map[string]string{
+				proModels.ProMetaProxyCacheFilterPattern: "^foo/.*$",
+				proModels.ProMetaProxyCacheFilterKind:    pattern.KindRegex,
+			},
+			update: map[string]string{proModels.ProMetaProxyCacheFilterPattern: "^bar/.*$"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeCtl := &fakeMetadataController{}
+			fakeCtl.updateWithValidationFunc = func(_ context.Context, _ int64, update map[string]string, validate pkgmetadata.Validator) error {
+				effective := make(map[string]string, len(tt.stored)+len(update))
+				for key, value := range tt.stored {
+					effective[key] = value
+				}
+				for key, value := range update {
+					effective[key] = value
+				}
+				return validate(effective)
+			}
+
+			api := &projectMetadataAPI{ctl: fakeCtl}
+			err := api.update(context.Background(), 1, tt.update)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
