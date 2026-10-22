@@ -15,6 +15,7 @@
 package filter
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/reg/model"
@@ -45,6 +46,17 @@ func BuildArtifactFilters(filters []*model.Filter) (ArtifactFilters, error) {
 			f = &artifactTagFilter{
 				pattern:    filter.Value.(string),
 				decoration: filter.Decoration,
+			}
+		case model.FilterTypeResource:
+			if resourceType, ok := filter.Value.(string); ok {
+				// "artifact" covers all kinds of artifacts, only "image" narrows down the result
+				if resourceType == model.ResourceTypeImage {
+					f = &artifactTypeFilter{
+						types: []string{resourceType},
+					}
+				}
+			} else {
+				return nil, fmt.Errorf("invalid filter value type for resource filter, expecting string")
 			}
 		}
 		if f != nil {
@@ -84,10 +96,16 @@ func (a *artifactTypeFilter) Filter(artifacts []*model.Artifact) ([]*model.Artif
 	}
 	var result []*model.Artifact
 	for _, artifact := range artifacts {
+		// some adapters (e.g. the native registry adapter) don't know the type of
+		// the artifacts, keep them rather than filtering out everything
+		if len(artifact.Type) == 0 {
+			result = append(result, artifact)
+			continue
+		}
 		for _, t := range a.types {
-			if strings.EqualFold(strings.ToLower(artifact.Type), strings.ToLower(t)) {
+			if strings.EqualFold(artifact.Type, t) {
 				result = append(result, artifact)
-				continue
+				break
 			}
 		}
 	}
