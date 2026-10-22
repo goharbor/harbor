@@ -43,6 +43,13 @@ func newPermissionsAPIAPI() *permissionsAPI {
 	}
 }
 
+// GetPermissions returns the available permission catalog.
+// Restricted to system admins and project admins (matching pre-custom-roles
+// behavior): the catalog is read-only metadata (action names such as
+// repository:pull) used by project-level UI components (robot accounts,
+// webhooks, role management). A project admin sees only the project catalog; a
+// system admin additionally sees the system-level and role-level catalogs (the
+// latter drives the sysadmin-only custom-role editor).
 func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPermissionsParams) middleware.Responder {
 	secCtx, ok := security.FromContext(ctx)
 	if !ok {
@@ -52,12 +59,9 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 		return p.SendError(ctx, errors.UnauthorizedError(nil).WithMessage(secCtx.GetUsername()))
 	}
 
-	var isSystemAdmin bool
-	var isProjectAdmin bool
-
-	if secCtx.IsSysAdmin() {
-		isSystemAdmin = true
-	} else {
+	isSystemAdmin := secCtx.IsSysAdmin()
+	isProjectAdmin := false
+	if !isSystemAdmin {
 		if sc, ok := secCtx.(*local.SecurityContext); ok {
 			user := sc.User()
 			var err error
@@ -74,15 +78,18 @@ func (p *permissionsAPI) GetPermissions(ctx context.Context, _ permissions.GetPe
 	provider := rbac.GetPermissionProvider()
 	sysPermissions := make([]*types.Policy, 0)
 	proPermissions := provider.GetPermissions(rbac.ScopeProject)
+	rolePermissions := make([]*types.Policy, 0)
 	if isSystemAdmin {
-		// project admin cannot see the system level permissions
+		// project admins cannot see the system-level or role-level catalogs;
+		// custom-role management is sysadmin-only.
 		sysPermissions = provider.GetPermissions(rbac.ScopeSystem)
+		rolePermissions = provider.GetPermissions(rbac.ScopeRole)
 	}
 
-	return permissions.NewGetPermissionsOK().WithPayload(p.convertPermissions(sysPermissions, proPermissions))
+	return permissions.NewGetPermissionsOK().WithPayload(p.convertPermissions(sysPermissions, proPermissions, rolePermissions))
 }
 
-func (p *permissionsAPI) convertPermissions(system, project []*types.Policy) *models.Permissions {
+func (p *permissionsAPI) convertPermissions(system, project, role []*types.Policy) *models.Permissions {
 	res := &models.Permissions{}
 	if len(system) > 0 {
 		var sysPermission []*models.Permission
@@ -104,6 +111,17 @@ func (p *permissionsAPI) convertPermissions(system, project []*types.Policy) *mo
 			})
 		}
 		res.Project = proPermission
+	}
+
+	if len(role) > 0 {
+		var rolePermission []*models.Permission
+		for _, item := range role {
+			rolePermission = append(rolePermission, &models.Permission{
+				Resource: item.Resource.String(),
+				Action:   item.Action.String(),
+			})
+		}
+		res.Role = rolePermission
 	}
 
 	return res

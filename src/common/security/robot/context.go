@@ -142,6 +142,15 @@ func filterRobotPolicies(p *models.Project, policies []*types.Policy) []*types.P
 // getPolicyResource to determine permissions for the project resource, the path should be /project instead of /project/project.
 func getPolicyResource(perm *robot.Permission, pol *types.Policy) string {
 	if strings.HasPrefix(perm.Scope, robot.SCOPEPROJECT) && pol.Resource == rbac.ResourceProject {
+		// A "cover all projects" robot carries the scope "/project/*". keyMatch2 expands that
+		// trailing wildcard to "^/project/.*$", which also matches every sub-resource of every
+		// project ("/project/N/robot", "/project/N/repository", ...). The project resource must
+		// therefore resolve to the single-segment form "/project/:id" ("^/project/[^/]+$"), the
+		// same shape a single-project scope such as "/project/N" already has, so that permissions
+		// granted on the project resource never reach project sub-resources.
+		if perm.Scope == robot.SCOPEALLPROJECT {
+			return fmt.Sprintf("%s/:id", robot.SCOPEPROJECT)
+		}
 		return perm.Scope
 	}
 	return fmt.Sprintf("%s/%s", perm.Scope, pol.Resource)

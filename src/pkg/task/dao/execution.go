@@ -25,6 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/gtask"
@@ -62,6 +63,9 @@ const (
 	// execStatusOutdateBatchSize is the max number of members consumed from the
 	// set in a single SPOP call.
 	execStatusOutdateBatchSize = 100
+	// maxFailedTasksToQuery is the maximum number of failed tasks queried when aggregating
+	// error status messages for an execution, avoiding unbounded memory and query overhead.
+	maxFailedTasksToQuery = 50
 )
 
 // ExecutionStatusChangePostFunc is the function called after the execution status changed
@@ -153,6 +157,9 @@ func (e *executionDAO) Create(ctx context.Context, execution *Execution) (int64,
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {
 		return 0, err
+	}
+	if len(execution.ExtraAttrs) == 0 {
+		execution.ExtraAttrs = "{}"
 	}
 	return ormer.Insert(execution)
 }
@@ -262,14 +269,38 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 	}
 
 	var status string
+	var statusMessage string
 	if metrics.PendingTaskCount > 0 || metrics.RunningTaskCount > 0 || metrics.ScheduledTaskCount > 0 {
 		status = job.RunningStatus.String()
+		statusMessage = ""
 	} else if metrics.ErrorTaskCount > 0 {
 		status = job.ErrorStatus.String()
+		failedTasks, err := e.taskDAO.List(ctx, &q.Query{
+			PageSize: maxFailedTasksToQuery,
+			Keywords: map[string]any{
+				"ExecutionID": id,
+				"Status":      job.ErrorStatus.String(),
+			},
+		})
+		if err != nil {
+			return false, "", false, errors.Wrapf(err, "failed to list failed tasks for execution %d", id)
+		}
+		statusMessage = mergeStatusMessages(execution.StatusMessage, aggregateTaskStatusMessages(failedTasks, metrics.ErrorTaskCount))
 	} else if metrics.StoppedTaskCount > 0 {
-		status = job.StoppedStatus.String()
+		if execution.Status == job.ErrorStatus.String() {
+			status = job.ErrorStatus.String()
+		} else {
+			status = job.StoppedStatus.String()
+		}
+		statusMessage = execution.StatusMessage
 	} else if metrics.SuccessTaskCount > 0 {
-		status = job.SuccessStatus.String()
+		if execution.Status == job.ErrorStatus.String() {
+			status = job.ErrorStatus.String()
+			statusMessage = execution.StatusMessage
+		} else {
+			status = job.SuccessStatus.String()
+			statusMessage = ""
+		}
 	}
 
 	ormer, err := orm.FromContext(ctx)
@@ -277,8 +308,9 @@ func (e *executionDAO) refreshStatus(ctx context.Context, id int64) (bool, strin
 		return false, "", false, err
 	}
 
-	sql := `update execution set status = ?, revision = revision+1, update_time = ? where id = ? and revision = ?`
-	result, err := ormer.Raw(sql, status, time.Now(), id, execution.Revision).Exec()
+	sql := `update execution set status = ?, status_message = ?, revision = revision+1, update_time = ?
+		where id = ? and revision = ?`
+	result, err := ormer.Raw(sql, status, statusMessage, time.Now(), id, execution.Revision).Exec()
 	if err != nil {
 		return false, "", false, err
 	}
@@ -577,4 +609,89 @@ func scanAndRefreshOutdateStatus(ctx context.Context) {
 	if succeed+failed > 0 {
 		log.Infof("refresh outdate execution status done, %d succeed, %d failed", succeed, failed)
 	}
+}
+
+func aggregateTaskStatusMessages(tasks []*Task, totalCount ...int64) string {
+	var msgs []string
+	seen := make(map[string]bool)
+	for _, t := range tasks {
+		msg := strings.ToValidUTF8(strings.TrimSpace(t.StatusMessage), "")
+		if len(msg) > 0 && !seen[msg] {
+			seen[msg] = true
+			msgs = append(msgs, msg)
+		}
+	}
+	if len(msgs) == 0 {
+		return ""
+	}
+	total := int64(len(tasks))
+	if len(totalCount) > 0 && totalCount[0] > 0 {
+		total = totalCount[0]
+	}
+	var res string
+	if total == 1 {
+		res = msgs[0]
+	} else if len(msgs) == 1 {
+		if strings.Contains(msgs[0], "\n") {
+			res = fmt.Sprintf("%d tasks failed with error:\n%s", total, msgs[0])
+		} else {
+			res = fmt.Sprintf("%d tasks failed with error: %s", total, msgs[0])
+		}
+	} else {
+		hasMultiline := false
+		for _, m := range msgs {
+			if strings.Contains(m, "\n") {
+				hasMultiline = true
+				break
+			}
+		}
+		if !hasMultiline {
+			if total > int64(len(tasks)) {
+				res = fmt.Sprintf("%d tasks failed (showing %d error samples):\n- %s",
+					total, len(msgs), strings.Join(msgs, "\n- "))
+			} else {
+				res = fmt.Sprintf("%d tasks failed:\n- %s", total, strings.Join(msgs, "\n- "))
+			}
+		} else {
+			var b strings.Builder
+			if total > int64(len(tasks)) {
+				b.WriteString(fmt.Sprintf("%d tasks failed with at least %d distinct errors:\n",
+					total, len(msgs)))
+			} else {
+				b.WriteString(fmt.Sprintf("%d tasks failed with %d distinct errors:\n", total, len(msgs)))
+			}
+			for idx, msg := range msgs {
+				if idx > 0 {
+					b.WriteString("\n---\n")
+				}
+				b.WriteString(msg)
+			}
+			res = b.String()
+		}
+	}
+	const maxLen = 4096
+	return lib.TruncateUTF8(res, maxLen)
+}
+
+// mergeStatusMessages merges the execution-level status message with the aggregated task status message.
+// If either message is empty, the other is returned. If one already contains the other (e.g. on
+// repeated refreshes), duplicates are avoided.
+func mergeStatusMessages(execMsg, taskMsg string) string {
+	execMsg = strings.TrimSpace(execMsg)
+	taskMsg = strings.TrimSpace(taskMsg)
+	if len(execMsg) == 0 {
+		return taskMsg
+	}
+	if len(taskMsg) == 0 {
+		return execMsg
+	}
+	if execMsg == taskMsg || strings.Contains(execMsg, taskMsg) {
+		return execMsg
+	}
+	if strings.Contains(taskMsg, execMsg) {
+		return taskMsg
+	}
+	res := fmt.Sprintf("%s\n%s", execMsg, taskMsg)
+	const maxLen = 4096
+	return lib.TruncateUTF8(res, maxLen)
 }

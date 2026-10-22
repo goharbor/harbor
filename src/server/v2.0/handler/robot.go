@@ -84,6 +84,9 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 	switch s := sc.(type) {
 	case *local.SecurityContext:
 		creatorRef = int64(s.User().UserID)
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
 	case *robotSc.SecurityContext:
 		if s.User() == nil {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
@@ -271,13 +274,41 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 		return rAPI.SendError(ctx, err)
 	}
 
-	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, nil)
+	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, &robot.Option{
+		WithPermission: true,
+	})
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
 	if err := rAPI.requireAccess(ctx, r, rbac.ActionUpdate); err != nil {
 		return rAPI.SendError(ctx, err)
+	}
+
+	// Refreshing the secret hands the caller control of the robot, which is
+	// effectively the same as being granted the robot's permissions. Run the same
+	// no-escalation check as create/update, so a caller holding e.g. robot:update
+	// but not the robot's own permissions cannot take over a more-privileged robot.
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	var robotPerms []*models.RobotPermission
+	if err := lib.JSONCopy(&robotPerms, r.Permissions); err != nil {
+		log.Warningf("failed to call JSONCopy on robot permission when RefreshSec, error: %v", err)
+	}
+	switch s := sc.(type) {
+	case *local.SecurityContext:
+		if err := rAPI.validateNoEscalation(ctx, robotPerms); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
+	case *robotSc.SecurityContext:
+		if s.User() == nil {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
+		}
+		if !isValidPermissionScope(robotPerms, s.User().Permissions) {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED))
+		}
 	}
 
 	var secret string
@@ -405,6 +436,16 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
 
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if _, ok := sc.(*local.SecurityContext); ok {
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return err
+		}
+	}
+
 	if r.Duration != *params.Robot.Duration {
 		r.Duration = *params.Robot.Duration
 		if *params.Robot.Duration == -1 {
@@ -455,6 +496,33 @@ func containsAccess(policies []*types.Policy, item *models.Access) bool {
 		}
 	}
 	return false
+}
+
+// mapRobotToHumanResource maps ScopeProject resource names to their ScopeRole equivalents.
+// Needed because robots use "project" for the project entity while human roles use "" (ResourceSelf).
+func mapRobotToHumanResource(r rbac.Resource) rbac.Resource {
+	if r == rbac.ResourceProject {
+		return rbac.ResourceSelf
+	}
+	return r
+}
+
+// validateNoEscalation ensures that a human user cannot grant a robot more permissions than they hold.
+func (rAPI *robotAPI) validateNoEscalation(ctx context.Context, permissions []*models.RobotPermission) error {
+	for _, perm := range permissions {
+		for _, acc := range perm.Access {
+			resource := mapRobotToHumanResource(rbac.Resource(acc.Resource))
+			has, err := rAPI.HasProjectPermission(ctx, perm.Namespace, rbac.Action(acc.Action), resource)
+			if err != nil {
+				return err
+			}
+			if !has {
+				return errors.ForbiddenError(nil).WithMessagef(
+					"permission escalation not allowed: you do not have %s:%s", acc.Resource, acc.Action)
+			}
+		}
+	}
+	return nil
 }
 
 // isValidPermissionScope checks if permission slice A is a subset of permission slice B
