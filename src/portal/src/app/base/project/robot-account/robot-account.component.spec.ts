@@ -112,6 +112,9 @@ describe('RobotAccountComponent', () => {
         getPermission() {
             return of(true);
         },
+        getProjectPermissions() {
+            return of([]);
+        },
     };
     const fakedRobotService = {
         ListRobotResponse() {
