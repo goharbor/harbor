@@ -13,6 +13,24 @@ type Iterator struct {
 	mock.Mock
 }
 
+// Err provides a mock function with no fields
+func (_m *Iterator) Err() error {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Err")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func() error); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Next provides a mock function with given fields: ctx
 func (_m *Iterator) Next(ctx context.Context) bool {
 	ret := _m.Called(ctx)

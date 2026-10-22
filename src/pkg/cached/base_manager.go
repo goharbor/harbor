@@ -108,6 +108,9 @@ func (bm *BaseManager) CountCache(ctx context.Context) (int64, error) {
 	for iter.Next(ctx) {
 		count++
 	}
+	if err := iter.Err(); err != nil {
+		return count, err
+	}
 
 	return count, nil
 }
@@ -130,6 +133,9 @@ func (bm *BaseManager) FlushAll(ctx context.Context) error {
 		if err = bm.CacheClient(ctx).Delete(ctx, iter.Val()); err != nil {
 			errs = append(errs, err)
 		}
+	}
+	if err = iter.Err(); err != nil {
+		errs = append(errs, err)
 	}
 
 	if errs.Len() > 0 {

@@ -106,21 +106,32 @@ func (s *JobServiceMonitorTestSuite) TestStopRunningJob() {
 
 func (s *JobServiceMonitorTestSuite) TestListQueue() {
 	mock.OnAnything(s.jmClient, "Queues").Return([]*work.Queue{
-		{JobName: "GARBAGE_COLLECTION", Count: 100, Latency: 10000}}, nil)
-	mock.OnAnything(s.queueStatusManager, "AllJobTypeStatus").Return(map[string]bool{"GARBAGE_COLLECTION": false}, nil).Once()
+		{JobName: "GARBAGE_COLLECTION", Count: 100, Latency: 10000},
+		{JobName: "REPLICATION", Count: 50, Latency: 5000},
+		{JobName: "EVENT_REPLICATION", Count: 5, Latency: 100},
+	}, nil)
+	mock.OnAnything(s.queueStatusManager, "AllJobTypeStatus").Return(map[string]bool{
+		"GARBAGE_COLLECTION": false,
+		"REPLICATION":        false,
+		"EVENT_REPLICATION":  true,
+	}, nil).Once()
 	queues, err := s.monitController.ListQueues(nil)
 	s.Assert().Nil(err)
-	s.Assert().Equal(1, len(queues))
+	s.Assert().Equal(3, len(queues))
 	s.Assert().Equal("GARBAGE_COLLECTION", queues[0].JobType)
 	s.Assert().False(queues[0].Paused)
+	s.Assert().Equal("REPLICATION", queues[1].JobType)
+	s.Assert().False(queues[1].Paused)
+	s.Assert().Equal("EVENT_REPLICATION", queues[2].JobType)
+	s.Assert().True(queues[2].Paused)
 }
 
 func (s *JobServiceMonitorTestSuite) TestPauseJob() {
 	mock.OnAnything(s.redisClient, "PauseJob").Return(nil).Once()
-	err := s.monitController.PauseJobQueues(nil, "GARBAGE_COLLECTION")
+	err := s.monitController.PauseJobQueues(nil, "EVENT_REPLICATION")
 	s.Assert().Nil(err)
 	mock.OnAnything(s.redisClient, "UnpauseJob").Return(nil).Once()
-	err = s.monitController.ResumeJobQueues(nil, "GARBAGE_COLLECTION")
+	err = s.monitController.ResumeJobQueues(nil, "EVENT_REPLICATION")
 	s.Assert().Nil(err)
 }
 
