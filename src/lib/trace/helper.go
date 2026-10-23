@@ -16,8 +16,8 @@ package trace // nolint:revive
 
 import (
 	"context"
-	"fmt"
 	"net/http"
+	"strings"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -51,24 +51,22 @@ func RecordError(span oteltrace.Span, err error, description string) {
 	span.SetStatus(codes.Error, description)
 }
 
-// HarborSpanNameFormatter common span name formatter in Harbor
+// HarborSpanNameFormatter common span name formatter in Harbor.
+// Following the OpenTelemetry HTTP semantic conventions, the span is named
+// "<METHOD> <route>" when the route pattern of the request is known, and just
+// "<METHOD>" otherwise, to keep the cardinality of span names low.
 func HarborSpanNameFormatter(operation string, r *http.Request) string {
-	schema := "http"
-	if r.URL != nil && len(r.URL.Scheme) != 0 {
-		schema = r.URL.Scheme
+	if len(r.Method) == 0 {
+		return operation
 	}
-	host := "host_unknown"
-	if len(r.Host) != 0 {
-		host = r.Host
+	if len(r.Pattern) != 0 {
+		// http.ServeMux patterns may already contain the method, e.g. "GET /path"
+		if strings.Contains(r.Pattern, " ") {
+			return r.Pattern
+		}
+		return r.Method + " " + r.Pattern
 	}
-	path := ""
-	if r.URL != nil && len(r.URL.Path) != 0 {
-		path = r.URL.Path
-	}
-	if len(path) != 0 {
-		return fmt.Sprintf("%s %s://%s%s", r.Method, schema, host, path)
-	}
-	return operation
+	return r.Method
 }
 
 // HarborHTTPTraceOptions common trace options
