@@ -56,7 +56,7 @@ jobs:
       - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-           go-version: 1.26.7
+           go-version: 1.26.10
         id: go
       - uses: actions/checkout@v6
         with:
@@ -114,10 +114,10 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.23
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.2
+          go-version: 1.26.10
         id: go
       - uses: actions/checkout@v6
         with:
@@ -175,10 +175,10 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.23
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.2
+          go-version: 1.26.10
         id: go
       - uses: actions/checkout@v6
         with:
@@ -236,10 +236,10 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.23
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.2
+          go-version: 1.26.10
         id: go
       - uses: actions/checkout@v6
         with:
@@ -295,10 +295,10 @@ jobs:
       - oracle-vm-24cpu-96gb-x86-64
     timeout-minutes: 100
     steps:
-      - name: Set up Go 1.23
+      - name: Set up Go 1.26
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23.2
+          go-version: 1.26.10
         id: go
       - uses: actions/checkout@v6
         with:
