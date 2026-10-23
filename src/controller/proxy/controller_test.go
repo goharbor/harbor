@@ -17,7 +17,9 @@ package proxy
 import (
 	"context"
 	"io"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/docker/distribution"
 	"github.com/opencontainers/go-digest"
@@ -61,7 +63,8 @@ func (l *localInterfaceMock) BlobExist(ctx context.Context, art lib.ArtifactInfo
 }
 
 func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
-	panic("implement me")
+	args := l.Called(localRepo, desc, bReader)
+	return args.Error(0)
 }
 
 func (l *localInterfaceMock) PushManifest(repo string, tag string, manifest distribution.Manifest) error {
@@ -200,6 +203,44 @@ func (p *proxyControllerTestSuite) TestUseLocalBlob_False() {
 	p.local.On("BlobExist", mock.Anything, mock.Anything).Return(false, nil)
 	result := p.ctr.UseLocalBlob(ctx, art)
 	p.Assert().False(result)
+}
+
+func (p *proxyControllerTestSuite) TestProxyBlob_SignalsStoredOnceTheLocalPushReturns() {
+	// Given
+	dig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	p.remote.On("BlobReader", "library/hello-world", dig).
+		Return(int64(4), io.NopCloser(strings.NewReader("blob")), nil).Twice()
+	pushing := make(chan struct{})
+	release := make(chan struct{})
+	p.local.On("PushBlob", "proxy/library/hello-world", mock.Anything, mock.Anything).
+		Run(func(mock.Arguments) {
+			close(pushing)
+			<-release
+		}).Return(nil)
+
+	// When
+	size, reader, stored, err := p.ctr.(*controller).proxyBlobFrom(p.remote, "library/hello-world", "proxy/library/hello-world", dig)
+
+	// Then
+	p.Require().NoError(err)
+	p.Require().Equal(int64(4), size)
+	p.Require().NotNil(reader)
+	select {
+	case <-pushing:
+	case <-time.After(time.Second):
+		p.FailNow("the local push never started")
+	}
+	select {
+	case <-stored:
+		p.FailNow("stored was signalled before the local push returned")
+	case <-time.After(20 * time.Millisecond):
+	}
+	close(release)
+	select {
+	case <-stored:
+	case <-time.After(time.Second):
+		p.FailNow("stored was never signalled")
+	}
 }
 
 func TestProxyControllerTestSuite(t *testing.T) {
