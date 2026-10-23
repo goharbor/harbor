@@ -72,3 +72,28 @@ func TestArtifactTypeFilterNoDuplicates(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, result, 1)
 }
+
+func TestArtifactResourceFiltersWithAccessories(t *testing.T) {
+	// Accessories already have their subject's type here; the Harbor v2 adapter tests cover inheritance.
+	artifacts := []*model.Artifact{
+		{Type: "IMAGE", Tags: []string{"1.0"}},
+		// Direct accessory of the image (e.g. signature or sbom)
+		{Type: "IMAGE", Digest: "sha256:acc1", IsAcc: true, ParentTags: []string{"1.0"}},
+		// Nested accessory with the image's type already assigned (e.g. signature of an SBOM)
+		{Type: "IMAGE", Digest: "sha256:subacc1", IsAcc: true, ParentTags: []string{"1.0"}},
+		{Type: "CHART", Tags: []string{"1.0"}},
+		// Accessory of the chart
+		{Type: "CHART", Digest: "sha256:chartacc1", IsAcc: true, ParentTags: []string{"1.0"}},
+	}
+
+	filters := []*model.Filter{
+		{Type: model.FilterTypeResource, Value: model.ResourceTypeImage},
+		{Type: model.FilterTypeTag, Value: "1.*"},
+	}
+	result, err := DoFilterArtifacts(artifacts, filters)
+	require.NoError(t, err)
+	require.Len(t, result, 3)
+	require.Equal(t, "IMAGE", result[0].Type)
+	require.Equal(t, "sha256:acc1", result[1].Digest)
+	require.Equal(t, "sha256:subacc1", result[2].Digest)
+}
