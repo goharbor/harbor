@@ -62,7 +62,13 @@ type Metadata struct {
 
 // ValidateRetentionPolicy validate the retention policy
 func (m *Metadata) ValidateRetentionPolicy() error {
-	// currently only validate the cron string of retention policy
+	// validate the template and parameters of each rule, the retention job can not evaluate an invalid rule
+	for _, r := range m.Rules {
+		if err := index.Valid(r.Template, r.Parameters); err != nil {
+			return errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("invalid rule for tag retention: %v", err)
+		}
+	}
 	if m.Trigger != nil {
 		if m.Trigger.Kind == TriggerKindSchedule && m.Trigger.Settings != nil {
 			cronItem, ok := m.Trigger.Settings[TriggerSettingsCron]
