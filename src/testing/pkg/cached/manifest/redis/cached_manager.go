@@ -6,7 +6,6 @@ import (
 	context "context"
 
 	cache "github.com/goharbor/harbor/src/lib/cache"
-
 	mock "github.com/stretchr/testify/mock"
 )
 

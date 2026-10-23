@@ -34,7 +34,7 @@ const AuthKey contextKey = "Auth"
 /* {{ pascalize .Name }}API {{ .Description }} */
 type {{ pascalize .Name }}API interface {
 	/* Prepare action before the operation */
-	Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder
+	Prepare(ctx context.Context, operation string, params any) middleware.Responder
 
 {{ range .Operations -}}
 	{{ if .Summary -}}
@@ -65,15 +65,15 @@ type Config struct {
 	{{ range .SecurityDefinitions -}}
 	{{ if .IsBasicAuth -}}
 	// Auth{{ pascalize .ID }} for basic authentication
-	Auth{{ pascalize .ID }} func(user string, pass string) (interface{}, error)
+	Auth{{ pascalize .ID }} func(user string, pass string) (any, error)
 	{{ end -}}
 	{{ if .IsAPIKeyAuth -}}
 	// Auth{{ pascalize .ID }} Applies when the "{{ .Name }}" {{ .Source }} is set
-	Auth{{ pascalize .ID }} func(token string) (interface{}, error)
+	Auth{{ pascalize .ID }} func(token string) (any, error)
 	{{ end }}
 	{{ if .IsOAuth2 -}}
 	// Auth{{ pascalize .ID }} For OAuth2 authentication
-	Auth{{ pascalize .ID }} func(token string, scopes []string) (interface{}, error)
+	Auth{{ pascalize .ID }} func(token string, scopes []string) (any, error)
 	{{ end -}}
 	{{ end -}}
 
@@ -135,7 +135,7 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 
 	{{ range .SecurityDefinitions -}}
 	{{ if .IsBasicAuth -}}
-	api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+	api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "any" )}}*{{ end }}{{.Principal}}, error) {
         if c.Auth{{ pascalize .ID }} == nil {
             return "", nil
         }
@@ -143,7 +143,7 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	}
 	{{ end -}}
 	{{ if .IsAPIKeyAuth -}}
-	api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+	api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "any" )}}*{{ end }}{{.Principal}}, error) {
 	    if c.Auth{{ pascalize .ID }} == nil {
 	        return token, nil
 	    }
@@ -151,7 +151,7 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	}
 	{{ end }}
 	{{ if .IsOAuth2 -}}
-	api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+	api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{if not ( eq .Principal "any" )}}*{{ end }}{{.Principal}}, error) {
         if c.Auth{{ pascalize .ID }} == nil {
             return token, nil
         }
@@ -166,7 +166,7 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 
 	{{ range .Operations -}}
 	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler =
-    {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
+    {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal any{{end}}) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)
@@ -197,7 +197,7 @@ func swaggerCopy(orig json.RawMessage) json.RawMessage {
 // authorizer is a helper function to implement the runtime.Authorizer interface.
 type authorizer func(*http.Request) error
 
-func (a authorizer) Authorize(req *http.Request, principal interface{}) error {
+func (a authorizer) Authorize(req *http.Request, principal any) error {
 	if a == nil {
 		return nil
 	}
@@ -205,6 +205,6 @@ func (a authorizer) Authorize(req *http.Request, principal interface{}) error {
 	return a(req.WithContext(ctx))
 }
 
-func storeAuth(ctx context.Context, principal interface{}) context.Context {
+func storeAuth(ctx context.Context, principal any) context.Context {
 	return context.WithValue(ctx, AuthKey, principal)
 }
