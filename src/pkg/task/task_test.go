@@ -74,11 +74,36 @@ func (t *taskManagerTestSuite) TestCreate() {
 	// failed to submit job to jobservice
 	t.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{}, nil)
 	t.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
-	t.jsClient.On("SubmitJob", mock.Anything).Return("", errors.New("error"))
+	submitErr := errors.New("error")
+	t.jsClient.On("SubmitJob", mock.Anything).Return("", submitErr)
 	t.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	t.execDAO.On("Update", mock.Anything, mock.MatchedBy(func(execution *dao.Execution) bool {
+		return execution.ID == 1 &&
+			execution.Status == job.ErrorStatus.String() &&
+			execution.StatusMessage == submitErr.Error() &&
+			!execution.UpdateTime.IsZero() &&
+			!execution.EndTime.IsZero()
+	}), "Status", "StatusMessage", "UpdateTime", "EndTime").Return(nil)
 
 	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
 	t.Require().NotNil(err)
+	t.dao.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
+	t.jsClient.AssertExpectations(t.T())
+
+	// A failure while marking the execution must not replace the original
+	// submission error returned to the caller.
+	t.SetupTest()
+	t.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{}, nil)
+	t.dao.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+	t.jsClient.On("SubmitJob", mock.Anything).Return("", submitErr)
+	t.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
+	updateErr := errors.New("execution update failed")
+	t.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(updateErr)
+
+	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
+	t.Require().ErrorIs(err, submitErr)
+	t.Equal(int64(0), id)
 	t.dao.AssertExpectations(t.T())
 	t.execDAO.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())

@@ -121,6 +121,18 @@ func (m *manager) Create(ctx context.Context, executionID int64, jb *Job, extraA
 		if err := m.dao.Delete(ctx, id); err != nil {
 			log.Errorf("failed to delete the task %d: %v", id, err)
 		}
+		// There is no task left for the execution status refresh to inspect. Mark
+		// the execution as failed so it does not remain Running indefinitely.
+		now := time.Now()
+		if updateErr := m.execDAO.Update(ctx, &dao.Execution{
+			ID:            executionID,
+			Status:        job.ErrorStatus.String(),
+			StatusMessage: err.Error(),
+			UpdateTime:    now,
+			EndTime:       now,
+		}, "Status", "StatusMessage", "UpdateTime", "EndTime"); updateErr != nil {
+			log.Errorf("failed to mark execution %d as failed: %v", executionID, updateErr)
+		}
 		return 0, err
 	}
 
