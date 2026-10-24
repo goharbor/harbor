@@ -42,7 +42,7 @@
     "@clr/angular": "18.0.0",
     "@clr/icons": "13.0.2",
     "@clr/ui": "18.0.0",
-    "@ngx-translate/core": "17.0.0",
+    "@ngx-translate/core": "18.0.0",
     "@ngx-translate/http-loader": "17.0.0",
     "cron-validator": "1.4.0",
     "echarts": "6.1.0",
