@@ -73,6 +73,10 @@ var (
 			path:   "./icons/sbom.png",
 			resize: true,
 		},
+		icon.DigestOfIconAccOpenVEX: {
+			path:   "./icons/openvex.png",
+			resize: true,
+		},
 		icon.DigestOfIconDefault: {
 			path:   "./icons/default.png",
 			resize: true,
@@ -129,8 +133,9 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		err      error
 	)
 
-	if i, exist := builtInIcons[digest]; exist {
-		iconFile, err = os.Open(i.path)
+	builtInIcon, isBuiltIn := builtInIcons[digest]
+	if isBuiltIn {
+		iconFile, err = os.Open(builtInIcon.path)
 		if err != nil {
 			return nil, err
 		}
@@ -155,15 +160,14 @@ func (c *controller) Get(ctx context.Context, digest string) (*Icon, error) {
 		}
 		defer iconFile.Close()
 	}
-
 	img, _, err := image.Decode(iconFile)
 	if err != nil {
 		return nil, err
 	}
 
 	// resize the icon to 50x50
-	if i, exist := builtInIcons[digest]; exist {
-		if i.resize {
+	if isBuiltIn {
+		if builtInIcon.resize {
 			img = resize.Thumbnail(50, 50, img, resize.NearestNeighbor)
 		}
 	} else {
