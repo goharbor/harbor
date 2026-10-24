@@ -86,7 +86,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 
 	tokenReq, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if a.registry.Credential != nil {
