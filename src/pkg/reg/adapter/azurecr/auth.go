@@ -104,6 +104,10 @@ func (a *authorizer) Modify(req *http.Request) error {
 		return err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return errors.Errorf("failed to fetch token, status code: %d, body: %s", resp.StatusCode, string(body))
+	}
+
 	var tk token
 	if err = json.Unmarshal(body, &tk); err != nil {
 		return err
