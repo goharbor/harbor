@@ -22,6 +22,7 @@ type Options struct {
 	Tag         string // The tag of the artifact to scan
 	ScanType    string // The scan type could be sbom or vulnerability
 	FromEvent   bool   // indicate the current call from event or not
+	Bulk        bool   // set by scan-all so child scans go to the bulk queue
 }
 
 // GetScanType returns the scan type. for backward compatibility, the default type is vulnerability.
@@ -69,6 +70,14 @@ func WithScanType(scanType string) Option {
 func WithFromEvent(fromEvent bool) Option {
 	return func(options *Options) error {
 		options.FromEvent = fromEvent
+		return nil
+	}
+}
+
+// WithBulk sends the scan to the scan-all (bulk) queue.
+func WithBulk() Option {
+	return func(options *Options) error {
+		options.Bulk = true
 		return nil
 	}
 }
