@@ -105,6 +105,7 @@ Test Case - Security Hub
     Close Browser
 
 Test Case - Manual Scan All
+    [Tags]  manual_scan_all
     Body Of Manual Scan All  Critical  High
 
 Test Case - Scan A Tag In The Repo
@@ -121,6 +122,7 @@ Test Case - Scan As An Unprivileged User
 
 # Chose a empty Vul repo
 Test Case - Scan Image With Empty Vul
+    [Tags] scan_image_with_empty_vul
     Body Of Scan Image With Empty Vul  photon  4.0_scan
 
 Test Case - Scan Image On Push
