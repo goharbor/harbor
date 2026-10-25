@@ -42,7 +42,7 @@ func init() {
 			ResourceIDPattern:   urlPattern,
 		},
 	}
-	commonevent.RegisterResolver(`/api/v2.0/users$`, userResolver)
+	commonevent.RegisterResolver(`^/api/v2\.0/users$`, userResolver)
 	commonevent.RegisterResolver(urlPattern, userResolver)
 }
 

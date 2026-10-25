@@ -15,8 +15,10 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"net/netip"
 	"testing"
 	"time"
 
@@ -33,6 +35,18 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// stubResolver resolves the fixed test hostnames used by the webhook target tests to a public
+// address, so the suite never depends on real DNS.
+type stubResolver struct{}
+
+func (stubResolver) LookupNetIP(_ context.Context, _ string, host string) ([]netip.Addr, error) {
+	switch host {
+	case "hooks.example.com", "webhook-target.corp.local":
+		return []netip.Addr{netip.MustParseAddr("93.184.216.34")}, nil
+	}
+	return nil, fmt.Errorf("no such host %q", host)
+}
+
 type WebhookTestSuite struct {
 	htesting.Suite
 	webhookCtl *webhook.Controller
@@ -41,14 +55,16 @@ type WebhookTestSuite struct {
 }
 
 func (suite *WebhookTestSuite) SetupSuite() {
+	suite.T().Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "false")
 	suite.webhookCtl = &webhook.Controller{}
 	suite.execCtl = &task.ExecutionController{}
 	suite.taskCtl = &task.Controller{}
 	suite.Config = &restapi.Config{
 		WebhookAPI: &webhookAPI{
-			webhookCtl: suite.webhookCtl,
-			execCtl:    suite.execCtl,
-			taskCtl:    suite.taskCtl,
+			webhookCtl:     suite.webhookCtl,
+			execCtl:        suite.execCtl,
+			taskCtl:        suite.taskCtl,
+			targetResolver: stubResolver{},
 		},
 	}
 
@@ -91,8 +107,22 @@ func (suite *WebhookTestSuite) TestCreateWebhookPolicyOfProject() {
 	}
 
 	{
-		// valid policy should got 200
+		// SSRF: a loopback target must be rejected
 		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		suite.NoError(err)
+		suite.Equal(400, resp.StatusCode)
+	}
+
+	{
+		// SSRF: the cloud metadata endpoint must be rejected
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://169.254.169.254/latest/meta-data/"}}})
+		suite.NoError(err)
+		suite.Equal(400, resp.StatusCode)
+	}
+
+	{
+		// valid policy targeting a public address should get 201
+		resp, err := suite.PostJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://hooks.example.com/notify"}}})
 		suite.NoError(err)
 		suite.Equal(201, resp.StatusCode)
 	}
@@ -132,8 +162,15 @@ func (suite *WebhookTestSuite) TestUpdateWebhookPolicyOfProject() {
 	}
 
 	{
-		// valid policy should got 200
+		// SSRF: a loopback target must be rejected on update too
 		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://127.0.0.1"}}})
+		suite.NoError(err)
+		suite.Equal(400, resp.StatusCode)
+	}
+
+	{
+		// valid policy targeting a public address should get 200
+		resp, err := suite.PutJSON(url, &models.WebhookPolicy{EventTypes: []string{"PUSH_ARTIFACT"}, Targets: []*models.WebhookTargetObject{{Type: "http", Address: "http://hooks.example.com/notify"}}})
 		suite.NoError(err)
 		suite.Equal(200, resp.StatusCode)
 	}
@@ -246,4 +283,31 @@ func (suite *WebhookTestSuite) TestGetSupportedEventTypes() {
 
 func TestWebhookTestSuite(t *testing.T) {
 	suite.Run(t, &WebhookTestSuite{})
+}
+
+func TestNormalizeAndValidateTargetsStoresNormalizedAddress(t *testing.T) {
+	t.Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "false")
+	api := &webhookAPI{targetResolver: stubResolver{}}
+	policy := &policyModel.Policy{
+		Name: "p",
+		Targets: []policyModel.EventTarget{
+			{Type: "http", Address: "http://user:pass@WEBHOOK-TARGET.CORP.LOCAL:8080/events?token=abc"},
+			{Type: "slack", Address: "https://Hooks.Example.com/services/T0/B0"},
+			{Type: "http", Address: "https://hooks.example.com/hooks/a%2Fb%20c?x=1"},
+		},
+	}
+	ok, err := api.normalizeAndValidateTargets(context.Background(), policy)
+	if !ok || err != nil {
+		t.Fatalf("unexpected validation failure: %v", err)
+	}
+	want := []string{
+		"http://webhook-target.corp.local:8080/events?token=abc",
+		"https://hooks.example.com/services/T0/B0",
+		"https://hooks.example.com/hooks/a%2Fb%20c?x=1",
+	}
+	for i, target := range policy.Targets {
+		if target.Address != want[i] {
+			t.Errorf("targets[%d].Address = %q, want %q", i, target.Address, want[i])
+		}
+	}
 }

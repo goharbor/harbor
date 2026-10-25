@@ -15,6 +15,7 @@
 package notification
 
 import (
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,6 +33,8 @@ const (
 	maxFails = "JOBSERVICE_WEBHOOK_JOB_MAX_RETRY"
 	// http client timeout for webhook job(seconds).
 	httpClientTimeout = "JOBSERVICE_WEBHOOK_JOB_HTTP_CLIENT_TIMEOUT"
+
+	maxDrainBytes = 64 << 10
 )
 
 var (
@@ -64,12 +67,36 @@ func init() {
 	httpHelper = &HTTPHelper{
 		clients: map[string]*http.Client{},
 	}
+
+	secureOptions := []func(*http.Transport){commonhttp.WithPublicNetworkOnly()}
+	if commonhttp.InternalTLSEnabled() {
+		secureOptions = append(secureOptions, commonhttp.WithInternalTLSConfig())
+	}
 	httpHelper.clients[secure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(),
-		Timeout:   timeout,
+		Transport:     commonhttp.NewTransport(secureOptions...),
+		Timeout:       timeout,
+		CheckRedirect: blockRedirect,
 	}
 	httpHelper.clients[insecure] = &http.Client{
-		Transport: commonhttp.GetHTTPTransport(commonhttp.WithInsecure(true)),
-		Timeout:   timeout,
+		Transport: commonhttp.NewTransport(
+			commonhttp.WithInsecureSkipVerify(true),
+			commonhttp.WithPublicNetworkOnly(),
+		),
+		Timeout:       timeout,
+		CheckRedirect: blockRedirect,
 	}
+}
+
+// blockRedirect stops the notification client from following redirects. Following them would
+// re-open the SSRF window a redirector could use to pivot to an internal origin (the dial-time
+// guard still runs per hop, but refusing outright keeps the response the caller sees deterministic).
+func blockRedirect(_ *http.Request, _ []*http.Request) error {
+	return http.ErrUseLastResponse
+}
+
+// drainBody discards up to maxDrainBytes of the response body as a best-effort attempt to let the
+// pooled connection be reused; a longer body is not read to the end, so that connection is closed
+// instead. The body itself is never surfaced to the caller.
+func drainBody(body io.Reader) {
+	_, _ = io.Copy(io.Discard, io.LimitReader(body, maxDrainBytes))
 }

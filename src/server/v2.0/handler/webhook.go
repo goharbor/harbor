@@ -17,11 +17,15 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/task"
@@ -38,19 +42,25 @@ import (
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/webhook"
 )
 
+// maxWebhookTargetHosts bounds the number of distinct target hostnames validated per policy,
+// so a policy cannot force an unbounded number of DNS lookups during creation/update.
+const maxWebhookTargetHosts = 32
+
 func newWebhookAPI() *webhookAPI {
 	return &webhookAPI{
-		execCtl:    task.ExecutionCtl,
-		taskCtl:    task.Ctl,
-		webhookCtl: webhook_ctl.Ctl,
+		execCtl:        task.ExecutionCtl,
+		taskCtl:        task.Ctl,
+		webhookCtl:     webhook_ctl.Ctl,
+		targetResolver: net.DefaultResolver,
 	}
 }
 
 type webhookAPI struct {
 	BaseAPI
-	execCtl    task.ExecutionController
-	taskCtl    task.Controller
-	webhookCtl webhook_ctl.Controller
+	execCtl        task.ExecutionController
+	taskCtl        task.Controller
+	webhookCtl     webhook_ctl.Controller
+	targetResolver commonhttp.NetworkResolver
 }
 
 func (n *webhookAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
@@ -151,7 +161,7 @@ func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params we
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.normalizeAndValidateTargets(policy); !ok {
+	if ok, err := n.normalizeAndValidateTargets(ctx, policy); !ok {
 		return n.SendError(ctx, err)
 	}
 
@@ -190,7 +200,7 @@ func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params we
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
-	if ok, err := n.normalizeAndValidateTargets(policy); !ok {
+	if ok, err := n.normalizeAndValidateTargets(ctx, policy); !ok {
 		return n.SendError(ctx, err)
 	}
 
@@ -402,17 +412,25 @@ func (n *webhookAPI) GetSupportedEventTypes(ctx context.Context, params webhook.
 	return webhook.NewGetSupportedEventTypesOK().WithPayload(notificationTypes)
 }
 
-func (n *webhookAPI) normalizeAndValidateTargets(policy *policy_model.Policy) (bool, error) {
+func (n *webhookAPI) normalizeAndValidateTargets(ctx context.Context, policy *policy_model.Policy) (bool, error) {
 	if len(policy.Targets) == 0 {
 		return false, errors.New(nil).WithMessagef("empty notification target with policy %s", policy.Name).WithCode(errors.BadRequestCode)
 	}
+	validationCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	validatedHosts := map[string]struct{}{}
 	for i, target := range policy.Targets {
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
 		}
-		// Prevent SSRF security issue #3755 and normalize host per RFC 1035
-		target.Address = url.Scheme + "://" + strings.ToLower(url.Host) + url.Path
+		// Reject targets resolving to private/loopback/link-local/metadata addresses (CWE-918).
+		if err := n.validateTargetHost(validationCtx, url.Hostname(), validatedHosts); err != nil {
+			return false, errors.New(err).WithCode(errors.BadRequestCode)
+		}
+		// Prevent SSRF security issue #3755 and normalize host per RFC 1035. Write through the
+		// slice, since target is a copy.
+		policy.Targets[i].Address = normalizeTargetAddress(url)
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
@@ -420,7 +438,7 @@ func (n *webhookAPI) normalizeAndValidateTargets(policy *policy_model.Policy) (b
 		// don't allow set the payload format for slack type
 		// slack should be migrated as a kind of payload in the future
 		if len(target.PayloadFormat) > 0 && target.Type == "slack" {
-			return false, errors.New(nil).WithMessage("set payload format is not allowed for slack").WithCode(errors.BadRequestCode)
+			return false, errors.New(nil).WithMessage("Setting payload format is not allowed for Slack").WithCode(errors.BadRequestCode)
 		}
 
 		if len(target.PayloadFormat) > 0 && !isPayloadFormatSupported(target.PayloadFormat) {
@@ -432,6 +450,33 @@ func (n *webhookAPI) normalizeAndValidateTargets(policy *policy_model.Policy) (b
 		}
 	}
 	return true, nil
+}
+
+// normalizeTargetAddress lowercases the host and drops userinfo, serializing through url.URL
+// so escaped path segments and the query survive untouched.
+func normalizeTargetAddress(u *url.URL) string {
+	normalized := *u
+	normalized.Host = strings.ToLower(u.Host)
+	normalized.User = nil
+	return normalized.String()
+}
+
+// validateTargetHost rejects a webhook target hostname that resolves to a non-public address.
+// Hosts already validated in the same call are skipped, and the number of distinct hosts is
+// capped so a single policy cannot force an unbounded number of DNS lookups.
+func (n *webhookAPI) validateTargetHost(ctx context.Context, host string, validatedHosts map[string]struct{}) error {
+	host = strings.TrimSuffix(strings.ToLower(host), ".")
+	if _, validated := validatedHosts[host]; validated {
+		return nil
+	}
+	if len(validatedHosts) >= maxWebhookTargetHosts {
+		return fmt.Errorf("notification policy exceeds %d distinct target hostnames", maxWebhookTargetHosts)
+	}
+	if err := commonhttp.ValidatePublicNetworkTarget(ctx, n.targetResolver, host); err != nil {
+		return err
+	}
+	validatedHosts[host] = struct{}{}
+	return nil
 }
 
 func (n *webhookAPI) validateEventTypes(policy *policy_model.Policy) (bool, error) {

@@ -209,6 +209,25 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
         config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
+    network_config = configs.get('network') or {}
+    allow_private_network_access = network_config.get('allow_private_network_access')
+    config_dict['allow_private_network_access'] = (
+        'true' if allow_private_network_access is None else str(allow_private_network_access).lower()
+    )
+
+    # Content trust configs, optional. The legacy signer-pull exemption is on unless the
+    # operator turns it off, so that signing under an enabled policy keeps working. A typo
+    # must not be read as either answer, so anything yaml did not resolve to a boolean is an
+    # error rather than a default.
+    content_trust_config = configs.get('content_trust') or {}
+    legacy_signer_pull = content_trust_config.get('legacy_signer_pull_enabled')
+    if legacy_signer_pull is None:
+        legacy_signer_pull = True
+    if not isinstance(legacy_signer_pull, bool):
+        raise Exception(
+            'content_trust.legacy_signer_pull_enabled must be true or false, got %r' % (legacy_signer_pull,))
+    config_dict['content_trust_legacy_signer_pull_enabled'] = 'true' if legacy_signer_pull else 'false'
+
     # Trivy configs, optional
     trivy_configs = configs.get("trivy") or {}
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
