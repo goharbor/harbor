@@ -197,12 +197,13 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 		code := resp.StatusCode
 		if code >= 300 || code < 200 {
 			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
 			return fmt.Errorf("[%d][%s]", code, string(body))
 		}
+		resp.Body.Close()
 
 		log.Debugf("namespace %s created", namespace)
 	}
