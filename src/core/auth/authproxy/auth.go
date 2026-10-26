@@ -84,12 +84,12 @@ func (a *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Warningf("Failed to read response body, error: %v", err)
 		return nil, auth.ErrAuth{}
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
 		s := session{}
 		err = json.Unmarshal(data, &s)
@@ -103,11 +103,6 @@ func (a *Auth) Authenticate(ctx context.Context, m models.AuthModel) (*models.Us
 		return user, nil
 	} else if resp.StatusCode == http.StatusUnauthorized {
 		return nil, auth.NewErrAuth(string(data))
-	}
-	// else
-	data, err = io.ReadAll(resp.Body)
-	if err != nil {
-		log.Warningf("Failed to read response body, error: %v", err)
 	}
 	return nil, fmt.Errorf("failed to authenticate, status code: %d, text: %s", resp.StatusCode, string(data))
 }
