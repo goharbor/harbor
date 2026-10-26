@@ -222,7 +222,7 @@ func (a adapter) DeleteManifest(repository, reference string) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		resp.Body.Close()
 	}
 
 	return nil
