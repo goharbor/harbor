@@ -49,6 +49,7 @@ var (
 type Iterator interface {
 	Next(ctx context.Context) bool
 	Val() string
+	Err() error
 }
 
 // Cache cache interface
