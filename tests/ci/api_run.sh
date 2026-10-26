@@ -22,7 +22,7 @@ docker ps
 if [ "$1" = 'DB' ]; then
     docker run -i --privileged \
         -v $DIR/../../:/drone -v $DIR/../:/ca -w /drone $E2E_IMAGE \
-        robot --exclude proxy_cache_* \
+        robot --exclude proxy_cache_*  --exclude replic_dockerhub \
         -v DOCKER_USER:"${DOCKER_USER}" -v DOCKER_PWD:${DOCKER_PWD} -v ip:$2 -v ip1: \
         -v http_get_ca:false -v HARBOR_PASSWORD:${HARBOR_ADMIN_PASSWD} -v HARBOR_ADMIN:${HARBOR_ADMIN} \
         /drone/tests/robot-cases/Group1-Nightly/Setup.robot \

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	comUtils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -119,6 +120,53 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 	}
 }
 
+// TestScheduleNextJobsUnreachableCron verifies that scheduleNextJobs returns
+// promptly and adds no entries for a cron spec that can never fire.
+func (suite *EnqueuerTestSuite) TestScheduleNextJobsUnreachableCron() {
+	p := &Policy{
+		ID:       "unreachable_policy",
+		JobName:  job.SampleJob,
+		CronSpec: "0 0 3 30 2 *",
+	}
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.RedisKeyScheduled(suite.namespace)
+
+	ctx := context.WithValue(context.Background(), utils.NodeID, "fake_node_ID")
+	localEnqueuer := newEnqueuer(ctx, suite.namespace, suite.pool, suite.enqueuer.ctl)
+
+	workerConn := suite.pool.Get()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		localEnqueuer.scheduleNextJobs(p, workerConn)
+	}()
+
+	select {
+	case <-done:
+		_ = workerConn.Close()
+		// returned promptly, as expected
+	case <-time.After(5 * time.Second):
+		_ = workerConn.Close()
+		suite.FailNow("scheduleNextJobs did not return within 5s for unreachable cron")
+	}
+
+	// Check that no entries exist for this specific policy ID, rather than
+	// comparing total ZCARD which can race with the background enqueuer.
+	results, err := redis.Values(conn.Do("ZRANGEBYSCORE", key, "-inf", "+inf"))
+	require.NoError(suite.T(), err)
+	for _, raw := range results {
+		if b, ok := raw.([]byte); ok {
+			assert.NotContains(suite.T(), string(b), p.ID,
+				"unreachable cron policy should not appear in the scheduled set")
+		}
+	}
+}
+
 func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
@@ -143,4 +191,25 @@ func (suite *EnqueuerTestSuite) prepare() {
 
 	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
 	assert.Nil(suite.T(), err, "prepare policy: nil error expected but got %s", err)
+}
+
+// TestFireTimesStopsAtZeroNext covers a reachable spec whose Next returns
+// time.Time{} mid-loop: after 2096-02-29 the next Feb 29 is 2104-02-29,
+// beyond robfig/cron's five-year search window.
+func TestFireTimesStopsAtZeroNext(t *testing.T) {
+	schedule, err := comUtils.CronParser().Parse("0 0 0 29 2 *")
+	require.NoError(t, err)
+
+	from := time.Date(2096, 2, 28, 23, 58, 0, 0, time.UTC)
+	horizon := from.Add(enqueuerHorizon)
+
+	done := make(chan []time.Time, 1)
+	go func() { done <- fireTimes(schedule, from, horizon) }()
+
+	select {
+	case times := <-done:
+		assert.Equal(t, []time.Time{time.Date(2096, 2, 29, 0, 0, 0, 0, time.UTC)}, times)
+	case <-time.After(5 * time.Second):
+		t.Fatal("fireTimes did not return within 5s")
+	}
 }

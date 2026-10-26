@@ -43,6 +43,7 @@ export const enum ConfirmationTargets {
     PROJECT_MEMBER,
     USER,
     ROBOT_ACCOUNT,
+    ROLE,
     POLICY,
     TOGGLE_CONFIRM,
     TARGET,

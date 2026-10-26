@@ -6,15 +6,21 @@ import (
 	context "context"
 
 	artifact "github.com/goharbor/harbor/src/controller/artifact"
+
 	job "github.com/goharbor/harbor/src/jobservice/job"
-	model "github.com/goharbor/harbor/src/pkg/robot/model"
+
 	mock "github.com/stretchr/testify/mock"
+
+	model "github.com/goharbor/harbor/src/pkg/robot/model"
+
+	scan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+
+	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 
 	time "time"
 
 	types "github.com/goharbor/harbor/src/pkg/permission/types"
-	scan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 

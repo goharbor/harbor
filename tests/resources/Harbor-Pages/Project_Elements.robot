@@ -76,3 +76,6 @@ ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_li
 
 ${project_proxy_cache_switcher_xpath}  xpath=//form//clr-toggle-wrapper
 ${project_registry_select_id}  xpath=//*[@id='registry']
+${project_proxy_cache_filter_pattern_xpath}  xpath=//*[@id='repositoryFilter']
+${project_proxy_cache_filter_kind_xpath}  xpath=//*[@id='repositoryFilterKind']
+

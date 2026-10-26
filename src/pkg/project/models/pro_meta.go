@@ -26,6 +26,8 @@ const (
 	ProMetaAutoSBOMGen               = "auto_sbom_generation"
 	ProMetaProxySpeed                = "proxy_speed_kb"
 	ProMetaMaxUpstreamConn           = "max_upstream_conn"
+	ProMetaProxyCacheFilterPattern   = "proxy_cache_filter_pattern" // plain string pattern for proxy cache repository filter
+	ProMetaProxyCacheFilterKind      = "proxy_cache_filter_kind"    // "doublestar" (default) or "regex"
 	ProMetaProxyReferrerAPI          = "proxy_referrer_api"
 	ProMetaProxyCacheLocalOnNotFound = "proxy_cache_local_on_not_found"
 )

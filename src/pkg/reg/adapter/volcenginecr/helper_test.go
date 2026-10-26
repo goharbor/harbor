@@ -17,6 +17,8 @@ func Test_getRegionRegistryNamer(t *testing.T) {
 		wantErr      bool
 	}{
 		{"registry beijing", "https://enterprise-cn-beijing.cr.volces.com", "cn-beijing", "enterprise", false},
+		{"registry beijing mixed case", "https://Enterprise-CN-Beijing.CR.Volces.com", "cn-beijing", "Enterprise", false},
+		{"registry ivolces", "https://enterprise-cn-beijing.cr.ivolces.com", "cn-beijing", "enterprise", false},
 		{"invalid url", "http://enterprise-cn-beijing.cr.volces.com", "", "", true},
 		{"invalid region", "https://enterprise-us-test.cr.volces.com", "", "", true},
 		{"invalid suffix", "https://enterprise-us-test.cr-test.volces.com", "", "", true},

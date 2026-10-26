@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	common_dao "github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/project"
 	repctl "github.com/goharbor/harbor/src/controller/replication"
@@ -138,6 +139,13 @@ func TestIsLocalRegistry(t *testing.T) {
 		URL:  config.InternalCoreURL(),
 	}
 	assert.True(t, isLocalRegistry(reg1))
+	// local registry with mixed-case host URL should return true
+	reg1MixedCase := &rpModel.Registry{
+		Type: "harbor",
+		Name: "Local",
+		URL:  "http://CORE:8080",
+	}
+	assert.True(t, utils.EqualURL(reg1MixedCase.URL, "http://core:8080"))
 	// non-local registry should return false
 	reg2 := &rpModel.Registry{
 		Type: "docker-registry",

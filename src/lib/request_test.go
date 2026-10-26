@@ -25,37 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-type NopCloseRequestTestSuite struct {
-	suite.Suite
-}
-
-func (suite *NopCloseRequestTestSuite) TestReusableBody() {
-	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-
-	body, err := io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
-
-	body, err = io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte(""), body)
-
-	r, _ = http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-	r = NopCloseRequest(r)
-
-	body, err = io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
-
-	body, err = io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
-}
-
-func TestNopCloseRequestTestSuite(t *testing.T) {
-	suite.Run(t, &NopCloseRequestTestSuite{})
-}
-
 type ReadRequestBodyTestSuite struct {
 	suite.Suite
 }

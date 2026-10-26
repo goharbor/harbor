@@ -51,7 +51,26 @@ func ParseEndpoint(endpoint string) (*url.URL, error) {
 		endpoint = "http://" + endpoint
 	}
 
-	return url.ParseRequestURI(endpoint)
+	u, err := url.ParseRequestURI(endpoint)
+	if err == nil && u != nil {
+		u.Host = strings.ToLower(u.Host)
+	}
+	return u, err
+}
+
+// EqualURL checks whether two URLs are equal, with case-insensitive host matching per RFC 1035.
+func EqualURL(rawURL1, rawURL2 string) bool {
+	if rawURL1 == rawURL2 {
+		return true
+	}
+	u1, err1 := url.Parse(rawURL1)
+	u2, err2 := url.Parse(rawURL2)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	u1.Host = strings.ToLower(u1.Host)
+	u2.Host = strings.ToLower(u2.Host)
+	return u1.String() == u2.String()
 }
 
 // ParseRepository splits a repository into two parts: project and rest
@@ -66,19 +85,33 @@ func ParseRepository(repository string) (project, rest string) {
 	return
 }
 
-// GenerateRandomStringWithLen generates a random string with length
-func GenerateRandomStringWithLen(length int) string {
+// GenerateRandomStringWithLenAndError generates a random string with length or returns an error if entropy cannot be read
+func GenerateRandomStringWithLenAndError(length int) (string, error) {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	l := len(chars)
 	result := make([]byte, length)
 	_, err := rand.Read(result)
 	if err != nil {
-		log.Warningf("Error reading random bytes: %v", err)
+		return "", fmt.Errorf("failed to read random bytes: %w", err)
 	}
 	for i := range length {
 		result[i] = chars[int(result[i])%l]
 	}
-	return string(result)
+	return string(result), nil
+}
+
+// GenerateRandomStringOrError generates a random string with 32 byte length or returns an error if entropy cannot be read
+func GenerateRandomStringOrError() (string, error) {
+	return GenerateRandomStringWithLenAndError(32)
+}
+
+// GenerateRandomStringWithLen generates a random string with length
+func GenerateRandomStringWithLen(length int) string {
+	str, err := GenerateRandomStringWithLenAndError(length)
+	if err != nil {
+		log.Warningf("Error reading random bytes: %v", err)
+	}
+	return str
 }
 
 // GenerateRandomString generate a random string with 32 byte length
@@ -145,7 +178,7 @@ func ConvertMapToStruct(object any, values any) error {
 		return errors.New("nil struct is not supported")
 	}
 
-	if reflect.TypeOf(object).Kind() != reflect.Ptr {
+	if reflect.TypeOf(object).Kind() != reflect.Pointer {
 		return errors.New("object should be referred by pointer")
 	}
 
@@ -296,14 +329,35 @@ func CronParser() cronlib.Parser {
 	return cronlib.NewParser(cronlib.Second | cronlib.Minute | cronlib.Hour | cronlib.Dom | cronlib.Month | cronlib.Dow)
 }
 
+// IsCronReachable reports whether the parsed schedule fires at least once
+// within a complete 400-year Gregorian cycle. robfig/cron only looks five
+// years ahead per Next call, so the cycle is probed in five-year windows to
+// avoid false negatives on rare but valid schedules. For example, "0 0 0 29 2 *"
+// (every Feb 29) is valid but after a non-leap century year (e.g. 2100) the
+// next Feb 29 is eight years away, exceeding a single five-year probe. Eighty
+// five-year windows cover 400 years at negligible cost (~1-3 ms).
+func IsCronReachable(schedule cronlib.Schedule) bool {
+	base := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	for i := 0; i < 80; i++ {
+		if !schedule.Next(base).IsZero() {
+			return true
+		}
+		base = base.AddDate(5, 0, 0)
+	}
+	return false
+}
+
 // ValidateCronString check whether it is a valid cron string and whether the 1st field (indicating Seconds of time) of the cron string is a fixed value of 0 or not
 func ValidateCronString(cron string) error {
 	if len(cron) == 0 {
 		return fmt.Errorf("empty cron string is invalid")
 	}
-	_, err := CronParser().Parse(cron)
+	schedule, err := CronParser().Parse(cron)
 	if err != nil {
 		return err
+	}
+	if !IsCronReachable(schedule) {
+		return fmt.Errorf("cron expression %q can never fire: no matching date exists", cron)
 	}
 	cronParts := strings.Split(cron, " ")
 	if len(cronParts) == 6 && cronParts[0] != "0" {
@@ -314,5 +368,11 @@ func ValidateCronString(cron string) error {
 
 // IsLocalPath checks if path is local, includes the empty path
 func IsLocalPath(path string) bool {
-	return len(path) == 0 || (strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//"))
+	if len(path) == 0 {
+		return true
+	}
+	if strings.ContainsAny(path, "\\\r\n\t") {
+		return false
+	}
+	return strings.HasPrefix(path, "/") && !strings.HasPrefix(path, "//")
 }

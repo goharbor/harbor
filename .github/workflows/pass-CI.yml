@@ -1,4 +1,5 @@
 name: CI
+permissions: {}
 
 on:
   pull_request:

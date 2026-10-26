@@ -26,6 +26,8 @@ func RegisterCollectors() {
 		TotalInFlightGauge,
 		TotalReqCnt,
 		TotalReqDurSummary,
+		TotalProxyReq,
+		TotalProxyUpstreamReq,
 	}...)
 }
 
@@ -61,4 +63,24 @@ var (
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"method", "operation"})
+
+	// TotalProxyReq used to collect total proxy cache requests
+	TotalProxyReq = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: os.Getenv(NamespaceEnvKey),
+			Subsystem: os.Getenv(SubsystemEnvKey),
+			Name:      "http_registry_proxy_requests_total",
+			Help:      "The total number of requests sent to the proxy cache",
+		},
+		[]string{"project", "method"})
+
+	// TotalProxyUpstreamReq used to collect total requests sent to the upstream
+	TotalProxyUpstreamReq = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: os.Getenv(NamespaceEnvKey),
+			Subsystem: os.Getenv(SubsystemEnvKey),
+			Name:      "http_registry_proxy_upstream_requests_total",
+			Help:      "The total number of proxy cache requests that fetched from the upstream registry (cache miss)",
+		},
+		[]string{"project", "method"})
 )

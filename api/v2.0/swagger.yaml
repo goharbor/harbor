@@ -1072,6 +1072,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
+          type: boolean
+          required: false
+          default: false
       responses:
         '200':
           description: Success
@@ -1182,6 +1188,12 @@ paths:
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts.
+          type: boolean
+          required: false
+          default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
           type: boolean
           required: false
           default: false
@@ -1713,6 +1725,12 @@ paths:
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
           type: boolean
           required: false
           default: false
@@ -3347,6 +3365,162 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /roles:
+    get:
+      summary: Get roles
+      description: >-
+        List the roles (built-in and custom) with their permissions. Readable by
+        any authenticated user (e.g. to populate member-role pickers), whereas
+        creating, updating and deleting roles is restricted to system admins.
+      tags:
+        - role
+      operationId: ListRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of roles
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a role
+      description: Create a role
+      tags:
+        - role
+      operationId: CreateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/RoleCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+            Location:
+              description: The location of the resource
+              type: string
+          schema:
+            $ref: '#/definitions/RoleCreated'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+
+  /roles/{role_id}:
+    get:
+      summary: Get a role
+      description: >-
+        Returns a role (built-in or custom) with its permissions by role ID.
+        Readable by any authenticated user; creating, updating and deleting roles
+        is restricted to system admins.
+      tags:
+        - role
+      operationId: GetRoleByID
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          description: Return matched role information.
+          schema:
+            $ref: '#/definitions/Role'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a role account
+      description: This endpoint updates specific role information by role ID.
+      tags:
+        - role
+      operationId: UpdateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a role account
+      description: This endpoint deletes specific role information by role ID.
+      tags:
+        - role
+      operationId: DeleteRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+
   '/quotas':
     get:
       summary: List quotas
@@ -3560,6 +3734,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+
   /replication/policies:
     get:
       summary: List replication policies
@@ -6523,6 +6698,13 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+    format: int64
+  roleId:
+    name: role_id
+    in: path
+    description: Role ID
+    required: true
+    type: integer
   gcId:
     name: gc_id
     in: path
@@ -6851,6 +7033,23 @@ definitions:
         items:
           $ref: '#/definitions/Accessory'
           description: The accessory of the artifact.
+      inherited_accessories:
+        type: array
+        # omitted rather than sent as null, so that responses which did not ask for the
+        # inherited accessories stay exactly as they are today
+        x-omitempty: true
+        description: |
+          The signatures of the parent OCI index(es) that reference this artifact, both
+          cosign and notation. A signature on an index covers the whole index, so a child
+          manifest of a signed index is covered by that signature even though it carries
+          none of its own. These entries describe the parent, not this artifact: their
+          subject_artifact_digest is the index digest, so verifying them against this
+          artifact's digest fails and they are not listed by the referrers API for this
+          digest. Only returned when the with_inherited_accessory query parameter is set
+          to true.
+        items:
+          $ref: '#/definitions/Accessory'
+          description: The accessory inherited from the parent OCI index.
   Tag:
     type: object
     properties:
@@ -7414,6 +7613,16 @@ definitions:
         format: int64
         description: The ID of referenced registry when creating the proxy cache project
         x-nullable: true
+      retention_days:
+        type: integer
+        format: int64
+        minimum: 0
+        maximum: 18250
+        description: >-
+          The number of days since the last pull for the retention policy created with a proxy cache project.
+          Omitted or null uses seven days. Zero is a valid retention threshold and does not disable retention.
+          Only supported when creating a proxy cache project; rejected for ordinary projects and project updates.
+        x-nullable: true
   Project:
     type: object
     properties:
@@ -7515,7 +7724,7 @@ definitions:
         x-nullable: true
       retention_id:
         type: string
-        description: 'The ID of the tag retention policy for the project'
+        description: 'The ID of the tag retention policy for the project.'
         x-nullable: true
       proxy_speed_kb:
         type: string
@@ -7532,6 +7741,14 @@ definitions:
       proxy_referrer_api:
         type: string
         description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
+        x-nullable: true
+      proxy_cache_filter_pattern:
+        type: string
+        description: 'Repository filter pattern for proxy cache project. Only repositories matching the pattern will be proxied. Empty means allow all. Only has value when the current project is a proxy cache project.'
+        x-nullable: true
+      proxy_cache_filter_kind:
+        type: string
+        description: 'Matching mode for proxy_cache_filter_pattern: "doublestar" (default, glob-style with ** support) or "regex". Only has value when the current project is a proxy cache project.'
         x-nullable: true
   ProjectSummary:
     type: object
@@ -7989,6 +8206,9 @@ definitions:
       status:
         type: string
         description: The status of the task
+      status_message:
+        type: string
+        description: The status message of the task
       job_id:
         type: string
         description: The ID of the underlying job that the task related to
@@ -8057,6 +8277,7 @@ definitions:
         description: The type of the robot creator, like local(harbor_user) or robot.
       creator_ref:
         type: integer
+        format: int64
         description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
@@ -8135,6 +8356,101 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Access'
+  Role:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+      is_builtin:
+        type: boolean
+        description: Whether this is a built-in role that cannot be modified or deleted
+      description:
+        type: string
+        description: Human-readable description of the role
+      modified:
+        type: boolean
+        description: Whether the role has been modified since creation
+      created_by:
+        type: string
+        description: Username of the admin who created the role
+      created_at:
+        type: string
+        format: date-time
+        description: When the role was created
+      modified_by:
+        type: string
+        description: Username of the admin who last modified the role
+      modified_at:
+        type: string
+        format: date-time
+        description: When the role was last modified
+  RoleCreate:
+    type: object
+    description: The request for role creation.
+    properties:
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      description:
+        type: string
+        description: Human-readable description of the role
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+  RoleCreated:
+    type: object
+    description: The response for role creation.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      secret:
+        type: string
+        description: The secret of the role
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the role.
+  RolePermission:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: The kind of the permission
+      namespace:
+        type: string
+        description: The namespace of the permission
+      access:
+        type: array
+        items:
+          $ref: '#/definitions/Access'
+
   Access:
     type: object
     properties:
@@ -8147,6 +8463,7 @@ definitions:
       effect:
         type: string
         description: The effect of the access
+
   RobotCreateV1:
     type: object
     properties:
@@ -9862,6 +10179,12 @@ definitions:
         description: The project level permissions
         items:
           $ref: '#/definitions/Permission'
+      role:
+        type: array
+        description: The role project level permissions
+        items:
+          $ref: '#/definitions/Permission'
+
   OIDCCliSecretReq:
     type: object
     properties:

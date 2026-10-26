@@ -286,7 +286,7 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 
 	{
 		// test blob size expired
-		ctl := &controller{blobSizeExpiration: time.Second * 5}
+		ctl := &controller{blobSizeExpiration: time.Millisecond * 10}
 
 		sessionID := uuid.New().String()
 
@@ -300,11 +300,10 @@ func (suite *ControllerTestSuite) TestGetSetAcceptedBlobSize() {
 		suite.Nil(err)
 		suite.Equal(int64(100), size)
 
-		time.Sleep(time.Second * 10)
-
-		size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
-		suite.Nil(err)
-		suite.Equal(int64(0), size)
+		suite.Eventually(func() bool {
+			size, err = ctl.GetAcceptedBlobSize(ctx, sessionID)
+			return err == nil && size == 0
+		}, time.Second*2, time.Millisecond*50)
 	}
 }
 

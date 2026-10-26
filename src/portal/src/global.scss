@@ -9,10 +9,7 @@ body {
 
 .app-loading {
     position: absolute !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     margin: auto !important;
     width: 108px !important;
     height: 108px !important;
@@ -20,7 +17,19 @@ body {
 
 .tooltip-content {
     white-space: normal;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.status-message-tooltip {
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 250px;
+    overflow-y: auto;
+    display: block;
+    text-align: left;
+    font-family: monospace;
+    font-size: 11px;
+    line-height: 1.4;
 }
 
 .modal-header {
