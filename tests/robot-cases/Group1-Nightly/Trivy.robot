@@ -122,7 +122,7 @@ Test Case - Scan As An Unprivileged User
 
 # Chose a empty Vul repo
 Test Case - Scan Image With Empty Vul
-    [Tags] scan_image_with_empty_vul
+    [Tags]  scan_image_with_empty_vul
     Body Of Scan Image With Empty Vul  photon  4.0_scan
 
 Test Case - Scan Image On Push
