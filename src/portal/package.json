@@ -36,7 +36,6 @@
     "@angular/forms": "21.2.20",
     "@angular/localize": "21.2.20",
     "@angular/platform-browser": "21.2.20",
-    "@angular/platform-browser-dynamic": "21.2.20",
     "@angular/router": "21.2.20",
     "@clr/addons": "18.0.0",
     "@clr/angular": "18.0.0",
