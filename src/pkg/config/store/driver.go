@@ -26,3 +26,8 @@ type Driver interface {
 	// Get - get config item from config driver
 	Get(ctx context.Context, key string) (map[string]any, error)
 }
+
+// Revisioned lets ConfigStore skip unchanged Loads; revision 0 always forces one.
+type Revisioned interface {
+	Revision() uint64
+}
