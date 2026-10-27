@@ -114,7 +114,8 @@ func (p *Params) ToJSON() (string, error) {
 }
 
 type Manager interface {
-	Fetch(ctx context.Context, params Params) ([]Data, error)
+	// Fetch returns matching rows and the count before CVE filtering.
+	Fetch(ctx context.Context, params Params) ([]Data, int, error)
 }
 
 type exportManager struct {
@@ -125,24 +126,30 @@ func NewManager() Manager {
 	return &exportManager{exportDataFilter: NewVulnerabilityDataSelector()}
 }
 
-func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, error) {
+func (em *exportManager) Fetch(ctx context.Context, params Params) ([]Data, int, error) {
 	exportData := make([]Data, 0)
-	rawSeter, _ := em.buildQuery(ctx, params)
-	_, err := rawSeter.QueryRows(&exportData)
+	rawSeter, err := em.buildQuery(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+
+	_, err = rawSeter.QueryRows(&exportData)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	rawCount := len(exportData)
 
 	exportData, err = em.exportDataFilter.Select(exportData, CVEIDMatches, params.CVEIds)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for i := range exportData {
 		exportData[i].sanitizeForCSV()
 	}
 
-	return exportData, nil
+	return exportData, rawCount, nil
 }
 
 // csvFormulaTriggers lists the leading characters a spreadsheet may interpret as
