@@ -252,6 +252,7 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 		}
 	}
 
+	headerWritten := false
 	for groupID, artIDGroup := range artIDGroups {
 		// fetch data by group
 		if len(artIDGroup) == 0 {
@@ -263,30 +264,33 @@ func (sde *ScanDataExport) writeCsvFile(ctx job.Context, params job.Parameters, 
 		exportParams.PageSize = export.QueryPageSize
 
 		for {
-			data, err := sde.exportMgr.Fetch(systemContext, exportParams)
+			data, rawCount, err := sde.exportMgr.Fetch(systemContext, exportParams)
 			if err != nil {
 				logger.Error("Encountered error reading from the report table", err)
 				return err
 			}
-			if len(data) == 0 {
+			if rawCount == 0 {
 				logger.Infof("No more data to fetch. Exiting...")
 				break
 			}
 			logger.Infof("Export Group Id = %d, Job Id = %s, Page Number = %d, Page Size = %d Num Records = %d", groupID, params[export.JobID], exportParams.PageNumber, exportParams.PageSize, len(data))
 
-			// for the first page write the CSV with the headers
-			if exportParams.PageNumber == 1 && groupID == 0 {
-				err = gocsv.Marshal(data, csvFile)
-			} else {
-				err = gocsv.MarshalWithoutHeaders(data, csvFile)
-			}
-			if err != nil {
-				return err
+			// Empty filtered pages may still be followed by matching rows.
+			if len(data) > 0 {
+				if !headerWritten {
+					err = gocsv.Marshal(data, csvFile)
+				} else {
+					err = gocsv.MarshalWithoutHeaders(data, csvFile)
+				}
+				if err != nil {
+					return err
+				}
+				headerWritten = true
 			}
 
 			exportParams.PageNumber = exportParams.PageNumber + 1
-			// break earlier if this is last page
-			if len(data) < int(exportParams.PageSize) {
+			// Only the unfiltered row count indicates the last database page.
+			if rawCount < int(exportParams.PageSize) {
 				break
 			}
 		}
