@@ -57,7 +57,7 @@ jobs:
               dst_online=harbor-online-installer-${cur}-${arch}.tgz
               aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
             fi
-            source tools/release/release_utils.sh && getAssets ${bucket} ${branch} ${dst_offline} ${dst_online} ${{ env.PRERELEASE }} ${assets_path}
+            source tools/release/release_utils.sh && getAssets "$bucket" "$branch" "$dst_offline" "$dst_online" "${{ env.PRERELEASE }}" "$assets_path"
           done
 
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
