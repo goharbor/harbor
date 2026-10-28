@@ -38,10 +38,12 @@ type User struct {
 	Comment         string         `orm:"column(comment)" json:"comment"`
 	Deleted         bool           `orm:"column(deleted)" json:"deleted"`
 	SysAdminFlag    bool           `orm:"column(sysadmin_flag)" json:"sysadmin_flag"`
-	ResetUUID       string         `orm:"column(reset_uuid)" json:"reset_uuid"`
-	Salt            string         `orm:"column(salt)" filter:"false" json:"-"`
-	CreationTime    time.Time      `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime      time.Time      `orm:"column(update_time);auto_now" json:"update_time"`
+	// SysAdminFlagSource is "manual", "sync" or "" (see common/models.User for details)
+	SysAdminFlagSource string    `orm:"column(sysadmin_flag_source)" filter:"false" json:"-"`
+	ResetUUID          string    `orm:"column(reset_uuid)" json:"reset_uuid"`
+	Salt               string    `orm:"column(salt)" filter:"false" json:"-"`
+	CreationTime       time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime         time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
 // TableName ...
@@ -65,6 +67,7 @@ func toDBUser(u *commonmodels.User) *User {
 	user.Comment = u.Comment
 	user.Deleted = u.Deleted
 	user.SysAdminFlag = u.SysAdminFlag
+	user.SysAdminFlagSource = u.SysAdminFlagSource
 	user.ResetUUID = u.ResetUUID
 	user.Salt = u.Salt
 	user.CreationTime = u.CreationTime
@@ -85,6 +88,7 @@ func toCommonUser(u *User) *commonmodels.User {
 	user.Comment = u.Comment
 	user.Deleted = u.Deleted
 	user.SysAdminFlag = u.SysAdminFlag
+	user.SysAdminFlagSource = u.SysAdminFlagSource
 	user.ResetUUID = u.ResetUUID
 	user.Salt = u.Salt
 	user.CreationTime = u.CreationTime
