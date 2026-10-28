@@ -18,12 +18,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/oauth2"
 
@@ -300,4 +304,42 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsLaterExpiringToken() {
 
 func TestOIDCOnboardTestSuite(t *testing.T) {
 	suite.Run(t, &OIDCOnboardTestSuite{})
+}
+
+func TestVerifyTokenError(t *testing.T) {
+	cases := []struct {
+		name    string
+		err     error
+		code    string
+		message string
+	}{
+		{
+			name:    "expired token",
+			err:     errors.UnauthorizedError(&gooidc.TokenExpiredError{Expiry: time.Now()}).WithMessage("invalid ID token"),
+			code:    errors.UnAuthorizedCode,
+			message: "the ID token is expired",
+		},
+		{
+			name:    "invalid token",
+			err:     errors.UnauthorizedError(fmt.Errorf(`oidc: expected audience "harbor" got ["other"]`)).WithMessage("invalid ID token"),
+			code:    errors.UnAuthorizedCode,
+			message: "invalid ID token",
+		},
+		{
+			name: "provider not reachable",
+			err:  fmt.Errorf("failed to create OIDC provider, error: connection refused"),
+			code: errors.GeneralCode,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := convertVerifyTokenError(context.Background(), c.err)
+			assert.Equal(t, c.code, errors.ErrCode(err))
+			if c.message != "" {
+				var e *errors.Error
+				require.True(t, errors.As(err, &e))
+				assert.Equal(t, c.message, e.Error())
+			}
+		})
+	}
 }

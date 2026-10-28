@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-openapi/runtime/middleware"
 	"golang.org/x/oauth2"
 
@@ -222,8 +223,7 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 func verifyIDToken(ctx context.Context, rawIDToken string) (*oidcpkg.Token, *oidcpkg.UserInfo, error) {
 	idToken, err := oidcpkg.VerifyToken(ctx, rawIDToken)
 	if err != nil {
-		log.G(ctx).Warningf("failed to verify ID token: %v", err)
-		return nil, nil, errors.UnauthorizedError(nil).WithMessage("invalid ID token")
+		return nil, nil, convertVerifyTokenError(ctx, err)
 	}
 	token := &oidcpkg.Token{
 		Token: oauth2.Token{
@@ -239,4 +239,21 @@ func verifyIDToken(ctx context.Context, rawIDToken string) (*oidcpkg.Token, *oid
 		return nil, nil, err
 	}
 	return token, info, nil
+}
+
+// convertVerifyTokenError maps the error of [oidcpkg.VerifyToken]:
+//
+//   - problems with the token itself => client error
+//   - problems with reaching the OIDC provider => server error
+func convertVerifyTokenError(ctx context.Context, err error) error {
+	var expiredErr *gooidc.TokenExpiredError
+	switch {
+	case errors.As(err, &expiredErr):
+		return errors.UnauthorizedError(nil).WithMessage("the ID token is expired")
+	case errors.IsErr(err, errors.UnAuthorizedCode):
+		log.G(ctx).Warningf("failed to verify ID token: %v", err)
+		return errors.UnauthorizedError(nil).WithMessage("invalid ID token")
+	default:
+		return errors.Wrap(err, "failed to verify ID token")
+	}
 }

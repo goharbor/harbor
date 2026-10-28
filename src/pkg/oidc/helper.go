@@ -219,7 +219,10 @@ func parseIDToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, erro
 	return verifyTokenWithConfig(ctx, rawIDToken, conf)
 }
 
-// VerifyToken verifies the ID token based on the OIDC settings
+// VerifyToken verifies the ID token based on the OIDC settings.
+//
+// Problems with the token itself are returned as [errors.UnauthorizedError],
+// to tell them apart from failures to load the OIDC provider or settings.
 func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error) {
 	return verifyTokenWithConfig(ctx, rawIDToken, nil)
 }
@@ -239,7 +242,13 @@ func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.
 	}
 	verifier := p.Verifier(conf)
 	ctx = clientCtx(ctx, settings.VerifyCert)
-	return verifier.Verify(ctx, rawIDToken)
+	idToken, err := verifier.Verify(ctx, rawIDToken)
+	if err != nil {
+		// go-oidc's error doesn't distinguish failures to fetch the keys of the provider from invalid signatures,
+		// so those end up here as well
+		return nil, errors.UnauthorizedError(err).WithMessage("invalid ID token")
+	}
+	return idToken, nil
 }
 
 func clientCtx(ctx context.Context, verifyCert bool) context.Context {
