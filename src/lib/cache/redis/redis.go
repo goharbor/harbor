@@ -25,7 +25,6 @@ import (
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var _ cache.Cache = (*Cache)(nil)
@@ -118,17 +117,17 @@ type ScanIterator struct {
 
 // Next check whether has the next element
 func (i *ScanIterator) Next(ctx context.Context) bool {
-	hasNext := i.iter.Next(ctx)
-	if !hasNext && i.iter.Err() != nil {
-		log.Errorf("error occurred when scan redis: %v", i.iter.Err())
-	}
-
-	return hasNext
+	return i.iter.Next(ctx)
 }
 
 // Val returns the key
 func (i *ScanIterator) Val() string {
 	return strings.TrimPrefix(i.iter.Val(), i.prefix)
+}
+
+// Err returns any error encountered while scanning.
+func (i *ScanIterator) Err() error {
+	return i.iter.Err()
 }
 
 // New returns redis cache
