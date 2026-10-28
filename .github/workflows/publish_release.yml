@@ -78,11 +78,11 @@ jobs:
                 ${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz
             fi
           done
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master (no tagged release newer than v1/2023 covers this fix; commit dated 2025-08-24)
-        with:
-          docker_version: 20.10
-          docker_channel: stable
+      # CNCF runners provide Docker; use the runner's engine and user configuration.
+      - name: Verify Docker
+        run: |
+          docker version
+          docker info
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Publish Images (amd64 + arm64)
