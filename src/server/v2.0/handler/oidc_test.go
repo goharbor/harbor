@@ -218,7 +218,7 @@ func (s *OIDCOnboardTestSuite) TestConcurrentOnboard() {
 	s.uCtl.On("Get", mock.Anything, 4, &user.Option{WithOIDCInfo: true}).Return(&commonmodels.User{
 		UserID:       4,
 		Username:     "ci-user",
-		OIDCUserMeta: &commonmodels.OIDCUser{ID: 8, UserID: 4, Token: s.storedToken("", time.Time{})},
+		OIDCUserMeta: &commonmodels.OIDCUser{ID: 8, UserID: 4, Token: s.storedToken("", s.expiry.Add(-time.Minute))},
 	}, nil).Once()
 	s.uCtl.On("UpdateOIDCMeta", mock.Anything, mock.MatchedBy(func(meta *commonmodels.OIDCUser) bool {
 		return meta.ID == 8
@@ -303,6 +303,20 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsLaterExpiringToken() {
 		UserID:       3,
 		Username:     "ci-user",
 		OIDCUserMeta: &commonmodels.OIDCUser{ID: 7, UserID: 3, Token: s.storedToken("", s.expiry.Add(time.Minute))},
+	}, nil).Once()
+
+	res := s.onboard("Bearer "+testIDToken, nil)
+	s.Require().Equal(http.StatusOK, res.StatusCode)
+	s.uCtl.AssertNotCalled(s.T(), "UpdateOIDCMeta", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsTokenWithoutExpiry() {
+	existing := &commonmodels.User{UserID: 3, Username: "jane"}
+	s.uCtl.On("GetBySubIss", mock.Anything, testSubject, testIssuer).Return(existing, nil).Once()
+	s.uCtl.On("Get", mock.Anything, 3, &user.Option{WithOIDCInfo: true}).Return(&commonmodels.User{
+		UserID:       3,
+		Username:     "jane",
+		OIDCUserMeta: &commonmodels.OIDCUser{ID: 7, UserID: 3, Token: s.storedToken("", time.Time{})},
 	}, nil).Once()
 
 	res := s.onboard("Bearer "+testIDToken, nil)

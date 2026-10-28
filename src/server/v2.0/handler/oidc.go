@@ -209,7 +209,7 @@ func (o oidcAPI) usernameForOnboarding(ctx context.Context, req *models.OIDCOnbo
 }
 
 // updateStoredToken replaces the token persisted for the user,
-// unless the stored token has a refresh token, or expires later.
+// unless the stored token has a refresh token, never expires, or expires later.
 //
 // A refresh token is only obtained via the normal web-based OIDC login flow (/c/oidc/callback).
 // As Harbor can refresh such token on its own, it must not be replaced by an ID token which can not be refreshed.
@@ -228,6 +228,10 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 		log.G(ctx).Warningf("failed to decrypt the stored token of user %d, replacing it: %v", userID, err)
 	case stored.RefreshToken != "":
 		log.G(ctx).Debugf("the stored token of user %d has a refresh token, skip replacing it", userID)
+		return nil
+	case stored.Expiry.IsZero():
+		// the same as oauth2, which considers tokens without expiry as valid forever
+		log.G(ctx).Debugf("the stored token of user %d never expires, skip replacing it", userID)
 		return nil
 	case stored.Expiry.After(expiry):
 		log.G(ctx).Debugf("the stored token of user %d expires later, skip replacing it", userID)
