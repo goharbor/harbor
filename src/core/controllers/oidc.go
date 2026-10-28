@@ -324,6 +324,13 @@ func (oc *OIDCController) RedirectLogout() {
 	oc.Controller.Redirect(logoutURL, http.StatusFound)
 }
 
+// userOnboard onboards the users of the web-based OIDC login flow.
+//
+// Users of non-interactive clients are onboarded via
+//
+//	POST /api/v2.0/oidc/onboard
+//
+// so changes to onboarding logic must be made there too.
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
 	user, err := oidc.NewOnboardUser(info, username, tokenBytes)
 	if err != nil {

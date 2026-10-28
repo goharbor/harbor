@@ -85,6 +85,14 @@ func (o oidcAPI) PingOIDC(ctx context.Context, params oidc.PingOIDCParams) middl
 	return oidc.NewPingOIDCOK()
 }
 
+// OnboardOIDCUser onboards the users of non-interactive clients.
+//
+// Users of the web-based OIDC login flow are onboarded via
+//
+//	GET /c/oidc/callback
+//	POST /c/oidc/onboard
+//
+// so changes to onboarding logic must be made there too.
 func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUserParams) middleware.Responder {
 	auth, err := o.getAuth(ctx)
 	if err != nil {
