@@ -51,7 +51,7 @@ func TestValidateUsername(t *testing.T) {
 	}
 }
 
-func TestEncryptSecretAndToken(t *testing.T) {
+func TestEncryptToken(t *testing.T) {
 	token := &Token{
 		Token:      oauth2.Token{AccessToken: "access-token", RefreshToken: "refresh-token", Expiry: time.Now().Add(time.Hour).Round(0)},
 		RawIDToken: "id-token",
@@ -59,14 +59,8 @@ func TestEncryptSecretAndToken(t *testing.T) {
 	tb, err := json.Marshal(token)
 	require.NoError(t, err)
 
-	encSecret, encToken, err := EncryptSecretAndToken(tb)
+	encToken, err := EncryptToken(tb)
 	require.NoError(t, err)
-
-	key, err := keyLoader.encryptKey()
-	require.NoError(t, err)
-	secret, err := utils.ReversibleDecrypt(encSecret, key)
-	require.NoError(t, err)
-	assert.NotEmpty(t, secret)
 
 	decrypted, err := DecryptToken(encToken)
 	require.NoError(t, err)
@@ -94,7 +88,12 @@ func TestNewOnboardUser(t *testing.T) {
 	assert.Equal(t, UserComment, u.Comment)
 	require.NotNil(t, u.OIDCUserMeta)
 	assert.Equal(t, info.Subject+info.Issuer, u.OIDCUserMeta.SubIss)
-	assert.NotEmpty(t, u.OIDCUserMeta.Secret)
+
+	key, err := keyLoader.encryptKey()
+	require.NoError(t, err)
+	secret, err := utils.ReversibleDecrypt(u.OIDCUserMeta.Secret, key)
+	require.NoError(t, err)
+	assert.NotEmpty(t, secret)
 
 	token, err := DecryptToken(u.OIDCUserMeta.Token)
 	require.NoError(t, err)

@@ -134,7 +134,7 @@ func (s *OIDCOnboardTestSuite) decodeUser(res *http.Response) *models.UserResp {
 func (s *OIDCOnboardTestSuite) storedToken(refreshToken string, expiry time.Time) string {
 	tb, err := json.Marshal(&oidcpkg.Token{Token: oauth2.Token{AccessToken: "stored", RefreshToken: refreshToken, Expiry: expiry}})
 	s.Require().NoError(err)
-	_, t, err := oidcpkg.EncryptSecretAndToken(tb)
+	t, err := oidcpkg.EncryptToken(tb)
 	s.Require().NoError(err)
 	return t
 }

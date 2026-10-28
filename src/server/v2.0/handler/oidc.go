@@ -230,7 +230,7 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 		log.G(ctx).Debugf("the stored token of user %d expires later, skip replacing it", userID)
 		return nil
 	}
-	_, t, err := oidcpkg.EncryptSecretAndToken(tokenBytes)
+	t, err := oidcpkg.EncryptToken(tokenBytes)
 	if err != nil {
 		return err
 	}

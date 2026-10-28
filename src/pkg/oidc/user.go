@@ -47,26 +47,17 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
-// EncryptSecretAndToken generates a new CLI secret and encrypts it together with the token for the OIDC user meta.
-// The stored token is what [VerifySecret] checks, and refreshes, whenever the CLI secret is used.
-func EncryptSecretAndToken(tokenBytes []byte) (string, string, error) {
+// EncryptToken encrypts the token for the OIDC user meta, e.g. to replace the stored token without changing the CLI
+// secret. The stored token is what [VerifySecret] checks, and refreshes, whenever the CLI secret is used.
+func EncryptToken(tokenBytes []byte) (string, error) {
 	key, err := keyLoader.encryptKey()
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-	token, err := utils.ReversibleEncrypt((string)(tokenBytes), key)
-	if err != nil {
-		return "", "", err
-	}
-	str := utils.GenerateRandomString()
-	secret, err := utils.ReversibleEncrypt(str, key)
-	if err != nil {
-		return "", "", err
-	}
-	return secret, token, nil
+	return utils.ReversibleEncrypt(string(tokenBytes), key)
 }
 
-// DecryptToken decrypts a token stored by [EncryptSecretAndToken], e.g. to check whether it has a refresh token
+// DecryptToken decrypts a token stored by [EncryptToken], e.g. to check whether it has a refresh token
 // before replacing it.
 func DecryptToken(encToken string) (*Token, error) {
 	key, err := keyLoader.encryptKey()
@@ -92,7 +83,15 @@ func NewOnboardUser(info *UserInfo, username string, tokenBytes []byte) (*models
 		return nil, errors.BadRequestError(nil).WithMessagef("the subject and issuer of the token are longer than %d characters combined: %s",
 			maxSubIssLen, info.Subject)
 	}
-	s, t, err := EncryptSecretAndToken(tokenBytes)
+	key, err := keyLoader.encryptKey()
+	if err != nil {
+		return nil, err
+	}
+	s, err := utils.ReversibleEncrypt(utils.GenerateRandomString(), key)
+	if err != nil {
+		return nil, err
+	}
+	t, err := EncryptToken(tokenBytes)
 	if err != nil {
 		return nil, err
 	}

@@ -213,7 +213,7 @@ func (oc *OIDCController) Callback() {
 		oc.SendError(err)
 		return
 	}
-	_, t, err := oidc.EncryptSecretAndToken(tokenBytes)
+	t, err := oidc.EncryptToken(tokenBytes)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
