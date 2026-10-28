@@ -17,7 +17,9 @@ package orm
 import (
 	"context"
 	"encoding/hex"
+	stdErrors "errors"
 	"fmt"
+	"sync"
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/google/uuid"
@@ -89,4 +91,42 @@ func (o *ormerTx) Rollback() error {
 	}
 
 	return o.TxOrmer.Rollback()
+}
+
+type afterCommitKey struct{}
+
+type afterCommitCallbacks struct {
+	mu    sync.Mutex
+	hooks []func() error
+}
+
+// WithAfterCommit creates a context that collects callbacks to run after the
+// surrounding transaction commits. The returned function runs the callbacks.
+func WithAfterCommit(ctx context.Context) (context.Context, func() error) {
+	callbacks := &afterCommitCallbacks{}
+	return context.WithValue(ctx, afterCommitKey{}, callbacks), callbacks.run
+}
+
+// AfterCommit registers hook for the current transaction, or runs it
+// immediately when the context has no after-commit callback collector.
+func AfterCommit(ctx context.Context, hook func() error) error {
+	if callbacks, ok := ctx.Value(afterCommitKey{}).(*afterCommitCallbacks); ok {
+		callbacks.mu.Lock()
+		defer callbacks.mu.Unlock()
+		callbacks.hooks = append(callbacks.hooks, hook)
+		return nil
+	}
+	return hook()
+}
+
+func (c *afterCommitCallbacks) run() error {
+	c.mu.Lock()
+	hooks := append([]func() error(nil), c.hooks...)
+	c.hooks = nil
+	c.mu.Unlock()
+	var hookErr error
+	for _, hook := range hooks {
+		hookErr = stdErrors.Join(hookErr, hook())
+	}
+	return hookErr
 }

@@ -42,7 +42,7 @@ jobs:
         run: echo "build_base=true" >> "$GITHUB_OUTPUT"
       - name: Set up QEMU
         if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           # Pin to a known-good binfmt image. The default "tonistiigi/binfmt:latest"
           # has shipped broken releases that fail arm64 emulation with
@@ -51,7 +51,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
       - name: Set up Docker Buildx
         if: steps.decide.outputs.build_base == 'true'
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build and push goharbor/photon:5.0 multi-arch manifest
         if: steps.decide.outputs.build_base == 'true'
         run: |
@@ -76,7 +76,7 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'cncf-ubuntu-16-64-arm' || 'cncf-ubuntu-16-64-x86' }}
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -88,7 +88,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: 1.26.9
+          go-version: 1.27.3
           cache-dependency-path: src/go.sum
         id: go
       - name: Build Package
@@ -209,7 +209,7 @@ jobs:
           pattern: repos-*
           merge-multiple: true
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Determine image tag
         id: tag
         run: |
