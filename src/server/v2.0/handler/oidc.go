@@ -132,10 +132,20 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 	return oidc.NewOnboardOIDCUserOK().WithPayload(m.ToUserResp())
 }
 
+var usernameReplacer = strings.NewReplacer(
+	" ", "_", // the same as the OIDC callback
+	// common in the subject of CI tokens, e.g. GitHub's "repo:my-org/my-repo:ref:refs/heads/main",
+	// but break HTTP Basic auth with the CLI secret.
+	":", ".",
+)
+
 func (o oidcAPI) usernameForOnboarding(ctx context.Context, req *models.OIDCOnboardReq, info *oidcpkg.UserInfo) (string, error) {
 	if req != nil && req.Username != "" {
 		if err := oidcpkg.ValidateUsername(req.Username); err != nil {
 			return "", err
+		}
+		if strings.Contains(req.Username, ":") {
+			return "", errors.BadRequestError(nil).WithMessage("username must not contain ':', as it can not be used to authenticate with the CLI secret")
 		}
 		return req.Username, nil
 	}
@@ -146,8 +156,7 @@ func (o oidcAPI) usernameForOnboarding(ctx context.Context, req *models.OIDCOnbo
 	if !setting.AutoOnboard {
 		return "", errors.BadRequestError(nil).WithMessage("username is required when automatic onboarding is disabled")
 	}
-	// Fix blanks in username, the same as the OIDC callback
-	username := strings.ReplaceAll(info.Username, " ", "_")
+	username := usernameReplacer.Replace(info.Username)
 	if username == "" {
 		return "", errors.BadRequestError(nil).WithMessagef("unable to recover username for auto onboard, username claim: %s", setting.UserClaim)
 	}

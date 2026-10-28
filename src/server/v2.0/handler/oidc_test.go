@@ -53,9 +53,10 @@ type OIDCOnboardTestSuite struct {
 	api  *oidcAPI
 	uCtl *usertesting.Controller
 
-	authMode    string
-	autoOnboard bool
-	expiry      time.Time
+	authMode      string
+	autoOnboard   bool
+	expiry        time.Time
+	claimUsername string
 }
 
 func (s *OIDCOnboardTestSuite) SetupSuite() {
@@ -68,6 +69,7 @@ func (s *OIDCOnboardTestSuite) SetupSuite() {
 func (s *OIDCOnboardTestSuite) SetupTest() {
 	s.authMode = common.OIDCAuth
 	s.autoOnboard = false
+	s.claimUsername = "My Repo"
 	s.expiry = time.Now().Add(time.Hour).Round(0)
 	s.uCtl = &usertesting.Controller{}
 	s.api.userCtl = s.uCtl
@@ -85,7 +87,7 @@ func (s *OIDCOnboardTestSuite) SetupTest() {
 			Token:      oauth2.Token{AccessToken: rawIDToken, TokenType: "Bearer", Expiry: s.expiry},
 			RawIDToken: rawIDToken,
 		}
-		info := &oidcpkg.UserInfo{Issuer: testIssuer, Subject: testSubject, Username: "My Repo"}
+		info := &oidcpkg.UserInfo{Issuer: testIssuer, Subject: testSubject, Username: s.claimUsername}
 		return token, info, nil
 	}
 	s.api.injectGroups = func(_ *oidcpkg.UserInfo, _ *commonmodels.User) {}
@@ -195,6 +197,22 @@ func (s *OIDCOnboardTestSuite) TestAutoOnboardWithoutUsername() {
 	res := s.onboard("Bearer "+testIDToken, nil)
 	s.Require().Equal(http.StatusOK, res.StatusCode)
 	s.Equal("My_Repo", s.decodeUser(res).Username)
+}
+
+func (s *OIDCOnboardTestSuite) TestAutoOnboardReplacesColons() {
+	s.autoOnboard = true
+	s.claimUsername = testSubject
+	s.mockNotOnboarded()
+	s.mockOnboard("repo.my-org/my-repo.ref.refs/heads/main", nil)
+	res := s.onboard("Bearer "+testIDToken, nil)
+	s.Require().Equal(http.StatusOK, res.StatusCode)
+	s.Equal("repo.my-org/my-repo.ref.refs/heads/main", s.decodeUser(res).Username)
+}
+
+func (s *OIDCOnboardTestSuite) TestOnboardWithColonInUsername() {
+	s.mockNotOnboarded()
+	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci:user"})
+	s.Equal(http.StatusBadRequest, res.StatusCode)
 }
 
 func (s *OIDCOnboardTestSuite) TestWithoutUsernameAutoOnboardDisabled() {
