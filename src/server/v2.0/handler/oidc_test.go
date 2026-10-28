@@ -196,12 +196,15 @@ func (s *OIDCOnboardTestSuite) TestOnboardWithInvalidUsername() {
 	s.Equal(http.StatusBadRequest, res.StatusCode)
 }
 
-// conflictErr is the error of the user controller when the username, or the OIDC identity, is already onboarded
-var conflictErr = errors.Wrap(errors.ConflictError(nil).WithMessage("user ci-user or email  already exists"), "failed to create user record")
+// sampleConflictErr returns the error of the user controller when the username, or the OIDC identity, is already onboarded.
+// A new error is needed for each test, the code mutates the error.
+func sampleConflictErr() error {
+	return errors.Wrap(errors.ConflictError(nil).WithMessage("user ci-user or email  already exists"), "failed to create user record")
+}
 
 func (s *OIDCOnboardTestSuite) TestOnboardUsernameTaken() {
 	s.mockNotOnboarded()
-	s.mockOnboard("ci-user", conflictErr)
+	s.mockOnboard("ci-user", sampleConflictErr())
 	// the conflict is not from a concurrent onboarding of the same user
 	s.mockNotOnboarded()
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci-user"})
@@ -209,9 +212,18 @@ func (s *OIDCOnboardTestSuite) TestOnboardUsernameTaken() {
 	s.Empty(s.events)
 }
 
+func (s *OIDCOnboardTestSuite) TestOnboardConflictLookupFails() {
+	s.mockNotOnboarded()
+	s.mockOnboard("ci-user", sampleConflictErr())
+	s.uCtl.On("GetBySubIss", mock.Anything, testSubject, testIssuer).Return(nil, errors.UnknownError(nil)).Once()
+	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci-user"})
+	s.Equal(http.StatusInternalServerError, res.StatusCode)
+	s.Empty(s.events)
+}
+
 func (s *OIDCOnboardTestSuite) TestConcurrentOnboard() {
 	s.mockNotOnboarded()
-	s.mockOnboard("ci-user", conflictErr)
+	s.mockOnboard("ci-user", sampleConflictErr())
 	// the same user got onboarded by a concurrent request
 	existing := &commonmodels.User{UserID: 4, Username: "ci-user"}
 	s.uCtl.On("GetBySubIss", mock.Anything, testSubject, testIssuer).Return(existing, nil).Once()

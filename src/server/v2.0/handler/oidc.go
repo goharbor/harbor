@@ -122,8 +122,12 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 		case errors.ErrCode(err) == errors.ConflictCode:
 			// A concurrent request may have onboarded the same user, e.g. parallel CI jobs on their first run
 			existing, getErr := o.userCtl.GetBySubIss(ctx, info.Subject, info.Issuer)
-			if getErr != nil {
+			switch {
+			case errors.IsNotFoundErr(getErr):
+				// the username is taken by another user
 				return o.SendError(ctx, err)
+			case getErr != nil:
+				return o.SendError(ctx, getErr)
 			}
 			if err := o.updateStoredToken(ctx, existing.UserID, tokenBytes, token.Expiry); err != nil {
 				return o.SendError(ctx, err)
