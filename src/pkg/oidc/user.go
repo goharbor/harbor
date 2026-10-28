@@ -17,7 +17,6 @@ package oidc
 import (
 	"encoding/json"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
@@ -26,9 +25,9 @@ import (
 )
 
 const (
-	// maxUsernameLen is the length of the username column of the harbor_user table, in characters
+	// maxUsernameLen is the length of the username column of the harbor_user table
 	maxUsernameLen = 255
-	// maxSubIssLen is the length of the subiss column of the oidc_user table, in characters
+	// maxSubIssLen is the length of the subiss column of the oidc_user table
 	maxSubIssLen = 255
 )
 
@@ -79,8 +78,8 @@ func DecryptToken(encToken string) (*Token, error) {
 // linked to the OIDC identity by subject and issuer, and with a newly generated CLI secret.
 func NewOnboardUser(info *UserInfo, username string, tokenBytes []byte) (*models.User, error) {
 	subIss := info.Subject + info.Issuer
-	if utf8.RuneCountInString(subIss) > maxSubIssLen {
-		return nil, errors.BadRequestError(nil).WithMessagef("the subject and issuer of the token are longer than %d characters combined: %s",
+	if len(subIss) > maxSubIssLen {
+		return nil, errors.BadRequestError(nil).WithMessagef("the subject and issuer of the token are longer than %d bytes combined: %s",
 			maxSubIssLen, info.Subject)
 	}
 	key, err := keyLoader.encryptKey()

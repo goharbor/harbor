@@ -10143,7 +10143,7 @@ definitions:
     properties:
       username:
         type: string
-        description: The username of the user to onboard. Must be 1 to 255 characters long, and must not contain any of the characters `,"~#%$:`
+        description: The username of the user to onboard. Must be 1 to 255 bytes long, and must not contain any of the characters `,"~#%$:`
   UserResp:
     type: object
     properties:

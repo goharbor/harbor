@@ -102,13 +102,16 @@ func TestNewOnboardUser(t *testing.T) {
 
 func TestNewOnboardUserSubIssLength(t *testing.T) {
 	issuer := "https://dex.example.com"
-	// the length of the column is in characters, not in bytes
-	maxSubject := strings.Repeat("ä", maxSubIssLen-len(issuer))
+	maxSubject := strings.Repeat("a", maxSubIssLen-len(issuer))
 
 	u, err := NewOnboardUser(&UserInfo{Issuer: issuer, Subject: maxSubject}, "ci-user", []byte(`{}`))
 	require.NoError(t, err)
 	assert.Equal(t, maxSubject+issuer, u.OIDCUserMeta.SubIss)
 
 	_, err = NewOnboardUser(&UserInfo{Issuer: issuer, Subject: maxSubject + "a"}, "ci-user", []byte(`{}`))
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode), "unexpected error: %v", err)
+
+	// the length is checked in bytes
+	_, err = NewOnboardUser(&UserInfo{Issuer: issuer, Subject: maxSubject[1:] + "ä"}, "ci-user", []byte(`{}`))
 	assert.True(t, errors.IsErr(err, errors.BadRequestCode), "unexpected error: %v", err)
 }
