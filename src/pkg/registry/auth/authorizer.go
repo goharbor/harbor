@@ -145,7 +145,7 @@ func (a *authorizer) isTarget(req *http.Request) bool {
 	if index == -1 {
 		return false
 	}
-	if req.URL.Host != a.url.Host || req.URL.Scheme != a.url.Scheme ||
+	if !strings.EqualFold(req.URL.Host, a.url.Host) || req.URL.Scheme != a.url.Scheme ||
 		req.URL.Path[:index+4] != a.url.Path {
 		return false
 	}

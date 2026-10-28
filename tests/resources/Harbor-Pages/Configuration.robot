@@ -281,8 +281,13 @@ Delete Top Item In System CVE Allowlist
 Set CVE Allowlist Expires
     [Arguments]  ${expired}
     Retry Button Click  ${cve_allowlist_expires_btn}
-    ${element}=  Set Variable If  ${expired}  ${cve_allowlist_expires_yesterday}  ${cve_allowlist_expires_tomorrow}
-    Retry Element Click  ${element}
+    # The picker opens on the month of the previously selected date, so jump back to the current month first
+    Retry Element Click  ${datepicker_cur_month_btn}
+    # Clarity hides adjacent-month days, so yesterday/tomorrow can be unclickable at month boundaries;
+    # switch to the previous/next month and pick its 15th to get a date in the past/future
+    ${switcher}=  Set Variable If  ${expired}  ${datepicker_prev_month_btn}  ${datepicker_next_month_btn}
+    Retry Element Click  ${switcher}
+    Retry Element Click  ${datepicker_mid_month_day_btn}
     Retry Element Click  //button[contains(.,'SAVE')]
 
 Get Project Count Quota Text From Project Quotas List

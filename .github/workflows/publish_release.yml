@@ -24,7 +24,7 @@ jobs:
           echo "BRANCH=$(echo $release | jq -r '.target_commitish')" >> $GITHUB_ENV
           echo "PRERELEASE=$(echo $release | jq -r '.prerelease')" >> $GITHUB_ENV
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -57,7 +57,7 @@ jobs:
               dst_online=harbor-online-installer-${cur}-${arch}.tgz
               aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
             fi
-            source tools/release/release_utils.sh && getAssets ${bucket} ${branch} ${dst_offline} ${dst_online} ${{ env.PRERELEASE }} ${assets_path}
+            source tools/release/release_utils.sh && getAssets "$bucket" "$branch" "$dst_offline" "$dst_online" "${{ env.PRERELEASE }}" "$assets_path"
           done
 
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
@@ -78,13 +78,13 @@ jobs:
                 ${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz
             fi
           done
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master (no tagged release newer than v1/2023 covers this fix; commit dated 2025-08-24)
-        with:
-          docker_version: 20.10
-          docker_channel: stable
+      # CNCF runners provide Docker; use the runner's engine and user configuration.
+      - name: Verify Docker
+        run: |
+          docker version
+          docker info
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Publish Images (amd64 + arm64)
         run: |
           set -euo pipefail
@@ -126,7 +126,7 @@ jobs:
           source tools/release/release_utils.sh && generateReleaseNotes ${{ env.CUR_TAG }} ${{ env.PRE_TAG }} ${{ secrets.GITHUB_TOKEN }} $release_notes_path
           echo "RELEASE_NOTES_PATH=$release_notes_path" >> $GITHUB_ENV
       - name: RC Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         if: ${{ env.PRERELEASE == 'true' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}
@@ -137,7 +137,7 @@ jobs:
             ${{ env.ASSETS_DIR }}/harbor-offline-installer-*-arm64.tgz.sigstore.json
             ${{ env.MD5SUM_PATH }}
       - name: GA Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         if: ${{ env.PRERELEASE == 'false' }}
         with:
           body_path: ${{ env.RELEASE_NOTES_PATH }}

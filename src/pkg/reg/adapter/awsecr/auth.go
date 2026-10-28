@@ -59,7 +59,7 @@ const DefaultCacheExpiredTime = time.Hour * 1
 
 func (a *awsAuthCredential) Modify(req *http.Request) error {
 	// url maybe redirect to s3
-	if !strings.Contains(req.URL.Host, ".ecr.") {
+	if !strings.Contains(strings.ToLower(req.URL.Host), ".ecr.") {
 		return nil
 	}
 	if !a.isTokenValid() {

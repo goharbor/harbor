@@ -61,8 +61,8 @@ Test Case - Proxy Cache
     END
     Should Be Equal As Strings  '${artifact_out[0]}'  'PASS'
 
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
-    Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=can not push artifact to a proxy project
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest  err_msg=Cannot push artifact to a proxy project
+    Cannot Push image  ${ip}  ${test_user}  ${test_pwd}  project${d}  busybox:latest  err_msg=Cannot push artifact to a proxy project
     Close Browser
 
 Test Case - Proxy Cache Filter

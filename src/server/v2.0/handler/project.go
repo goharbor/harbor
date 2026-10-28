@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSec "github.com/goharbor/harbor/src/common/security/robot"
@@ -62,8 +63,11 @@ import (
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/project"
 )
 
-// for the proxy cache type project, we will create a 7 days retention policy for it by default
-const defaultDaysToRetentionForProxyCacheProject = 7
+const (
+	// for the proxy cache type project, we will create a 7 days retention policy for it by default
+	defaultDaysToRetentionForProxyCacheProject = 7
+	maxDaysToRetentionForProxyCacheProject     = 18250 // 50 years, matching the API and portal limit
+)
 
 func newProjectAPI() *projectAPI {
 	return &projectAPI{
@@ -178,7 +182,7 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 		req.Metadata.EnableContentTrust = nil
 	}
 
-	// validate the RetentionID, RegistryID and StorageLimit in the body of the request
+	// validate the retention settings, RegistryID and StorageLimit in the body of the request
 	if err := a.validateProjectReq(ctx, req); err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -244,7 +248,11 @@ func (a *projectAPI) CreateProject(ctx context.Context, params operation.CreateP
 	// RegistryID is provided in the request body and it's valid,
 	// create a default retention policy for proxy project
 	if req.RegistryID != nil {
-		plc := policy.WithNDaysSinceLastPull(projectID, defaultDaysToRetentionForProxyCacheProject)
+		days := defaultDaysToRetentionForProxyCacheProject
+		if req.RetentionDays != nil {
+			days = int(*req.RetentionDays)
+		}
+		plc := policy.WithNDaysSinceLastPull(projectID, days)
 		retentionID, err := a.retentionCtl.CreateRetention(ctx, plc)
 		if err != nil {
 			return a.SendError(ctx, err)
@@ -556,6 +564,15 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		return a.SendError(ctx, err)
 	}
 
+	if params.Project.RetentionDays != nil {
+		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project"))
+	}
+
+	// registry_id can only be set when creating a project, allow the current value to be sent back unchanged
+	if params.Project.RegistryID != nil && *params.Project.RegistryID != p.RegistryID {
+		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("registry_id can not be changed after the project is created"))
+	}
+
 	if params.Project.CVEAllowlist != nil {
 		if params.Project.CVEAllowlist.ProjectID == 0 {
 			// project_id in cve_allowlist not provided or provided as 0, let it to be the id of the project which will be updating
@@ -661,9 +678,18 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 		return a.SendError(ctx, err)
 	}
 
+	hasAdminPermission := false
+	if secCtx, err := a.GetSecurityContext(ctx); err == nil && secCtx != nil {
+		hasAdminPermission = secCtx.IsSysAdmin() || secCtx.Can(ctx, rbac.ActionList, system.NewNamespace().Resource(rbac.ResourceScanner))
+	}
+
 	payload := make([]*models.ScannerRegistration, len(scanners))
 	for i, scanner := range scanners {
-		payload[i] = model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		s := model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		if s != nil && !hasAdminPermission {
+			s.URL = ""
+		}
+		payload[i] = s
 	}
 
 	return operation.NewListScannerCandidatesOfProjectOK().
@@ -799,6 +825,15 @@ func (a *projectAPI) getProject(ctx context.Context, projectNameOrID any, option
 }
 
 func (a *projectAPI) validateProjectReq(ctx context.Context, req *models.ProjectReq) error {
+	if req.RetentionDays != nil {
+		if req.RegistryID == nil {
+			return errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project")
+		}
+		if *req.RetentionDays < 0 || *req.RetentionDays > maxDaysToRetentionForProxyCacheProject {
+			return errors.BadRequestError(nil).WithMessagef("retention_days must be between 0 and %d", maxDaysToRetentionForProxyCacheProject)
+		}
+	}
+
 	if req.Metadata.RetentionID != nil && *req.Metadata.RetentionID != "" {
 		return errors.BadRequestError(fmt.Errorf("the retention_id in the request's payload when creating a project should be omitted, alternatively passing an empty string"))
 	}
