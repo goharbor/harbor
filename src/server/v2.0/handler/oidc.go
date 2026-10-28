@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/runtime/middleware"
 	"golang.org/x/oauth2"
@@ -106,7 +107,7 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 			if getErr != nil {
 				return o.SendError(ctx, err)
 			}
-			if err := o.updateStoredToken(ctx, existing.UserID, tokenBytes); err != nil {
+			if err := o.updateStoredToken(ctx, existing.UserID, tokenBytes, token.Expiry); err != nil {
 				return o.SendError(ctx, err)
 			}
 			u = existing
@@ -116,7 +117,7 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 	case err != nil:
 		return o.SendError(ctx, err)
 	default:
-		if err := o.updateStoredToken(ctx, u.UserID, tokenBytes); err != nil {
+		if err := o.updateStoredToken(ctx, u.UserID, tokenBytes, token.Expiry); err != nil {
 			return o.SendError(ctx, err)
 		}
 	}
@@ -182,11 +183,15 @@ func (o oidcAPI) usernameForOnboarding(ctx context.Context, req *models.OIDCOnbo
 	return username, nil
 }
 
-// updateStoredToken replaces the token persisted for the user, unless the stored token has a refresh token.
+// updateStoredToken replaces the token persisted for the user,
+// unless the stored token has a refresh token, or expires later.
 //
 // A refresh token is only obtained via the normal web-based OIDC login flow (/c/oidc/callback).
 // As Harbor can refresh such token on its own, it must not be replaced by an ID token which can not be refreshed.
-func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes []byte) error {
+//
+// The CLI secret only works until the stored token expires. A token that expires earlier, e.g. of a parallel
+// CI job that obtained its token before another, will not shorten the lifetime of the CLI secret for the others.
+func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes []byte, expiry time.Time) error {
 	u, err := o.userCtl.Get(ctx, userID, &user.Option{WithOIDCInfo: true})
 	if err != nil {
 		return err
@@ -196,10 +201,14 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 		return errors.NotFoundError(nil).WithMessagef("OIDC info of user %d not found", userID)
 	}
 	stored, err := oidcpkg.DecryptToken(meta.Token)
-	if err != nil {
+	switch {
+	case err != nil:
 		log.G(ctx).Warningf("failed to decrypt the stored token of user %d, replacing it: %v", userID, err)
-	} else if stored.RefreshToken != "" {
+	case stored.RefreshToken != "":
 		log.G(ctx).Debugf("the stored token of user %d has a refresh token, skip replacing it", userID)
+		return nil
+	case stored.Expiry.After(expiry):
+		log.G(ctx).Debugf("the stored token of user %d expires later, skip replacing it", userID)
 		return nil
 	}
 	_, t, err := oidcpkg.EncryptSecretAndToken(tokenBytes)
