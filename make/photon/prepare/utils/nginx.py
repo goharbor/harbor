@@ -64,6 +64,7 @@ def render_nginx_template(config_dict):
             ssl_cert_key=SSL_CERT_KEY_PATH,
             internal_tls=config_dict['internal_tls'],
             metric=config_dict['metric'],
+            ssl_protocols=config_dict['ssl_protocols'],
             strong_ssl_ciphers=config_dict['strong_ssl_ciphers'],
             ip_family=config_dict['ip_family'])
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
