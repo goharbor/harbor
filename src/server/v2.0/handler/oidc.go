@@ -190,9 +190,6 @@ func (o oidcAPI) usernameForOnboarding(ctx context.Context, req *models.OIDCOnbo
 		if err := oidcpkg.ValidateUsername(req.Username); err != nil {
 			return "", err
 		}
-		if strings.Contains(req.Username, ":") {
-			return "", errors.BadRequestError(nil).WithMessage("username must not contain ':', as it can not be used to authenticate with the CLI secret")
-		}
 		return req.Username, nil
 	}
 	setting, err := o.oidcSetting(ctx)

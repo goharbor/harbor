@@ -43,6 +43,10 @@ func ValidateUsername(username string) error {
 	if strings.ContainsAny(username, common.IllegalCharsInUsername) {
 		return errors.BadRequestError(nil).WithMessagef("username %v contains illegal characters: %v", username, common.IllegalCharsInUsername)
 	}
+	// HTTP Basic auth splits the username and password at the first colon, which breaks logins with the CLI secret
+	if strings.Contains(username, ":") {
+		return errors.BadRequestError(nil).WithMessage("username must not contain ':'")
+	}
 	return nil
 }
 

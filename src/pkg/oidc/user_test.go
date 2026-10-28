@@ -34,7 +34,7 @@ func TestValidateUsername(t *testing.T) {
 		valid    bool
 	}{
 		{"user", true},
-		{"repo:my-org/my-repo:ref:refs/heads/main", true},
+		{"repo:my-org/my-repo:ref:refs/heads/main", false},
 		{"", false},
 		{strings.Repeat("a", maxUsernameLen+1), false},
 		{"robot$ci", false},
