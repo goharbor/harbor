@@ -95,33 +95,33 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 		return o.SendError(ctx, err)
 	}
 
-	var userID int
 	u, err := o.userCtl.GetBySubIss(ctx, info.Subject, info.Issuer)
 	switch {
 	case errors.IsNotFoundErr(err):
-		username, err := o.usernameForOnboarding(ctx, params.Onboard, info)
-		if err != nil {
+		u, err = o.onboardUser(ctx, params.Onboard, info, tokenBytes)
+		switch {
+		case errors.ErrCode(err) == errors.ConflictCode:
+			// A concurrent request may have onboarded the same user, e.g. parallel CI jobs on their first run
+			existing, getErr := o.userCtl.GetBySubIss(ctx, info.Subject, info.Issuer)
+			if getErr != nil {
+				return o.SendError(ctx, err)
+			}
+			if err := o.updateStoredToken(ctx, existing.UserID, tokenBytes); err != nil {
+				return o.SendError(ctx, err)
+			}
+			u = existing
+		case err != nil:
 			return o.SendError(ctx, err)
 		}
-		u, err = oidcpkg.NewOnboardUser(info, username, tokenBytes)
-		if err != nil {
-			return o.SendError(ctx, err)
-		}
-		if err := o.userCtl.OnboardOIDCUser(ctx, u); err != nil {
-			return o.SendError(ctx, err)
-		}
-		log.G(ctx).Infof("OIDC user %s onboarded via ID token", u.Username)
-		userID = u.UserID
 	case err != nil:
 		return o.SendError(ctx, err)
 	default:
 		if err := o.updateStoredToken(ctx, u.UserID, tokenBytes); err != nil {
 			return o.SendError(ctx, err)
 		}
-		userID = u.UserID
 	}
 
-	u, err = o.userCtl.Get(ctx, userID, nil)
+	u, err = o.userCtl.Get(ctx, u.UserID, nil)
 	if err != nil {
 		return o.SendError(ctx, err)
 	}
@@ -130,6 +130,22 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 	u.OIDCUserMeta = nil
 	m := &model.User{User: u}
 	return oidc.NewOnboardOIDCUserOK().WithPayload(m.ToUserResp())
+}
+
+func (o oidcAPI) onboardUser(ctx context.Context, req *models.OIDCOnboardReq, info *oidcpkg.UserInfo, tokenBytes []byte) (*commonmodels.User, error) {
+	username, err := o.usernameForOnboarding(ctx, req, info)
+	if err != nil {
+		return nil, err
+	}
+	u, err := oidcpkg.NewOnboardUser(info, username, tokenBytes)
+	if err != nil {
+		return nil, err
+	}
+	if err := o.userCtl.OnboardOIDCUser(ctx, u); err != nil {
+		return nil, err
+	}
+	log.G(ctx).Infof("OIDC user %s onboarded via ID token", u.Username)
+	return u, nil
 }
 
 var usernameReplacer = strings.NewReplacer(
