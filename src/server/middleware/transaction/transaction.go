@@ -66,7 +66,16 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 			return nil
 		}
 
-		if err := orm.WithTransaction(h)(r.Context()); err != nil && err != errNonSuccess {
+		txCtx, runAfterCommit := orm.WithAfterCommit(r.Context())
+		err := orm.WithTransaction(h)(txCtx)
+		if err == nil {
+			if hookErr := runAfterCommit(); hookErr != nil {
+				// The database commit has completed, so a cache cleanup error cannot
+				// roll the transaction back. Keep the successful response and log it.
+				log.Errorf("run after-commit transaction hooks failed: %v", hookErr)
+			}
+		}
+		if err != nil && err != errNonSuccess {
 			err = fmt.Errorf("deal with %s request in transaction failed: %v", r.URL.Path, err)
 
 			// begin, commit or rollback transaction db error happened,
