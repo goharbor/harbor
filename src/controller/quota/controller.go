@@ -275,13 +275,13 @@ func (c *controller) updateUsageByRedis(ctx context.Context, reference, referenc
 	key := fmt.Sprintf("%s:quota:%s:%s", "cache", reference, referenceID)
 	return client.Watch(ctx, func(tx *redis.Tx) error {
 		data, err := tx.Get(ctx, key).Result()
-		if err != nil && err != redis.Nil {
+		if err != nil && !errors.Is(err, redis.Nil) {
 			return retry.Abort(err)
 		}
 
 		q := &quota.Quota{}
 		// calc the quota usage in real time if no key found
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			// use singleflight to prevent cache penetration and cause pressure on the database.
 			realQuota, err, _ := c.g.Do(key, func() (any, error) {
 				return c.calcQuota(ctx, reference, referenceID)
@@ -324,7 +324,7 @@ func (c *controller) updateUsageByRedis(ctx context.Context, reference, referenc
 			return err
 		})
 
-		if err != nil && err != redis.TxFailedErr {
+		if err != nil && !errors.Is(err, redis.TxFailedErr) {
 			return retry.Abort(err)
 		}
 

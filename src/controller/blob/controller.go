@@ -346,7 +346,7 @@ func (c *controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) 
 
 	size, err := rc.Get(ctx, key).Int64()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, nil
 		}
 
