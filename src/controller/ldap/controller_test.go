@@ -116,6 +116,57 @@ func (c *controllerTestSuite) TestPingNoPassword() {
 	c.True(result)
 }
 
+func (c *controllerTestSuite) TestPingEmptyRequestUsesSystemConfig() {
+	mgr := &ldap.Manager{}
+	var pinged models.LdapConf
+	mgr.On("Ping", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		pinged = args.Get(1).(models.LdapConf)
+	}).Return(true, nil)
+	c.controller = &controller{mgr: mgr}
+
+	// an empty request must be tested against the configuration saved in the system
+	result, err := c.controller.Ping(c.Context(), models.LdapConf{})
+	c.Nil(err)
+	c.True(result)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPURL], pinged.URL)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPSearchDN], pinged.SearchDn)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPSearchPwd], pinged.SearchPassword)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPBaseDN], pinged.BaseDn)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPUID], pinged.UID)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPScope], pinged.Scope)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPTimeout], pinged.ConnectionTimeout)
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPVerifyCert], pinged.VerifyCert)
+	mgr.AssertExpectations(c.T())
+}
+
+func (c *controllerTestSuite) TestPingRequestConfigIsUsedAsIs() {
+	mgr := &ldap.Manager{}
+	var pinged models.LdapConf
+	mgr.On("Ping", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		pinged = args.Get(1).(models.LdapConf)
+	}).Return(true, nil)
+	c.controller = &controller{mgr: mgr}
+
+	// a request that carries its own URL must not be overridden by the saved configuration
+	req := models.LdapConf{
+		URL:      "ldap://other.example.com:389",
+		SearchDn: "cn=other,dc=example,dc=com",
+		BaseDn:   "dc=other,dc=com",
+		UID:      "sAMAccountName",
+		Scope:    2,
+	}
+	result, err := c.controller.Ping(c.Context(), req)
+	c.Nil(err)
+	c.True(result)
+	c.Equal(req.URL, pinged.URL)
+	c.Equal(req.SearchDn, pinged.SearchDn)
+	c.Equal(req.BaseDn, pinged.BaseDn)
+	c.Equal(req.UID, pinged.UID)
+	// only the password falls back to the saved one
+	c.Equal(defaultConfigWithVerifyCert[common.LDAPSearchPwd], pinged.SearchPassword)
+	mgr.AssertExpectations(c.T())
+}
+
 func (c *controllerTestSuite) TestSearchUser() {
 	users, err := c.controller.SearchUser(c.Context(), "mike02")
 	c.Nil(err)
