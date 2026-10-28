@@ -33,12 +33,14 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/encrypt"
 	"github.com/goharbor/harbor/src/lib/errors"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
+	notifierevent "github.com/goharbor/harbor/src/pkg/notifier/event"
 	oidcpkg "github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -61,6 +63,7 @@ type OIDCOnboardTestSuite struct {
 	autoOnboard   bool
 	expiry        time.Time
 	claimUsername string
+	events        []notifierevent.Metadata
 }
 
 func (s *OIDCOnboardTestSuite) SetupSuite() {
@@ -95,6 +98,10 @@ func (s *OIDCOnboardTestSuite) SetupTest() {
 		return token, info, nil
 	}
 	s.api.injectGroups = func(_ *oidcpkg.UserInfo, _ *commonmodels.User) {}
+	s.events = nil
+	s.api.addEvent = func(_ context.Context, m notifierevent.Metadata) {
+		s.events = append(s.events, m)
+	}
 }
 
 func (s *OIDCOnboardTestSuite) TearDownTest() {
@@ -168,6 +175,7 @@ func (s *OIDCOnboardTestSuite) TestMissingToken() {
 func (s *OIDCOnboardTestSuite) TestInvalidToken() {
 	res := s.onboard("Bearer invalid", &models.OIDCOnboardReq{Username: "ci-user"})
 	s.Equal(http.StatusUnauthorized, res.StatusCode)
+	s.Empty(s.events)
 }
 
 func (s *OIDCOnboardTestSuite) TestOnboardWithUsername() {
@@ -179,6 +187,7 @@ func (s *OIDCOnboardTestSuite) TestOnboardWithUsername() {
 	s.Equal(int64(3), u.UserID)
 	s.Equal("ci-user", u.Username)
 	s.Nil(u.OIDCUserMeta)
+	s.Equal([]notifierevent.Metadata{&metadata.OIDCOnboardEventMetadata{Username: "ci-user"}}, s.events)
 }
 
 func (s *OIDCOnboardTestSuite) TestOnboardWithInvalidUsername() {
@@ -197,6 +206,7 @@ func (s *OIDCOnboardTestSuite) TestOnboardUsernameTaken() {
 	s.mockNotOnboarded()
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci-user"})
 	s.Equal(http.StatusConflict, res.StatusCode)
+	s.Empty(s.events)
 }
 
 func (s *OIDCOnboardTestSuite) TestConcurrentOnboard() {
@@ -218,6 +228,7 @@ func (s *OIDCOnboardTestSuite) TestConcurrentOnboard() {
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci-user"})
 	s.Require().Equal(http.StatusOK, res.StatusCode)
 	s.Equal(int64(4), s.decodeUser(res).UserID)
+	s.Equal([]notifierevent.Metadata{&metadata.OIDCOnboardEventMetadata{Username: "ci-user"}}, s.events)
 }
 
 func (s *OIDCOnboardTestSuite) TestAutoOnboardWithoutUsername() {
@@ -269,6 +280,7 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedReplacesToken() {
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "another-user"})
 	s.Require().Equal(http.StatusOK, res.StatusCode)
 	s.Equal("ci-user", s.decodeUser(res).Username)
+	s.Equal([]notifierevent.Metadata{&metadata.OIDCOnboardEventMetadata{Username: "ci-user"}}, s.events)
 }
 
 func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsRefreshableToken() {

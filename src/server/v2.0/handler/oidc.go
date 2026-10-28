@@ -27,17 +27,22 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/user"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	notifierevent "github.com/goharbor/harbor/src/pkg/notifier/event"
 	oidcpkg "github.com/goharbor/harbor/src/pkg/oidc"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/oidc"
 )
+
+const loginUserEventType = "login_user"
 
 type oidcAPI struct {
 	BaseAPI
@@ -47,6 +52,7 @@ type oidcAPI struct {
 	oidcSetting  func(ctx context.Context) (*cfgModels.OIDCSetting, error)
 	verifyToken  func(ctx context.Context, rawIDToken string) (*oidcpkg.Token, *oidcpkg.UserInfo, error)
 	injectGroups func(info *oidcpkg.UserInfo, u *commonmodels.User)
+	addEvent     func(ctx context.Context, m notifierevent.Metadata)
 }
 
 func newOIDCAPI() *oidcAPI {
@@ -57,6 +63,9 @@ func newOIDCAPI() *oidcAPI {
 		verifyToken: verifyIDToken,
 		injectGroups: func(info *oidcpkg.UserInfo, u *commonmodels.User) {
 			oidcpkg.InjectGroupsToUser(info, u)
+		},
+		addEvent: func(ctx context.Context, m notifierevent.Metadata) {
+			notification.AddEvent(ctx, m)
 		},
 	}
 }
@@ -128,10 +137,17 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 		return o.SendError(ctx, err)
 	}
 	o.injectGroups(info, u)
+	o.addLoginAuditEvent(ctx, u.Username)
 	// never expose the CLI secret or the token
 	u.OIDCUserMeta = nil
 	m := &model.User{User: u}
 	return oidc.NewOnboardOIDCUserOK().WithPayload(m.ToUserResp())
+}
+
+func (o oidcAPI) addLoginAuditEvent(ctx context.Context, username string) {
+	if config.AuditLogEventEnabled(ctx, loginUserEventType) {
+		o.addEvent(ctx, &metadata.OIDCOnboardEventMetadata{Username: username})
+	}
 }
 
 func (o oidcAPI) onboardUser(ctx context.Context, req *models.OIDCOnboardReq, info *oidcpkg.UserInfo, tokenBytes []byte) (*commonmodels.User, error) {
