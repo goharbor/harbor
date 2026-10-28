@@ -123,6 +123,12 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 			u = existing
 		case err != nil:
 			return o.SendError(ctx, err)
+		default:
+			// read the onboarded user back, for the fields populated by the database, such as the creation time
+			u, err = o.userCtl.Get(ctx, u.UserID, nil)
+			if err != nil {
+				return o.SendError(ctx, err)
+			}
 		}
 	case err != nil:
 		return o.SendError(ctx, err)
@@ -132,10 +138,6 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 		}
 	}
 
-	u, err = o.userCtl.Get(ctx, u.UserID, nil)
-	if err != nil {
-		return o.SendError(ctx, err)
-	}
 	o.injectGroups(info, u)
 	o.addLoginAuditEvent(ctx, u.Username)
 	// never expose the CLI secret or the token

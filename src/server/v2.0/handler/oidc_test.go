@@ -223,7 +223,6 @@ func (s *OIDCOnboardTestSuite) TestConcurrentOnboard() {
 	s.uCtl.On("UpdateOIDCMeta", mock.Anything, mock.MatchedBy(func(meta *commonmodels.OIDCUser) bool {
 		return meta.ID == 8
 	}), "token").Return(nil).Once()
-	s.uCtl.On("Get", mock.Anything, 4, (*user.Option)(nil)).Return(existing, nil).Once()
 
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "ci-user"})
 	s.Require().Equal(http.StatusOK, res.StatusCode)
@@ -274,7 +273,6 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedReplacesToken() {
 		token, err := oidcpkg.DecryptToken(meta.Token)
 		return meta.ID == 7 && err == nil && token.RawIDToken == testIDToken && token.Expiry.Equal(s.expiry)
 	}), "token").Return(nil).Once()
-	s.uCtl.On("Get", mock.Anything, 3, (*user.Option)(nil)).Return(&commonmodels.User{UserID: 3, Username: "ci-user"}, nil).Once()
 
 	// the username in the request is ignored for users already onboarded
 	res := s.onboard("Bearer "+testIDToken, &models.OIDCOnboardReq{Username: "another-user"})
@@ -291,7 +289,6 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsRefreshableToken() {
 		Username:     "jane",
 		OIDCUserMeta: &commonmodels.OIDCUser{ID: 7, UserID: 3, Token: s.storedToken("refresh-token", time.Time{})},
 	}, nil).Once()
-	s.uCtl.On("Get", mock.Anything, 3, (*user.Option)(nil)).Return(&commonmodels.User{UserID: 3, Username: "jane"}, nil).Once()
 
 	res := s.onboard("Bearer "+testIDToken, nil)
 	s.Require().Equal(http.StatusOK, res.StatusCode)
@@ -307,7 +304,6 @@ func (s *OIDCOnboardTestSuite) TestAlreadyOnboardedKeepsLaterExpiringToken() {
 		Username:     "ci-user",
 		OIDCUserMeta: &commonmodels.OIDCUser{ID: 7, UserID: 3, Token: s.storedToken("", s.expiry.Add(time.Minute))},
 	}, nil).Once()
-	s.uCtl.On("Get", mock.Anything, 3, (*user.Option)(nil)).Return(existing, nil).Once()
 
 	res := s.onboard("Bearer "+testIDToken, nil)
 	s.Require().Equal(http.StatusOK, res.StatusCode)
