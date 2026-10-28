@@ -215,10 +215,7 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 	if err != nil {
 		return err
 	}
-	meta := u.OIDCUserMeta
-	if meta == nil {
-		return errors.NotFoundError(nil).WithMessagef("OIDC info of user %d not found", userID)
-	}
+	meta := u.OIDCUserMeta // Get returns an error when the user has no OIDC info, so it is never nil
 	stored, err := oidcpkg.DecryptToken(meta.Token)
 	switch {
 	case err != nil:
