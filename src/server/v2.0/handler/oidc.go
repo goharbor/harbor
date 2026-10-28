@@ -140,8 +140,6 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 
 	o.injectGroups(info, u)
 	o.addLoginAuditEvent(ctx, u.Username)
-	// never expose the CLI secret or the token
-	u.OIDCUserMeta = nil
 	m := &model.User{User: u}
 	return oidc.NewOnboardOIDCUserOK().WithPayload(m.ToUserResp())
 }
