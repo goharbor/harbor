@@ -334,7 +334,7 @@ func (oc *OIDCController) RedirectLogout() {
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
 	user, err := oidc.NewOnboardUser(info, username, tokenBytes)
 	if err != nil {
-		oc.SendInternalServerError(err)
+		oc.SendError(err)
 		return nil, false
 	}
 	oidc.InjectGroupsToUser(info, user)
