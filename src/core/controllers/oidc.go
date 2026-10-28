@@ -213,7 +213,7 @@ func (oc *OIDCController) Callback() {
 		oc.SendError(err)
 		return
 	}
-	_, t, err := secretAndToken(tokenBytes)
+	_, t, err := oidc.EncryptSecretAndToken(tokenBytes)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
@@ -325,23 +325,10 @@ func (oc *OIDCController) RedirectLogout() {
 }
 
 func userOnboard(ctx context.Context, oc *OIDCController, info *oidc.UserInfo, username string, tokenBytes []byte) (*models.User, bool) {
-	s, t, err := secretAndToken(tokenBytes)
+	user, err := oidc.NewOnboardUser(info, username, tokenBytes)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return nil, false
-	}
-	oidcUser := models.OIDCUser{
-		SubIss: info.Subject + info.Issuer,
-		Secret: s,
-		Token:  t,
-	}
-
-	user := &models.User{
-		Username:     username,
-		Realname:     username,
-		Email:        info.Email,
-		OIDCUserMeta: &oidcUser,
-		Comment:      oidcUserComment,
 	}
 	oidc.InjectGroupsToUser(info, user)
 
@@ -363,12 +350,8 @@ func (oc *OIDCController) Onboard() {
 		return
 	}
 	username := u.Username
-	if utils.IsIllegalLength(username, 1, 255) {
-		oc.SendBadRequestError(errors.New("username with illegal length"))
-		return
-	}
-	if strings.ContainsAny(username, common.IllegalCharsInUsername) {
-		oc.SendBadRequestError(errors.Errorf("username %v contains illegal characters: %v", username, common.IllegalCharsInUsername))
+	if err := oidc.ValidateUsername(username); err != nil {
+		oc.SendBadRequestError(err)
 		return
 	}
 
@@ -400,23 +383,6 @@ func (oc *OIDCController) Onboard() {
 		}
 		oc.PopulateUserSession(*user)
 	}
-}
-
-func secretAndToken(tokenBytes []byte) (string, string, error) {
-	key, err := config.SecretKey()
-	if err != nil {
-		return "", "", err
-	}
-	token, err := utils.ReversibleEncrypt((string)(tokenBytes), key)
-	if err != nil {
-		return "", "", err
-	}
-	str := utils.GenerateRandomString()
-	secret, err := utils.ReversibleEncrypt(str, key)
-	if err != nil {
-		return "", "", err
-	}
-	return secret, token, nil
 }
 
 // getSessionType determines if the session is offline by decoding the refresh token or not
