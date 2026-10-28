@@ -36,7 +36,7 @@ func TestValidateUsername(t *testing.T) {
 		{"user", true},
 		{"repo:my-org/my-repo:ref:refs/heads/main", true},
 		{"", false},
-		{strings.Repeat("a", 256), false},
+		{strings.Repeat("a", maxUsernameLen+1), false},
 		{"robot$ci", false},
 		{"user,name", false},
 		{`user"name`, false},
@@ -99,4 +99,17 @@ func TestNewOnboardUser(t *testing.T) {
 	token, err := DecryptToken(u.OIDCUserMeta.Token)
 	require.NoError(t, err)
 	assert.Equal(t, "token", token.AccessToken)
+}
+
+func TestNewOnboardUserSubIssLength(t *testing.T) {
+	issuer := "https://dex.example.com"
+	// the length of the column is in characters, not in bytes
+	maxSubject := strings.Repeat("ä", maxSubIssLen-len(issuer))
+
+	u, err := NewOnboardUser(&UserInfo{Issuer: issuer, Subject: maxSubject}, "ci-user", []byte(`{}`))
+	require.NoError(t, err)
+	assert.Equal(t, maxSubject+issuer, u.OIDCUserMeta.SubIss)
+
+	_, err = NewOnboardUser(&UserInfo{Issuer: issuer, Subject: maxSubject + "a"}, "ci-user", []byte(`{}`))
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode), "unexpected error: %v", err)
 }
