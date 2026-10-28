@@ -89,7 +89,7 @@ func DecryptToken(encToken string) (*Token, error) {
 func NewOnboardUser(info *UserInfo, username string, tokenBytes []byte) (*models.User, error) {
 	subIss := info.Subject + info.Issuer
 	if utf8.RuneCountInString(subIss) > maxSubIssLen {
-		return nil, errors.BadRequestError(nil).WithMessagef("the subject and issuer of the ID token are longer than %d characters combined: %s",
+		return nil, errors.BadRequestError(nil).WithMessagef("the subject and issuer of the token are longer than %d characters combined: %s",
 			maxSubIssLen, info.Subject)
 	}
 	s, t, err := EncryptSecretAndToken(tokenBytes)

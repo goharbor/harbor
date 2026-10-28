@@ -86,7 +86,7 @@ func (o oidcAPI) OnboardOIDCUser(ctx context.Context, params oidc.OnboardOIDCUse
 	}
 	rawIDToken := lib.BearerToken(params.HTTPRequest)
 	if rawIDToken == "" {
-		return o.SendError(ctx, errors.UnauthorizedError(nil).WithMessage("an ID token is required in the Authorization header using the Bearer scheme"))
+		return o.SendError(ctx, errors.UnauthorizedError(nil).WithMessage("a token is required in the Authorization header using the Bearer scheme"))
 	}
 	token, info, err := o.verifyToken(ctx, rawIDToken)
 	if err != nil {
@@ -146,7 +146,7 @@ func (o oidcAPI) onboardUser(ctx context.Context, req *models.OIDCOnboardReq, in
 	if err := o.userCtl.OnboardOIDCUser(ctx, u); err != nil {
 		return nil, err
 	}
-	log.G(ctx).Infof("OIDC user %s onboarded via ID token", u.Username)
+	log.G(ctx).Infof("OIDC user %s onboarded via bearer token", u.Username)
 	return u, nil
 }
 
@@ -220,6 +220,9 @@ func (o oidcAPI) updateStoredToken(ctx context.Context, userID int, tokenBytes [
 	return o.userCtl.UpdateOIDCMeta(ctx, meta, "token")
 }
 
+// verifyIDToken verifies the bearer token as an ID token.
+//
+// Clients may use an ID token or access token, as long as the JWT has the client ID of Harbor in its audience.
 func verifyIDToken(ctx context.Context, rawIDToken string) (*oidcpkg.Token, *oidcpkg.UserInfo, error) {
 	idToken, err := oidcpkg.VerifyToken(ctx, rawIDToken)
 	if err != nil {
@@ -249,11 +252,11 @@ func convertVerifyTokenError(ctx context.Context, err error) error {
 	var expiredErr *gooidc.TokenExpiredError
 	switch {
 	case errors.As(err, &expiredErr):
-		return errors.UnauthorizedError(nil).WithMessage("the ID token is expired")
+		return errors.UnauthorizedError(nil).WithMessage("the token is expired")
 	case errors.IsErr(err, errors.UnAuthorizedCode):
-		log.G(ctx).Warningf("failed to verify ID token: %v", err)
-		return errors.UnauthorizedError(nil).WithMessage("invalid ID token")
+		log.G(ctx).Warningf("failed to verify token: %v", err)
+		return errors.UnauthorizedError(nil).WithMessage("invalid token")
 	default:
-		return errors.Wrap(err, "failed to verify ID token")
+		return errors.Wrap(err, "failed to verify token")
 	}
 }

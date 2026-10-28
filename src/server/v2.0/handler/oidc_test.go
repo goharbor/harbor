@@ -317,13 +317,13 @@ func TestVerifyTokenError(t *testing.T) {
 			name:    "expired token",
 			err:     errors.UnauthorizedError(&gooidc.TokenExpiredError{Expiry: time.Now()}).WithMessage("invalid ID token"),
 			code:    errors.UnAuthorizedCode,
-			message: "the ID token is expired",
+			message: "the token is expired",
 		},
 		{
 			name:    "invalid token",
 			err:     errors.UnauthorizedError(fmt.Errorf(`oidc: expected audience "harbor" got ["other"]`)).WithMessage("invalid ID token"),
 			code:    errors.UnAuthorizedCode,
-			message: "invalid ID token",
+			message: "invalid token",
 		},
 		{
 			name: "provider not reachable",

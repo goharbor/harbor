@@ -4502,10 +4502,13 @@ paths:
           $ref: '#/responses/500'
   /oidc/onboard:
     post:
-      summary: Onboard an OIDC user with an ID token.
+      summary: Onboard an OIDC user with a bearer token.
       description: |
-        Onboard the OIDC user identified by the ID token in the Authorization header, using the Bearer scheme.
-        Intended for non-interactive clients, such as CI jobs that obtained the ID token via OAuth 2.0 Token Exchange.
+        Onboard the OIDC user identified by the token in the Authorization header, using the Bearer scheme.
+        Intended for non-interactive clients, such as CI jobs that obtained the token via OAuth 2.0 Token Exchange.
+
+        The token must be a JWT issued by the configured OIDC provider with the client ID of Harbor in its `aud` claim,
+        such as an ID token, or a JWT access token. Opaque access tokens are not supported.
 
         If the user is already onboarded the username in the request body is ignored, and the OIDC token stored for the user is refreshed,
         unless the stored token can be refreshed by Harbor itself.
@@ -4518,7 +4521,7 @@ paths:
         - $ref: '#/parameters/requestId'
         - name: onboard
           in: body
-          description: The user to onboard. Username defaults to the configured username claim of the ID token.
+          description: The user to onboard. Username defaults to the configured username claim of the token.
           required: false
           schema:
             $ref: '#/definitions/OIDCOnboardReq'
