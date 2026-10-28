@@ -4500,6 +4500,47 @@ paths:
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
+  /oidc/onboard:
+    post:
+      summary: Onboard an OIDC user with an ID token.
+      description: |
+        Onboard the OIDC user identified by the ID token in the Authorization header, using the Bearer scheme.
+        Intended for non-interactive clients, such as CI jobs that obtained the ID token via OAuth 2.0 Token Exchange.
+
+        If the user is already onboarded the username in the request body is ignored, and the OIDC token stored for the user is refreshed,
+        unless the stored token can be refreshed by Harbor itself.
+
+        This API is only available when the authentication mode is OIDC.
+      tags:
+        - oidc
+      operationId: onboardOIDCUser
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: onboard
+          in: body
+          description: The user to onboard. Username defaults to the configured username claim of the ID token.
+          required: false
+          schema:
+            $ref: '#/definitions/OIDCOnboardReq'
+      responses:
+        '200':
+          description: The onboarded user.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/UserResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
   /system/gc:
     get:
       summary: Get gc results.
@@ -10093,6 +10134,12 @@ definitions:
         type: string
         format: date-time
         description: The update time of the OIDC user info record.
+  OIDCOnboardReq:
+    type: object
+    properties:
+      username:
+        type: string
+        description: The username of the user to onboard.
   UserResp:
     type: object
     properties:
