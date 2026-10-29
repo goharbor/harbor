@@ -54,6 +54,7 @@ export const enum ConfirmationTargets {
     CONFIG_TAB,
     STOP_EXECUTIONS,
     SCANNER,
+    OPTIMIZER,
     REPLICATION,
     ROBOT_ACCOUNT_ENABLE_OR_DISABLE,
     INSTANCE,

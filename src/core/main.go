@@ -76,6 +76,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/oidc"
+	optimizerpkg "github.com/goharbor/harbor/src/pkg/optimizer"
+	optimizerdao "github.com/goharbor/harbor/src/pkg/optimizer/dao"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	_ "github.com/goharbor/harbor/src/pkg/scan/sbom"
@@ -246,6 +248,7 @@ func main() {
 
 	health.RegisterHealthCheckers()
 	registerScanners(orm.Context())
+	registerOptimizers(orm.Context())
 
 	// start global task pool, do not stop in the gracefulShutdown because it may take long time to finish.
 	gtask.DefaultPool().Start(ctx)
@@ -372,6 +375,42 @@ func getDefaultScannerName() string {
 		return trivyScanner
 	}
 	return ""
+}
+
+const sleekoOptimizer = "Sleeko"
+
+func registerOptimizers(ctx context.Context) {
+	wantedOptimizers := make([]optimizerdao.Registration, 0)
+	uninstallOptimizerNames := make([]string, 0)
+
+	if config.WithSleeko() {
+		log.Info("Registering Sleeko optimizer")
+		wantedOptimizers = append(wantedOptimizers, optimizerdao.Registration{
+			Name:            sleekoOptimizer,
+			Description:     "The sleeko Dockerfile optimizer adapter",
+			URL:             config.SleekoAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
+	} else {
+		log.Info("Removing Sleeko optimizer")
+		uninstallOptimizerNames = append(uninstallOptimizerNames, sleekoOptimizer)
+	}
+
+	if err := optimizerpkg.RemoveImmutableOptimizers(ctx, uninstallOptimizerNames); err != nil {
+		log.Warningf("failed to remove optimizers: %v", err)
+	}
+
+	if err := optimizerpkg.EnsureOptimizers(ctx, wantedOptimizers); err != nil {
+		log.Fatalf("failed to register optimizers: %v", err)
+	}
+
+	if config.WithSleeko() {
+		log.Infof("Setting %s as default optimizer", sleekoOptimizer)
+		if err := optimizerpkg.EnsureDefaultOptimizer(ctx, sleekoOptimizer); err != nil {
+			log.Fatalf("failed to set default optimizer: %v", err)
+		}
+	}
 }
 
 func initSkipAuditDBbyEnv(ctx context.Context) error {
