@@ -104,8 +104,12 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 	log.Debugf("Put blob to local registry, localRepo:%v, digest: %v", localRepo, desc.Digest)
 	ref := string(desc.Digest)
 	artName := localRepo + ":" + ref
-	// use inflight checker to avoid multiple requests to push blob to local in same time
-	if !inflightChecker.addRequest(artName) {
+	// Push each blob once at a time; a concurrent push of the same blob waits
+	// for the running one so that its caller, too, only returns once the blob
+	// is local.
+	owner, done := inflightChecker.addRequest(artName)
+	if !owner {
+		<-done
 		return nil
 	}
 	defer inflightChecker.removeRequest(artName)
@@ -116,8 +120,9 @@ func (l *localHelper) PushBlob(localRepo string, desc distribution.Descriptor, b
 func (l *localHelper) PushManifest(repo string, ref string, manifest distribution.Manifest) error {
 	// Make sure there is only one go routing to push current artName to local repo
 	artName := repo + ":" + ref
-	// use inflight checker to avoid multiple requests to push manifest to local in same time
-	if !inflightChecker.addRequest(artName) {
+	owner, done := inflightChecker.addRequest(artName)
+	if !owner {
+		<-done
 		return nil
 	}
 	defer inflightChecker.removeRequest(artName)
