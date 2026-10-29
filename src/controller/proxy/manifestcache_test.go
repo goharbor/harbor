@@ -18,12 +18,14 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"testing/synctest"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -172,8 +174,11 @@ func (suite *CacheTestSuite) TestPushManifestList() {
 	suite.local.On("PushManifest", repo, mock.Anything, mock.Anything).Return(nil)
 	suite.local.On("UpdatePullTime", ctx, mock.Anything).Return(nil)
 
-	err = suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
-	suite.Require().Nil(err)
+	// Advance dependency polling in virtual time, including the timeout path.
+	synctest.Test(suite.T(), func(t *testing.T) {
+		err := suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
+		require.NoError(t, err)
+	})
 }
 
 func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
@@ -196,7 +201,9 @@ func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
 
-	suite.mCache.CacheContent(ctx, repo, man, artInfo, nil, "")
+	synctest.Test(suite.T(), func(t *testing.T) {
+		suite.mCache.CacheContent(ctx, repo, man, artInfo, nil, "")
+	})
 }
 
 func (suite *CacheTestSuite) TestManifestCache_push_succeeds() {
@@ -217,7 +224,7 @@ func (suite *CacheTestSuite) TestManifestCache_push_succeeds() {
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(nil)
 	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(nil)
 
-	err = suite.mCache.push(artInfo, man)
+	err = suite.mCache.push(context.Background(), artInfo, man)
 	suite.Assert().NoError(err)
 }
 
@@ -238,10 +245,10 @@ func (suite *CacheTestSuite) TestManifestCache_push_fails() {
 
 	digestErr := fmt.Errorf("error during manifest push referencing digest")
 	tagErr := fmt.Errorf("error during manifest push referencing tag")
-	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Once().Return(digestErr)
-	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Once().Return(tagErr)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Digest, man).Times(localPushAttempts).Return(digestErr)
+	suite.local.On("PushManifest", artInfo.Repository, artInfo.Tag, man).Times(localPushAttempts).Return(tagErr)
 
-	err = suite.mCache.push(artInfo, man)
+	err = suite.mCache.push(context.Background(), artInfo, man)
 	suite.Assert().Error(err)
 	wrappedErr, isWrappedErr := err.(interface{ Unwrap() []error })
 	suite.Assert().True(isWrappedErr)

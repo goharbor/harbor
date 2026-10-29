@@ -61,7 +61,8 @@ func (l *localInterfaceMock) BlobExist(ctx context.Context, art lib.ArtifactInfo
 }
 
 func (l *localInterfaceMock) PushBlob(localRepo string, desc distribution.Descriptor, bReader io.ReadCloser) error {
-	panic("implement me")
+	args := l.Called(localRepo, desc, bReader)
+	return args.Error(0)
 }
 
 func (l *localInterfaceMock) PushManifest(repo string, tag string, manifest distribution.Manifest) error {
