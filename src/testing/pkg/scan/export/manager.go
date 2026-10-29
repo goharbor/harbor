@@ -15,7 +15,7 @@ type Manager struct {
 }
 
 // Fetch provides a mock function with given fields: ctx, params
-func (_m *Manager) Fetch(ctx context.Context, params export.Params) ([]export.Data, error) {
+func (_m *Manager) Fetch(ctx context.Context, params export.Params) ([]export.Data, int, error) {
 	ret := _m.Called(ctx, params)
 
 	if len(ret) == 0 {
@@ -23,8 +23,9 @@ func (_m *Manager) Fetch(ctx context.Context, params export.Params) ([]export.Da
 	}
 
 	var r0 []export.Data
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, export.Params) ([]export.Data, error)); ok {
+	var r1 int
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, export.Params) ([]export.Data, int, error)); ok {
 		return rf(ctx, params)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, export.Params) []export.Data); ok {
@@ -35,13 +36,19 @@ func (_m *Manager) Fetch(ctx context.Context, params export.Params) ([]export.Da
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, export.Params) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, export.Params) int); ok {
 		r1 = rf(ctx, params)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(int)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(context.Context, export.Params) error); ok {
+		r2 = rf(ctx, params)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // NewManager creates a new instance of Manager. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
