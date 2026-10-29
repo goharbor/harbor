@@ -255,7 +255,9 @@ func BenchmarkProjectEvaluator(b *testing.B) {
 
 	b.ResetTimer()
 	for b.Loop() {
-		evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull)
+		if !evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull) {
+			b.Fatal("permission denied")
+		}
 	}
 }
 
@@ -274,7 +276,32 @@ func BenchmarkProjectEvaluatorParallel(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull)
+			if !evaluator.HasPermission(context.TODO(), resource, rbac.ActionPull) {
+				b.Error("permission denied")
+				return
+			}
 		}
 	})
+}
+
+// A resource naming another project is out of a membership's reach, including
+// through ".." segments.
+func TestTraversalDoesNotReachAnotherProject(t *testing.T) {
+	assert := assert.New(t)
+
+	ctl := &projecttesting.Controller{}
+	ctl_r := &stubRoleCtl{}
+	mock.OnAnything(ctl, "Get").Return(public, nil)
+	mock.OnAnything(ctl, "ListRoles").Return([]int{common.RoleProjectAdmin}, nil)
+
+	user := &models.User{UserID: 1, Username: "username"}
+	evaluator := NewEvaluator(ctl, NewBuilderForUser(user, ctl, ctl_r))
+
+	ctx := context.TODO()
+	assert.True(evaluator.HasPermission(ctx,
+		NewNamespace(public.ProjectID).Resource(rbac.ResourceRepository), rbac.ActionPush))
+	assert.False(evaluator.HasPermission(ctx,
+		types.Resource("/project/1/../../project/2/repository"), rbac.ActionPush))
+	assert.False(evaluator.HasPermission(ctx,
+		types.Resource("/project/1/../2/repository"), rbac.ActionPush))
 }
