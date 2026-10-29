@@ -16,6 +16,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: delimit-ai/delimit-action@00900a3b45d9278400854f38ec0262bc07a62373 # v1.11.6
+      - uses: delimit-ai/delimit-action@671929c6218caa3f2c47476e953f9ce0f5201d0a # v1.11.7
         with:
           spec: api/v2.0/swagger.yaml
