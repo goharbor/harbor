@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -181,35 +182,56 @@ func (rp *Provider) SessionRegenerate(ctx context.Context, oldsid, sid string) (
 		ctx = context.TODO()
 	}
 	maxlifetime := time.Duration(systemSessionTimeout(ctx, rp.maxlifetime))
-	if isExist, _ := rp.SessionExist(ctx, oldsid); !isExist {
-		err := rp.c.Save(ctx, sid, map[any]any{}, maxlifetime)
-		if err != nil {
-			log.Debugf("failed to save sid=%s, where oldsid=%s, error: %s", sid, oldsid, err)
-		}
-	} else {
-		if rdb, ok := rp.c.(*redis.Cache); ok {
-			// redis has rename command
-			rdb.Rename(ctx, oldsid, sid)
-			rdb.Expire(ctx, sid, maxlifetime)
-		} else {
-			kv := make(map[any]any)
-			err := rp.c.Fetch(ctx, oldsid, &kv)
-			if err != nil && !errors.Is(err, cache.ErrNotFound) {
+	if rdb, ok := rp.c.(*redis.Cache); ok {
+		// RENAME is atomic and answers "no such key" when oldsid is already gone,
+		// so it moves the session and detects the miss in a single round trip.
+		// Any other failure is a transport or server error and is propagated:
+		// beego skips Set-Cookie when this returns an error, which keeps the
+		// client on its current session instead of handing it a sid we were
+		// unable to populate.
+		if err := rdb.Rename(ctx, oldsid, sid).Err(); err != nil {
+			if !isNoSuchKey(err) {
 				return nil, err
 			}
-
-			err = rp.c.Delete(ctx, oldsid)
-			if err != nil {
+			log.Debugf("oldsid=%s is gone, not persisting an empty session for sid=%s", oldsid, sid)
+		} else if err := rdb.Expire(ctx, sid, maxlifetime).Err(); err != nil {
+			log.Debugf("failed to set the expiration of sid=%s, error: %s", sid, err)
+		}
+	} else {
+		// Not reachable through SessionInit, which always builds a *redis.Cache,
+		// and Store.releaseSession is a no-op for any other implementation, so a
+		// session could not be persisted here anyway.
+		kv := make(map[any]any)
+		err := rp.c.Fetch(ctx, oldsid, &kv)
+		switch {
+		case err == nil:
+			// A session that exists but carries no values is still a session and
+			// has to be moved, so the fetch error is what decides, not len(kv).
+			if err := rp.c.Delete(ctx, oldsid); err != nil {
 				log.Debugf("failed to delete oldsid=%s, error: %s", oldsid, err)
 			}
-			err = rp.c.Save(ctx, sid, kv, maxlifetime)
-			if err != nil {
+			if err := rp.c.Save(ctx, sid, kv, maxlifetime); err != nil {
 				log.Debugf("failed to save sid=%s, error: %s", sid, err)
 			}
+		case !errors.Is(err, cache.ErrNotFound):
+			return nil, err
 		}
 	}
 
+	// Nothing is persisted when oldsid is missing. beego hands the new sid to the
+	// browser through Set-Cookie either way, so persisting an empty session here
+	// would leave the client holding a valid cookie for a session that carries no
+	// user, and every following request would be anonymous. SessionRead still
+	// returns a usable in-memory store, and beego writes it out on SessionRelease
+	// once the caller has populated it.
 	return rp.SessionRead(ctx, sid)
+}
+
+// isNoSuchKey reports whether err is the reply Redis sends when RENAME is called
+// on a key that no longer exists. go-redis surfaces it as a plain server error,
+// so the message is the only thing to match on.
+func isNoSuchKey(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "no such key")
 }
 
 // SessionDestroy delete redis session by id
