@@ -1859,9 +1859,12 @@ paths:
           $ref: '#/responses/500'
   /audit-logs:
     get:
-      summary: Get recent logs of projects which the user is a member with project admin role, or return all audit logs for system admin user (deprecated)
+      summary: Get legacy audit logs (deprecated)
       description: |
-        This endpoint let the user see the recent operation logs of projects which the user is a member with project admin role,, or return all audit logs for system admin user, it only query the audit log in previous version.
+        Returns audit logs recorded by Harbor versions earlier than v2.13.
+        Project admins can view logs for their projects. System admins can view all logs.
+        For events recorded by Harbor v2.13 and later, use GET /api/v2.0/auditlog-exts.
+      deprecated: true
       tags:
         - auditlog
       operationId: listAuditLogs
@@ -1950,8 +1953,11 @@ paths:
           $ref: '#/responses/500'
   /projects/{project_name}/logs:
     get:
-      summary: Get recent logs of the projects (deprecated)
-      description: Get recent logs of the projects, it only query the previous version's audit log
+      summary: Get legacy project audit logs (deprecated)
+      description: |
+        Returns project audit logs recorded by Harbor versions earlier than v2.13.
+        For events recorded by Harbor v2.13 and later, use GET /api/v2.0/projects/{project_name}/auditlog-exts.
+      deprecated: true
       tags:
         - project
       operationId: getLogs
