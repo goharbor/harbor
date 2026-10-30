@@ -413,6 +413,7 @@
     },
     "GROUP": {
         "GROUP": "Grupo",
+        "FILTER_PLACEHOLDER": "Filtrar grupos",
         "IMPORT_LDAP_GROUP": "Importar grupo do LDAP",
         "IMPORT_HTTP_GROUP": "Novo Grupo HTTP",
         "IMPORT_OIDC_GROUP": "Novo Grupo OIDC",
