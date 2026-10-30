@@ -16,6 +16,7 @@ package period
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -281,7 +282,7 @@ func (e *enqueuer) shouldEnqueue() bool {
 	shouldEnq := false
 	lastEnqueue, err := redis.Int64(conn.Do("GET", rds.RedisKeyLastPeriodicEnqueue(e.namespace)))
 	if err != nil {
-		if err.Error() != redis.ErrNil.Error() {
+		if !errors.Is(err, redis.ErrNil) {
 			// Logged error
 			logger.Errorf("get timestamp of last enqueue error: %s", err)
 		}
