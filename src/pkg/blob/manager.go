@@ -77,6 +77,10 @@ type Manager interface {
 
 	// UselessBlobs useless blob is the blob that is not used in any of projects.
 	UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error)
+
+	// UselessBlobsAfterDeletion returns the blobs that UselessBlobs would return after the artifacts are deleted and the
+	// projects drop the blobs that none of their remaining artifacts reference, without changing anything.
+	UselessBlobsAfterDeletion(ctx context.Context, timeWindowHours int64, artifactIDs []int64) ([]*models.Blob, error)
 }
 
 type manager struct {
@@ -155,6 +159,10 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 
 func (m *manager) UselessBlobs(ctx context.Context, timeWindowHours int64) ([]*models.Blob, error) {
 	return m.dao.GetBlobsNotRefedByProjectBlob(ctx, timeWindowHours)
+}
+
+func (m *manager) UselessBlobsAfterDeletion(ctx context.Context, timeWindowHours int64, artifactIDs []int64) ([]*models.Blob, error) {
+	return m.dao.GetBlobsUselessAfterDeletion(ctx, timeWindowHours, artifactIDs)
 }
 
 func (m *manager) CalculateTotalSize(ctx context.Context, excludeForeignLayer bool) (int64, error) {

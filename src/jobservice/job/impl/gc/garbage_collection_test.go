@@ -149,7 +149,7 @@ func (suite *gcTestSuite) TestRemoveUntaggedBlobs() {
 	}
 
 	suite.NotPanics(func() {
-		gc.markOrSweepUntaggedBlobs(ctx)
+		gc.removeUntaggedBlobs(ctx)
 	})
 }
 
@@ -372,6 +372,25 @@ func (suite *gcTestSuite) TestMark() {
 	}
 
 	suite.Nil(gc.mark(ctx))
+}
+
+func (suite *gcTestSuite) TestUselessBlobsDryRun() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	useless := []*pkg_blob.Blob{{Digest: suite.DigestString()}}
+	suite.blobMgr.On("UselessBlobsAfterDeletion", mock.Anything, int64(2), []int64{1, 2}).Return(useless, nil)
+
+	gc := &GarbageCollector{
+		blobMgr:            suite.blobMgr,
+		logger:             logger,
+		dryRun:             true,
+		timeWindowHours:    2,
+		simulatedDeletions: []int64{1, 2},
+	}
+	blobs, err := gc.uselessBlobs(ctx)
+	suite.Require().NoError(err)
+	suite.Equal(useless, blobs)
+	suite.blobMgr.AssertNotCalled(suite.T(), "UselessBlobs", mock.Anything, mock.Anything)
 }
 
 func (suite *gcTestSuite) TestSweep() {
