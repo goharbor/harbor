@@ -313,6 +313,13 @@ func TestUploadLocationErrorsRedactSecrets(t *testing.T) {
 			t.Fatalf("resolve: error leaks secret from Location %q: %s", location, msg)
 		}
 	}
+	// chunked uploads resolve against the previous Location, which can carry a signed token
+	tokenOrigin, _ := url.Parse(endpoint + "/v2/repo/blobs/uploads/uuid?_state=s3cr3t-state")
+	if _, err := resolveUploadLocation(endpoint, tokenOrigin, "http://evil.attacker.com/steal"); err == nil {
+		t.Fatal("resolve: expected cross-origin rejection")
+	} else if strings.Contains(err.Error(), "s3cr3t") {
+		t.Fatalf("resolve: error leaks secret from origin: %s", err)
+	}
 	for _, location := range []string{
 		"/v2/relative?token=s3cr3t-token",
 		"https://user:s3cr3t-pass@evil.attacker.com/steal",

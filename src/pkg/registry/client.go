@@ -540,7 +540,7 @@ func (c *client) uploadLocation(req *http.Request, resp *http.Response) (string,
 	origin := req.URL
 	if resp.Request != nil && resp.Request.URL != nil {
 		if !sameRegistryOrigin(origin, resp.Request.URL) {
-			return "", fmt.Errorf("registry upload response redirected to a different origin than %q", origin.Redacted())
+			return "", fmt.Errorf("registry upload response redirected to a different origin than %q", redactUploadLocation(origin))
 		}
 		origin = resp.Request.URL
 	}
@@ -886,7 +886,7 @@ func resolveUploadLocation(endpoint string, origin *url.URL, location string) (s
 	}
 	next := origin.ResolveReference(ref)
 	if !sameRegistryOrigin(origin, next) {
-		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", redactUploadLocation(next), origin.Redacted())
+		return "", fmt.Errorf("registry upload Location %q resolves to a different origin than %q", redactUploadLocation(next), redactUploadLocation(origin))
 	}
 	return next.String(), nil
 }
