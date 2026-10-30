@@ -48,7 +48,7 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 		if len(repositorySelectors) < 1 {
 			continue
 		}
-		matched, err := dimensionSelects(repositorySelectors, "", &c)
+		matched, err := scopeSelects(repositorySelectors, &c)
 		if err != nil {
 			return false, err
 		}
@@ -75,11 +75,11 @@ func (rm *Matcher) Match(ctx context.Context, pid int64, c iselector.Candidate) 
 	return false, nil
 }
 
-// dimensionSelects reports whether a rule dimension (repository or tag) puts
-// the candidate in scope. The selectors must behave like the portal's single
-// `{a,b}` pattern: inclusion selectors are alternatives (any may match) and an
-// exclusion selector removes whatever it matches, so every exclusion selector
-// has to select the candidate. A dimension holding only exclusions starts from
+// dimensionSelects reports whether a rule dimension puts the candidate in
+// scope. The selectors must behave like the portal's single `{a,b}` pattern:
+// inclusion selectors are alternatives (any may match) and an exclusion
+// selector removes whatever it matches, so every exclusion selector has to
+// select the candidate. A dimension holding only exclusions starts from
 // everything.
 //
 // A multi-tag candidate is evaluated per tag because a doublestar selector
@@ -98,6 +98,34 @@ func dimensionSelects(selectors []*model.Selector, extras string, c *iselector.C
 		}
 	}
 	return false, nil
+}
+
+// scopeSelects reports whether the repository dimension puts the candidate in
+// scope. A repository or namespace decoration reads only fields that are the
+// same for every tag of a candidate, so a dimension built from those is
+// evaluated once rather than once per tag. Nothing constrains a stored scope
+// selector's decoration (Selector.Decoration is only Required, and the API
+// schema takes any string), so a persisted rule can hold a tag decoration
+// here; that dimension keeps the per-tag evaluation, where its result does not
+// depend on which tags are grouped into one candidate.
+func scopeSelects(selectors []*model.Selector, c *iselector.Candidate) (bool, error) {
+	if tagIndependent(selectors) {
+		return selectsOne(selectors, "", c)
+	}
+	return dimensionSelects(selectors, "", c)
+}
+
+// tagIndependent reports whether every selector reads the repository or the
+// namespace, and nothing that varies between the tags of one candidate.
+func tagIndependent(selectors []*model.Selector) bool {
+	for _, sel := range selectors {
+		switch sel.Decoration {
+		case doublestar.RepoMatches, doublestar.RepoExcludes, doublestar.NSMatches, doublestar.NSExcludes:
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func selectsOne(selectors []*model.Selector, extras string, c *iselector.Candidate) (bool, error) {
