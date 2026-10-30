@@ -87,6 +87,7 @@ func RegisterRoutes() {
 		Method(http.MethodHead).
 		Path("/*/blobs/:digest").
 		Middleware(metric.InjectOpIDMiddleware(metric.BlobsOperationID)).
+		Middleware(repoproxy.BlobHeadMiddleware()).
 		Middleware(blob.HeadBlobMiddleware()).
 		Handler(proxy)
 	// blob get

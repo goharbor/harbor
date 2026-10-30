@@ -60,6 +60,7 @@ type ArtifactRegistry interface {
 	PushManifest(repository, reference, mediaType string, payload []byte) (string, error)
 	DeleteManifest(repository, reference string) error // the "reference" can be "tag" or "digest", the function needs to handle both
 	BlobExist(repository, digest string) (exist bool, err error)
+	BlobStat(repository, digest string) (exist bool, size int64, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PullBlobChunk(repository, digest string, blobSize, start, end int64) (size int64, blob io.ReadCloser, err error)
 	PushBlobChunk(repository, digest string, size int64, chunk io.Reader, start, end int64, location string) (nextUploadLocation string, endRange int64, err error)
