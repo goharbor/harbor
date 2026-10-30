@@ -156,18 +156,27 @@ func TestCheckNoEscalation_CallerLacksPermission(t *testing.T) {
 // Assigning a built-in role (e.g. projectAdmin) must still be blocked when the
 // caller lacks its permissions — the previous DB-only lookup reported built-in
 // roles as permissionless and silently allowed escalation.
-func TestCheckNoEscalation_BuiltinRoleSynthesized(t *testing.T) {
+// A role Harbor ships is read the same way as one somebody wrote: its grants
+// are rows, so the escalation check asks the controller for them rather than
+// synthesizing them from a map.
+func TestCheckNoEscalation_BuiltinRoleIsReadLikeAnyOther(t *testing.T) {
 	sc := &securityMock.Context{}
 	sc.On("IsSysAdmin").Return(false)
 	// Caller holds none of projectAdmin's permissions.
 	sc.On("Can", testifymock.Anything, testifymock.Anything, testifymock.Anything).Return(false)
 
-	rc := &stubRoleCtl{} // Get must NOT be consulted for a built-in role.
+	rc := &stubRoleCtl{}
+	rc.On("Get", testifymock.Anything, int64(common.RoleProjectAdmin), testifymock.Anything).
+		Return(&roleCtl.Role{
+			Permissions: []*roleCtl.Permission{{
+				Access: policyAccess(rbac.ResourceMember, rbac.ActionCreate),
+			}},
+		}, nil)
 
 	err := newAPI(rc).checkNoEscalation(newCtxWithSecurity(sc), testProjectID, int64(common.RoleProjectAdmin))
 	assert.Error(t, err)
 	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err), "assigning projectAdmin without holding its perms must be forbidden")
-	rc.AssertNotCalled(t, "Get")
+	rc.AssertCalled(t, "Get", testifymock.Anything, int64(common.RoleProjectAdmin), testifymock.Anything)
 }
 
 func TestCheckNoEscalation_FirstPermissionPassesSecondFails(t *testing.T) {

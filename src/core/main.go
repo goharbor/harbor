@@ -76,6 +76,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/oidc"
+	"github.com/goharbor/harbor/src/pkg/permission/policy"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	_ "github.com/goharbor/harbor/src/pkg/scan/sbom"
@@ -219,6 +220,15 @@ func main() {
 
 		log.Info("The database has been migrated successfully")
 	}
+
+	// The policy store holds every role and every grant in memory for the life
+	// of this replica, and a Postgres LISTEN/NOTIFY watcher reloads it when
+	// another replica changes something. It has to be up before anything can
+	// answer a permission question.
+	if err := policy.Init(ctx, database.PostGreSQL, policy.Origin()); err != nil {
+		log.Fatalf("failed to initialize the policy store: %v", err)
+	}
+	defer policy.Default().Close()
 
 	ctx = orm.Clone(ctx)
 	if err := config.Load(ctx); err != nil {
