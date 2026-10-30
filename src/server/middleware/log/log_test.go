@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -29,8 +30,11 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	_ "github.com/goharbor/harbor/src/pkg/auditext/event/config"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
 )
 
 type MiddlewareTestSuite struct {
@@ -45,7 +49,7 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 			w.WriteHeader(http.StatusOK)
 		})
 	}
-	loc := "/server/middleware/log/log_test.go:43"
+	loc := "/server/middleware/log/log_test.go:47"
 	locPrefix := regexp.MustCompile(fmt.Sprintf(`\[([^\s]*)%s\]`, loc))
 
 	type args struct {
@@ -219,4 +223,190 @@ func TestRemoveSubmatch(t *testing.T) {
 		string(removeSubmatch(locPrefix, []byte(line))),
 	)
 
+}
+
+const maxAuditBodySize = common.MaxAuditLogPayloadSize
+
+type observedReadCloser struct {
+	remaining int64
+	bytesRead int64
+}
+
+func (r *observedReadCloser) Read(buffer []byte) (int, error) {
+	if r.remaining == 0 {
+		return 0, io.EOF
+	}
+	count := int64(len(buffer))
+	if count > r.remaining {
+		count = r.remaining
+	}
+	for i := int64(0); i < count; i++ {
+		buffer[i] = 'x'
+	}
+	r.remaining -= count
+	r.bytesRead += count
+	return int(count), nil
+}
+
+func (*observedReadCloser) Close() error {
+	return nil
+}
+
+func TestMiddlewareBoundsActualAuditedBody(t *testing.T) {
+	for _, unknownLength := range []bool{false, true} {
+		name := "known length"
+		if unknownLength {
+			name = "unknown length"
+		}
+		t.Run(name, func(t *testing.T) {
+			body := &observedReadCloser{remaining: 2 * maxAuditBodySize}
+			request := httptest.NewRequest(
+				http.MethodPut,
+				"/api/v2.0/configurations?source=test",
+				body,
+			)
+			// httptest.NewRequest only infers ContentLength for in-memory readers
+			request.ContentLength = 2 * maxAuditBodySize
+			if unknownLength {
+				request.ContentLength = -1
+			}
+
+			downstreamCalled := false
+			next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				downstreamCalled = true
+				w.WriteHeader(http.StatusNoContent)
+			})
+			response := httptest.NewRecorder()
+
+			Middleware()(next).ServeHTTP(response, request)
+
+			if response.Code != http.StatusRequestEntityTooLarge {
+				t.Errorf("status = %d, want %d", response.Code, http.StatusRequestEntityTooLarge)
+			}
+			if downstreamCalled {
+				t.Error("oversized audited body reached downstream")
+			}
+			if body.bytesRead > maxAuditBodySize+1 {
+				t.Errorf("audit middleware read %d bytes, want at most %d", body.bytesRead, maxAuditBodySize+1)
+			}
+			if body.bytesRead <= maxAuditBodySize {
+				t.Errorf("audit middleware read %d bytes, want enough to detect oversize", body.bytesRead)
+			}
+		})
+	}
+}
+
+func TestMiddlewarePreservesAuditedBodyAtLimit(t *testing.T) {
+	body := &observedReadCloser{remaining: maxAuditBodySize}
+	request := httptest.NewRequest(
+		http.MethodPut,
+		"/api/v2.0/configurations?source=test",
+		body,
+	)
+
+	downstreamCalled := false
+	next := http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		downstreamCalled = true
+		read, err := io.Copy(io.Discard, request.Body)
+		if err != nil {
+			t.Errorf("read downstream body: %v", err)
+		}
+		if read != maxAuditBodySize {
+			t.Errorf("downstream body size = %d, want %d", read, maxAuditBodySize)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
+	response := httptest.NewRecorder()
+
+	Middleware()(next).ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusNoContent)
+	}
+	if !downstreamCalled {
+		t.Error("audited body at the limit did not reach downstream")
+	}
+}
+
+type disabledAuditResolver struct{}
+
+func (disabledAuditResolver) Resolve(*commonevent.Metadata, *event.Event) error {
+	return nil
+}
+
+func (disabledAuditResolver) PreCheck(context.Context, string, string) (bool, string) {
+	return false, ""
+}
+
+func TestMiddlewareDoesNotReadDisabledAuditBody(t *testing.T) {
+	commonevent.RegisterResolver(`^/__disabled_audit_test__$`, disabledAuditResolver{})
+	defer commonevent.UnregisterResolver(`^/__disabled_audit_test__$`)
+	body := &observedReadCloser{remaining: 2 * maxAuditBodySize}
+	request := httptest.NewRequest(http.MethodPut, "/__disabled_audit_test__", body)
+
+	next := http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		if request.Body != body {
+			t.Error("disabled audit event replaced the request body")
+		}
+		if body.bytesRead != 0 {
+			t.Errorf("disabled audit event read %d bytes before downstream", body.bytesRead)
+		}
+		_, _ = io.Copy(io.Discard, request.Body)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	response := httptest.NewRecorder()
+
+	Middleware()(next).ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Errorf("status = %d, want %d", response.Code, http.StatusNoContent)
+	}
+	if body.bytesRead != 2*maxAuditBodySize {
+		t.Errorf("downstream read %d bytes, want %d", body.bytesRead, 2*maxAuditBodySize)
+	}
+}
+
+func TestMiddlewareDoesNotReadRegistryResolverCollisions(t *testing.T) {
+	urls := []string{
+		"/v2/project/repo/manifests/latest?x=/api/v2.0/configurations",
+		"/v2/api/v2.0/configurations/blobs/uploads/session?digest=sha256:" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"/prefix/api/v2.0/configurations",
+		"/api/v2X0/configurations",
+	}
+
+	for _, requestURL := range urls {
+		t.Run(requestURL, func(t *testing.T) {
+			body := &observedReadCloser{remaining: 2 * maxAuditBodySize}
+			request := httptest.NewRequest(http.MethodPut, requestURL, body)
+			downstreamCalled := false
+			next := http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+				downstreamCalled = true
+				if request.Body != body {
+					t.Error("audit middleware replaced a registry request body")
+				}
+				if body.bytesRead != 0 {
+					t.Errorf("audit middleware read %d registry body bytes", body.bytesRead)
+				}
+				read, err := io.Copy(io.Discard, request.Body)
+				if err != nil {
+					t.Errorf("read registry body: %v", err)
+				}
+				if read != 2*maxAuditBodySize {
+					t.Errorf("registry body size = %d, want %d", read, 2*maxAuditBodySize)
+				}
+				w.WriteHeader(http.StatusNoContent)
+			})
+			response := httptest.NewRecorder()
+
+			Middleware()(next).ServeHTTP(response, request)
+
+			if response.Code != http.StatusNoContent {
+				t.Errorf("status = %d, want %d", response.Code, http.StatusNoContent)
+			}
+			if !downstreamCalled {
+				t.Error("registry request did not reach downstream")
+			}
+		})
+	}
 }
