@@ -92,11 +92,13 @@ func (rc *reqChecker) projectID(ctx context.Context, name string) (int64, error)
 func getChallenge(req *http.Request, accessList []access) string {
 	logger := log.G(req.Context())
 	auth := req.Header.Get(authHeader)
-	if len(auth) > 0 || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
-		// Return basic auth challenge by default, incl. request to '/v2/_catalog'
+	scheme, _, _ := strings.Cut(auth, " ")
+	if (len(auth) > 0 && !strings.EqualFold(scheme, "Bearer")) || lib.V2CatalogURLRe.MatchString(req.URL.Path) {
+		// Keep Basic challenges for non-Bearer credentials and '/v2/_catalog',
+		// which does not support token authentication.
 		return `Basic realm="harbor"`
 	}
-	// No auth header, treat it as CLI and redirect to token service
+	// Direct anonymous clients and Bearer clients needing new scopes to the token service.
 	tokenSvc, err := tokenSvcURL(req)
 	if err != nil {
 		logger.Errorf("failed to get the endpoint for token service, error: %v", err)
