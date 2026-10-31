@@ -359,7 +359,7 @@ Logger configuration options:
 | loggers[x].name | The unique name of the logger backend |
 | loggers[x].level| The logger level of the logger backend|
 | loggers[x].settings | A hash map to pass extra settings of the logger backend. Depends on the implementation of the backend.|
-| loggers[x].sweeper.duration| The duration of the sweeper looping |
+| loggers[x].sweeper.duration| The retention duration (in days) for keeping outdated logs |
 | loggers[x].sweeper.settings| A hash map to pass extra settings of the sweeper. Depends on the implementation of sweeper. |
 
 An example:

@@ -31,17 +31,19 @@ const (
 // SweeperController is an unified sweeper entry and built on top of multiple sweepers.
 // It's responsible for starting the configured sweepers.
 type SweeperController struct {
-	context  context.Context
-	sweepers []sweeper.Interface
-	errChan  chan error
+	context       context.Context
+	sweepers      []sweeper.Interface
+	errChan       chan error
+	sweepInterval time.Duration
 }
 
 // NewSweeperController is constructor of controller.
 func NewSweeperController(ctx context.Context, sweepers []sweeper.Interface) *SweeperController {
 	return &SweeperController{
-		context:  ctx,
-		sweepers: sweepers,
-		errChan:  make(chan error, 1),
+		context:       ctx,
+		sweepers:      sweepers,
+		errChan:       make(chan error, 1),
+		sweepInterval: oneDay,
 	}
 }
 
@@ -74,9 +76,9 @@ func (c *SweeperController) Duration() int {
 }
 
 func (c *SweeperController) startSweeper(s sweeper.Interface) {
-	d := s.Duration()
-	if d <= 0 {
-		d = 1
+	interval := c.sweepInterval
+	if interval <= 0 {
+		interval = oneDay
 	}
 
 	// Use the type name as a simple ID
@@ -84,16 +86,16 @@ func (c *SweeperController) startSweeper(s sweeper.Interface) {
 	defer Infof("sweeper %s exit", sid)
 
 	// First run
-	go c.doSweeping(sid, s)
+	c.doSweeping(sid, s)
 
 	// Loop
-	ticker := time.NewTicker(time.Duration(d) * oneDay)
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			go c.doSweeping(sid, s)
+			c.doSweeping(sid, s)
 		case <-c.context.Done():
 			return
 		}
@@ -101,22 +103,35 @@ func (c *SweeperController) startSweeper(s sweeper.Interface) {
 }
 
 func (c *SweeperController) doSweeping(sid string, s sweeper.Interface) {
+	select {
+	case <-c.context.Done():
+		return
+	default:
+	}
+
 	Debugf("Sweeper %s is under working", sid)
 
 	if err := config.Load(context.Background()); err != nil {
-		c.errChan <- fmt.Errorf("failed to load configurations: %v", err)
+		c.sendError(fmt.Errorf("failed to load configurations: %v", err))
 		return
 	}
 	if config.ReadOnly(context.Background()) {
-		c.errChan <- fmt.Errorf("the system is in read only mode, cancel the sweeping")
+		c.sendError(fmt.Errorf("the system is in read only mode, cancel the sweeping"))
 		return
 	}
 
 	count, err := s.Sweep()
 	if err != nil {
-		c.errChan <- fmt.Errorf("sweep logs error in %s at %d: %s", sid, time.Now().Unix(), err)
+		c.sendError(fmt.Errorf("sweep logs error in %s at %d: %s", sid, time.Now().Unix(), err))
 		return
 	}
 
 	Infof("%d outdated log entries are sweepped by sweeper %s", count, sid)
+}
+
+func (c *SweeperController) sendError(err error) {
+	select {
+	case c.errChan <- err:
+	case <-c.context.Done():
+	}
 }
