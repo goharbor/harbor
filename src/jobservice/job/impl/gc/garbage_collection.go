@@ -350,7 +350,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 								return ignoreNotFound(func() error {
 									err := v2DeleteManifest(art.RepositoryName, blob.Digest)
 									// if the system is in read-only mode, return an Abort error to skip retrying
-									if err == readonly.Err {
+									if errors.Is(err, readonly.Err) {
 										return retry.Abort(err)
 									}
 									return err
@@ -366,7 +366,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 									return err
 								}
 								// if the system is set to read-only mode, return directly
-								if err == readonly.Err {
+								if errors.Is(err, readonly.Err) {
 									return err
 								}
 								skippedBlob = true
@@ -379,7 +379,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 							return ignoreNotFound(func() error {
 								err := gc.registryCtlClient.DeleteManifest(art.RepositoryName, blob.Digest)
 								// if the system is in read-only mode, return an Abort error to skip retrying
-								if err == readonly.Err {
+								if errors.Is(err, readonly.Err) {
 									return retry.Abort(err)
 								}
 								return err
@@ -395,7 +395,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 								return err
 							}
 							// if the system is set to read-only mode, return directly
-							if err == readonly.Err {
+							if errors.Is(err, readonly.Err) {
 								return err
 							}
 							skippedBlob = true
@@ -436,7 +436,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 						return ignoreNotFound(func() error {
 							err := gc.registryCtlClient.DeleteBlob(blob.Digest)
 							// if the system is in read-only mode, return an Abort error to skip retrying
-							if err == readonly.Err {
+							if errors.Is(err, readonly.Err) {
 								return retry.Abort(err)
 							}
 							notFound = errors.IsNotFoundErr(err)
@@ -453,7 +453,7 @@ func (gc *GarbageCollector) sweep(ctx job.Context) error {
 							return err
 						}
 						// if the system is set to read-only mode, return directly
-						if err == readonly.Err {
+						if errors.Is(err, readonly.Err) {
 							return err
 						}
 						continue

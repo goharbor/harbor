@@ -72,7 +72,7 @@ func untar(reader io.Reader, limit int64) ([]byte, error) {
 	remaining := limit
 	for {
 		header, err := tr.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 
