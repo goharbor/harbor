@@ -19,6 +19,7 @@ import (
 	"io"
 	"log/syslog"
 	"os"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
@@ -54,7 +55,7 @@ func (a *LoggerManager) Init(_ context.Context, logEndpoint string) {
 // DefaultLogger ...
 func (a *LoggerManager) DefaultLogger(ctx context.Context) *log.Logger {
 	endpoint := config.AuditLogForwardEndpoint(ctx)
-	if a.endpoint != endpoint {
+	if !strings.EqualFold(a.endpoint, endpoint) {
 		a.Init(ctx, endpoint)
 		a.initialized = true
 	}

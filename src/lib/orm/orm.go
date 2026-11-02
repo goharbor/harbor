@@ -128,6 +128,15 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		// Collect after-commit hooks for transactions that are not started by
+		// middleware. Middleware may install its own collector so that hooks run
+		// after its outer transaction has committed.
+		_, hasCallbacks := ctx.Value(afterCommitKey{}).(*afterCommitCallbacks)
+		var runAfterCommit func() error
+		if !hasCallbacks {
+			ctx, runAfterCommit = WithAfterCommit(ctx)
+		}
+
 		cx, span := tracelib.StartTrace(ctx, tracerName, GetTransactionOpNameFromContext(ctx))
 		defer span.End()
 		o, err := FromContext(ctx)
@@ -169,6 +178,13 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			tracelib.RecordError(span, err, "commit transaction failed")
 			log.Errorf("commit transaction failed: %v", err)
 			return err
+		}
+		if runAfterCommit != nil {
+			if hookErr := runAfterCommit(); hookErr != nil {
+				// The database transaction has committed, so hook failures cannot
+				// change the transaction result.
+				log.Errorf("run after-commit transaction hooks failed: %v", hookErr)
+			}
 		}
 
 		return nil

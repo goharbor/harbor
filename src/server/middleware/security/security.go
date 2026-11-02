@@ -20,6 +20,8 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -48,11 +50,15 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
 		log := log.G(r.Context())
 		mode, err := config.AuthMode(r.Context())
-		if err == nil {
-			r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
-		} else {
-			log.Warningf("failed to get auth mode: %v", err)
+		if err != nil {
+			// Fail closed: determining the security context depends on the configured auth
+			// mode, so a failure to load it must reject the request rather than continue with
+			// an undetermined mode (CWE-636 fail-open of an authorization decision).
+			log.Errorf("failed to get auth mode, rejecting request: %v", err)
+			lib_http.SendError(w, errors.UnknownError(err).WithMessage("failed to determine authentication mode"))
+			return
 		}
+		r = r.WithContext(lib.WithAuthMode(r.Context(), mode))
 		for _, generator := range generators {
 			if ctx := generator.Generate(r); ctx != nil {
 				r = r.WithContext(security.NewContext(r.Context(), ctx))

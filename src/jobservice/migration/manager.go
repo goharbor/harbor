@@ -93,7 +93,7 @@ func (bm *BasicManager) Migrate() error {
 
 	// Read schema version first
 	v, err := redis.String(conn.Do("GET", VersionKey(bm.namespace)))
-	if err != nil && err != redis.ErrNil {
+	if err != nil && !errors.Is(err, redis.ErrNil) {
 		return errors.Wrap(err, "read schema version failed")
 	}
 

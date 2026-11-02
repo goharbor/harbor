@@ -49,6 +49,7 @@ type baseManagerTestSuite struct {
 
 func (m *baseManagerTestSuite) SetupTest() {
 	m.cache = &testCache{Cache: &testcache.Cache{}, iterator: &testcache.Iterator{}}
+	m.cache.iterator.On("Err").Return(nil).Maybe()
 	m.mgr = NewBaseManager(testResourceType).WithCacheClient(m.cache)
 }
 

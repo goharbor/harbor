@@ -20,10 +20,12 @@ import (
 	"strings"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/task"
 )
 
 // get/create the source registry, destination registry, source adapter and destination adapter
@@ -227,4 +229,13 @@ func replaceNamespace(repository string, namespace string, replaceCount int8, ds
 	}
 
 	return dstRepo, nil
+}
+
+// getReplicationJobName returns the job name to use for replication tasks based on the execution trigger.
+// Event-triggered executions use EventReplicationVendorType to avoid head-of-line blocking in the replication queue.
+func getReplicationJobName(execution *task.Execution) string {
+	if execution != nil && execution.Trigger == task.ExecutionTriggerEvent {
+		return job.EventReplicationVendorType
+	}
+	return job.ReplicationVendorType
 }

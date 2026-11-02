@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -79,6 +80,7 @@ type defaultController struct {
 	taskMgr        task.Manager
 	launcher       retention.Launcher
 	projectManager project.Manager
+	projectMetaMgr metadata.Manager
 	repositoryMgr  repository.Manager
 	scheduler      scheduler.Scheduler
 	wp             *lib.WorkerPool
@@ -445,7 +447,9 @@ func (r *defaultController) DeleteRetentionByProject(ctx context.Context, projec
 			return err
 		}
 	}
-	return nil
+	// the retention_id metadata references the policies just deleted. The retention DELETE
+	// API drops it in its own handler, so project deletion has to do it here.
+	return r.projectMetaMgr.Delete(ctx, projectID, "retention_id")
 }
 
 // NewController ...
@@ -458,6 +462,7 @@ func NewController() Controller {
 		taskMgr:        task.Mgr,
 		launcher:       retentionLauncher,
 		projectManager: pkg.ProjectMgr,
+		projectMetaMgr: pkg.ProjectMetaMgr,
 		repositoryMgr:  pkg.RepositoryMgr,
 		scheduler:      scheduler.Sched,
 		wp:             lib.NewWorkerPool(10),

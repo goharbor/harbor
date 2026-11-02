@@ -8,14 +8,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	testifymock "github.com/stretchr/testify/mock"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/robot"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	projectModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/robot"
 	securitytesting "github.com/goharbor/harbor/src/testing/common/security"
+	"github.com/goharbor/harbor/src/testing/mock"
 )
 
 func TestValidLevel(t *testing.T) {
@@ -527,4 +532,78 @@ func TestListRobotNonStringQueryValue(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
 		})
 	}
+}
+
+// ---------------------------------------------------------------------------
+// mapRobotToHumanResource
+// ---------------------------------------------------------------------------
+
+func TestMapRobotToHumanResource_ProjectMapsToSelf(t *testing.T) {
+	assert.Equal(t, rbac.ResourceSelf, mapRobotToHumanResource(rbac.ResourceProject))
+}
+
+func TestMapRobotToHumanResource_RepositoryPassthrough(t *testing.T) {
+	assert.Equal(t, rbac.ResourceRepository, mapRobotToHumanResource(rbac.ResourceRepository))
+}
+
+func TestMapRobotToHumanResource_UnknownPassthrough(t *testing.T) {
+	unknown := rbac.Resource("unknown")
+	assert.Equal(t, unknown, mapRobotToHumanResource(unknown))
+}
+
+// ---------------------------------------------------------------------------
+// validateNoEscalation
+// ---------------------------------------------------------------------------
+
+func robotPerm(ns, resource, action string) []*models.RobotPermission {
+	return []*models.RobotPermission{{
+		Namespace: ns,
+		Access:    []*models.Access{{Resource: resource, Action: action}},
+	}}
+}
+
+// stubProject stubs projectCtlMock.GetByName to return a project with the given ID.
+// perm.Namespace is always a string so HasProjectPermission always calls GetByName.
+func stubProject(projectID int64) {
+	mock.OnAnything(projectCtlMock, "GetByName").
+		Return(&projectModels.Project{ProjectID: projectID}, nil).Once()
+}
+
+func TestValidateNoEscalation_CallerHasPermission(t *testing.T) {
+	stubProject(1)
+	sc := &securitytesting.Context{}
+	sc.On("Can", testifymock.Anything, rbac.ActionPull,
+		rbacProject.NewNamespace(1).Resource(rbac.ResourceRepository)).Return(true)
+
+	err := (&robotAPI{}).validateNoEscalation(newCtxWithSecurity(sc), robotPerm("testproject", "repository", "pull"))
+	assert.NoError(t, err)
+}
+
+func TestValidateNoEscalation_CallerLacksPermission(t *testing.T) {
+	stubProject(1)
+	sc := &securitytesting.Context{}
+	sc.On("Can", testifymock.Anything, rbac.ActionPush,
+		rbacProject.NewNamespace(1).Resource(rbac.ResourceRepository)).Return(false)
+
+	err := (&robotAPI{}).validateNoEscalation(newCtxWithSecurity(sc), robotPerm("testproject", "repository", "push"))
+	assert.Error(t, err)
+	assert.Equal(t, errors.ForbiddenCode, errors.ErrCode(err))
+}
+
+func TestValidateNoEscalation_EmptyPermissions(t *testing.T) {
+	sc := &securitytesting.Context{}
+	err := (&robotAPI{}).validateNoEscalation(newCtxWithSecurity(sc), nil)
+	assert.NoError(t, err)
+	sc.AssertNotCalled(t, "Can")
+}
+
+func TestValidateNoEscalation_ProjectResourceMappedToSelf(t *testing.T) {
+	stubProject(1)
+	sc := &securitytesting.Context{}
+	// "project" maps to ResourceSelf ("") via mapRobotToHumanResource.
+	sc.On("Can", testifymock.Anything, rbac.ActionRead,
+		rbacProject.NewNamespace(1).Resource(rbac.ResourceSelf)).Return(true)
+
+	err := (&robotAPI{}).validateNoEscalation(newCtxWithSecurity(sc), robotPerm("testproject", "project", "read"))
+	assert.NoError(t, err)
 }

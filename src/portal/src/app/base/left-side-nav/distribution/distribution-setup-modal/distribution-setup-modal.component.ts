@@ -26,7 +26,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
 import { Instance } from '../../../../../../ng-swagger-gen/models/instance';
 import { AuthMode, FrontInstance } from '../distribution-interface';
-import { clone } from '../../../../shared/units/utils';
+import { clone, equalEndpoint } from '../../../../shared/units/utils';
 import { ClrLoadingState } from '@clr/angular';
 import { Metadata } from '../../../../../../ng-swagger-gen/models/metadata';
 import {
@@ -145,7 +145,10 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
                         if (
                             this.editingMode &&
                             this.originModelForEdit &&
-                            this.originModelForEdit.endpoint === endpoint
+                            equalEndpoint(
+                                this.originModelForEdit.endpoint,
+                                endpoint
+                            )
                         ) {
                             return false;
                         }
@@ -442,7 +445,12 @@ export class DistributionSetupModalComponent implements OnInit, OnDestroy {
             ) {
                 return true;
             }
-            if (this.model.endpoint !== this.originModelForEdit.endpoint) {
+            if (
+                !equalEndpoint(
+                    this.model.endpoint,
+                    this.originModelForEdit.endpoint
+                )
+            ) {
                 return true;
             }
             // eslint-disable-next-line eqeqeq

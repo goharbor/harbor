@@ -15,13 +15,19 @@ class Artifact(base.Base, object):
     def __init__(self):
         super(Artifact,self).__init__(api_type = "artifact")
 
-    def list_artifacts(self, project_name, repo_name, **kwargs):
+    def list_artifacts(self, project_name, repo_name, expect_status_code = 200, **kwargs):
         params = {}
         if "with_accessory" in kwargs:
             params["with_accessory"] = kwargs["with_accessory"]
         if "with_inherited_accessory" in kwargs:
             params["with_inherited_accessory"] = kwargs["with_inherited_accessory"]
-        return self._get_client(**kwargs).list_artifacts(project_name, repo_name, **params)
+        try:
+            data, status_code, _ = self._get_client(**kwargs).list_artifacts_with_http_info(project_name, repo_name, **params)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            return []
+        base._assert_status_code(expect_status_code, status_code)
+        return data
 
     def get_reference_info(self, project_name, repo_name, reference, expect_status_code = 200, ignore_not_found = False,**kwargs):
         params = {}

@@ -51,7 +51,7 @@ func (c *Cache) Contains(ctx context.Context, key string) bool {
 	}
 
 	if e.(*entry).isExpirated() {
-		err := c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, key)
 		log.Errorf("failed to delete cache in Contains() method when it's expired, error: %v", err)
 		return false
 	}
@@ -74,7 +74,7 @@ func (c *Cache) Fetch(ctx context.Context, key string, value any) error {
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		err := c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, key)
 		if err != nil {
 			log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
 		}
@@ -166,6 +166,11 @@ func (i *ScanIterator) Val() string {
 	}
 
 	return val
+}
+
+// Err returns nil because the in-memory scan cannot fail after it starts.
+func (*ScanIterator) Err() error {
+	return nil
 }
 
 // New returns memory cache
