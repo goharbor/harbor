@@ -60,5 +60,9 @@
 }
 
 :host::ng-deep.modal-dialog {
-  width: 46.2rem;
+  width: 50rem;
+}
+
+:host ::ng-deep .clr-wizard-main-content > .clr-wizard-body-wrapper {
+  overflow-x: auto;
 }
