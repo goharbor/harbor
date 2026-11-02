@@ -28,6 +28,8 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
+	robotSec "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/controller/scandataexport"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -87,21 +89,14 @@ func (se *scanDataExportAPI) ExportScanData(ctx context.Context, params operatio
 	}
 
 	// vendor id associated with the job == the user id
-	usr, err := se.userMgr.GetByName(ctx, secContext.GetUsername())
-
+	userID, err := se.exportUserID(ctx, secContext)
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
 
-	if usr == nil {
-		err := &models.Error{Message: fmt.Sprintf("User : %s not found", secContext.GetUsername())}
-		errors := &models.Errors{Errors: []*models.Error{err}}
-		return operation.NewExportScanDataForbidden().WithPayload(errors)
-	}
+	userContext := context.WithValue(ctx, export.CsvJobVendorIDKey, userID)
 
-	userContext := context.WithValue(ctx, export.CsvJobVendorIDKey, usr.UserID)
-
-	jobID, err := se.scanDataExportCtl.Start(userContext, se.convertToCriteria(params.Criteria, secContext.GetUsername(), usr.UserID))
+	jobID, err := se.scanDataExportCtl.Start(userContext, se.convertToCriteria(params.Criteria, secContext.GetUsername(), userID))
 	if err != nil {
 		return se.SendError(ctx, err)
 	}
@@ -279,6 +274,22 @@ func (se *scanDataExportAPI) convertToCriteria(requestCriteria *models.ScanDataE
 		Repositories: requestCriteria.Repositories,
 		Tags:         requestCriteria.Tags,
 	}
+}
+
+// exportUserID returns the local user ID that owns the export. Robot accounts are not local users, so they get 0
+// and own the export by name only.
+func (se *scanDataExportAPI) exportUserID(ctx context.Context, secContext security.Context) (int, error) {
+	if _, ok := secContext.(*robotSec.SecurityContext); ok {
+		return 0, nil
+	}
+	usr, err := se.userMgr.GetByName(ctx, secContext.GetUsername())
+	if err != nil {
+		return 0, err
+	}
+	if usr == nil {
+		return 0, errors.ForbiddenError(nil).WithMessagef("User : %s not found", secContext.GetUsername())
+	}
+	return usr.UserID, nil
 }
 
 func (se *scanDataExportAPI) cleanUpArtifact(ctx context.Context, repositoryName, digest string, execID int64, file io.ReadCloser) {

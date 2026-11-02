@@ -18,6 +18,9 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	commonmodels "github.com/goharbor/harbor/src/common/models"
+	robotSec "github.com/goharbor/harbor/src/common/security/robot"
+	"github.com/goharbor/harbor/src/controller/robot"
+	robotmodel "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/export"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -658,6 +661,16 @@ func (suite *ScanExportTestSuite) TestGetScanDataExportExecutionListFilterNotOwn
 	json.NewDecoder(res.Body).Decode(&respData)
 	suite.Equal(1, len(respData.Items))
 	suite.Equal(int64(100), respData.Items[0].ID)
+}
+
+func (suite *ScanExportTestSuite) TestExportUserIDRobot() {
+	api := &scanDataExportAPI{userMgr: suite.userMgr}
+	secCtx := robotSec.NewSecurityContext(&robot.Robot{Robot: robotmodel.Robot{ID: 42, Name: "robot$library+ci"}})
+
+	userID, err := api.exportUserID(context.TODO(), secCtx)
+	suite.NoError(err)
+	suite.Equal(0, userID)
+	suite.userMgr.AssertNotCalled(suite.T(), "GetByName", mock.Anything, mock.Anything)
 }
 
 func TestScanExportTestSuite(t *testing.T) {
