@@ -15,13 +15,23 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"io"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/iotest"
+	"time"
 
 	"github.com/docker/distribution"
 	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
@@ -30,7 +40,12 @@ import (
 	_ "github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/reg"
+	_ "github.com/goharbor/harbor/src/pkg/reg/adapter/native"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
+	testreg "github.com/goharbor/harbor/src/testing/pkg/reg"
 )
 
 type localInterfaceMock struct {
@@ -252,4 +267,103 @@ func TestGetRef(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProxyBlob(t *testing.T) {
+	cases := []struct {
+		name       string
+		disconnect bool
+	}{
+		{name: "full read"},
+		{name: "client disconnect", disconnect: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := bytes.Repeat([]byte("layer"), 1<<20)
+			dig := digest.FromBytes(data).String()
+			var upstreamN atomic.Int32
+			stored := make(chan []byte, 1)
+
+			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != "/v2/library/app/blobs/"+dig {
+					http.NotFound(w, r)
+					return
+				}
+				upstreamN.Add(1)
+				w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+				_, _ = w.Write(data)
+			}))
+			defer upstream.Close()
+
+			local := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.Method {
+				case http.MethodPost:
+					w.Header().Set("Location", r.URL.Path+"1")
+					w.WriteHeader(http.StatusAccepted)
+				case http.MethodPut:
+					b, _ := io.ReadAll(r.Body)
+					stored <- b
+					w.WriteHeader(http.StatusCreated)
+				}
+			}))
+			defer local.Close()
+
+			regMgr := &testreg.Manager{}
+			regMgr.On("Get", mock.Anything, int64(1)).Return(&model.Registry{Type: model.RegistryTypeDockerRegistry, URL: upstream.URL, Status: model.Healthy}, nil)
+			orig := reg.Mgr
+			reg.Mgr = regMgr
+			defer func() { reg.Mgr = orig }()
+
+			ctl := &controller{local: &localHelper{registry: registry.NewClient(local.URL, "", "", true)}}
+			art := lib.ArtifactInfo{ProjectName: "proxy", Repository: "proxy/library/app", Digest: dig}
+			size, r, err := ctl.ProxyBlob(context.Background(), &proModels.Project{RegistryID: 1}, art)
+			require.NoError(t, err)
+			assert.Equal(t, int64(len(data)), size)
+			if tc.disconnect {
+				_, err = io.ReadFull(r, make([]byte, 1024))
+				require.NoError(t, err)
+			} else {
+				got, err := io.ReadAll(r)
+				require.NoError(t, err)
+				assert.Equal(t, data, got)
+			}
+			require.NoError(t, r.Close())
+
+			select {
+			case b := <-stored:
+				assert.Equal(t, data, b)
+			case <-time.After(10 * time.Second):
+				t.Fatal("blob was not stored locally")
+			}
+			assert.Equal(t, int32(1), upstreamN.Load())
+		})
+	}
+}
+
+func TestTeeBlobUpstreamError(t *testing.T) {
+	pr, pw := io.Pipe()
+	upstreamErr := errors.New("boom")
+	stored := make(chan error, 1)
+	go func() {
+		_, err := io.ReadAll(pr)
+		stored <- err
+	}()
+	tb := &teeBlob{upstream: io.NopCloser(io.MultiReader(strings.NewReader("partial"), iotest.ErrReader(upstreamErr))), store: pw}
+
+	_, err := io.ReadAll(tb)
+	assert.ErrorIs(t, err, upstreamErr)
+	require.NoError(t, tb.Close())
+	assert.ErrorIs(t, <-stored, upstreamErr)
+}
+
+func TestTeeBlobStoreFails(t *testing.T) {
+	data := bytes.Repeat([]byte("x"), 100*1024)
+	pr, pw := io.Pipe()
+	require.NoError(t, pr.Close())
+	tb := &teeBlob{upstream: io.NopCloser(bytes.NewReader(data)), store: pw}
+
+	got, err := io.ReadAll(tb)
+	require.NoError(t, err)
+	require.NoError(t, tb.Close())
+	assert.Equal(t, data, got)
 }
