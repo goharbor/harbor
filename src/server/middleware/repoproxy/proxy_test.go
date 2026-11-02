@@ -25,6 +25,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/docker/distribution"
+	"github.com/opencontainers/go-digest"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -35,6 +37,7 @@ import (
 	robotSc "github.com/goharbor/harbor/src/common/security/robot"
 	securitySecret "github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/proxy"
 	registryCtl "github.com/goharbor/harbor/src/controller/registry"
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib"
@@ -974,5 +977,39 @@ func TestTagsListMiddlewareDefaultLibrary(t *testing.T) {
 	expectedLocation := "/v2/proxy_project/library/nginx/tags/list"
 	if location := rec.Header().Get("Location"); location != expectedLocation {
 		t.Errorf("expected Location header %q, got %q", expectedLocation, location)
+	}
+}
+
+type manifestOnlyProxyCtl struct {
+	proxy.Controller
+	man distribution.Manifest
+}
+
+func (c *manifestOnlyProxyCtl) ProxyManifest(_ context.Context, _ lib.ArtifactInfo, _ proxy.RemoteInterface) (distribution.Manifest, error) {
+	return c.man, nil
+}
+
+func TestProxyManifestGetDigestHeader(t *testing.T) {
+	payload := []byte(`{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json","config":{"mediaType":"application/vnd.oci.image.config.v1+json","digest":"sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a","size":2},"layers":[]}`)
+	man, _, err := distribution.UnmarshalManifest(ocispec.MediaTypeImageManifest, payload)
+	require.NoError(t, err)
+	ctl := &manifestOnlyProxyCtl{man: man}
+	want := digest.FromBytes(payload).String()
+
+	cases := []struct {
+		name string
+		art  lib.ArtifactInfo
+	}{
+		{name: "by tag", art: lib.ArtifactInfo{Repository: "library/hello", Tag: "latest"}},
+		{name: "by digest", art: lib.ArtifactInfo{Repository: "library/hello", Digest: want}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			require.NoError(t, proxyManifestGet(context.Background(), w, ctl, nil, tc.art, nil))
+			require.Equal(t, want, w.Header().Get("Docker-Content-Digest"))
+			require.Equal(t, want, w.Header().Get("Etag"))
+			require.Equal(t, payload, w.Body.Bytes())
+		})
 	}
 }
