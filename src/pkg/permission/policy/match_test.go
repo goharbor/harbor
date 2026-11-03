@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbac
+package policy
 
 import (
 	"testing"
@@ -81,4 +81,20 @@ func TestRegexpStore(t *testing.T) {
 	assert.Equal(r1, r2)
 	s.Purge()
 	assert.Equal(0, sLen())
+}
+
+// casbin v3 pre-registers keyMatch2 and AddFunction never replaces it, so the
+// store must register Harbor's matcher under its own name.
+func TestStoreUsesHarborKeyMatch2(t *testing.T) {
+	s, err := NewInMemory([]Grant{{RoleID: 1, Resource: "repository", Action: "pull"}})
+	assert.NoError(t, err)
+	defer s.Close()
+
+	matchStore.Purge()
+	granted, err := s.Enforce(Subject(1), Object("repository"), "pull")
+	assert.NoError(t, err)
+	assert.True(t, granted)
+
+	_, cached := matchStore.entries.Load(Object("repository"))
+	assert.True(t, cached, "store did not call Harbor's keyMatch2")
 }

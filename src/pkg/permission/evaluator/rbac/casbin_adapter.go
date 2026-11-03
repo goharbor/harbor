@@ -27,62 +27,28 @@ var (
 	errNotImplemented = errors.New("not implemented")
 )
 
-func policyLinesOfRole(rbacRole types.RBACRole) [][]string {
-	lines := [][]string{}
-
-	roleName := rbacRole.GetRoleName()
-	// returns empty policy lines if role name is empty
-	if roleName == "" {
-		return lines
-	}
-
-	for _, policy := range rbacRole.GetPolicies() {
-		line := []string{"p", roleName, policy.Resource.String(), policy.Action.String(), policy.GetEffect()}
-		lines = append(lines, line)
-	}
-
-	return lines
-}
-
-func policyLinesOfRBACUser(rbacUser types.RBACUser) [][]string {
-	lines := [][]string{}
-
-	username := rbacUser.GetUserName()
-	for _, policy := range rbacUser.GetPolicies() {
-		line := []string{"p", username, policy.Resource.String(), policy.Action.String(), policy.GetEffect()}
-		lines = append(lines, line)
-	}
-
-	return lines
-}
-
 type adapter struct {
-	rbacUser types.RBACUser
+	policies []*types.Policy
+	username string
 }
 
-func (a *adapter) getPolicyLines() [][]string {
-	lines := [][]string{}
-
-	username := a.rbacUser.GetUserName()
-	// returns empty policy lines if username is empty
-	if username == "" {
-		return lines
-	}
-
-	lines = append(lines, policyLinesOfRBACUser(a.rbacUser)...)
-
-	for _, role := range a.rbacUser.GetRoles() {
-		lines = append(lines, policyLinesOfRole(role)...)
-		lines = append(lines, []string{"g", username, role.GetRoleName()})
-	}
-
-	return lines
-}
-
+// LoadPolicy loads the visitor's own grants.
+//
+// Role grants are not here. They live in casbin_rule, they are held in memory
+// by the process-wide store, and the evaluator asks that store directly rather
+// than copying a role's policy into a fresh enforcer on every request.
+//
+// The rules go in as arrays rather than as "p, sub, obj, act" text, because
+// casbin parses a policy line with a CSV reader and there is no reason to
+// format a string only to have it taken apart again.
 func (a *adapter) LoadPolicy(model model.Model) error {
-	// arrays, not text lines: casbin v3 parses lines as CSV, which breaks on names with quotes or commas
-	for _, line := range a.getPolicyLines() {
-		if err := persist.LoadPolicyArray(line, model); err != nil {
+	if a.username == "" {
+		return nil
+	}
+	for _, policy := range a.policies {
+		// casbin keeps the slice it is given, so each rule gets its own.
+		rule := []string{"p", a.username, policy.Resource.String(), policy.Action.String(), policy.GetEffect()}
+		if err := persist.LoadPolicyArray(rule, model); err != nil {
 			return err
 		}
 	}

@@ -94,7 +94,7 @@ func (s *SecurityContext) Can(ctx context.Context, action types.Action, resource
 			evaluators = evaluators.Add(admin.New(s.GetUsername()))
 		}
 
-		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl, s.ctlR)))
+		evaluators = evaluators.Add(rbac_project.NewEvaluator(s.ctl, rbac_project.NewBuilderForUser(s.user, s.ctl)))
 
 		s.evaluator = evaluators
 	})

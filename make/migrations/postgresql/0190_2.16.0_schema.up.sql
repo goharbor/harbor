@@ -62,3 +62,118 @@ BEGIN
             FOREIGN KEY (role) REFERENCES role (role_id) ON DELETE RESTRICT;
     END IF;
 END $$;
+
+/*
+Every core replica holds the role policy in memory and reads the database when
+that policy changes, not when a user asks a permission question. Harbor runs
+several cores against one database, so a replica that misses a change and never
+finds out would keep authorizing against a policy that no longer exists.
+
+Two things guard against that, and both are driven from here.
+
+The trigger sends NOTIFY from inside the writing transaction, so it cannot
+survive a rollback and it fires for writes that never went through Harbor, such
+as a migration or a support script. Its payload carries no rules, only the new
+version and the replica that caused it, so a replica goes back to the table
+rather than applying something it was handed, and skips its own writes.
+
+The same statement bumps policy_version. A replica records the version it last
+loaded and compares it against this counter, so a notification that never
+arrives, a dropped connection or a failed reload all converge anyway.
+*/
+CREATE TABLE IF NOT EXISTS policy_version (
+  only_row    boolean   PRIMARY KEY DEFAULT TRUE,
+  version     bigint    NOT NULL DEFAULT 1,
+  update_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT policy_version_single_row CHECK (only_row)
+);
+INSERT INTO policy_version (only_row) VALUES (TRUE) ON CONFLICT DO NOTHING;
+
+CREATE OR REPLACE FUNCTION harbor_policy_bump() RETURNS void AS $$
+DECLARE
+  v bigint;
+BEGIN
+  UPDATE policy_version
+     SET version = version + 1, update_time = CURRENT_TIMESTAMP
+   WHERE only_row
+  RETURNING version INTO v;
+
+  PERFORM pg_notify(
+    'harbor_policy',
+    v::text || ':' || coalesce(current_setting('harbor.origin', TRUE), '?'));
+END;
+$$ LANGUAGE plpgsql;
+
+/*
+Both tables are shared with robot accounts, which write one row per grant every
+time a robot is created or edited. A robot has nothing to do with what a
+project role grants, so the triggers below look at the rows the statement
+actually touched and stay quiet unless a project-role link is among them.
+Without that test, creating a robot would bump the version and make every core
+in the fleet reload a policy that did not change.
+
+Transition tables are what make that test possible from a statement-level
+trigger, and a trigger carrying one may name a single event, so there is one
+trigger per event rather than one for all three.
+*/
+CREATE OR REPLACE FUNCTION harbor_role_permission_notify() RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM changed WHERE role_type = 'project-role') THEN
+    PERFORM harbor_policy_bump();
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- A policy row matters to the store only while a project role links to it. A
+-- robot's own policy rows are invisible here, and a policy inserted before
+-- anything links to it is picked up by the link's own trigger.
+CREATE OR REPLACE FUNCTION harbor_permission_policy_notify() RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+      FROM role_permission rp
+      JOIN changed c ON c.id = rp.permission_policy_id
+     WHERE rp.role_type = 'project-role'
+  ) THEN
+    PERFORM harbor_policy_bump();
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- AFTER STATEMENT, not AFTER ROW: replacing a role's permissions is one delete
+-- and one insert, and the fleet does not need to rebuild once per row.
+DROP TRIGGER IF EXISTS role_permission_notify ON role_permission;
+DROP TRIGGER IF EXISTS role_permission_notify_ins ON role_permission;
+DROP TRIGGER IF EXISTS role_permission_notify_upd ON role_permission;
+DROP TRIGGER IF EXISTS role_permission_notify_del ON role_permission;
+CREATE TRIGGER role_permission_notify_ins
+  AFTER INSERT ON role_permission
+  REFERENCING NEW TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_role_permission_notify();
+CREATE TRIGGER role_permission_notify_upd
+  AFTER UPDATE ON role_permission
+  REFERENCING NEW TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_role_permission_notify();
+CREATE TRIGGER role_permission_notify_del
+  AFTER DELETE ON role_permission
+  REFERENCING OLD TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_role_permission_notify();
+
+DROP TRIGGER IF EXISTS permission_policy_notify ON permission_policy;
+DROP TRIGGER IF EXISTS permission_policy_notify_ins ON permission_policy;
+DROP TRIGGER IF EXISTS permission_policy_notify_upd ON permission_policy;
+DROP TRIGGER IF EXISTS permission_policy_notify_del ON permission_policy;
+CREATE TRIGGER permission_policy_notify_ins
+  AFTER INSERT ON permission_policy
+  REFERENCING NEW TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_permission_policy_notify();
+CREATE TRIGGER permission_policy_notify_upd
+  AFTER UPDATE ON permission_policy
+  REFERENCING NEW TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_permission_policy_notify();
+CREATE TRIGGER permission_policy_notify_del
+  AFTER DELETE ON permission_policy
+  REFERENCING OLD TABLE AS changed
+  FOR EACH STATEMENT EXECUTE FUNCTION harbor_permission_policy_notify();

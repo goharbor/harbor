@@ -27,6 +27,7 @@ import (
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	"github.com/goharbor/harbor/src/testing/mock"
+	policytesting "github.com/goharbor/harbor/src/testing/pkg/permission/policy"
 )
 
 var (
@@ -111,6 +112,8 @@ func TestIsSolutionUser(t *testing.T) {
 }
 
 func TestHasPullPerm(t *testing.T) {
+	policytesting.Seed(t)
+
 	{
 		// public project
 		ctl := &projecttesting.Controller{}
@@ -173,6 +176,8 @@ func TestHasPullPerm(t *testing.T) {
 }
 
 func TestHasPushPerm(t *testing.T) {
+	policytesting.Seed(t)
+
 	resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 
 	{
@@ -220,6 +225,8 @@ func TestHasPushPerm(t *testing.T) {
 }
 
 func TestHasPushPullPerm(t *testing.T) {
+	policytesting.Seed(t)
+
 	resource := rbac_project.NewNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 
 	{
