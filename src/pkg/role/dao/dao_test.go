@@ -131,6 +131,19 @@ func (suite *DaoTestSuite) TestUpdate() {
 
 }
 
+func (suite *DaoTestSuite) TestUpdateDuplicateName() {
+	// renaming a role to the name of another existing role must be reported
+	// as a conflict instead of a generic database error
+	r := &model.Role{
+		ID:   suite.roleID3,
+		Name: "test1",
+	}
+
+	err := suite.dao.Update(orm.Context(), r, "name")
+	suite.Require().Error(err)
+	suite.True(errors.IsErr(err, errors.ConflictCode))
+}
+
 func TestDaoTestSuite(t *testing.T) {
 	suite.Run(t, &DaoTestSuite{})
 }
