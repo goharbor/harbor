@@ -57,7 +57,7 @@ jobs:
               dst_online=harbor-online-installer-${cur}-${arch}.tgz
               aws s3 cp s3://${bucket}/${branch}/${src_online} s3://${bucket}/${branch}/${dst_online}
             fi
-            source tools/release/release_utils.sh && getAssets ${bucket} ${branch} ${dst_offline} ${dst_online} ${{ env.PRERELEASE }} ${assets_path}
+            source tools/release/release_utils.sh && getAssets "$bucket" "$branch" "$dst_offline" "$dst_online" "${{ env.PRERELEASE }}" "$assets_path"
           done
 
           echo "ASSETS_DIR=$assets_path" >> $GITHUB_ENV
@@ -78,11 +78,11 @@ jobs:
                 ${{ env.ASSETS_DIR }}/harbor-online-installer-${cur}-${arch}.tgz
             fi
           done
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@509de4a162d8fd24b2721a9fb3721131a6a4776b # master (no tagged release newer than v1/2023 covers this fix; commit dated 2025-08-24)
-        with:
-          docker_version: 20.10
-          docker_channel: stable
+      # CNCF runners provide Docker; use the runner's engine and user configuration.
+      - name: Verify Docker
+        run: |
+          docker version
+          docker info
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Publish Images (amd64 + arm64)

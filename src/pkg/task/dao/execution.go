@@ -556,7 +556,7 @@ func scanAndRefreshOutdateStatus(ctx context.Context) {
 	var succeed, failed int64
 	for {
 		members, err := client.SPopN(ctx, execStatusOutdateSetKey, int64(execStatusOutdateBatchSize)).Result()
-		if err != nil && err != redis.Nil {
+		if err != nil && !errors.Is(err, redis.Nil) {
 			log.Errorf("failed to SPOP outdate executions from set %s, error: %v", execStatusOutdateSetKey, err)
 			return
 		}
