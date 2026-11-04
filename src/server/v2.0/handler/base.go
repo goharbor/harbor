@@ -231,6 +231,53 @@ func (b *BaseAPI) Links(_ context.Context, u *url.URL, total, pageNumber, pageSi
 	return links
 }
 
+// PaginationLinks returns Links based on pageNumber, pageSize, and hasNext flag
+func (b *BaseAPI) PaginationLinks(_ context.Context, u *url.URL, pageNumber, pageSize int64, hasNext bool) lib.Links {
+	var links lib.Links
+	if pageSize <= 0 {
+		return links
+	}
+	// prev
+	if pageNumber > 1 {
+		ul := *u
+		q := ul.Query()
+		q.Set("page", strconv.FormatInt(pageNumber-1, 10))
+		q.Set("page_size", strconv.FormatInt(pageSize, 10))
+		ul.RawQuery = q.Encode()
+		// try to unescape the query
+		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
+			ul.RawQuery = escapedQuery
+		} else {
+			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
+		}
+		link := &lib.Link{
+			URL: ul.String(),
+			Rel: "prev",
+		}
+		links = append(links, link)
+	}
+	// next
+	if hasNext {
+		ul := *u
+		q := ul.Query()
+		q.Set("page", strconv.FormatInt(pageNumber+1, 10))
+		q.Set("page_size", strconv.FormatInt(pageSize, 10))
+		ul.RawQuery = q.Encode()
+		// try to unescape the query
+		if escapedQuery, err := url.QueryUnescape(ul.RawQuery); err == nil {
+			ul.RawQuery = escapedQuery
+		} else {
+			log.Errorf("failed to unescape the query %s: %v", ul.RawQuery, err)
+		}
+		link := &lib.Link{
+			URL: ul.String(),
+			Rel: "next",
+		}
+		links = append(links, link)
+	}
+	return links
+}
+
 var _ middleware.Responder = &ErrResponder{}
 
 // ErrResponder error responder

@@ -99,7 +99,11 @@ func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Opti
 
 	// pagination
 	if query.PageSize > 0 {
-		qs = qs.Limit(query.PageSize)
+		limit := query.PageSize + query.ExtraLimit
+		if limit < 0 {
+			limit = 0
+		}
+		qs = qs.Limit(limit)
 		if query.PageNumber > 0 {
 			qs = qs.Offset(query.PageSize * (query.PageNumber - 1))
 		}
@@ -130,8 +134,12 @@ func newConfig(opts ...Option) *Config {
 // and appends the limit value and offset value to the params of this query
 func PaginationOnRawSQL(query *q.Query, sql string, params []any) (string, []any) {
 	if query != nil && query.PageSize > 0 {
+		limit := query.PageSize + query.ExtraLimit
+		if limit < 0 {
+			limit = 0
+		}
 		sql += ` limit ?`
-		params = append(params, query.PageSize)
+		params = append(params, limit)
 
 		if query.PageNumber > 0 {
 			sql += ` offset ?`
@@ -147,6 +155,7 @@ func QuerySetterForCount(ctx context.Context, model any, query *q.Query, _ ...st
 	query.Sorts = nil
 	query.PageSize = 0
 	query.PageNumber = 0
+	query.ExtraLimit = 0
 	return QuerySetter(ctx, model, query, WithSortDisabled(true))
 }
 
