@@ -301,6 +301,69 @@ func (c *clientTestSuite) TestBlobExist() {
 	c.True(exist)
 }
 
+func (c *clientTestSuite) TestBlobStat() {
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: "/v2/library/hello-world/blobs/digest1",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusNotFound,
+			}),
+		},
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: "/v2/library/hello-world/blobs/digest2",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusOK,
+				Headers: map[string]string{
+					"Content-Length": "1024",
+				},
+			}),
+		},
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: "/v2/library/hello-world/blobs/digest4",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusInternalServerError,
+			}),
+		},
+		&test.RequestHandlerMapping{
+			Method:  "HEAD",
+			Pattern: "/v2/library/hello-world/blobs/digest3",
+			Handler: test.Handler(&test.Response{
+				StatusCode: http.StatusOK,
+				Headers: map[string]string{
+					"Content-Length": "invalid",
+				},
+			}),
+		},
+	)
+	defer server.Close()
+
+	client := NewClient(server.URL, "", "", true)
+
+	// doesn't exist
+	exist, size, err := client.BlobStat("library/hello-world", "digest1")
+	c.Require().Nil(err)
+	c.False(exist)
+	c.Equal(int64(0), size)
+
+	// exist
+	exist, size, err = client.BlobStat("library/hello-world", "digest2")
+	c.Require().Nil(err)
+	c.True(exist)
+	c.Equal(int64(1024), size)
+
+	// invalid Content-Length
+	_, _, err = client.BlobStat("library/hello-world", "digest3")
+	c.NotNil(err)
+
+	// upstream error
+	exist, _, err = client.BlobStat("library/hello-world", "digest4")
+	c.NotNil(err)
+	c.False(exist)
+}
+
 func (c *clientTestSuite) TestPullBlob() {
 	data := []byte{'a'}
 	server := test.NewServer(

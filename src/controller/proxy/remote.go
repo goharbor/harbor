@@ -32,6 +32,8 @@ import (
 type RemoteInterface interface {
 	// BlobReader create a reader for remote blob
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
+	// BlobStat checks remote blob exist, if exist, returns its size
+	BlobStat(repo, dig string) (bool, int64, error)
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 	// ManifestExist checks manifest exist, if exist, returns digest
@@ -98,6 +100,10 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 		bReader = lib.NewReader(bReader, r.opts.Speed)
 	}
 	return sz, bReader, err
+}
+
+func (r *remoteHelper) BlobStat(repo, dig string) (bool, int64, error) {
+	return r.registry.BlobStat(repo, dig)
 }
 
 func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
