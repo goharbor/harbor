@@ -80,10 +80,19 @@ func TestAll(t *testing.T) {
 		handler = mws[i](handler)
 	}
 
+	// requests carrying neither Sec-Fetch-Site nor Origin are treated as
+	// non-browser requests by the CSRF middleware and reach the handler
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
-	assert.Equal(http.StatusForbidden, w.Code, "'/c/login' httpStatusCode should be 403")
+	assert.Equal(http.StatusUnauthorized, w.Code, "'/c/login' httpStatusCode should be 401")
+
+	// a cross-origin request is rejected by the CSRF middleware
+	r, _ = http.NewRequest("POST", "/c/login", nil)
+	r.Header.Set("Sec-Fetch-Site", "cross-site")
+	w = httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	assert.Equal(http.StatusForbidden, w.Code, "cross-origin '/c/login' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("GET", "/c/log_out", nil)
 	w = httptest.NewRecorder()
@@ -94,6 +103,13 @@ func TestAll(t *testing.T) {
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
-	assert.Equal(http.StatusForbidden, w.Code, "'/c/userExists' httpStatusCode should be 403")
+	assert.Equal(http.StatusOK, w.Code, "'/c/userExists' httpStatusCode should be 200")
+
+	// a cross-origin request is rejected by the CSRF middleware
+	r, _ = http.NewRequest("POST", "/c/userExists", nil)
+	r.Header.Set("Sec-Fetch-Site", "cross-site")
+	w = httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	assert.Equal(http.StatusForbidden, w.Code, "cross-origin '/c/userExists' httpStatusCode should be 403")
 
 }
