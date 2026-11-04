@@ -30,6 +30,12 @@ import (
 	"github.com/goharbor/harbor/src/testing/lib/orm"
 )
 
+type dummyTestingT struct{}
+
+func (d *dummyTestingT) Logf(format string, args ...interface{})   {}
+func (d *dummyTestingT) Errorf(format string, args ...interface{}) {}
+func (d *dummyTestingT) FailNow()                                  {}
+
 type executionManagerTestSuite struct {
 	suite.Suite
 	execMgr    *executionManager
@@ -65,8 +71,10 @@ func (e *executionManagerTestSuite) TestCreate() {
 		map[string]any{"k": "v"})
 	e.Require().Nil(err)
 	e.Equal(int64(1), id)
-	// sleep to make sure the function in the goroutine run
-	time.Sleep(1 * time.Second)
+	e.Eventually(func() bool {
+		dt := &dummyTestingT{}
+		return e.execDAO.AssertExpectations(dt)
+	}, 2*time.Second, 10*time.Millisecond)
 	e.execDAO.AssertExpectations(e.T())
 }
 
