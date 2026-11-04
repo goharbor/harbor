@@ -16,11 +16,16 @@ package session
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/beego/beego/v2/server/web/session"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/lib/cache/redis"
 	"github.com/goharbor/harbor/src/lib/config"
 	_ "github.com/goharbor/harbor/src/pkg/config/db"
 	_ "github.com/goharbor/harbor/src/pkg/config/inmemory"
@@ -97,9 +102,85 @@ func (s *sessionTestSuite) TestSessionRegenerate() {
 	s.True(s.provider.SessionExist(ctx, "session-003"))
 	s.False(s.provider.SessionExist(ctx, "session-001"))
 
-	_, err = s.provider.SessionRegenerate(ctx, "session-001", "session-004")
+	// session-001 was renamed above, so it no longer exists. Regenerating from a
+	// missing session must not leave an empty one behind under the new sid.
+	store, err = s.provider.SessionRegenerate(ctx, "session-001", "session-004")
 	s.NoError(err, "session regenerate should not error")
-	s.True(s.provider.SessionExist(ctx, "session-004"))
+	s.NotNil(store, "the caller should still get a usable store")
+
+	exist, _ := s.provider.SessionExist(ctx, "session-004")
+	s.False(exist, "an empty session should not be persisted")
+}
+
+func (s *sessionTestSuite) TestSessionRegenerateConcurrent() {
+	ctx := context.Background()
+	const workers = 20
+
+	store, err := s.provider.SessionRead(ctx, "session-concurrent")
+	s.NoError(err, "session read should not error")
+	s.NoError(store.Set(ctx, "user", "alice"))
+	store.SessionRelease(ctx, nil)
+
+	sids := make([]string, workers)
+	for i := range sids {
+		sids[i] = fmt.Sprintf("session-concurrent-%d", i)
+	}
+
+	defer func() {
+		s.NoError(s.provider.SessionDestroy(ctx, "session-concurrent"))
+		for _, sid := range sids {
+			s.NoError(s.provider.SessionDestroy(ctx, sid))
+		}
+	}()
+
+	// Every worker regenerates the same session, which is what the UI does when
+	// several requests are in flight at once.
+	errs := make([]error, workers)
+	var wg sync.WaitGroup
+	for i, sid := range sids {
+		wg.Add(1)
+		go func(i int, sid string) {
+			defer wg.Done()
+			_, errs[i] = s.provider.SessionRegenerate(ctx, "session-concurrent", sid)
+		}(i, sid)
+	}
+	wg.Wait()
+
+	for _, err := range errs {
+		s.NoError(err, "session regenerate should not error")
+	}
+
+	// Only one worker can win the rename. The others must not persist anything:
+	// whoever receives one of those sids in a cookie would otherwise be logged out.
+	persisted := 0
+	for _, sid := range sids {
+		exist, _ := s.provider.SessionExist(ctx, sid)
+		if !exist {
+			continue
+		}
+		persisted++
+
+		regenerated, err := s.provider.SessionRead(ctx, sid)
+		s.NoError(err, "session read should not error")
+		s.Equal("alice", regenerated.Get(ctx, "user"), "the regenerated session should keep its data")
+	}
+	s.Equal(1, persisted, "exactly one regenerated session should be persisted")
+}
+
+func (s *sessionTestSuite) TestSessionRegenerateTransportError() {
+	ctx := context.Background()
+
+	// Nothing is listening on this port, so every command fails at the transport
+	// level. That must not be reported as a missing session: beego only skips
+	// Set-Cookie when regenerate returns an error, and handing the client a sid
+	// we could not populate is what logs the user out.
+	c, err := redis.New(cache.Options{Address: "redis://127.0.0.1:16379/0", Codec: codec})
+	s.NoError(err, "cache should be created")
+
+	provider := &Provider{c: c, maxlifetime: int64(time.Hour)}
+	store, err := provider.SessionRegenerate(ctx, "session-001", "session-006")
+	s.Error(err, "a transport failure should be propagated")
+	s.Nil(store, "no store should be returned when the backend is unreachable")
 }
 
 func (s *sessionTestSuite) TestSessionDestroy() {
