@@ -89,7 +89,8 @@
         "OIDC_AUTOONBOARD": "跳过登录界面，这样用户就不能更改其用户名。用户名是从ID令牌中获取的",
         "OIDC_USER_CLAIM": "指定从ID令牌中获取的名称。如果未指定，则默认为'name'",
         "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -663,7 +664,31 @@
         "COPY_BY_CHUNK": "分块复制",
         "COPY_BY_CHUNK_TIP": "请指定是否开启分块复制。开启此项可能导致相应的 API 请求数量增加。",
         "TRIGGER_STOP_SUCCESS": "成功触发停止执行",
-        "CRON_STR": "Cron"
+        "CRON_STR": "Cron",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -696,7 +721,8 @@
         "PLACEHOLDER": "未发现任何复制目标!",
         "CA_CERTIFICATE": "CA 证书",
         "CA_CERTIFICATE_TOOLTIP": "提供 PEM 编码的 CA 证书以信任此仓库的其他 CA 证书。自定义 CA 将被添加到系统 CA 池，允许 Harbor 信任系统签名和自定义签名的证书。留空将仅使用系统 CA 池。此字段仅在启用\"验证远程证书\"时可用。",
-        "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。证书将被添加到系统 CA 池，而不是替代它。"
+        "CA_CERTIFICATE_HELPER": "可选。在此粘贴 PEM 编码的 CA 证书，以信任此端点的自签名或私有 CA 证书。证书将被添加到系统 CA 池，而不是替代它。",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "复制摘要",
@@ -1090,7 +1116,24 @@
         "FILE_TOO_LARGE": "文件太大，无法处理",
         "ITEMS": "条记录",
         "SHOW_KV": "展示健值对",
-        "SHOW_YAML": "展示YAML文件"
+        "SHOW_YAML": "展示YAML文件",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
