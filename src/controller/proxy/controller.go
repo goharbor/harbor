@@ -296,25 +296,16 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 		return 0, nil, err
 	}
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
+	// caching outlives the request that triggered it, and this push needs no ORM,
+	// so keep the values but drop the cancellation
+	bCtx := context.WithoutCancel(ctx)
 	go func() {
-		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
+		err := putBlobToLocal(bCtx, c.local, remoteRepo, art.Repository, desc, rHelper)
 		if err != nil {
 			log.Errorf("error while putting blob to local repo, %v", err)
 		}
 	}()
 	return size, bReader, nil
-}
-
-func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
-	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
-	if err != nil {
-		log.Errorf("failed to create blob reader, error %v", err)
-		return err
-	}
-	defer bReader.Close()
-	err = c.local.PushBlob(localRepo, desc, bReader)
-	return err
 }
 
 func (c *controller) waitAndPushManifest(ctx context.Context, remoteRepo string, man distribution.Manifest, art lib.ArtifactInfo, contType string, r RemoteInterface) {
