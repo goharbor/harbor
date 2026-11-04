@@ -1,6 +1,7 @@
 #!/bin/bash
 #docker version: 20.10.10+
 #docker-compose version: 1.18.0+
+#podman and podman-compose are also supported by the installer
 #golang version: 1.12.0+
 
 set +e
@@ -102,11 +103,71 @@ function check_docker {
 	fi
 }
 
-function check_dockercompose {
-	if [! docker compose version] &> /dev/null || [! docker-compose --version] &> /dev/null
+function check_container_runtime {
+	if [ -z "${CONTAINER_RUNTIME:-}" ]
 	then
-		error "Need to install docker-compose(1.18.0+) or a docker-compose-plugin (https://docs.docker.com/compose/)by yourself first and run this script again."
-		exit 1
+		if command -v docker &> /dev/null
+		then
+			CONTAINER_RUNTIME=docker
+		elif command -v podman &> /dev/null
+		then
+			CONTAINER_RUNTIME=podman
+		else
+			error "Need to install Docker (20.10.10+) or Podman first and run this script again."
+			exit 1
+		fi
+	fi
+
+	case "$CONTAINER_RUNTIME" in
+		docker)
+			check_docker
+			;;
+		podman)
+			if ! podman --version &> /dev/null
+			then
+				error "CONTAINER_RUNTIME is set to podman, but Podman is not installed."
+				exit 1
+			fi
+			note "$(podman --version)"
+			;;
+		*)
+			error "Unsupported container runtime: $CONTAINER_RUNTIME. Use docker or podman."
+			exit 1
+			;;
+	esac
+}
+
+function check_dockercompose {
+	if [ -n "${DOCKER_COMPOSE:-}" ]
+	then
+		if $DOCKER_COMPOSE version &> /dev/null
+		then
+			note "$($DOCKER_COMPOSE version)"
+		elif $DOCKER_COMPOSE --version &> /dev/null
+		then
+			note "$($DOCKER_COMPOSE --version)"
+		else
+			error "The configured compose command is not available: $DOCKER_COMPOSE"
+			exit 1
+		fi
+		return
+	fi
+
+	if [ "${CONTAINER_RUNTIME:-docker}" = "podman" ]
+	then
+		if podman-compose --version &> /dev/null
+		then
+			note "$(podman-compose --version)"
+			DOCKER_COMPOSE="podman-compose"
+		elif podman compose version &> /dev/null
+		then
+			note "$(podman compose version)"
+			DOCKER_COMPOSE="podman compose"
+		else
+			error "Need to install podman-compose and run this script again."
+			exit 1
+		fi
+		return
 	fi
 
 	# either docker compose plugin has been installed
@@ -130,9 +191,7 @@ function check_dockercompose {
 			exit 1
 		fi
 	else
-		error "Failed to parse docker-compose version."
+		error "Need to install docker-compose(1.18.0+) or a docker-compose plugin and run this script again."
 		exit 1
 	fi
 }
-
-

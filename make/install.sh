@@ -18,8 +18,9 @@ with_clair=$false
 # trivy is not enabled by default
 with_trivy=$false
 
-# flag to using docker compose v1 or v2, default would using v1 docker-compose
-DOCKER_COMPOSE=docker-compose
+# Selected by check_container_runtime and check_dockercompose.
+CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-}
+DOCKER_COMPOSE=${DOCKER_COMPOSE:-}
 
 while [ $# -gt 0 ]; do
         case $1 in
@@ -38,16 +39,16 @@ done
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
 
-h2 "[Step $item]: checking if docker is installed ..."; let item+=1
-check_docker
+h2 "[Step $item]: checking if a container runtime is installed ..."; let item+=1
+check_container_runtime
 
-h2 "[Step $item]: checking docker-compose is installed ..."; let item+=1
+h2 "[Step $item]: checking if a compose provider is installed ..."; let item+=1
 check_dockercompose
 
 if [ -f harbor*.tar.gz ]
 then
     h2 "[Step $item]: loading Harbor images ..."; let item+=1
-    docker load -i ./harbor*.tar.gz
+    "$CONTAINER_RUNTIME" load -i ./harbor*.tar.gz
 fi
 echo ""
 
@@ -64,10 +65,10 @@ then
     prepare_para="${prepare_para} --with-trivy"
 fi
 
-./prepare $prepare_para
+CONTAINER_RUNTIME="$CONTAINER_RUNTIME" ./prepare $prepare_para
 echo ""
 
-if [ -n "$DOCKER_COMPOSE ps -q"  ]
+if [ -n "$($DOCKER_COMPOSE ps -q)" ]
     then
         note "stopping existing Harbor instance ..." 
         $DOCKER_COMPOSE down -v
