@@ -155,11 +155,11 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
 	}
