@@ -183,6 +183,8 @@ func TestIsCoreNotificationURL(t *testing.T) {
 		{"http://core.example:8080/service/notifications/../token", false},
 		{"http://core.example:8080/service/notifications/%2e%2e/token", false},
 		{"http://user@core.example:8080/service/notifications/tasks/1", false},
+		{"HTTP://core.example:8080/service/notifications/tasks/1", true},
+		{"Http://core.example:8080/service/notifications/tasks/1", true},
 	} {
 		t.Run(tc.url, func(t *testing.T) {
 			target, err := url.Parse(tc.url)
@@ -190,6 +192,13 @@ func TestIsCoreNotificationURL(t *testing.T) {
 			require.Equal(t, tc.match, isCoreNotificationURL(target))
 		})
 	}
+
+	t.Run("uppercase CORE_URL scheme", func(t *testing.T) {
+		t.Setenv("CORE_URL", "HTTP://core.example:8080")
+		target, err := url.Parse("http://core.example:8080/service/notifications/tasks/1")
+		require.NoError(t, err)
+		require.True(t, isCoreNotificationURL(target))
+	})
 }
 
 func TestExternalCallbackWithoutCredential(t *testing.T) {

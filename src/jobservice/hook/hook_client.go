@@ -163,7 +163,7 @@ func isCoreNotificationURL(target *url.URL) bool {
 	if err != nil || target == nil || core.Host == "" || core.User != nil || target.User != nil {
 		return false
 	}
-	return (core.Scheme == "http" || core.Scheme == "https") &&
+	return (strings.EqualFold(core.Scheme, "http") || strings.EqualFold(core.Scheme, "https")) &&
 		strings.EqualFold(target.Scheme, core.Scheme) &&
 		strings.EqualFold(target.Host, core.Host) &&
 		path.Clean(target.Path) == target.Path &&

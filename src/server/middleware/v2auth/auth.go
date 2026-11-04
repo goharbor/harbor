@@ -146,14 +146,15 @@ func match(ctx context.Context, reqHost, rawURL string) bool {
 		logger.Errorf("Failed to parse url: %s, error: %v", rawURL, err)
 		return false
 	}
-	if cfgURL.Scheme == "http" && cfgURL.Port() == "80" ||
-		cfgURL.Scheme == "https" && cfgURL.Port() == "443" {
+	scheme := strings.ToLower(cfgURL.Scheme)
+	if scheme == "http" && cfgURL.Port() == "80" ||
+		scheme == "https" && cfgURL.Port() == "443" {
 		cfgURL.Host = cfgURL.Hostname()
 	}
-	if cfgURL.Scheme == "http" && strings.HasSuffix(reqHost, ":80") {
+	if scheme == "http" && strings.HasSuffix(reqHost, ":80") {
 		reqHost = strings.TrimSuffix(reqHost, ":80")
 	}
-	if cfgURL.Scheme == "https" && strings.HasSuffix(reqHost, ":443") {
+	if scheme == "https" && strings.HasSuffix(reqHost, ":443") {
 		reqHost = strings.TrimSuffix(reqHost, ":443")
 	}
 	return strings.EqualFold(reqHost, cfgURL.Host)

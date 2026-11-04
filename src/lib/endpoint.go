@@ -33,14 +33,15 @@ func NormalizeAndValidateHTTPURL(s string) (string, error) {
 	if !strings.Contains(s, "://") {
 		s = "http://" + s
 	}
-	url, err := url.Parse(s)
+	u, err := url.Parse(s)
 	if err != nil {
 		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid URL: %s", err.Error())
 	}
-	if url.Scheme != "http" && url.Scheme != "https" {
-		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid HTTP scheme: %s", url.Scheme)
+	scheme := strings.ToLower(u.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return "", errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid HTTP scheme: %s", u.Scheme)
 	}
 	// To avoid SSRF security issue, refer to #3755 for more detail
-	// Normalize host to lowercase per RFC 1035 (preserving scheme & path casing)
-	return fmt.Sprintf("%s://%s%s", url.Scheme, strings.ToLower(url.Host), url.Path), nil
+	// Normalize scheme and host to lowercase per RFC 3986 and RFC 1035
+	return fmt.Sprintf("%s://%s%s", scheme, strings.ToLower(u.Host), u.Path), nil
 }

@@ -45,6 +45,9 @@ var testcases = []struct {
 	{"http://HARBOR.FOO.COM", "http://harbor.foo.com", true},
 	{"http://HARBOR.FOO.COM:8080/MyPath", "http://harbor.foo.com:8080/MyPath", true},
 	{"https://My-Registry.Domain.COM/v2/Catalog", "https://my-registry.domain.com/v2/Catalog", true},
+	{"HTTP://HARBOR.FOO.COM", "http://harbor.foo.com", true},
+	{"HTTPS://My-Registry.Domain.COM/v2/Catalog", "https://my-registry.domain.com/v2/Catalog", true},
+	{"Https://My-Registry.Domain.COM:8443/v2/Catalog", "https://my-registry.domain.com:8443/v2/Catalog", true},
 }
 
 func TestNormalizeAndValidateHTTPURL(t *testing.T) {
