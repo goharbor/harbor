@@ -61,6 +61,15 @@ func (p *Policy) IsScheduledTrigger() bool {
 	return p.Trigger.Type == model.TriggerTypeScheduled
 }
 
+// SourceOptions returns the settings of the policy that the source adapter must honor.
+func (p *Policy) SourceOptions() (*model.SourceOptions, error) {
+	fileFilter, err := model.FileFilterOf(p.Filters)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SourceOptions{FileFilter: fileFilter}, nil
+}
+
 // Validate the policy
 func (p *Policy) Validate() error {
 	if len(p.Name) == 0 {
@@ -82,10 +91,17 @@ func (p *Policy) Validate() error {
 	}
 
 	// valid the filters
+	fileFilters := 0
 	for _, f := range p.Filters {
 		if err := f.Validate(); err != nil {
 			return err
 		}
+		if f.Type == model.FilterTypeFile {
+			fileFilters++
+		}
+	}
+	if fileFilters > 1 {
+		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("at most one file filter is allowed")
 	}
 
 	// valid the destination namespace

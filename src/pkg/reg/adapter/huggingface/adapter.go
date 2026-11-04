@@ -76,12 +76,27 @@ func getAdapterPattern() *model.AdapterPattern {
 var (
 	_ adp.Adapter          = (*adapter)(nil)
 	_ adp.ArtifactRegistry = (*adapter)(nil)
+	_ adp.SourceConfigurer = (*adapter)(nil)
 )
 
 type adapter struct {
 	registry *model.Registry
 	hub      *hub.Client
 	locator  *locator
+	opts     model.SourceOptions
+}
+
+// ConfigureSource ...
+func (a *adapter) ConfigureSource(opts *model.SourceOptions) error {
+	if opts == nil {
+		a.opts = model.SourceOptions{}
+		return nil
+	}
+	if err := opts.FileFilter.Validate(); err != nil {
+		return err
+	}
+	a.opts = *opts
+	return nil
 }
 
 func newAdapter(registry *model.Registry, c cache.Cache) (*adapter, error) {
@@ -128,6 +143,10 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			},
 			{
 				Type:  model.FilterTypeTag,
+				Style: model.FilterStyleTypeText,
+			},
+			{
+				Type:  model.FilterTypeFile,
 				Style: model.FilterStyleTypeText,
 			},
 		},

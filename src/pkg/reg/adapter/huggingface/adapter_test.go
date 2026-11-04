@@ -53,9 +53,10 @@ func TestInfo(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, model.RegistryTypeHuggingFace, info.Type)
 	assert.Equal(t, []string{model.ResourceTypeArtifact}, info.SupportedResourceTypes)
-	require.Len(t, info.SupportedResourceFilters, 2)
+	require.Len(t, info.SupportedResourceFilters, 3)
 	assert.Equal(t, model.FilterTypeName, info.SupportedResourceFilters[0].Type)
 	assert.Equal(t, model.FilterTypeTag, info.SupportedResourceFilters[1].Type)
+	assert.Equal(t, model.FilterTypeFile, info.SupportedResourceFilters[2].Type)
 	assert.Equal(t, []string{model.TriggerTypeManual, model.TriggerTypeScheduled}, info.SupportedTriggers)
 	assert.True(t, info.SupportedCopyByChunk)
 }

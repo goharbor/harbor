@@ -286,3 +286,21 @@ func TestValidate(t *testing.T) {
 	err = policy.Validate()
 	assert.Nil(err)
 }
+
+func TestValidateFileFilter(t *testing.T) {
+	base := func(filters ...*model.Filter) *Policy {
+		return &Policy{Name: "p", SrcRegistry: &model.Registry{ID: 1}, Filters: filters}
+	}
+	assert.NoError(t, base(&model.Filter{Type: model.FilterTypeFile, Value: "*.json"}).Validate())
+	err := base(&model.Filter{Type: model.FilterTypeFile, Value: "*.json"}, &model.Filter{Type: model.FilterTypeFile, Value: "*.md"}).Validate()
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+	err = base(&model.Filter{Type: model.FilterTypeFile, Value: "[a"}).Validate()
+	assert.True(t, errors.IsErr(err, errors.BadRequestCode))
+
+	opts, err := base(&model.Filter{Type: model.FilterTypeName, Value: "org/**"}, &model.Filter{Type: model.FilterTypeFile, Value: "*.json,!x.json"}).SourceOptions()
+	assert.NoError(t, err)
+	assert.Equal(t, &model.FileFilter{Include: []string{"*.json"}, Exclude: []string{"x.json"}}, opts.FileFilter)
+	opts, err = base().SourceOptions()
+	assert.NoError(t, err)
+	assert.True(t, opts.IsEmpty())
+}

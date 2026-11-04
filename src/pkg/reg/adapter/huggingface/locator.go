@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/cache/memory"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface/synth"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 const (
@@ -78,6 +79,9 @@ type location struct {
 	// Path and Size are set for layers.
 	Path string
 	Size int64
+	// Filter is the file filter a manifest or config was built with, so any adapter of the
+	// registry can rebuild it.
+	Filter *model.FileFilter
 }
 
 // locator holds all adapter state in one cache. Keys are scoped by registry ID so a registry
@@ -107,10 +111,14 @@ func (l *locator) refsKey(repository string) string {
 	return l.prefix() + "refs:" + repository
 }
 
-// scannedKey marks that every ref head of a repository was synthesized and indexed, so a digest
-// still missing from the index is not in any of them.
-func (l *locator) scannedKey(repository string) string {
-	return l.prefix() + "scanned:" + repository
+// scannedKey marks that every ref head of a repository was synthesized with filter and indexed,
+// so a digest still missing from the index is not in any of them.
+func (l *locator) scannedKey(repository string, filter *model.FileFilter) string {
+	key := l.prefix() + "scanned:" + repository
+	if k := filter.Key(); k != "" {
+		key += ":" + k
+	}
+	return key
 }
 
 func (l *locator) digestKey(repository string, d digest.Digest) string {
@@ -153,13 +161,14 @@ func (l *locator) put(ctx context.Context, repository string, d digest.Digest, l
 	}
 }
 
-func (l *locator) scanned(ctx context.Context, repository string) bool {
-	return l.cache.Contains(ctx, l.scannedKey(repository))
+func (l *locator) scanned(ctx context.Context, repository string, filter *model.FileFilter) bool {
+	return l.cache.Contains(ctx, l.scannedKey(repository, filter))
 }
 
-func (l *locator) markScanned(ctx context.Context, repository string) {
-	if err := l.cache.Save(ctx, l.scannedKey(repository), true, refsTTL); err != nil {
-		log.Warningf("failed to save %s to cache: %v", l.scannedKey(repository), err)
+func (l *locator) markScanned(ctx context.Context, repository string, filter *model.FileFilter) {
+	key := l.scannedKey(repository, filter)
+	if err := l.cache.Save(ctx, key, true, refsTTL); err != nil {
+		log.Warningf("failed to save %s to cache: %v", key, err)
 	}
 }
 
@@ -171,7 +180,7 @@ func (l *locator) forget(ctx context.Context, repository string, d digest.Digest
 
 // index records every digest of an artifact. The manifest is written last, so its presence
 // means the whole artifact is indexed.
-func (l *locator) index(ctx context.Context, repository, modelID, commit string, art *synth.Artifact) {
+func (l *locator) index(ctx context.Context, repository, modelID, commit string, filter *model.FileFilter, art *synth.Artifact) {
 	manifestKey := l.digestKey(repository, art.Digest)
 	if l.cache.Contains(ctx, manifestKey) {
 		return
@@ -189,8 +198,8 @@ func (l *locator) index(ctx context.Context, repository, modelID, commit string,
 			return
 		}
 	}
-	if !save(l.digestKey(repository, art.ConfigDigest), &location{ModelID: modelID, Commit: commit, Kind: kindConfig}) {
+	if !save(l.digestKey(repository, art.ConfigDigest), &location{ModelID: modelID, Commit: commit, Kind: kindConfig, Filter: filter}) {
 		return
 	}
-	save(manifestKey, &location{ModelID: modelID, Commit: commit, Kind: kindManifest})
+	save(manifestKey, &location{ModelID: modelID, Commit: commit, Kind: kindManifest, Filter: filter})
 }

@@ -7918,7 +7918,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings. For file filters (only on sources that list the "file" filter in their registry info), this is either an object {"include": [patterns], "exclude": [patterns]} or a string of doublestar patterns separated by commas or whitespace, where a leading "!" excludes.'
       decoration:
         type: string
         description: 'matches or excludes the result'

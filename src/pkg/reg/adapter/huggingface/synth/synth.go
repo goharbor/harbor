@@ -27,7 +27,9 @@ import (
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface/hub"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // Version identifies the synthesis rules. Any change to the bytes produced for the same
@@ -70,9 +72,21 @@ func Included(filePath string) bool {
 	return filePath != ".gitattributes"
 }
 
-// Build synthesizes the artifact of a snapshot. fileDigests must hold the content digest of every
-// included non-LFS file; LFS files use the sha256 published by the Hub.
+// Selected reports whether a repository path becomes a layer under filter.
+func Selected(filePath string, filter *model.FileFilter) bool {
+	return Included(filePath) && filter.Match(filePath)
+}
+
+// Build synthesizes the artifact of a snapshot with every included file.
 func Build(s *hub.Snapshot, fileDigests map[string]digest.Digest) (*Artifact, error) {
+	return BuildFiltered(s, fileDigests, nil)
+}
+
+// BuildFiltered synthesizes the artifact of a snapshot with the files selected by filter.
+// fileDigests must hold the content digest of every selected non-LFS file; LFS files use the
+// sha256 published by the Hub. The filter itself is not recorded, so two filters that select
+// the same files of a commit produce the same digest.
+func BuildFiltered(s *hub.Snapshot, fileDigests map[string]digest.Digest, filter *model.FileFilter) (*Artifact, error) {
 	if s == nil {
 		return nil, fmt.Errorf("nil snapshot")
 	}
@@ -81,7 +95,7 @@ func Build(s *hub.Snapshot, fileDigests map[string]digest.Digest) (*Artifact, er
 	}
 	var layers []Layer
 	for _, f := range s.Files {
-		if !Included(f.Path) {
+		if !Selected(f.Path, filter) {
 			continue
 		}
 		var d digest.Digest
@@ -101,6 +115,10 @@ func Build(s *hub.Snapshot, fileDigests map[string]digest.Digest) (*Artifact, er
 		})
 	}
 	if len(layers) == 0 {
+		if !filter.IsEmpty() {
+			return nil, errors.New(nil).WithCode(errors.BadRequestCode).
+				WithMessagef("the file filter selects no file of model %s at %s", s.ModelID, s.Commit)
+		}
 		return nil, fmt.Errorf("model %s at %s has no files", s.ModelID, s.Commit)
 	}
 	sort.Slice(layers, func(i, j int) bool { return layers[i].Path < layers[j].Path })

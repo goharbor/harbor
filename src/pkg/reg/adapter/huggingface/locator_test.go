@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/lib/cache"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 type scanSpy struct {
@@ -44,7 +45,9 @@ func TestSweepScansAdapterKeys(t *testing.T) {
 func TestKeys(t *testing.T) {
 	l := &locator{registryID: 42}
 	assert.Equal(t, "huggingface:42:refs:org/m", l.refsKey("org/m"))
-	assert.Equal(t, "huggingface:42:scanned:org/m", l.scannedKey("org/m"))
+	assert.Equal(t, "huggingface:42:scanned:org/m", l.scannedKey("org/m", nil))
+	f := &model.FileFilter{Include: []string{"*.json"}}
+	assert.Equal(t, "huggingface:42:scanned:org/m:"+f.Key(), l.scannedKey("org/m", f))
 	assert.Equal(t, "huggingface:42:snapshot:org/m:c", l.snapshotKey("org/m", "c"))
 	assert.Equal(t, "huggingface:42:model:org/m", l.modelKey("org/m"))
 	assert.Equal(t, "huggingface:blob:abc", l.blobKey("abc"))

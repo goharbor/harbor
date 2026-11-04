@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface/hub"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface/synth"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 const hashConcurrency = 8
@@ -125,7 +126,7 @@ func (a *adapter) resolve(ctx context.Context, repository, reference string) (*s
 		if loc.Kind != kindManifest {
 			return nil, errors.NotFoundError(fmt.Errorf("%s is not a manifest of %s", d, repository))
 		}
-		art, _, err := a.artifact(ctx, repository, loc.Commit)
+		art, _, err := a.artifact(ctx, repository, loc.Commit, loc.Filter)
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +142,7 @@ func (a *adapter) resolve(ctx context.Context, repository, reference string) (*s
 			return nil, err
 		}
 	}
-	art, _, err := a.artifact(ctx, repository, commit)
+	art, _, err := a.artifact(ctx, repository, commit, a.opts.FileFilter)
 	return art, err
 }
 
@@ -162,8 +163,27 @@ func (a *adapter) refs(ctx context.Context, repository string) ([]hub.Ref, error
 	return refs, err
 }
 
-// artifact synthesizes the artifact of a commit, indexes its digests and returns it with the model ID.
-func (a *adapter) artifact(ctx context.Context, repository, commit string) (*synth.Artifact, string, error) {
+// artifact synthesizes the artifact of a commit with the files selected by filter, indexes its
+// digests and returns it with the model ID.
+func (a *adapter) artifact(ctx context.Context, repository, commit string, filter *model.FileFilter) (*synth.Artifact, string, error) {
+	s, err := a.snapshot(ctx, repository, commit)
+	if err != nil {
+		return nil, "", err
+	}
+	digests, err := a.contentDigests(ctx, s, filter)
+	if err != nil {
+		return nil, "", err
+	}
+	art, err := synth.BuildFiltered(s, digests, filter)
+	if err != nil {
+		return nil, "", err
+	}
+	a.locator.index(ctx, repository, s.ModelID, s.Commit, filter, art)
+	return art, s.ModelID, nil
+}
+
+// snapshot returns the Hub file listing of a commit, cached for snapshotTTL.
+func (a *adapter) snapshot(ctx context.Context, repository, commit string) (*hub.Snapshot, error) {
 	s := &hub.Snapshot{}
 	err := cache.FetchOrSave(ctx, a.locator.cache, a.locator.snapshotKey(repository, commit), s, func() (any, error) {
 		snapshot, err := a.hub.Snapshot(ctx, a.locator.modelID(ctx, repository), commit)
@@ -174,29 +194,20 @@ func (a *adapter) artifact(ctx context.Context, repository, commit string) (*syn
 		return snapshot, nil
 	}, snapshotTTL)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
-	digests, err := a.contentDigests(ctx, s)
-	if err != nil {
-		return nil, "", err
-	}
-	art, err := synth.Build(s, digests)
-	if err != nil {
-		return nil, "", err
-	}
-	a.locator.index(ctx, repository, s.ModelID, s.Commit, art)
-	return art, s.ModelID, nil
+	return s, nil
 }
 
-// contentDigests returns the sha256 of every included non-LFS file, downloading only the ones
+// contentDigests returns the sha256 of every selected non-LFS file, downloading only the ones
 // whose git blob id is not cached yet.
-func (a *adapter) contentDigests(ctx context.Context, s *hub.Snapshot) (map[string]digest.Digest, error) {
+func (a *adapter) contentDigests(ctx context.Context, s *hub.Snapshot, filter *model.FileFilter) (map[string]digest.Digest, error) {
 	var mu sync.Mutex
 	digests := map[string]digest.Digest{}
 	g, gctx := errgroup.WithContext(ctx)
 	g.SetLimit(hashConcurrency)
 	for _, f := range s.Files {
-		if f.IsLFS() || !synth.Included(f.Path) {
+		if f.IsLFS() || !synth.Selected(f.Path, filter) {
 			continue
 		}
 		g.Go(func() error {
@@ -233,7 +244,8 @@ func (a *adapter) find(ctx context.Context, repository string, d digest.Digest) 
 		return nil, err
 	}
 	notFound := errors.NotFoundError(fmt.Errorf("digest %s not found in any ref head of %s", d, repository))
-	if a.locator.scanned(ctx, repository) {
+	filter := a.opts.FileFilter
+	if a.locator.scanned(ctx, repository, filter) {
 		return nil, notFound
 	}
 	refs, err := a.refs(ctx, repository)
@@ -241,7 +253,7 @@ func (a *adapter) find(ctx context.Context, repository string, d digest.Digest) 
 		return nil, err
 	}
 	for _, commit := range headsMainFirst(refs) {
-		art, modelID, err := a.artifact(ctx, repository, commit)
+		art, modelID, err := a.artifact(ctx, repository, commit, filter)
 		if errors.IsNotFoundErr(err) {
 			// The ref moved after the refs were listed; its old head is gone.
 			log.Warningf("skip commit %s of %s while locating %s: %v", commit, repository, d, err)
@@ -250,12 +262,12 @@ func (a *adapter) find(ctx context.Context, repository string, d digest.Digest) 
 		if err != nil {
 			return nil, err
 		}
-		if loc := locationIn(art, modelID, commit, d); loc != nil {
+		if loc := locationIn(art, modelID, commit, filter, d); loc != nil {
 			a.locator.put(ctx, repository, d, loc)
 			return loc, nil
 		}
 	}
-	a.locator.markScanned(ctx, repository)
+	a.locator.markScanned(ctx, repository, filter)
 	return nil, notFound
 }
 
@@ -288,12 +300,12 @@ func headsMainFirst(refs []hub.Ref) []string {
 	return append([]string{main}, others...)
 }
 
-func locationIn(art *synth.Artifact, modelID, commit string, d digest.Digest) *location {
+func locationIn(art *synth.Artifact, modelID, commit string, filter *model.FileFilter, d digest.Digest) *location {
 	switch d {
 	case art.Digest:
-		return &location{ModelID: modelID, Commit: commit, Kind: kindManifest}
+		return &location{ModelID: modelID, Commit: commit, Kind: kindManifest, Filter: filter}
 	case art.ConfigDigest:
-		return &location{ModelID: modelID, Commit: commit, Kind: kindConfig}
+		return &location{ModelID: modelID, Commit: commit, Kind: kindConfig, Filter: filter}
 	}
 	for _, l := range art.Layers {
 		if l.Digest == d {
@@ -338,7 +350,7 @@ func (a *adapter) open(ctx context.Context, repository string, loc *location, d 
 		}
 		return length, body, nil
 	}
-	art, _, err := a.artifact(ctx, repository, loc.Commit)
+	art, _, err := a.artifact(ctx, repository, loc.Commit, loc.Filter)
 	if err != nil {
 		return 0, nil, err
 	}
