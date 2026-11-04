@@ -62,6 +62,7 @@ type protectedData struct {
 	RegistryStorageProviderName string
 	ReadOnly                    bool
 	NotificationEnable          bool
+	GCMaxWorkers                int
 }
 
 // Options provide a set of attributes to control what info should be returned
@@ -135,6 +136,7 @@ func (c *controller) GetInfo(ctx context.Context, opt Options) (*Data, error) {
 		ProjectCreationRestrict:     utils.SafeCastString(cfg[common.ProjectCreationRestriction]),
 		RegistryStorageProviderName: utils.SafeCastString(cfg[common.RegistryStorageProviderName]),
 		NotificationEnable:          utils.SafeCastBool(cfg[common.NotificationEnable]),
+		GCMaxWorkers:                config.GetGCMaxWorkers(),
 	}
 	return res, nil
 }
