@@ -269,24 +269,7 @@ func (c *controller) StartRegularHealthCheck(ctx context.Context, closing, done 
 				continue
 			}
 			for _, registry := range registries {
-				isHealthy, err := c.IsHealthy(ctx, registry)
-				if err != nil {
-					log.Errorf("failed to check health of registry %d: %v", registry.ID, err)
-					continue
-				}
-				status := model.Healthy
-				if !isHealthy {
-					status = model.Unhealthy
-				}
-				if registry.Status == status {
-					continue
-				}
-				registry.Status = status
-				if err = c.regMgr.Update(ctx, registry, "Status"); err != nil {
-					log.Errorf("failed to update the status of registry %d: %v", registry.ID, err)
-					continue
-				}
-				log.Debugf("update the status of registry %d to %s", registry.ID, status)
+				c.checkRegistry(ctx, registry)
 			}
 		case <-closing:
 			log.Info("Stop registry health checker")
@@ -295,6 +278,26 @@ func (c *controller) StartRegularHealthCheck(ctx context.Context, closing, done 
 			return
 		}
 	}
+}
+
+func (c *controller) checkRegistry(ctx context.Context, registry *model.Registry) {
+	isHealthy, err := c.IsHealthy(ctx, registry)
+	status := model.Healthy
+	if err != nil {
+		log.Errorf("failed to check health of registry %d: %v", registry.ID, err)
+		status = model.Unhealthy
+	} else if !isHealthy {
+		status = model.Unhealthy
+	}
+	if registry.Status == status {
+		return
+	}
+	registry.Status = status
+	if err = c.regMgr.Update(ctx, registry, "Status"); err != nil {
+		log.Errorf("failed to update the status of registry %d: %v", registry.ID, err)
+		return
+	}
+	log.Debugf("update the status of registry %d to %s", registry.ID, status)
 }
 
 // merge "SupportedResourceTypes" into "SupportedResourceFilters" for UI to render easier
