@@ -16,7 +16,9 @@ package role
 
 import (
 	"context"
+	"math"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/role/dao"
 	"github.com/goharbor/harbor/src/pkg/role/model"
@@ -61,8 +63,21 @@ func NewManager() Manager {
 	}
 }
 
+// The role_id column is a 32-bit integer, so an ID outside that range can't
+// match any row. Passing it to the database fails with an encoding error
+// instead of a not found one.
+func checkRoleID(id int64) error {
+	if id > math.MaxInt32 || id < math.MinInt32 {
+		return errors.NotFoundError(nil).WithMessagef("role %d not found", id)
+	}
+	return nil
+}
+
 // Get ...
 func (m *manager) Get(ctx context.Context, id int64) (*model.Role, error) {
+	if err := checkRoleID(id); err != nil {
+		return nil, err
+	}
 	return m.dao.Get(ctx, id)
 }
 
@@ -78,11 +93,19 @@ func (m *manager) Create(ctx context.Context, r *model.Role) (int64, error) {
 
 // Delete ...
 func (m *manager) Delete(ctx context.Context, id int64) error {
+	if err := checkRoleID(id); err != nil {
+		return err
+	}
 	return m.dao.Delete(ctx, id)
 }
 
 // Update ...
 func (m *manager) Update(ctx context.Context, r *model.Role, props ...string) error {
+	if r != nil {
+		if err := checkRoleID(r.ID); err != nil {
+			return err
+		}
+	}
 	return m.dao.Update(ctx, r, props...)
 }
 
