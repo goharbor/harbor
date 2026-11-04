@@ -50,6 +50,9 @@ type Manager interface {
 	// Delete deletes the specified scanner registration.
 	Delete(ctx context.Context, registrationUUID string) error
 
+	// DeleteBy deletes the scanner registrations according to the query.
+	DeleteBy(ctx context.Context, query *q.Query) (int64, error)
+
 	// SetAsDefault marks the specified scanner registration as default.
 	// The implementation is supposed to unset any registration previously set as default.
 	SetAsDefault(ctx context.Context, registrationUUID string) error
@@ -143,6 +146,11 @@ func (bm *basicManager) Delete(ctx context.Context, registrationUUID string) err
 	}
 
 	return scanner.DeleteRegistration(ctx, registrationUUID)
+}
+
+// DeleteBy deletes registrations according to the query
+func (bm *basicManager) DeleteBy(ctx context.Context, query *q.Query) (int64, error) {
+	return scanner.DeleteRegistrations(ctx, query)
 }
 
 // List ...
