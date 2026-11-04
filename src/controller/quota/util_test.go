@@ -18,7 +18,6 @@ import (
 	"context"
 	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -74,8 +73,6 @@ func (suite *RefreshForProjectsTestSuite) TearDownTest() {
 }
 
 func (suite *RefreshForProjectsTestSuite) TestRefreshForProjects() {
-	rand.Seed(time.Now().UnixNano())
-
 	startProjectID := rand.Int63()
 	var firstPageProjects, secondPageProjects []*models.Project
 	for i := range 50 {
