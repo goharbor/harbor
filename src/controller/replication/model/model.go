@@ -51,6 +51,10 @@ type Policy struct {
 	// RevisionTag makes every copy also tag the artifact with the immutable tag of its source
 	// revision (model.RevisionTag), on sources that declare SupportedRevisionTag.
 	RevisionTag bool `json:"revision_tag"`
+	// DestRepository, when set, is the full destination repository of every copied resource
+	// instead of the DestNamespace rewrite. Only set by model sync, which copies one repository
+	// into a name of the user's choice; it is not part of the replication API or table.
+	DestRepository string `json:"-"`
 }
 
 // IsScheduledTrigger returns true when the policy is scheduled trigger and enabled

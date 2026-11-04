@@ -58,6 +58,11 @@ packages:
       Controller:
         config:
           dir: testing/controller/replication
+  github.com/goharbor/harbor/src/controller/modelsync:
+    interfaces:
+      Controller:
+        config:
+          dir: testing/controller/modelsync
   github.com/goharbor/harbor/src/controller/replication/flow:
     interfaces:
       Controller:
@@ -417,6 +422,11 @@ packages:
       Manager:
         config:
           dir: testing/pkg/replication
+  github.com/goharbor/harbor/src/pkg/modelsync/policy:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/modelsync/policy
   github.com/goharbor/harbor/src/pkg/replication/dao:
     interfaces:
       DAO:

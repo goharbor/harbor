@@ -115,6 +115,11 @@ func (s *stageTestSuite) TestAssembleDestinationResources() {
 	s.Equal("test/hello-world", res[0].Metadata.Repository.Name)
 	s.Equal(1, len(res[0].Metadata.Vtags))
 	s.Equal("latest", res[0].Metadata.Vtags[0])
+
+	policy.DestRepository = "models/my-model"
+	res, err = assembleDestinationResources(resources, policy, "")
+	s.Require().Nil(err)
+	s.Equal("models/my-model", res[0].Metadata.Repository.Name)
 }
 
 func (s *stageTestSuite) TestReplaceNamespace() {
