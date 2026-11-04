@@ -173,7 +173,7 @@ func (d *dao) SearchByName(ctx context.Context, name string, limitSize int) ([]*
 	var usergroups []*model.UserGroup
 	// use raw sql to return the most matched user first, then by alphabetic order
 	sql := "select id, group_name, group_type, ldap_group_dn, creation_time, update_time from user_group where group_name like ? order by length(group_name), group_name asc limit ?"
-	likePattern := "%" + name + "%"
+	likePattern := "%" + orm.Escape(name) + "%"
 	_, err = o.Raw(sql, likePattern, limitSize).QueryRows(&usergroups)
 	if err != nil {
 		return nil, err
