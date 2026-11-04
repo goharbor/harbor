@@ -42,15 +42,19 @@ func (l *ldapAPI) PingLdap(ctx context.Context, params operation.PingLdapParams)
 	if err := l.RequireSystemAccess(ctx, rbac.ActionRead, rbac.ResourceConfiguration); err != nil {
 		return l.SendError(ctx, err)
 	}
-	basicCfg := cfgModels.LdapConf{
-		URL:            params.Ldapconf.LdapURL,
-		BaseDn:         params.Ldapconf.LdapBaseDn,
-		SearchDn:       params.Ldapconf.LdapSearchDn,
-		Filter:         params.Ldapconf.LdapFilter,
-		SearchPassword: params.Ldapconf.LdapSearchPassword,
-		UID:            params.Ldapconf.LdapUID,
-		Scope:          int(params.Ldapconf.LdapScope),
-		VerifyCert:     params.Ldapconf.LdapVerifyCert,
+	// the body is optional: an empty request tests the configuration saved in the system
+	basicCfg := cfgModels.LdapConf{}
+	if params.Ldapconf != nil {
+		basicCfg = cfgModels.LdapConf{
+			URL:            params.Ldapconf.LdapURL,
+			BaseDn:         params.Ldapconf.LdapBaseDn,
+			SearchDn:       params.Ldapconf.LdapSearchDn,
+			Filter:         params.Ldapconf.LdapFilter,
+			SearchPassword: params.Ldapconf.LdapSearchPassword,
+			UID:            params.Ldapconf.LdapUID,
+			Scope:          int(params.Ldapconf.LdapScope),
+			VerifyCert:     params.Ldapconf.LdapVerifyCert,
+		}
 	}
 	payload := &models.LdapPingResult{}
 	suc, err := l.ctl.Ping(ctx, basicCfg)
