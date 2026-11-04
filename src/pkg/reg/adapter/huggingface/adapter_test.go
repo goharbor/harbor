@@ -40,7 +40,13 @@ func TestFactory(t *testing.T) {
 	p := f.AdapterPattern()
 	assert.Equal(t, model.EndpointPatternTypeList, p.EndpointPattern.EndpointType)
 	assert.Equal(t, hub.DefaultEndpoint, p.EndpointPattern.Endpoints[0].Value)
-	assert.Nil(t, p.CredentialPattern)
+	require.NotNil(t, p.CredentialPattern)
+	assert.Equal(t, model.AccessKeyTypeFix, p.CredentialPattern.AccessKeyType)
+	assert.Equal(t, "token", p.CredentialPattern.AccessKeyData)
+	assert.Equal(t, model.AccessSecretTypeStandard, p.CredentialPattern.AccessSecretType)
+	info, err := a.Info()
+	require.NoError(t, err)
+	assert.Equal(t, info.SourceOnly, p.SourceOnly, "type-level and instance-level source-only must agree")
 
 	_, err = f.Create(&model.Registry{URL: "not a url"})
 	assert.Error(t, err)
@@ -57,6 +63,10 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.FilterTypeName, info.SupportedResourceFilters[0].Type)
 	assert.Equal(t, model.FilterTypeTag, info.SupportedResourceFilters[1].Type)
 	assert.Equal(t, model.FilterTypeFile, info.SupportedResourceFilters[2].Type)
+	for _, f := range info.SupportedResourceFilters {
+		assert.NotEmpty(t, f.Label, f.Type)
+		assert.NotEmpty(t, f.Placeholder, f.Type)
+	}
 	assert.Equal(t, []string{model.TriggerTypeManual, model.TriggerTypeScheduled}, info.SupportedTriggers)
 	assert.True(t, info.SupportedCopyByChunk)
 	assert.True(t, info.SupportedRevisionTag)

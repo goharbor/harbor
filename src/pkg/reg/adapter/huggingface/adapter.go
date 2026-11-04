@@ -55,12 +55,17 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 }
 
 // getAdapterPattern suggests the public Hub but accepts any URL, e.g. a mirror in an air-gapped
-// site. CredentialPattern stays nil: any credential pattern turns the secret field of the portal
-// into a JSON editor. The access secret is the Hub token. The access ID must be non-empty (the
-// Hugging Face username is the natural value) because Harbor stores a credential only when it
-// has an access key; the Hub itself only sees "Authorization: Bearer <token>".
+// site. The access secret is the Hub token. The access key is fixed because Harbor stores a
+// credential only when it has an access key, while the Hub only sees "Authorization: Bearer
+// <token>"; any other non-empty access key (e.g. a username saved earlier) works the same.
 func getAdapterPattern() *model.AdapterPattern {
 	return &model.AdapterPattern{
+		SourceOnly: true,
+		CredentialPattern: &model.CredentialPattern{
+			AccessKeyType:    model.AccessKeyTypeFix,
+			AccessKeyData:    fixedAccessKey,
+			AccessSecretType: model.AccessSecretTypeStandard,
+		},
 		EndpointPattern: &model.EndpointPattern{
 			EndpointType: model.EndpointPatternTypeList,
 			Endpoints: []*model.Endpoint{
@@ -72,6 +77,8 @@ func getAdapterPattern() *model.AdapterPattern {
 		},
 	}
 }
+
+const fixedAccessKey = "token"
 
 var (
 	_ adp.Adapter          = (*adapter)(nil)
@@ -138,16 +145,25 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		SupportedResourceTypes: []string{model.ResourceTypeArtifact},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{
-				Type:  model.FilterTypeName,
-				Style: model.FilterStyleTypeText,
+				Type:        model.FilterTypeName,
+				Style:       model.FilterStyleTypeText,
+				Label:       "Model",
+				Placeholder: "org/model or org/**",
+				Description: "Hugging Face model ID. The organization must be literal, the model name may be a pattern.",
 			},
 			{
-				Type:  model.FilterTypeTag,
-				Style: model.FilterStyleTypeText,
+				Type:        model.FilterTypeTag,
+				Style:       model.FilterStyleTypeText,
+				Label:       "Revision",
+				Placeholder: "main",
+				Description: "Branch or tag of the model repository, e.g. main or v*. Each copy is tagged with it.",
 			},
 			{
-				Type:  model.FilterTypeFile,
-				Style: model.FilterStyleTypeText,
+				Type:        model.FilterTypeFile,
+				Style:       model.FilterStyleTypeText,
+				Label:       "Files",
+				Placeholder: "*.json, !onnx/**",
+				Description: "Files of the model repository to copy. A pattern without / matches the file name at any depth.",
 			},
 		},
 		SupportedTriggers: []string{

@@ -112,6 +112,11 @@ type FilterStyle struct {
 	Type   string   `json:"type"`
 	Style  string   `json:"style"`
 	Values []string `json:"values,omitempty"`
+	// Label, Placeholder and Description let an adapter name the filter in its own terms (e.g.
+	// "Model" for a name filter). A UI falls back to its generic wording when they are empty.
+	Label       string `json:"label,omitempty"`
+	Placeholder string `json:"placeholder,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // EndpointPattern ...
@@ -148,12 +153,18 @@ type RegistryInfo struct {
 	SourceOnly bool `json:"source_only,omitempty"`
 	// SupportedRevisionTag declares that the source honors SourceOptions.RevisionTag.
 	SupportedRevisionTag bool `json:"supported_revision_tag,omitempty"`
+	// SupportedPreview is set by the registry controller when the adapter implements
+	// adapter.ArtifactResolver; adapters do not declare it.
+	SupportedPreview bool `json:"supported_preview,omitempty"`
 }
 
 // AdapterPattern provides base info and capability declarations of the registry
 type AdapterPattern struct {
 	EndpointPattern   *EndpointPattern   `json:"endpoint_pattern"`
 	CredentialPattern *CredentialPattern `json:"credential_pattern"`
+	// SourceOnly mirrors RegistryInfo.SourceOnly at type level, so a UI can leave such registries
+	// out of destination pickers without creating an adapter per registry.
+	SourceOnly bool `json:"source_only,omitempty"`
 }
 
 // NewDefaultAdapterPattern ...

@@ -268,6 +268,36 @@ func (_m *Controller) ListRegistryProviderTypes(ctx context.Context) ([]string, 
 	return r0, r1
 }
 
+// Preview provides a mock function with given fields: ctx, id, repository, reference, filter
+func (_m *Controller) Preview(ctx context.Context, id int64, repository string, reference string, filter *model.FileFilter) (*model.ResolveResult, error) {
+	ret := _m.Called(ctx, id, repository, reference, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Preview")
+	}
+
+	var r0 *model.ResolveResult
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string, *model.FileFilter) (*model.ResolveResult, error)); ok {
+		return rf(ctx, id, repository, reference, filter)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string, *model.FileFilter) *model.ResolveResult); ok {
+		r0 = rf(ctx, id, repository, reference, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.ResolveResult)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string, string, *model.FileFilter) error); ok {
+		r1 = rf(ctx, id, repository, reference, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // StartRegularHealthCheck provides a mock function with given fields: ctx, closing, done
 func (_m *Controller) StartRegularHealthCheck(ctx context.Context, closing chan struct{}, done chan struct{}) {
 	_m.Called(ctx, closing, done)
