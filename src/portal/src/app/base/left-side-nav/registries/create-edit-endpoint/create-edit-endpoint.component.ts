@@ -42,6 +42,8 @@ const FAKE_PASSWORD = 'rjGcfuRu';
 const FAKE_JSON_KEY = 'No Change';
 const METADATA_URL = CURRENT_BASE_HREF + '/replication/adapterinfos';
 const FIXED_PATTERN_TYPE: string = 'EndpointPatternTypeFix';
+const FIXED_ACCESS_KEY_TYPE: string = 'AccessKeyTypeFix';
+const FILE_ACCESS_SECRET_TYPE: string = 'AccessSecretTypeFile';
 @Component({
     selector: 'hbr-create-edit-endpoint',
     templateUrl: './create-edit-endpoint.component.html',
@@ -124,6 +126,29 @@ export class CreateEditEndpointComponent
             this.adapterInfo[this.target.type].credential_pattern
         );
     }
+    // the adapter fixes the access key (e.g. "_json_key" for GCR, "token" for
+    // Hugging Face), so the user only enters the secret
+    isFixedAccessKey(): boolean {
+        return (
+            !this.isNormalCredential() &&
+            this.adapterInfo[this.target.type].credential_pattern
+                .access_key_type === FIXED_ACCESS_KEY_TYPE
+        );
+    }
+
+    isSourceOnly(): boolean {
+        return !!(this.adapterInfo as any)?.[this.target?.type]?.source_only;
+    }
+
+    // the secret is the content of a key file and needs a text area
+    isFileAccessSecret(): boolean {
+        return (
+            !this.isNormalCredential() &&
+            this.adapterInfo[this.target.type].credential_pattern
+                .access_secret_type === FILE_ACCESS_SECRET_TYPE
+        );
+    }
+
     selectedEndpoint(endpoint: string) {
         this.targetForm.controls.endpointUrl.reset(endpoint);
         this.showEndpointList = false;
@@ -268,7 +293,7 @@ export class CreateEditEndpointComponent
         this.targetForm.controls.endpointUrl.reset('');
         let selectValue = this.targetForm.controls.adapter.value;
         this.urlDisabled = false;
-        if (this.isNormalCredential()) {
+        if (!this.isFixedAccessKey()) {
             this.targetForm.controls.access_key.setValue('');
         } else {
             this.targetForm.controls.access_key.setValue(
