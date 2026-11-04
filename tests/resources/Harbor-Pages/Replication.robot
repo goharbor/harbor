@@ -289,10 +289,8 @@ Verify Artifacts Counts In Archive
     [Arguments]  ${total_artifact_count}  ${tag}  ${total_artifact_count}  ${archive_count}
 
 Executions Result Count Should Be
-    [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}
-    Sleep  10
-    ${count}=  Get Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]
-    Should Be Equal As Integers  ${count}  ${expected_result_count}
+    [Arguments]  ${expected_status}  ${expected_trigger_type}  ${expected_result_count}  ${times}=60
+    Retry Wait Element Count  xpath=//clr-dg-row[contains(.,'${expected_status}') and contains(.,'${expected_trigger_type}')]  ${expected_result_count}  times=${times}
 
 Check Latest Replication Job Status
     [Arguments]  ${expected_status}
