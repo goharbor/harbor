@@ -122,7 +122,10 @@ func mockGetRegistry(ctx context.Context) (string, bool) {
 	return "myharbor.example.com", false
 }
 
+var lastScanRep v1.ScanRequest
+
 func mockGenAccessory(scanRep v1.ScanRequest, sbomContent []byte, labels map[string]string, mediaType string, robot *model.Robot) (string, error) {
+	lastScanRep = scanRep
 	return "sha256:1234567890", nil
 }
 
@@ -172,14 +175,6 @@ func (suite *SBOMTestSuite) TearDownSuite() {
 }
 
 func (suite *SBOMTestSuite) TestPostScan() {
-	req := &v1.ScanRequest{
-		Registry: &v1.Registry{
-			URL: "myregistry.example.com",
-		},
-		Artifact: &v1.Artifact{
-			Repository: "library/nosql",
-		},
-	}
 	robot := &model.Robot{
 		Name:   "robot",
 		Secret: "mysecret",
@@ -188,9 +183,81 @@ func (suite *SBOMTestSuite) TestPostScan() {
 	rawReport := `{"sbom": { "key": "value" }}`
 	ctx := &jobservice.MockJobContext{}
 	ctx.On("GetLogger").Return(&jobservice.MockJobLogger{})
-	accessory, err := suite.handler.PostScan(ctx, req, nil, rawReport, startTime, robot)
-	suite.Require().NoError(err)
-	suite.Require().NotEmpty(accessory)
+
+	cases := []struct {
+		url          string
+		expectedURL  string
+		expectedInsc bool
+	}{
+		{
+			url:          "myregistry.example.com",
+			expectedURL:  "myregistry.example.com",
+			expectedInsc: false,
+		},
+		{
+			url:          "http://myregistry.example.com",
+			expectedURL:  "myregistry.example.com",
+			expectedInsc: true,
+		},
+		{
+			url:          "HTTP://MYREGISTRY.EXAMPLE.COM",
+			expectedURL:  "MYREGISTRY.EXAMPLE.COM",
+			expectedInsc: true,
+		},
+		{
+			url:          "Http://myregistry.example.com:5000/",
+			expectedURL:  "myregistry.example.com:5000",
+			expectedInsc: true,
+		},
+		{
+			url:          "https://myregistry.example.com",
+			expectedURL:  "myregistry.example.com",
+			expectedInsc: false,
+		},
+		{
+			url:          "HTTPS://MYREGISTRY.EXAMPLE.COM/",
+			expectedURL:  "MYREGISTRY.EXAMPLE.COM",
+			expectedInsc: false,
+		},
+	}
+
+	for _, tc := range cases {
+		req := &v1.ScanRequest{
+			Registry: &v1.Registry{
+				URL: tc.url,
+			},
+			Artifact: &v1.Artifact{
+				Repository: "library/nosql",
+			},
+		}
+		accessory, err := suite.handler.PostScan(ctx, req, nil, rawReport, startTime, robot)
+		suite.Require().NoError(err)
+		suite.Require().NotEmpty(accessory)
+		suite.Equal(tc.expectedURL, lastScanRep.Registry.URL)
+		suite.Equal(tc.expectedInsc, lastScanRep.Registry.Insecure)
+	}
+
+	// empty or trimmed empty registry returns error
+	emptyReq := &v1.ScanRequest{
+		Registry: &v1.Registry{
+			URL: "http://",
+		},
+		Artifact: &v1.Artifact{
+			Repository: "library/nosql",
+		},
+	}
+	_, err := suite.handler.PostScan(ctx, emptyReq, nil, rawReport, startTime, robot)
+	suite.Require().Error(err)
+
+	// nil registry returns error
+	nilRegReq := &v1.ScanRequest{
+		Registry: nil,
+		Artifact: &v1.Artifact{
+			Repository: "library/nosql",
+		},
+	}
+	_, err = suite.handler.PostScan(ctx, nilRegReq, nil, rawReport, startTime, robot)
+	suite.Require().Error(err)
 }
 
 func (suite *SBOMTestSuite) TestMakeReportPlaceHolder() {
