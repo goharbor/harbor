@@ -16,11 +16,15 @@ package config
 
 import (
 	"context"
+	"net"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/config/metadata"
+	"github.com/goharbor/harbor/src/pkg/audit"
 	testCfg "github.com/goharbor/harbor/src/testing/lib/config"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
@@ -62,6 +66,55 @@ func Test_verifySkipAuditLogCfg(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdateUserConfigsInitializesAuditEndpointBeforeSave(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer listener.Close()
+	accepted := make(chan struct{})
+	go func() {
+		conn, acceptErr := listener.Accept()
+		if acceptErr == nil {
+			close(accepted)
+			_ = conn.Close()
+		}
+	}()
+
+	manager := &testCfg.Manager{}
+	manager.On("Load", mock.Anything).Return(nil)
+	manager.On("ValidateCfg", mock.Anything, mock.Anything).Return(nil)
+	manager.On("Get", mock.Anything, common.AuditLogForwardEndpoint).
+		Return(&metadata.ConfigureValue{Name: common.AuditLogForwardEndpoint, Value: ""})
+	manager.On("Get", mock.Anything, common.SkipAuditLogDatabase).
+		Return(&metadata.ConfigureValue{Name: common.SkipAuditLogDatabase, Value: "false"})
+	manager.On("UpdateConfig", mock.Anything, mock.Anything).
+		Run(func(args mock.Arguments) {
+			select {
+			case <-accepted:
+			default:
+				t.Fatal("configuration was saved before the audit endpoint was initialized")
+			}
+		}).Return(nil)
+
+	const managerName = "audit-forward-test"
+	config.Register(managerName, manager)
+	oldManager := config.DefaultCfgManager
+	config.DefaultCfgManager = managerName
+	defer func() { config.DefaultCfgManager = oldManager }()
+
+	oldLogMgr := audit.LogMgr
+	audit.LogMgr = &audit.LoggerManager{}
+	defer func() {
+		_ = audit.LogMgr.Init(context.Background(), "")
+		audit.LogMgr = oldLogMgr
+	}()
+
+	ctl := &controller{}
+	err = ctl.UpdateUserConfigs(context.Background(), map[string]any{
+		common.AuditLogForwardEndpoint: listener.Addr().String(),
+	})
+	require.NoError(t, err)
 }
 
 func Test_maxValueLimitedByLength(t *testing.T) {
