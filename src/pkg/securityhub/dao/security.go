@@ -145,8 +145,18 @@ func rangeFilter(_ context.Context, key string, query *q.Query) (sqlStr string, 
 	}
 	if val, ok := query.Keywords[key]; ok {
 		if r, ok := val.(*q.Range); ok {
-			sqlStr = fmt.Sprintf(" and %v between ? and ?", key)
-			params = append(params, r.Min, r.Max)
+			// q.Build allows a range with only one bound set.
+			switch {
+			case r.Min != nil && r.Max != nil:
+				sqlStr = fmt.Sprintf(" and %v between ? and ?", key)
+				params = append(params, r.Min, r.Max)
+			case r.Min != nil:
+				sqlStr = fmt.Sprintf(" and %v >= ?", key)
+				params = append(params, r.Min)
+			case r.Max != nil:
+				sqlStr = fmt.Sprintf(" and %v <= ?", key)
+				params = append(params, r.Max)
+			}
 		}
 	}
 	return
