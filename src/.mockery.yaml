@@ -77,6 +77,11 @@ packages:
       Controller:
         config:
           dir: testing/controller/robot
+  github.com/goharbor/harbor/src/controller/optimizer:
+    interfaces:
+      Controller:
+        config:
+          dir: testing/controller/optimizer
   github.com/goharbor/harbor/src/controller/proxy:
     interfaces:
       RemoteInterface:
@@ -353,6 +358,20 @@ packages:
       DAO:
         config:
           dir: testing/pkg/repository/dao
+  github.com/goharbor/harbor/src/pkg/optimizer:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/optimizer
+  github.com/goharbor/harbor/src/pkg/optimizer/rest/v1:
+    config:
+      dir: testing/pkg/optimizer/rest/v1
+      all: True
+  github.com/goharbor/harbor/src/pkg/dockerfileoptimization/dao:
+    interfaces:
+      DAO:
+        config:
+          dir: testing/pkg/dockerfileoptimization/dao
   github.com/goharbor/harbor/src/pkg/notification/policy:
     interfaces:
       Manager:
