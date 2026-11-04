@@ -23,6 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
+	robotSecurity "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/controller/member"
 	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib"
@@ -185,8 +186,20 @@ func (m *memberAPI) UpdateProjectMember(ctx context.Context, params operation.Up
 	return operation.NewUpdateProjectMemberOK()
 }
 
-// checkNoEscalation rejects role assignments where the target role has permissions the caller lacks.
+// checkNoEscalation rejects human role assignments that exceed the caller's permissions.
+// Robots delegate roles through the member:create/update permission checked by the handler.
 func (m *memberAPI) checkNoEscalation(ctx context.Context, projectNameOrID any, roleID int64) error {
+	sc, err := m.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if robot, ok := sc.(*robotSecurity.SecurityContext); ok && robot.IsAuthenticated() {
+		// Robot permissions cannot express all human role permissions. Requiring
+		// those permissions would break existing member-management robots. The
+		// member controller still validates the target role before persisting it.
+		return nil
+	}
+
 	// Collect the (resource, action) pairs the target role grants. Built-in roles
 	// (IDs 1-5) have no role_permission rows — their permissions live only in the
 	// compile-time policy map — so they must be synthesized here. Reading them from
