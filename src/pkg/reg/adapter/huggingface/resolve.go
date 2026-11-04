@@ -65,15 +65,16 @@ func (a *adapter) Resolve(repository, reference string, filter *model.FileFilter
 	}
 
 	result := &model.ResolveResult{
-		Repository: repo,
-		SourceID:   s.ModelID,
-		Reference:  reference,
-		Revision:   s.Commit,
-		SourceURL:  hub.DefaultEndpoint + "/" + s.ModelID,
-		Tags:       tags,
-		Licenses:   s.Licenses,
-		Task:       s.PipelineTag,
-		Files:      []*model.ResolvedFile{},
+		Repository:  repo,
+		SourceID:    s.ModelID,
+		Reference:   reference,
+		Revision:    s.Commit,
+		RevisionTag: model.RevisionTag(s.Commit),
+		SourceURL:   hub.DefaultEndpoint + "/" + s.ModelID,
+		Tags:        tags,
+		Licenses:    s.Licenses,
+		Task:        s.PipelineTag,
+		Files:       []*model.ResolvedFile{},
 	}
 	if !s.LastModified.IsZero() {
 		lastModified := s.LastModified.UTC()

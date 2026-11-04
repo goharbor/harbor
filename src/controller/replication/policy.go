@@ -253,6 +253,10 @@ func validateSourceOptions(policy *model.Policy, src *regmodel.Registry) error {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessagef("the source registry %s does not support the %s filter", src.Name, regmodel.FilterTypeFile)
 	}
+	if opts.RevisionTag && !info.SupportedRevisionTag {
+		return errors.New(nil).WithCode(errors.BadRequestCode).
+			WithMessagef("the source registry %s does not support the revision tag", src.Name)
+	}
 	return nil
 }
 

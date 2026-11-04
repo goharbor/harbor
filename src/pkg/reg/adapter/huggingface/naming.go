@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/huggingface/hub"
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 var (
@@ -85,10 +86,33 @@ func (r *refIndex) commit(tag string) (string, error) {
 			WithMessagef("tag %s is ambiguous, refs %s all map to it", tag, strings.Join(refs, ", "))
 	}
 	commit, ok := r.commits[tag]
-	if !ok {
-		return "", errors.NotFoundError(fmt.Errorf("tag %s not found", tag))
+	if ok {
+		return commit, nil
 	}
-	return commit, nil
+	if model.IsRevisionTag(tag) {
+		return r.commitOfRevisionTag(tag)
+	}
+	return "", errors.NotFoundError(fmt.Errorf("tag %s not found", tag))
+}
+
+// commitOfRevisionTag returns the ref head a revision tag names. A revision tag of a commit
+// that no ref points at any more is not found: the Hub has no lookup by short sha.
+func (r *refIndex) commitOfRevisionTag(tag string) (string, error) {
+	found := ""
+	for _, c := range r.commits {
+		if model.RevisionTag(c) != tag || c == found {
+			continue
+		}
+		if found != "" {
+			return "", errors.New(nil).WithCode(errors.ConflictCode).
+				WithMessagef("revision tag %s is ambiguous, commits %s and %s share it", tag, found, c)
+		}
+		found = c
+	}
+	if found == "" {
+		return "", errors.NotFoundError(fmt.Errorf("no ref head matches revision tag %s", tag))
+	}
+	return found, nil
 }
 
 // tags returns the valid, unambiguous tags, sorted.

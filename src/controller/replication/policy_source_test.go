@@ -46,6 +46,7 @@ func (f infoFactory) AdapterPattern() *model.AdapterPattern { return nil }
 func init() {
 	_ = adapter.RegisterFactory(typeModelSource, infoFactory{info: &model.RegistryInfo{
 		SupportedResourceFilters: []*model.FilterStyle{{Type: model.FilterTypeName}, {Type: model.FilterTypeFile}},
+		SupportedRevisionTag:     true,
 	}})
 	_ = adapter.RegisterFactory(typePlainSource, infoFactory{info: &model.RegistryInfo{
 		SupportedResourceFilters: []*model.FilterStyle{{Type: model.FilterTypeName}},
@@ -53,6 +54,10 @@ func init() {
 }
 
 func (r *replicationTestSuite) createPullPolicy(srcType string, filters ...*model.Filter) error {
+	return r.createPullPolicyWith(srcType, false, filters...)
+}
+
+func (r *replicationTestSuite) createPullPolicyWith(srcType string, revisionTag bool, filters ...*model.Filter) error {
 	r.regMgr.On("Get", mock.Anything, int64(0)).Return(&model.Registry{ID: 0, Type: model.RegistryTypeHarbor}, nil)
 	r.regMgr.On("Get", mock.Anything, int64(5)).Return(&model.Registry{ID: 5, Name: "src", Type: srcType}, nil)
 	mock.OnAnything(r.repMgr, "Create").Return(int64(1), nil)
@@ -62,8 +67,20 @@ func (r *replicationTestSuite) createPullPolicy(srcType string, filters ...*mode
 		DestRegistry: &model.Registry{ID: 0},
 		Filters:      filters,
 		Enabled:      true,
+		RevisionTag:  revisionTag,
 	})
 	return err
+}
+
+func (r *replicationTestSuite) TestCreatePolicyRevisionTagSupported() {
+	r.Require().NoError(r.createPullPolicyWith(typeModelSource, true))
+}
+
+func (r *replicationTestSuite) TestCreatePolicyRevisionTagUnsupported() {
+	err := r.createPullPolicyWith(typePlainSource, true)
+	r.Require().Error(err)
+	r.True(errors.IsErr(err, errors.BadRequestCode))
+	r.Contains(err.Error(), "does not support the revision tag")
 }
 
 func (r *replicationTestSuite) TestCreatePolicyFileFilterSupported() {

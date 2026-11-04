@@ -155,6 +155,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 		SupportedCopyByChunk: true,
+		SupportedRevisionTag: true,
 	}, nil
 }
 

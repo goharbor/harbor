@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -34,8 +35,32 @@ const (
 	// list it in RegistryInfo.SupportedResourceFilters accept it.
 	FilterTypeFile = "file"
 
+	// RevisionTagPrefix starts the immutable tag of a source revision, see RevisionTag.
+	RevisionTagPrefix = "sha-"
+	revisionTagHexLen = 12
+
 	maxFilePatterns = 64
 )
+
+var revisionTagRe = regexp.MustCompile(`^sha-[0-9a-f]{12}$`)
+
+// RevisionTag returns the immutable tag of a source revision: "sha-" and the first 12 hex
+// characters. It returns "" for a revision that does not start with 12 lowercase hex characters.
+func RevisionTag(revision string) string {
+	if len(revision) < revisionTagHexLen {
+		return ""
+	}
+	tag := RevisionTagPrefix + revision[:revisionTagHexLen]
+	if !revisionTagRe.MatchString(tag) {
+		return ""
+	}
+	return tag
+}
+
+// IsRevisionTag reports whether tag has the form produced by RevisionTag.
+func IsRevisionTag(tag string) bool {
+	return revisionTagRe.MatchString(tag)
+}
 
 // FileFilter selects files of a source artifact by path. A path is selected when it matches
 // any Include pattern (or Include is empty) and no Exclude pattern. Patterns use doublestar
@@ -186,11 +211,14 @@ func (f *FileFilter) Key() string {
 type SourceOptions struct {
 	// FileFilter limits the files packed into each artifact.
 	FileFilter *FileFilter `json:"file_filter,omitempty"`
+	// RevisionTag adds RevisionTag(revision) to the tags of every fetched artifact, so the copy
+	// keeps an immutable tag next to the moving ones.
+	RevisionTag bool `json:"revision_tag,omitempty"`
 }
 
 // IsEmpty reports whether the options change nothing.
 func (o *SourceOptions) IsEmpty() bool {
-	return o == nil || o.FileFilter.IsEmpty()
+	return o == nil || o.FileFilter.IsEmpty() && !o.RevisionTag
 }
 
 // File classes of ResolvedFile.Class, after the ModelPack model-spec layer media types.
@@ -211,8 +239,10 @@ type ResolveResult struct {
 	SourceID  string `json:"source_id"`
 	Reference string `json:"reference"`
 	// Revision is the immutable source revision the reference resolves to, e.g. a git commit.
-	Revision  string `json:"revision"`
-	SourceURL string `json:"source_url,omitempty"`
+	Revision string `json:"revision"`
+	// RevisionTag is the immutable tag a copy gets when SourceOptions.RevisionTag is set.
+	RevisionTag string `json:"revision_tag,omitempty"`
+	SourceURL   string `json:"source_url,omitempty"`
 	// Tags are the moving tags of the source that point at Revision.
 	Tags []string `json:"tags"`
 	// Digest is the manifest digest a copy with the given filter produces; empty when no file matches.

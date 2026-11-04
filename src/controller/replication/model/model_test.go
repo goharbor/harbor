@@ -303,4 +303,9 @@ func TestValidateFileFilter(t *testing.T) {
 	opts, err = base().SourceOptions()
 	assert.NoError(t, err)
 	assert.True(t, opts.IsEmpty())
+	p := base()
+	p.RevisionTag = true
+	opts, err = p.SourceOptions()
+	assert.NoError(t, err)
+	assert.True(t, opts.RevisionTag)
 }

@@ -7897,6 +7897,12 @@ definitions:
           Whether to skip execution until the previous active execution finishes,
           avoiding the execution of the same replication rules multiple times in parallel.
         x-isnullable: true # make this field optional to keep backward compatibility
+      revision_tag:
+        type: boolean
+        description: |-
+          Whether each copy also gets the immutable tag "sha-<first 12 hex of the source revision>"
+          next to its moving tags. Only sources whose registry info declares supported_revision_tag accept it.
+        x-isnullable: true
   ReplicationTrigger:
     type: object
     properties:
@@ -8068,6 +8074,11 @@ definitions:
       supported_copy_by_chunk:
         type: boolean
         description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
+      supported_revision_tag:
+        type: boolean
+        description: Whether the registry as a replication source can add the immutable revision tag to copies.
         x-omitempty: true
         x-isnullable: true
   RegistryProviderInfo:

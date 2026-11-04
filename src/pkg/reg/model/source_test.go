@@ -89,3 +89,15 @@ func TestSourceOptionsIsEmpty(t *testing.T) {
 	assert.True(t, (&SourceOptions{FileFilter: &FileFilter{}}).IsEmpty())
 	assert.False(t, (&SourceOptions{FileFilter: &FileFilter{Include: []string{"*"}}}).IsEmpty())
 }
+
+func TestRevisionTag(t *testing.T) {
+	assert.Equal(t, "sha-93efa2f097d5", RevisionTag("93efa2f097d58c2a74874c7e644dbc9b0cee75a2"))
+	assert.Equal(t, "sha-93efa2f097d5", RevisionTag("93efa2f097d5"))
+	assert.Empty(t, RevisionTag("93efa2f"))
+	assert.Empty(t, RevisionTag("93EFA2F097D58C2A"))
+	assert.Empty(t, RevisionTag("main-branch-name"))
+	assert.True(t, IsRevisionTag("sha-93efa2f097d5"))
+	assert.False(t, IsRevisionTag("sha-93efa2f097d58"))
+	assert.False(t, IsRevisionTag("main"))
+	assert.False(t, (&SourceOptions{RevisionTag: true}).IsEmpty())
+}

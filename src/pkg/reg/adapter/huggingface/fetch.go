@@ -157,5 +157,19 @@ func (a *adapter) listArtifacts(ctx context.Context, modelID string, filters []*
 	for _, c := range commits {
 		artifacts = append(artifacts, &model.Artifact{Tags: byCommit[c]})
 	}
-	return filter.DoFilterArtifacts(artifacts, filters)
+	artifacts, err = filter.DoFilterArtifacts(artifacts, filters)
+	if err != nil || !a.opts.RevisionTag {
+		return artifacts, err
+	}
+	// The revision tag is added after the tag filter: it follows the moving tags the filter
+	// selected rather than being matched itself.
+	for _, art := range artifacts {
+		if len(art.Tags) == 0 {
+			continue
+		}
+		if tag := model.RevisionTag(idx.commits[art.Tags[0]]); tag != "" {
+			art.Tags = append(art.Tags, tag)
+		}
+	}
+	return artifacts, nil
 }
