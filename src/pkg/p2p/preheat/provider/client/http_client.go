@@ -72,6 +72,7 @@ func NewHTTPClient(insecure bool) *HTTPClient {
 			TLSHandshakeTimeout: tlsHandshakeTimeout,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: insecure,
+				MinVersion:         tls.VersionTLS12,
 			},
 		},
 	}
