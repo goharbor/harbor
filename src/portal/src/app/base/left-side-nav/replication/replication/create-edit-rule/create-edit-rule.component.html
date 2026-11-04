@@ -1,5 +1,6 @@
 <clr-modal
     [(clrModalOpen)]="createEditRuleOpened"
+    [clrModalSize]="showPreview ? 'lg' : 'md'"
     [clrModalStaticBackdrop]="true"
     [clrModalClosable]="false">
     <h3 class="modal-title">{{ headerTitle | translate }}</h3>
@@ -173,13 +174,10 @@
                     <div class="filterSelect">
                         <div [formGroupName]="i" class="flex">
                             <label class="sub-label"
-                                >{{
-                                    'REPLICATION.' +
-                                        supportedFilters[i]?.type.toUpperCase()
-                                        | translate
-                                }}:</label
+                                >{{ filterLabel(supportedFilters[i]) }}:</label
                             >
-                            @if (supportedFilters[i]?.style === 'input') {
+                            @if (supportedFilters[i]?.style === 'input' &&
+                            supportedFilters[i]?.type !== 'file') {
                             <div class="flex">
                                 @if (supportedFilters[i]?.type === 'tag') {
                                 <div class="clr-select-wrapper mr-1">
@@ -215,11 +213,56 @@
                                         type="text"
                                         #filterValue
                                         size="14"
+                                        [attr.placeholder]="
+                                            supportedFilters[i]?.placeholder ||
+                                            null
+                                        "
                                         formControlName="value"
                                         id="{{
                                             'filter_' +
                                                 supportedFilters[i]?.type
                                         }}" />
+                                </div>
+                            </div>
+                            } @if (supportedFilters[i]?.type === 'file') {
+                            <div class="file-filter">
+                                <div class="clr-input-wrapper file-filter-row">
+                                    <span class="file-filter-key">{{
+                                        'REPLICATION.FILE_INCLUDE' | translate
+                                    }}</span>
+                                    <input
+                                        class="clr-input width-name-resource"
+                                        autocomplete="off"
+                                        type="text"
+                                        id="filter_file_include"
+                                        placeholder="e.g. *.json, *.safetensors"
+                                        [ngModel]="fileInclude"
+                                        (ngModelChange)="
+                                            fileInclude = $event;
+                                            rematchPreview()
+                                        "
+                                        [ngModelOptions]="{
+                                            standalone: true
+                                        }" />
+                                </div>
+                                <div class="clr-input-wrapper file-filter-row">
+                                    <span class="file-filter-key">{{
+                                        'REPLICATION.FILE_EXCLUDE' | translate
+                                    }}</span>
+                                    <input
+                                        class="clr-input width-name-resource"
+                                        autocomplete="off"
+                                        type="text"
+                                        id="filter_file_exclude"
+                                        placeholder="e.g. onnx/**, *.bin"
+                                        [ngModel]="fileExclude"
+                                        (ngModelChange)="
+                                            fileExclude = $event;
+                                            rematchPreview()
+                                        "
+                                        [ngModelOptions]="{
+                                            standalone: true
+                                        }" />
                                 </div>
                             </div>
                             } @if ( supportedFilters[i]?.style === 'radio' &&
@@ -347,13 +390,22 @@
                                     clrPosition="top-left"
                                     clrSize="md"
                                     *clrIfOpen>
-                                    @if ( supportedFilters[i]?.type === 'name' )
-                                    {
+                                    @if (supportedFilters[i]?.description) {
+                                    <span class="tooltip-content">{{
+                                        supportedFilters[i]?.description
+                                    }}</span>
+                                    } @else if (supportedFilters[i]?.type ===
+                                    'file') {
+                                    <span class="tooltip-content">{{
+                                        'TOOLTIP.FILE_FILTER' | translate
+                                    }}</span>
+                                    } @else if (supportedFilters[i]?.type ===
+                                    'name') {
                                     <span class="tooltip-content">{{
                                         'TOOLTIP.NAME_FILTER' | translate
                                     }}</span>
-                                    } @if ( supportedFilters[i]?.type === 'tag'
-                                    ) {
+                                    } @else if (supportedFilters[i]?.type ===
+                                    'tag') {
                                     <span class="tooltip-content">{{
                                         'TOOLTIP.TAG_FILTER' | translate
                                     }}</span>
@@ -375,6 +427,204 @@
                     }
                 </div>
             </div>
+            <!--preview, offered when the source can resolve a copy without copying-->
+            @if (showPreview) {
+            <div class="clr-form-control">
+                <label class="clr-control-label">{{
+                    'REPLICATION.PREVIEW' | translate
+                }}</label>
+                <div class="clr-control-container preview-container">
+                    <div class="flex preview-inputs">
+                        @if (nameFilterIsExact) {
+                        <code class="preview-target">{{
+                            previewRepository || '-'
+                        }}</code>
+                        } @if (!nameFilterIsExact) {
+                        <input
+                            class="clr-input width-name-resource"
+                            autocomplete="off"
+                            id="preview_repository"
+                            [placeholder]="
+                                'REPLICATION.PREVIEW_REPOSITORY' | translate
+                            "
+                            [(ngModel)]="previewRepositoryInput"
+                            [ngModelOptions]="{ standalone: true }" />
+                        }
+                        <span class="preview-at">@</span>
+                        @if (tagFilterIsExact) {
+                        <code class="preview-target">{{
+                            previewReference
+                        }}</code>
+                        } @if (!tagFilterIsExact) {
+                        <input
+                            class="clr-input width-tag-label"
+                            autocomplete="off"
+                            id="preview_reference"
+                            [placeholder]="
+                                'REPLICATION.PREVIEW_REFERENCE' | translate
+                            "
+                            [(ngModel)]="previewReferenceInput"
+                            [ngModelOptions]="{ standalone: true }" />
+                        }
+                        <button
+                            type="button"
+                            id="rule_preview"
+                            class="btn btn-sm btn-outline preview-btn"
+                            [disabled]="!canPreview()"
+                            (click)="doPreview()">
+                            {{ 'REPLICATION.PREVIEW_BUTTON' | translate }}
+                        </button>
+                        <span
+                            class="spinner spinner-inline"
+                            [hidden]="!previewing"></span>
+                    </div>
+                    @if (!nameFilterIsExact) {
+                    <div class="preview-hint">
+                        {{ 'REPLICATION.PREVIEW_PATTERN_HINT' | translate }}
+                    </div>
+                    } @if (previewError) {
+                    <div class="alert-label preview-error">
+                        {{ previewError }}
+                    </div>
+                    } @if (preview) {
+                    <div class="preview" id="rule_preview_result">
+                        @if (previewStale) {
+                        <div class="preview-stale">
+                            {{ 'REPLICATION.PREVIEW_STALE' | translate }}
+                        </div>
+                        }
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_REVISION' | translate
+                            }}</span>
+                            @if (preview.source_url) {
+                            <a
+                                [href]="preview.source_url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                [title]="preview.revision"
+                                ><code>{{
+                                    preview.revision | slice : 0 : 12
+                                }}</code></a
+                            >
+                            } @else {
+                            <code>{{ preview.revision | slice : 0 : 12 }}</code>
+                            } @if (preview.source_id) {
+                            <span class="preview-muted">{{
+                                preview.source_id
+                            }}</span>
+                            }
+                        </div>
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_TAGS' | translate
+                            }}</span>
+                            @for (t of previewTags; track t) {
+                            <span class="label label-info">{{ t }}</span>
+                            } @if (!previewTags.length) {
+                            <span class="preview-muted">{{
+                                'REPLICATION.PREVIEW_NO_TAGS' | translate
+                            }}</span>
+                            }
+                        </div>
+                        @if (preview.licenses?.length) {
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_LICENSE' | translate
+                            }}</span>
+                            @for (l of preview.licenses; track l) {
+                            <span class="label">{{ l }}</span>
+                            }
+                        </div>
+                        } @if (preview.task) {
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_TASK' | translate
+                            }}</span>
+                            <span>{{ preview.task }}</span>
+                        </div>
+                        }
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_FILES' | translate
+                            }}</span>
+                            <span id="preview_counts">{{
+                                'REPLICATION.PREVIEW_MATCHED'
+                                    | translate
+                                        : {
+                                              matched: previewMatchedFiles,
+                                              matchedSize:
+                                                  size(previewMatchedSize),
+                                              total: preview.total_files,
+                                              totalSize: size(
+                                                  preview.total_size
+                                              )
+                                          }
+                            }}</span>
+                        </div>
+                        <div class="preview-row">
+                            <span class="preview-key">{{
+                                'REPLICATION.PREVIEW_DIGEST' | translate
+                            }}</span>
+                            @if ( !previewFilterChanged) { @if (preview.digest)
+                            {
+                            <code [title]="preview.digest"
+                                >{{ preview.digest | slice : 0 : 19 }}…</code
+                            >
+                            } @if (!preview.digest) {
+                            <span class="alert-label">{{
+                                'REPLICATION.PREVIEW_NOTHING_MATCHES'
+                                    | translate
+                            }}</span>
+                            } } @else {
+                            <span class="preview-muted">{{
+                                'REPLICATION.PREVIEW_FILTER_CHANGED' | translate
+                            }}</span>
+                            }
+                        </div>
+                        <div class="preview-files">
+                            @for (f of displayedPreviewFiles; track f) {
+                            <div
+                                class="preview-file"
+                                [class.unmatched]="!f.matched">
+                                <clr-icon
+                                    [attr.shape]="fileIcon(f)"
+                                    size="16"></clr-icon>
+                                <span class="file-path">{{ f.path }}</span>
+                                <span class="file-class">{{ f.class }}</span>
+                                <span class="file-size">{{
+                                    size(f.size)
+                                }}</span>
+                            </div>
+                            } @if (!displayedPreviewFiles.length) {
+                            <div class="preview-muted">
+                                {{
+                                    'REPLICATION.PREVIEW_NOTHING_MATCHES'
+                                        | translate
+                                }}
+                            </div>
+                            }
+                        </div>
+                        @if (previewFiles.length !== previewMatchedFiles) {
+                        <button
+                            type="button"
+                            class="btn btn-link btn-sm preview-toggle"
+                            (click)="
+                                showAllPreviewFiles = !showAllPreviewFiles
+                            ">
+                            {{
+                                (showAllPreviewFiles
+                                    ? 'REPLICATION.PREVIEW_MATCHED_ONLY'
+                                    : 'REPLICATION.PREVIEW_ALL_FILES'
+                                ) | translate
+                            }}
+                        </button>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
             <!--destination registry-->
             @if (isPushMode) {
             <div class="clr-form-control">
@@ -390,7 +640,7 @@
                             formControlName="dest_registry"
                             [compareWith]="equals">
                             <option class="display-none"></option>
-                            @for (target of targetList; track target) {
+                            @for (target of destinationList; track target) {
                             <option [ngValue]="target">
                                 {{ target.name }}-{{ target.url }}
                             </option>
@@ -792,6 +1042,33 @@
                                 </clr-tooltip>
                             </label>
                         </div>
+                        @if (showRevisionTag) {
+                        <div class="clr-checkbox-wrapper">
+                            <input
+                                type="checkbox"
+                                id="revision-tag"
+                                formControlName="revision_tag"
+                                class="clr-checkbox" />
+                            <label for="revision-tag" class="clr-control-label"
+                                >{{ 'REPLICATION.REVISION_TAG' | translate }}
+                                <clr-tooltip class="override-tooltip">
+                                    <clr-icon
+                                        clrTooltipTrigger
+                                        shape="info-circle"
+                                        size="24"></clr-icon>
+                                    <clr-tooltip-content
+                                        clrPosition="top-left"
+                                        clrSize="md"
+                                        *clrIfOpen>
+                                        <span>{{
+                                            'REPLICATION.REVISION_TAG_TIP'
+                                                | translate
+                                        }}</span>
+                                    </clr-tooltip-content>
+                                </clr-tooltip>
+                            </label>
+                        </div>
+                        }
                     </div>
                     <div class="clr-control-inline" [hidden]="policyId < 0">
                         <div class="clr-checkbox-wrapper">

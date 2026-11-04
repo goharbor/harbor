@@ -66,6 +66,9 @@ export interface Filter {
     style: string;
     decoration?: string;
     values?: string[];
+    label?: string;
+    placeholder?: string;
+    description?: string;
 }
 
 export class Filter {
