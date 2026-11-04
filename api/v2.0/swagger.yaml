@@ -8081,6 +8081,11 @@ definitions:
         description: Whether the registry as a replication source can add the immutable revision tag to copies.
         x-omitempty: true
         x-isnullable: true
+      source_only:
+        type: boolean
+        description: Whether the registry can only be a replication source, never a destination.
+        x-omitempty: true
+        x-isnullable: true
   RegistryProviderInfo:
     type: object
     description: The registry provider info contains the base info and capability declarations of the registry provider

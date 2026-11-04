@@ -21,8 +21,8 @@ import (
 )
 
 func TestProcessKeepsCapabilities(t *testing.T) {
-	in := process(&model.RegistryInfo{SupportedCopyByChunk: true, SupportedRevisionTag: true})
-	if !in.SupportedCopyByChunk || !in.SupportedRevisionTag {
+	in := process(&model.RegistryInfo{SupportedCopyByChunk: true, SupportedRevisionTag: true, SourceOnly: true})
+	if !in.SupportedCopyByChunk || !in.SupportedRevisionTag || !in.SourceOnly {
 		t.Fatalf("capabilities dropped: %+v", in)
 	}
 }

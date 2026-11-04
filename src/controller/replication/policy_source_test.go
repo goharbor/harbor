@@ -27,6 +27,7 @@ import (
 const (
 	typeModelSource = "test-model-source"
 	typePlainSource = "test-plain-source"
+	typeSourceOnly  = "test-source-only"
 )
 
 type infoAdapter struct {
@@ -51,6 +52,7 @@ func init() {
 	_ = adapter.RegisterFactory(typePlainSource, infoFactory{info: &model.RegistryInfo{
 		SupportedResourceFilters: []*model.FilterStyle{{Type: model.FilterTypeName}},
 	}})
+	_ = adapter.RegisterFactory(typeSourceOnly, infoFactory{info: &model.RegistryInfo{SourceOnly: true}})
 }
 
 func (r *replicationTestSuite) createPullPolicy(srcType string, filters ...*model.Filter) error {

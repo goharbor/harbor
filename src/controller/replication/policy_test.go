@@ -91,11 +91,11 @@ func (r *replicationTestSuite) TestCreatePolicy() {
 	r.scheduler.AssertExpectations(r.T())
 }
 
-func (r *replicationTestSuite) TestCreatePolicyHuggingFaceDestination() {
+func (r *replicationTestSuite) TestCreatePolicySourceOnlyDestination() {
 	r.regMgr.On("Get", mock.Anything, int64(0)).Return(&model.Registry{ID: 0, Type: model.RegistryTypeHarbor}, nil)
-	r.regMgr.On("Get", mock.Anything, int64(2)).Return(&model.Registry{ID: 2, Name: "hf", Type: model.RegistryTypeHuggingFace}, nil)
+	r.regMgr.On("Get", mock.Anything, int64(2)).Return(&model.Registry{ID: 2, Name: "hf", Type: typeSourceOnly}, nil)
 	_, err := r.ctl.CreatePolicy(context.TODO(), &repmodel.Policy{
-		Name:         "push-to-hf",
+		Name:         "push-to-source-only",
 		SrcRegistry:  &model.Registry{ID: 0},
 		DestRegistry: &model.Registry{ID: 2},
 		Enabled:      true,

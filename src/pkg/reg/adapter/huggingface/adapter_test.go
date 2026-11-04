@@ -59,6 +59,8 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.FilterTypeFile, info.SupportedResourceFilters[2].Type)
 	assert.Equal(t, []string{model.TriggerTypeManual, model.TriggerTypeScheduled}, info.SupportedTriggers)
 	assert.True(t, info.SupportedCopyByChunk)
+	assert.True(t, info.SupportedRevisionTag)
+	assert.True(t, info.SourceOnly)
 }
 
 func TestHealthCheck(t *testing.T) {

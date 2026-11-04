@@ -156,6 +156,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		},
 		SupportedCopyByChunk: true,
 		SupportedRevisionTag: true,
+		SourceOnly:           true,
 	}, nil
 }
 

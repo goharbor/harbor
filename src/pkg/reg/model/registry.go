@@ -143,6 +143,9 @@ type RegistryInfo struct {
 	SupportedTriggers                    []string       `json:"supported_triggers"`
 	SupportedRepositoryPathComponentType string         `json:"supported_repository_path_component_type"` // how many path components are allowed in the repository name
 	SupportedCopyByChunk                 bool           `json:"supported_copy_by_chunk,omitempty"`
+	// SourceOnly declares that the registry can only be a replication source, e.g. because its
+	// artifacts are synthesized from another protocol.
+	SourceOnly bool `json:"source_only,omitempty"`
 	// SupportedRevisionTag declares that the source honors SourceOptions.RevisionTag.
 	SupportedRevisionTag bool `json:"supported_revision_tag,omitempty"`
 }
