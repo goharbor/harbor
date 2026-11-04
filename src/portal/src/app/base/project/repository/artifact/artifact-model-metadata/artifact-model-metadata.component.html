@@ -1,0 +1,30 @@
+@if (rows.length || licenses.length) {
+<h4 class="margin-bottom-075">{{ 'ARTIFACT.MODEL' | translate }}</h4>
+<div class="model-metadata" id="model-metadata">
+    @if (licenses.length) {
+    <div class="model-row">
+        <span class="model-key">{{
+            'ARTIFACT.MODEL_LICENSES' | translate
+        }}</span>
+        <span class="model-value">
+            @for (l of licenses; track l) {
+            <span class="label label-info">{{ l }}</span>
+            }
+        </span>
+    </div>
+    } @for (row of rows; track row) {
+    <div class="model-row">
+        <span class="model-key">{{ row.key | translate }}</span>
+        <span class="model-value">
+            @if (row.href) {
+            <a [href]="row.href" target="_blank" rel="noopener noreferrer">{{
+                row.value
+            }}</a>
+            } @else {
+            {{ row.value }}
+            }
+        </span>
+    </div>
+    }
+</div>
+}

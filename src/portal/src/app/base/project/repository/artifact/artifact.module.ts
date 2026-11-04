@@ -18,6 +18,7 @@ import { ArtifactListPageComponent } from './artifact-list-page/artifact-list-pa
 import { ArtifactListTabComponent } from './artifact-list-page/artifact-list/artifact-list-tab/artifact-list-tab.component';
 import { ArtifactSummaryComponent } from './artifact-summary.component';
 import { ArtifactLabelComponent } from './artifact-label/artifact-label.component';
+import { ArtifactModelMetadataComponent } from './artifact-model-metadata/artifact-model-metadata.component';
 import { ArtifactTagComponent } from './artifact-tag/artifact-tag.component';
 import { ArtifactCommonPropertiesComponent } from './artifact-common-properties/artifact-common-properties.component';
 import { ArtifactAdditionsComponent } from './artifact-additions/artifact-additions.component';
@@ -87,6 +88,7 @@ const routes: Routes = [
 ];
 @NgModule({
     declarations: [
+        ArtifactModelMetadataComponent,
         ArtifactListPageComponent,
         ArtifactListTabComponent,
         ArtifactSummaryComponent,

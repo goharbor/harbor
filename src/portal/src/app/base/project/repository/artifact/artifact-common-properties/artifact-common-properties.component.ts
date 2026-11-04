@@ -14,6 +14,10 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Artifact } from '../../../../../../../ng-swagger-gen/models/artifact';
+import {
+    CNAI_METADATA_KEYS,
+    CNAI_TYPE,
+} from '../artifact-model-metadata/artifact-model-metadata.component';
 
 enum Types {
     CREATED = 'created',
@@ -46,6 +50,11 @@ export class ArtifactCommonPropertiesComponent implements OnChanges {
                     this.artifactDetails.extra_attrs,
                     this.artifactDetails.annotations
                 );
+                if (this.artifactDetails.type === CNAI_TYPE) {
+                    CNAI_METADATA_KEYS.forEach(
+                        key => delete this.commonProperties[key]
+                    );
+                }
                 for (let name in this.commonProperties) {
                     if (this.commonProperties.hasOwnProperty(name)) {
                         if (typeof this.commonProperties[name] === 'object') {
