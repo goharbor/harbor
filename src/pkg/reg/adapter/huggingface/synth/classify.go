@@ -17,6 +17,8 @@ package synth
 import (
 	"path"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
 
 // The classification rules below are copied from modctl pkg/modelfile/constants.go at commit
@@ -439,5 +441,20 @@ func (t fileType) mediaType() string {
 		return MediaTypeDocRaw
 	default:
 		return MediaTypeCodeRaw
+	}
+}
+
+// Class returns the model.FileClass* of a repository path, the same classification that picks
+// the layer media type.
+func Class(filePath string, size int64) string {
+	switch classify(filePath, size) {
+	case fileTypeWeightConfig:
+		return model.FileClassConfig
+	case fileTypeWeight:
+		return model.FileClassWeight
+	case fileTypeDoc:
+		return model.FileClassDoc
+	default:
+		return model.FileClassCode
 	}
 }

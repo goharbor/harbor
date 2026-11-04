@@ -39,3 +39,10 @@ func ConfigureSource(a any, opts *model.SourceOptions) error {
 	}
 	return c.ConfigureSource(opts)
 }
+
+// ArtifactResolver is implemented by source adapters that can preview a copy: which revision a
+// reference resolves to, which files a file filter selects and which digest the copy produces,
+// without copying anything.
+type ArtifactResolver interface {
+	Resolve(repository, reference string, filter *model.FileFilter) (*model.ResolveResult, error)
+}

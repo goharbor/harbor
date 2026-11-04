@@ -22,6 +22,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
 
@@ -190,4 +191,50 @@ type SourceOptions struct {
 // IsEmpty reports whether the options change nothing.
 func (o *SourceOptions) IsEmpty() bool {
 	return o == nil || o.FileFilter.IsEmpty()
+}
+
+// File classes of ResolvedFile.Class, after the ModelPack model-spec layer media types.
+const (
+	FileClassWeight = "weight"
+	FileClassConfig = "config"
+	FileClassCode   = "code"
+	FileClassDoc    = "doc"
+)
+
+// ResolveResult describes what a copy of one source reference would produce, see
+// adapter.ArtifactResolver.
+type ResolveResult struct {
+	// Repository is the repository name the source adapter uses for the artifact, before any
+	// destination namespace rewriting.
+	Repository string `json:"repository"`
+	// SourceID is the canonical identifier at the source, e.g. a Hugging Face model ID.
+	SourceID  string `json:"source_id"`
+	Reference string `json:"reference"`
+	// Revision is the immutable source revision the reference resolves to, e.g. a git commit.
+	Revision  string `json:"revision"`
+	SourceURL string `json:"source_url,omitempty"`
+	// Tags are the moving tags of the source that point at Revision.
+	Tags []string `json:"tags"`
+	// Digest is the manifest digest a copy with the given filter produces; empty when no file matches.
+	Digest       string     `json:"digest,omitempty"`
+	Licenses     []string   `json:"licenses,omitempty"`
+	Task         string     `json:"task,omitempty"`
+	LastModified *time.Time `json:"last_modified,omitempty"`
+	TotalFiles   int        `json:"total_files"`
+	TotalSize    int64      `json:"total_size"`
+	MatchedFiles int        `json:"matched_files"`
+	MatchedSize  int64      `json:"matched_size"`
+	// Files is sorted by path.
+	Files []*ResolvedFile `json:"files"`
+}
+
+// ResolvedFile is one source file of a ResolveResult.
+type ResolvedFile struct {
+	Path  string `json:"path"`
+	Size  int64  `json:"size"`
+	Class string `json:"class"`
+	// SHA256 is the hex sha256 of the content when known without downloading the file, or
+	// when it was hashed to compute the digest.
+	SHA256  string `json:"sha256,omitempty"`
+	Matched bool   `json:"matched"`
 }

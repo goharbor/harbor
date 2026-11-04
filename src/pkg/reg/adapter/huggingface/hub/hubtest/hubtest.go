@@ -54,6 +54,8 @@ type Model struct {
 	Tags     map[string]string
 	// Gated models answer 401 to requests without the token.
 	Gated bool
+	// PipelineTag is the task of the model, e.g. text-generation.
+	PipelineTag string
 }
 
 // Hub is a fake Hub.
@@ -257,6 +259,9 @@ func (h *Hub) revision(w http.ResponseWriter, m *Model, rev string) {
 	}
 	if c.License != nil {
 		resp["cardData"] = map[string]any{"license": c.License}
+	}
+	if m.PipelineTag != "" {
+		resp["pipeline_tag"] = m.PipelineTag
 	}
 	writeJSON(w, resp)
 }

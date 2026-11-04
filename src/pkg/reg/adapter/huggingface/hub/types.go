@@ -35,7 +35,10 @@ type Snapshot struct {
 	Commit       string
 	LastModified time.Time
 	Licenses     []string
-	Files        []File
+	// PipelineTag is the task the Hub lists for the model, e.g. text-generation. It is not part
+	// of the synthesized artifact.
+	PipelineTag string
+	Files       []File
 }
 
 // File is one file of a snapshot.
@@ -66,6 +69,7 @@ type revisionResponse struct {
 	SHA          string          `json:"sha"`
 	LastModified time.Time       `json:"lastModified"`
 	CardData     *cardData       `json:"cardData"`
+	PipelineTag  string          `json:"pipeline_tag"`
 	Siblings     []siblingEntity `json:"siblings"`
 }
 
@@ -125,6 +129,7 @@ func (r *revisionResponse) toSnapshot() (*Snapshot, error) {
 		ModelID:      r.ID,
 		Commit:       r.SHA,
 		LastModified: r.LastModified.UTC(),
+		PipelineTag:  r.PipelineTag,
 	}
 	if r.CardData != nil {
 		s.Licenses = parseLicenses(r.CardData.License)
