@@ -241,6 +241,37 @@ func TestContainsAccess(t *testing.T) {
 	}
 }
 
+func TestValidPermissionScopeDefaultEffect(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		requested string
+		granted   types.Effect
+		allowed   bool
+	}{
+		{"both omitted", "", "", true},
+		{"both explicit allow", "allow", types.EffectAllow, true},
+		{"request omitted", "", types.EffectAllow, true},
+		{"grant omitted", "allow", "", true},
+		{"both deny", "deny", types.EffectDeny, true},
+		{"default cannot match deny", "", types.EffectDeny, false},
+		{"allow cannot match deny", "allow", types.EffectDeny, false},
+		{"deny cannot match default", "deny", "", false},
+		{"deny cannot match allow", "deny", types.EffectAllow, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			requested := []*models.RobotPermission{{
+				Kind: robot.LEVELPROJECT, Namespace: "library",
+				Access: []*models.Access{{Resource: "repository", Action: "pull", Effect: tc.requested}},
+			}}
+			granted := []*robot.Permission{{
+				Kind: robot.LEVELPROJECT, Namespace: "library",
+				Access: []*types.Policy{{Resource: rbac.ResourceRepository, Action: rbac.ActionPull, Effect: tc.granted}},
+			}}
+			assert.Equal(t, tc.allowed, isValidPermissionScope(requested, granted))
+		})
+	}
+}
+
 func TestValidPermissionScope(t *testing.T) {
 	tests := []struct {
 		name          string
