@@ -15,13 +15,17 @@
 package user // nolint:revive
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/goharbor/harbor/src/lib/log"
 )
 
 const (
@@ -37,9 +41,72 @@ const (
 	// nothing has expired, new verifications are simply not cached, which falls
 	// back to the uncached behaviour rather than evicting live entries.
 	defaultVerifyCacheMaxEntries = 10000
+
+	// verifyCacheTypeEnv selects where successful verifications are remembered:
+	//   - "memory" (default): per-process cache; each core pod verifies a
+	//     credential once per TTL.
+	//   - "redis": Harbor's shared Redis cache (cache.Default()); all core pods
+	//     share entries, so a credential is verified once per TTL cluster-wide.
+	//   - "none": disable caching.
+	verifyCacheTypeEnv = "LOCAL_PASSWORD_VERIFY_CACHE_TYPE"
+	verifyCacheMemory  = "memory"
+	verifyCacheRedis   = "redis"
+	verifyCacheNone    = "none"
 )
 
-// verifyCache remembers recent successful local password verifications so that
+// credentialCache remembers recent successful local password verifications.
+// Implementations must only report a hit for the exact password and the exact
+// stored credential (version, salt, hash) that were remembered, and must treat
+// any internal error as a miss so callers fall back to the full verification.
+type credentialCache interface {
+	verified(ctx context.Context, password, salt, version, storedHash string) bool
+	remember(ctx context.Context, password, salt, version, storedHash string)
+}
+
+// newCredentialCacheFromEnv builds the cache selected by verifyCacheTypeEnv with
+// the TTL from verifyCacheTTLEnv. It returns nil when caching is disabled.
+func newCredentialCacheFromEnv() credentialCache {
+	ttl := defaultVerifyCacheTTL
+	if v, ok := os.LookupEnv(verifyCacheTTLEnv); ok && v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			ttl = d
+		} else {
+			log.Warningf("invalid %s %q, using default %s", verifyCacheTTLEnv, v, defaultVerifyCacheTTL)
+		}
+	}
+	typ := strings.ToLower(strings.TrimSpace(os.Getenv(verifyCacheTypeEnv)))
+	switch typ {
+	case verifyCacheNone:
+		return nil
+	case verifyCacheRedis:
+		if c := newRedisVerifyCache(ttl); c != nil {
+			return c
+		}
+		return nil
+	case "", verifyCacheMemory:
+	default:
+		log.Warningf("unknown %s %q, using %q", verifyCacheTypeEnv, typ, verifyCacheMemory)
+	}
+	if c := newVerifyCache(ttl, defaultVerifyCacheMaxEntries); c != nil {
+		return c
+	}
+	return nil
+}
+
+// credentialFingerprint is HMAC-SHA256 under key over the password version,
+// salt, stored hash and candidate password. Each field is length-prefixed so
+// different splits of the same bytes cannot collide.
+func credentialFingerprint(key []byte, password, salt, version, storedHash string) [sha256.Size]byte {
+	mac := hmac.New(sha256.New, key)
+	for _, field := range []string{version, salt, storedHash, password} {
+		mac.Write([]byte(strconv.Itoa(len(field)) + ":" + field))
+	}
+	var out [sha256.Size]byte
+	copy(out[:], mac.Sum(nil))
+	return out
+}
+
+// verifyCache is the in-memory credentialCache. It remembers recent successful local password verifications so that
 // clients using HTTP Basic Auth do not pay for a full PBKDF2 derivation
 // (600,000 iterations for PasswordVersion pbkdf2_sha256) on every request.
 //
@@ -87,32 +154,13 @@ func newVerifyCache(ttl time.Duration, maxEntries int) *verifyCache {
 	}
 }
 
-// newVerifyCacheFromEnv builds the cache using verifyCacheTTLEnv, falling back
-// to defaultVerifyCacheTTL when the variable is unset or invalid.
-func newVerifyCacheFromEnv() *verifyCache {
-	ttl := defaultVerifyCacheTTL
-	if v, ok := os.LookupEnv(verifyCacheTTLEnv); ok {
-		if d, err := time.ParseDuration(v); err == nil {
-			ttl = d
-		}
-	}
-	return newVerifyCache(ttl, defaultVerifyCacheMaxEntries)
-}
-
 func (c *verifyCache) fingerprint(password, salt, version, storedHash string) [sha256.Size]byte {
-	mac := hmac.New(sha256.New, c.key)
-	for _, field := range []string{version, salt, storedHash, password} {
-		// Length-prefix each field so different splits cannot collide.
-		mac.Write([]byte(strconv.Itoa(len(field)) + ":" + field))
-	}
-	var out [sha256.Size]byte
-	copy(out[:], mac.Sum(nil))
-	return out
+	return credentialFingerprint(c.key, password, salt, version, storedHash)
 }
 
 // verified reports whether this exact password was successfully verified
 // against this exact stored credential within the TTL.
-func (c *verifyCache) verified(password, salt, version, storedHash string) bool {
+func (c *verifyCache) verified(_ context.Context, password, salt, version, storedHash string) bool {
 	if c == nil {
 		return false
 	}
@@ -132,7 +180,7 @@ func (c *verifyCache) verified(password, salt, version, storedHash string) bool 
 
 // remember records a successful verification. Call it only after the password
 // has been checked against storedHash with the full PBKDF2 derivation.
-func (c *verifyCache) remember(password, salt, version, storedHash string) {
+func (c *verifyCache) remember(_ context.Context, password, salt, version, storedHash string) {
 	if c == nil {
 		return
 	}

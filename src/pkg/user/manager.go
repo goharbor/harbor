@@ -71,14 +71,14 @@ type Manager interface {
 
 // New returns a default implementation of Manager
 func New() Manager {
-	return &manager{dao: dao.New(), verifyCache: newVerifyCacheFromEnv()}
+	return &manager{dao: dao.New(), verifyCache: newCredentialCacheFromEnv()}
 }
 
 type manager struct {
 	dao dao.DAO
 	// verifyCache remembers recent successful password verifications so Basic
 	// Auth clients do not re-run PBKDF2 on every request. nil disables it.
-	verifyCache *verifyCache
+	verifyCache credentialCache
 }
 
 func (m *manager) Onboard(ctx context.Context, user *commonmodels.User) error {
@@ -131,7 +131,7 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 		return nil, err
 	}
 	for _, entry := range l {
-		if m.passwordMatches(password, entry) {
+		if m.passwordMatches(ctx, password, entry) {
 			entry.Password = ""
 			return entry, nil
 		}
@@ -141,14 +141,16 @@ func (m *manager) MatchLocalPassword(ctx context.Context, usernameOrEmail, passw
 
 // passwordMatches checks the password against the stored credential, consulting
 // the verification cache before running the PBKDF2 derivation.
-func (m *manager) passwordMatches(password string, u *commonmodels.User) bool {
-	if m.verifyCache.verified(password, u.Salt, u.PasswordVersion, u.Password) {
+func (m *manager) passwordMatches(ctx context.Context, password string, u *commonmodels.User) bool {
+	if m.verifyCache != nil && m.verifyCache.verified(ctx, password, u.Salt, u.PasswordVersion, u.Password) {
 		return true
 	}
 	if utils.Encrypt(password, u.Salt, u.PasswordVersion) != u.Password {
 		return false
 	}
-	m.verifyCache.remember(password, u.Salt, u.PasswordVersion, u.Password)
+	if m.verifyCache != nil {
+		m.verifyCache.remember(ctx, password, u.Salt, u.PasswordVersion, u.Password)
+	}
 	return true
 }
 

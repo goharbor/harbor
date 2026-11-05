@@ -183,6 +183,61 @@ func (m *mgrTestSuite) TestMatchLocalPasswordUsesVerifyCache() {
 	m.Require().NotNil(u)
 }
 
+func (m *mgrTestSuite) TestMatchLocalPasswordUsesRedisVerifyCache() {
+	salt := "test-salt"
+	stored := &models.User{
+		UserID:          8,
+		Username:        "bob",
+		Salt:            salt,
+		Password:        utils.Encrypt("Harbor12345", salt, utils.PBKDF2SHA256),
+		PasswordVersion: utils.PBKDF2SHA256,
+	}
+	m.dao.On("List", mock.Anything, mock.Anything).Return(
+		func(context.Context, *q.Query) []*models.User {
+			u := *stored
+			return []*models.User{&u}
+		}, nil)
+
+	redis := newFakeRedis()
+	podA := &manager{dao: m.dao, verifyCache: newTestRedisVerifyCache(redis, "secret-key-16chr")}
+	podB := &manager{dao: m.dao, verifyCache: newTestRedisVerifyCache(redis, "secret-key-16chr")}
+	ctx := context.Background()
+
+	u, err := podA.MatchLocalPassword(ctx, "bob", "Harbor12345")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
+	m.Equal(8, u.UserID)
+	m.Len(redis.entries, 1, "a successful verification should be cached in Redis")
+
+	// Another core instance reuses the entry.
+	u, err = podB.MatchLocalPassword(ctx, "bob", "Harbor12345")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
+	m.Equal(1, redis.saves, "a cache hit must not write to Redis again")
+
+	// Wrong passwords are rejected and never cached.
+	u, err = podB.MatchLocalPassword(ctx, "bob", "wrong")
+	m.Nil(err)
+	m.Nil(u)
+	m.Len(redis.entries, 1)
+
+	// A password change invalidates the cached entry on every instance.
+	stored.Salt = "new-salt"
+	stored.Password = utils.Encrypt("NewPassw0rd", stored.Salt, utils.PBKDF2SHA256)
+	u, err = podB.MatchLocalPassword(ctx, "bob", "Harbor12345")
+	m.Nil(err)
+	m.Nil(u)
+
+	// If Redis fails, verification still works through PBKDF2.
+	redis.failing = true
+	u, err = podA.MatchLocalPassword(ctx, "bob", "NewPassw0rd")
+	m.Require().Nil(err)
+	m.Require().NotNil(u)
+	u, err = podA.MatchLocalPassword(ctx, "bob", "Harbor12345")
+	m.Nil(err)
+	m.Nil(u)
+}
+
 func TestManager(t *testing.T) {
 	suite.Run(t, &mgrTestSuite{})
 }
