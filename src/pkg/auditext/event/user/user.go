@@ -15,6 +15,7 @@
 package user // nolint:revive
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
 	"github.com/goharbor/harbor/src/controller/event/model"
 	"github.com/goharbor/harbor/src/lib/log"
-	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/auditext/event"
 	notifierevent "github.com/goharbor/harbor/src/pkg/notifier/event"
 	pkgUser "github.com/goharbor/harbor/src/pkg/user"
@@ -51,14 +51,13 @@ type userEventResolver struct {
 }
 
 // userIDToName convert user id to user name
-func userIDToName(userID string) string {
+func userIDToName(ctx context.Context, userID string) string {
 	id, err := strconv.ParseInt(userID, 10, 32)
 	if err != nil {
 		log.Errorf("failed to parse userID: %v to int", userID)
 		return ""
 	}
-	// use different context to so that the user is visible before the transaction is committed
-	user, err := pkgUser.Mgr.Get(orm.Context(), int(id))
+	user, err := pkgUser.Mgr.Get(ctx, int(id))
 	if err != nil {
 		log.Errorf("failed to parse userID: %v to int, err %v", userID, err)
 		return ""
