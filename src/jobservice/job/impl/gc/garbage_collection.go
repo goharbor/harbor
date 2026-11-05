@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
@@ -236,6 +237,9 @@ func (gc *GarbageCollector) mark(ctx job.Context) error {
 		return err
 	}
 	if len(orphanBlobs) != 0 {
+		if gc.dryRun {
+			orphanBlobs = gc.excludeBlobsReferencedOutsideTrash(ctx, orphanBlobs)
+		}
 		blobs = append(blobs, orphanBlobs...)
 	}
 	if len(blobs) == 0 {
@@ -711,14 +715,19 @@ func (gc *GarbageCollector) uselessBlobs(ctx job.Context) ([]*blobModels.Blob, e
 	// Do it since the it doesn't remove the untagged artifact in dry run mode. All the blobs of untagged artifact are referenced by project,
 	// so they cannot get by the above UselessBlobs method.
 	// In dryRun mode, trashedArts only contains the mock deletion artifact.
+	// Simulate the post-deletion state: drop blobs still referenced by any
+	// artifact outside the simulated-deletion set, which mirrors what the
+	// real run ends up doing through project_blob. See #23803.
 	if gc.dryRun {
+		var candidates []*blobModels.Blob
 		for artDigest := range gc.trashedArts {
 			artBlobs, err := gc.blobMgr.GetByArt(ctx.SystemContext(), artDigest)
 			if err != nil {
 				return blobs, err
 			}
-			blobs = append(blobs, artBlobs...)
+			candidates = append(candidates, artBlobs...)
 		}
+		blobs = append(blobs, gc.excludeBlobsReferencedOutsideTrash(ctx, candidates)...)
 	}
 
 	return blobs, err
@@ -744,6 +753,108 @@ func (gc *GarbageCollector) shouldStop(ctx job.Context) bool {
 		return true
 	}
 	return false
+}
+
+// dryRunRefCheckChunkSize bounds the IN list per statement so large
+// registries stay under the Postgres extended-protocol 65535 parameter
+// cap (pgx/v5/stdlib). Matches the per-project scan page size.
+const dryRunRefCheckChunkSize = 1000
+
+type blobRefRow struct {
+	DigestBlob     string `orm:"column(digest_blob)"`
+	DigestAf       string `orm:"column(digest_af)"`
+	RepositoryName string `orm:"column(repository_name)"`
+}
+
+func trashedKey(digest, repo string) string {
+	return digest + "\x00" + repo
+}
+
+// buildTrashedSet returns every simulated-deleted (digest, repository)
+// pair in gc.trashedArts for dry-run post-deletion simulation.
+func (gc *GarbageCollector) buildTrashedSet() map[string]struct{} {
+	set := make(map[string]struct{}, len(gc.trashedArts)*2)
+	for digest, arts := range gc.trashedArts {
+		for _, a := range arts {
+			set[trashedKey(digest, a.RepositoryName)] = struct{}{}
+			if a.Digest != "" && a.Digest != digest {
+				set[trashedKey(a.Digest, a.RepositoryName)] = struct{}{}
+			}
+		}
+	}
+	return set
+}
+
+// excludeBlobsReferencedOutsideTrash keeps only blobs with no referencing
+// artifact outside the simulated-deletion set. It fetches referencing
+// (digest_af, repository_name) pairs in bounded chunks and filters in Go,
+// so dry-run mirrors what the real run does through project_blob.
+// See #23803. Dry-run only, the real-run path is left alone.
+func (gc *GarbageCollector) excludeBlobsReferencedOutsideTrash(ctx job.Context, blobs []*blobModels.Blob) []*blobModels.Blob {
+	if len(blobs) == 0 {
+		return blobs
+	}
+	// Dry-run only. Fail-open (keep candidates on DB error) is safe for
+	// reporting but must never gate real deletions.
+	if !gc.dryRun {
+		return blobs
+	}
+	seen := make(map[string]bool, len(blobs))
+	unique := make([]*blobModels.Blob, 0, len(blobs))
+	digests := make([]string, 0, len(blobs))
+	for _, blob := range blobs {
+		if blob == nil || seen[blob.Digest] {
+			continue
+		}
+		seen[blob.Digest] = true
+		unique = append(unique, blob)
+		digests = append(digests, blob.Digest)
+	}
+	if len(digests) == 0 {
+		return unique
+	}
+	sysCtx := ctx.SystemContext()
+	o, err := orm.FromContext(sysCtx)
+	if err != nil {
+		gc.logger.Errorf("failed to check blob references, keep all candidates: %v", err)
+		return unique
+	}
+	trashed := gc.buildTrashedSet()
+	referencedOutside := make(map[string]bool, len(unique))
+	for start := 0; start < len(digests); start += dryRunRefCheckChunkSize {
+		end := start + dryRunRefCheckChunkSize
+		if end > len(digests) {
+			end = len(digests)
+		}
+		chunk := digests[start:end]
+		sql := fmt.Sprintf(`SELECT b.digest_blob, a.digest AS digest_af, a.repository_name FROM artifact a JOIN artifact_blob b ON a.digest = b.digest_af WHERE b.digest_blob IN (%s)`, orm.ParamPlaceholderForIn(len(chunk)))
+		params := make([]any, len(chunk))
+		for i, d := range chunk {
+			params[i] = d
+		}
+		var rows []blobRefRow
+		if _, err := o.Raw(sql, params...).QueryRows(&rows); err != nil {
+			gc.logger.Errorf("failed to check blob references, keep chunk candidates: %v", err)
+			continue
+		}
+		for _, r := range rows {
+			if _, ok := trashed[trashedKey(r.DigestAf, r.RepositoryName)]; !ok {
+				referencedOutside[r.DigestBlob] = true
+			}
+		}
+	}
+	filtered := make([]*blobModels.Blob, 0, len(unique))
+	for _, blob := range unique {
+		if referencedOutside[blob.Digest] {
+			gc.logger.Infof("skip blob %s as it is still referenced outside the simulated deletions", blob.Digest)
+			continue
+		}
+		filtered = append(filtered, blob)
+	}
+	if len(filtered) != len(unique) {
+		gc.logger.Infof("filtered %d/%d blobs still referenced outside the simulated deletions", len(unique)-len(filtered), len(unique))
+	}
+	return filtered
 }
 
 func saveGCRes(ctx job.Context, sweepSize, blobs, manifests int64) error {
