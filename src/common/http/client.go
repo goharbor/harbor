@@ -288,8 +288,16 @@ func RedactedURL(u *url.URL) string {
 // SameOrigin reports whether a and b share scheme, host and effective port.
 func SameOrigin(a, b *url.URL) bool {
 	return strings.EqualFold(a.Scheme, b.Scheme) &&
-		strings.EqualFold(a.Hostname(), b.Hostname()) &&
+		sameHost(a.Hostname(), b.Hostname()) &&
 		effectivePort(a) == effectivePort(b)
+}
+
+// sameHost compares host names case-insensitively, except for an IPv6 zone identifier,
+// which names a network interface and must match exactly.
+func sameHost(a, b string) bool {
+	aHost, aZone, _ := strings.Cut(a, "%")
+	bHost, bZone, _ := strings.Cut(b, "%")
+	return strings.EqualFold(aHost, bHost) && aZone == bZone
 }
 
 // effectivePort returns the URL's port, substituting the scheme's default when none is set,
