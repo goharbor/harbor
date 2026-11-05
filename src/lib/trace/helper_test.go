@@ -39,6 +39,10 @@ func TestHarborSpanNameFormatter(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	patternReq := httptest.NewRequest(http.MethodGet, "/api/v2.0/projects/library", nil)
+	patternReq.Pattern = "/api/v2.0/projects/{project_name}"
+	methodPatternReq := httptest.NewRequest(http.MethodGet, "/api/v2.0/projects/library", nil)
+	methodPatternReq.Pattern = "GET /api/v2.0/projects/{project_name}"
 	cases := []struct {
 		name string
 		in   args
@@ -47,41 +51,41 @@ func TestHarborSpanNameFormatter(t *testing.T) {
 		{
 			name: `normal`,
 			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodGet, URL: &url.URL{Scheme: "http", Path: "/api/v2.0/configuration"}}},
-			want: "GET http://10.192.168.1/api/v2.0/configuration",
+			want: "GET",
 		},
 		{
 			name: `normal request `,
 			in:   args{"sample", normalReq},
-			want: "GET http://10.192.168.1/api/v2.0/configuration",
+			want: "GET",
 		},
 		{
 			name: `normal request with https `,
 			in:   args{"sample", normalReqWithHTTPS},
-			want: "GET https://10.192.168.1/api/v2.0/configuration",
+			want: "GET",
 		},
 		{
-			name: `no host`,
-			in:   args{"sample", &http.Request{Method: http.MethodGet, URL: &url.URL{Scheme: "http", Path: "/api/v2.0/configuration"}}},
-			want: "GET http://host_unknown/api/v2.0/configuration",
-		},
-		{
-			name: `no schema`,
-			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodGet, URL: &url.URL{Path: "/api/v2.0/configuration"}}},
-			want: "GET http://10.192.168.1/api/v2.0/configuration",
-		},
-		{
-			name: `https`,
-			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodGet, URL: &url.URL{Scheme: "https", Path: "/api/v2.0/configuration"}}},
-			want: "GET https://10.192.168.1/api/v2.0/configuration",
-		},
-		{
-			name: `empty path`,
-			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodGet, URL: &url.URL{Scheme: "http"}}},
-			want: "sample",
+			name: `post`,
+			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodPost, URL: &url.URL{Path: "/api/v2.0/projects"}}},
+			want: "POST",
 		},
 		{
 			name: `nil url`,
 			in:   args{"sample", &http.Request{Host: "10.192.168.1", Method: http.MethodGet}},
+			want: "GET",
+		},
+		{
+			name: `pattern`,
+			in:   args{"sample", patternReq},
+			want: "GET /api/v2.0/projects/{project_name}",
+		},
+		{
+			name: `pattern with method`,
+			in:   args{"sample", methodPatternReq},
+			want: "GET /api/v2.0/projects/{project_name}",
+		},
+		{
+			name: `no method`,
+			in:   args{"sample", &http.Request{Host: "10.192.168.1", URL: &url.URL{Path: "/api/v2.0/configuration"}}},
 			want: "sample",
 		},
 	}
