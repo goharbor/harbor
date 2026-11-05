@@ -393,7 +393,7 @@
         "ARTIFACT_ADDITION": "Artifact Addition",
         "ARTIFACT_LABEL": "Artifact Label",
         "PREHEAT_POLICY": "Preheat Policy",
-        "IMMUTABLE_TAG": "Immutable Tag",
+        "IMMUTABLE_TAG": "Tag Immutability",
         "LOG": "Log",
         "NOTIFICATION_POLICY": "Notification Policy",
         "QUOTA": "Quota",

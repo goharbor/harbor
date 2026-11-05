@@ -393,7 +393,7 @@
         "ARTIFACT_ADDITION": "아티팩트 추가",
         "ARTIFACT_LABEL": "아티팩트 라벨",
         "PREHEAT_POLICY": "예열 정책",
-        "IMMUTABLE_TAG": "Immutable Tag",
+        "IMMUTABLE_TAG": "Tag Immutability",
         "LOG": "로그",
         "NOTIFICATION_POLICY": "알림 정책",
         "QUOTA": "할당량",

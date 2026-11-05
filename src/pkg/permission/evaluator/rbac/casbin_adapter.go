@@ -16,10 +16,9 @@ package rbac
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/casbin/casbin/model"
-	"github.com/casbin/casbin/persist"
+	"github.com/casbin/casbin/v3/model"
+	"github.com/casbin/casbin/v3/persist"
 
 	"github.com/goharbor/harbor/src/pkg/permission/types"
 )
@@ -28,8 +27,8 @@ var (
 	errNotImplemented = errors.New("not implemented")
 )
 
-func policyLinesOfRole(rbacRole types.RBACRole) []string {
-	lines := []string{}
+func policyLinesOfRole(rbacRole types.RBACRole) [][]string {
+	lines := [][]string{}
 
 	roleName := rbacRole.GetRoleName()
 	// returns empty policy lines if role name is empty
@@ -38,19 +37,19 @@ func policyLinesOfRole(rbacRole types.RBACRole) []string {
 	}
 
 	for _, policy := range rbacRole.GetPolicies() {
-		line := fmt.Sprintf("p, %s, %s, %s, %s", roleName, policy.Resource, policy.Action, policy.GetEffect())
+		line := []string{"p", roleName, policy.Resource.String(), policy.Action.String(), policy.GetEffect()}
 		lines = append(lines, line)
 	}
 
 	return lines
 }
 
-func policyLinesOfRBACUser(rbacUser types.RBACUser) []string {
-	lines := []string{}
+func policyLinesOfRBACUser(rbacUser types.RBACUser) [][]string {
+	lines := [][]string{}
 
 	username := rbacUser.GetUserName()
 	for _, policy := range rbacUser.GetPolicies() {
-		line := fmt.Sprintf("p, %s, %s, %s, %s", username, policy.Resource, policy.Action, policy.GetEffect())
+		line := []string{"p", username, policy.Resource.String(), policy.Action.String(), policy.GetEffect()}
 		lines = append(lines, line)
 	}
 
@@ -61,8 +60,8 @@ type adapter struct {
 	rbacUser types.RBACUser
 }
 
-func (a *adapter) getPolicyLines() []string {
-	lines := []string{}
+func (a *adapter) getPolicyLines() [][]string {
+	lines := [][]string{}
 
 	username := a.rbacUser.GetUserName()
 	// returns empty policy lines if username is empty
@@ -74,15 +73,18 @@ func (a *adapter) getPolicyLines() []string {
 
 	for _, role := range a.rbacUser.GetRoles() {
 		lines = append(lines, policyLinesOfRole(role)...)
-		lines = append(lines, fmt.Sprintf("g, %s, %s", username, role.GetRoleName()))
+		lines = append(lines, []string{"g", username, role.GetRoleName()})
 	}
 
 	return lines
 }
 
 func (a *adapter) LoadPolicy(model model.Model) error {
+	// arrays, not text lines: casbin v3 parses lines as CSV, which breaks on names with quotes or commas
 	for _, line := range a.getPolicyLines() {
-		persist.LoadPolicyLine(line, model)
+		if err := persist.LoadPolicyArray(line, model); err != nil {
+			return err
+		}
 	}
 
 	return nil

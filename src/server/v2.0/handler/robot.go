@@ -25,6 +25,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSc "github.com/goharbor/harbor/src/common/security/robot"
@@ -440,9 +441,17 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 	if err != nil {
 		return err
 	}
-	if _, ok := sc.(*local.SecurityContext); ok {
+	switch s := sc.(type) {
+	case *local.SecurityContext:
 		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
 			return err
+		}
+	case *robotSc.SecurityContext:
+		if s.User() == nil {
+			return errors.New(nil).WithMessage("invalid security context: empty robot account")
+		}
+		if !isValidPermissionScope(params.Robot.Permissions, s.User().Permissions) {
+			return errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED)
 		}
 	}
 
@@ -510,7 +519,16 @@ func mapRobotToHumanResource(r rbac.Resource) rbac.Resource {
 // validateNoEscalation ensures that a human user cannot grant a robot more permissions than they hold.
 func (rAPI *robotAPI) validateNoEscalation(ctx context.Context, permissions []*models.RobotPermission) error {
 	for _, perm := range permissions {
+		memberDelegationChecked := false
 		for _, acc := range perm.Access {
+			if !memberDelegationChecked && acc.Effect != types.EffectDeny.String() &&
+				acc.Resource == rbac.ResourceMember.String() &&
+				(acc.Action == rbac.ActionCreate.String() || acc.Action == rbac.ActionUpdate.String()) {
+				if err := rAPI.requireMemberDelegation(ctx, perm.Namespace); err != nil {
+					return err
+				}
+				memberDelegationChecked = true
+			}
 			resource := mapRobotToHumanResource(rbac.Resource(acc.Resource))
 			has, err := rAPI.HasProjectPermission(ctx, perm.Namespace, rbac.Action(acc.Action), resource)
 			if err != nil {
@@ -525,6 +543,37 @@ func (rAPI *robotAPI) validateNoEscalation(ctx context.Context, permissions []*m
 	return nil
 }
 
+// requireMemberDelegation protects create, update and secret refresh: controlling
+// a robot with member:create/update allows assigning any role in that project.
+// A human with a restricted custom role must not use a robot to bypass their own
+// role-assignment checks, even if they hold the same member permission.
+func (rAPI *robotAPI) requireMemberDelegation(ctx context.Context, namespace string) error {
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if sc.IsSysAdmin() {
+		return nil
+	}
+	if user, ok := sc.(*local.SecurityContext); ok && user.IsAuthenticated() && namespace != "*" {
+		p, err := baseProjectCtl.GetByName(ctx, namespace)
+		if err != nil {
+			return err
+		}
+		roles, err := baseProjectCtl.ListRoles(ctx, p.ProjectID, user.User())
+		if err != nil {
+			return err
+		}
+		for _, role := range roles {
+			if role == common.RoleProjectAdmin {
+				return nil
+			}
+		}
+	}
+	return errors.ForbiddenError(nil).WithMessagef(
+		"only system or project administrators can grant control of a robot with member:create or member:update in project %s", namespace)
+}
+
 // isValidPermissionScope checks if permission slice A is a subset of permission slice B
 func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot.Permission) bool {
 	creatorMap := make(map[string]*robot.Permission)
@@ -534,13 +583,19 @@ func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot
 	}
 
 	hasLessThanOrEqualAccess := func(creating []*models.Access, creator []*types.Policy) bool {
+		// Policy.String treats an omitted effect as allow, matching authorization.
 		creatorMap := make(map[string]*types.Policy)
 		for _, creatorP := range creator {
-			key := fmt.Sprintf("%s:%s:%s", creatorP.Resource, creatorP.Action, creatorP.Effect)
+			key := creatorP.String()
 			creatorMap[key] = creatorP
 		}
 		for _, creatingP := range creating {
-			key := fmt.Sprintf("%s:%s:%s", creatingP.Resource, creatingP.Action, creatingP.Effect)
+			policy := types.Policy{
+				Resource: types.Resource(creatingP.Resource),
+				Action:   types.Action(creatingP.Action),
+				Effect:   types.Effect(creatingP.Effect),
+			}
+			key := policy.String()
 			if _, found := creatorMap[key]; !found {
 				return false
 			}

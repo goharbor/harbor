@@ -62,7 +62,7 @@ func (h *hookHandlerTestSuite) TestHandle() {
 		CheckIn:  "data",
 		Metadata: &job.StatsInfo{},
 	}
-	err := h.handler.Handle(nil, sc)
+	err := h.handler.Handle(context.TODO(), sc)
 	h.Require().Nil(err)
 	h.taskDAO.AssertExpectations(h.T())
 	h.execDAO.AssertExpectations(h.T())
@@ -93,7 +93,67 @@ func (h *hookHandlerTestSuite) TestHandle() {
 				Revision: time.Now().Unix(),
 			},
 		}
-		err = h.handler.Handle(nil, sc)
+		err = h.handler.Handle(context.TODO(), sc)
+		h.Require().Nil(err)
+		h.taskDAO.AssertExpectations(h.T())
+		h.execDAO.AssertExpectations(h.T())
+	}
+
+	// test update status with error status and status message
+	{
+		h.SetupTest()
+		h.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+			{
+				ID:          1,
+				ExecutionID: 1,
+			},
+		}, nil)
+		h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, job.ErrorStatus.String(),
+			mock.Anything, "413 Quota Exceeded").Return(nil)
+		h.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+			ID:         1,
+			VendorType: "test",
+		}, nil)
+		h.execDAO.On("AsyncRefreshStatus", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		sc = &job.StatusChange{
+			JobID:         "test-job",
+			Status:        job.ErrorStatus.String(),
+			StatusMessage: "413 Quota Exceeded",
+			Metadata: &job.StatsInfo{
+				Revision: time.Now().Unix(),
+			},
+		}
+		err = h.handler.Handle(context.TODO(), sc)
+		h.Require().Nil(err)
+		h.taskDAO.AssertExpectations(h.T())
+		h.execDAO.AssertExpectations(h.T())
+	}
+
+	// test update status with error status and empty status message
+	{
+		h.SetupTest()
+		h.taskDAO.On("List", mock.Anything, mock.Anything).Return([]*dao.Task{
+			{
+				ID:          1,
+				ExecutionID: 1,
+			},
+		}, nil)
+		h.taskDAO.On("UpdateStatus", mock.Anything, mock.Anything, job.ErrorStatus.String(),
+			mock.Anything, "").Return(nil)
+		h.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+			ID:         1,
+			VendorType: "test",
+		}, nil)
+		h.execDAO.On("AsyncRefreshStatus", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+		sc = &job.StatusChange{
+			JobID:         "test-job",
+			Status:        job.ErrorStatus.String(),
+			StatusMessage: "",
+			Metadata: &job.StatsInfo{
+				Revision: time.Now().Unix(),
+			},
+		}
+		err = h.handler.Handle(context.TODO(), sc)
 		h.Require().Nil(err)
 		h.taskDAO.AssertExpectations(h.T())
 		h.execDAO.AssertExpectations(h.T())
@@ -164,3 +224,4 @@ func (h *hookHandlerTestSuite) TestHandleInvalidPayload() {
 func TestHookHandlerTestSuite(t *testing.T) {
 	suite.Run(t, &hookHandlerTestSuite{})
 }
+

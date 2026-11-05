@@ -562,15 +562,16 @@ func convertExecution(execution *replication.Execution) *models.ReplicationExecu
 
 func convertTask(task *replication.Task) *models.ReplicationTask {
 	tk := &models.ReplicationTask{
-		ID:           task.ID,
-		ExecutionID:  task.ExecutionID,
-		JobID:        task.JobID,
-		Operation:    task.Operation,
-		ResourceType: task.ResourceType,
-		SrcResource:  task.SourceResource,
-		DstResource:  task.DestinationResource,
-		StartTime:    strfmt.DateTime(task.StartTime),
-		EndTime:      strfmt.DateTime(task.EndTime),
+		ID:            task.ID,
+		ExecutionID:   task.ExecutionID,
+		JobID:         task.JobID,
+		Operation:     task.Operation,
+		ResourceType:  task.ResourceType,
+		SrcResource:   task.SourceResource,
+		DstResource:   task.DestinationResource,
+		StatusMessage: task.StatusMessage,
+		StartTime:     strfmt.DateTime(task.StartTime),
+		EndTime:       strfmt.DateTime(task.EndTime),
 	}
 	// keep backward compatibility
 	switch task.Status {

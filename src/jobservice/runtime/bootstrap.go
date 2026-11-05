@@ -318,6 +318,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.PurgeAuditVendorType:        (*purge.Job)(nil),
 			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
 			job.ReplicationVendorType:       (*replication.Replication)(nil),
+			job.EventReplicationVendorType:  (*replication.EventReplication)(nil),
 			job.RetentionVendorType:         (*retention.Job)(nil),
 			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
 			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),

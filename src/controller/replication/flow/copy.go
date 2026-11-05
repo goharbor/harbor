@@ -61,19 +61,21 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		}
 	}
 
-	isStopped, err := c.isExecutionStopped(ctx)
+	execution, err := c.getExecution(ctx)
 	if err != nil {
 		return err
 	}
-	if isStopped {
+	if isExecutionStopped(execution) {
 		logger.Debugf("the execution %d is stopped, stop the flow", c.executionID)
 		return nil
 	}
 
 	if len(srcResources) == 0 {
 		// no candidates, mark the execution as done directly
-		if err := c.executionMgr.MarkDone(ctx, c.executionID, "no resources need to be replicated"); err != nil {
-			logger.Errorf("failed to mark done for the execution %d: %v", c.executionID, err)
+		if c.executionMgr != nil {
+			if err := c.executionMgr.MarkDone(ctx, c.executionID, "no resources need to be replicated"); err != nil {
+				logger.Errorf("failed to mark done for the execution %d: %v", c.executionID, err)
+			}
 		}
 		return nil
 	}
@@ -92,27 +94,37 @@ func (c *copyFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return c.createTasks(ctx, srcResources, dstResources, c.policy.Speed, c.policy.CopyByChunk)
+	return c.createTasks(ctx, execution, srcResources, dstResources, c.policy.Speed, c.policy.CopyByChunk)
 }
 
-func (c *copyFlow) isExecutionStopped(ctx context.Context) (bool, error) {
-	execution, err := c.executionMgr.Get(ctx, c.executionID)
-	if err != nil {
-		return false, err
+func (c *copyFlow) getExecution(ctx context.Context) (*task.Execution, error) {
+	if c.executionMgr == nil {
+		return nil, nil
 	}
-	return execution.Status == job.StoppedStatus.String(), nil
+	return c.executionMgr.Get(ctx, c.executionID)
 }
 
-func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource, speed int32, copyByChunk bool) error {
+func isExecutionStopped(execution *task.Execution) bool {
+	return execution != nil && execution.Status == job.StoppedStatus.String()
+}
+
+func (c *copyFlow) createTasks(
+	ctx context.Context, execution *task.Execution, srcResources, dstResources []*model.Resource,
+	speed int32, copyByChunk bool,
+) error {
 	var taskCnt int
 	defer func() {
 		// if no task be created, mark execution done.
 		if taskCnt == 0 {
-			if err := c.executionMgr.MarkDone(ctx, c.executionID, "no resources need to be replicated"); err != nil {
-				logger.Errorf("failed to mark done for the execution %d: %v", c.executionID, err)
+			if c.executionMgr != nil {
+				if err := c.executionMgr.MarkDone(ctx, c.executionID, "no resources need to be replicated"); err != nil {
+					logger.Errorf("failed to mark done for the execution %d: %v", c.executionID, err)
+				}
 			}
 		}
 	}()
+
+	jobName := getReplicationJobName(execution)
 
 	for i, srcResource := range srcResources {
 		dstResource := dstResources[i]
@@ -132,7 +144,7 @@ func (c *copyFlow) createTasks(ctx context.Context, srcResources, dstResources [
 		}
 
 		job := &task.Job{
-			Name: job.ReplicationVendorType,
+			Name: jobName,
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},
