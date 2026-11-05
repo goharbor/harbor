@@ -17,9 +17,13 @@ package parser
 import (
 	"archive/tar"
 	"bytes"
+	"fmt"
+	"io"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
 func TestUntar(t *testing.T) {
@@ -55,7 +59,7 @@ func TestUntar(t *testing.T) {
 			}
 			tw.Close()
 
-			result, err := untar(&buf)
+			result, err := untar(&buf, defaultFileSizeLimit)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("untar() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -65,6 +69,129 @@ func TestUntar(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUntarExceedsLimit(t *testing.T) {
+	// A single tar entry whose content exceeds the limit must be rejected
+	// before it is fully materialized in memory. Note: Go's tar writer cannot
+	// emit GNU sparse entries, so this test writes the full zero-filled
+	// payload; on the read side untar behaves identically for a sparse entry
+	// declaring the same logical size (the reader expands holes to zeros), so
+	// this covers the sparse-bomb scenario as well.
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	const logicalSize = int64(defaultFileSizeLimit) * 4
+	if err := tw.WriteHeader(&tar.Header{
+		Name: "sparse.bin",
+		Mode: 0600,
+		Size: logicalSize,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	// Write the declared number of bytes so the archive is well-formed; the
+	// point is that untar must stop at the limit regardless of entry size.
+	if _, err := io.CopyN(tw, zeroReader{}, logicalSize); err != nil {
+		t.Fatal(err)
+	}
+	tw.Close()
+
+	_, err := untar(&buf, defaultFileSizeLimit)
+	if err == nil {
+		t.Fatal("expected untar to reject content exceeding the size limit")
+	}
+	if !errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+		t.Errorf("expected RequestEntityTooLarge error, got %v", err)
+	}
+}
+
+func TestUntarOversizedMetadataInNext(t *testing.T) {
+	// tar.Reader.Next() materializes PAX extended records in memory before
+	// untar's per-entry content copy runs, and those bytes never count against
+	// the logical content limit. Many zero-size entries carrying large PAX
+	// records keep the logical content at 0 bytes while the raw stream grows
+	// unboundedly; the raw-stream limit must stop it.
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	chunk := strings.Repeat("x", 256*1024) // 256KB per record, under the reader's 1MB special-file cap
+	for i := 0; int64(buf.Len()) <= int64(defaultFileSizeLimit)+maxTarMetadataOverhead; i++ {
+		if err := tw.WriteHeader(&tar.Header{
+			Name:       fmt.Sprintf("empty-%d.txt", i),
+			Mode:       0600,
+			Size:       0,
+			Format:     tar.FormatPAX,
+			PAXRecords: map[string]string{"HARBOR.padding": chunk},
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tw.Close()
+
+	_, err := untar(&buf, defaultFileSizeLimit)
+	if err == nil {
+		t.Fatal("expected untar to reject oversized tar metadata")
+	}
+	if !errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+		t.Errorf("expected RequestEntityTooLarge error, got %v", err)
+	}
+}
+
+func TestUntarNegativeLimit(t *testing.T) {
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	if err := tw.WriteHeader(&tar.Header{Name: "a.txt", Mode: 0600, Size: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tw.Write([]byte("a")); err != nil {
+		t.Fatal(err)
+	}
+	tw.Close()
+
+	_, err := untar(&buf, -1)
+	if err == nil {
+		t.Fatal("expected untar to reject a negative limit")
+	}
+	if errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+		t.Errorf("negative limit should be a programmer error, not RequestEntityTooLarge, got %v", err)
+	}
+}
+
+func TestUntarMultipleEntriesExceedLimit(t *testing.T) {
+	// Many small entries individually under the limit must still be rejected
+	// once their cumulative size crosses the limit.
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	chunk := bytes.Repeat([]byte("a"), 1024*1024) // 1MB each
+	for i := 0; i < 8; i++ {                      // 8MB total > 4MB limit
+		if err := tw.WriteHeader(&tar.Header{
+			Name: fmt.Sprintf("file-%d.txt", i),
+			Mode: 0600,
+			Size: int64(len(chunk)),
+		}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := tw.Write(chunk); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tw.Close()
+
+	_, err := untar(&buf, defaultFileSizeLimit)
+	if err == nil {
+		t.Fatal("expected untar to reject cumulative content exceeding the size limit")
+	}
+	if !errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+		t.Errorf("expected RequestEntityTooLarge error, got %v", err)
+	}
+}
+
+// zeroReader is an infinite source of zero bytes.
+type zeroReader struct{}
+
+func (zeroReader) Read(p []byte) (int, error) {
+	for i := range p {
+		p[i] = 0
+	}
+	return len(p), nil
 }
 
 func TestFileNode(t *testing.T) {

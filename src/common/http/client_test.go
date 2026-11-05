@@ -190,5 +190,25 @@ func TestSameOriginIPv6Zone(t *testing.T) {
 	}
 	if SameOrigin(parse("http://[fe80::a%25eth0]:5000/"), parse("http://[fe80::a%25ETH0]:5000/x")) {
 		t.Fatal("zone identifiers differing in case must not be the same origin")
+  }
+}
+// TestResolveNextLinkErrorRedactsSecrets keeps credentials and tokens carried in a rejected
+// Link out of the returned error, which callers log.
+func TestResolveNextLinkErrorRedactsSecrets(t *testing.T) {
+	base, err := url.Parse("https://reg.example.com/v2/_catalog?n=100")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, link := range []string{
+		"https://user:s3cr3t-pass@reg.example.com/v2/_catalog",
+		"https://evil.example/v2/_catalog?token=s3cr3t-token",
+	} {
+		_, err := resolveNextLink(base, link)
+		if err == nil {
+			t.Fatalf("expected rejection for %q", link)
+		}
+		if strings.Contains(err.Error(), "s3cr3t") {
+			t.Fatalf("error leaks secret from Link %q: %v", link, err)
+		}
 	}
 }

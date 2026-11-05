@@ -31,7 +31,7 @@ import (
 
 func init() {
 	var configureEventResolver = &resolver{}
-	commonevent.RegisterResolver(`/api/v2.0/configurations`, configureEventResolver)
+	commonevent.RegisterResolver(`^/api/v2\.0/configurations$`, configureEventResolver)
 }
 
 // resolver used to resolve the configuration event
