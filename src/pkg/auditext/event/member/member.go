@@ -40,9 +40,9 @@ import (
 )
 
 const (
-	memberCreatePattern = `/api/v2\.0/projects/[^/]+/members$`
-	memberActionPattern = `/api/v2\.0/projects/[^/]+/members/\d+$`
-	extractPattern      = `/api/v2\.0/projects/([^/]+)/members(?:/(\d+))?$`
+	memberCreatePattern = `^/api/v2\.0/projects/[^/]+/members$`
+	memberActionPattern = `^/api/v2\.0/projects/[^/]+/members/\d+$`
+	extractPattern      = `^/api/v2\.0/projects/([^/]+)/members(?:/(\d+))?$`
 )
 
 var extractRe = regexp.MustCompile(extractPattern)
