@@ -284,3 +284,30 @@ func (suite *WebhookTestSuite) TestGetSupportedEventTypes() {
 func TestWebhookTestSuite(t *testing.T) {
 	suite.Run(t, &WebhookTestSuite{})
 }
+
+func TestNormalizeAndValidateTargetsStoresNormalizedAddress(t *testing.T) {
+	t.Setenv("HARBOR_ALLOW_PRIVATE_NETWORK_ACCESS", "false")
+	api := &webhookAPI{targetResolver: stubResolver{}}
+	policy := &policyModel.Policy{
+		Name: "p",
+		Targets: []policyModel.EventTarget{
+			{Type: "http", Address: "http://user:pass@WEBHOOK-TARGET.CORP.LOCAL:8080/events?token=abc"},
+			{Type: "slack", Address: "https://Hooks.Example.com/services/T0/B0"},
+			{Type: "http", Address: "https://hooks.example.com/hooks/a%2Fb%20c?x=1"},
+		},
+	}
+	ok, err := api.normalizeAndValidateTargets(context.Background(), policy)
+	if !ok || err != nil {
+		t.Fatalf("unexpected validation failure: %v", err)
+	}
+	want := []string{
+		"http://webhook-target.corp.local:8080/events?token=abc",
+		"https://hooks.example.com/services/T0/B0",
+		"https://hooks.example.com/hooks/a%2Fb%20c?x=1",
+	}
+	for i, target := range policy.Targets {
+		if target.Address != want[i] {
+			t.Errorf("targets[%d].Address = %q, want %q", i, target.Address, want[i])
+		}
+	}
+}
