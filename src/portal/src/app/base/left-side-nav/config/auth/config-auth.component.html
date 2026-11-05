@@ -846,6 +846,34 @@
                 [disabled]="disabled(currentConfig.oidc_groups_claim)" />
         </clr-input-container>
         <clr-input-container>
+            <label for="OIDCLoginGroups"
+                >{{ 'CONFIG.OIDC.OIDC_LOGIN_GROUPS' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CONFIG.OIDC.OIDC_LOGIN_GROUPS_INFO' | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input
+                clrInput
+                name="OIDCLoginGroups"
+                type="text"
+                #ngOIDCLoginGroups="ngModel"
+                [(ngModel)]="currentConfig.oidc_login_groups.value"
+                id="OIDCLoginGroups"
+                size="40"
+                [disabled]="disabled(currentConfig.oidc_login_groups)" />
+        </clr-input-container>
+        <clr-input-container>
             <label for="OIDCAdminGroup"
                 >{{ 'CONFIG.OIDC.OIDC_ADMIN_GROUP' | translate }}
                 <clr-tooltip>
