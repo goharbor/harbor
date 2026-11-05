@@ -383,7 +383,9 @@
         "INVALID_VALUE": "Значение срока действия недействительно",
         "NEVER_EXPIRED": "Никогда не истекает",
         "NAME_PREFIX": "Префикс имени робота",
-        "NAME_PREFIX_REQUIRED": "Префикс имени робота обязателен"
+        "NAME_PREFIX_REQUIRED": "Префикс имени робота обязателен",
+        "CONFIGURATION": "Конфигурация",
+        "OPERATE": "Выполнить"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "РЕДАКТИРОВАТЬ",

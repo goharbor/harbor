@@ -74,6 +74,8 @@ export const ACTION_RESOURCE_I18N_MAP = {
     'purge-audit': 'ROBOT_ACCOUNT.PURGE_AUDIT',
     'jobservice-monitor': 'ROBOT_ACCOUNT.JOBSERVICE_MONITOR',
     'tag-retention': 'ROBOT_ACCOUNT.TAG_RETENTION',
+    configuration: 'ROBOT_ACCOUNT.CONFIGURATION',
+    operate: 'ROBOT_ACCOUNT.OPERATE',
     scanner: 'ROBOT_ACCOUNT.SCANNER',
     label: 'ROBOT_ACCOUNT.LABEL',
     'export-cve': 'ROBOT_ACCOUNT.EXPORT_CVE',

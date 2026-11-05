@@ -94,8 +94,9 @@ func blockRedirect(_ *http.Request, _ []*http.Request) error {
 	return http.ErrUseLastResponse
 }
 
-// drainBody discards a bounded amount of the response body so the pooled connection can be
-// reused once the body is closed; the body itself is never surfaced to the caller.
+// drainBody discards up to maxDrainBytes of the response body as a best-effort attempt to let the
+// pooled connection be reused; a longer body is not read to the end, so that connection is closed
+// instead. The body itself is never surfaced to the caller.
 func drainBody(body io.Reader) {
 	_, _ = io.Copy(io.Discard, io.LimitReader(body, maxDrainBytes))
 }

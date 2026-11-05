@@ -17,6 +17,11 @@ package registry
 import (
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
+	lib_http "github.com/goharbor/harbor/src/lib/http"
+	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/cosign"
@@ -74,6 +79,7 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
+		Middleware(manifestBodyLimitMiddleware()).
 		Middleware(metric.InjectOpIDMiddleware(metric.ManifestOperationID)).
 		Middleware(repoproxy.DisableBlobAndManifestUploadMiddleware()).
 		Middleware(immutable.Middleware()).
@@ -126,4 +132,24 @@ func RegisterRoutes() {
 		Handler(newReferrersHandler())
 	// others
 	root.NewRoute().Path("/*").Middleware(metric.InjectOpIDMiddleware(metric.OthersOperationID)).Handler(proxy)
+}
+
+func manifestBodyLimitMiddleware() middleware.Middleware {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		if r.ContentLength > common.MaxManifestBodySize {
+			lib_http.SendError(w, errors.RequestEntityTooLargeError(nil))
+			return
+		}
+		if r.ContentLength < 0 {
+			// Unknown length: buffer through ReadRequestBody, which reads at most
+			// limit+1 bytes and returns 413 when the body is over the limit.
+			if _, err := lib.ReadRequestBody(r, common.MaxManifestBodySize); err != nil {
+				lib_http.SendError(w, err)
+				return
+			}
+		} else {
+			r.Body = http.MaxBytesReader(w, r.Body, common.MaxManifestBodySize)
+		}
+		next.ServeHTTP(w, r)
+	})
 }
