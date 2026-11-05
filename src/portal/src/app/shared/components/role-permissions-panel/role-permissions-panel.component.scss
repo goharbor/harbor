@@ -5,6 +5,10 @@
   padding-bottom: 0 !important;
 }
 
+.table td:first-child {
+  white-space: nowrap;
+}
+
 .dropdown-menu {
   max-width: unset;
 }

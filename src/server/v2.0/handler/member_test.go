@@ -29,13 +29,20 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbacProject "github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/security"
+	robotSecurity "github.com/goharbor/harbor/src/common/security/robot"
+	"github.com/goharbor/harbor/src/controller/member"
+	"github.com/goharbor/harbor/src/controller/project"
+	"github.com/goharbor/harbor/src/controller/robot"
 	roleCtl "github.com/goharbor/harbor/src/controller/role"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/permission/types"
+	projectModels "github.com/goharbor/harbor/src/pkg/project/models"
+	robotModels "github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	memberop "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/member"
 	securityMock "github.com/goharbor/harbor/src/testing/common/security"
+	projectMock "github.com/goharbor/harbor/src/testing/controller/project"
 )
 
 // ---------------------------------------------------------------------------
@@ -341,3 +348,99 @@ func TestCreateProjectMember_EscalationBlocked(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 var _ roleCtl.Controller = (*stubRoleCtl)(nil)
+
+type stubMemberController struct {
+	member.Controller
+	testifymock.Mock
+}
+
+func (s *stubMemberController) Create(ctx context.Context, projectNameOrID any, req member.Request) (int, error) {
+	args := s.Called(ctx, projectNameOrID, req)
+	return args.Int(0), args.Error(1)
+}
+
+func (s *stubMemberController) UpdateRole(ctx context.Context, projectNameOrID any, memberID, roleID int) error {
+	return s.Called(ctx, projectNameOrID, memberID, roleID).Error(0)
+}
+
+func TestRobotMemberRoleAssignment(t *testing.T) {
+	for _, level := range []string{robot.LEVELPROJECT, robot.LEVELSYSTEM} {
+		for _, action := range []rbac.Action{rbac.ActionCreate, rbac.ActionUpdate} {
+			for _, roleID := range []int{common.RoleProjectAdmin, common.RoleDeveloper, common.RoleGuest, common.RoleMaintainer, common.RoleLimitedGuest, 100} {
+				t.Run(fmt.Sprintf("%s/%s/role-%d", level, action, roleID), func(t *testing.T) {
+					pc := &projectMock.Controller{}
+					old := project.Ctl
+					project.Ctl = pc
+					t.Cleanup(func() { project.Ctl = old })
+					pc.On("Get", testifymock.Anything, testProjectID, testifymock.Anything).
+						Return(&projectModels.Project{ProjectID: testProjectID}, nil)
+					sc := robotSecurity.NewSecurityContext(&robot.Robot{
+						Robot: robotModels.Robot{Name: "robot$library+member-updater", ProjectID: testProjectID},
+						Level: level,
+						Permissions: []*robot.Permission{{
+							Kind: robot.LEVELPROJECT, Namespace: "library", Scope: fmt.Sprintf("/project/%d", testProjectID),
+							Access: policyAccess(rbac.ResourceMember, action),
+						}},
+					})
+					rc := &stubRoleCtl{}
+					rc.On("Get", testifymock.Anything, int64(100), testifymock.Anything).
+						Return(&roleCtl.Role{Permissions: []*roleCtl.Permission{{Access: policyAccess(rbac.ResourceRepository, rbac.ActionPush)}}}, nil).Maybe()
+					mc := &stubMemberController{}
+					api := &memberAPI{ctl: mc, roleCtl: rc}
+					xFalse := false
+					rr := httptest.NewRecorder()
+					ctx := newCtxWithSecurity(sc)
+					if action == rbac.ActionCreate {
+						mc.On("Create", ctx, testProjectID, member.Request{Role: roleID, MemberUser: member.User{Username: "mike01"}}).Return(2, nil).Once()
+						api.CreateProjectMember(ctx, memberop.CreateProjectMemberParams{
+							ProjectNameOrID: fmt.Sprint(testProjectID), XIsResourceName: &xFalse,
+							ProjectMember: &models.ProjectMember{RoleID: int64(roleID), MemberUser: &models.UserEntity{Username: "mike01"}},
+						}).WriteResponse(rr, runtime.JSONProducer())
+						assert.Equal(t, http.StatusCreated, rr.Code, rr.Body.String())
+					} else {
+						mc.On("UpdateRole", ctx, testProjectID, 2, roleID).Return(nil).Once()
+						api.UpdateProjectMember(ctx, memberop.UpdateProjectMemberParams{
+							ProjectNameOrID: fmt.Sprint(testProjectID), XIsResourceName: &xFalse, Mid: 2,
+							Role: &models.RoleRequest{RoleID: int64(roleID)},
+						}).WriteResponse(rr, runtime.JSONProducer())
+						assert.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
+					}
+					mc.AssertExpectations(t)
+				})
+			}
+		}
+	}
+}
+
+func TestRobotMemberAccessRequired(t *testing.T) {
+	for _, level := range []string{robot.LEVELPROJECT, robot.LEVELSYSTEM} {
+		for _, tc := range []struct {
+			name   string
+			scope  string
+			action rbac.Action
+		}{
+			{"wrong action", fmt.Sprintf("/project/%d", testProjectID), rbac.ActionList},
+			{"wrong project", fmt.Sprintf("/project/%d", testProjectID+1), rbac.ActionUpdate},
+		} {
+			t.Run(level+"/"+tc.name, func(t *testing.T) {
+				pc := &projectMock.Controller{}
+				old := project.Ctl
+				project.Ctl = pc
+				t.Cleanup(func() { project.Ctl = old })
+				pc.On("Get", testifymock.Anything, testProjectID, testifymock.Anything).
+					Return(&projectModels.Project{ProjectID: testProjectID}, nil)
+				sc := robotSecurity.NewSecurityContext(&robot.Robot{
+					Robot: robotModels.Robot{Name: "robot$library+restricted"}, Level: level,
+					Permissions: []*robot.Permission{{Scope: tc.scope, Access: policyAccess(rbac.ResourceMember, tc.action)}},
+				})
+				xFalse := false
+				rr := httptest.NewRecorder()
+				(&memberAPI{}).UpdateProjectMember(newCtxWithSecurity(sc), memberop.UpdateProjectMemberParams{
+					ProjectNameOrID: fmt.Sprint(testProjectID), XIsResourceName: &xFalse, Mid: 2,
+					Role: &models.RoleRequest{RoleID: common.RoleLimitedGuest},
+				}).WriteResponse(rr, runtime.JSONProducer())
+				assert.Equal(t, http.StatusForbidden, rr.Code, rr.Body.String())
+			})
+		}
+	}
+}
