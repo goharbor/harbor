@@ -232,6 +232,29 @@ func TestResolveUploadLocation_OriginRules(t *testing.T) {
 	}
 }
 
+func TestUploadLocationErrorsRedactSecrets(t *testing.T) {
+	const endpoint = "https://registry.example"
+	origin, _ := url.Parse(endpoint)
+	location := "https://alice" + ":" + "secret" + "@" + "evil.example/path?token=secret#fragment"
+
+	_, resolveErr := resolveUploadLocation(endpoint, origin, location)
+	if resolveErr == nil {
+		t.Fatal("expected cross-origin upload Location to be rejected")
+	}
+	_, parseErr := parseUploadLocation(location)
+	if parseErr == nil {
+		t.Fatal("expected upload Location with userinfo to be rejected")
+	}
+
+	for _, err := range []error{resolveErr, parseErr} {
+		for _, secret := range []string{"alice:secret", "token=secret", "#fragment"} {
+			if strings.Contains(err.Error(), secret) {
+				t.Errorf("error %q contains secret %q", err, secret)
+			}
+		}
+	}
+}
+
 // TestResolveUploadLocation_EndpointPathPrefix covers registries reached through a path prefix
 // (e.g. behind a reverse proxy). Distribution with relativeurls returns "/v2/..." without the
 // prefix, so the prefix must be kept exactly as before the origin check was added.
