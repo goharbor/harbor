@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/accessory"
 	"github.com/goharbor/harbor/src/pkg/accessory/model"
+	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 )
 
@@ -61,7 +62,7 @@ func ParseProjectName(r *http.Request) string {
 }
 
 // SkipPolicyChecking ...
-func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
+func SkipPolicyChecking(r *http.Request, projectID int64, art *artifact.Artifact) (bool, error) {
 	secCtx, ok := security.FromContext(r.Context())
 
 	// Scanner pull is authorised by the scanner-pull RBAC action, which is carried in the
@@ -80,7 +81,10 @@ func SkipPolicyChecking(r *http.Request, projectID, artID int64) (bool, error) {
 		}
 	}
 
-	accs, err := accessory.Mgr.List(r.Context(), q.New(q.KeyWords{"ArtifactID": artID}))
+	if art.MayBeRunnable() {
+		return false, nil
+	}
+	accs, err := accessory.Mgr.List(r.Context(), q.New(q.KeyWords{"ArtifactID": art.ID}))
 	if err != nil {
 		return false, err
 	}

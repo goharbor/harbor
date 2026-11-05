@@ -236,6 +236,19 @@ func (suite *MiddlewareTestSuite) TestSpoofedUserAgentDoesNotSkipVulnerable() {
 	suite.Equal(http.StatusPreconditionFailed, rr.Code)
 }
 
+func (suite *MiddlewareTestSuite) TestRunnableSignatureWithNoReportIsRejected() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
+		&basemodel.Default{Data: accessorymodel.AccessoryData{Type: accessorymodel.TypeNotationSignature}},
+	}, nil)
+	mock.OnAnything(suite.scanController, "GetVulnerable").Return(nil, errors.NotFoundError(nil))
+	mock.OnAnything(suite.checker, "IsScannable").Return(true, nil)
+	rr := httptest.NewRecorder()
+	Middleware()(suite.next).ServeHTTP(rr, suite.makeRequest())
+	suite.Equal(http.StatusPreconditionFailed, rr.Code)
+}
+
 func (suite *MiddlewareTestSuite) TestCheckIsScannableFailed() {
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
@@ -425,6 +438,8 @@ func (suite *MiddlewareTestSuite) TestArtifactIsImageIndex() {
 
 // pull cosign signature when policy checker is enabled.
 func (suite *MiddlewareTestSuite) TestSignaturePulling() {
+	suite.artifact.Type = ""
+	suite.artifact.MediaType = "application/vnd.dev.cosign.artifact.sig.v1+json"
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(suite.project, nil)
 	acc := &basemodel.Default{

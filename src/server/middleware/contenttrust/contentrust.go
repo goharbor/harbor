@@ -74,7 +74,7 @@ func signatureChecking(ctx context.Context, r *http.Request, af lib.ArtifactInfo
 		return err
 	}
 
-	ok, err := util.SkipPolicyChecking(r, projectID, art.ID)
+	ok, err := util.SkipPolicyChecking(r, projectID, &art.Artifact)
 	if err != nil {
 		return err
 	}
