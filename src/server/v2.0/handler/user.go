@@ -445,6 +445,10 @@ func requireValidSecret(in string) error {
 	return errors.BadRequestError(nil).WithMessage("the password or secret must be 8-128, inclusively, characters long with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
+// cliSecretLength is the length of a server generated CLI secret, the same length as the secret generated
+// when an OIDC user is onboarded.
+const cliSecretLength = 32
+
 func getRandomSecret() (string, error) {
 	var cliSecret string
 	options := []retry.Option{
@@ -457,7 +461,7 @@ func getRandomSecret() (string, error) {
 	}
 
 	if err := retry.Retry(func() error {
-		cliSecret = utils.GenerateRandomStringWithLen(9)
+		cliSecret = utils.GenerateRandomStringWithLen(cliSecretLength)
 		if err := requireValidSecret(cliSecret); err != nil {
 			return errors.New(nil).WithMessage("invalid cli secret format")
 		}
