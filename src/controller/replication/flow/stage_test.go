@@ -20,8 +20,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	repctlmodel "github.com/goharbor/harbor/src/controller/replication/model"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
+	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/mock"
 )
 
@@ -195,6 +197,23 @@ func (s *stageTestSuite) TestReplaceNamespace() {
 	result, err = replaceNamespace(repository, namespace, replaceCount, "")
 	s.Require().Nil(err)
 	s.Equal("n/a", result)
+}
+
+func (s *stageTestSuite) TestGetReplicationJobName() {
+	// nil execution defaults to standard replication
+	s.Equal(job.ReplicationVendorType, getReplicationJobName(nil))
+
+	// manual execution
+	manualExec := &task.Execution{Trigger: task.ExecutionTriggerManual}
+	s.Equal(job.ReplicationVendorType, getReplicationJobName(manualExec))
+
+	// scheduled execution
+	schedExec := &task.Execution{Trigger: task.ExecutionTriggerSchedule}
+	s.Equal(job.ReplicationVendorType, getReplicationJobName(schedExec))
+
+	// event-triggered execution
+	eventExec := &task.Execution{Trigger: task.ExecutionTriggerEvent}
+	s.Equal(job.EventReplicationVendorType, getReplicationJobName(eventExec))
 }
 
 func TestStage(t *testing.T) {

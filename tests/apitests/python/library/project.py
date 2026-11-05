@@ -213,3 +213,19 @@ class Project(base.Base):
         except ApiException as e:
             _assert_status_code(status_code, e.status)
             return 0
+
+    def get_member_role_id(self, role_name):
+        if not role_name:
+            return None
+        roles = {
+            "projectadmin": 1,
+            "admin": 1,
+            "developer": 2,
+            "guest": 3,
+            "maintainer": 4,
+            "master": 4,
+            "limitedguest": 5
+        }
+        normalized = role_name.lower().replace(" ", "").replace("_", "").replace("-", "")
+        return roles.get(normalized)
+

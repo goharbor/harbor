@@ -58,7 +58,7 @@ type Controller interface {
 
 	// Exist check blob exist by digest,
 	// it check the blob associated with the artifact when `IsAssociatedWithArtifact` option provided,
-	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
+	// and also check the blob associated with the project when `IsAssociatedWithProject` option provided.
 	Exist(ctx context.Context, digest string, options ...Option) (bool, error)
 
 	// FindMissingAssociationsForProjectByArtifact returns blobs which are associated with artifact but not associated with project
@@ -66,7 +66,7 @@ type Controller interface {
 
 	// Get get the blob by digest,
 	// it check the blob associated with the artifact when `IsAssociatedWithArtifact` option provided,
-	// and also check the blob associated with the project when `IsAssociatedWithProject` option provied.
+	// and also check the blob associated with the project when `IsAssociatedWithProject` option provided.
 	Get(ctx context.Context, digest string, options ...Option) (*blob.Blob, error)
 
 	// List list blobs
@@ -346,7 +346,7 @@ func (c *controller) GetAcceptedBlobSize(ctx context.Context, sessionID string) 
 
 	size, err := rc.Get(ctx, key).Int64()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, nil
 		}
 

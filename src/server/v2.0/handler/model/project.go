@@ -52,6 +52,12 @@ func (p *Project) ToSwagger() *models.Project {
 			m.Severity = &severity
 		}
 
+		// proxy_cache_filter_pattern and proxy_cache_filter_kind are only for proxy cache projects
+		if !p.IsProxy() {
+			m.ProxyCacheFilterPattern = nil
+			m.ProxyCacheFilterKind = nil
+		}
+
 		md = &m
 	}
 

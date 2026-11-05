@@ -32,7 +32,7 @@ describe('CreateProjectComponent', () => {
                 return of([]).pipe(delay(10));
             }
         },
-        createProject: function () {
+        createProject: function (_params: ProjectService.CreateProjectParams) {
             return of(true);
         },
     };
@@ -126,5 +126,147 @@ describe('CreateProjectComponent', () => {
         const endpoint: HTMLDivElement =
             fixture.nativeElement.querySelector('#endpoint');
         expect(endpoint).toBeFalsy();
+    });
+
+    it('should show the default retention period only for proxy cache creation', async () => {
+        component.createProjectOpened = true;
+        component.isSystemAdmin = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(
+            fixture.nativeElement.querySelector('#retentionDays')
+        ).toBeNull();
+
+        component.enableProxyCache = true;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const retentionInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#retentionDays');
+        expect(retentionInput.value).toBe('7');
+
+        component.enableProxyCache = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(
+            fixture.nativeElement.querySelector('#retentionDays')
+        ).toBeNull();
+    });
+
+    it('should create the project with the retention period entered in the dialog', async () => {
+        const createProject = spyOn(
+            mockProjectService,
+            'createProject'
+        ).and.callThrough();
+        component.createProjectOpened = true;
+        component.isSystemAdmin = true;
+        component.enableProxyCache = true;
+        component.project.registry_id = 1;
+        component.project.name = 'proxy-project';
+        component.storageLimit = -1;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const retentionInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#retentionDays');
+        retentionInput.value = '30';
+        retentionInput.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const okButton: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#new-project-ok');
+        expect(okButton.disabled).toBeFalse();
+        okButton.click();
+        expect(createProject).toHaveBeenCalledWith({
+            project: jasmine.objectContaining({
+                project_name: 'proxy-project',
+                registry_id: 1,
+                retention_days: 30,
+            }),
+        });
+    });
+
+    it('should disable creation for an invalid retention period and recover when proxy cache is disabled', async () => {
+        component.createProjectOpened = true;
+        component.isSystemAdmin = true;
+        component.enableProxyCache = true;
+        component.project.registry_id = 1;
+        component.project.name = 'proxy-project';
+        component.storageLimit = -1;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const retentionInput: HTMLInputElement =
+            fixture.nativeElement.querySelector('#retentionDays');
+        retentionInput.value = '1.5';
+        retentionInput.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const okButton: HTMLButtonElement =
+            fixture.nativeElement.querySelector('#new-project-ok');
+        expect(okButton.disabled).toBeTrue();
+        expect(
+            retentionInput.parentElement.querySelector('clr-control-error')
+        ).toBeTruthy();
+
+        component.enableProxyCache = false;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        expect(okButton.disabled).toBeFalse();
+    });
+
+    [null, -1, 1.5, 106752].forEach(retentionDays => {
+        it(`should reject retention period ${retentionDays} before submitting`, () => {
+            const createProject = spyOn(mockProjectService, 'createProject');
+            const showError = spyOn(component.inlineAlert, 'showInlineError');
+            component.enableProxyCache = true;
+            component.retentionDays = retentionDays;
+            component.onSubmit();
+            expect(createProject).not.toHaveBeenCalled();
+            expect(showError).toHaveBeenCalledWith(
+                'PROJECT.PROXY_CACHE_RETENTION_DAYS_INVALID'
+            );
+        });
+    });
+
+    [0, 7, 18250].forEach(retentionDays => {
+        it(`should submit valid retention period ${retentionDays}`, () => {
+            const createProject = spyOn(
+                mockProjectService,
+                'createProject'
+            ).and.callThrough();
+            component.enableProxyCache = true;
+            component.project.registry_id = 1;
+            component.retentionDays = retentionDays;
+            component.onSubmit();
+            expect(createProject).toHaveBeenCalledWith({
+                project: jasmine.objectContaining({
+                    registry_id: 1,
+                    retention_days: retentionDays,
+                }),
+            });
+        });
+    });
+
+    it('should omit retention settings for a normal project', () => {
+        const createProject = spyOn(
+            mockProjectService,
+            'createProject'
+        ).and.callThrough();
+        component.retentionDays = null;
+        component.onSubmit();
+        expect(createProject).toHaveBeenCalled();
+        expect(
+            Object.prototype.hasOwnProperty.call(
+                createProject.calls.mostRecent().args[0].project,
+                'retention_days'
+            )
+        ).toBeFalse();
+    });
+
+    it('should restore the default retention period when reopening the dialog', () => {
+        component.retentionDays = 30;
+        component.onCancel();
+        component.newProject();
+        expect(component.retentionDays).toBe(7);
     });
 });

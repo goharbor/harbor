@@ -91,10 +91,10 @@ func (c *controller) Update(ctx context.Context, id int, groupName string) error
 func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, error) {
 	if group.GroupType == common.LDAPGroupType {
 		ldapGroup, err := auth.SearchGroup(ctx, group.LdapGroupDN)
-		if err == ldap.ErrNotFound || ldapGroup == nil {
+		if errors.Is(err, ldap.ErrNotFound) || ldapGroup == nil {
 			return 0, errors.BadRequestError(nil).WithMessagef("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
 		}
-		if err == ldap.ErrDNSyntax {
+		if errors.Is(err, ldap.ErrDNSyntax) {
 			return 0, errors.BadRequestError(nil).WithMessagef("invalid DN syntax. DN: %v", group.LdapGroupDN)
 		}
 		if err != nil {
@@ -102,7 +102,7 @@ func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, er
 		}
 	}
 	id, err := c.mgr.Create(ctx, group)
-	if err != nil && err == usergroup.ErrDupUserGroup {
+	if errors.Is(err, usergroup.ErrDupUserGroup) {
 		return 0, errors.ConflictError(nil).
 			WithMessagef("duplicate user group, group name:%v, group type: %v, ldap group DN: %v",
 				group.GroupName, group.GroupType, group.LdapGroupDN)

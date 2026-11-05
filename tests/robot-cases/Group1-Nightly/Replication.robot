@@ -54,6 +54,25 @@ Test Case - Harbor Endpoint Verification
     Endpoint Is Unpingable
     Close Browser
 
+Test Case - Harbor Endpoint With Per-Endpoint CA Certificate
+    [Documentation]  Verify an endpoint using a self-signed certificate can be pinged
+    ...    successfully with "Verify Remote Cert" enabled, as long as the matching
+    ...    per-endpoint CA certificate is provided; and that it fails when the CA
+    ...    certificate does not match the remote endpoint's certificate.
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    ${ca_cert}=    OperatingSystem.Get File    ${CURDIR}/../../harbor_ca.crt
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    # correct CA certificate + verify remote cert enabled -> ping should succeed
+    Create A New Endpoint    harbor    edpca${d}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    N    ${ca_cert}
+    Endpoint Is Pingable
+    # replacing it with a bogus CA certificate -> ping should fail
+    Retry Clear Element Text  ${destination_ca_cert_xpath}
+    Input CA Certificate  not-a-valid-ca-certificate
+    Endpoint Is Unpingable
+    Close Browser
+
 Test Case - Harbor Endpoint Add
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
@@ -499,7 +518,7 @@ Test Case - Replication Triggered By Events
     Go Into Repo  project${d}  ${image2}
     Should Not Be Signed  ${tag2}
     Go Into Repo  project${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Inherited Signed  ${image2_short_sha256}
     Logout Harbor
 
     Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -512,7 +531,7 @@ Test Case - Replication Triggered By Events
     Go Into Repo  project_dest${d}  ${image2}
     Should Not Be Signed  ${tag2}
     Go Into Repo  project_dest${d}  ${index}
-    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Not Be Signed  ${image2_short_sha256}
+    Retry Double Keywords When Error  Click Index Achieve  ${index_tag}  Should Be Inherited Signed  ${image2_short_sha256}
     Logout Harbor
     # delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

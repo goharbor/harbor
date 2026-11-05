@@ -83,12 +83,12 @@ Check Pending Job Card
     ${total_pending_count}=  Set Variable  0
     ${index}=  Set Variable  1
     FOR  ${job_type}  IN  @{jobs_type_pending_count.keys()}
-        Run Keyword If  '${total}' != '0'  Retry Wait Until Page Contains Element  //app-pending-job-card//div[contains(@class,'clr-row ng-star-inserted')][${index}]//div[1][contains(.,'${job_type}')]
-        Retry Wait Until Page Contains Element  //app-pending-job-card//div[contains(@class,'clr-row ng-star-inserted')][${index}]//div[2][contains(.,'${jobs_type_pending_count['${job_type}']}')]
+        Run Keyword If  '${total}' != '0'  Retry Wait Until Page Contains Element  //app-pending-job-card//label[normalize-space()='${job_type}']
+        Retry Wait Until Page Contains Element  //app-pending-job-card//div[contains(@class, 'queue-row')][${index}]/div[contains(@class, 'count') and normalize-space()='${jobs_type_pending_count['${job_type}']}']
         ${index}=  Evaluate  ${index} + 1
         ${total_pending_count}=  Evaluate  ${total_pending_count} + ${jobs_type_pending_count['${job_type}']}
     END
-    Retry Wait Element Visible  //app-pending-job-card//div[contains(text(),'Total: ${total_pending_count}')]
+    Retry Wait Element Visible  //app-pending-job-card//div[contains(@class, 'duration') and normalize-space()='Total: ${total_pending_count}']
 
 Check Jobs Latency
     [Arguments]  &{jobs_type_is_zore}

@@ -190,8 +190,9 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	// before proxying to the backend. This prevents tags from being stored in the
 	// backend registry storage, while Harbor maintains the tag-to-digest mapping in the database.
 	if _, err := digest.Parse(reference); err != nil {
-		// reference is a tag, not a digest
-		data, err := io.ReadAll(req.Body)
+		// reference is a tag, not a digest; bound the buffered body so an
+		// over-limit manifest is rejected with 413 instead of buffered whole
+		data, err := lib.ReadRequestBody(req, common.MaxManifestBodySize)
 		if err != nil {
 			lib_http.SendError(w, err)
 			return

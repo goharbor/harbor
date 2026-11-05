@@ -35,8 +35,10 @@ ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
 ${configuration_system_wl_delete_a_cve_id_icon}    //app-security//form/section//ul/li[1]/a[2]/clr-icon
 ${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
 ${cve_allowlist_expires_btn}  //clr-date-container[.//div[@class='clr-input-group' and not(@hidden)]]//button
-${cve_allowlist_expires_yesterday}  //td[.//button[@class='day-btn is-today']]/preceding::td[1]
-${cve_allowlist_expires_tomorrow}  //td[.//button[@class='day-btn is-today']]/following::td[1]
+${datepicker_cur_month_btn}  //button[@class='calendar-btn switcher' and .//cds-icon[@shape='event']]
+${datepicker_prev_month_btn}  //button[@class='calendar-btn switcher' and .//cds-icon[@shape='angle' and @direction='left']]
+${datepicker_next_month_btn}  //button[@class='calendar-btn switcher' and .//cds-icon[@shape='angle' and @direction='right']]
+${datepicker_mid_month_day_btn}  //button[contains(@class,'day-btn') and not(contains(@class,'is-excluded')) and normalize-space()='15']
 ${cfg_auth_automatic_onboarding_checkbox}  (//input[@id='oidcAutoOnboard'])[1]
 ${cfg_auth_user_name_claim_input}  //*[@id='oidcUserClaim']
 

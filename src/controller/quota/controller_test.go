@@ -18,11 +18,13 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/orm"
+	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg/quota"
 	"github.com/goharbor/harbor/src/pkg/quota/driver"
 	"github.com/goharbor/harbor/src/pkg/quota/types"
@@ -95,6 +97,32 @@ func (suite *ControllerTestSuite) TestRefreshUsageExceed() {
 	referenceID := uuid.New().String()
 
 	suite.Error(suite.ctl.Refresh(ctx, suite.reference, referenceID))
+}
+
+func (suite *ControllerTestSuite) TestUpdateUsageRetriesWithBackoff() {
+	// regression test for the retry storm: optimistic-lock conflicts must
+	// go through the retry loop with a non-zero backoff sleep, so losers
+	// cannot re-CAS the contended quota_usage row in a zero-delay loop
+	suite.PrepareForUpdate(suite.quota, types.ResourceList{types.ResourceStorage: 1})
+	suite.quotaMgr.ExpectedCalls = nil
+	mock.OnAnything(suite.quotaMgr, "GetByRef").Return(suite.quota, nil)
+	mock.OnAnything(suite.quotaMgr, "Update").Return(orm.ErrOptimisticLock).Once()
+	mock.OnAnything(suite.quotaMgr, "Update").Return(nil).Once()
+
+	var sleeps []time.Duration
+	opts := []retry.Option{
+		retry.InitialInterval(time.Millisecond),
+		retry.MaxInterval(5 * time.Millisecond),
+		retry.Callback(func(_ error, sleep time.Duration) {
+			sleeps = append(sleeps, sleep)
+		}),
+	}
+
+	ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+	suite.Nil(suite.ctl.Refresh(ctx, suite.reference, uuid.New().String(), IgnoreLimitation(true), WithRetryOptions(opts)))
+
+	suite.Require().Len(sleeps, 1, "the optimistic-lock conflict must pass through the retry callback")
+	suite.Greater(sleeps[0], time.Duration(0), "optimistic-lock retries must back off, not spin")
 }
 
 func (suite *ControllerTestSuite) TestRefreshIgnoreLimitation() {

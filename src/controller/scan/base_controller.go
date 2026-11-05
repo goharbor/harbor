@@ -369,14 +369,19 @@ func (bc *basicController) Stop(ctx context.Context, artifact *ar.Artifact, capT
 		return errors.New("nil artifact to stop scan")
 	}
 	vendorType := sca.GetScanHandler(capType).JobVendorType()
-	query := q.New(q.KeyWords{"vendor_type": vendorType, "extra_attrs.artifact.digest": artifact.Digest, "extra_attrs.enabled_capabilities.type": capType})
+	query := q.New(q.KeyWords{
+		"vendor_type":                           vendorType,
+		"vendor_id":                             artifact.ID,
+		"extra_attrs.artifact.id":               fmt.Sprintf("%d", artifact.ID),
+		"extra_attrs.enabled_capabilities.type": capType,
+	})
 	executions, err := bc.execMgr.List(ctx, query)
 	if err != nil {
 		return err
 	}
 
 	if len(executions) == 0 {
-		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact digest=%v", artifact.Digest)
+		return errors.BadRequestError(nil).WithMessagef("no scan job for artifact %s (id=%d)", artifact, artifact.ID)
 	}
 	execution := executions[0]
 	return bc.execMgr.Stop(ctx, execution.ID)
@@ -757,7 +762,7 @@ func scanTaskForArtifacts(task *task.Task, artifactMap map[int64]any) bool {
 	if task == nil {
 		return false
 	}
-	artifactID := int64(task.GetNumFromExtraAttrs(artifactIDKey))
+	artifactID := task.GetInt64FromExtraAttrs(artifactIDKey)
 	if artifactID == 0 {
 		return false
 	}
@@ -1113,14 +1118,7 @@ func (bc *basicController) isAccessory(ctx context.Context, art *ar.Artifact) (b
 }
 
 func getArtifactID(extraAttrs map[string]any) int64 {
-	var artifactID float64
-	if extraAttrs != nil {
-		if v, ok := extraAttrs[artifactIDKey]; ok {
-			artifactID, _ = v.(float64) // int64 Unmarshal to float64
-		}
-	}
-
-	return int64(artifactID)
+	return int64FromExtraAttrs(extraAttrs, artifactIDKey)
 }
 
 func getArtifactTag(extraAttrs map[string]any) string {
@@ -1154,14 +1152,20 @@ func GetReportUUIDs(extraAttrs map[string]any) []string {
 }
 
 func getRobotID(extraAttrs map[string]any) int64 {
-	var trackID float64
-	if extraAttrs != nil {
-		if v, ok := extraAttrs[robotIDKey]; ok {
-			trackID, _ = v.(float64) // int64 Unmarshal to float64
-		}
-	}
+	return int64FromExtraAttrs(extraAttrs, robotIDKey)
+}
 
-	return int64(trackID)
+// int64FromExtraAttrs gets the int64 value specified by key from the extra attributes
+func int64FromExtraAttrs(extraAttrs map[string]any, key string) int64 {
+	if extraAttrs == nil {
+		return 0
+	}
+	v, ok := extraAttrs[key]
+	if !ok || v == nil {
+		return 0
+	}
+	id, _ := task.Int64FromAny(v)
+	return id
 }
 
 func parseOptions(options ...Option) (*Options, error) {

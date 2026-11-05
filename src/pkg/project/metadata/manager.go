@@ -16,12 +16,17 @@ package metadata
 
 import (
 	"context"
+	"maps"
 
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/project/metadata/dao"
 	"github.com/goharbor/harbor/src/pkg/project/metadata/models"
+	projectmodels "github.com/goharbor/harbor/src/pkg/project/models"
 )
+
+// Validator validates the effective project metadata before an update.
+type Validator func(map[string]string) error
 
 // Manager defines the operations that a project metadata manager should implement
 type Manager interface {
@@ -33,6 +38,9 @@ type Manager interface {
 
 	// Update metadatas
 	Update(ctx context.Context, projectID int64, meta map[string]string) error
+
+	// UpdateWithValidation atomically validates and updates metadatas.
+	UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate Validator) error
 
 	// Get metadatas whose keys are specified in parameter meta, if it is absent, get all
 	Get(ctx context.Context, projectID int64, meta ...string) (map[string]string, error)
@@ -85,6 +93,48 @@ func (m *manager) Update(ctx context.Context, projectID int64, meta map[string]s
 	}
 
 	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-delete-project"))
+}
+
+func (m *manager) UpdateWithValidation(ctx context.Context, projectID int64, meta map[string]string, validate Validator) error {
+	if len(meta) == 0 {
+		return nil
+	}
+
+	h := func(ctx context.Context) error {
+		o, err := orm.FromContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		// Lock the parent row because metadata rows may not exist yet. All
+		// validated metadata updates for a project serialize on this row.
+		project := &projectmodels.Project{ProjectID: projectID}
+		if err := o.ReadForUpdate(project, "project_id"); err != nil {
+			return orm.WrapNotFoundError(err, "project %d not found", projectID)
+		}
+
+		current, err := m.Get(ctx, projectID)
+		if err != nil {
+			return err
+		}
+		effective := maps.Clone(current)
+		if effective == nil {
+			effective = map[string]string{}
+		}
+		maps.Copy(effective, meta)
+		if err := validate(effective); err != nil {
+			return err
+		}
+
+		for name, value := range meta {
+			if err := m.dao.Update(ctx, projectID, name, value); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	return orm.WithTransaction(h)(orm.SetTransactionOpNameToContext(ctx, "tx-update-project-metadata"))
 }
 
 // Get metadatas whose keys are specified in parameter meta, if it is absent, get all

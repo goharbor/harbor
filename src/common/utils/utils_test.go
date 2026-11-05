@@ -37,6 +37,9 @@ func TestParseEndpoint(t *testing.T) {
 		{"ftp://example.com", true, ""},
 		{"http://example.com", false, "http://example.com"},
 		{"https://example.com", false, "https://example.com"},
+		{"http://EXAMPLE.COM", false, "http://example.com"},
+		{"https://EXAMPLE.COM:8080/Path", false, "https://example.com:8080/Path"},
+		{" MIXED.case.com/path/ ", false, "http://mixed.case.com/path"},
 		{"http://example!@#!?//#", true, ""},
 	}
 
@@ -48,6 +51,31 @@ func TestParseEndpoint(t *testing.T) {
 		}
 		require.Nil(t, err)
 		assert.Equal(t, c.expected, u.String())
+	}
+}
+
+func TestEqualURL(t *testing.T) {
+	cases := []struct {
+		url1     string
+		url2     string
+		expected bool
+	}{
+		{"http://example.com:8080/v2", "http://example.com:8080/v2", true},
+		{"http://EXAMPLE.COM:8080/v2", "http://example.com:8080/v2", true},
+		{"http://example.com:8080/V2", "http://example.com:8080/v2", false},
+		{"https://core:8080", "https://CORE:8080", true},
+		{"http://example.com", "https://example.com", false},
+		{"http://example.com:8080", "http://example.com:8081", false},
+		{"http://example.com/foo", "http://example.com/bar", false},
+		{"://invalid-url-1", "http://example.com", false},
+		{"http://example.com", "://invalid-url-2", false},
+		{"http://example.com/A%", "http://example.com/a%", false},
+	}
+
+	for _, c := range cases {
+		t.Run(c.url1+"_vs_"+c.url2, func(t *testing.T) {
+			assert.Equal(t, c.expected, EqualURL(c.url1, c.url2))
+		})
 	}
 }
 
@@ -155,11 +183,26 @@ func TestGenerateRandomString(t *testing.T) {
 	}
 }
 
+func TestGenerateRandomStringOrError(t *testing.T) {
+	str, err := GenerateRandomStringOrError()
+	assert.Nil(t, err)
+	assert.Equal(t, 32, len(str))
+	str2, err := GenerateRandomStringOrError()
+	assert.Nil(t, err)
+	assert.NotEqual(t, str, str2)
+}
+
 func TestGenerateRandomStringWithLen(t *testing.T) {
 	str := GenerateRandomStringWithLen(16)
 	if len(str) != 16 {
 		t.Errorf("Failed to generate ramdom string with fixed length.")
 	}
+}
+
+func TestGenerateRandomStringWithLenAndError(t *testing.T) {
+	str, err := GenerateRandomStringWithLenAndError(16)
+	assert.Nil(t, err)
+	assert.Equal(t, 16, len(str))
 }
 
 func TestTestTCPConn(t *testing.T) {
@@ -432,6 +475,20 @@ func TestValidateCronString(t *testing.T) {
 		{
 			description: "test case 4",
 			input:       "0 1 2 1 1 *",
+			hasErr:      false,
+		},
+
+		// cron expression that can never fire (Feb 30 does not exist)
+		{
+			description: "test case 5",
+			input:       "0 0 3 30 2 *",
+			hasErr:      true,
+		},
+
+		// Feb 29 (leap day) is valid and reachable — fires every leap year
+		{
+			description: "test case 6 - Feb 29 leap day is reachable",
+			input:       "0 0 0 29 2 *",
 			hasErr:      false,
 		},
 	}

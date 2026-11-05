@@ -15,9 +15,12 @@
 package gc
 
 import (
+	"bytes"
+	"context"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	commom_regctl "github.com/goharbor/harbor/src/common/registryctl"
@@ -25,6 +28,8 @@ import (
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/log"
 	pkgart "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	pkg_blob "github.com/goharbor/harbor/src/pkg/blob/models"
@@ -398,6 +403,38 @@ func (suite *gcTestSuite) TestSweep() {
 	suite.Nil(gc.sweep(ctx))
 }
 
+func (suite *gcTestSuite) TestSweepBlobNotFound() {
+	ctx := &mockjobservice.MockJobContext{}
+	logger := &mockjobservice.MockJobLogger{}
+	ctx.On("GetLogger").Return(logger)
+	ctx.On("OPCommand").Return(job.NilCommand, false)
+	ctx.On("Checkin", `{"freed_space":0,"purged_blobs":1,"purged_manifests":0}`).Return(nil)
+
+	mock.OnAnything(suite.blobMgr, "UpdateBlobStatus").Return(int64(1), nil)
+	mock.OnAnything(suite.blobMgr, "Delete").Return(nil)
+
+	gc := &GarbageCollector{
+		artCtl:            suite.artifactCtl,
+		artrashMgr:        suite.artrashMgr,
+		blobMgr:           suite.blobMgr,
+		registryCtlClient: suite.registryCtlClient,
+		deleteSet: []*pkg_blob.Blob{
+			{
+				ID:          1,
+				Digest:      suite.DigestString(),
+				ContentType: schema2.MediaTypeLayer,
+				Size:        1234,
+			},
+		},
+		workers: 3,
+	}
+
+	// the blob is missing from the storage: the GC must still succeed, but must not count its size as freed
+	mock.OnAnything(gc.registryCtlClient, "DeleteBlob").Return(errors.NotFoundError(nil))
+	suite.Nil(gc.sweep(ctx))
+	ctx.AssertCalled(suite.T(), "Checkin", `{"freed_space":0,"purged_blobs":1,"purged_manifests":0}`)
+}
+
 func (suite *gcTestSuite) TestSaveRes() {
 	ctx := &mockjobservice.MockJobContext{}
 	logger := &mockjobservice.MockJobLogger{}
@@ -431,6 +468,25 @@ func (suite *gcTestSuite) TestFormatSize() {
 	for _, tc := range tests {
 		suite.Equal(tc.expected, formatSize(tc.size), tc.name)
 	}
+}
+
+func TestCleanCacheDoesNotLeakRedisPassword(t *testing.T) {
+	var logBuf bytes.Buffer
+	const password = "super-secret-redis-password"
+	redisURL := "redis://user:" + password + "@localhost:6379/0\x7f"
+
+	gc := &GarbageCollector{
+		logger:   log.New(&logBuf, log.NewTextFormatter(), log.DebugLevel),
+		redisURL: redisURL,
+	}
+
+	err := gc.cleanCache(context.TODO())
+	assert.Error(t, err)
+	assert.ErrorContains(t, err, "failed to parse the redis url")
+	assert.NotContains(t, err.Error(), password)
+	assert.NotContains(t, err.Error(), redisURL)
+	assert.NotContains(t, logBuf.String(), password)
+	assert.NotContains(t, logBuf.String(), redisURL)
 }
 
 func TestGCTestSuite(t *testing.T) {

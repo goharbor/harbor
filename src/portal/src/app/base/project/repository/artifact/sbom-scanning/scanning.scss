@@ -13,6 +13,10 @@ hbr-sbom-bar {
     .label {
         padding: 0 1rem;
     }
+
+    .not-scan {
+        cursor: default;
+    }
 }
 
 .bar-state-chart {

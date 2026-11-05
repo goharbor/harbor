@@ -1,9 +1,6 @@
 .grid-content {
   position: relative;
-  top: 66px;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 66px 0 0;
   overflow: auto;
   max-height: 65vh;
 }
@@ -26,18 +23,12 @@
 .central-block-loading {
   position: absolute;
   z-index: 10;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   text-align: center;
 }
 
 .central-block-loading-more {
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   text-align: center;
 
   .spinner {

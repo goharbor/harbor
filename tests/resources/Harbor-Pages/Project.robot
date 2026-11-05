@@ -37,6 +37,33 @@ Create An New Project And Go Into Project
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Go Into Project  ${projectname}  has_image=${false}
 
+Create An New Project With Proxy Cache Filter
+    [Arguments]  ${projectname}  ${registry}  ${filter_pattern}  ${filter_kind}=doublestar
+    Navigate To Projects
+    FOR  ${n}  IN RANGE  1  8
+        ${out}  Run Keyword And Ignore Error  Retry Button Click  xpath=${create_project_button_xpath}
+        Log All  Return value is ${out[0]}
+        Exit For Loop If  '${out[0]}'=='PASS'
+    END
+    Log To Console  Project Name: ${projectname}
+    Retry Text Input  xpath=${project_name_xpath}  ${projectname}
+    Retry Element Click  ${project_proxy_cache_switcher_xpath}
+    Retry Element Click  ${project_registry_select_id}
+    Retry Element Click  xpath=//select[@id='registry']//option[contains(.,'${registry}')]
+    Retry Text Input  ${project_proxy_cache_filter_pattern_xpath}  ${filter_pattern}
+    Retry Element Click  ${project_proxy_cache_filter_kind_xpath}
+    Retry Element Click  xpath=//select[@id='repositoryFilterKind']//option[@value='${filter_kind}']
+    Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
+    Go Into Project  ${projectname}  has_image=${false}
+
+Update Project Proxy Cache Filter
+    [Arguments]  ${filter_pattern}  ${filter_kind}
+    Switch To Project Configuration
+    Retry Text Input  ${project_proxy_cache_filter_pattern_xpath}  ${filter_pattern}
+    Retry Element Click  ${project_proxy_cache_filter_kind_xpath}
+    Retry Element Click  xpath=//select[@id='repositoryFilterKind']//option[@value='${filter_kind}']
+    Retry Element Click  xpath=//button[contains(.,'SAVE')]
+
 Create An New Project With New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
     Create An New User  url=${url}  username=${username}  email=${email}  realname=${realname}  newPassword=${newPassword}  comment=${comment}
@@ -386,6 +413,10 @@ Should Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed')]
 
+Should Be Inherited Signed
+    [Arguments]  ${tag}
+    Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'signed-inherited')]
+
 Should Not Be Signed
     [Arguments]  ${tag}
     Retry Wait Element Visible  //clr-dg-row[contains(.,'${tag}')]//clr-icon[contains(@class,'color-red')]
@@ -427,7 +458,7 @@ Export CVEs
     Retry Text Input  ${export_cve_filter_tag_input}  ${tags}
     Select Filter Label For CVE Export  @{labels}
     Retry Text Input  ${export_cve_filter_cveid_input}  ${cve_ids}
-    Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Trigger exporting CVEs successfully!
+    Retry Double Keywords When Error  Retry Button Click  ${export_btn}  Retry Wait Until Page Contains  Triggered exporting CVEs successfully!
 
 Should Not Be Export CVEs
      Retry Element Click  ${project_action_xpath}

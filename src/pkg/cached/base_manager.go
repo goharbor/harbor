@@ -51,8 +51,8 @@ func (*cacheClient) Save(ctx context.Context, key string, value any, expiration 
 	// intercept here
 	// it should ignore save cache if this request is wrapped by orm.Transaction,
 	// because if tx rollback, we can not rollback cache,
-	// identify whether in transaction by checking the commitedKey in context.
-	// commitedKey is a context value which be injected in the transaction middleware.
+	// identify whether in transaction by checking the committedKey in context.
+	// committedKey is a context value which is injected in the transaction middleware.
 	if orm.HasCommittedKey(ctx) {
 		return nil
 	}
@@ -108,6 +108,9 @@ func (bm *BaseManager) CountCache(ctx context.Context) (int64, error) {
 	for iter.Next(ctx) {
 		count++
 	}
+	if err := iter.Err(); err != nil {
+		return count, err
+	}
 
 	return count, nil
 }
@@ -130,6 +133,9 @@ func (bm *BaseManager) FlushAll(ctx context.Context) error {
 		if err = bm.CacheClient(ctx).Delete(ctx, iter.Val()); err != nil {
 			errs = append(errs, err)
 		}
+	}
+	if err = iter.Err(); err != nil {
+		errs = append(errs, err)
 	}
 
 	if errs.Len() > 0 {

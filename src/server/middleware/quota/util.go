@@ -16,11 +16,11 @@ package quota
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/quota"
@@ -35,7 +35,7 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 	projectName := util.ParseProjectName(r)
 
 	if projectName == "" {
-		return "", "", fmt.Errorf("request %s not match any project", r.URL.Path)
+		return "", "", fmt.Errorf("request %s does not match any project", r.URL.Path)
 	}
 
 	project, err := projectController.GetByName(r.Context(), projectName)
@@ -48,9 +48,7 @@ func projectReferenceObject(r *http.Request) (string, string, error) {
 
 var (
 	unmarshalManifest = func(r *http.Request) (distribution.Manifest, distribution.Descriptor, error) {
-		lib.NopCloseRequest(r)
-
-		body, err := io.ReadAll(r.Body)
+		body, err := lib.ReadRequestBody(r, common.MaxManifestBodySize)
 		if err != nil {
 			return nil, distribution.Descriptor{}, err
 		}

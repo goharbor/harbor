@@ -147,31 +147,39 @@
 }
 
 .pull-command-column {
-  width: 6rem !important;
+  width: 6rem;
 }
 
 .co-signed-column {
-  width: 7rem !important;
+  width: 7rem;
 }
 
 .size-column {
-  width: 6rem !important;
+  width: 6rem;
 }
 
 .vul-column {
-  width: 11rem !important;
+  width: 11rem;
 }
 
 .sbom-column {
-  width: 7rem !important;
+  width: 7rem;
 }
 
 .annotations-column {
-  width: 5rem !important;
+  width: 5rem;
 }
 
 .signed {
   color: #00d40f;
+}
+
+// deliberately not the green of a direct signature: the artifact carries no signature of
+// its own and is only covered by the one on the index that references it. The Clarity
+// neutral-status token rather than a literal, so the icon tracks the light/dark theme
+// instead of staying darker than the text beside it in dark mode.
+.signed-inherited {
+  color: var(--cds-alias-status-neutral);
 }
 
 .mb-05 {
@@ -189,6 +197,21 @@
 
 .width-p-75 {
   width: 75%;
+}
+
+.tag-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.tag-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-left: 2px;
 }
 
 .action-bar {

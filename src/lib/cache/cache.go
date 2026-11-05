@@ -49,6 +49,7 @@ var (
 type Iterator interface {
 	Next(ctx context.Context) bool
 	Val() string
+	Err() error
 }
 
 // Cache cache interface
@@ -96,7 +97,7 @@ func New(typ string, opt ...Option) (Cache, error) {
 
 	factory, ok := factories[typ]
 	if !ok {
-		return nil, fmt.Errorf("cache type %s not support", typ)
+		return nil, fmt.Errorf("cache type %s is not supported", typ)
 	}
 
 	return factory(opts)

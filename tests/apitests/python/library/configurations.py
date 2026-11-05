@@ -61,7 +61,7 @@ class Configurations(base.Base, object):
                            ldap_group_base_dn=ldap_group_base_dn, ldap_group_search_filter=ldap_group_search_filter, ldap_group_admin_dn=ldap_group_admin_dn, ldap_group_search_scope=ldap_group_search_scope)
         set_configurations(client, expect_status_code = expect_status_code, **config)
 
-    def set_configurations_of_audit_log_forword(self, audit_log_forward_endpoint=None, skip_audit_log_database=None, expect_status_code = 200, **kwargs):
+    def set_configurations_of_audit_log_forward(self, audit_log_forward_endpoint=None, skip_audit_log_database=None, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         config=dict(audit_log_forward_endpoint=audit_log_forward_endpoint, skip_audit_log_database=skip_audit_log_database)
         set_configurations(client, expect_status_code = expect_status_code, **config)

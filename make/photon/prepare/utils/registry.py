@@ -9,6 +9,8 @@ from utils.misc import prepare_dir
 registry_config_dir = os.path.join(config_dir, "registry")
 registry_config_template_path = os.path.join(templates_dir, "registry", "config.yml.jinja")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
+registry_env_template_path = os.path.join(templates_dir, "registry", "env.jinja")
+registry_conf_env = os.path.join(config_dir, "registry", "env")
 registry_passwd_path = os.path.join(config_dir, "registry", "passwd")
 registry_data_dir = os.path.join(data_dir, 'registry')
 
@@ -40,6 +42,12 @@ def prepare_registry(config_dict):
         level=levels_map[config_dict['log_level']],
         storage_provider_info=storage_provider_info,
         **config_dict, **redis_ops)
+
+    # Render Registry env
+    render_jinja(
+        registry_env_template_path,
+        registry_conf_env,
+        **config_dict)
 
 def parse_redis(redis_url):
     u = urlsplit(redis_url)

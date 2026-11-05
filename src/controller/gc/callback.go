@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/goharbor/harbor/src/controller/quota"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -47,6 +48,14 @@ func gcCallback(ctx context.Context, p string) error {
 	param := &Policy{}
 	if err := json.Unmarshal([]byte(p), param); err != nil {
 		return fmt.Errorf("failed to unmarshal the param: %v", err)
+	}
+	// The schedule stores the registry Redis URL from the time it was saved,
+	// which breaks every run once the Redis address or credentials change.
+	if url := os.Getenv("_REDIS_URL_REG"); url != "" {
+		if param.ExtraAttrs == nil {
+			param.ExtraAttrs = make(map[string]any)
+		}
+		param.ExtraAttrs["redis_url_reg"] = url
 	}
 	_, err := Ctl.Start(ctx, *param, task.ExecutionTriggerSchedule)
 	return err

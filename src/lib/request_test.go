@@ -21,35 +21,51 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+
+	"github.com/goharbor/harbor/src/lib/errors"
 )
 
-type NopCloseRequestTestSuite struct {
+type ReadRequestBodyTestSuite struct {
 	suite.Suite
 }
 
-func (suite *NopCloseRequestTestSuite) TestReusableBody() {
+func (suite *ReadRequestBodyTestSuite) TestWithinLimit() {
 	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
 
-	body, err := io.ReadAll(r.Body)
+	data, err := ReadRequestBody(r, 8)
 	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
+	suite.Equal([]byte("body"), data)
 
-	body, err = io.ReadAll(r.Body)
+	// body is restored and re-readable for downstream consumers
+	rest, err := io.ReadAll(r.Body)
 	suite.Nil(err)
-	suite.Equal([]byte(""), body)
-
-	r, _ = http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
-	r = NopCloseRequest(r)
-
-	body, err = io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
-
-	body, err = io.ReadAll(r.Body)
-	suite.Nil(err)
-	suite.Equal([]byte("body"), body)
+	suite.Equal([]byte("body"), rest)
 }
 
-func TestNopCloseRequestTestSuite(t *testing.T) {
-	suite.Run(t, &NopCloseRequestTestSuite{})
+func (suite *ReadRequestBodyTestSuite) TestAtLimit() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 4)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), data)
+}
+
+func (suite *ReadRequestBodyTestSuite) TestOverLimit() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 3)
+	suite.Nil(data)
+	suite.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
+}
+
+func (suite *ReadRequestBodyTestSuite) TestUnbounded() {
+	r, _ := http.NewRequest(http.MethodPost, "/", strings.NewReader("body"))
+
+	data, err := ReadRequestBody(r, 0)
+	suite.Nil(err)
+	suite.Equal([]byte("body"), data)
+}
+
+func TestReadRequestBodyTestSuite(t *testing.T) {
+	suite.Run(t, &ReadRequestBodyTestSuite{})
 }

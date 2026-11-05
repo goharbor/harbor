@@ -19,11 +19,13 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/controller/artifact/manifest"
 	"github.com/goharbor/harbor/src/controller/artifact/processor"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -306,14 +308,22 @@ func (a *abstractorTestSuite) SetupTest() {
 	a.argMgr = &tart.Manager{}
 	a.blobMgr = &tblob.Manager{}
 	a.abstractor = &abstractor{
-		artMgr:  a.argMgr,
-		blobMgr: a.blobMgr,
-		regCli:  a.regCli,
+		regCli: a.regCli,
 	}
 	a.processor = &tpro.Processor{}
 	// clear all registered processors
 	processor.Registry = map[string]processor.Processor{}
 	processor.Registry[schema2.MediaTypeImageConfig] = a.processor
+	// replace the registered manifest abstractors with mock-backed ones so the
+	// suite exercises them against its own managers instead of the globals
+	// wired up by the manifest package's init()
+	manifest.Registry = map[string]manifest.Abstractor{}
+	a.Require().NoError(manifest.Register(manifest.NewV1(a.blobMgr),
+		"", "application/json", schema1.MediaTypeSignedManifest))
+	a.Require().NoError(manifest.Register(manifest.NewV2(),
+		v1.MediaTypeImageManifest, schema2.MediaTypeManifest))
+	a.Require().NoError(manifest.Register(manifest.NewIndex(a.argMgr),
+		v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList))
 }
 
 // docker manifest v1

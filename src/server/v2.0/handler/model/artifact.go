@@ -59,6 +59,9 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 	for _, acc := range a.Accessories {
 		art.Accessories = append(art.Accessories, NewAccessory(acc.GetData()).ToSwagger())
 	}
+	for _, acc := range a.InheritedAccessories {
+		art.InheritedAccessories = append(art.InheritedAccessories, NewAccessory(acc.GetData()).ToSwagger())
+	}
 	for _, tag := range a.Tags {
 		art.Tags = append(art.Tags, NewTag(tag).ToSwagger())
 	}
