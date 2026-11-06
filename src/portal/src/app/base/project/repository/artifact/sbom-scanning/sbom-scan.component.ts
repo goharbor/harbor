@@ -63,6 +63,7 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     @Input() sbomDigest: string = '';
     @Input() sbomOverview: SBOMOverview;
     @Input() accessories: Accessory[] = [];
+    @Input() hasChild: boolean = false;
     onSubmitting: boolean = false;
     onStopping: boolean = false;
     retryCounter: number = 0;
@@ -77,6 +78,10 @@ export class ResultSbomComponent implements OnInit, OnDestroy {
     submitStopFinish: EventEmitter<boolean> = new EventEmitter<boolean>();
     @Output()
     scanFinished: EventEmitter<Artifact> = new EventEmitter<Artifact>();
+    // bubbles up a request to navigate to the artifact's per-architecture
+    // child list, where each arch's own SBOM/vulnerability results are shown
+    @Output()
+    viewMultiArchSbom: EventEmitter<void> = new EventEmitter<void>();
 
     constructor(
         private artifactService: ArtifactService,
