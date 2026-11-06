@@ -174,3 +174,21 @@ func mustHost(t *testing.T, raw string) string {
 	}
 	return u.Host
 }
+
+// TestSameOriginIPv6Zone treats the IPv6 zone identifier as case-sensitive, since it names
+// a network interface, while the address itself still compares case-insensitively.
+func TestSameOriginIPv6Zone(t *testing.T) {
+	parse := func(raw string) *url.URL {
+		u, err := url.Parse(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return u
+	}
+	if !SameOrigin(parse("http://[fe80::a%25eth0]:5000/"), parse("http://[FE80::A%25eth0]:5000/x")) {
+		t.Fatal("address case must not matter")
+	}
+	if SameOrigin(parse("http://[fe80::a%25eth0]:5000/"), parse("http://[fe80::a%25ETH0]:5000/x")) {
+		t.Fatal("zone identifiers differing in case must not be the same origin")
+	}
+}
