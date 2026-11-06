@@ -85,7 +85,7 @@ func (bc *basicController) ListRegistrations(ctx context.Context, query *q.Query
 	for _, r := range l {
 		if err := bc.RetrieveCap(ctx, r); err != nil {
 			log.Warningf(RetrieveCapFailMsg, err)
-			return l, nil
+			continue
 		}
 	}
 	return l, nil
