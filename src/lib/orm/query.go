@@ -22,6 +22,7 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/q"
 )
@@ -88,7 +89,10 @@ func QuerySetter(ctx context.Context, model any, query *q.Query, options ...Opti
 
 	metadata := parseModel(model)
 	// set filters
-	qs = setFilters(ctx, qs, query, metadata)
+	qs, err = setFilters(ctx, qs, query, metadata)
+	if err != nil {
+		return nil, err
+	}
 
 	opts := newConfig(options...)
 	// sorting
@@ -151,7 +155,7 @@ func QuerySetterForCount(ctx context.Context, model any, query *q.Query, _ ...st
 }
 
 // set filters according to the query
-func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *metadata) orm.QuerySeter {
+func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *metadata) (orm.QuerySeter, error) {
 	for key, value := range query.Keywords {
 		// The "strings.SplitN()" here is a workaround for the incorrect usage of query which should be avoided
 		// e.g. use the query with the knowledge of underlying ORM implementation, the "OrList" should be used instead:
@@ -196,6 +200,10 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 			qs = mk.FilterFunc(ctx, qs, key, value)
 			continue
 		}
+		// reject the operand that the database cannot convert to the type of the column, otherwise it fails with 500
+		if err := validateOperands(mk.Operand, value); err != nil {
+			return nil, errors.BadRequestError(fmt.Errorf("invalid filter %q: %v", key, err))
+		}
 		// fuzzy match
 		if f, ok := value.(*q.FuzzyMatchValue); ok {
 			qs = qs.Filter(key+"__icontains", Escape(f.Value))
@@ -228,7 +236,7 @@ func setFilters(ctx context.Context, qs orm.QuerySeter, query *q.Query, meta *me
 		// exact match
 		qs = qs.Filter(key, value)
 	}
-	return qs
+	return qs, nil
 }
 
 // set sorts according to the query
