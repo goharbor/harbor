@@ -47,14 +47,14 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 		h := func(ctx context.Context) error {
 			logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
 
-			size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
-			if err != nil || size == 0 {
-				size, err = blobController.GetAcceptedBlobSize(ctx, distribution.ParseSessionID(r.URL.Path))
-			}
+			var size int64
+			contentLength, _ := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
+			acceptedSize, err := blobController.GetAcceptedBlobSize(ctx, distribution.ParseSessionID(r.URL.Path))
 			if err != nil {
-				logger.Errorf("get blob size failed, error: %v", err)
+				logger.Errorf("get accepted blob size failed, error: %v", err)
 				return err
 			}
+			size = contentLength + acceptedSize
 
 			p, err := projectController.GetByName(ctx, distribution.ParseProjectName(r.URL.Path))
 			if err != nil {

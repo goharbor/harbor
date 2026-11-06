@@ -78,6 +78,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestGetAcceptedBlobSizeFailed() {
 }
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExist() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(true, nil)
 
 	req := suite.makeRequest(100)
@@ -88,6 +89,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExist() {
 }
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobNotExist() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(false, nil).Once()
 	mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
 		resources := args.Get(3).(types.ResourceList)
@@ -107,6 +109,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobNotExist() {
 }
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExistFailed() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(false, fmt.Errorf("error"))
 
 	req := suite.makeRequest(100)
@@ -117,6 +120,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobExistFailed() {
 }
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestResourcesExceeded() {
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(0), nil)
 	mock.OnAnything(suite.quotaController, "IsEnabled").Return(true, nil)
 	mock.OnAnything(suite.blobController, "Exist").Return(false, nil)
 	mock.OnAnything(suite.projectController, "Get").Return(&proModels.Project{}, nil)
