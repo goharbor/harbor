@@ -96,7 +96,10 @@ func IsDuplicateKeyError(err error) bool {
 
 func isViolatingForeignKeyConstraintError(err error) bool {
 	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+	// 23503 = foreign_key_violation (insert/update referencing a missing row).
+	// 23001 = restrict_violation (delete/update blocked by ON DELETE/UPDATE RESTRICT).
+	// Postgres can raise either for the same project_member ↔ role FK race.
+	if errors.As(err, &pgErr) && (pgErr.Code == "23503" || pgErr.Code == "23001") {
 		return true
 	}
 
