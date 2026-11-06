@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/lib/log"
+	pkguser "github.com/goharbor/harbor/src/pkg/user"
 )
 
 type session struct{}
@@ -44,6 +45,19 @@ func (s *session) Generate(req *http.Request) security.Context {
 		log.Warning("can not convert the user in session to user model")
 		return nil
 	}
+	currentUser, err := pkguser.Mgr.Get(req.Context(), user.UserID)
+	if err != nil {
+		log.Warningf("failed to load user %d for session: %v", user.UserID, err)
+		return nil
+	}
+	if currentUser == nil || currentUser.Deleted {
+		return nil
+	}
+	// These fields are supplied by the authentication provider and are not stored in the user table.
+	currentUser.AdminRoleInAuth = user.AdminRoleInAuth
+	currentUser.GroupIDs = user.GroupIDs
+	currentUser.Password = ""
+	currentUser.Salt = ""
 	log.Debugf("a session security context generated for request %s %s", req.Method, req.URL.Path)
-	return local.NewSecurityContext(&user)
+	return local.NewSecurityContext(currentUser)
 }
