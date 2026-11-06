@@ -18,10 +18,14 @@ import (
 	"context"
 	"testing"
 
+	"github.com/docker/distribution/manifest/schema2"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
+	accessorybase "github.com/goharbor/harbor/src/pkg/accessory/model/base"
+	artmodel "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	artifacttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
@@ -103,6 +107,81 @@ func (suite *CheckerTestSuite) TestIsScannable() {
 		suite.Nil(err)
 		suite.True(isScannable)
 	}
+}
+
+func (suite *CheckerTestSuite) TestRunnableSignatureAccessoryIsScannable() {
+	for _, mediaType := range []string{ocispec.MediaTypeImageConfig, schema2.MediaTypeImageConfig} {
+		suite.Run(mediaType, func() {
+			c := suite.new()
+			art := &artifact.Artifact{Artifact: artmodel.Artifact{MediaType: mediaType, ManifestMediaType: ocispec.MediaTypeImageManifest}}
+			registration := &scanner.Registration{Metadata: &v1.ScannerAdapterMetadata{
+				Capabilities: []*v1.ScannerCapability{{ConsumesMimeTypes: []string{ocispec.MediaTypeImageManifest}}},
+			}}
+			mock.OnAnything(c.scannerCtl, "GetRegistrationByProject").Return(registration, nil).Once()
+			mock.OnAnything(c.accMgr, "List").Return([]accessoryModel.Accessory{
+				&accessorybase.Default{Data: accessoryModel.AccessoryData{Type: accessoryModel.TypeNotationSignature}},
+			}, nil).Once()
+			mock.OnAnything(c.artifactCtl, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {
+				walkFn := args.Get(2).(func(*artifact.Artifact) error)
+				walkFn(art)
+			})
+			scannable, err := c.IsScannable(context.Background(), art)
+			suite.Require().NoError(err)
+			suite.True(scannable)
+		})
+	}
+}
+
+func (suite *CheckerTestSuite) TestAccessoryClassification() {
+	tests := []struct {
+		name              string
+		mediaType         string
+		accessoryType     string
+		skip              bool
+		runnableSignature bool
+	}{
+		{"notation signature", "application/vnd.oci.empty.v1+json", accessoryModel.TypeNotationSignature, true, false},
+		{"nydus image", ocispec.MediaTypeImageConfig, accessoryModel.TypeNydusAccelerator, false, true},
+		{"non-runnable nydus", "application/vnd.oci.empty.v1+json", accessoryModel.TypeNydusAccelerator, true, false},
+		{"image claiming signature", ocispec.MediaTypeImageConfig, accessoryModel.TypeCosignSignature, false, true},
+		{"image with subject", ocispec.MediaTypeImageConfig, accessoryModel.TypeSubject, false, true},
+		{"image claiming sbom", ocispec.MediaTypeImageConfig, accessoryModel.TypeHarborSBOM, false, true},
+		{"wasm claiming signature", "application/vnd.wasm.config.v1+json", accessoryModel.TypeCosignSignature, false, true},
+	}
+	for _, tc := range tests {
+		suite.Run(tc.name, func() {
+			c := suite.new()
+			art := &artifact.Artifact{Artifact: artmodel.Artifact{MediaType: tc.mediaType}}
+			mock.OnAnything(c.accMgr, "List").Return([]accessoryModel.Accessory{
+				&accessorybase.Default{Data: accessoryModel.AccessoryData{Type: tc.accessoryType}},
+			}, nil).Once()
+			skip, runnable, err := scanAccessoryStatus(context.Background(), c.accMgr, art)
+			suite.Require().NoError(err)
+			suite.Equal(tc.skip, skip)
+			suite.Equal(tc.runnableSignature, runnable)
+		})
+	}
+}
+
+func (suite *CheckerTestSuite) TestRunnableSignatureCollectedForScanning() {
+	c := suite.new()
+	art := &artifact.Artifact{Artifact: artmodel.Artifact{MediaType: schema2.MediaTypeImageConfig, ManifestMediaType: ocispec.MediaTypeImageManifest}}
+	registration := &scanner.Registration{Metadata: &v1.ScannerAdapterMetadata{
+		Capabilities: []*v1.ScannerCapability{{ConsumesMimeTypes: []string{ocispec.MediaTypeImageManifest}}},
+	}}
+	mock.OnAnything(c.accMgr, "List").Return([]accessoryModel.Accessory{
+		&accessorybase.Default{Data: accessoryModel.AccessoryData{Type: accessoryModel.TypeCosignSignature}},
+	}, nil).Once()
+	mock.OnAnything(c.artifactCtl, "HasUnscannableLayer").Return(false, nil).Once()
+	mock.OnAnything(c.artifactCtl, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		walkFn(art)
+	})
+	bc := &basicController{ar: c.artifactCtl, acc: c.accMgr}
+	artifacts, scannable, err := bc.collectScanningArtifacts(context.Background(), registration, art)
+	suite.Require().NoError(err)
+	suite.True(scannable)
+	suite.Equal([]*artifact.Artifact{art}, artifacts)
 }
 
 func TestCheckerTestSuite(t *testing.T) {
