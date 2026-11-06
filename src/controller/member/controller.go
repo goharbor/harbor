@@ -22,6 +22,7 @@ import (
 	commonmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/member"
@@ -231,7 +232,17 @@ func (c *controller) Create(ctx context.Context, projectNameOrID any, req Reques
 	if err := c.validateRole(ctx, member.Role); err != nil {
 		return 0, err
 	}
-	return c.mgr.AddProjectMember(ctx, member)
+	pmid, err := c.mgr.AddProjectMember(ctx, member)
+	if err != nil {
+		// A concurrent role delete can trip fk_project_member_role after
+		// validateRole succeeded; surface that as the same 400 clients get
+		// for a missing role instead of a 500.
+		if e := orm.AsForeignKeyError(err, "invalid role: must be a built-in project role (1-5) or an existing custom role"); e != nil {
+			return 0, ErrInvalidRole
+		}
+		return 0, err
+	}
+	return pmid, nil
 }
 
 // validateRole ensures a member's role is real: a built-in role (1-5), or a
