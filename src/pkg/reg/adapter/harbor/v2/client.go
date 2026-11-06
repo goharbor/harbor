@@ -117,15 +117,16 @@ func (c *client) getAccessoryArts(project, repo string, art *artifact.Artifact, 
 			accArt.Labels = append(accArt.Labels, label.Name)
 		}
 		// recursively get the accessories of the accessory
-		art, err := c.getArtifact(project, repo, acc.GetData().Digest, true)
+		subArt, err := c.getArtifact(project, repo, acc.GetData().Digest, true)
 		if err != nil {
 			return err
 		}
-		for _, tag := range art.Tags {
+		for _, tag := range subArt.Tags {
 			accArt.Tags = append(accArt.Tags, tag.Name)
 		}
 		*accArts = append(*accArts, accArt)
-		if err := c.getAccessoryArts(project, repo, art, labels, tags, accArts); err != nil {
+		subArt.Type = art.Type
+		if err := c.getAccessoryArts(project, repo, subArt, labels, tags, accArts); err != nil {
 			return err
 		}
 	}

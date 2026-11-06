@@ -59,10 +59,22 @@ func (d *deletionFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return d.createTasks(ctx, srcResources, dstResources)
+	var execution *task.Execution
+	if d.executionMgr != nil {
+		execution, err = d.executionMgr.Get(ctx, d.executionID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return d.createTasks(ctx, execution, srcResources, dstResources)
 }
 
-func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource) error {
+func (d *deletionFlow) createTasks(
+	ctx context.Context, execution *task.Execution, srcResources, dstResources []*model.Resource,
+) error {
+	jobName := getReplicationJobName(execution)
+
 	for i, resource := range srcResources {
 		src, err := json.Marshal(resource)
 		if err != nil {
@@ -74,7 +86,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 		}
 
 		job := &task.Job{
-			Name: job.ReplicationVendorType,
+			Name: jobName,
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},

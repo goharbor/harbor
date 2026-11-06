@@ -23,11 +23,7 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AppConfigService } from '../../../../services/app-config.service';
-import { ProjectRootInterface } from '../../../../shared/services';
-import {
-    GroupType,
-    PROJECT_ROOTS,
-} from '../../../../shared/entities/shared.const';
+import { GroupType } from '../../../../shared/entities/shared.const';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { UsergroupService } from '../../../../../../ng-swagger-gen/services/usergroup.service';
 import { of, Subject, Subscription } from 'rxjs';
@@ -35,6 +31,8 @@ import { UserGroup } from 'ng-swagger-gen/models/user-group';
 import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
+import { roleDisplayName } from '../../../../shared/units/role-util';
+import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
     selector: 'add-group',
@@ -43,7 +41,6 @@ import { MessageHandlerService } from '../../../../shared/services/message-handl
     standalone: false,
 })
 export class AddGroupComponent implements OnInit, OnDestroy {
-    projectRoots: ProjectRootInterface[] = PROJECT_ROOTS;
     memberGroup: UserGroup = {
         group_name: '',
     };
@@ -59,6 +56,10 @@ export class AddGroupComponent implements OnInit, OnDestroy {
     inlineAlert: InlineAlertComponent;
 
     @Input() projectId: number;
+    // Shared with the add-member dialog by the parent page, which loads the role
+    // list once for both.
+    @Input() roles: Role[] = [];
+    @Input() rolesLoaded: boolean = false;
     @Output() added = new EventEmitter<boolean>();
 
     checkOnGoing: boolean = false;
@@ -239,8 +240,20 @@ export class AddGroupComponent implements OnInit, OnDestroy {
             this.isGroupNameValid &&
             this.currentForm &&
             this.currentForm.valid &&
-            !this.checkOnGoing
+            !this.checkOnGoing &&
+            // The picker is empty until the roles arrive while roleId still holds
+            // its default, so submitting early would silently create a project
+            // admin.
+            this.hasValidRole()
         );
+    }
+
+    hasValidRole(): boolean {
+        return this.rolesLoaded && this.roles.some(r => r.id === this.roleId);
+    }
+
+    getRoleDisplayName(role: Role): string {
+        return roleDisplayName(role);
     }
 
     selectGroup(groupName) {

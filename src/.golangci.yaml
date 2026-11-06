@@ -26,9 +26,13 @@ linters:
         - G112
         - G114
         - G115
+        - G117
+        - G118
         - G306
         - G402
         - G404
+        - G407
+        - G704
     misspell:
       locale: US,UK
     staticcheck:

@@ -104,6 +104,13 @@ func (lAPI *labelAPI) ListLabels(ctx context.Context, params operation.ListLabel
 	if name != "" {
 		query.Keywords["name"] = &q.FuzzyMatchValue{Value: name}
 	}
+	// Global labels are shared across projects, so listing them requires a signed-in
+	// caller rather than access to a particular project or a system-admin role.
+	if scope == common.LabelScopeGlobal {
+		if err := lAPI.RequireAuthenticated(ctx); err != nil {
+			return lAPI.SendError(ctx, err)
+		}
+	}
 	if scope == common.LabelScopeProject {
 		pid := lib.Int64Value(params.ProjectID)
 		if pid == 0 {

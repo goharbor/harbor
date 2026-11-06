@@ -27,6 +27,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSec "github.com/goharbor/harbor/src/common/security/robot"
@@ -567,6 +568,11 @@ func (a *projectAPI) UpdateProject(ctx context.Context, params operation.UpdateP
 		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("retention_days is only supported when creating a proxy cache project"))
 	}
 
+	// registry_id can only be set when creating a project, allow the current value to be sent back unchanged
+	if params.Project.RegistryID != nil && *params.Project.RegistryID != p.RegistryID {
+		return a.SendError(ctx, errors.BadRequestError(nil).WithMessage("registry_id can not be changed after the project is created"))
+	}
+
 	if params.Project.CVEAllowlist != nil {
 		if params.Project.CVEAllowlist.ProjectID == 0 {
 			// project_id in cve_allowlist not provided or provided as 0, let it to be the id of the project which will be updating
@@ -672,9 +678,18 @@ func (a *projectAPI) ListScannerCandidatesOfProject(ctx context.Context, params 
 		return a.SendError(ctx, err)
 	}
 
+	hasAdminPermission := false
+	if secCtx, err := a.GetSecurityContext(ctx); err == nil && secCtx != nil {
+		hasAdminPermission = secCtx.IsSysAdmin() || secCtx.Can(ctx, rbac.ActionList, system.NewNamespace().Resource(rbac.ResourceScanner))
+	}
+
 	payload := make([]*models.ScannerRegistration, len(scanners))
 	for i, scanner := range scanners {
-		payload[i] = model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		s := model.NewScannerRegistration(scanner).ToSwagger(ctx)
+		if s != nil && !hasAdminPermission {
+			s.URL = ""
+		}
+		payload[i] = s
 	}
 
 	return operation.NewListScannerCandidatesOfProjectOK().

@@ -1108,6 +1108,7 @@ export enum PageSizeMapKeys {
     SYSTEM_RECENT_LOG_COMPONENT = 'SystemRecentLogComponent',
     SYSTEM_USER_COMPONENT = 'SystemUserComponent',
     SYSTEM_ROBOT_COMPONENT = 'SystemRobotAccountsComponent',
+    ROLE_COMPONENT = 'RolesComponent',
     SYSTEM_ENDPOINT_COMPONENT = 'SystemEndpointComponent',
     LIST_REPLICATION_RULE_COMPONENT = 'ListReplicationRuleComponent',
     LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS = 'ListReplicationRuleComponentExecutions',
