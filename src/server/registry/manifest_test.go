@@ -30,12 +30,15 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/goharbor/harbor/src/server/router"
 	arttesting "github.com/goharbor/harbor/src/testing/controller/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/controller/repository"
+	tagtesting "github.com/goharbor/harbor/src/testing/controller/tag"
 	"github.com/goharbor/harbor/src/testing/mock"
 	testmanifest "github.com/goharbor/harbor/src/testing/pkg/cached/manifest/redis"
 )
@@ -44,15 +47,18 @@ type manifestTestSuite struct {
 	suite.Suite
 	originalRepoCtl repository.Controller
 	originalArtCtl  artifact.Controller
+	originalTagCtl  tag.Controller
 	originalProxy   http.Handler
 	repoCtl         *repotesting.Controller
 	artCtl          *arttesting.Controller
+	tagCtl          *tagtesting.FakeController
 	cachedMgr       *testmanifest.CachedManager
 }
 
 func (m *manifestTestSuite) SetupSuite() {
 	m.originalRepoCtl = repository.Ctl
 	m.originalArtCtl = artifact.Ctl
+	m.originalTagCtl = tag.Ctl
 	m.originalProxy = proxy
 	m.cachedMgr = &testmanifest.CachedManager{}
 }
@@ -60,8 +66,10 @@ func (m *manifestTestSuite) SetupSuite() {
 func (m *manifestTestSuite) SetupTest() {
 	m.repoCtl = &repotesting.Controller{}
 	m.artCtl = &arttesting.Controller{}
+	m.tagCtl = &tagtesting.FakeController{}
 	repository.Ctl = m.repoCtl
 	artifact.Ctl = m.artCtl
+	tag.Ctl = m.tagCtl
 	pkg.ManifestMgr = m.cachedMgr
 }
 
@@ -72,6 +80,7 @@ func (m *manifestTestSuite) TearDownTest() {
 func (m *manifestTestSuite) TearDownSuite() {
 	repository.Ctl = m.originalRepoCtl
 	artifact.Ctl = m.originalArtCtl
+	tag.Ctl = m.originalTagCtl
 	proxy = m.originalProxy
 }
 
@@ -119,14 +128,6 @@ func (m *manifestTestSuite) TestGetManifest() {
 }
 
 func (m *manifestTestSuite) TestDeleteManifest() {
-	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
-	w := &httptest.ResponseRecorder{}
-	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
-	deleteManifest(w, req)
-	m.Equal(http.StatusBadRequest, w.Code)
-
-	m.SetupTest()
-
 	proxy = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodPut && req.URL.Path == "/v2/library/hello-world/manifests/latest" {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -135,11 +136,11 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 		}
 		w.WriteHeader(http.StatusOK)
 	})
-	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
+	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	input := &beegocontext.BeegoInput{}
 	input.SetParam(":reference", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
 	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
-	w = &httptest.ResponseRecorder{}
+	w := &httptest.ResponseRecorder{}
 	mock.OnAnything(m.artCtl, "GetByReference").Return(&artifact.Artifact{}, nil)
 	mock.OnAnything(m.artCtl, "Delete").Return(nil)
 	deleteManifest(w, req)
@@ -156,6 +157,58 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	deleteManifest(w, req)
 	m.Equal(http.StatusAccepted, w.Code)
 	m.cachedMgr.AssertCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+}
+
+func (m *manifestTestSuite) TestDeleteManifestByTag() {
+	newRequest := func() *http.Request {
+		req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
+		input := &beegocontext.BeegoInput{}
+		input.SetParam(":splat", "library/hello-world")
+		input.SetParam(":reference", "latest")
+		return req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input))
+	}
+	art := &artifact.Artifact{
+		Tags: []*tag.Tag{
+			{Tag: model_tag.Tag{ID: 1, Name: "v1"}},
+			{Tag: model_tag.Tag{ID: 2, Name: "latest"}},
+		},
+	}
+
+	// the tag doesn't exist
+	w := httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, errors.New(nil).WithCode(errors.NotFoundCode))
+	deleteManifest(w, newRequest())
+	m.Equal(http.StatusNotFound, w.Code)
+	m.tagCtl.AssertNotCalled(m.T(), "Delete")
+	m.artCtl.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
+
+	// the tag isn't attached to the artifact anymore
+	m.SetupTest()
+	w = httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(&artifact.Artifact{
+		Tags: []*tag.Tag{{Tag: model_tag.Tag{ID: 1, Name: "v1"}}},
+	}, nil)
+	deleteManifest(w, newRequest())
+	m.Equal(http.StatusNotFound, w.Code)
+	m.tagCtl.AssertNotCalled(m.T(), "Delete")
+
+	// the tag is immutable
+	m.SetupTest()
+	w = httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(art, nil)
+	m.tagCtl.On("Delete").Return(errors.New(nil).WithCode(errors.PreconditionCode))
+	deleteManifest(w, newRequest())
+	m.Equal(http.StatusPreconditionFailed, w.Code)
+
+	// only the tag is deleted, the artifact is kept
+	m.SetupTest()
+	w = httptest.NewRecorder()
+	mock.OnAnything(m.artCtl, "GetByReference").Return(art, nil)
+	m.tagCtl.On("Delete").Return(nil)
+	deleteManifest(w, newRequest())
+	m.Equal(http.StatusAccepted, w.Code)
+	m.tagCtl.AssertCalled(m.T(), "Delete")
+	m.artCtl.AssertNotCalled(m.T(), "Delete", mock.Anything, mock.Anything)
 }
 
 func (m *manifestTestSuite) TestPutManifest() {
