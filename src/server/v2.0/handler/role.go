@@ -55,6 +55,10 @@ func (rAPI *roleAPI) CreateRole(ctx context.Context, params operation.CreateRole
 		return rAPI.SendError(ctx, err)
 	}
 
+	if err := validateRoleDescription(params.Role.Description); err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+
 	if err := rAPI.validate(params.Role.Permissions); err != nil {
 		return rAPI.SendError(ctx, err)
 	}
@@ -279,10 +283,14 @@ func (rAPI *roleAPI) updateV2Role(ctx context.Context, params operation.UpdateRo
 		return err
 	}
 
+	if err := validateRoleDescription(params.Role.Description); err != nil {
+		return err
+	}
+
 	// A rename is allowed; validate the new name and apply it so it is persisted
-	// (the DB unique index rejects a collision). An empty or unchanged name leaves
-	// the existing name in place.
-	if params.Role.Name != "" && params.Role.Name != r.Name {
+	// (the DB unique index rejects a collision). An unchanged name leaves the
+	// existing name in place, an empty one is rejected like it is on create.
+	if params.Role.Name != r.Name {
 		if err := validateRoleName(params.Role.Name); err != nil {
 			return err
 		}
@@ -317,6 +325,15 @@ func validateRoleName(name string) error {
 	}
 	if strings.Contains(name, "+") {
 		return errors.New(nil).WithMessage("role name cannot contain the '+' character").WithCode(errors.BadRequestCode)
+	}
+	return nil
+}
+
+// validateRoleDescription rejects descriptions that the database cannot store,
+// so they fail with a 400 instead of a 500 from the insert.
+func validateRoleDescription(description string) error {
+	if strings.ContainsRune(description, 0) {
+		return errors.New(nil).WithMessage("role description cannot contain a NUL character").WithCode(errors.BadRequestCode)
 	}
 	return nil
 }
