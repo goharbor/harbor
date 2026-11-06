@@ -1,4 +1,18 @@
 <div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-alert [clrAlertType]="'info'" [clrAlertClosable]="false">
+            <clr-alert-item>
+                <span class="alert-text">
+                    {{ 'AUDIT_LOG.LEGACY_LOG_NOTICE' | translate }}
+                </span>
+                <div class="alert-actions">
+                    <a routerLink="../project-audit-log" class="alert-action">
+                        {{ 'SIDE_NAV.AUDIT_LOGS' | translate }}
+                    </a>
+                </div>
+            </clr-alert-item>
+        </clr-alert>
+    </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 reverse-row log-top">
         <div class="row flex-items-xs-right option-right display-f">
             <div class="flex-xs-middle">
