@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	rbac_project "github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/common/rbac/system"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/controller/project"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -132,8 +133,7 @@ func (reg registryFilter) filter(ctx context.Context, _ project.Controller,
 	}
 
 	secCtx, ok := security.FromContext(ctx)
-	if !ok || !secCtx.IsSysAdmin() {
-		// Set the actions to empty is the user is not admin
+	if !ok || !(secCtx.IsSysAdmin() || secCtx.Can(ctx, rbac.ActionRead, system.NewNamespace().Resource(rbac.ResourceCatalog))) {
 		a.Actions = []string{}
 	}
 	return nil
