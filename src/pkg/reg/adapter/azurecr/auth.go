@@ -86,7 +86,7 @@ func (a *authorizer) Modify(req *http.Request) error {
 
 	tokenReq, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if a.registry.Credential != nil {
@@ -102,6 +102,10 @@ func (a *authorizer) Modify(req *http.Request) error {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.Errorf("failed to fetch token, status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var tk token

@@ -63,3 +63,26 @@ func TestAuth(t *testing.T) {
 	tokenHeader := req.Header.Get("Authorization")
 	assert.Equal(t, fmt.Sprintf("Bearer %s", mockToken), tokenHeader)
 }
+
+func TestAuthTokenFailure(t *testing.T) {
+	defer gock.Off()
+	gock.New(mockURL).
+		Get("/v2/").
+		Reply(401).
+		SetHeader("Www-Authenticate", `Bearer realm="https://test.azurecr.io/oauth2/token",service="test.azurecr.io"`)
+	gock.New(mockURL).
+		Get("/oauth2/token").
+		Reply(401).
+		JSON(`{"errors": [{"code": "UNAUTHORIZED"}]}`)
+
+	a := newAuthorizer(&model.Registry{URL: mockURL, Credential: &model.Credential{AccessKey: mockUsername, AccessSecret: mockPassword}})
+	ct := &http.Client{}
+	a.client = ct
+	gock.InterceptClient(ct)
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", mockURL, "/v2/library/busybox/tags/list"), nil)
+	assert.NoError(t, err)
+	err = a.Modify(req)
+	assert.Error(t, err)
+	assert.Empty(t, req.Header.Get("Authorization"))
+}
