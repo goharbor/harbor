@@ -58,17 +58,13 @@ func NewClient(registry *model.Registry) (*Client, error) {
 		return client, nil
 	}
 
-	// Login to DockerHub to get access token. Tokens expire after 10 minutes;
-	// subsequent calls via Do() will refresh the token automatically.
+	// Keep authentication lazy. Proxy-cache pulls use the embedded native
+	// registry adapter and do not need the Docker Hub API token. Authenticating
+	// here would call /v2/auth/token for every short-lived proxy adapter.
 	client.credential = LoginCredential{
 		Identifier: registry.Credential.AccessKey,
 		Secret:     registry.Credential.AccessSecret,
 	}
-	err := client.refreshToken()
-	if err != nil {
-		return nil, fmt.Errorf("login to dockerhub error: %v", err)
-	}
-
 	return client, nil
 }
 
@@ -105,6 +101,9 @@ func (c *Client) refreshToken() error {
 	if err = json.Unmarshal(body, token); err != nil {
 		return fmt.Errorf("unmarshal token response error: %v", err)
 	}
+	if token.AccessToken == "" {
+		return fmt.Errorf("dockerhub token response contains no access_token")
+	}
 
 	c.token = token.AccessToken
 	// Tokens issued by /v2/auth/token expire after 10 minutes; refresh 1 minute
@@ -113,25 +112,31 @@ func (c *Client) refreshToken() error {
 	return nil
 }
 
-// ensureToken refreshes the bearer token when it has expired or is close to
-// expiring. It is a no-op for anonymous (unauthenticated) clients.
-func (c *Client) ensureToken() error {
-	if len(c.credential.Identifier) == 0 {
-		return nil
+// ensureToken returns a cached bearer token, refreshing it when it is expired
+// or close to expiring. It is a no-op for anonymous clients.
+func (c *Client) ensureToken() (string, error) {
+	if len(c.credential.Identifier) == 0 && len(c.credential.Secret) == 0 {
+		return "", nil
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if time.Now().Before(c.tokenExpiry) {
-		return nil
+		return c.token, nil
 	}
-	return c.refreshToken()
+
+	if err := c.refreshToken(); err != nil {
+		return "", err
+	}
+	return c.token, nil
 }
 
 // Do performs an HTTP request to DockerHub, refreshing the bearer token when
 // needed and attaching it to the Authorization header.
 func (c *Client) Do(method, path string, body io.Reader) (*http.Response, error) {
-	if err := c.ensureToken(); err != nil {
-		return nil, fmt.Errorf("refresh dockerhub token: %v", err)
+	token, err := c.ensureToken()
+	if err != nil {
+		return nil, fmt.Errorf("refresh dockerhub token: %w", err)
 	}
 
 	url := baseURL + path
@@ -143,7 +148,21 @@ func (c *Client) Do(method, path string, body io.Reader) (*http.Response, error)
 	if body != nil || method == http.MethodPost || method == http.MethodPut {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	if token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	}
 
-	return c.client.Do(req)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return resp, err
+	}
+	if resp.StatusCode == http.StatusUnauthorized && token != "" {
+		c.mu.Lock()
+		if c.token == token {
+			c.token = ""
+			c.tokenExpiry = time.Time{}
+		}
+		c.mu.Unlock()
+	}
+	return resp, nil
 }
