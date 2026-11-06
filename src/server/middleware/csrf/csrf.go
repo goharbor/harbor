@@ -65,6 +65,11 @@ func check(req *http.Request) error {
 // Fetch metadata headers browsers have sent since 2023, falling back to
 // comparing Origin against the Host the client addressed.
 //
+// Without Sec-Fetch-Site, Origin is compared to the Host core receives, port
+// included and scheme ignored; X-Forwarded-Host is not consulted. Reverse
+// proxies must forward Host unchanged, e.g. nginx `proxy_set_header Host
+// $http_host;`.
+//
 // Deliberately no configured endpoint takes part in the decision. Harbor is
 // commonly reachable on several ingresses, over different schemes, behind
 // proxies that rewrite Host; a single configured origin describes none of that,
