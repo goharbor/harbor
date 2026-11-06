@@ -225,6 +225,8 @@ def parse_yaml_config(config_file_path, with_trivy):
     if isinstance(webhook_egress_allowlist, str):
         webhook_egress_allowlist = [webhook_egress_allowlist]
     config_dict['webhook_egress_allowlist'] = ','.join(str(entry).strip() for entry in webhook_egress_allowlist)
+    webhook_pin_proxied_targets = webhook_egress_config.get('pin_proxied_targets')
+    config_dict['webhook_pin_proxied_targets'] = '' if webhook_pin_proxied_targets is None else str(webhook_pin_proxied_targets).strip().lower()
     # 2.15 boolean, passed through so its meaning survives the upgrade
     allow_private_network_access = (configs.get('network') or {}).get('allow_private_network_access')
     config_dict['allow_private_network_access'] = ''
