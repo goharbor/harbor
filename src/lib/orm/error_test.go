@@ -70,10 +70,18 @@ func TestIsForeignKeyError(t *testing.T) {
 	err = AsForeignKeyError(errors.New("common error"), "")
 	assert.Nil(t, err)
 
-	// pass
+	// pass — foreign_key_violation
 	message := "message"
 	err = AsForeignKeyError(&pgconn.PgError{
 		Code: "23503",
+	}, "%s", message)
+	require.NotNil(t, err)
+	assert.Equal(t, errors.ViolateForeignKeyConstraintCode, err.Code)
+	assert.Equal(t, message, err.Message)
+
+	// pass — restrict_violation (ON DELETE/UPDATE RESTRICT)
+	err = AsForeignKeyError(&pgconn.PgError{
+		Code: "23001",
 	}, "%s", message)
 	require.NotNil(t, err)
 	assert.Equal(t, errors.ViolateForeignKeyConstraintCode, err.Code)
