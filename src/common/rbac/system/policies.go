@@ -55,6 +55,17 @@ var (
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionDelete},
 
+		{Resource: rbac.ResourceModelSyncPolicy, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceModelSyncPolicy, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceModelSyncPolicy, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceModelSyncPolicy, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceModelSyncPolicy, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceModelSync, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceModelSync, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceModelSync, Action: rbac.ActionList},
+		{Resource: rbac.ResourceModelSync, Action: rbac.ActionStop},
+
 		{Resource: rbac.ResourceDistribution, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceDistribution, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceDistribution, Action: rbac.ActionUpdate},

@@ -1,0 +1,408 @@
+<div class="row" class="model-sync-row">
+    <div>
+        <div class="row flex-items-xs-between rightPos">
+            <div class="flex-xs-middle option-right">
+                <hbr-filter
+                    id="filter-model-sync-policies"
+                    [withDivider]="true"
+                    filterPlaceholder="{{
+                        'MODEL_SYNC.FILTER_POLICIES_PLACEHOLDER' | translate
+                    }}"
+                    (filterEvt)="doSearchPolicies($event)"
+                    [currentValue]="searchPolicy"></hbr-filter>
+                <span class="refresh-btn" (click)="refreshPolicies()">
+                    <clr-icon shape="refresh"></clr-icon>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="list-policy">
+            <clr-datagrid
+                clrDgSelectionType="single"
+                (clrDgRefresh)="clrLoadPolicies($event)"
+                [clrDgLoading]="policiesLoading"
+                [clrDgSelected]="selectedPolicy ? [selectedPolicy] : []"
+                (clrDgSelectedChange)="selectPolicy($event?.[0])">
+                <clr-dg-action-bar>
+                    <button
+                        type="button"
+                        id="new-model-sync-policy"
+                        class="btn btn-secondary"
+                        (click)="openCreatePolicy()">
+                        <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{
+                            'MODEL_SYNC.NEW_POLICY' | translate
+                        }}
+                    </button>
+                    <button
+                        type="button"
+                        id="model-sync-exe-id"
+                        class="btn btn-secondary"
+                        [disabled]="
+                            !selectedPolicy ||
+                            !selectedPolicy.enabled ||
+                            policyOperating
+                        "
+                        (click)="confirmSync(selectedPolicy)">
+                        <clr-icon shape="export" size="16"></clr-icon>&nbsp;{{
+                            'MODEL_SYNC.SYNC_NOW' | translate
+                        }}
+                    </button>
+                    <clr-dropdown
+                        [clrCloseMenuOnItemClick]="true"
+                        class="btn btn-link"
+                        clrDropdownTrigger>
+                        <span id="policy-action"
+                            >{{ 'BUTTON.ACTIONS' | translate
+                            }}<clr-icon
+                                shape="caret"
+                                direction="down"></clr-icon
+                        ></span>
+                        <clr-dropdown-menu *clrIfOpen>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                clrDropdownItem
+                                (click)="openEditPolicy(selectedPolicy)"
+                                [disabled]="!selectedPolicy">
+                                <clr-icon shape="edit" size="16"></clr-icon
+                                >&nbsp;
+                                <span id="edit-model-sync-policy">{{
+                                    'BUTTON.EDIT' | translate
+                                }}</span>
+                            </button>
+                            @if ( selectedPolicy && !selectedPolicy.enabled ) {
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                clrDropdownItem
+                                (click)="confirmToggle(selectedPolicy)">
+                                <clr-icon
+                                    size="16"
+                                    shape="success-standard"></clr-icon
+                                >&nbsp;
+                                <span id="policy-enable">{{
+                                    'WEBHOOK.ENABLED_BUTTON' | translate
+                                }}</span>
+                            </button>
+                            } @if ( !selectedPolicy || (selectedPolicy &&
+                            selectedPolicy.enabled) ) {
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                clrDropdownItem
+                                (click)="confirmToggle(selectedPolicy)"
+                                [disabled]="
+                                    !(selectedPolicy && selectedPolicy.enabled)
+                                ">
+                                <clr-icon size="16" shape="ban"></clr-icon
+                                >&nbsp;
+                                <span id="policy-disable">{{
+                                    'WEBHOOK.DISABLED_BUTTON' | translate
+                                }}</span>
+                            </button>
+                            }
+                            <div class="dropdown-divider"></div>
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                clrDropdownItem
+                                (click)="confirmDelete(selectedPolicy)"
+                                [disabled]="!selectedPolicy">
+                                <clr-icon
+                                    shape="window-close"
+                                    size="16"></clr-icon
+                                >&nbsp;
+                                <span id="delete-model-sync-policy">{{
+                                    'BUTTON.DELETE' | translate
+                                }}</span>
+                            </button>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
+                </clr-dg-action-bar>
+                <clr-dg-column>{{
+                    'MODEL_SYNC.NAME' | translate
+                }}</clr-dg-column>
+                <clr-dg-column class="status-width">{{
+                    'MODEL_SYNC.STATUS' | translate
+                }}</clr-dg-column>
+                <clr-dg-column class="col-width">{{
+                    'MODEL_SYNC.SOURCE_REGISTRY' | translate
+                }}</clr-dg-column>
+                <clr-dg-column class="min-width">{{
+                    'MODEL_SYNC.MODEL' | translate
+                }}</clr-dg-column>
+                <clr-dg-column class="col-width">{{
+                    'MODEL_SYNC.REVISION' | translate
+                }}</clr-dg-column>
+                <clr-dg-column class="min-width">{{
+                    'MODEL_SYNC.DESTINATION' | translate
+                }}</clr-dg-column>
+                <clr-dg-column>{{
+                    'MODEL_SYNC.LAST_SYNCED' | translate
+                }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'description'">{{
+                    'MODEL_SYNC.DESCRIPTION' | translate
+                }}</clr-dg-column>
+                <clr-dg-column>{{
+                    'MODEL_SYNC.TRIGGER' | translate
+                }}</clr-dg-column>
+                <clr-dg-placeholder>{{
+                    'MODEL_SYNC.POLICIES_PLACEHOLDER' | translate
+                }}</clr-dg-placeholder>
+                @for (p of policies; track p) {
+                <clr-dg-row [clrDgItem]="p">
+                    <clr-dg-cell>{{ p.name }}</clr-dg-cell>
+                    <clr-dg-cell class="status-width">
+                        <div>
+                            @if (!p?.enabled) {
+                            <div>
+                                <clr-icon
+                                    shape="exclamation-triangle"
+                                    status="warning"
+                                    class="text-alignment"
+                                    size="18"></clr-icon>
+                                {{ 'WEBHOOK.DISABLED' | translate }}
+                            </div>
+                            } @if (p?.enabled) {
+                            <div>
+                                <clr-icon
+                                    shape="success-standard"
+                                    status="success"
+                                    class="text-alignment"
+                                    size="18"></clr-icon>
+                                {{ 'WEBHOOK.ENABLED' | translate }}
+                            </div>
+                            }
+                        </div>
+                    </clr-dg-cell>
+                    <clr-dg-cell class="col-width">
+                        {{ p.registry ? p.registry.name : '-' }}
+                    </clr-dg-cell>
+                    <clr-dg-cell class="min-width">{{
+                        p.src_repository
+                    }}</clr-dg-cell>
+                    <clr-dg-cell class="col-width">{{
+                        revision(p)
+                    }}</clr-dg-cell>
+                    <clr-dg-cell class="min-width">{{
+                        destination(p)
+                    }}</clr-dg-cell>
+                    <clr-dg-cell>
+                        @if (p.last_synced_revision) {
+                        {{ p.last_synced_revision | slice : 0 : 12 }}
+                        <clr-signpost>
+                            <clr-signpost-content *clrIfOpen>
+                                {{ p.last_synced_revision }}
+                            </clr-signpost-content>
+                        </clr-signpost>
+                        } @else { - }
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        {{
+                            p.description
+                                ? truncatedDescription(p.description)
+                                : '-'
+                        }}
+                        <clr-tooltip>
+                            @if ( p.description && p.description.length > 35 ) {
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="ellipsis-horizontal"
+                                size="18"></clr-icon>
+                            }
+                            <clr-tooltip-content
+                                clrPosition="bottom-right"
+                                clrSize="md"
+                                *clrIfOpen>
+                                <span>{{ p.description }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </clr-dg-cell>
+                    <clr-dg-cell class="trigger">
+                        {{ triggerI18n(p) | translate }}
+                        @if (p?.trigger?.trigger_settings?.cron) {
+                        <clr-signpost>
+                            <clr-signpost-content *clrIfOpen>
+                                {{ p?.trigger?.trigger_settings?.cron }}
+                            </clr-signpost-content>
+                        </clr-signpost>
+                        }
+                    </clr-dg-cell>
+                </clr-dg-row>
+                }
+                <clr-dg-footer>
+                    <clr-dg-pagination
+                        #policyPagination
+                        [(clrDgPage)]="policiesPage"
+                        [clrDgPageSize]="policiesPageSize"
+                        [clrDgTotalItems]="policiesTotal">
+                        <clr-dg-page-size
+                            [clrPageSizeOptions]="clrPageSizeOptions"
+                            >{{
+                                'PAGINATION.PAGE_SIZE' | translate
+                            }}</clr-dg-page-size
+                        >
+                        @if (policiesTotal) {
+                        <span
+                            >{{ policyPagination.firstItem + 1 }} -
+                            {{ policyPagination.lastItem + 1 }}
+                            {{ 'REPLICATION.OF' | translate }}
+                        </span>
+                        }{{ policiesTotal }}
+                        {{ 'REPLICATION.ITEMS' | translate }}
+                    </clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
+    <div
+        class="col-lg-12 col-md-12 col-sm-12 col-xs-12 jobList"
+        [hidden]="!selectedPolicy">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="executions-header">
+                <h5 class="executions-title">
+                    {{ 'MODEL_SYNC.EXECUTIONS' | translate }}
+                </h5>
+                <div class="executions-tools">
+                    <div class="select filter-tag" [hidden]="!isOpenFilterTag">
+                        <clr-select-container>
+                            <select
+                                clrSelect
+                                (change)="doFilterExecutions($event)">
+                                <option value="trigger">
+                                    {{ 'MODEL_SYNC.TRIGGER' | translate }}
+                                </option>
+                                <option value="status">
+                                    {{ 'MODEL_SYNC.STATUS' | translate }}
+                                </option>
+                            </select>
+                        </clr-select-container>
+                    </div>
+                    <hbr-filter
+                        id="filter-model-sync-executions"
+                        [withDivider]="true"
+                        (openFlag)="openFilter($event)"
+                        filterPlaceholder="{{
+                            'REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER'
+                                | translate
+                        }}"
+                        (filterEvt)="doSearchExecutions($event)"
+                        [currentValue]="currentTerm"></hbr-filter>
+                    <span class="refresh-btn" (click)="refreshExecutions()">
+                        <clr-icon shape="refresh"></clr-icon>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <clr-datagrid
+                clrDgSelectionType="multi"
+                [(clrDgSelected)]="selectedExecutions"
+                [clrDgLoading]="executionsLoading"
+                (clrDgRefresh)="clrLoadExecutions(true, $event)">
+                <clr-dg-action-bar>
+                    <div class="btn-group">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            [disabled]="
+                                !canStop() ||
+                                !(executions && executions.length > 0) ||
+                                stopOnGoing ||
+                                !selectedExecutions.length
+                            "
+                            (click)="openStopDialog()">
+                            {{ 'REPLICATION.STOPJOB' | translate }}
+                        </button>
+                    </div>
+                </clr-dg-action-bar>
+                <clr-dg-column [clrDgSortBy]="'id'">{{
+                    'REPLICATION.ID' | translate
+                }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'status'">{{
+                    'REPLICATION.STATUS' | translate
+                }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'trigger'">{{
+                    'REPLICATION.REPLICATION_TRIGGER' | translate
+                }}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="'start_time'">{{
+                    'REPLICATION.CREATION_TIME' | translate
+                }}</clr-dg-column>
+                <clr-dg-column>{{
+                    'REPLICATION.DURATION' | translate
+                }}</clr-dg-column>
+                <clr-dg-column>{{
+                    'MODEL_SYNC.OPERATOR' | translate
+                }}</clr-dg-column>
+                <clr-dg-placeholder>{{
+                    'MODEL_SYNC.EXECUTIONS_PLACEHOLDER' | translate
+                }}</clr-dg-placeholder>
+                @for (e of executions; track e) {
+                <clr-dg-row [clrDgItem]="e">
+                    <clr-dg-cell>
+                        <a href="javascript:void(0)" (click)="goToTasks(e)">{{
+                            e.id
+                        }}</a>
+                    </clr-dg-cell>
+                    <clr-dg-cell>
+                        {{ getStatusStr(e.status, e.status_text) }}
+                        <clr-tooltip>
+                            @if (e.status_text) {
+                            <clr-icon
+                                clrTooltipTrigger
+                                shape="info-circle"
+                                size="20"></clr-icon>
+                            }
+                            <clr-tooltip-content
+                                [clrPosition]="'left'"
+                                clrSize="md"
+                                *clrIfOpen>
+                                <span>{{ e.status_text }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{ e.trigger }}</clr-dg-cell>
+                    <clr-dg-cell>{{
+                        e.start_time | harborDatetime : 'short'
+                    }}</clr-dg-cell>
+                    <clr-dg-cell>{{ getDuration(e) }}</clr-dg-cell>
+                    <clr-dg-cell>{{ e.operator }}</clr-dg-cell>
+                </clr-dg-row>
+                }
+                <clr-dg-footer>
+                    <clr-dg-pagination
+                        #executionPagination
+                        [(clrDgPage)]="executionsPage"
+                        [clrDgPageSize]="executionsPageSize"
+                        [clrDgTotalItems]="executionsTotal">
+                        <clr-dg-page-size
+                            [clrPageSizeOptions]="clrPageSizeOptions"
+                            >{{
+                                'PAGINATION.PAGE_SIZE' | translate
+                            }}</clr-dg-page-size
+                        >
+                        @if (executionsTotal) {
+                        <span
+                            >{{ executionPagination.firstItem + 1 }} -
+                            {{ executionPagination.lastItem + 1 }}
+                            {{ 'REPLICATION.OF' | translate }}</span
+                        >
+                        }
+                        {{ executionsTotal }}
+                        {{ 'REPLICATION.ITEMS' | translate }}
+                    </clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
+    <create-edit-model-sync-policy
+        (goToRegistry)="goRegistry()"
+        (saved)="onPolicySaved()"></create-edit-model-sync-policy>
+    <confirmation-dialog
+        #policyConfirmDialog
+        (confirmAction)="onPolicyConfirm($event)"></confirmation-dialog>
+    <confirmation-dialog
+        #stopConfirmDialog
+        (confirmAction)="onStopConfirm($event)"></confirmation-dialog>
+</div>

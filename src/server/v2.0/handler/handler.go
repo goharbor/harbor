@@ -46,6 +46,7 @@ func New() http.Handler {
 		RobotAPI:              newRobotAPI(),
 		RoleAPI:               newRoleAPI(),
 		ReplicationAPI:        newReplicationAPI(),
+		ModelSyncAPI:          newModelSyncAPI(),
 		RegistryAPI:           newRegistryAPI(),
 		SysteminfoAPI:         newSystemInfoAPI(),
 		PingAPI:               newPingAPI(),

@@ -44,6 +44,7 @@ type Policy struct {
 	Speed                     int32     `orm:"column(speed_kb)"`
 	CopyByChunk               bool      `orm:"column(copy_by_chunk)"`
 	SingleActiveReplication   bool      `orm:"column(single_active_replication)"`
+	RevisionTag               bool      `orm:"column(revision_tag)"`
 }
 
 // TableName set table name for ORM

@@ -28,6 +28,8 @@ import {
 export enum RouteConfigId {
     REPLICATION_PAGE = 'TotalReplicationPageComponent',
     REPLICATION_TASKS_PAGE = 'ReplicationTasksComponent',
+    MODEL_SYNC_PAGE = 'ModelSyncPageComponent',
+    MODEL_SYNC_TASKS_PAGE = 'ModelSyncExecutionTasksComponent',
     P2P_POLICIES_PAGE = 'PolicyComponent',
     P2P_TASKS_PAGE = 'P2pTaskListComponent',
     WEBHOOK_POLICIES_PAGE = 'WebhookComponent',
@@ -79,6 +81,14 @@ export class HarborRouteReuseStrategy implements RouteReuseStrategy {
                     RouteConfigId.REPLICATION_TASKS_PAGE &&
                 future.routeConfig.data.routeConfigId ===
                     RouteConfigId.REPLICATION_PAGE
+            ) {
+                this.shouldDeleteCache = false;
+            }
+            if (
+                curr.routeConfig.data.routeConfigId ===
+                    RouteConfigId.MODEL_SYNC_TASKS_PAGE &&
+                future.routeConfig.data.routeConfigId ===
+                    RouteConfigId.MODEL_SYNC_PAGE
             ) {
                 this.shouldDeleteCache = false;
             }

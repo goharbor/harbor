@@ -76,6 +76,8 @@ const (
 	ResourceGarbageCollection  = Resource("garbage-collection")
 	ResourceReplicationAdapter = Resource("replication-adapter")
 	ResourceReplicationPolicy  = Resource("replication-policy")
+	ResourceModelSync          = Resource("model-sync")
+	ResourceModelSyncPolicy    = Resource("model-sync-policy")
 	ResourceScanAll            = Resource("scan-all")
 	ResourceSystemVolumes      = Resource("system-volumes")
 	ResourcePurgeAuditLog      = Resource("purge-audit")
@@ -191,6 +193,17 @@ var (
 			{Resource: ResourceReplication, Action: ActionList},
 
 			{Resource: ResourceReplicationAdapter, Action: ActionList},
+
+			{Resource: ResourceModelSyncPolicy, Action: ActionRead},
+			{Resource: ResourceModelSyncPolicy, Action: ActionCreate},
+			{Resource: ResourceModelSyncPolicy, Action: ActionDelete},
+			{Resource: ResourceModelSyncPolicy, Action: ActionList},
+			{Resource: ResourceModelSyncPolicy, Action: ActionUpdate},
+
+			{Resource: ResourceModelSync, Action: ActionRead},
+			{Resource: ResourceModelSync, Action: ActionCreate},
+			{Resource: ResourceModelSync, Action: ActionList},
+			{Resource: ResourceModelSync, Action: ActionStop},
 
 			{Resource: ResourceRegistry, Action: ActionRead},
 			{Resource: ResourceRegistry, Action: ActionCreate},

@@ -218,6 +218,12 @@ func (r *registryAPI) GetRegistryInfo(ctx context.Context, params operation.GetR
 	if info.SupportedCopyByChunk {
 		in.SupportedCopyByChunk = &info.SupportedCopyByChunk
 	}
+	if info.SupportedRevisionTag {
+		in.SupportedRevisionTag = &info.SupportedRevisionTag
+	}
+	if info.SourceOnly {
+		in.SourceOnly = &info.SourceOnly
+	}
 
 	return operation.NewGetRegistryInfoOK().WithPayload(in)
 }

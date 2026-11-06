@@ -1,0 +1,155 @@
+clr-modal {
+    ::ng-deep div.modal-dialog {
+        width: 32rem;
+    }
+}
+
+.alert-label {
+    color: red;
+    font-size: 12px;
+}
+
+.go-link {
+    line-height: 1rem;
+    cursor: pointer;
+}
+
+.modal-body-height {
+    max-height: 85vh;
+}
+
+.filter-select {
+    position: relative;
+    width: 315px;
+    margin-bottom: 0.25rem;
+}
+
+.filter-select clr-icon {
+    margin-left: 10px;
+    margin-top: 5px;
+    margin-right: 15px;
+}
+
+.space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex {
+    display: flex;
+}
+
+.sub-label {
+    flex: 0 0 5rem;
+}
+
+.clr-control-label {
+    width: 8.6rem;
+}
+
+.des-tooltip {
+    margin-left: 0.5rem;
+}
+
+.width-input {
+    width: 17rem;
+}
+
+.width-name-resource {
+    flex: 0 0 12rem;
+    width: 12rem;
+}
+
+.margin-left-90px {
+    margin-left: 5rem;
+}
+
+.spinner-position {
+    margin-left: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.display-none {
+    display: none;
+}
+
+.no-extend {
+    flex: 1;
+}
+
+.cron-input {
+    width: 12rem;
+}
+
+.preview {
+    margin-top: 0.25rem;
+    width: 12rem;
+    flex: 0 0 12rem;
+    font-size: 0.55rem;
+    line-height: 0.9rem;
+
+    .preview-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        min-height: 1rem;
+    }
+
+    .preview-key {
+        color: #8c8c8c;
+        margin-right: 0.2rem;
+    }
+
+    .mono {
+        font-family: monospace;
+    }
+
+    .stale {
+        color: #8c8c8c;
+        font-style: italic;
+    }
+
+    .label {
+        font-size: 0.45rem;
+        height: 0.8rem;
+        line-height: 0.75rem;
+        padding: 0 0.3rem;
+    }
+
+    .toggle-files {
+        margin-left: 0.25rem;
+    }
+
+    .preview-files {
+        max-height: 7rem;
+        overflow-y: auto;
+        margin-top: 0.25rem;
+        border: 1px solid #8c8c8c;
+        border-radius: 3px;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .preview-file {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+
+        .file-path {
+            font-family: monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-meta {
+            color: #8c8c8c;
+            white-space: nowrap;
+        }
+    }
+
+    .unmatched {
+        color: #8c8c8c;
+        text-decoration: line-through;
+    }
+}

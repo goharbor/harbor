@@ -4101,6 +4101,402 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /model-sync/policies:
+    get:
+      summary: List model sync policies
+      description: List model sync policies
+      tags:
+        - model_sync
+      operationId: listModelSyncPolicies
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ModelSyncPolicy'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a model sync policy
+      description: Create a model sync policy
+      tags:
+        - model_sync
+      operationId: createModelSyncPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: policy
+          in: body
+          description: The model sync policy
+          required: true
+          schema:
+            $ref: '#/definitions/ModelSyncPolicy'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/policies/{id}:
+    get:
+      summary: Get the specific model sync policy
+      description: Get the specific model sync policy
+      tags:
+        - model_sync
+      operationId: getModelSyncPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Policy ID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ModelSyncPolicy'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update the model sync policy
+      description: Update the model sync policy
+      tags:
+        - model_sync
+      operationId: updateModelSyncPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The policy ID
+        - name: policy
+          in: body
+          description: The model sync policy
+          required: true
+          schema:
+            $ref: '#/definitions/ModelSyncPolicy'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific model sync policy
+      description: Delete the specific model sync policy
+      tags:
+        - model_sync
+      operationId: deleteModelSyncPolicy
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Policy ID
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/policies/{id}/executions:
+    get:
+      summary: List executions of the model sync policy
+      description: List executions of the model sync policy
+      tags:
+        - model_sync
+      operationId: listModelSyncExecutions
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Policy ID
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The execution status.
+        - name: trigger
+          in: query
+          type: string
+          required: false
+          description: The trigger mode.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ModelSyncExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Trigger a sync of the model sync policy manually
+      description: Trigger a sync of the model sync policy manually
+      tags:
+        - model_sync
+      operationId: startModelSync
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Policy ID
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/executions/{execution_id}:
+    get:
+      summary: Get the specific model sync execution
+      description: Get the model sync execution specified by ID
+      tags:
+        - model_sync
+      operationId: getModelSyncExecution
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ModelSyncExecution'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Stop the specific model sync execution
+      description: Stop the model sync execution specified by ID
+      tags:
+        - model_sync
+      operationId: stopModelSync
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/executions/{execution_id}/tasks:
+    get:
+      summary: List tasks of the model sync execution
+      description: List tasks of the model sync execution
+      tags:
+        - model_sync
+      operationId: listModelSyncTasks
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/executionId'
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The task status.
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of the resources
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ModelSyncTask'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/executions/{execution_id}/tasks/{task_id}/log:
+    get:
+      summary: Get the log of the specific model sync task
+      description: Get the log of the specific model sync task
+      tags:
+        - model_sync
+      operationId: getModelSyncLog
+      produces:
+        - text/plain
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/executionId'
+        - $ref: '#/parameters/taskId'
+      responses:
+        '200':
+          description: Success
+          headers:
+            Content-Type:
+              description: The content type of response body
+              type: string
+          schema:
+            type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/preview:
+    post:
+      summary: Preview a model source
+      description: Resolve a model from the source hub and list its files without importing it
+      tags:
+        - model_sync
+      operationId: previewModelSync
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: preview
+          in: body
+          description: The source to preview
+          required: true
+          schema:
+            $ref: '#/definitions/ModelSyncPreviewRequest'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/ModelSyncPreview'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /model-sync/adapters:
+    get:
+      summary: List the registry types that support model sync
+      description: List the registry types that have a model adapter and can be used as the source of model sync policies
+      tags:
+        - model_sync
+      operationId: listModelSyncAdapters
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              type: string
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /replication/adapters:
     get:
       summary: List registry adapters
@@ -7897,6 +8293,12 @@ definitions:
           Whether to skip execution until the previous active execution finishes,
           avoiding the execution of the same replication rules multiple times in parallel.
         x-isnullable: true # make this field optional to keep backward compatibility
+      revision_tag:
+        type: boolean
+        description: |-
+          Whether each copy also gets the immutable tag "sha-<first 12 hex of the source revision>"
+          next to its moving tags. Only sources whose registry info declares supported_revision_tag accept it.
+        x-isnullable: true
   ReplicationTrigger:
     type: object
     properties:
@@ -7918,7 +8320,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings. For file filters (only on sources that list the "file" filter in their registry info), this is either an object {"include": [patterns], "exclude": [patterns]} or a string of doublestar patterns separated by commas or whitespace, where a leading "!" excludes.'
       decoration:
         type: string
         description: 'matches or excludes the result'
@@ -8068,6 +8470,16 @@ definitions:
       supported_copy_by_chunk:
         type: boolean
         description: The registry whether support copy by chunk.
+        x-omitempty: true
+        x-isnullable: true
+      supported_revision_tag:
+        type: boolean
+        description: Whether the registry as a replication source can add the immutable revision tag to copies.
+        x-omitempty: true
+        x-isnullable: true
+      source_only:
+        type: boolean
+        description: Whether the registry can only be a replication source, never a destination.
         x-omitempty: true
         x-isnullable: true
   RegistryProviderInfo:
@@ -8232,6 +8644,312 @@ definitions:
         type: string
         format: date-time
         description: The end time of the task
+  ModelSyncPolicy:
+    type: object
+    description: The model sync policy
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The policy ID
+      name:
+        type: string
+        description: The policy name
+      description:
+        type: string
+        description: The description of the policy
+      creator:
+        type: string
+        description: The creator of the policy
+      enabled:
+        type: boolean
+        x-omitempty: false
+        description: Whether the policy is enabled or not
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of the source registry (model hub) registered in registry management
+      registry:
+        $ref: '#/definitions/Registry'
+        description: The source registry, populated in responses
+      src_repository:
+        type: string
+        description: The hub-side model repository, e.g. Qwen/Qwen3-8B
+      src_revision:
+        type: string
+        description: The branch, tag or immutable revision to sync; empty means the default branch
+      file_filters:
+        type: array
+        description: Doublestar include patterns of the files to sync; empty means all files
+        items:
+          type: string
+      file_excludes:
+        type: array
+        description: Doublestar patterns of the files to leave out, applied after file_filters
+        items:
+          type: string
+      dest_project_id:
+        type: integer
+        format: int64
+        description: The ID of the destination project
+      dest_project_name:
+        type: string
+        description: The name of the destination project, populated in responses
+      dest_repository:
+        type: string
+        description: The destination repository inside the project; defaults to the lower-cased source repository
+      trigger:
+        $ref: '#/definitions/ModelSyncTrigger'
+      last_synced_revision:
+        type: string
+        description: The upstream revision of the last successful sync
+      creation_time:
+        type: string
+        format: date-time
+        description: The create time of the policy
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the policy
+  ModelSyncTrigger:
+    type: object
+    properties:
+      type:
+        type: string
+        description: 'The trigger type: manual or scheduled'
+        enum:
+          - manual
+          - scheduled
+      trigger_settings:
+        type: object
+        properties:
+          cron:
+            type: string
+            description: The cron string for scheduled trigger
+  ModelSyncExecution:
+    type: object
+    description: The model sync execution
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the execution
+      policy_id:
+        type: integer
+        format: int64
+        description: The ID of the policy that the execution belongs to
+      status:
+        type: string
+        description: The status of the execution
+      status_text:
+        type: string
+        x-omitempty: false
+        description: The status text
+      trigger:
+        type: string
+        description: The trigger mode
+      operator:
+        type: string
+        description: The operator who triggered the execution
+      start_time:
+        type: string
+        format: date-time
+        description: The start time
+      end_time:
+        type: string
+        format: date-time
+        description: The end time
+      total:
+        type: integer
+        x-omitempty: false
+        description: The total count of tasks
+      failed:
+        type: integer
+        x-omitempty: false
+        description: The count of failed tasks
+      succeed:
+        type: integer
+        x-omitempty: false
+        description: The count of succeed tasks
+      in_progress:
+        type: integer
+        x-omitempty: false
+        description: The count of in progress tasks
+      stopped:
+        type: integer
+        x-omitempty: false
+        description: The count of stopped tasks
+  ModelSyncTask:
+    type: object
+    description: The model sync task
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the task
+      execution_id:
+        type: integer
+        format: int64
+        description: The ID of the execution that the task belongs to
+      status:
+        type: string
+        description: The status of the task
+      status_message:
+        type: string
+        x-omitempty: false
+        description: The status message of the task
+      job_id:
+        type: string
+        description: The ID of the underlying job
+      src_repository:
+        type: string
+        description: The hub-side model repository
+      src_revision:
+        type: string
+        description: The revision expression requested
+      dest_repository:
+        type: string
+        description: The destination repository
+      revision:
+        type: string
+        description: The resolved immutable upstream revision
+      digest:
+        type: string
+        description: The digest of the pushed artifact
+      tags:
+        type: array
+        description: The tags applied to the artifact
+        items:
+          type: string
+      files:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The number of files synced
+      size:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The total size in bytes of the pushed artifact
+      skipped:
+        type: boolean
+        x-omitempty: false
+        description: Whether the destination already held the artifact before the sync, so nothing was copied
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the task
+      start_time:
+        type: string
+        format: date-time
+        description: The start time of the task
+      end_time:
+        type: string
+        format: date-time
+        description: The end time of the task
+  ModelSyncPreviewRequest:
+    type: object
+    required:
+      - registry_id
+      - src_repository
+    properties:
+      registry_id:
+        type: integer
+        format: int64
+        description: The ID of the source registry
+      src_repository:
+        type: string
+        description: The hub-side model repository
+      src_revision:
+        type: string
+        description: The branch, tag or revision; empty means the default branch
+      file_filters:
+        type: array
+        description: Doublestar include patterns of the files to sync
+        items:
+          type: string
+      file_excludes:
+        type: array
+        description: Doublestar patterns of the files to leave out
+        items:
+          type: string
+  ModelSyncPreview:
+    type: object
+    description: The resolved model source
+    properties:
+      repository:
+        type: string
+        description: The hub-side model repository
+      ref:
+        type: string
+        description: The revision expression as resolved
+      revision:
+        type: string
+        description: The immutable upstream revision
+      source_url:
+        type: string
+        description: The upstream URL of the revision
+      revision_tag:
+        type: string
+        description: The immutable tag of the revision added to the synced artifact
+      digest:
+        type: string
+        description: The manifest digest the sync produces with these filters; empty when no file matches
+      metadata:
+        type: object
+        description: 'Model metadata: license, task, last_modified'
+        additionalProperties:
+          type: string
+      tags:
+        type: array
+        description: The tags that will be applied to the synced artifact
+        items:
+          type: string
+      total_files:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The number of files in the revision
+      total_size:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The total size in bytes of the revision
+      matched_files:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The number of files matching the filters
+      matched_size:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The total size in bytes of the files matching the filters
+      files:
+        type: array
+        items:
+          $ref: '#/definitions/ModelSyncPreviewFile'
+  ModelSyncPreviewFile:
+    type: object
+    properties:
+      path:
+        type: string
+        description: The file path
+      size:
+        type: integer
+        format: int64
+        x-omitempty: false
+        description: The file size in bytes
+      sha256:
+        type: string
+        description: The sha256 of the file; always for LFS files, for other files when matched
+      type:
+        type: string
+        description: 'The model-spec class of the file: weight, config, code or doc'
+      matched:
+        type: boolean
+        x-omitempty: false
+        description: Whether the file matches the filters
   Robot:
     type: object
     properties:
