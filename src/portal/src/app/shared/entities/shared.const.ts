@@ -107,6 +107,7 @@ export const FilterType = {
     TAG: 'tag',
     LABEL: 'label',
     RESOURCE: 'resource',
+    FILE: 'file',
 };
 
 export const enum ConfirmationButtons {

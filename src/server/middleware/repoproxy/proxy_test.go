@@ -305,6 +305,9 @@ func (m *mockRegistryController) ListRegistryProviderInfos(_ context.Context) (m
 func (m *mockRegistryController) StartRegularHealthCheck(_ context.Context, _, _ chan struct{}) {
 	panic("not implemented")
 }
+func (m *mockRegistryController) Preview(_ context.Context, _ int64, _, _ string, _ *model.FileFilter) (*model.ResolveResult, error) {
+	panic("not implemented")
+}
 
 // --- ProxyReferrerMiddleware suite ---
 

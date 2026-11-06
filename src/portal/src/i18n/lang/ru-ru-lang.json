@@ -89,7 +89,8 @@
     "OIDC_AUTOONBOARD": "Пропустить экран адаптации, чтобы пользователь не мог изменить свое имя пользователя. Имя пользователя предоставляется из ID токена",
     "OIDC_USER_CLAIM": "Имя утверждения в идентификаторе токена, откуда извлекается имя пользователя. Если не указано, по умолчанию будет использоваться 'name'",
     "NEW_SECRET": "Секрет должен содержать от 8 символов, с хотя бы 1 заглавной, 1 строчной буквы и одной цифрой",
-    "OIDC_LOGOUT": "Выход пользователя из текущей сессии Провайдера Авторизации."
+    "OIDC_LOGOUT": "Выход пользователя из текущей сессии Провайдера Авторизации.",
+    "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
   },
   "PLACEHOLDER": {
     "CURRENT_PWD": "Введите текущий пароль",
@@ -262,7 +263,8 @@
         "OIDC_VERIFYCERT": "Снимите этот флажок, если ваш OIDC сервер размещен на самоподписанном сертификате.",
         "OIDC_AUTOONBOARD": "Пропустить экран адаптации, чтобы пользователь не мог изменить свое имя пользователя. Имя пользователя предоставляется из ID токена",
         "OIDC_USER_CLAIM": "Имя утверждения в ID токене, откуда извлекается имя пользователя. Если не указано, по умолчанию будет использоваться 'name'",
-        "NEW_SECRET": "Секрет должен быть длиннее 8 символов с хотя бы одной заглавной буквой, одной строчной буквой и одной цифрой"
+        "NEW_SECRET": "Секрет должен быть длиннее 8 символов с хотя бы одной заглавной буквой, одной строчной буквой и одной цифрой",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Введите текущий пароль",
@@ -830,7 +832,31 @@
         "CRON_ERROR_TIP": "Поле обязательно для заполнения, и \"*\" не допускается для поля \"Минуты\"",
         "COPY_BY_CHUNK": "Копировать по частям",
         "COPY_BY_CHUNK_TIP": "Укажите, следует ли копировать большой двоичный объект по частям. Передача по частям может увеличить количество запросов API.",
-        "TRIGGER_STOP_SUCCESS": "Успешно запущено остановку выполнения"
+        "TRIGGER_STOP_SUCCESS": "Успешно запущено остановку выполнения",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Новая Конечная Точка",
@@ -933,7 +959,8 @@
         "ADDITIONAL_INFO": "Добавить Дополнительную Информацию",
         "REPO_NAME": "Репозиторий",
         "MARKDOWN": "Поддерживается оформление с помощью Markdown",
-        "LAST_MODIFIED": "Время Последнего Изменения"
+        "LAST_MODIFIED": "Время Последнего Изменения",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "HELM_CHART": {
         "HELMCHARTS": "Диаграммы",
@@ -1281,7 +1308,24 @@
         "UNTAGGED": "Непомеченные",
         "ALL": "Все",
         "PLACEHOLDER": "Мы не смогли найти никаких артефактов!",
-        "SCAN_UNSUPPORTED": "Неподдерживаемый"
+        "SCAN_UNSUPPORTED": "Неподдерживаемый",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Создано",
@@ -1903,7 +1947,31 @@
     "COPY_BY_CHUNK": "Копировать по частям",
     "COPY_BY_CHUNK_TIP": "Укажите, следует ли копировать большой двоичный объект по частям. Передача по частям может увеличить количество запросов к API.",
     "TRIGGER_STOP_SUCCESS": "Успешно вызвана остановка операции",
-    "CRON_STR": "Cron Строка"
+    "CRON_STR": "Cron Строка",
+    "FILE": "File",
+    "FILE_INCLUDE": "Include",
+    "FILE_EXCLUDE": "Exclude",
+    "PREVIEW": "Preview",
+    "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+    "PREVIEW_REFERENCE": "Tag or revision",
+    "PREVIEW_BUTTON": "PREVIEW",
+    "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+    "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+    "PREVIEW_REVISION": "Revision",
+    "PREVIEW_TAGS": "Copy tags",
+    "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+    "PREVIEW_LICENSE": "License",
+    "PREVIEW_TASK": "Task",
+    "PREVIEW_FILES": "Files",
+    "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+    "PREVIEW_DIGEST": "Digest",
+    "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+    "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+    "PREVIEW_ALL_FILES": "Show all files",
+    "PREVIEW_MATCHED_ONLY": "Show matched files only",
+    "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+    "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+    "SOURCE_ONLY": "Source only"
   },
   "DESTINATION": {
     "NEW_ENDPOINT": "Новый Реестр",
@@ -1936,7 +2004,8 @@
     "PLACEHOLDER": "Мы не смогли найти ни одного реестра!",
     "CA_CERTIFICATE": "Сертификат CA",
     "CA_CERTIFICATE_TOOLTIP": "Укажите сертификат CA в формате PEM для проверки TLS сертификата реестра. Оставьте пустым для использования системного пула CA. Это поле доступно только при включенной опции 'Проверять удаленный сертификат'.",
-    "CA_CERTIFICATE_HELPER": "Необязательно. Вставьте здесь сертификат CA в формате PEM для доверия самоподписанным или частным сертификатам CA для этого адреса. Если оставить пустым, Harbor будет использовать системный пул CA."
+    "CA_CERTIFICATE_HELPER": "Необязательно. Вставьте здесь сертификат CA в формате PEM для доверия самоподписанным или частным сертификатам CA для этого адреса. Если оставить пустым, Harbor будет использовать системный пул CA.",
+    "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
   },
   "REPOSITORY": {
     "COPY_DIGEST_ID": "Копировать Хэш",
@@ -2329,7 +2398,24 @@
     "FILE_TOO_LARGE": "Файл слишком большой для обработки.",
     "ITEMS": "элементов",
     "SHOW_KV": "Пары Ключ-Значений",
-    "SHOW_YAML": "Файл YAML"
+    "SHOW_YAML": "Файл YAML",
+    "MODEL": "Model",
+    "MODEL_LICENSES": "Licenses",
+    "MODEL_NAME": "Name",
+    "MODEL_FAMILY": "Family",
+    "MODEL_VERSION": "Version",
+    "MODEL_SOURCE": "Source",
+    "MODEL_REVISION": "Source revision",
+    "MODEL_ARCHITECTURE": "Architecture",
+    "MODEL_FORMAT": "Format",
+    "MODEL_PARAMS": "Parameters",
+    "MODEL_PRECISION": "Precision",
+    "MODEL_QUANTIZATION": "Quantization",
+    "MODEL_AUTHORS": "Authors",
+    "MODEL_VENDOR": "Vendor",
+    "MODEL_CREATED": "Created",
+    "MODEL_LAYERS": "Layers",
+    "MODEL_DOCS": "Documentation"
   },
   "TAG": {
     "CREATION_TIME_PREFIX": "Создано",

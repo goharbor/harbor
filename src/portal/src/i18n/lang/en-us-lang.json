@@ -89,7 +89,8 @@
         "OIDC_AUTOONBOARD": "Skip the onboarding screen after user is authenticated via OIDC endpoint, so the user cannot change their username. The username is provided from the ID Token.",
         "OIDC_USER_CLAIM": "The name of the claim in the ID Token where the username is retrieved from. If not specified, it will default to 'name'",
         "NEW_SECRET": "The secret must be longer than 8 characters with at least 1 uppercase letter, 1 lowercase letter and 1 number.",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -661,7 +662,31 @@
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -694,7 +719,8 @@
         "PLACEHOLDER": "We couldn't find any endpoints!",
         "CA_CERTIFICATE": "CA Certificate",
         "CA_CERTIFICATE_TOOLTIP": "Provide a PEM-encoded CA certificate to trust additional CA certificates for this registry. The custom CA will be added to the system CA pool, allowing Harbor to trust both system-signed and custom-signed certificates. Leave empty to use only the system CA pool. This field is only available when 'Verify Remote Cert' is enabled.",
-        "CA_CERTIFICATE_HELPER": "Optional. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint. The certificate will be added to the system CA pool, not replace it."
+        "CA_CERTIFICATE_HELPER": "Optional. Paste the PEM-encoded CA certificate here to trust self-signed or private CA certificates for this endpoint. The certificate will be added to the system CA pool, not replace it.",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "REPOSITORY": {
         "COPY_DIGEST_ID": "Copy Digest",
@@ -1087,7 +1113,24 @@
         "FILE_TOO_LARGE": "The file is too large to be processed.",
         "ITEMS": "items",
         "SHOW_KV": "Key Value Pairs",
-        "SHOW_YAML": "YAML File"
+        "SHOW_YAML": "YAML File",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Created on",

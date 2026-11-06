@@ -120,6 +120,9 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
+	if params.Policy.RevisionTag != nil {
+		policy.RevisionTag = *params.Policy.RevisionTag
+	}
 
 	id, err := r.ctl.CreatePolicy(ctx, policy)
 	if err != nil {
@@ -195,6 +198,9 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
 		}
 		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
+	}
+	if params.Policy.RevisionTag != nil {
+		policy.RevisionTag = *params.Policy.RevisionTag
 	}
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
@@ -463,6 +469,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
 		SingleActiveReplication:   &policy.SingleActiveReplication,
+		RevisionTag:               &policy.RevisionTag,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)

@@ -89,7 +89,8 @@
         "OIDC_AUTOONBOARD": "Pular tela de alteração durante o cadastro automático. Informações, como nome e e-mail, virão do provedor externo.",
         "OIDC_USER_CLAIM": "Nome da propriedade (claim) cujo valor representa o nome de usuário (login). Se não informado, 'name' será usado.",
         "NEW_SECRET": "Deve ter mais de 8 caracteres e pelo menos 1 letra maiúscula, 1 minúscula e 1 número.",
-        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider."
+        "OIDC_LOGOUT": "Logs the user out of their current session with the Identity Provider.",
+        "FILE_FILTER": "Select the files of each artifact to copy. Patterns use * and **; a pattern without / matches the file name at any depth. An empty filter copies every file."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Informe a senha atual",
@@ -663,7 +664,31 @@
         "COPY_BY_CHUNK": "Copy by chunk",
         "COPY_BY_CHUNK_TIP": "Specify whether to copy the blob by chunk. Transfer by chunk may increase the number of API requests.",
         "TRIGGER_STOP_SUCCESS": "Triggered stopping execution successfully",
-        "CRON_STR": "Cron String"
+        "CRON_STR": "Cron String",
+        "FILE": "File",
+        "FILE_INCLUDE": "Include",
+        "FILE_EXCLUDE": "Exclude",
+        "PREVIEW": "Preview",
+        "PREVIEW_REPOSITORY": "One repository, e.g. org/name",
+        "PREVIEW_REFERENCE": "Tag or revision",
+        "PREVIEW_BUTTON": "PREVIEW",
+        "PREVIEW_PATTERN_HINT": "The name filter is a pattern. Enter one repository it matches to preview the copy.",
+        "PREVIEW_STALE": "The name or tag filter changed since this preview. Preview again.",
+        "PREVIEW_REVISION": "Revision",
+        "PREVIEW_TAGS": "Copy tags",
+        "PREVIEW_NO_TAGS": "None, the tag filter excludes every source tag",
+        "PREVIEW_LICENSE": "License",
+        "PREVIEW_TASK": "Task",
+        "PREVIEW_FILES": "Files",
+        "PREVIEW_MATCHED": "{{matched}} of {{total}} files, {{matchedSize}} of {{totalSize}}",
+        "PREVIEW_DIGEST": "Digest",
+        "PREVIEW_NOTHING_MATCHES": "No file matches the filter",
+        "PREVIEW_FILTER_CHANGED": "File filter changed, preview again to compute the digest",
+        "PREVIEW_ALL_FILES": "Show all files",
+        "PREVIEW_MATCHED_ONLY": "Show matched files only",
+        "REVISION_TAG": "Also tag each copy with its source revision (sha-…)",
+        "REVISION_TAG_TIP": "Adds the immutable tag sha-<first 12 hex characters of the source revision> next to the moving tags, so every copied revision stays addressable after the branch moves on.",
+        "SOURCE_ONLY": "Source only"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endereço",
@@ -696,7 +721,8 @@
         "PLACEHOLDER": "Não há endereços cadastrados",
         "CA_CERTIFICATE": "Certificado CA",
         "CA_CERTIFICATE_TOOLTIP": "Forneça um certificado CA codificado em PEM para confiar em certificados CA adicionais para este registro. O CA personalizado será adicionado ao pool de CA do sistema, permitindo que o Harbor confie em certificados assinados pelo sistema e por assinatura personalizada. Deixe em branco para usar apenas o pool de CA do sistema. Este campo está disponível apenas quando 'Verificar Certificado Remoto' está habilitado.",
-        "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. O certificado será adicionado ao pool de CA do sistema, não o substituirá."
+        "CA_CERTIFICATE_HELPER": "Opcional. Cole aqui o certificado CA codificado em PEM para confiar em certificados autoassinados ou de CA privadas para este endpoint. O certificado será adicionado ao pool de CA do sistema, não o substituirá.",
+        "SOURCE_ONLY_HELPER": "Source only: usable as a replication source or proxy cache, never as a replication destination."
     },
     "REPOSITORY": {
         "BUILD_HISTORY": "Histórico de Build",
@@ -1091,7 +1117,24 @@
         "FILE_TOO_LARGE": "O arquivo é muito grande para ser processado.",
         "ITEMS": "itens",
         "SHOW_KV": "Pares chave-valor",
-        "SHOW_YAML": "Arquivo YAML"
+        "SHOW_YAML": "Arquivo YAML",
+        "MODEL": "Model",
+        "MODEL_LICENSES": "Licenses",
+        "MODEL_NAME": "Name",
+        "MODEL_FAMILY": "Family",
+        "MODEL_VERSION": "Version",
+        "MODEL_SOURCE": "Source",
+        "MODEL_REVISION": "Source revision",
+        "MODEL_ARCHITECTURE": "Architecture",
+        "MODEL_FORMAT": "Format",
+        "MODEL_PARAMS": "Parameters",
+        "MODEL_PRECISION": "Precision",
+        "MODEL_QUANTIZATION": "Quantization",
+        "MODEL_AUTHORS": "Authors",
+        "MODEL_VENDOR": "Vendor",
+        "MODEL_CREATED": "Created",
+        "MODEL_LAYERS": "Layers",
+        "MODEL_DOCS": "Documentation"
     },
     "TAG": {
         "OS_VERSION": "Versão do SO",

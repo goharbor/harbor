@@ -657,4 +657,30 @@ describe('CreateEditEndpointComponent (inline template)', () => {
             expect(comp.target.name).toEqual('target_01');
         });
     });
+
+    it('derives fixed access key, secret input and source-only from the credential pattern', () => {
+        comp.adapterInfo = {
+            'google-gcr': adapterInfoMockData['google-gcr'],
+            hf: {
+                source_only: true,
+                credential_pattern: {
+                    access_key_type: 'AccessKeyTypeFix',
+                    access_key_data: 'token',
+                    access_secret_type: 'AccessSecretTypePass',
+                },
+            },
+            harbor: { credential_pattern: null },
+        };
+        comp.target.type = 'hf';
+        expect(comp.isFixedAccessKey()).toBeTrue();
+        expect(comp.isFileAccessSecret()).toBeFalse();
+        expect(comp.isSourceOnly()).toBeTrue();
+        comp.target.type = 'google-gcr';
+        expect(comp.isFixedAccessKey()).toBeTrue();
+        expect(comp.isFileAccessSecret()).toBeTrue();
+        expect(comp.isSourceOnly()).toBeFalse();
+        comp.target.type = 'harbor';
+        expect(comp.isFixedAccessKey()).toBeFalse();
+        expect(comp.isFileAccessSecret()).toBeFalse();
+    });
 });

@@ -1,0 +1,26 @@
+.margin-bottom-075 {
+    margin-bottom: 0.75rem;
+}
+
+.model-metadata {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.model-row {
+    display: contents;
+}
+
+.model-key {
+    font-weight: 600;
+}
+
+.model-value {
+    overflow-wrap: anywhere;
+
+    .label {
+        margin-right: 0.25rem;
+    }
+}

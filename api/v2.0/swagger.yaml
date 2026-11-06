@@ -4356,6 +4356,43 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /registries/{id}/preview:
+    post:
+      summary: Preview a copy from the registry
+      description: Resolve what copying a repository reference from the registry with an optional file filter would produce (revision, tags, digest, files), without copying anything. Only registries whose info declares supported_preview support it; others answer 400.
+      tags:
+        - registry
+      operationId: previewRegistryArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Registry ID
+        - name: preview
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RegistryPreviewRequest'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/RegistryPreview'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
   /scans/all/metrics:
     get:
       summary: Get the metrics of the latest scan all process
@@ -7897,6 +7934,12 @@ definitions:
           Whether to skip execution until the previous active execution finishes,
           avoiding the execution of the same replication rules multiple times in parallel.
         x-isnullable: true # make this field optional to keep backward compatibility
+      revision_tag:
+        type: boolean
+        description: |-
+          Whether each copy also gets the immutable tag "sha-<first 12 hex of the source revision>"
+          next to its moving tags. Only sources whose registry info declares supported_revision_tag accept it.
+        x-isnullable: true
   ReplicationTrigger:
     type: object
     properties:
@@ -7918,7 +7961,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings. For file filters (only on sources that list the "file" filter in their registry info), this is either an object {"include": [patterns], "exclude": [patterns]} or a string of doublestar patterns separated by commas or whitespace, where a leading "!" excludes.'
       decoration:
         type: string
         description: 'matches or excludes the result'
@@ -8070,16 +8113,128 @@ definitions:
         description: The registry whether support copy by chunk.
         x-omitempty: true
         x-isnullable: true
+      supported_revision_tag:
+        type: boolean
+        description: Whether the registry as a replication source can add the immutable revision tag to copies.
+        x-omitempty: true
+        x-isnullable: true
+      source_only:
+        type: boolean
+        description: Whether the registry can only be a replication source, never a destination.
+        x-omitempty: true
+        x-isnullable: true
+      supported_preview:
+        type: boolean
+        description: Whether the registry can preview a copy without copying, see POST /registries/{id}/preview.
+        x-omitempty: true
+        x-isnullable: true
   RegistryProviderInfo:
     type: object
     description: The registry provider info contains the base info and capability declarations of the registry provider
     properties:
+      source_only:
+        type: boolean
+        description: Whether registries of this type can only be a replication source, never a destination.
+        x-omitempty: true
       endpoint_pattern:
         description: The endpoint pattern
         $ref: '#/definitions/RegistryProviderEndpointPattern'
       credential_pattern:
         description: The credential pattern
         $ref: '#/definitions/RegistryProviderCredentialPattern'
+  RegistryPreviewRequest:
+    type: object
+    required:
+      - repository
+    properties:
+      repository:
+        type: string
+        description: The repository at the source, e.g. a Hugging Face model ID "org/model".
+      reference:
+        type: string
+        description: The tag, branch or revision at the source. Empty means the source default.
+      file_filter:
+        $ref: '#/definitions/FileFilter'
+  FileFilter:
+    type: object
+    description: Doublestar path patterns; a pattern without "/" matches the base name at any depth.
+    properties:
+      include:
+        type: array
+        items:
+          type: string
+      exclude:
+        type: array
+        items:
+          type: string
+  RegistryPreview:
+    type: object
+    description: What a copy of the reference would produce.
+    properties:
+      repository:
+        type: string
+        description: The repository name at the source as used by replication, before destination namespace rewriting.
+      source_id:
+        type: string
+        description: The canonical identifier at the source.
+      reference:
+        type: string
+      revision:
+        type: string
+        description: The immutable source revision the reference resolves to.
+      revision_tag:
+        type: string
+        description: The tag a copy gets when the policy enables revision_tag.
+      source_url:
+        type: string
+      tags:
+        type: array
+        description: The moving tags of the source that point at the revision.
+        items:
+          type: string
+      digest:
+        type: string
+        description: The manifest digest a copy with this filter produces; empty when no file matches.
+      licenses:
+        type: array
+        items:
+          type: string
+      task:
+        type: string
+      last_modified:
+        type: string
+        format: date-time
+        x-nullable: true
+      total_files:
+        type: integer
+      total_size:
+        type: integer
+        format: int64
+      matched_files:
+        type: integer
+      matched_size:
+        type: integer
+        format: int64
+      files:
+        type: array
+        items:
+          $ref: '#/definitions/RegistryPreviewFile'
+  RegistryPreviewFile:
+    type: object
+    properties:
+      path:
+        type: string
+      size:
+        type: integer
+        format: int64
+      class:
+        type: string
+        description: weight, config, code or doc
+      sha256:
+        type: string
+      matched:
+        type: boolean
+        description: Whether the file filter selects the file.
   RegistryProviderEndpointPattern:
     type: object
     description: The registry endpoint pattern
@@ -8133,6 +8288,18 @@ definitions:
         description: The filter values
         items:
           type: string
+      label:
+        type: string
+        description: The name the registry gives this filter, e.g. "Model" for a name filter. Clients fall back to their generic wording when empty.
+        x-omitempty: true
+      placeholder:
+        type: string
+        description: An example value for the filter input.
+        x-omitempty: true
+      description:
+        type: string
+        description: A short help text for the filter in the terms of the registry.
+        x-omitempty: true
   ResourceList:
     type: object
     additionalProperties:
