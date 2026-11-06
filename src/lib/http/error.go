@@ -71,6 +71,7 @@ func SendError(w http.ResponseWriter, err error) {
 func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 	code := 0
 	var openAPIErr openapi.Error
+	var legacyErr *commonhttp.Error
 	if errors.As(err, &openAPIErr) {
 		// Before executing operation handler, go-swagger will bind a parameters object to a request and validate the request,
 		// it will return directly when bind and validate failed.
@@ -79,7 +80,7 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		code = int(openAPIErr.Code())
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
 		err = errors.New(nil).WithCode(errCode).WithMessage(openAPIErr.Error())
-	} else if legacyErr, ok := err.(*commonhttp.Error); ok {
+	} else if errors.As(err, &legacyErr) && legacyErr != nil {
 		// make sure the legacy error format is align with the new one
 		code = legacyErr.Code
 		errCode := strings.Replace(strings.ToUpper(http.StatusText(code)), " ", "_", -1)
@@ -91,8 +92,9 @@ func apiError(err error) (statusCode int, errPayload, stackTrace string) {
 		code = http.StatusInternalServerError
 	}
 	fullStack := ""
-	if _, ok := err.(*errors.Error); ok {
-		fullStack = err.(*errors.Error).StackTrace()
+	var harborErr *errors.Error
+	if errors.As(err, &harborErr) && harborErr != nil {
+		fullStack = harborErr.StackTrace()
 	}
 	return code, errors.NewErrs(err).Error(), fullStack
 }

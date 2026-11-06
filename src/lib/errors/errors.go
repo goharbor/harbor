@@ -95,6 +95,11 @@ type Errors []error
 
 var _ error = Errors{}
 
+// Unwrap returns the slice of errors, enabling errors.Is and errors.As tree inspection (Go 1.20+).
+func (errs Errors) Unwrap() []error {
+	return errs
+}
+
 // Error converts slice of error
 func (errs Errors) Error() string {
 	var tmpErrs struct {
@@ -102,15 +107,22 @@ func (errs Errors) Error() string {
 	}
 
 	for _, e := range errs {
-		err, ok := e.(*Error)
-		if !ok {
+		var err *Error
+		var msg string
+		if As(e, &err) && err != nil {
+			msg = e.Error()
+		} else {
 			err = UnknownError(e)
+			msg = err.Error()
 		}
 		if err.Code == "" {
 			err.Code = GeneralCode
 		}
 
-		tmpErrs.Errors = append(tmpErrs.Errors, *err)
+		tmpErrs.Errors = append(tmpErrs.Errors, Error{
+			Code:    err.Code,
+			Message: msg,
+		})
 	}
 
 	msg, err := json.Marshal(tmpErrs)
@@ -198,9 +210,16 @@ func Cause(err error) error {
 
 // IsErr checks whether the err chain contains error matches the code
 func IsErr(err error, code string) bool {
-	var e *Error
-	if As(err, &e) {
-		return e.Code == code
+	for err != nil {
+		var e *Error
+		if As(err, &e) {
+			if e.Code == code {
+				return true
+			}
+			err = e.Cause
+		} else {
+			break
+		}
 	}
 	return false
 }
