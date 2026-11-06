@@ -70,7 +70,7 @@ func (d *dao) Update(ctx context.Context, r *model.Role, props ...string) error 
 	}
 	n, err := ormer.Update(r, props...)
 	if err != nil {
-		return err
+		return orm.WrapConflictError(err, "role %s already exists", r.Name)
 	}
 	if n == 0 {
 		return errors.NotFoundError(nil).WithMessagef("role %d not found", r.ID)
