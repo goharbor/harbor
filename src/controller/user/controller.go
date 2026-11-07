@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/oidc"
@@ -34,17 +35,15 @@ import (
 	"github.com/goharbor/harbor/src/pkg/user/models"
 )
 
-var (
-	// Ctl is a global user controller instance
-	Ctl = NewController()
-)
+// Ctl is a global user controller instance
+var Ctl = NewController()
 
 // Controller provides functions to support API/middleware for user management and query
 type Controller interface {
 	// SetSysAdmin ...
 	SetSysAdmin(ctx context.Context, id int, adminFlag bool) error
 	// VerifyPassword ...
-	VerifyPassword(ctx context.Context, usernameOrEmail string, password string) (bool, error)
+	VerifyPassword(ctx context.Context, usernameOrEmail, password string) (bool, error)
 	// UpdatePassword ...
 	UpdatePassword(ctx context.Context, id int, password string) error
 	// List ...
@@ -114,19 +113,24 @@ func (c *controller) OnboardOIDCUser(ctx context.Context, u *commonmodels.User) 
 	if u.OIDCUserMeta == nil {
 		return errors.BadRequestError(nil).WithMessage("OIDC meta of the user model is empty")
 	}
-	uid, err := c.mgr.Create(ctx, u)
-	if err != nil {
-		return errors.Wrap(err, "failed to create user record")
-	}
-	u.UserID = uid
-	u.OIDCUserMeta.UserID = uid
+	// Concurrent onboarding of the same user is common for CI jobs, e.g. parallel jobs of a GitHub Actions matrix.
+	// Within the transaction of a request this is a savepoint, so a conflict only rolls back the onboarding,
+	// and the caller can still look up the user that got onboarded concurrently.
+	return orm.WithTransaction(func(ctx context.Context) error {
+		uid, err := c.mgr.Create(ctx, u)
+		if err != nil {
+			return errors.Wrap(err, "failed to create user record")
+		}
+		u.UserID = uid
+		u.OIDCUserMeta.UserID = uid
 
-	mid, err2 := c.oidcMetaMgr.Create(ctx, u.OIDCUserMeta)
-	if err2 != nil {
-		return errors.Wrap(err2, "failed to create OIDC metadata record")
-	}
-	u.OIDCUserMeta.ID = int64(mid)
-	return nil
+		mid, err := c.oidcMetaMgr.Create(ctx, u.OIDCUserMeta)
+		if err != nil {
+			return errors.Wrap(err, "failed to create OIDC metadata record")
+		}
+		u.OIDCUserMeta.ID = int64(mid)
+		return nil
+	})(ctx)
 }
 
 func (c *controller) GetBySubIss(ctx context.Context, sub, iss string) (*commonmodels.User, error) {

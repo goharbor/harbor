@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -76,4 +77,17 @@ func ReadRequestBody(r *http.Request, limit int64) ([]byte, error) {
 
 	r.Body = nopCloser{bytes.NewReader(data)}
 	return data, nil
+}
+
+// BearerToken returns the token of an "Authorization: Bearer" header, or an empty string for any other scheme.
+// The scheme is matched case-insensitively, as required by RFC 9110.
+func BearerToken(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	scheme, token, ok := strings.Cut(r.Header.Get("Authorization"), " ")
+	if !ok || !strings.EqualFold(scheme, "Bearer") {
+		return ""
+	}
+	return strings.TrimSpace(token)
 }

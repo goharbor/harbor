@@ -70,6 +70,7 @@ var (
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/login")),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/userExists")),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/oidc/onboard")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/api/v2.0/oidc/onboard")),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/adminjob/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/"+numericRegexp.String())),
 		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),

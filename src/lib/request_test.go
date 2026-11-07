@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -68,4 +69,31 @@ func (suite *ReadRequestBodyTestSuite) TestUnbounded() {
 
 func TestReadRequestBodyTestSuite(t *testing.T) {
 	suite.Run(t, &ReadRequestBodyTestSuite{})
+}
+
+func TestBearerToken(t *testing.T) {
+	cases := []struct {
+		name   string
+		header string
+		token  string
+	}{
+		{name: "bearer scheme", header: "Bearer token", token: "token"},
+		{name: "scheme is case-insensitive", header: "bearer token", token: "token"},
+		{name: "token containing the scheme", header: "Bearer abcBearerdef", token: "abcBearerdef"},
+		{name: "surrounding spaces", header: "Bearer  token ", token: "token"},
+		{name: "basic scheme", header: "Basic dXNlcjpwYXNz", token: ""},
+		{name: "scheme as prefix of another word", header: "Bearertoken", token: ""},
+		{name: "scheme only", header: "Bearer", token: ""},
+		{name: "no header", header: "", token: ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r, _ := http.NewRequest(http.MethodGet, "/", nil)
+			if c.header != "" {
+				r.Header.Set("Authorization", c.header)
+			}
+			assert.Equal(t, c.token, BearerToken(r))
+		})
+	}
+	assert.Equal(t, "", BearerToken(nil))
 }
