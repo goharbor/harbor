@@ -51,6 +51,8 @@ var (
 	// Ctl is a global proxy controller instance
 	ctl  Controller
 	once sync.Once
+	// copyContext copies the request context for the goroutines that outlive the request
+	copyContext = orm.Copy
 )
 
 // Controller defines the operations related with pull through proxy
@@ -220,7 +222,41 @@ func (c *controller) UseLocalManifest(ctx context.Context, art lib.ArtifactInfo,
 		return false, nil, nil
 	}
 	log.Debugf("Get the manifest list with key=cache:%v", manifestListKey(art.Repository, art))
+	if len(art.Tag) > 0 && !c.manifestListTagged(ctx, a, art) {
+		go c.pushCachedManifestList(copyContext(ctx), art, content, contentType, remote)
+	}
 	return true, &ManifestList{content, string(desc.Digest), contentType}, nil
+}
+
+// manifestListTagged checks whether the local artifact a is the local copy of the manifest list of art
+func (c *controller) manifestListTagged(ctx context.Context, a *artifact.Artifact, art lib.ArtifactInfo) bool {
+	if a == nil {
+		return false
+	}
+	if a.Digest == art.Digest {
+		return true
+	}
+	var trimmedDigest string
+	if err := c.cache.Fetch(ctx, trimmedDigestKey(art.Repository, art.Digest), &trimmedDigest); err != nil {
+		return false
+	}
+	return a.Digest == trimmedDigest
+}
+
+// pushCachedManifestList pushes the cached manifest list to local when its tag is missing
+func (c *controller) pushCachedManifestList(ctx context.Context, art lib.ArtifactInfo, content []byte, contentType string, remote RemoteInterface) {
+	h, ok := c.handlerRegistry[contentType].(*ManifestListCache)
+	if !ok {
+		return
+	}
+	man, _, err := distribution.UnmarshalManifest(contentType, content)
+	if err != nil {
+		log.Errorf("failed to unmarshal the cached manifest list %v:%v, error: %v", art.Repository, art.Tag, err)
+		return
+	}
+	if err := h.waitAndPush(ctx, GetRemoteRepo(art), art, man, remote); err != nil {
+		log.Errorf("failed to push the cached manifest list %v:%v, error: %v", art.Repository, art.Tag, err)
+	}
 }
 
 func manifestListKey(repo string, art lib.ArtifactInfo) string {
