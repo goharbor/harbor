@@ -58,7 +58,7 @@ type repositoryAPI struct {
 
 func (r *repositoryAPI) Prepare(ctx context.Context, _ string, params any) middleware.Responder {
 	if err := unescapePathParams(params, "RepositoryName"); err != nil {
-		r.SendError(ctx, err)
+		return r.SendError(ctx, err)
 	}
 
 	return nil

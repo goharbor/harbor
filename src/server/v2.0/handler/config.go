@@ -67,7 +67,7 @@ func (c *configAPI) GetConfigurations(ctx context.Context, _ configure.GetConfig
 	}
 	payload, err := toResponseModel(cfg)
 	if err != nil {
-		c.SendError(ctx, err)
+		return c.SendError(ctx, err)
 	}
 	return configure.NewGetConfigurationsOK().WithPayload(payload)
 }
