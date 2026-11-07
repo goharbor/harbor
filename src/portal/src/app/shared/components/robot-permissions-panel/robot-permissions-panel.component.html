@@ -27,16 +27,18 @@
                         {{ convertKey(resource) | translate }}
                     </td>
                     @for (action of candidateActions; track action) {
-                    <td class="td">
+                    <td class="td checkbox-cell">
                         @if (isCandidate(resource, action)) {
-                        <input
-                            type="checkbox"
-                            clrCheckbox
-                            [disabled]="true"
-                            [ngModel]="getCheckBoxValue(resource, action)"
-                            (ngModelChange)="
-                                setCheckBoxValue(resource, action, $event)
-                            " />
+                        <clr-checkbox-wrapper>
+                            <input
+                                type="checkbox"
+                                clrCheckbox
+                                [disabled]="true"
+                                [ngModel]="getCheckBoxValue(resource, action)"
+                                (ngModelChange)="
+                                    setCheckBoxValue(resource, action, $event)
+                                " />
+                        </clr-checkbox-wrapper>
                         }
                     </td>
                     }
@@ -89,15 +91,17 @@
                         {{ convertKey(resource) | translate }}
                     </td>
                     @for (action of candidateActions; track action) {
-                    <td class="td">
+                    <td class="td checkbox-cell">
                         @if (isCandidate(resource, action)) {
-                        <input
-                            type="checkbox"
-                            clrCheckbox
-                            [ngModel]="getCheckBoxValue(resource, action)"
-                            (ngModelChange)="
-                                setCheckBoxValue(resource, action, $event)
-                            " />
+                        <clr-checkbox-wrapper>
+                            <input
+                                type="checkbox"
+                                clrCheckbox
+                                [ngModel]="getCheckBoxValue(resource, action)"
+                                (ngModelChange)="
+                                    setCheckBoxValue(resource, action, $event)
+                                " />
+                        </clr-checkbox-wrapper>
                         }
                     </td>
                     }
@@ -135,15 +139,17 @@
         <tr>
             <td class="left td">{{ convertKey(resource) | translate }}</td>
             @for (action of candidateActions; track action) {
-            <td class="td">
+            <td class="td checkbox-cell">
                 @if (isCandidate(resource, action)) {
-                <input
-                    type="checkbox"
-                    clrCheckbox
-                    [ngModel]="getCheckBoxValue(resource, action)"
-                    (ngModelChange)="
-                        setCheckBoxValue(resource, action, $event)
-                    " />
+                <clr-checkbox-wrapper>
+                    <input
+                        type="checkbox"
+                        clrCheckbox
+                        [ngModel]="getCheckBoxValue(resource, action)"
+                        (ngModelChange)="
+                            setCheckBoxValue(resource, action, $event)
+                        " />
+                </clr-checkbox-wrapper>
                 }
             </td>
             }
