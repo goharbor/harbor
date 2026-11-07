@@ -114,7 +114,10 @@ func (p *Policy) Validate() error {
 				return errors.New(nil).WithCode(errors.BadRequestCode).
 					WithMessagef("cron expression %q can never fire: no matching date exists", p.Trigger.Settings.Cron)
 			}
-			cronParts := strings.Split(p.Trigger.Settings.Cron, " ")
+			// Split on any run of whitespace, the way CronParser does, so that a cron
+			// separated by tabs or repeated spaces is checked on the same fields the
+			// scheduler will act on.
+			cronParts := strings.Fields(p.Trigger.Settings.Cron)
 			if cronParts[0] != "0" {
 				return errors.New(nil).WithCode(errors.BadRequestCode).WithMessage("the 1st field (indicating Seconds of time) of the cron setting must be 0")
 			}
