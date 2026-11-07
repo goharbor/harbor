@@ -46,6 +46,22 @@ type Artifact struct {
 	ExtraAttrs        map[string]any    `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string `json:"annotations"`
 	References        []*Reference      `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
+	// accessories discovered while abstracting the manifest, to be persisted in
+	// the same transaction that creates the artifact
+	AccessoryCandidates []*AccessoryCandidate `json:"-"`
+}
+
+// AccessoryCandidate is an accessory relationship discovered during metadata
+// abstraction. The abstractor cannot persist it: the subject and the accessory
+// are only guaranteed to exist together once the artifact row is created.
+type AccessoryCandidate struct {
+	ArtifactID        int64
+	SubArtifactID     int64
+	SubArtifactRepo   string
+	SubArtifactDigest string
+	Digest            string
+	Size              int64
+	Type              string
 }
 
 // ResolveArtifactType returns the artifact type of the artifact, prefer ArtifactType, use MediaType if ArtifactType is empty.
