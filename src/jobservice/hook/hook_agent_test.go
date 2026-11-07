@@ -73,11 +73,17 @@ func (suite *HookAgentTestSuite) TearDownSuite() {
 }
 
 func (suite *HookAgentTestSuite) prepareData() {
-	suite.jid = utils.MakeIdentifier()
+	suite.event = suite.newEvent()
+	suite.jid = suite.event.Data.JobID
+}
+
+// newEvent saves the stats of a new running job and returns the event of its success.
+func (suite *HookAgentTestSuite) newEvent() *Event {
+	jid := utils.MakeIdentifier()
 	rev := time.Now().Unix()
 	stats := &job.Stats{
 		Info: &job.StatsInfo{
-			JobID:    suite.jid,
+			JobID:    jid,
 			Status:   job.RunningStatus.String(),
 			Revision: rev,
 			JobKind:  job.KindGeneric,
@@ -88,15 +94,15 @@ func (suite *HookAgentTestSuite) prepareData() {
 	err := t.Save()
 	suite.NoError(err, "mock job stats")
 
-	suite.event = &Event{
+	return &Event{
 		URL:       "http://domian.com",
 		Message:   "HookAgentTestSuite",
 		Timestamp: time.Now().Unix(),
 		Data: &job.StatusChange{
-			JobID:  suite.jid,
+			JobID:  jid,
 			Status: job.SuccessStatus.String(),
 			Metadata: &job.StatsInfo{
-				JobID:    suite.jid,
+				JobID:    jid,
 				Status:   job.SuccessStatus.String(),
 				Revision: rev,
 				JobKind:  job.KindGeneric,
@@ -128,6 +134,34 @@ func (suite *HookAgentTestSuite) TestEventSendingError() {
 	err := suite.agent.Trigger(suite.event)
 
 	suite.Error(err)
+}
+
+// TestEventRetryAck checks that an event delivered by a retry is ACKed as when it
+// is delivered directly, so that the reaper does not send it again.
+func (suite *HookAgentTestSuite) TestEventRetryAck() {
+	evt := suite.newEvent()
+	mc := &mockClient{}
+	mc.On("SendEvent", evt).Return(errors.New("internal server error: for testing")).Once()
+	mc.On("SendEvent", evt).Return(nil)
+
+	agent := &basicAgent{
+		context:   context.TODO(),
+		namespace: suite.namespace,
+		client:    mc,
+		redisPool: suite.pool,
+		tokens:    make(chan struct{}, 1),
+	}
+	suite.Error(agent.Trigger(evt))
+
+	suite.Eventually(func() bool {
+		t := job.NewBasicTrackerWithID(context.TODO(), evt.Data.JobID, suite.namespace, suite.pool, nil, list.New())
+		if err := t.Load(); err != nil {
+			return false
+		}
+		ack := t.Job().Info.HookAck
+		return ack != nil && ack.Status == job.SuccessStatus.String()
+	}, 10*time.Second, 100*time.Millisecond, "event delivered by a retry should be ACKed")
+	mc.AssertNumberOfCalls(suite.T(), "SendEvent", 2)
 }
 
 func (suite *HookAgentTestSuite) checkStatus() {
