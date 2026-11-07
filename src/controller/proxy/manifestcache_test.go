@@ -17,6 +17,7 @@ package proxy
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -28,6 +29,8 @@ import (
 
 	"github.com/goharbor/harbor/src/controller/artifact"
 	"github.com/goharbor/harbor/src/lib"
+	testproxy "github.com/goharbor/harbor/src/testing/controller/proxy"
+	cachetesting "github.com/goharbor/harbor/src/testing/lib/cache"
 	"github.com/goharbor/harbor/src/testing/mock"
 
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -58,11 +61,13 @@ type CacheTestSuite struct {
 	mCache     *ManifestCache
 	mListCache *ManifestListCache
 	local      localInterfaceMock
+	cache      *cachetesting.Cache
 }
 
-func (suite *CacheTestSuite) SetupSuite() {
+func (suite *CacheTestSuite) SetupTest() {
 	suite.local = localInterfaceMock{}
-	suite.mListCache = &ManifestListCache{local: &suite.local}
+	suite.cache = &cachetesting.Cache{}
+	suite.mListCache = &ManifestListCache{local: &suite.local, cache: suite.cache}
 	suite.mCache = &ManifestCache{local: &suite.local}
 }
 
@@ -118,62 +123,141 @@ func (suite *CacheTestSuite) TestUpdateManifestList() {
 	suite.Assert().Equal(len(newMan.References()), 1)
 }
 
-func (suite *CacheTestSuite) TestPushManifestList() {
+const (
+	testAmdDigest = "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
+	testArmDigest = "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
+)
+
+func testManifestList(t *testing.T) (*manifestlist.DeserializedManifestList, *manifestlist.DeserializedManifestList) {
+	manList, err := manifestlist.FromDescriptors([]manifestlist.ManifestDescriptor{
+		{
+			Descriptor: distribution.Descriptor{Digest: digest.Digest(testAmdDigest), Size: 3253, MediaType: schema2.MediaTypeManifest},
+			Platform:   manifestlist.PlatformSpec{Architecture: "amd64", OS: "linux"},
+		},
+		{
+			Descriptor: distribution.Descriptor{Digest: digest.Digest(testArmDigest), Size: 3253, MediaType: schema2.MediaTypeManifest},
+			Platform:   manifestlist.PlatformSpec{Architecture: "arm", OS: "linux"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	trimmed, err := manifestlist.FromDescriptors(manList.Manifests[:1])
+	if err != nil {
+		t.Fatal(err)
+	}
+	return manList, trimmed
+}
+
+func payloadDigest(t *testing.T, man distribution.Manifest) string {
+	_, payload, err := man.Payload()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(digest.FromBytes(payload))
+}
+
+func (suite *CacheTestSuite) TestPushManifestListByTag() {
 	ctx := context.Background()
-	amdDig := "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b"
-	armDig := "sha256:92c7f9c92844bbbb5d0a101b22f7c2a7949e40f8ea90c8b3bc396879d95e899a"
-	manifestList := manifestlist.ManifestList{
-		Versioned: manifest.Versioned{
-			SchemaVersion: 2,
-			MediaType:     manifestlist.MediaTypeManifestList,
-		},
-		Manifests: []manifestlist.ManifestDescriptor{
-			{
-				Descriptor: distribution.Descriptor{
-					Digest:    digest.Digest(amdDig),
-					Size:      3253,
-					MediaType: schema2.MediaTypeManifest,
-				},
-				Platform: manifestlist.PlatformSpec{
-					Architecture: "amd64",
-					OS:           "linux",
-				},
-			}, {
-				Descriptor: distribution.Descriptor{
-					Digest:    digest.Digest(armDig),
-					Size:      3253,
-					MediaType: schema2.MediaTypeManifest,
-				},
-				Platform: manifestlist.PlatformSpec{
-					Architecture: "arm",
-					OS:           "linux",
-				},
-			},
-		},
-	}
-	manList := &manifestlist.DeserializedManifestList{
-		ManifestList: manifestList,
-	}
 	repo := "library/hello-world"
-	artInfo1 := lib.ArtifactInfo{
-		Repository: repo,
-		Digest:     amdDig,
-		Tag:        "",
-	}
-	ar := &artifact.Artifact{}
-	_, payload, err := manList.Payload()
-	suite.Nil(err)
-	originDigest := digest.FromBytes(payload)
+	manList, trimmed := testManifestList(suite.T())
+	dig, trimmedDig := payloadDigest(suite.T(), manList), payloadDigest(suite.T(), trimmed)
+	art := lib.ArtifactInfo{Repository: repo, Digest: dig, Tag: "latest"}
 
-	suite.local.On("GetManifest", ctx, artInfo1).Return(ar, nil)
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Tag: "latest"}).Return(nil, nil)
+	suite.cache.On("Save", ctx, TrimmedManifestlist+dig, trimmedDig).Return(nil).Once()
+	suite.cache.On("Save", ctx, trimmedDigestKey(repo, dig), trimmedDig, manifestListCacheInterval).Return(nil).Once()
+	suite.local.On("PushManifest", repo, "latest", trimmed).Return(nil).Once()
+	suite.local.On("UpdatePullTime", ctx, lib.ArtifactInfo{Repository: repo, Tag: "latest", Digest: trimmedDig}).Return(nil).Once()
+
+	suite.Require().NoError(suite.mListCache.push(ctx, art, trimmed))
+	suite.local.AssertExpectations(suite.T())
+	suite.cache.AssertExpectations(suite.T())
+}
+
+func (suite *CacheTestSuite) TestPushManifestListByDigest() {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	manList, trimmed := testManifestList(suite.T())
+	dig, trimmedDig := payloadDigest(suite.T(), manList), payloadDigest(suite.T(), trimmed)
+	art := lib.ArtifactInfo{Repository: repo, Digest: dig}
+
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Tag: trimmedDig}).Return(nil, nil)
+	suite.cache.On("Save", ctx, TrimmedManifestlist+dig, trimmedDig).Return(nil).Once()
+	suite.cache.On("Save", ctx, trimmedDigestKey(repo, dig), trimmedDig, manifestListCacheInterval).Return(nil).Once()
+	suite.local.On("PushManifest", repo, trimmedDig, trimmed).Return(nil).Once()
+	suite.local.On("UpdatePullTime", ctx, lib.ArtifactInfo{Repository: repo, Digest: trimmedDig}).Return(nil).Once()
+
+	suite.Require().NoError(suite.mListCache.push(ctx, art, trimmed))
+	suite.local.AssertExpectations(suite.T())
+	suite.cache.AssertExpectations(suite.T())
+}
+
+func (suite *CacheTestSuite) TestPushManifestListAlreadyTagged() {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	manList, trimmed := testManifestList(suite.T())
+	dig, trimmedDig := payloadDigest(suite.T(), manList), payloadDigest(suite.T(), trimmed)
+	art := lib.ArtifactInfo{Repository: repo, Digest: dig, Tag: "latest"}
+
+	tagged := &artifact.Artifact{}
+	tagged.Digest = trimmedDig
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Tag: "latest"}).Return(tagged, nil)
+	suite.cache.On("Save", ctx, TrimmedManifestlist+dig, trimmedDig).Return(nil).Once()
+	suite.cache.On("Save", ctx, trimmedDigestKey(repo, dig), trimmedDig, manifestListCacheInterval).Return(nil).Once()
+	suite.local.On("UpdatePullTime", ctx, lib.ArtifactInfo{Repository: repo, Tag: "latest", Digest: trimmedDig}).Return(nil).Once()
+
+	suite.Require().NoError(suite.mListCache.push(ctx, art, trimmed))
+	suite.local.AssertNotCalled(suite.T(), "PushManifest", mock.Anything, mock.Anything, mock.Anything)
+	suite.local.AssertExpectations(suite.T())
+}
+
+func (suite *CacheTestSuite) TestPushManifestListNoManifestCached() {
+	manList, _ := testManifestList(suite.T())
+	empty, err := manifestlist.FromDescriptors(nil)
+	suite.Require().NoError(err)
+	art := lib.ArtifactInfo{Repository: "library/hello-world", Digest: payloadDigest(suite.T(), manList), Tag: "latest"}
+
+	suite.Error(suite.mListCache.push(context.Background(), art, empty))
+	suite.local.AssertNotCalled(suite.T(), "PushManifest", mock.Anything, mock.Anything, mock.Anything)
+	suite.cache.AssertNotCalled(suite.T(), "Save", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func (suite *CacheTestSuite) waitAndPushAllCached(remoteDigest string) (lib.ArtifactInfo, string) {
+	ctx := context.Background()
+	repo := "library/hello-world"
+	manList, _ := testManifestList(suite.T())
+	dig := payloadDigest(suite.T(), manList)
+	art := lib.ArtifactInfo{Repository: repo, Digest: dig, Tag: "latest"}
+	remote := &testproxy.RemoteInterface{}
+	remote.On("ManifestExist", "hello-world", "latest").Return(true, &distribution.Descriptor{Digest: digest.Digest(remoteDigest)}, nil).Once()
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Digest: testAmdDigest}).Return(&artifact.Artifact{}, nil)
+	suite.local.On("GetManifest", ctx, lib.ArtifactInfo{Repository: repo, Digest: testArmDigest}).Return(&artifact.Artifact{}, nil)
 	suite.local.On("GetManifest", ctx, mock.Anything).Return(nil, nil)
+	suite.cache.On("Save", ctx, TrimmedManifestlist+dig, dig).Return(nil).Once()
+	suite.cache.On("Save", ctx, trimmedDigestKey(repo, dig), dig, manifestListCacheInterval).Return(nil).Once()
+	suite.local.On("UpdatePullTime", ctx, mock.Anything).Return(nil).Once()
 
-	suite.local.On("PushManifest", repo, originDigest, mock.Anything).Return(fmt.Errorf("wrong digest"))
-	suite.local.On("PushManifest", repo, mock.Anything, mock.Anything).Return(nil)
-	suite.local.On("UpdatePullTime", ctx, mock.Anything).Return(nil)
+	suite.Require().NoError(suite.mListCache.waitAndPush(ctx, "hello-world", art, manList, remote))
+	remote.AssertExpectations(suite.T())
+	suite.cache.AssertExpectations(suite.T())
+	return art, dig
+}
 
-	err = suite.mListCache.push(ctx, "library/hello-world", string(originDigest), manList)
-	suite.Require().Nil(err)
+func (suite *CacheTestSuite) TestWaitAndPushManifestList() {
+	manList, _ := testManifestList(suite.T())
+	suite.local.On("PushManifest", "library/hello-world", "latest", mock.Anything).Return(nil).Once()
+	art, _ := suite.waitAndPushAllCached(payloadDigest(suite.T(), manList))
+	suite.local.AssertCalled(suite.T(), "UpdatePullTime", mock.Anything, lib.ArtifactInfo{Repository: art.Repository, Tag: "latest", Digest: art.Digest})
+	suite.local.AssertExpectations(suite.T())
+}
+
+func (suite *CacheTestSuite) TestWaitAndPushManifestListTagMoved() {
+	dig := "sha256:" + strings.Repeat("0", 64)
+	suite.local.On("PushManifest", "library/hello-world", mock.Anything, mock.Anything).Return(nil).Once()
+	art, _ := suite.waitAndPushAllCached(dig)
+	suite.local.AssertCalled(suite.T(), "PushManifest", art.Repository, art.Digest, mock.Anything)
+	suite.local.AssertNotCalled(suite.T(), "PushManifest", art.Repository, "latest", mock.Anything)
 }
 
 func (suite *CacheTestSuite) TestManifestCache_CacheContent() {
