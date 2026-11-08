@@ -72,7 +72,7 @@ func (i *interceptor) isReadOnly(ctx context.Context) (bool, error) {
 	if err = i.cache.Fetch(ctx, key, &isReadOnly); err == nil {
 		return isReadOnly, nil
 	}
-	if err != cache.ErrNotFound {
+	if !errors.Is(err, cache.ErrNotFound) {
 		return false, err
 	}
 

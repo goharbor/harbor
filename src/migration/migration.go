@@ -15,6 +15,8 @@
 package migration
 
 import (
+	"errors"
+
 	"github.com/golang-migrate/migrate/v4"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -31,7 +33,7 @@ func Migrate(database *models.Database) error {
 	}
 	defer migrator.Close()
 	schemaVersion, _, err := migrator.Version()
-	if err != nil && err != migrate.ErrNilVersion {
+	if err != nil && !errors.Is(err, migrate.ErrNilVersion) {
 		return err
 	}
 	log.Debugf("current database schema version: %v", schemaVersion)
