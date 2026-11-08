@@ -49,6 +49,49 @@ func (g *gcCtrTestSuite) TestStart() {
 	g.Equal(int64(1), id)
 }
 
+func (g *gcCtrTestSuite) TestStartInjectsMaxWorkers() {
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	g.T().Setenv("GC_MAX_WORKERS", "8")
+
+	p := Policy{
+		DeleteUntagged: true,
+		DeleteTag:      true,
+		Workers:        24,
+		ExtraAttrs:     make(map[string]any),
+	}
+	_, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
+	g.Nil(err)
+
+	// the limit is resolved at execution time and shipped to the job, so that a
+	// schedule created before the limit was configured is clamped as well
+	jobArg, ok := g.taskMgr.Calls[len(g.taskMgr.Calls)-1].Arguments.Get(2).(*task.Job)
+	g.True(ok)
+	g.Equal(8, jobArg.Parameters["max_workers"])
+	g.Equal(24, jobArg.Parameters["workers"])
+}
+
+func (g *gcCtrTestSuite) TestStartWithoutMaxWorkers() {
+	g.execMgr.On("Create", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
+
+	p := Policy{
+		DeleteUntagged: true,
+		DeleteTag:      true,
+		Workers:        24,
+		ExtraAttrs:     make(map[string]any),
+	}
+	_, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
+	g.Nil(err)
+
+	// no limit configured means the key is omitted entirely
+	jobArg, ok := g.taskMgr.Calls[len(g.taskMgr.Calls)-1].Arguments.Get(2).(*task.Job)
+	g.True(ok)
+	_, exist := jobArg.Parameters["max_workers"]
+	g.False(exist)
+}
+
 func (g *gcCtrTestSuite) TestStop() {
 	g.execMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 	g.Nil(g.ctl.Stop(nil, 1))
