@@ -326,8 +326,8 @@ func (u *usersAPI) UpdateUserPassword(ctx context.Context, params operation.Upda
 	if ok {
 		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("New password is identical to old password"))
 	}
-	err2 := u.ctl.UpdatePassword(ctx, uid, params.Password.NewPassword)
-	if err2 != nil {
+	err = u.ctl.UpdatePassword(ctx, uid, params.Password.NewPassword)
+	if err != nil {
 		log.G(ctx).Errorf("Failed to update password, error: %v", err)
 		return u.SendError(ctx, err)
 	}
