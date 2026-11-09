@@ -30,7 +30,7 @@ const (
 	postURIKey        = "postURI"
 )
 
-var helper = &authproxy.Auth{}
+var helper = authproxy.New()
 
 // AuthProxyController handles requests with token that can be reviewed by authproxy.
 type AuthProxyController struct {
