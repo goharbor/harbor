@@ -67,7 +67,7 @@ func (f *FakeOrmer) Begin() (orm.TxOrmer, error) {
 }
 
 func (f *FakeOrmer) BeginWithCtx(ctx context.Context) (orm.TxOrmer, error) {
-	return nil, nil
+	return &FakeTxOrmer{}, nil
 }
 
 func (f *FakeOrmer) BeginWithOpts(opts *sql.TxOptions) (orm.TxOrmer, error) {
