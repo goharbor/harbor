@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"encoding/hex"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
 
@@ -35,6 +36,8 @@ type DAO interface {
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List tags according to the query
 	List(ctx context.Context, query *q.Query) (tags []*tag.Tag, err error)
+	// ListNames returns at most limit names in byte order, strictly after last, from one repository.
+	ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error)
 	// Get the tag specified by ID
 	Get(ctx context.Context, id int64) (tag *tag.Tag, err error)
 	// Create the tag
@@ -72,6 +75,26 @@ func (d *dao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	}
 	return tags, nil
 }
+func (d *dao) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	o, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sql := `SELECT name FROM tag WHERE repository_id = ?`
+	args := []any{repositoryID}
+	if last != "" {
+		// Compare bytes rather than database collation. Encoding the cursor also
+		// accepts URL cursors containing NUL or invalid UTF-8, unlike a text parameter.
+		sql += ` AND convert_to(name, 'UTF8') > decode(?, 'hex')`
+		args = append(args, hex.EncodeToString([]byte(last)))
+	}
+	sql += ` ORDER BY name COLLATE "C" LIMIT ?`
+	args = append(args, limit)
+	names := []string{}
+	_, err = o.Raw(sql, args...).QueryRows(&names)
+	return names, err
+}
+
 func (d *dao) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	tag := &tag.Tag{
 		ID: id,

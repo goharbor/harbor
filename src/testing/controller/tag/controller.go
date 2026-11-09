@@ -36,6 +36,16 @@ func (f *FakeController) List(ctx context.Context, query *q.Query, option *tag.O
 	return tags, args.Error(1)
 }
 
+// ListNames ...
+func (f *FakeController) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	args := f.Called(ctx, repositoryID, last, limit)
+	var names []string
+	if args.Get(0) != nil {
+		names = args.Get(0).([]string)
+	}
+	return names, args.Error(1)
+}
+
 // Get ...
 func (f *FakeController) Get(ctx context.Context, id int64, option *tag.Option) (*tag.Tag, error) {
 	args := f.Called()

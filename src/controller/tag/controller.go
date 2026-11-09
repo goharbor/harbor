@@ -48,6 +48,8 @@ type Controller interface {
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List tags according to the query
 	List(ctx context.Context, query *q.Query, option *Option) (tags []*Tag, err error)
+	// ListNames returns at most limit names in byte order, strictly after last, from one repository.
+	ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error)
 	// Get the tag specified by ID
 	Get(ctx context.Context, id int64, option *Option) (tag *Tag, err error)
 	// Create the tag and returns the ID
@@ -161,6 +163,11 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 		tags = append(tags, c.assembleTag(ctx, tg, option))
 	}
 	return tags, nil
+}
+
+// ListNames ...
+func (c *controller) ListNames(ctx context.Context, repositoryID int64, last string, limit int) ([]string, error) {
+	return c.tagMgr.ListNames(ctx, repositoryID, last, limit)
 }
 
 // Get ...
