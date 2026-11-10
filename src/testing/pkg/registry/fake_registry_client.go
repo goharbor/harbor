@@ -3,10 +3,12 @@
 package registry
 
 import (
-	io "io"
 	http "net/http"
 
 	distribution "github.com/docker/distribution"
+
+	io "io"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
