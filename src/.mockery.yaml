@@ -530,6 +530,11 @@ packages:
         config:
           dir: testing/pkg/usergroup
           filename: fake_usergroup_manager.go
+  github.com/goharbor/harbor/src/pkg/usergroup/dao:
+    interfaces:
+      DAO:
+        config:
+          dir: testing/pkg/usergroup/dao
   github.com/goharbor/harbor/src/pkg/jobmonitor:
     config:
       dir: testing/pkg/jobmonitor
