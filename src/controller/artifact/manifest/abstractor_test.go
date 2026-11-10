@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/mock"
 	tart "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	tblob "github.com/goharbor/harbor/src/testing/pkg/blob"
+	tregistry "github.com/goharbor/harbor/src/testing/pkg/registry"
 )
 
 // Driving each abstractor directly with mocks is what the exported constructors are for.
@@ -106,7 +107,7 @@ func TestIndexAbstractorUsesInjectedArtifactManager(t *testing.T) {
 	mock.OnAnything(artMgr, "GetByDigest").Return(&artifact.Artifact{ID: 2, Size: 100}, nil)
 
 	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(indexContent)))
+	require.NoError(t, NewIndex(artMgr, &tregistry.Client{}).Abstract(context.Background(), art, []byte(indexContent)))
 
 	assert.Equal(t, v1.MediaTypeImageIndex, art.MediaType)
 	assert.Empty(t, art.ArtifactType)
@@ -120,7 +121,7 @@ func TestIndexAbstractorPropagatesChildLookupError(t *testing.T) {
 	mock.OnAnything(artMgr, "GetByDigest").Return(nil, assert.AnError)
 
 	art := &artifact.Artifact{ID: 1, ManifestMediaType: v1.MediaTypeImageIndex}
-	assert.Error(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(indexContent)))
+	assert.Error(t, NewIndex(artMgr, &tregistry.Client{}).Abstract(context.Background(), art, []byte(indexContent)))
 }
 
 // CNAB carries its media type in an index annotation, not in the descriptor.
@@ -133,7 +134,7 @@ func TestIndexAbstractorReadsMediaTypeFromAnnotations(t *testing.T) {
    "manifests": [],
    "annotations": {"org.opencontainers.artifactType": "application/vnd.cnab.manifest.v1"}
 }`
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(content)))
+	require.NoError(t, NewIndex(artMgr, &tregistry.Client{}).Abstract(context.Background(), art, []byte(content)))
 	assert.Equal(t, "application/vnd.cnab.manifest.v1", art.MediaType)
 }
 
@@ -146,7 +147,7 @@ func TestIndexAbstractorReadsArtifactType(t *testing.T) {
    "artifactType": "application/vnd.example.sbom",
    "manifests": []
 }`
-	require.NoError(t, NewIndex(artMgr).Abstract(context.Background(), art, []byte(content)))
+	require.NoError(t, NewIndex(artMgr, &tregistry.Client{}).Abstract(context.Background(), art, []byte(content)))
 	assert.Equal(t, "application/vnd.example.sbom", art.ArtifactType)
 }
 
@@ -176,5 +177,5 @@ func TestAbstractorsRejectMalformedContent(t *testing.T) {
 
 	assert.Error(t, NewV1(&tblob.Manager{}).Abstract(context.Background(), &artifact.Artifact{}, malformed))
 	assert.Error(t, NewV2().Abstract(context.Background(), &artifact.Artifact{}, malformed))
-	assert.Error(t, NewIndex(&tart.Manager{}).Abstract(context.Background(), &artifact.Artifact{}, malformed))
+	assert.Error(t, NewIndex(&tart.Manager{}, &tregistry.Client{}).Abstract(context.Background(), &artifact.Artifact{}, malformed))
 }
