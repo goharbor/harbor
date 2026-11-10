@@ -37,6 +37,9 @@ func TestParseEndpoint(t *testing.T) {
 		{"ftp://example.com", true, ""},
 		{"http://example.com", false, "http://example.com"},
 		{"https://example.com", false, "https://example.com"},
+		{"http://EXAMPLE.COM", false, "http://example.com"},
+		{"https://EXAMPLE.COM:8080/Path", false, "https://example.com:8080/Path"},
+		{" MIXED.case.com/path/ ", false, "http://mixed.case.com/path"},
 		{"http://example!@#!?//#", true, ""},
 	}
 
@@ -472,6 +475,20 @@ func TestValidateCronString(t *testing.T) {
 		{
 			description: "test case 4",
 			input:       "0 1 2 1 1 *",
+			hasErr:      false,
+		},
+
+		// cron expression that can never fire (Feb 30 does not exist)
+		{
+			description: "test case 5",
+			input:       "0 0 3 30 2 *",
+			hasErr:      true,
+		},
+
+		// Feb 29 (leap day) is valid and reachable — fires every leap year
+		{
+			description: "test case 6 - Feb 29 leap day is reachable",
+			input:       "0 0 0 29 2 *",
 			hasErr:      false,
 		},
 	}

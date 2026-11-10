@@ -227,6 +227,54 @@
                     </div>
                 </div>
             </div>
+            @if (isSystemAdmin && enableProxyCache) {
+            <div class="clr-form-control mt-05">
+                <label for="retentionDays" class="clr-control-label required">
+                    {{ 'PROJECT.PROXY_CACHE_RETENTION_DAYS' | translate }}
+                    <clr-tooltip>
+                        <clr-icon
+                            clrTooltipTrigger
+                            shape="info-circle"
+                            size="24"></clr-icon>
+                        <clr-tooltip-content
+                            clrPosition="bottom-left"
+                            clrSize="lg"
+                            *clrIfOpen>
+                            <span>{{
+                                'PROJECT.PROXY_CACHE_RETENTION_DAYS_TOOLTIP'
+                                    | translate
+                            }}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <div
+                    class="clr-control-container"
+                    [class.clr-error]="!isRetentionDaysValid">
+                    <input
+                        type="number"
+                        id="retentionDays"
+                        name="retentionDays"
+                        [(ngModel)]="retentionDays"
+                        required
+                        min="0"
+                        [max]="maxRetentionDays"
+                        step="1"
+                        class="clr-input width-164 mr-10"
+                        autocomplete="off" />
+                    @if (!isRetentionDaysValid) {
+                    <clr-icon
+                        class="clr-validate-icon"
+                        shape="exclamation-circle"></clr-icon>
+                    <clr-control-error class="tooltip-content">
+                        {{
+                            'PROJECT.PROXY_CACHE_RETENTION_DAYS_INVALID'
+                                | translate
+                        }}
+                    </clr-control-error>
+                    }
+                </div>
+            </div>
+            }
             <div
                 class="clr-form-control mt-05"
                 [ngStyle]="{

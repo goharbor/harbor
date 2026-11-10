@@ -31,6 +31,7 @@ on:
       - '!tests/resources/**'
       - '!tests/robot-cases/**'
       - '!tests/robot-cases/Group1-Nightly/**'
+  merge_group:
   push:
     # the paths-ignore is the same as the paths in pass-CI.yml, they should be synced together
     paths-ignore:
@@ -56,10 +57,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
          path: src/github.com/goharbor/harbor
-      - name: Set up Go 1.26
+      - name: Set up Go 1.27
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-           go-version: 1.26.4
+           go-version: 1.27.3
            cache-dependency-path: src/github.com/goharbor/harbor/src/go.sum
         id: go
       - name: Cache CI Go tools
@@ -107,7 +108,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
           df -h
       - name: Codecov For BackEnd
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./src/github.com/goharbor/harbor/profile.cov
           flags: unittests
@@ -169,7 +170,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
           df -h
       - name: upload_logs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: db-api-harbor-logs.tar.gz
@@ -233,7 +234,7 @@ jobs:
           df -h
       - name: upload_logs
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: proxy-api-harbor-logs.tar.gz
           path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -293,7 +294,7 @@ jobs:
           df -h
       - name: upload_logs
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ldap-api-harbor-logs.tar.gz
           path: /home/ubuntu/_work/harbor/harbor/src/github.com/goharbor/harbor/integration_logs.tar.gz
@@ -359,7 +360,7 @@ jobs:
       - cncf-ubuntu-16-64-x86
     timeout-minutes: 100
     steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -373,7 +374,7 @@ jobs:
           bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
           df -h
       - name: Codecov For UI
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./src/github.com/goharbor/harbor/src/portal/coverage/lcov.info
           flags: unittests

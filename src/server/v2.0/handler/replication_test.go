@@ -311,6 +311,7 @@ func TestConvertExecution(t *testing.T) {
 	assert.Equal(t, int64(1), result.ID)
 	assert.Equal(t, int64(2), result.PolicyID)
 	assert.Equal(t, "InProgress", result.Status)
+	assert.Equal(t, "test execution", result.StatusText)
 	assert.Equal(t, "manual", result.Trigger)
 	assert.Equal(t, int64(10), result.Total)
 	assert.Equal(t, int64(8), result.Succeed)
@@ -320,16 +321,17 @@ func TestConvertExecution(t *testing.T) {
 
 func TestConvertTask(t *testing.T) {
 	task := &replication.Task{
-		ID:                1,
-		ExecutionID:       2,
-		JobID:             "job-123",
-		Status:            job.SuccessStatus.String(),
-		Operation:         "copy",
-		ResourceType:      "image",
-		SourceResource:    "source/repo:tag",
+		ID:                  1,
+		ExecutionID:         2,
+		JobID:               "job-123",
+		Status:              job.SuccessStatus.String(),
+		StatusMessage:       "test status message",
+		Operation:           "copy",
+		ResourceType:        "image",
+		SourceResource:      "source/repo:tag",
 		DestinationResource: "dest/repo:tag",
-		StartTime:         time.Now(),
-		EndTime:           time.Now(),
+		StartTime:           time.Now(),
+		EndTime:             time.Now(),
 	}
 	
 	result := convertTask(task)
@@ -338,6 +340,7 @@ func TestConvertTask(t *testing.T) {
 	assert.Equal(t, int64(2), result.ExecutionID)
 	assert.Equal(t, "job-123", result.JobID)
 	assert.Equal(t, "Succeed", result.Status)
+	assert.Equal(t, "test status message", result.StatusMessage)
 	assert.Equal(t, "copy", result.Operation)
 	assert.Equal(t, "image", result.ResourceType)
 	assert.Equal(t, "source/repo:tag", result.SrcResource)

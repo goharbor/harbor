@@ -1057,6 +1057,36 @@ export function durationStr(distance: number): string {
     return result ? result : '0';
 }
 
+/**
+ * Compare two URL endpoints with case-insensitive host matching per RFC 1035.
+ * Returns true if both endpoints point to the same location, ignoring host casing.
+ */
+export function equalEndpoint(endpoint1: string, endpoint2: string): boolean {
+    if (endpoint1 === endpoint2) {
+        return true;
+    }
+    if (!endpoint1 || !endpoint2) {
+        return false;
+    }
+    const ep1 = endpoint1.trim();
+    const ep2 = endpoint2.trim();
+    if (ep1 === ep2) {
+        return true;
+    }
+    try {
+        const hasScheme1 = ep1.includes('://');
+        const hasScheme2 = ep2.includes('://');
+        if (hasScheme1 !== hasScheme2) {
+            return false;
+        }
+        const u1 = new URL(hasScheme1 ? ep1 : `http://${ep1}`);
+        const u2 = new URL(hasScheme2 ? ep2 : `http://${ep2}`);
+        return u1.href === u2.href;
+    } catch {
+        return false;
+    }
+}
+
 export enum PageSizeMapKeys {
     LIST_PROJECT_COMPONENT = 'ListProjectComponent',
     REPOSITORY_GRIDVIEW_COMPONENT = 'RepositoryGridviewComponent',
@@ -1078,6 +1108,7 @@ export enum PageSizeMapKeys {
     SYSTEM_RECENT_LOG_COMPONENT = 'SystemRecentLogComponent',
     SYSTEM_USER_COMPONENT = 'SystemUserComponent',
     SYSTEM_ROBOT_COMPONENT = 'SystemRobotAccountsComponent',
+    ROLE_COMPONENT = 'RolesComponent',
     SYSTEM_ENDPOINT_COMPONENT = 'SystemEndpointComponent',
     LIST_REPLICATION_RULE_COMPONENT = 'ListReplicationRuleComponent',
     LIST_REPLICATION_RULE_COMPONENT_EXECUTIONS = 'ListReplicationRuleComponentExecutions',

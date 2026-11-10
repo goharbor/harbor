@@ -34,6 +34,9 @@ func delKeys(ctx context.Context, c cache.Cache, pattern string) error {
 			return errors.Wrap(err, "failed to clean registry cache")
 		}
 	}
+	if err := iter.Err(); err != nil {
+		return errors.Wrap(err, "failed to scan keys")
+	}
 
 	return nil
 }

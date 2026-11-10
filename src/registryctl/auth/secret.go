@@ -38,8 +38,14 @@ type secretHandler struct {
 // NewSecretHandler creates a new authentication handler which adds
 // basic authentication credentials to a request.
 func NewSecretHandler(secrets map[string]string) AuthenticationHandler {
+	cleaned := make(map[string]string)
+	for k, v := range secrets {
+		if len(v) > 0 {
+			cleaned[k] = v
+		}
+	}
 	return &secretHandler{
-		secrets: secrets,
+		secrets: cleaned,
 	}
 }
 
@@ -53,6 +59,9 @@ func (s *secretHandler) AuthorizeRequest(req *http.Request) error {
 		return ErrInvalidCredential
 	}
 	secInReq := strings.TrimPrefix(auth, HarborSecret)
+	if len(secInReq) == 0 {
+		return ErrInvalidCredential
+	}
 
 	for _, v := range s.secrets {
 		if subtle.ConstantTimeCompare([]byte(secInReq), []byte(v)) == 1 {

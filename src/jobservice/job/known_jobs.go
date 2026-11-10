@@ -30,6 +30,8 @@ const (
 	GarbageCollectionVendorType = "GARBAGE_COLLECTION"
 	// ReplicationVendorType : the name of the replication job in job service
 	ReplicationVendorType = "REPLICATION"
+	// EventReplicationVendorType : the name of the event-triggered replication job in job service
+	EventReplicationVendorType = "EVENT_REPLICATION"
 	// WebhookJobVendorType : the name of the webhook job in job service
 	WebhookJobVendorType = "WEBHOOK"
 	// SlackJobVendorType : the name of the slack job in job service

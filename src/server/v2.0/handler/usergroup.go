@@ -192,7 +192,7 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 		return u.SendError(ctx, err)
 	}
 	if len(params.Groupname) == 0 {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("need to provide groupname to search user group"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("A group name must be provided to search user groups"))
 	}
 	query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: params.Groupname}
 	total, err := u.ctl.Count(ctx, query)
