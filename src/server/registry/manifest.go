@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/event/metadata"
 	"github.com/goharbor/harbor/src/controller/event/operator"
 	"github.com/goharbor/harbor/src/controller/repository"
+	"github.com/goharbor/harbor/src/controller/tag"
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -139,18 +140,14 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	notification.AddEvent(req.Context(), e)
 }
 
-// just delete the artifact from database
+// delete the artifact from database, or only the tag if the reference is tag
 func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	repository := router.Param(req.Context(), ":splat")
 	reference := router.Param(req.Context(), ":reference")
-	// v2 doesn't support delete by tag
-	// add parse digest here is to return ErrDigestInvalidFormat before GetByReference throws an NOT_FOUND(404)
-	// Do not add the logic into GetByReference as it's a shared method for PUT/GET/DELETE/Internal call,
-	// and NOT_FOUND satisfy PUT/GET/Internal call.
-	// According to https://github.com/opencontainers/distribution-spec/blob/v1.1.0/spec.md#deleting-tags
-	// If tag deletion is disabled, the registry MUST respond with either a 400 Bad Request or a 405 Method Not Allowed
+	// the reference is tag, delete the tag only and keep the artifact
+	// https://github.com/opencontainers/distribution-spec/blob/v1.1.0/spec.md#deleting-tags
 	if _, err := digest.Parse(reference); err != nil {
-		lib_http.SendError(w, errors.Wrapf(err, "unsupported digest %s", reference).WithCode(errors.UNSUPPORTED))
+		deleteTag(w, req, repository, reference)
 		return
 	}
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
@@ -170,6 +167,47 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 			log.Errorf("failed to delete manifest cache: %v", err)
 		}
 	}
+}
+
+// delete the tag from the artifact it's attached to, the artifact and its other tags are kept
+func deleteTag(w http.ResponseWriter, req *http.Request, repository, name string) {
+	ctx := req.Context()
+	art, err := artifact.Ctl.GetByReference(ctx, repository, name, &artifact.Option{
+		WithTag:   true,
+		WithLabel: true,
+	})
+	if err != nil {
+		lib_http.SendError(w, err)
+		return
+	}
+	var id int64
+	for _, t := range art.Tags {
+		if t.Name == name {
+			id = t.ID
+			break
+		}
+	}
+	// the tag not found
+	if id == 0 {
+		lib_http.SendError(w, errors.New(nil).WithCode(errors.NotFoundCode).
+			WithMessagef("tag %s attached to artifact %d not found", name, art.ID))
+		return
+	}
+	// the immutable status is checked by the tag controller
+	if err = tag.Ctl.Delete(ctx, id); err != nil {
+		lib_http.SendError(w, err)
+		return
+	}
+
+	// fire event
+	notification.AddEvent(ctx, &metadata.DeleteTagEventMetadata{
+		Ctx:              ctx,
+		Tag:              name,
+		Labels:           art.AbstractLabelNames(),
+		AttachedArtifact: &art.Artifact,
+	})
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func putManifest(w http.ResponseWriter, req *http.Request) {
