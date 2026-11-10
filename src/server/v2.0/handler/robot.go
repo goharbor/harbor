@@ -25,6 +25,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotSc "github.com/goharbor/harbor/src/common/security/robot"
@@ -84,6 +85,9 @@ func (rAPI *robotAPI) CreateRobot(ctx context.Context, params operation.CreateRo
 	switch s := sc.(type) {
 	case *local.SecurityContext:
 		creatorRef = int64(s.User().UserID)
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
 	case *robotSc.SecurityContext:
 		if s.User() == nil {
 			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
@@ -173,7 +177,7 @@ func (rAPI *robotAPI) ListRobot(ctx context.Context, params operation.ListRobotP
 		if level == robot.LEVELPROJECT {
 			pv, ok := query.Keywords["ProjectID"]
 			if !ok {
-				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("must with project ID when to query project robots"))
+				return rAPI.SendError(ctx, errors.BadRequestError(nil).WithMessage("Project ID must be specified when querying project robots"))
 			}
 			pidStr, ok := pv.(string)
 			if !ok {
@@ -271,13 +275,41 @@ func (rAPI *robotAPI) RefreshSec(ctx context.Context, params operation.RefreshSe
 		return rAPI.SendError(ctx, err)
 	}
 
-	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, nil)
+	r, err := rAPI.robotCtl.Get(ctx, params.RobotID, &robot.Option{
+		WithPermission: true,
+	})
 	if err != nil {
 		return rAPI.SendError(ctx, err)
 	}
 
 	if err := rAPI.requireAccess(ctx, r, rbac.ActionUpdate); err != nil {
 		return rAPI.SendError(ctx, err)
+	}
+
+	// Refreshing the secret hands the caller control of the robot, which is
+	// effectively the same as being granted the robot's permissions. Run the same
+	// no-escalation check as create/update, so a caller holding e.g. robot:update
+	// but not the robot's own permissions cannot take over a more-privileged robot.
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return rAPI.SendError(ctx, err)
+	}
+	var robotPerms []*models.RobotPermission
+	if err := lib.JSONCopy(&robotPerms, r.Permissions); err != nil {
+		log.Warningf("failed to call JSONCopy on robot permission when RefreshSec, error: %v", err)
+	}
+	switch s := sc.(type) {
+	case *local.SecurityContext:
+		if err := rAPI.validateNoEscalation(ctx, robotPerms); err != nil {
+			return rAPI.SendError(ctx, err)
+		}
+	case *robotSc.SecurityContext:
+		if s.User() == nil {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessage("invalid security context: empty robot account"))
+		}
+		if !isValidPermissionScope(robotPerms, s.User().Permissions) {
+			return rAPI.SendError(ctx, errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED))
+		}
 	}
 
 	var secret string
@@ -334,26 +366,26 @@ func (rAPI *robotAPI) validate(d int64, level string, permissions []*models.Robo
 	}
 
 	if len(permissions) == 0 {
-		return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Permission list cannot be empty").WithCode(errors.BadRequestCode)
 	}
 
 	for _, perm := range permissions {
 		if perm == nil {
-			return errors.New(nil).WithMessage("bad request empty permission").WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("Permission list cannot be empty").WithCode(errors.BadRequestCode)
 		}
 		if len(perm.Access) == 0 {
-			return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+			return errors.New(nil).WithMessage("Access list cannot be empty").WithCode(errors.BadRequestCode)
 		}
 		for _, acc := range perm.Access {
 			if acc == nil {
-				return errors.New(nil).WithMessage("bad request empty access").WithCode(errors.BadRequestCode)
+				return errors.New(nil).WithMessage("Access list cannot be empty").WithCode(errors.BadRequestCode)
 			}
 		}
 	}
 
 	// to create a project robot, the permission must be only one project scope.
 	if level == robot.LEVELPROJECT && len(permissions) > 1 {
-		return errors.New(nil).WithMessage("bad request permission").WithCode(errors.BadRequestCode)
+		return errors.New(nil).WithMessage("Project robot account cannot be assigned permissions for multiple projects").WithCode(errors.BadRequestCode)
 	}
 
 	provider := rbac.GetPermissionProvider()
@@ -405,6 +437,24 @@ func (rAPI *robotAPI) updateV2Robot(ctx context.Context, params operation.Update
 		return errors.BadRequestError(nil).WithMessage("cannot update the level or name of robot")
 	}
 
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	switch s := sc.(type) {
+	case *local.SecurityContext:
+		if err := rAPI.validateNoEscalation(ctx, params.Robot.Permissions); err != nil {
+			return err
+		}
+	case *robotSc.SecurityContext:
+		if s.User() == nil {
+			return errors.New(nil).WithMessage("invalid security context: empty robot account")
+		}
+		if !isValidPermissionScope(params.Robot.Permissions, s.User().Permissions) {
+			return errors.New(nil).WithMessagef("permission scope is invalid. It must be equal to or more restrictive than the robot's permissions: %s", s.User().Name).WithCode(errors.DENIED)
+		}
+	}
+
 	if r.Duration != *params.Robot.Duration {
 		r.Duration = *params.Robot.Duration
 		if *params.Robot.Duration == -1 {
@@ -443,7 +493,7 @@ func validateName(name string) error {
 	robotNameReg := `^[a-z0-9]+(?:[._-][a-z0-9]+)*$`
 	legal := regexp.MustCompile(robotNameReg).MatchString(name)
 	if !legal {
-		return errors.BadRequestError(nil).WithMessage("robot name is not in lower case or contains illegal characters")
+		return errors.BadRequestError(nil).WithMessage("Robot name must be lowercase and cannot contain invalid characters")
 	}
 	return nil
 }
@@ -457,6 +507,73 @@ func containsAccess(policies []*types.Policy, item *models.Access) bool {
 	return false
 }
 
+// mapRobotToHumanResource maps ScopeProject resource names to their ScopeRole equivalents.
+// Needed because robots use "project" for the project entity while human roles use "" (ResourceSelf).
+func mapRobotToHumanResource(r rbac.Resource) rbac.Resource {
+	if r == rbac.ResourceProject {
+		return rbac.ResourceSelf
+	}
+	return r
+}
+
+// validateNoEscalation ensures that a human user cannot grant a robot more permissions than they hold.
+func (rAPI *robotAPI) validateNoEscalation(ctx context.Context, permissions []*models.RobotPermission) error {
+	for _, perm := range permissions {
+		memberDelegationChecked := false
+		for _, acc := range perm.Access {
+			if !memberDelegationChecked && acc.Effect != types.EffectDeny.String() &&
+				acc.Resource == rbac.ResourceMember.String() &&
+				(acc.Action == rbac.ActionCreate.String() || acc.Action == rbac.ActionUpdate.String()) {
+				if err := rAPI.requireMemberDelegation(ctx, perm.Namespace); err != nil {
+					return err
+				}
+				memberDelegationChecked = true
+			}
+			resource := mapRobotToHumanResource(rbac.Resource(acc.Resource))
+			has, err := rAPI.HasProjectPermission(ctx, perm.Namespace, rbac.Action(acc.Action), resource)
+			if err != nil {
+				return err
+			}
+			if !has {
+				return errors.ForbiddenError(nil).WithMessagef(
+					"permission escalation not allowed: you do not have %s:%s", acc.Resource, acc.Action)
+			}
+		}
+	}
+	return nil
+}
+
+// requireMemberDelegation protects create, update and secret refresh: controlling
+// a robot with member:create/update allows assigning any role in that project.
+// A human with a restricted custom role must not use a robot to bypass their own
+// role-assignment checks, even if they hold the same member permission.
+func (rAPI *robotAPI) requireMemberDelegation(ctx context.Context, namespace string) error {
+	sc, err := rAPI.GetSecurityContext(ctx)
+	if err != nil {
+		return err
+	}
+	if sc.IsSysAdmin() {
+		return nil
+	}
+	if user, ok := sc.(*local.SecurityContext); ok && user.IsAuthenticated() && namespace != "*" {
+		p, err := baseProjectCtl.GetByName(ctx, namespace)
+		if err != nil {
+			return err
+		}
+		roles, err := baseProjectCtl.ListRoles(ctx, p.ProjectID, user.User())
+		if err != nil {
+			return err
+		}
+		for _, role := range roles {
+			if role == common.RoleProjectAdmin {
+				return nil
+			}
+		}
+	}
+	return errors.ForbiddenError(nil).WithMessagef(
+		"only system or project administrators can grant control of a robot with member:create or member:update in project %s", namespace)
+}
+
 // isValidPermissionScope checks if permission slice A is a subset of permission slice B
 func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot.Permission) bool {
 	creatorMap := make(map[string]*robot.Permission)
@@ -466,13 +583,19 @@ func isValidPermissionScope(creating []*models.RobotPermission, creator []*robot
 	}
 
 	hasLessThanOrEqualAccess := func(creating []*models.Access, creator []*types.Policy) bool {
+		// Policy.String treats an omitted effect as allow, matching authorization.
 		creatorMap := make(map[string]*types.Policy)
 		for _, creatorP := range creator {
-			key := fmt.Sprintf("%s:%s:%s", creatorP.Resource, creatorP.Action, creatorP.Effect)
+			key := creatorP.String()
 			creatorMap[key] = creatorP
 		}
 		for _, creatingP := range creating {
-			key := fmt.Sprintf("%s:%s:%s", creatingP.Resource, creatingP.Action, creatingP.Effect)
+			policy := types.Policy{
+				Resource: types.Resource(creatingP.Resource),
+				Action:   types.Action(creatingP.Action),
+				Effect:   types.Effect(creatingP.Effect),
+			}
+			key := policy.String()
 			if _, found := creatorMap[key]; !found {
 				return false
 			}

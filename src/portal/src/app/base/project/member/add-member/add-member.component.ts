@@ -22,16 +22,16 @@ import {
     ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { of, Subject, Subscription } from 'rxjs';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
-import { Project } from '../../project';
 import { InlineAlertComponent } from '../../../../shared/components/inline-alert/inline-alert.component';
 import { ClrLoadingState } from '@clr/angular';
 import { MemberService } from 'ng-swagger-gen/services/member.service';
 import { UserService } from 'ng-swagger-gen/services/user.service';
 import { UserResp } from '../../../../../../ng-swagger-gen/models/user-resp';
 import { UserEntity } from '../../../../../../ng-swagger-gen/models/user-entity';
+import { roleDisplayName } from '../../../../shared/units/role-util';
+import { Role } from '../../../../../../ng-swagger-gen/models/role';
 
 @Component({
     selector: 'add-member',
@@ -49,6 +49,11 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
     @Input() projectId: number;
+    // The parent page loads the role list once and shares it with both the member
+    // and the group dialog, so opening the page issues a single paginated role
+    // fetch instead of one per dialog.
+    @Input() roles: Role[] = [];
+    @Input() rolesLoaded: boolean = false;
     @Output() added = new EventEmitter<boolean>();
     isMemberNameValid: boolean = true;
     memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
@@ -64,79 +69,67 @@ export class AddMemberComponent implements OnInit, OnDestroy {
     constructor(
         private memberService: MemberService,
         private userService: UserService,
-        private messageHandlerService: MessageHandlerService,
-        private route: ActivatedRoute
+        private messageHandlerService: MessageHandlerService
     ) {}
 
     ngOnInit(): void {
-        let resolverData = this.route.snapshot.parent.parent.data;
-        let hasProjectAdminRole: boolean;
-        if (resolverData) {
-            hasProjectAdminRole = (<Project>resolverData['projectResolver'])
-                .has_project_admin_role;
+        if (!this.searcherSub) {
+            this.searcherSub = this.searcher
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            return this.userService.searchUsers({
+                                page: 1,
+                                pageSize: 10,
+                                username: name,
+                            });
+                        } else {
+                            return of([]);
+                        }
+                    })
+                )
+                .subscribe(res => {
+                    if (res) {
+                        this.searchedUserLists = res;
+                    }
+                });
         }
-        if (hasProjectAdminRole) {
-            if (!this.searcherSub) {
-                this.searcherSub = this.searcher
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                return this.userService.searchUsers({
+        if (!this.nameCheckerSub) {
+            this.nameCheckerSub = this.nameChecker
+                .pipe(
+                    debounceTime(500),
+                    switchMap(name => {
+                        if (name) {
+                            this.checkOnGoing = true;
+                            return this.memberService
+                                .listProjectMembers({
                                     page: 1,
                                     pageSize: 10,
-                                    username: name,
-                                });
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res) {
-                            this.searchedUserLists = res;
+                                    projectNameOrId: this.projectId.toString(),
+                                    entityname: name,
+                                })
+                                .pipe(
+                                    finalize(() => (this.checkOnGoing = false))
+                                );
+                        } else {
+                            return of([]);
                         }
-                    });
-            }
-            if (!this.nameCheckerSub) {
-                this.nameCheckerSub = this.nameChecker
-                    .pipe(
-                        debounceTime(500),
-                        switchMap(name => {
-                            if (name) {
-                                this.checkOnGoing = true;
-                                return this.memberService
-                                    .listProjectMembers({
-                                        page: 1,
-                                        pageSize: 10,
-                                        projectNameOrId:
-                                            this.projectId.toString(),
-                                        entityname: name,
-                                    })
-                                    .pipe(
-                                        finalize(
-                                            () => (this.checkOnGoing = false)
-                                        )
-                                    );
-                            } else {
-                                return of([]);
-                            }
-                        })
-                    )
-                    .subscribe(res => {
-                        if (res && res.length) {
-                            if (
-                                res.filter(
-                                    m => m.entity_name === this.member.username
-                                ).length > 0
-                            ) {
-                                this.isMemberNameValid = false;
-                                this.memberTooltip =
-                                    'MEMBER.USERNAME_ALREADY_EXISTS';
-                            }
+                    })
+                )
+                .subscribe(res => {
+                    if (res && res.length) {
+                        if (
+                            res.filter(
+                                m => m.entity_name === this.member.username
+                            ).length > 0
+                        ) {
+                            this.isMemberNameValid = false;
+                            this.memberTooltip =
+                                'MEMBER.USERNAME_ALREADY_EXISTS';
                         }
-                    });
-            }
+                    }
+                });
         }
     }
 
@@ -223,7 +216,19 @@ export class AddMemberComponent implements OnInit, OnDestroy {
             this.currentForm &&
             this.currentForm.valid &&
             this.isMemberNameValid &&
-            !this.checkOnGoing
+            !this.checkOnGoing &&
+            // Without a loaded role list the picker is empty while roleId still
+            // holds its default, so submitting would silently create a project
+            // admin. Wait for the roles and for a selection that exists in them.
+            this.hasValidRole()
         );
+    }
+
+    hasValidRole(): boolean {
+        return this.rolesLoaded && this.roles.some(r => r.id === this.roleId);
+    }
+
+    getRoleDisplayName(role: Role): string {
+        return roleDisplayName(role);
     }
 }

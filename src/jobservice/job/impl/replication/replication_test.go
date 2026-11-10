@@ -15,12 +15,14 @@
 package replication
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/controller/replication/transfer"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 )
@@ -87,4 +89,28 @@ func TestRun(t *testing.T) {
 	rep := &Replication{}
 	require.Nil(t, rep.Run(&impl.Context{}, params))
 	assert.True(t, transferred)
+}
+
+func TestEventReplication(t *testing.T) {
+	eventRep := &EventReplication{}
+	var j job.Interface = eventRep
+	assert.NotNil(t, j)
+
+	assert.Equal(t, uint(3), eventRep.MaxFails())
+	assert.Equal(t, uint(0), eventRep.MaxCurrency())
+	assert.True(t, eventRep.ShouldRetry())
+	assert.Nil(t, eventRep.Validate(nil))
+
+	// Verify distinct reflection types for job registration uniqueness
+	repType := reflect.TypeOf((*Replication)(nil)).String()
+	eventRepType := reflect.TypeOf((*EventReplication)(nil)).String()
+	assert.NotEqual(t, repType, eventRepType)
+	assert.Equal(t, "*replication.EventReplication", eventRepType)
+
+	// Verify both can be registered concurrently in job map
+	jobs := map[string]any{
+		job.ReplicationVendorType:      (*Replication)(nil),
+		job.EventReplicationVendorType: (*EventReplication)(nil),
+	}
+	assert.Equal(t, 2, len(jobs))
 }

@@ -59,6 +59,11 @@ import (
 // Replication implements the job interface
 type Replication struct{}
 
+// EventReplication implements the job interface for event-based replication
+type EventReplication struct {
+	Replication
+}
+
 // MaxFails returns that how many times this job can fail
 func (r *Replication) MaxFails() uint {
 	return 3

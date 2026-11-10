@@ -22,7 +22,6 @@ def prepare_core(config_dict, with_trivy):
         core_env_template_path,
         core_conf_env,
         with_trivy=with_trivy,
-        csrf_key=generate_random_string(32),
         scan_robot_prefix=generate_random_string(8),
         **config_dict)
 

@@ -17,7 +17,15 @@ default_https_key_path = '/your/certificate/path'
 REGISTRY_USER_NAME = 'harbor_registry_user'
 
 
+WEBHOOK_EGRESS_POLICIES = ('allow_all', 'block_restricted', 'public_only')
+
+
 def validate(conf: dict, **kwargs):
+    # webhook egress policy validate
+    if conf.get('webhook_egress_policy') and conf['webhook_egress_policy'] not in WEBHOOK_EGRESS_POLICIES:
+        raise Exception("Error: webhook_egress.policy must be one of {}, got {!r}".format(
+            ', '.join(WEBHOOK_EGRESS_POLICIES), conf['webhook_egress_policy']))
+
     # hostname validate
     if conf.get('hostname') == '127.0.0.1':
         raise Exception("127.0.0.1 can not be the hostname")
@@ -208,6 +216,21 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
         config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
         config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
+
+    # Webhook and Slack notification egress; an unset policy leaves the default to Harbor
+    webhook_egress_config = configs.get('webhook_egress') or {}
+    webhook_egress_policy = webhook_egress_config.get('policy')
+    config_dict['webhook_egress_policy'] = '' if webhook_egress_policy is None else str(webhook_egress_policy).strip().lower()
+    webhook_egress_allowlist = webhook_egress_config.get('allowlist') or []
+    if isinstance(webhook_egress_allowlist, str):
+        webhook_egress_allowlist = [webhook_egress_allowlist]
+    config_dict['webhook_egress_allowlist'] = ','.join(str(entry).strip() for entry in webhook_egress_allowlist)
+    # 2.15 boolean, passed through so its meaning survives the upgrade
+    allow_private_network_access = (configs.get('network') or {}).get('allow_private_network_access')
+    config_dict['allow_private_network_access'] = ''
+    if allow_private_network_access is not None:
+        logging.warning("WARNING: network.allow_private_network_access is deprecated, use webhook_egress.policy")
+        config_dict['allow_private_network_access'] = str(allow_private_network_access).lower()
 
     # Trivy configs, optional
     trivy_configs = configs.get("trivy") or {}

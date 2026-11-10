@@ -71,7 +71,7 @@ class TestScanDataExport(unittest.TestCase):
         self.scan_data_export.export_scan_data("", projects=[project_id], expect_status_code=422, expect_response_body="X-Scan-Data-Type in header is required")
 
         # 6. Verify trigger export scan data execution but specifying multiple project status code should be 400
-        self.scan_data_export.export_scan_data(self.x_scan_data_type, projects=[1, project_id], expect_status_code=400, expect_response_body="bad request: only support export single project")
+        self.scan_data_export.export_scan_data(self.x_scan_data_type, projects=[1, project_id], expect_status_code=400, expect_response_body="bad request: Only exporting a single project is supported")
 
         # 7. Trigger export scan data execution correctly
         execution_id = self.scan_data_export.export_scan_data(self.x_scan_data_type, projects=[project_id], **user_client).id

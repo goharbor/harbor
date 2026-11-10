@@ -60,7 +60,7 @@ func (kd *KrakenDriver) GetHealth() (*DriverStatus, error) {
 	}
 
 	url := fmt.Sprintf("%s%s", strings.TrimSuffix(kd.instance.Endpoint, "/"), krakenHealthPath)
-	url, err := lib.ValidateHTTPURL(url)
+	url, err := lib.NormalizeAndValidateHTTPURL(url)
 	if err != nil {
 		return nil, err
 	}
