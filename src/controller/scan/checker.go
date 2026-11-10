@@ -82,11 +82,6 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 			return nil
 		}
 
-		if hasCapability(r, a) || (runnableAccessory && r.HasCapability(a.ManifestMediaType)) {
-			scannable = true
-			return artifact.ErrBreak
-		}
-
 		// because there are lots of in-toto sbom artifacts in dockerhub and replicated to Harbor, they are considered as image type
 		// when scanning these type of sbom artifact, the scanner might assume it is image layer with tgz format, and if scanner read the layer with a stream of tgz,
 		// it fail and close the stream abruptly and cause the pannic in the harbor core log
@@ -97,6 +92,11 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 		}
 		if unscannable {
 			return nil
+		}
+
+		if hasScanCapability(r, a, runnableAccessory) {
+			scannable = true
+			return artifact.ErrBreak
 		}
 
 		return nil
@@ -133,4 +133,9 @@ func hasCapability(r *models.Registration, a *artifact.Artifact) bool {
 	}
 
 	return false
+}
+
+// hasScanCapability applies the same capability rule throughout scanning.
+func hasScanCapability(r *models.Registration, a *artifact.Artifact, runnableAccessory bool) bool {
+	return hasCapability(r, a) || (runnableAccessory && r.HasCapability(a.ManifestMediaType))
 }

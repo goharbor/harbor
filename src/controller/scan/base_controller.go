@@ -206,7 +206,7 @@ func (bc *basicController) collectScanningArtifacts(ctx context.Context, r *scan
 			return nil
 		}
 
-		supported := hasCapability(r, a) || (runnableAccessory && r.HasCapability(a.ManifestMediaType))
+		supported := hasScanCapability(r, a, runnableAccessory)
 
 		if !supported && a.IsImageIndex() {
 			// image index not supported by the scanner, so continue to walk its children
@@ -901,7 +901,13 @@ func (bc *basicController) makeRobotAccount(ctx context.Context, projectID int64
 func (bc *basicController) launchScanJob(ctx context.Context, param *launchScanJobParam, opts *Options) error {
 	// don't launch scan job for the artifact which is not supported by the scanner
 	if !hasCapability(param.Registration, param.Artifact) {
-		return nil
+		skip, runnableAccessory, err := scanAccessoryStatus(ctx, bc.acc, param.Artifact)
+		if err != nil {
+			return err
+		}
+		if skip || !hasScanCapability(param.Registration, param.Artifact, runnableAccessory) {
+			return nil
+		}
 	}
 
 	var ck string

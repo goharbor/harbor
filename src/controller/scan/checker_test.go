@@ -121,6 +121,7 @@ func (suite *CheckerTestSuite) TestRunnableSignatureAccessoryIsScannable() {
 			mock.OnAnything(c.accMgr, "List").Return([]accessoryModel.Accessory{
 				&accessorybase.Default{Data: accessoryModel.AccessoryData{Type: accessoryModel.TypeNotationSignature}},
 			}, nil).Once()
+			mock.OnAnything(c.artifactCtl, "HasUnscannableLayer").Return(false, nil).Once()
 			mock.OnAnything(c.artifactCtl, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {
 				walkFn := args.Get(2).(func(*artifact.Artifact) error)
 				walkFn(art)
@@ -130,6 +131,24 @@ func (suite *CheckerTestSuite) TestRunnableSignatureAccessoryIsScannable() {
 			suite.True(scannable)
 		})
 	}
+}
+
+func (suite *CheckerTestSuite) TestRunnableAccessoryWithExcludedLayerIsNotScannable() {
+	c := suite.new()
+	art := &artifact.Artifact{Artifact: artmodel.Artifact{MediaType: ocispec.MediaTypeImageConfig, ManifestMediaType: ocispec.MediaTypeImageManifest}}
+	registration := &scanner.Registration{Metadata: &v1.ScannerAdapterMetadata{
+		Capabilities: []*v1.ScannerCapability{{ConsumesMimeTypes: []string{ocispec.MediaTypeImageManifest}}},
+	}}
+	mock.OnAnything(c.scannerCtl, "GetRegistrationByProject").Return(registration, nil).Once()
+	mock.OnAnything(c.accMgr, "List").Return([]accessoryModel.Accessory{&accessorybase.Default{}}, nil).Once()
+	mock.OnAnything(c.artifactCtl, "HasUnscannableLayer").Return(true, nil).Once()
+	mock.OnAnything(c.artifactCtl, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {
+		walkFn := args.Get(2).(func(*artifact.Artifact) error)
+		suite.Require().NoError(walkFn(art))
+	})
+	scannable, err := c.IsScannable(context.Background(), art)
+	suite.Require().NoError(err)
+	suite.False(scannable)
 }
 
 func (suite *CheckerTestSuite) TestAccessoryClassification() {
