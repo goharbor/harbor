@@ -383,7 +383,7 @@ func (c *client) PullBlob(repository, digest string) (int64, io.ReadCloser, erro
 }
 
 // PullBlobChunk pulls the specified blob, but by chunked, refer to https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pull for more details.
-func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end int64) (int64, io.ReadCloser, error) {
+func (c *client) PullBlobChunk(repository, digest string, blobSize, start, end int64) (int64, io.ReadCloser, error) {
 	req, err := http.NewRequest(http.MethodGet, buildBlobURL(c.url, repository, digest), nil)
 	if err != nil {
 		return 0, nil, err
@@ -394,6 +394,29 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 	resp, err := c.do(req)
 	if err != nil {
 		return 0, nil, err
+	}
+
+	// A server may ignore Range and answer 200 with the full blob. Callers
+	// splice the body in at start, so accept only what was asked for: a 206
+	// starting at start, or a 200 when the whole blob was requested.
+	switch resp.StatusCode {
+	case http.StatusPartialContent:
+		cr := resp.Header.Get("Content-Range")
+		got, crErr := parseContentRangeStart(cr)
+		if crErr != nil || got != start {
+			defer resp.Body.Close()
+			return 0, nil, fmt.Errorf("registry returned Content-Range %q for requested range bytes=%d-%d, refusing to treat it as that chunk", cr, start, end)
+		}
+	case http.StatusOK:
+		// With blobSize unknown there's nothing to check end against.
+		wholeBlobRequested := start == 0 && (blobSize <= 0 || end == blobSize-1)
+		if !wholeBlobRequested {
+			defer resp.Body.Close()
+			return 0, nil, fmt.Errorf("registry ignored range request bytes=%d-%d and returned a full 200 response", start, end)
+		}
+	default:
+		defer resp.Body.Close()
+		return 0, nil, fmt.Errorf("unexpected status code %d for ranged blob pull", resp.StatusCode)
 	}
 
 	var size int64
@@ -408,6 +431,20 @@ func (c *client) PullBlobChunk(repository, digest string, _ int64, start, end in
 	}
 
 	return size, resp.Body, nil
+}
+
+// parseContentRangeStart extracts the start offset from a GET response's
+// Content-Range header, e.g. "bytes 100-499/1234" or "bytes 100-499/*".
+func parseContentRangeStart(cr string) (int64, error) {
+	// Range unit names are case-insensitive.
+	if unit, rest, ok := strings.Cut(cr, " "); ok && strings.EqualFold(unit, "bytes") {
+		cr = rest
+	}
+	dash := strings.IndexByte(cr, '-')
+	if dash <= 0 {
+		return -1, fmt.Errorf("invalid Content-Range format: %q", cr)
+	}
+	return strconv.ParseInt(cr[:dash], 10, 64)
 }
 
 func (c *client) PushBlob(repository, digest string, size int64, blob io.Reader) error {

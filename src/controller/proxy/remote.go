@@ -32,6 +32,9 @@ import (
 type RemoteInterface interface {
 	// BlobReader create a reader for remote blob
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
+	// BlobReaderAt creates a reader for the rest of a remote blob of the given
+	// size, from byte start on, to resume an interrupted BlobReader
+	BlobReaderAt(repo, dig string, size, start int64) (io.ReadCloser, error)
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
 	// ManifestExist checks manifest exist, if exist, returns digest
@@ -98,6 +101,17 @@ func (r *remoteHelper) BlobReader(repo, dig string) (int64, io.ReadCloser, error
 		bReader = lib.NewReader(bReader, r.opts.Speed)
 	}
 	return sz, bReader, err
+}
+
+func (r *remoteHelper) BlobReaderAt(repo, dig string, size, start int64) (io.ReadCloser, error) {
+	_, bReader, err := r.registry.PullBlobChunk(repo, dig, size, start, size-1)
+	if err != nil {
+		return nil, err
+	}
+	if r.opts != nil && r.opts.Speed > 0 {
+		bReader = lib.NewReader(bReader, r.opts.Speed)
+	}
+	return bReader, nil
 }
 
 func (r *remoteHelper) Manifest(repo string, ref string) (distribution.Manifest, string, error) {
