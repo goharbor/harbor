@@ -34,7 +34,6 @@ import {
     QUOTA_DANGER_COEFFICIENT,
     QUOTA_WARNING_COEFFICIENT,
     QuotaUnits,
-    RoleMapping,
 } from '../../../shared/entities/shared.const';
 import {
     UserPermissionService,
@@ -72,23 +71,14 @@ export class ProjectDetailComponent
     hasLabelListPermission: boolean;
     hasLabelCreatePermission: boolean;
     hasLogListPermission: boolean;
-    hasConfigurationListPermission: boolean;
+    hasConfigurationUpdatePermission: boolean;
     hasRobotListPermission: boolean;
     hasTagRetentionPermission: boolean;
     hasTagImmutablePermission: boolean;
     hasWebhookListPermission: boolean;
-    hasScannerReadPermission: boolean;
+    hasScannerCreatePermission: boolean;
     hasP2pProviderReadPermission: boolean;
     hasQuotaReadPermission: boolean = false;
-
-    // Check if current user role is Limited Guest or Guest
-    isLimitedGuestOrGuest(): boolean {
-        return (
-            this.roleName === RoleMapping.limitedGuest ||
-            this.roleName === RoleMapping.guest
-        );
-    }
-
     tabLinkNavList = [
         {
             linkName: 'summary',
@@ -119,8 +109,7 @@ export class ProjectDetailComponent
             linkName: 'scanner',
             tabLinkInOverflow: false,
             showTabName: 'SCANNER.SCANNER',
-            permissions: () =>
-                this.hasScannerReadPermission && !this.isLimitedGuestOrGuest(),
+            permissions: () => this.hasScannerCreatePermission,
         },
         {
             linkName: 'p2p-provider',
@@ -159,9 +148,7 @@ export class ProjectDetailComponent
             tabLinkInOverflow: false,
             showTabName: 'PROJECT_DETAIL.CONFIG',
             permissions: () =>
-                this.isSessionValid &&
-                this.hasConfigurationListPermission &&
-                !this.isLimitedGuestOrGuest(),
+                this.isSessionValid && this.hasConfigurationUpdatePermission,
         },
     ];
     previousWindowWidth: number;
@@ -253,7 +240,7 @@ export class ProjectDetailComponent
             this.userPermissionService.getPermission(
                 projectId,
                 USERSTATICPERMISSION.CONFIGURATION.KEY,
-                USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+                USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE
             )
         );
         permissionsList.push(
@@ -316,7 +303,7 @@ export class ProjectDetailComponent
             this.userPermissionService.getPermission(
                 projectId,
                 USERSTATICPERMISSION.SCANNER.KEY,
-                USERSTATICPERMISSION.SCANNER.VALUE.READ
+                USERSTATICPERMISSION.SCANNER.VALUE.CREATE
             )
         );
         permissionsList.push(
@@ -339,7 +326,7 @@ export class ProjectDetailComponent
                 [
                     this.hasProjectReadPermission,
                     this.hasLogListPermission,
-                    this.hasConfigurationListPermission,
+                    this.hasConfigurationUpdatePermission,
                     this.hasMemberListPermission,
                     this.hasLabelListPermission,
                     this.hasRepositoryListPermission,
@@ -348,7 +335,7 @@ export class ProjectDetailComponent
                     this.hasTagRetentionPermission,
                     this.hasTagImmutablePermission,
                     this.hasWebhookListPermission,
-                    this.hasScannerReadPermission,
+                    this.hasScannerCreatePermission,
                     this.hasP2pProviderReadPermission,
                     this.hasQuotaReadPermission,
                 ] = Rules;
