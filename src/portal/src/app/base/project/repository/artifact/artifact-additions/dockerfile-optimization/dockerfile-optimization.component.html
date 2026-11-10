@@ -1,0 +1,123 @@
+<div class="dockerfile-optimization-container">
+    <div *ngIf="loadingCached || loadingAvailability" class="spinner-container">
+        <clr-spinner></clr-spinner>
+    </div>
+
+    <ng-container *ngIf="!loadingCached && !loadingAvailability && result">
+        <div *ngIf="result.generated" class="alert alert-warning" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <cds-icon
+                            class="alert-icon"
+                            shape="exclamation-triangle"></cds-icon>
+                    </div>
+                    <span class="alert-text">{{
+                        'REPOSITORY.DOCKERFILE_GENERATED_HINT' | translate
+                    }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="clr-row comparison-panels">
+            <div class="clr-col-6">
+                <h5>
+                    {{
+                        (result.generated
+                            ? 'REPOSITORY.DOCKERFILE_ORIGINAL_GENERATED'
+                            : 'REPOSITORY.DOCKERFILE_ORIGINAL'
+                        ) | translate
+                    }}
+                </h5>
+                <pre class="dockerfile-pre">{{ result.dockerfile }}</pre>
+            </div>
+            <div class="clr-col-6">
+                <h5>{{ 'REPOSITORY.DOCKERFILE_OPTIMIZED' | translate }}</h5>
+                <textarea
+                    class="dockerfile-pre dockerfile-textarea"
+                    [(ngModel)]="editedDockerfile"></textarea>
+            </div>
+        </div>
+
+        <div class="action-row build-row" *ngIf="hasSourceTag">
+            <button class="btn btn-outline" (click)="downloadDockerfile()">
+                <clr-icon shape="download" size="16"></clr-icon>
+                <span>{{ 'REPOSITORY.DOWNLOAD_DOCKERFILE' | translate }}</span>
+            </button>
+            <p class="hint-text">
+                {{ 'REPOSITORY.BUILD_COMMAND_HINT' | translate }}
+            </p>
+            <hbr-copy-input
+                inputSize="65"
+                headerTitle="{{ 'REPOSITORY.BUILD_COMMAND' | translate }}"
+                defaultValue="{{ buildCommand }}"
+                (onCopySuccess)="onCpSuccess()"
+                (onCopyError)="onCpError()"></hbr-copy-input>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loadingCached && !loadingAvailability && inProgress">
+        <div class="action-row">
+            <clr-spinner [clrSmall]="true"></clr-spinner>
+            <span class="hint-text">{{
+                'REPOSITORY.DOCKERFILE_IN_PROGRESS' | translate
+            }}</span>
+        </div>
+    </ng-container>
+
+    <ng-container
+        *ngIf="
+            !loadingCached &&
+            !loadingAvailability &&
+            !inProgress &&
+            showButton &&
+            !result
+        ">
+        <div class="action-row">
+            <button
+                class="btn btn-primary"
+                [disabled]="loading"
+                (click)="optimize()">
+                <clr-spinner *ngIf="loading" [clrSmall]="true"></clr-spinner>
+                <span>{{ 'REPOSITORY.OPTIMIZE_DOCKERFILE' | translate }}</span>
+            </button>
+        </div>
+        <p *ngIf="!loading" class="hint-text">
+            {{ 'REPOSITORY.DOCKERFILE_HINT' | translate }}
+        </p>
+    </ng-container>
+
+    <div
+        *ngIf="
+            !loadingCached &&
+            !loadingAvailability &&
+            !inProgress &&
+            !result &&
+            unavailableReason
+        "
+        class="alert alert-warning"
+        role="alert">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <cds-icon
+                        class="alert-icon"
+                        shape="exclamation-triangle"></cds-icon>
+                </div>
+                <span class="alert-text">{{ unavailableReason }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        <div class="alert-items">
+            <div class="alert-item static">
+                <div class="alert-icon-wrapper">
+                    <cds-icon
+                        class="alert-icon"
+                        shape="exclamation-circle"></cds-icon>
+                </div>
+                <span class="alert-text">{{ errorMessage }}</span>
+            </div>
+        </div>
+    </div>
+</div>
