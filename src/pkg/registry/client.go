@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -151,7 +152,42 @@ func (c *client) Ping() error {
 		return err
 	}
 	defer resp.Body.Close()
-	return nil
+	return checkRegistryPingResponse(resp, c.url)
+}
+
+// checkRegistryPingResponse rejects a /v2/ response that is positively not a registry,
+// so a non-registry endpoint isn't stored as healthy. It rejects a rendered page only:
+// requiring Docker-Distribution-Api-Version would reject OCI-only registries that never
+// set it, and rejecting any non-JSON body would catch a sniffed Content-Type.
+func checkRegistryPingResponse(resp *http.Response, url string) error {
+	mediaType, isPage := isRenderedPage(resp)
+	if !isPage {
+		return nil
+	}
+	// an empty body carries no signal even with a page content type
+	if resp.ContentLength == 0 {
+		return nil
+	}
+
+	return errors.New(nil).WithCode(errors.BadRequestCode).
+		WithMessagef("%s is not a registry v2 endpoint: /v2/ returned a %q page", url, mediaType)
+}
+
+// isRenderedPage reports whether a response carries a web page, which a registry
+// does not return for /v2/. A blob response may legitimately be a page, since the
+// OCI distribution spec does not constrain a blob's Content-Type, so this check
+// applies to the ping endpoint only; blob integrity is enforced by digest verification.
+func isRenderedPage(resp *http.Response) (string, bool) {
+	mediaType, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	if err != nil {
+		return "", false
+	}
+	switch mediaType {
+	case "text/html", "application/xhtml+xml":
+		return mediaType, true
+	}
+
+	return "", false
 }
 
 func (c *client) Catalog() ([]string, error) {
