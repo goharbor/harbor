@@ -165,7 +165,8 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.26.10
+GOBUILDIMAGE=golang:1.27.3
+GOBUILDVERSION=$(lastword $(subst :, ,$(GOBUILDIMAGE)))
 GOBUILDPATHINCONTAINER=/harbor
 
 # go build
@@ -322,7 +323,8 @@ lint_apis:
 SWAGGER_IMAGENAME=$(IMAGENAMESPACE)/swagger
 SWAGGER_VERSION=v0.33.1
 # use a -legacy suffixed image tag to decouple the helper image from the one built on the main branch
-SWAGGER_IMAGETAG=$(SWAGGER_VERSION)-legacy
+# Include the Go version so cached helpers are rebuilt when Go changes.
+SWAGGER_IMAGETAG=$(SWAGGER_VERSION)-go$(GOBUILDVERSION)-legacy
 SWAGGER=$(RUNCONTAINER) ${SWAGGER_IMAGENAME}:${SWAGGER_IMAGETAG}
 SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main --additional-initialism=CVE --additional-initialism=GC --additional-initialism=OIDC
 SWAGGER_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_IMAGETAG) .
@@ -335,6 +337,8 @@ define swagger_generate_server
 	@# Drop the previously generated files but keep the committed
 	@# zz_generated_placeholder.go of each package (see .gitignore).
 	@find $(2)/models $(2)/restapi -type f ! -name 'zz_generated_placeholder.go' -delete
+	@# Remove stale empty directories so they are not checked as generated packages.
+	@find $(2)/models $(2)/restapi -mindepth 1 -type d -empty -delete
 	@mkdir -p $(2)
 	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
 	@missing=; orphaned=; \
@@ -363,21 +367,27 @@ gen_apis:
 
 MOCKERY_IMAGENAME=$(IMAGENAMESPACE)/mockery
 MOCKERY_VERSION=v2.53.3
+MOCKERY_XTOOLS_VERSION=v0.51.0
 # use a -legacy suffixed image tag to decouple the helper image from the one built on the main branch
-MOCKERY_IMAGETAG=$(MOCKERY_VERSION)-legacy
-MOCKERY=$(RUNCONTAINER)/src ${MOCKERY_IMAGENAME}:${MOCKERY_IMAGETAG}
-MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_IMAGETAG) .
+MOCKERY_IMAGETAG=$(MOCKERY_VERSION)-xtools-$(MOCKERY_XTOOLS_VERSION)-go$(GOBUILDVERSION)-legacy
+# Go caches must be writable when the container runs as the invoking user.
+MOCKERY=$(RUNCONTAINER)/src -e GOCACHE=/tmp/go-build -e GOMODCACHE=/tmp/go-mod ${MOCKERY_IMAGENAME}:${MOCKERY_IMAGETAG}
+MOCKERY_IMAGE_BUILD_CMD=${DOCKERBUILD} -f ${TOOLSPATH}/mockery/Dockerfile --build-arg GOLANG=${GOBUILDIMAGE} --build-arg MOCKERY_VERSION=${MOCKERY_VERSION} --build-arg XTOOLS_VERSION=${MOCKERY_XTOOLS_VERSION} -t ${MOCKERY_IMAGENAME}:$(MOCKERY_IMAGETAG) .
 
 gen_mocks:
 	$(call prepare_docker_image,${MOCKERY_IMAGENAME},${MOCKERY_IMAGETAG},${MOCKERY_IMAGE_BUILD_CMD})
 	${MOCKERY} mockery
 
-mocks_check: gen_mocks
+mocks_check:
 	@echo checking mocks...
-	@res=$$(git status -s src/ | awk '{ printf("%s\n", $$2) }' | egrep .*.go); \
-	if [ -n "$${res}" ]; then \
+	@set -e; \
+	before=$$(mktemp); after=$$(mktemp); \
+	trap 'rm -f "$$before" "$$after"' EXIT; \
+	find src -type d -name node_modules -prune -o -type f -name '*.go' -exec cksum {} + | LC_ALL=C sort > "$$before"; \
+	$(MAKE) gen_mocks; \
+	find src -type d -name node_modules -prune -o -type f -name '*.go' -exec cksum {} + | LC_ALL=C sort > "$$after"; \
+	if ! diff -u "$$before" "$$after"; then \
 		echo mocks of the interface are out of date... ; \
-		echo "$${res}"; \
 		exit 1; \
 	fi
 
@@ -534,9 +544,11 @@ commentfmt:
 		exit 1; \
 	fi
 
+# go install github.com/client9/misspell/cmd/misspell@latest
+MISSPELL := $(shell command -v misspell 2>/dev/null || echo $(firstword $(subst :, ,$(shell go env GOPATH)))/bin/misspell)
 misspell:
 	@echo checking misspell...
-	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
+	@find . -type d \( -path ./tests \) -prune -o -name '*.go' -print | xargs $(MISSPELL) -error
 
 # golangci-lint binary installation or refer to https://golangci-lint.run/usage/install/#local-installation
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.9.0

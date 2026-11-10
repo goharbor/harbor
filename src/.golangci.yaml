@@ -55,6 +55,7 @@ linters:
         text: "var-naming: avoid package names that conflict with Go standard library package names"
         path: "server/v2\\.0/restapi/operations/.*/zz_generated_placeholder\\.go$"
     paths:
+      - node_modules
       - third_party$
       - builtin$
       - examples$
@@ -75,6 +76,7 @@ formatters:
   exclusions:
     generated: lax
     paths:
+      - node_modules
       - third_party$
       - builtin$
       - examples$

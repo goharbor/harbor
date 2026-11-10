@@ -6,6 +6,7 @@ import (
 	io "io"
 
 	distribution "github.com/docker/distribution"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
