@@ -184,6 +184,17 @@ func (suite *ErrorTestSuite) TestIsNotFoundErr() {
 	suite.False(IsNotFoundErr(err))
 }
 
+func (suite *ErrorTestSuite) TestAsManifestUnknownError() {
+	// a not found error is converted and keeps the original message as the cause
+	err := AsManifestUnknownError(NotFoundError(nil).WithMessage("artifact library/hello-world:latest not found"))
+	suite.Equal(MANIFESTUNKNOWN, ErrCode(err))
+	suite.Equal("manifest unknown: artifact library/hello-world:latest not found", err.Error())
+
+	// any other error is returned unchanged
+	precondition := New(nil).WithCode(PreconditionCode)
+	suite.Equal(precondition, AsManifestUnknownError(precondition))
+}
+
 func (suite *ErrorTestSuite) TestIsConflictErrErr() {
 	err := New(nil).WithCode(ConflictCode)
 	suite.True(IsConflictErr(err))
