@@ -36,6 +36,8 @@ type key struct {
 	Filterable bool
 	FilterFunc func(context.Context, orm.QuerySeter, string, any) orm.QuerySeter
 	Sortable   bool
+	// Operand is the kind of the value the column accepts in a filter
+	Operand operandKind
 }
 
 type metadata struct {
@@ -90,16 +92,19 @@ func parseModel(model any) *metadata {
 		filterable := parseFilterable(field)
 		defaultSort, sortable := parseSortable(field)
 		column := parseColumn(field)
+		operand := parseOperandKind(field)
 
 		metadata.Keys[field.Name] = &key{
 			Name:       field.Name,
 			Filterable: filterable,
 			Sortable:   sortable,
+			Operand:    operand,
 		}
 		metadata.Keys[column] = &key{
 			Name:       column,
 			Filterable: filterable,
 			Sortable:   sortable,
+			Operand:    operand,
 		}
 		if defaultSort != nil {
 			metadata.DefaultSorts = []*q.Sort{defaultSort}
