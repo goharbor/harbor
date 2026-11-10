@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -187,6 +188,13 @@ func (s *ControllerTestSuite) TestPolicy() {
 	p1, err = c.GetRetention(ctx, id)
 	s.Require().Nil(err)
 	s.Require().EqualValues("test", p1.Scope.Level)
+
+	p1.Rules[0].Parameters = rule.Parameters{"latest_pushed_k": 5}
+	err = c.UpdateRetention(ctx, p1)
+	s.Require().True(errors.IsErr(err, errors.BadRequestCode))
+	p1, err = c.GetRetention(ctx, id)
+	s.Require().Nil(err)
+	s.Require().EqualValues(rule.Parameters{"latestPushedK": float64(10)}, p1.Rules[0].Parameters)
 
 	err = c.DeleteRetention(ctx, id)
 	s.Require().Nil(err)
