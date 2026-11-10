@@ -74,6 +74,28 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 }
 
+// A large number of days must retain every recent artifact instead of
+// overflowing time.Duration and moving the cutoff into the future.
+func (e *EvaluatorTestSuite) TestProcessLargeX() {
+	now := time.Now().UTC()
+	data := []*selector.Candidate{
+		{PushedTime: now.Add(time.Duration(1*-24) * time.Hour).Unix()},
+		{PushedTime: now.Add(time.Duration(30*-24) * time.Hour).Unix()},
+		{PushedTime: now.Add(time.Duration(3650*-24) * time.Hour).Unix()},
+	}
+
+	for _, days := range []float64{106751, 106752, 200000, 999999, 20190904, 2099999999} {
+		e.T().Run(fmt.Sprintf("%v", days), func(t *testing.T) {
+			sut := New(rule.Parameters{ParameterX: days})
+
+			result, err := sut.Process(data)
+
+			require.NoError(t, err)
+			require.Len(t, result, len(data))
+		})
+	}
+}
+
 func TestEvaluatorSuite(t *testing.T) {
 	suite.Run(t, &EvaluatorTestSuite{})
 }
