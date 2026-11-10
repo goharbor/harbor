@@ -454,6 +454,7 @@
     },
     "GROUP": {
         "GROUP": "그룹",
+        "FILTER_PLACEHOLDER": "그룹 필터",
         "IMPORT_LDAP_GROUP": "LDAP Group 불러오기",
         "IMPORT_HTTP_GROUP": "새 HTTP Group",
         "IMPORT_OIDC_GROUP": "새 OIDC Group",

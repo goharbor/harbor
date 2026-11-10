@@ -454,6 +454,7 @@
     },
     "GROUP": {
         "GROUP": "组",
+        "FILTER_PLACEHOLDER": "过滤组",
         "IMPORT_LDAP_GROUP": "导入LDAP组",
         "IMPORT_HTTP_GROUP": "新建HTTP组",
         "IMPORT_OIDC_GROUP": "新建 OIDC 组",

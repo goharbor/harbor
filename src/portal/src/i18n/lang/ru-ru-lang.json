@@ -1696,6 +1696,7 @@
   },
   "GROUP": {
     "GROUP": "Группа",
+    "FILTER_PLACEHOLDER": "Фильтр групп",
     "IMPORT_LDAP_GROUP": "Импорт LDAP Группы",
     "IMPORT_HTTP_GROUP": "Новая HTTP Группа",
     "IMPORT_OIDC_GROUP": "Новая OIDC Группа",
