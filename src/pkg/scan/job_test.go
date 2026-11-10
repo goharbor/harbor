@@ -161,6 +161,59 @@ func (suite *JobTestSuite) TestJob() {
 	require.NoError(suite.T(), err)
 }
 
+// TestJobRunRecoversPanicInReportRoutine checks that a panic while fetching a
+// report fails the job instead of the process. The runner's recover only guards
+// the job goroutine, so a panic in a report routine used to crash jobservice.
+// It runs outside JobTestSuite because the job returns before touching the DB.
+func TestJobRunRecoversPanicInReportRoutine(t *testing.T) {
+	defaultClientPool := v1.DefaultClientPool
+	mcp := &v1testing.ClientPool{}
+	v1.DefaultClientPool = mcp
+	defer func() {
+		v1.DefaultClientPool = defaultClientPool
+	}()
+
+	ctx := &mockjobservice.MockJobContext{}
+	// The two checks before the scan is submitted pass; the one inside the
+	// report routine panics, as getStatus did on a missing job stats key.
+	ctx.On("OPCommand").Return(job.NilCommand, false).Twice()
+	ctx.On("OPCommand").Run(func(mock.Arguments) { panic("status of a missing job") }).Return(job.NilCommand, false).Once()
+	ctx.On("OPCommand").Return(job.NilCommand, false)
+
+	r := &scanner.Registration{UUID: "uuid", Name: "TestJobRunRecoversPanic", URL: "https://trivy.com:8080"}
+	rData, err := r.ToJSON()
+	require.NoError(t, err)
+
+	sr := &v1.ScanRequest{
+		Registry: &v1.Registry{URL: "http://localhost:5000", Authorization: "Basic cm9ib3Q6dG9rZW4="},
+		Artifact: &v1.Artifact{Repository: "library/test_job", Digest: "sha256:data", MimeType: v1.MimeTypeDockerArtifact},
+	}
+	sData, err := sr.ToJSON()
+	require.NoError(t, err)
+
+	rb := &robot.Robot{Robot: model.Robot{ID: 1, Name: "robot", Secret: "token"}, Level: "project"}
+	robotData, err := rb.ToJSON()
+	require.NoError(t, err)
+
+	jp := make(job.Parameters)
+	jp[JobParamRegistration] = rData
+	jp[JobParameterRequest] = sData
+	// []any, as the parameter arrives after the JSON round trip. A []string is
+	// read as zero mime types, so no report routine would start at all.
+	jp[JobParameterMimes] = []any{v1.MimeTypeNativeReport}
+	jp[JobParameterAuthType] = "Basic"
+	jp[JobParameterRobot] = robotData
+
+	mc := &v1testing.Client{}
+	mc.On("SubmitScan", sr).Return(&v1.ScanResponse{ID: "scan_id"}, nil)
+	mocktesting.OnAnything(mcp, "Get").Return(mc, nil)
+
+	var runErr error
+	require.NotPanics(t, func() { runErr = (&Job{}).Run(ctx, jp) })
+	require.Error(t, runErr)
+	require.Contains(t, runErr.Error(), "panic while fetching report")
+}
+
 func (suite *JobTestSuite) TestfetchScanReportFromScanner() {
 	vulnRpt := &vuln.Report{
 		GeneratedAt: time.Now().UTC().String(),
