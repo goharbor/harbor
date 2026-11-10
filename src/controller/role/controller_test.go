@@ -152,6 +152,31 @@ func (suite *ControllerTestSuite) TestUpdateCustomRole() {
 	suite.Nil(err)
 }
 
+// Failure injection: with WithPermission set, Update deletes the old permissions
+// and re-inserts the new set inside a transaction. A permission insert failing
+// must fail the whole Update (the transaction propagates the error) rather than
+// leaving the role with the old permissions dropped and the new set half-written.
+// Guards against silently dropping the Update transaction.
+func (suite *ControllerTestSuite) TestUpdateCustomRolePermissionFailure() {
+	suite.roleMgr.On("Get", mock.Anything, int64(2)).Return(&model.Role{
+		ID:        2,
+		Name:      "myCustomRole",
+		IsBuiltin: false,
+	}, nil)
+	suite.roleMgr.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	suite.rbacMgr.On("DeletePermissionsByRole", mock.Anything, ROLETYPE, int64(2)).Return(nil)
+	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).
+		Return(int64(0), errors.New("insert failed"))
+
+	err := suite.c.Update(suite.ctx, &Role{
+		Role: model.Role{ID: 2, Name: "myCustomRole"},
+		Permissions: []*Permission{
+			{Access: []*types.Policy{{Resource: "repository", Action: "pull"}}},
+		},
+	}, &Option{WithPermission: true})
+	suite.Require().NotNil(err)
+}
+
 func (suite *ControllerTestSuite) TestCreateCustomRole() {
 	suite.roleMgr.On("Create", mock.Anything, mock.Anything).Return(int64(7), nil)
 	suite.rbacMgr.On("CreateRbacPolicy", mock.Anything, mock.Anything).Return(int64(1), nil)
