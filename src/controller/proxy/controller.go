@@ -295,6 +295,11 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 		log.Errorf("failed to pull blob, error %v", err)
 		return 0, nil, err
 	}
+	// Resume the fetch if the upstream connection breaks mid-stream, for as
+	// long as the pulling client (ctx) is still there.
+	bReader = newResumingBlobReader(ctx, bReader, size, func(offset int64) (io.ReadCloser, error) {
+		return rHelper.BlobReaderAt(remoteRepo, art.Digest, size, offset)
+	})
 	desc := distribution.Descriptor{Size: size, Digest: digest.Digest(art.Digest)}
 	go func() {
 		err := c.putBlobToLocal(remoteRepo, art.Repository, desc, rHelper)
@@ -307,7 +312,7 @@ func (c *controller) ProxyBlob(ctx context.Context, p *proModels.Project, art li
 
 func (c *controller) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
 	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
+	bReader, err := openCacheBlobReader(r, remoteRepo, desc)
 	if err != nil {
 		log.Errorf("failed to create blob reader, error %v", err)
 		return err
