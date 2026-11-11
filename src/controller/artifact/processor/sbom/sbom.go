@@ -33,9 +33,13 @@ const (
 	ArtifactTypeSBOM = "SBOM"
 	// processorMediaType is the media type for SBOM, it's scope is only used to register the processor
 	processorMediaType = "application/vnd.goharbor.harbor.sbom.v1"
-	// maxSBOMBytes is the maximum allowed size for an SBOM layer (4MB)
+	// maxSBOMBytes is the maximum allowed size for an SBOM layer (4 MiB)
 	maxSBOMBytes = 1024 * 1024 * 4
 )
+
+func errSBOMTooLarge() *errors.Error {
+	return errors.RequestEntityTooLargeError(nil).WithMessage("The sbom layer is too large")
+}
 
 func init() {
 	pc := &Processor{}
@@ -71,7 +75,7 @@ func (m *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 	}
 	layer := manifest.Layers[0]
 	if layer.Size > maxSBOMBytes {
-		return nil, errors.RequestEntityTooLargeError(nil).WithMessage("The sbom layer is too large")
+		return nil, errSBOMTooLarge()
 	}
 	layerDgst := layer.Digest.String()
 	_, blob, err := m.RegCli.PullBlob(art.RepositoryName, layerDgst)
@@ -79,17 +83,14 @@ func (m *Processor) AbstractAddition(_ context.Context, art *artifact.Artifact, 
 		return nil, errors.Wrap(err, "failed to pull the blob")
 	}
 	defer blob.Close()
-	content, err := io.ReadAll(io.LimitReader(blob, maxSBOMBytes))
+	// Read up to maxSBOMBytes+1 bytes so that "exactly at the limit" can be
+	// distinguished from "over the limit" without an extra Read call.
+	content, err := io.ReadAll(io.LimitReader(blob, maxSBOMBytes+1))
 	if err != nil {
 		return nil, err
 	}
-	if int64(len(content)) >= maxSBOMBytes {
-		// Check if we actually hit the limit by trying to read one more byte
-		var checkBuf [1]byte
-		n, _ := blob.Read(checkBuf[:])
-		if n > 0 {
-			return nil, errors.RequestEntityTooLargeError(nil).WithMessage("The sbom layer is too large")
-		}
+	if int64(len(content)) > maxSBOMBytes {
+		return nil, errSBOMTooLarge()
 	}
 	return &processor.Addition{
 		Content:     content,
