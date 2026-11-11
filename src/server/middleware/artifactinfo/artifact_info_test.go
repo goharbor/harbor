@@ -128,6 +128,103 @@ func TestParseURL(t *testing.T) {
 	}
 }
 
+// TestParseURLRepositoryWithKeywordComponents covers repository names with the components "manifests",
+// "referrers", "tags/list" or "blobs/uploads", which other URL patterns could also match.
+// Each case is parsed many times, as the result once depended on map iteration order.
+func TestParseURLRepositoryWithKeywordComponents(t *testing.T) {
+	dgt := "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f"
+	cases := []struct {
+		input  string
+		expect map[string]string
+	}{
+		{
+			input: "/v2/library/x/manifests/y/blobs/" + dgt,
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests/y",
+				lib.DigestSubexp:     dgt,
+			},
+		},
+		{
+			input: "/v2/library/x/manifests/blobs/" + dgt,
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests",
+				lib.DigestSubexp:     dgt,
+			},
+		},
+		{
+			input: "/v2/library/x/referrers/y/blobs/" + dgt,
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/referrers/y",
+				lib.DigestSubexp:     dgt,
+			},
+		},
+		{
+			input: "/v2/library/x/tags/list/blobs/" + dgt,
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/tags/list",
+				lib.DigestSubexp:     dgt,
+			},
+		},
+		{
+			input: "/v2/library/x/manifests/y/tags/list",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests/y",
+			},
+		},
+		{
+			input: "/v2/library/x/tags/list/manifests/latest",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/tags/list",
+				lib.ReferenceSubexp:  "latest",
+				"tag":                "latest",
+			},
+		},
+		{
+			input: "/v2/library/x/manifests/y/referrers/" + dgt,
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests/y",
+				lib.ReferenceSubexp:  dgt,
+				lib.DigestSubexp:     dgt,
+			},
+		},
+		{
+			input: "/v2/library/x/blobs/uploads/manifests/latest",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/blobs/uploads",
+				lib.ReferenceSubexp:  "latest",
+				"tag":                "latest",
+			},
+		},
+		{
+			input: "/v2/library/x/blobs/uploads/tags/list",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/blobs/uploads",
+			},
+		},
+		{
+			input: "/v2/library/x/manifests/y/blobs/uploads/u-12345",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests/y",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		u, err := url.Parse(c.input)
+		if err != nil {
+			panic(err)
+		}
+		for i := 0; i < 100; i++ {
+			e, m, err := parse(u)
+			assert.NoError(t, err, c.input)
+			assert.True(t, m, c.input)
+			if !assert.Equal(t, c.expect, e, c.input) {
+				break
+			}
+		}
+	}
+}
+
 type handler struct {
 	ctx context.Context
 }
@@ -181,6 +278,24 @@ func TestPopulateArtifactInfo(t *testing.T) {
 			art: lib.ArtifactInfo{
 				Repository:  "library/hello-world",
 				Reference:   "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
+				Digest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
+				ProjectName: "library",
+			},
+		},
+		{
+			req: httptest.NewRequest(http.MethodHead, "/v2/library/x/manifests/y/blobs/sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
+			sc:  http.StatusOK,
+			art: lib.ArtifactInfo{
+				Repository:  "library/x/manifests/y",
+				Digest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
+				ProjectName: "library",
+			},
+		},
+		{
+			req: httptest.NewRequest(http.MethodHead, "/v2/library/x/tags/list/blobs/sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f", nil),
+			sc:  http.StatusOK,
+			art: lib.ArtifactInfo{
+				Repository:  "library/x/tags/list",
 				Digest:      "sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f",
 				ProjectName: "library",
 			},
