@@ -15,14 +15,22 @@
 package security
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
+	gooidc "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
+	cfgModels "github.com/goharbor/harbor/src/lib/config/models"
+	pkgoidc "github.com/goharbor/harbor/src/pkg/oidc"
+	testingUser "github.com/goharbor/harbor/src/testing/controller/user"
 )
 
 func TestIDToken(t *testing.T) {
@@ -46,5 +54,41 @@ func TestIDToken(t *testing.T) {
 	require.Nil(t, err)
 	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
 	ctx = idToken.Generate(req)
+	assert.Nil(t, ctx)
+}
+
+func TestIDTokenLoginGroupsBlocked(t *testing.T) {
+	config.InitWithSettings(map[string]any{
+		common.OIDCLoginGroups: "allowed-group",
+	})
+	t.Cleanup(func() {
+		config.InitWithSettings(map[string]any{common.OIDCLoginGroups: ""})
+	})
+
+	origVerifyFn := idTokenVerifyFn
+	idTokenVerifyFn = func(_ context.Context, _ string) (*gooidc.IDToken, error) {
+		return &gooidc.IDToken{Issuer: "test-issuer", Subject: "test-subject"}, nil
+	}
+	t.Cleanup(func() { idTokenVerifyFn = origVerifyFn })
+
+	testCtl := &testingUser.Controller{}
+	testCtl.On("GetBySubIss", mock.Anything, "test-subject", "test-issuer").Return(
+		&models.User{Username: "blockedUser"}, nil)
+	origUserCtl := idTokenUserCtl
+	idTokenUserCtl = testCtl
+	t.Cleanup(func() { idTokenUserCtl = origUserCtl })
+
+	origUserInfoFn := idTokenUserInfoFn
+	idTokenUserInfoFn = func(_ context.Context, _ *pkgoidc.Token, _ cfgModels.OIDCSetting) (*pkgoidc.UserInfo, error) {
+		return &pkgoidc.UserInfo{}, nil
+	}
+	t.Cleanup(func() { idTokenUserInfoFn = origUserInfoFn })
+
+	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	req = req.WithContext(lib.WithAuthMode(req.Context(), common.OIDCAuth))
+	req.Header.Set("Authorization", "Bearer fake-token")
+
+	ctx := (&idToken{}).Generate(req)
 	assert.Nil(t, ctx)
 }
