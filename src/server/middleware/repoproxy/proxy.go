@@ -53,6 +53,7 @@ import (
 	accModel "github.com/goharbor/harbor/src/pkg/accessory/model"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
 	"github.com/goharbor/harbor/src/pkg/proxy/connection"
+	proxySecret "github.com/goharbor/harbor/src/pkg/proxy/secret"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
@@ -137,20 +138,11 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 		return nil
 	}
 
-	if p.MaxUpstreamConnection() > 0 {
-		client, err := redis.GetHarborClient()
-		if err != nil {
-			return errors.NewErrs(err)
-		}
-		key := upstreamRegistryConnectionKey(art)
-		log.Debugf("handle blob, upstream registry connection limit key: %s", key)
-		if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
-			log.Infof("current connection exceed max connections to upstream registry")
-			// send http code 429 to client
-			return tooManyRequestsError
-		}
-		defer connection.Limiter.Release(context.Background(), client, key) // use background context in defer to avoid been canceled
+	release, err := acquireUpstreamConnection(ctx, p, art)
+	if err != nil {
+		return err
 	}
+	defer release()
 
 	if config.Metric().Enabled {
 		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
@@ -161,6 +153,126 @@ func handleBlob(w http.ResponseWriter, r *http.Request, next http.Handler) error
 	}
 	defer reader.Close()
 	return serveBlob(w, reader, size, art.Digest)
+}
+
+// acquireUpstreamConnection takes a slot of the project's upstream connection
+// limit, the returned release func must be called once the upstream request is done
+func acquireUpstreamConnection(ctx context.Context, p *proModels.Project, art lib.ArtifactInfo) (func(), error) {
+	if p.MaxUpstreamConnection() <= 0 {
+		return func() {}, nil
+	}
+	client, err := redis.GetHarborClient()
+	if err != nil {
+		return nil, errors.NewErrs(err)
+	}
+	key := upstreamRegistryConnectionKey(art)
+	log.Debugf("handle blob, upstream registry connection limit key: %s", key)
+	if !connection.Limiter.Acquire(ctx, client, key, p.MaxUpstreamConnection()) {
+		log.Infof("current connection exceed max connections to upstream registry")
+		// send http code 429 to client
+		return nil, tooManyRequestsError
+	}
+	// use background context to avoid been canceled
+	return func() { connection.Limiter.Release(context.Background(), client, key) }, nil
+}
+
+// BlobHeadMiddleware handle head blob request
+// When the blob is not cached in a proxy cache project yet, the existence and
+// size of the blob are checked against the upstream registry, so that clients
+// sending HEAD before GET (e.g. a pull through cache registry in front of
+// Harbor) see the blob that a GET would serve. Only HEAD is sent upstream,
+// the blob is still cached by the GET request.
+func BlobHeadMiddleware() func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		if err := handleBlobHead(w, r, next); err != nil {
+			httpLib.SendError(w, err)
+		}
+	})
+}
+
+func handleBlobHead(w http.ResponseWriter, r *http.Request, next http.Handler) error {
+	ctx := r.Context()
+	art, p, proxyCtl, err := preCheck(ctx, true)
+	if err != nil {
+		return err
+	}
+	// the proxy cache checks whether a blob is cached by sending HEAD to the
+	// local registry, it must only see the local state. A request carrying a
+	// proxy secret is passed through even if the secret no longer verifies, so
+	// the check can never be proxied back into this middleware; a client
+	// forging the header only gets the local view.
+	if !p.IsProxy() || isProxySession(ctx, art.ProjectName) || proxySecret.GetSecret(r) != "" {
+		next.ServeHTTP(w, r)
+		return nil
+	}
+
+	// Handle dockerhub request without library prefix
+	isDefault, name, err := defaultLibrary(ctx, p.RegistryID, art)
+	if err != nil {
+		return err
+	}
+	if isDefault {
+		http.Redirect(w, r, defaultBlobURL(p.Name, name, art.Digest), http.StatusMovedPermanently)
+		return nil
+	}
+
+	// Apply repository filter: if proxy_cache_filter_pattern is set, the repository must match
+	if err := checkRepositoryFilter(p, art); err != nil {
+		return err
+	}
+
+	if config.Metric().Enabled {
+		metric.TotalProxyReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
+	if !canProxy(ctx, p) || proxyCtl.UseLocalBlob(ctx, art) {
+		next.ServeHTTP(w, r)
+		return nil
+	}
+
+	release, err := acquireUpstreamConnection(ctx, p, art)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	if config.Metric().Enabled {
+		metric.TotalProxyUpstreamReq.WithLabelValues(p.Name, r.Method).Inc()
+	}
+	remote, err := proxy.NewRemoteHelper(ctx, p.RegistryID)
+	if err != nil {
+		log.Errorf("failed to create the remote helper for head blob, error %v, fallback to local registry", err)
+		next.ServeHTTP(w, r)
+		return nil
+	}
+	served, err := headBlobFromRemote(w, art, remote)
+	if err != nil {
+		return err
+	}
+	if !served {
+		next.ServeHTTP(w, r)
+	}
+	return nil
+}
+
+// headBlobFromRemote writes the blob headers when the blob exists in the upstream
+// registry. It returns false when the upstream can't confirm the blob, then the
+// request is left to the local registry as before. A rate limit from the upstream
+// is returned as an error so the client sees 429 rather than a missing blob.
+func headBlobFromRemote(w http.ResponseWriter, art lib.ArtifactInfo, remote proxy.RemoteInterface) (bool, error) {
+	exist, size, err := remote.BlobStat(proxy.GetRemoteRepo(art), art.Digest)
+	if err != nil {
+		if errors.IsRateLimitError(err) {
+			return false, err
+		}
+		log.Warningf("failed to check the blob %s in upstream registry, error %v, fallback to local registry", art.Digest, err)
+		return false, nil
+	}
+	if !exist {
+		return false, nil
+	}
+	setHeaders(w, size, "", art.Digest)
+	w.WriteHeader(http.StatusOK)
+	return true, nil
 }
 
 // serveBlob sets the blob headers before streaming the body: the first write
