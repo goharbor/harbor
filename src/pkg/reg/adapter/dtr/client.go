@@ -216,8 +216,8 @@ func (c *Client) getNamespaces() ([]Account, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer resp.Body.Close()
 		data, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			return nil, err
 		}
