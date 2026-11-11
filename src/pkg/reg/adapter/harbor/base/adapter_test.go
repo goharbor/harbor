@@ -16,7 +16,9 @@ package base
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -73,6 +75,51 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 	assert.Equal(t, true, info.SupportedCopyByChunk)
 	server.Close()
+}
+
+func newLabelsStatusServer(status int) *httptest.Server {
+	return test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/api/systeminfo",
+			Handler: func(w http.ResponseWriter, r *http.Request) {},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
+			Pattern: "/api",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				if strings.HasSuffix(r.URL.Path, "/labels") {
+					w.WriteHeader(status)
+					return
+				}
+				w.WriteHeader(http.StatusNotFound)
+			},
+		},
+	)
+}
+
+func TestInfoListLabelsUnauthorized(t *testing.T) {
+	server := newLabelsStatusServer(http.StatusUnauthorized)
+	defer server.Close()
+
+	adapter, err := New(&model.Registry{URL: server.URL})
+	require.Nil(t, err)
+	info, err := adapter.Info()
+	require.Nil(t, err)
+	require.Equal(t, 3, len(info.SupportedResourceFilters))
+	labelFilter := info.SupportedResourceFilters[2]
+	assert.Equal(t, model.FilterTypeLabel, labelFilter.Type)
+	assert.Empty(t, labelFilter.Values)
+}
+
+func TestInfoListLabelsOtherError(t *testing.T) {
+	server := newLabelsStatusServer(http.StatusInternalServerError)
+	defer server.Close()
+
+	adapter, err := New(&model.Registry{URL: server.URL})
+	require.Nil(t, err)
+	_, err = adapter.Info()
+	assert.NotNil(t, err)
 }
 
 func TestPrepareForPush(t *testing.T) {
