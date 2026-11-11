@@ -139,8 +139,8 @@ func (p *processorTestSuite) TestAbstractAddition_ExceedLimit() {
 
 	_, err = p.processor.AbstractAddition(nil, artifact, AdditionTypeValues)
 	p.Require().NotNil(err)
-	p.True(errors.IsErr(err, errors.BadRequestCode))
-	p.Contains(err.Error(), "chart layer size")
+	p.True(errors.IsErr(err, errors.RequestEntityTooLargeCode))
+	p.Contains(err.Error(), "chart layer exceeds limit")
 }
 
 func (p *processorTestSuite) TestGetArtifactType() {

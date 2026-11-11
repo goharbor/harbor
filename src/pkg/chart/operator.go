@@ -34,9 +34,6 @@ const (
 	readmeFileName       = "README.MD"
 	valuesFileName       = "VALUES.YAML"
 	dependenciesFileName = "REQUIREMENTS.YAML"
-
-	// maxDecompressedChartBytes limits the total decompressed size of all files in a chart (100 MB)
-	maxDecompressedChartBytes = 100 * 1024 * 1024
 )
 
 // Operator ...
@@ -124,22 +121,12 @@ func (cho *operator) GetData(content []byte) (*helm_chart.Chart, error) {
 	}
 
 	reader := bytes.NewReader(content)
+	// loader.LoadArchive bounds decompression while reading the archive: the total
+	// size is capped by loader.MaxDecompressedChartSize and each file by
+	// loader.MaxDecompressedFileSize, so no additional check is needed here.
 	chartData, err := loader.LoadArchive(reader)
 	if err != nil {
 		return nil, err
-	}
-
-	var decompressedSize int64
-	for _, file := range chartData.Raw {
-		if file != nil {
-			decompressedSize += int64(len(file.Data))
-		}
-	}
-	// We check our custom maxDecompressedChartBytes limit as well.
-	// Since helm also enforces its own internal file limits (e.g. 100MB / 104857600 bytes), we want to make sure
-	// we have this extra defensive check in place.
-	if decompressedSize > maxDecompressedChartBytes {
-		return nil, fmt.Errorf("chart decompressed size %d exceeds limit of %d bytes", decompressedSize, maxDecompressedChartBytes)
 	}
 
 	return chartData, nil

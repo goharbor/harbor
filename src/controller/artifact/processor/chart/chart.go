@@ -94,8 +94,8 @@ func (p *processor) AbstractAddition(_ context.Context, artifact *artifact.Artif
 				return nil, err
 			}
 			if len(content) > maxChartBytes {
-				return nil, errors.New(nil).WithCode(errors.BadRequestCode).
-					WithMessagef("chart layer size %d exceeds limit of %d bytes", len(content), maxChartBytes)
+				return nil, errors.RequestEntityTooLargeError(nil).
+					WithMessagef("chart layer exceeds limit of %d bytes", maxChartBytes)
 			}
 			chartDetails, err := p.chartOperator.GetDetails(content)
 			if err != nil {

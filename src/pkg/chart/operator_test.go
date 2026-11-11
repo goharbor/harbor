@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 func addFileToTar(tarWriter *tar.Writer, filename string) error {
@@ -125,40 +126,27 @@ func TestGetChartDetails(t *testing.T) {
 	}
 }
 
-func TestGetData_ExceedDecompressedLimit(t *testing.T) {
+// TestGetData_HelmDecompressedLimit guards that GetData relies on helm's
+// loader to bound decompression (loader.MaxDecompressedChartSize).
+func TestGetData_HelmDecompressedLimit(t *testing.T) {
 	chartOpr := NewOperator()
 
-	// Create a tar.gz with a file of size maxDecompressedChartBytes + 1
+	// Only the tar header declaring an oversized entry is needed: helm rejects
+	// it from the header before reading any data, so the test stays fast and
+	// does not allocate the declared size.
 	var buf bytes.Buffer
 	gzw := gzip.NewWriter(&buf)
 	tw := tar.NewWriter(gzw)
-
 	header := &tar.Header{
 		Name: "harbor/values.yaml",
-		Size: int64(maxDecompressedChartBytes + 1),
+		Size: loader.MaxDecompressedChartSize + 1,
 		Mode: 0600,
 	}
-	err := tw.WriteHeader(header)
-	assert.Nil(t, err)
+	// The entry is intentionally left incomplete, so tw is not closed.
+	assert.Nil(t, tw.WriteHeader(header))
+	assert.Nil(t, gzw.Close())
 
-	// Write zero bytes to satisfy the size in header (gzip handles zeros very efficiently)
-	chunkSize := 1024 * 1024
-	zeroChunk := make([]byte, chunkSize)
-	remaining := maxDecompressedChartBytes + 1
-	for remaining > 0 {
-		toWrite := chunkSize
-		if remaining < chunkSize {
-			toWrite = remaining
-		}
-		_, err = tw.Write(zeroChunk[:toWrite])
-		assert.Nil(t, err)
-		remaining -= toWrite
-	}
-
-	tw.Close()
-	gzw.Close()
-
-	_, err = chartOpr.GetData(buf.Bytes())
+	_, err := chartOpr.GetData(buf.Bytes())
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "is larger than the maximum file size")
 }
