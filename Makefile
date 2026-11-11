@@ -126,11 +126,11 @@ PREPARE_VERSION_NAME=versions
 #versions
 REGISTRYVERSION=v2.8.3-patch-redis
 TRIVYVERSION=v0.76.2
-TRIVYADAPTERVERSION=v0.40.1-rc1
+TRIVYADAPTERVERSION=v0.40.1
 NODEBUILDIMAGE=node:22.22.3
 
 # version of registry for pulling the source code
-REGISTRY_SRC_TAG=v2.8.3-harbor.4-rc1
+REGISTRY_SRC_TAG=v2.8.3-harbor.4
 # source of upstream distribution code
 DISTRIBUTION_SRC=https://github.com/goharbor/distribution.git
 
