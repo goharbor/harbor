@@ -28,9 +28,8 @@ func TestMatchManifestURLPattern(t *testing.T) {
 	_, _, ok = MatchManifestURLPattern("/v2/")
 	assert.False(t, ok)
 
-	// the reference is a single path segment
 	_, _, ok = MatchManifestURLPattern("/v2/library/hello-world/manifests//")
-	assert.False(t, ok)
+	assert.True(t, ok)
 
 	_, _, ok = MatchManifestURLPattern("/v2/library/hello-world/manifests/###")
 	assert.True(t, ok)
@@ -167,6 +166,8 @@ func TestV2URLPatternsRepositoryWithKeywordComponents(t *testing.T) {
 		{"/v2/library/x/referrers/y/blobs/" + dgt, "blob", "library/x/referrers/y"},
 		{"/v2/library/x/tags/list/blobs/" + dgt, "blob", "library/x/tags/list"},
 		{"/v2/library/x/manifests/y/tags/list", "tag_list", "library/x/manifests/y"},
+		{"/v2/library/x/manifests/y/tags/list/", "tag_list", "library/x/manifests/y"},
+		{"/v2/library/x/tags/list/manifests/latest/", "manifest", "library/x/tags/list"},
 		{"/v2/library/x/blobs/uploads/tags/list", "tag_list", "library/x/blobs/uploads"},
 		{"/v2/library/x/tags/list/manifests/latest", "manifest", "library/x/tags/list"},
 		{"/v2/library/x/referrers/manifests/" + dgt, "manifest", "library/x/referrers"},

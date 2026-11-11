@@ -207,6 +207,20 @@ func TestParseURLRepositoryWithKeywordComponents(t *testing.T) {
 				lib.RepositorySubexp: "library/x/manifests/y",
 			},
 		},
+		{
+			input: "/v2/library/x/manifests/y/tags/list/",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/manifests/y",
+			},
+		},
+		{
+			input: "/v2/library/x/tags/list/manifests/latest/",
+			expect: map[string]string{
+				lib.RepositorySubexp: "library/x/tags/list",
+				lib.ReferenceSubexp:  "latest/",
+				"tag":                "latest/",
+			},
+		},
 	}
 
 	for _, c := range cases {

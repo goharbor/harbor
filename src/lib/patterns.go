@@ -34,10 +34,11 @@ const (
 var (
 	// V2ManifestURLRe is the regular expression for matching request v2 handler to view/delete manifest.
 	// The reference is the last path segment, as neither a tag nor a digest can contain "/", so that a
-	// repository name with a "manifests" component, e.g. /v2/a/manifests/b/blobs/<digest>, is not read as a manifest URL
-	V2ManifestURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/manifests/(?P<%s>[^/]*)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
+	// repository name with a "manifests" component, e.g. /v2/a/manifests/b/blobs/<digest>, is not read as a manifest URL.
+	// A trailing "/" stays in the reference, which is then answered as an invalid one
+	V2ManifestURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/manifests/(?P<%s>[^/]*/?)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
 	// V2TagListURLRe is the regular expression for matching request to v2 handler to list tags
-	V2TagListURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/tags/list$`, RepositorySubexp, reference.NameRegexp.String()))
+	V2TagListURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/tags/list/?$`, RepositorySubexp, reference.NameRegexp.String()))
 	// V2BlobURLRe is the regular expression for matching request to v2 handler to retrieve head/delete a blob
 	V2BlobURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/blobs/(?P<%s>%s)$`, RepositorySubexp, reference.NameRegexp.String(), DigestSubexp, digest.DigestRegexp.String()))
 	// V2BlobUploadURLRe is the regular expression for matching the request to v2 handler to upload a blob, the upload uuid currently is not put into a group
@@ -46,7 +47,7 @@ var (
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog(/.*)?$`)
 	// V2ReferrersURLRe is the regular expression for matching request to v2 handler to list referrers,
 	// the reference is the last path segment as in V2ManifestURLRe
-	V2ReferrersURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/referrers/(?P<%s>[^/]*)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
+	V2ReferrersURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/referrers/(?P<%s>[^/]*/?)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp))
 	// RepositoryNameRe is the regular expression for  matching repository name
 	RepositoryNameRe = regexp.MustCompile(fmt.Sprintf("^%s$", reference.NameRegexp))
 )
