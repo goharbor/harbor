@@ -47,8 +47,8 @@ func Build(q, sort string, pageNumber, pageSize int64) (*Query, error) {
 	}, nil
 }
 
-func parseKeywords(q string) (map[string]interface{}, error) {
-	keywords := map[string]interface{}{}
+func parseKeywords(q string) (map[string]any, error) {
+	keywords := map[string]any{}
 	if len(q) == 0 {
 		return keywords, nil
 	}
@@ -58,8 +58,8 @@ func parseKeywords(q string) (map[string]interface{}, error) {
 	} else {
 		log.Errorf("failed to unescape the query %s: %v", q, err)
 	}
-	params := strings.Split(q, ",")
-	for _, param := range params {
+
+	for param := range strings.SplitSeq(q, ",") {
 		strs := strings.SplitN(param, "=", 2)
 		if len(strs) != 2 || len(strs[0]) == 0 || len(strs[1]) == 0 {
 			return nil, errors.New(nil).
@@ -82,11 +82,11 @@ func ParseSorting(sort string) []*Sort {
 		return []*Sort{}
 	}
 	var sorts []*Sort
-	for _, sorting := range strings.Split(sort, ",") {
+	for sorting := range strings.SplitSeq(sort, ",") {
 		key := sorting
 		desc := false
-		if strings.HasPrefix(sorting, "-") {
-			key = strings.TrimPrefix(sorting, "-")
+		if after, ok := strings.CutPrefix(sorting, "-"); ok {
+			key = after
 			desc = true
 		}
 		sorts = append(sorts, &Sort{
@@ -97,7 +97,7 @@ func ParseSorting(sort string) []*Sort {
 	return sorts
 }
 
-func parsePattern(value string) (interface{}, error) {
+func parsePattern(value string) (any, error) {
 	// empty string
 	if len(value) == 0 {
 		return value, nil
@@ -132,17 +132,17 @@ func parseRange(value string) (*Range, error) {
 		return nil, fmt.Errorf(`range must start with "[", end with "]" and contains only one "~"`)
 	}
 	strs := strings.SplitN(value[1:length-1], "~", 2)
-	min := strings.TrimSpace(strs[0])
-	max := strings.TrimSpace(strs[1])
-	if len(min) == 0 && len(max) == 0 {
+	minVal := strings.TrimSpace(strs[0])
+	maxVal := strings.TrimSpace(strs[1])
+	if len(minVal) == 0 && len(maxVal) == 0 {
 		return nil, fmt.Errorf(`min and max at least one should be set in range'`)
 	}
 	r := &Range{}
-	if len(min) > 0 {
-		r.Min = parseValue(min)
+	if len(minVal) > 0 {
+		r.Min = parseValue(minVal)
 	}
-	if len(max) > 0 {
-		r.Max = parseValue(max)
+	if len(maxVal) > 0 {
+		r.Max = parseValue(maxVal)
 	}
 	return r, nil
 }
@@ -167,7 +167,7 @@ func parseAndList(value string) (*AndList, error) {
 	return al, nil
 }
 
-func parseList(value string, c rune) ([]interface{}, error) {
+func parseList(value string, c rune) ([]any, error) {
 	length := len(value)
 	if c == '{' && value[length-1] != '}' {
 		return nil, fmt.Errorf(`or list must start with "{" and end with "}"`)
@@ -175,9 +175,9 @@ func parseList(value string, c rune) ([]interface{}, error) {
 	if c == '(' && value[length-1] != ')' {
 		return nil, fmt.Errorf(`and list must start with "(" and end with ")"`)
 	}
-	var vs []interface{}
-	strs := strings.Split(value[1:length-1], " ")
-	for _, str := range strs {
+	var vs []any
+
+	for str := range strings.SplitSeq(value[1:length-1], " ") {
 		v := parseValue(str)
 		if s, ok := v.(string); ok && len(s) == 0 {
 			continue
@@ -188,7 +188,7 @@ func parseList(value string, c rune) ([]interface{}, error) {
 }
 
 // try to parse value as time first, then integer, and last string
-func parseValue(value string) interface{} {
+func parseValue(value string) any {
 	value = strings.TrimSpace(value)
 	// try to parse time
 	time, err := time.Parse("2006-01-02T15:04:05", value)

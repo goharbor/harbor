@@ -16,8 +16,9 @@ package instance
 
 import (
 	"context"
-	"encoding/json"
 
+	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	dao "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
@@ -100,6 +101,9 @@ var _ Manager = (*manager)(nil)
 
 // Save implements @Manager.Save
 func (dm *manager) Save(ctx context.Context, inst *provider.Instance) (int64, error) {
+	if err := encryptAuthData(inst); err != nil {
+		return 0, errors.Wrap(err, "encrypt auth data: save preheat instance")
+	}
 	return dm.dao.Create(ctx, inst)
 }
 
@@ -110,6 +114,9 @@ func (dm *manager) Delete(ctx context.Context, id int64) error {
 
 // Update implements @Manager.Update
 func (dm *manager) Update(ctx context.Context, inst *provider.Instance, props ...string) error {
+	if err := encryptAuthData(inst); err != nil {
+		return errors.Wrap(err, "encrypt auth data: update preheat instance")
+	}
 	return dm.dao.Update(ctx, inst, props...)
 }
 
@@ -119,19 +126,26 @@ func (dm *manager) Get(ctx context.Context, id int64) (*provider.Instance, error
 	if err != nil {
 		return nil, err
 	}
-	// mapping auth data to auth info.
-	if len(ins.AuthData) > 0 {
-		if err := json.Unmarshal([]byte(ins.AuthData), &ins.AuthInfo); err != nil {
-			return nil, err
-		}
+
+	if err := decryptAndDecode(ins); err != nil {
+		return nil, err
 	}
 
 	return ins, nil
 }
 
-// Get implements @Manager.GetByName
+// GetByName implements @Manager.GetByName
 func (dm *manager) GetByName(ctx context.Context, name string) (*provider.Instance, error) {
-	return dm.dao.GetByName(ctx, name)
+	ins, err := dm.dao.GetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := decryptAndDecode(ins); err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 // Count implements @Manager.Count
@@ -141,5 +155,42 @@ func (dm *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
 
 // List implements @Manager.List
 func (dm *manager) List(ctx context.Context, query *q.Query) ([]*provider.Instance, error) {
-	return dm.dao.List(ctx, query)
+	inss, err := dm.dao.List(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range inss {
+		if err := decryptAndDecode(inss[i]); err != nil {
+			return nil, err
+		}
+	}
+
+	return inss, nil
+}
+
+// encryptAuthData encrypts the AuthData field of the instance before persisting to the database.
+func encryptAuthData(inst *provider.Instance) error {
+	if inst == nil || len(inst.AuthData) == 0 {
+		return nil
+	}
+	encrypted, err := config.EncryptSecret(inst.AuthData)
+	if err != nil {
+		return err
+	}
+	inst.AuthData = encrypted
+	return nil
+}
+
+// decryptAndDecode decrypts AuthData (if encrypted) then decodes it into AuthInfo.
+// It falls back gracefully for legacy plaintext JSON stored before encryption was introduced.
+func decryptAndDecode(inst *provider.Instance) error {
+	if len(inst.AuthData) > 0 {
+		decrypted, err := config.DecryptSecret(inst.AuthData)
+		if err != nil {
+			return errors.Wrap(err, "decrypt auth data")
+		}
+		inst.AuthData = decrypted
+	}
+	return inst.Decode()
 }

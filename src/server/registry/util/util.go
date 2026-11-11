@@ -147,12 +147,7 @@ func pickItems(items []string, n *int, last string) ([]string, string) {
 		i = sort.Search(len(items), func(ix int) bool { return strings.Compare(items[ix], last) > 0 })
 	}
 
-	j := i + *n
-
-	if j >= len(items) {
-		j = len(items)
-	}
-
+	j := min(i+*n, len(items))
 	result := items[i:j]
 
 	nextLast := ""

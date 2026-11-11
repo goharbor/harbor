@@ -29,7 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/ldap"
 )
 
-var defaultConfigWithVerifyCert = map[string]interface{}{
+var defaultConfigWithVerifyCert = map[string]any{
 	common.ExtEndpoint:                "https://host01.com",
 	common.AUTHMode:                   common.LDAPAuth,
 	common.DatabaseType:               "postgresql",

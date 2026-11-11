@@ -174,7 +174,7 @@ func (r *reaper) syncOutdatedStats() error {
 				if time.Unix(t.Job().Info.UpdateTime, 0).Add(config.MaxUpdateDuration()).Before(time.Now()) {
 					// Status hung
 					// Mark job status to error state
-					if err = t.Fail(); err != nil {
+					if err = t.Fail("job hung for longer than max allowed duration"); err != nil {
 						return
 					}
 
@@ -250,7 +250,7 @@ func (r *reaper) scanLocks(key string, handler func(k string, v int64) error) er
 			return errors.Wrap(err, "scan locks")
 		}
 
-		if values, ok := reply[1].([]interface{}); ok {
+		if values, ok := reply[1].([]any); ok {
 			for i := 0; i < len(values); i += 2 {
 				k := string(values[i].([]uint8))
 				lc, err := strconv.ParseInt(string(values[i+1].([]uint8)), 10, 64)
@@ -317,7 +317,7 @@ func (r *reaper) getCurrentWorkerPools() (map[string]bool, error) {
 func (r *reaper) requeueInProgressJobs(poolID string, jobTypes []string) error {
 	numKeys := len(jobTypes)
 	redisRequeueScript := rds.RedisLuaReenqueueScript(numKeys)
-	var scriptArgs = make([]interface{}, 0, numKeys+1)
+	var scriptArgs = make([]any, 0, numKeys+1)
 
 	for _, jobType := range jobTypes {
 		// pops from in progress, push into job queue and decrement the queue lock
@@ -341,7 +341,7 @@ func (r *reaper) requeueInProgressJobs(poolID string, jobTypes []string) error {
 	// Keep moving jobs until all queues are empty
 	for {
 		values, err := redis.Values(redisRequeueScript.Do(conn, scriptArgs...))
-		if err == redis.ErrNil {
+		if errors.Is(err, redis.ErrNil) {
 			return nil
 		} else if err != nil {
 			return err

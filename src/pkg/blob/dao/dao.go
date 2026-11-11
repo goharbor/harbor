@@ -17,6 +17,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema2"
@@ -195,7 +196,7 @@ func (d *dao) UpdateBlobStatus(ctx context.Context, blob *models.Blob) (int64, e
 	}
 
 	var newVersion int64
-	params := []interface{}{time.Now(), blob.Status, blob.ID, blob.Version}
+	params := []any{time.Now(), blob.Status, blob.ID, blob.Version}
 	stats := models.StatusMap[blob.Status]
 	for _, stat := range stats {
 		params = append(params, stat)
@@ -246,14 +247,26 @@ func (d *dao) FindBlobsShouldUnassociatedWithProject(ctx context.Context, projec
 		return nil, err
 	}
 
-	sql := `SELECT b.digest_blob FROM artifact a, artifact_blob b WHERE a.digest = b.digest_af AND a.project_id = ? AND b.digest_blob IN (%s)`
-	params := []interface{}{projectID}
-	for _, blob := range blobs {
-		params = append(params, blob.Digest)
+	// Build a VALUES list for all blob digests and use EXISTS to check
+	// association. EXISTS short-circuits on the first match, and targeting
+	// one digest at a time gives the planner high selectivity to use the index.
+	valueParts := make([]string, len(blobs))
+	params := make([]interface{}, len(blobs)+1)
+	for i, blob := range blobs {
+		valueParts[i] = "(?)"
+		params[i] = blob.Digest
 	}
+	params[len(blobs)] = projectID
+
+	sql := `SELECT v.digest_blob FROM (VALUES ` + strings.Join(valueParts, ", ") + `) AS v(digest_blob)
+WHERE EXISTS (
+  SELECT 1 FROM artifact a
+  JOIN artifact_blob b ON a.digest = b.digest_af
+  WHERE a.project_id = ? AND b.digest_blob = v.digest_blob
+)`
 
 	var digests []string
-	_, err = o.Raw(fmt.Sprintf(sql, orm.ParamPlaceholderForIn(len(blobs))), params...).QueryRows(&digests)
+	_, err = o.Raw(sql, params...).QueryRows(&digests)
 	if err != nil {
 		return nil, err
 	}
@@ -279,10 +292,10 @@ func (d *dao) SumBlobsSizeByProject(ctx context.Context, projectID int64, exclud
 		return 0, err
 	}
 
-	params := []interface{}{projectID}
+	params := []any{projectID}
 	sql := `SELECT SUM(size) FROM blob JOIN project_blob ON blob.id = project_blob.blob_id AND project_id = ?`
 	if excludeForeignLayer {
-		foreignLayerTypes := []interface{}{
+		foreignLayerTypes := []any{
 			schema2.MediaTypeForeignLayer,
 		}
 
@@ -305,10 +318,10 @@ func (d *dao) SumBlobsSize(ctx context.Context, excludeForeignLayer bool) (int64
 		return 0, err
 	}
 
-	params := []interface{}{}
+	params := []any{}
 	sql := `SELECT SUM(size) FROM blob`
 	if excludeForeignLayer {
-		foreignLayerTypes := []interface{}{
+		foreignLayerTypes := []any{
 			schema2.MediaTypeForeignLayer,
 		}
 		sql = fmt.Sprintf(`%s Where content_type NOT IN (%s)`, sql, orm.ParamPlaceholderForIn(len(foreignLayerTypes)))

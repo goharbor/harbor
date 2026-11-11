@@ -41,6 +41,8 @@ type Manager interface {
 	Update(ctx context.Context, repository *model.RepoRecord, props ...string) (err error)
 	// AddPullCount increase pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64, count uint64) error
+	// Touch bumps the repository's update_time to now
+	Touch(ctx context.Context, id int64) error
 	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
 	NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error)
 }
@@ -74,7 +76,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*model.RepoRecord, error) 
 
 func (m *manager) GetByName(ctx context.Context, name string) (repository *model.RepoRecord, err error) {
 	repositories, err := m.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"Name": name,
 		},
 	})
@@ -101,6 +103,10 @@ func (m *manager) Update(ctx context.Context, repository *model.RepoRecord, prop
 
 func (m *manager) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	return m.dao.AddPullCount(ctx, id, count)
+}
+
+func (m *manager) Touch(ctx context.Context, id int64) error {
+	return m.dao.Touch(ctx, id)
 }
 
 func (m *manager) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {

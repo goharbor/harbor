@@ -16,6 +16,7 @@ package task
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -61,7 +62,7 @@ func (t *taskManagerTestSuite) TestCreate() {
 	t.jsClient.On("SubmitJob", mock.Anything).Return("1", nil)
 	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	id, err := t.mgr.Create(nil, 1, &Job{}, map[string]interface{}{"a": "b"})
+	id, err := t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
 	t.Require().Nil(err)
 	t.Equal(int64(1), id)
 	t.dao.AssertExpectations(t.T())
@@ -77,7 +78,7 @@ func (t *taskManagerTestSuite) TestCreate() {
 	t.jsClient.On("SubmitJob", mock.Anything).Return("", errors.New("error"))
 	t.dao.On("Delete", mock.Anything, mock.Anything).Return(nil)
 
-	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]interface{}{"a": "b"})
+	id, err = t.mgr.Create(nil, 1, &Job{}, map[string]any{"a": "b"})
 	t.Require().NotNil(err)
 	t.dao.AssertExpectations(t.T())
 	t.execDAO.AssertExpectations(t.T())
@@ -96,6 +97,25 @@ func (t *taskManagerTestSuite) TestStop() {
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	t.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, "", nil)
 	err := t.mgr.Stop(nil, 1)
+	t.Require().Nil(err)
+	t.dao.AssertExpectations(t.T())
+	t.jsClient.AssertExpectations(t.T())
+	t.execDAO.AssertExpectations(t.T())
+
+	// reset mock
+	t.SetupTest()
+
+	// wrapped job not found
+	t.dao.On("Get", mock.Anything, mock.Anything).Return(&dao.Task{
+		ID:          1,
+		ExecutionID: 1,
+		Status:      job.RunningStatus.String(),
+	}, nil)
+	t.jsClient.On("PostAction", mock.Anything, mock.Anything).Return(fmt.Errorf("wrapped error: %w", cjob.ErrJobNotFound))
+	t.dao.On("Update", mock.Anything, mock.Anything,
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	t.execDAO.On("RefreshStatus", mock.Anything, mock.Anything).Return(true, "", nil)
+	err = t.mgr.Stop(nil, 1)
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 	t.jsClient.AssertExpectations(t.T())
@@ -129,7 +149,7 @@ func (t *taskManagerTestSuite) TestGet() {
 
 func (t *taskManagerTestSuite) TestUpdateExtraAttrs() {
 	t.dao.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{})
+	err := t.mgr.UpdateExtraAttrs(nil, 1, map[string]any{})
 	t.Require().Nil(err)
 	t.dao.AssertExpectations(t.T())
 }

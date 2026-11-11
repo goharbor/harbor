@@ -36,13 +36,13 @@ func TestExpiration(t *testing.T) {
 
 func TestGC(t *testing.T) {
 	manager := createManager(1*time.Second, 10, 1*time.Second).(*mgr)
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		rn := fmt.Sprintf("project%d/golang", i)
 		manager.Generate(rn)
 	}
 	time.Sleep(2 * time.Second)
 	assert.Equal(t, uint64(10), manager.size)
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		rn := fmt.Sprintf("project%d/redis", i)
 		manager.Generate(rn)
 	}

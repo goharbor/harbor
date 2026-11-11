@@ -66,10 +66,17 @@ func (m *Metadata) ValidateRetentionPolicy() error {
 	if m.Trigger != nil {
 		if m.Trigger.Kind == TriggerKindSchedule && m.Trigger.Settings != nil {
 			cronItem, ok := m.Trigger.Settings[TriggerSettingsCron]
-			if ok && len(cronItem.(string)) > 0 {
-				if err := utils.ValidateCronString(cronItem.(string)); err != nil {
+			if ok {
+				if cronStr, isStr := cronItem.(string); isStr {
+					if len(cronStr) > 0 {
+						if err := utils.ValidateCronString(cronStr); err != nil {
+							return errors.New(nil).WithCode(errors.BadRequestCode).
+								WithMessagef("invalid cron string for scheduled tag retention: %s, error: %v", cronStr, err)
+						}
+					}
+				} else {
 					return errors.New(nil).WithCode(errors.BadRequestCode).
-						WithMessagef("invalid cron string for scheduled tag retention: %s, error: %v", cronItem.(string), err)
+						WithMessage("invalid cron type for scheduled tag retention: must be a string")
 				}
 			}
 		}
@@ -117,7 +124,7 @@ type Trigger struct {
 
 	// Settings for the specified trigger
 	// '[cron]="* 22 11 * * *"' for the 'Schedule'
-	Settings map[string]interface{} `json:"settings" valid:"Required"`
+	Settings map[string]any `json:"settings" valid:"Required"`
 }
 
 // Scope definition
@@ -164,7 +171,7 @@ func WithNDaysSinceLastPull(projID int64, n int) *Metadata {
 		},
 		Trigger: &Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 0 0 * * *",
 			},
 		},

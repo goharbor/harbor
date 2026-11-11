@@ -39,7 +39,7 @@ func TestEnsureScanners(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"name__in": []string{"scanner"},
 			},
 		}).Return(nil, errors.New("DB error"))
@@ -57,7 +57,7 @@ func TestEnsureScanners(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"name__in": []string{
 					"trivy",
 				},
@@ -81,7 +81,7 @@ func TestEnsureScanners(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"name__in": []string{
 					"trivy",
 				},
@@ -96,6 +96,28 @@ func TestEnsureScanners(t *testing.T) {
 
 		err := EnsureScanners(context.TODO(), []scanner.Registration{
 			{Name: "trivy", URL: "http://trivy:8443"},
+		})
+
+		assert.NoError(t, err)
+		mgr.AssertExpectations(t)
+	})
+
+	t.Run("Should not update scanners when URL only differs in host case", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		mgr.On("List", mock.Anything, &q.Query{
+			Keywords: map[string]any{
+				"name__in": []string{
+					"trivy",
+				},
+			},
+		}).Return([]*scanner.Registration{
+			{Name: "trivy", URL: "http://trivy:8080"},
+		}, nil)
+
+		err := EnsureScanners(context.TODO(), []scanner.Registration{
+			{Name: "trivy", URL: "http://TRIVY:8080"},
 		})
 
 		assert.NoError(t, err)
@@ -136,7 +158,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"name": "trivy"},
+			Keywords: map[string]any{"name": "trivy"},
 		}).Return(nil, errors.New("DB error"))
 
 		err := EnsureDefaultScanner(context.TODO(), "trivy")
@@ -150,7 +172,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"name": "trivy"},
+			Keywords: map[string]any{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{Name: "trivy"},
 			{Name: "trivy"},
@@ -167,7 +189,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"name": "trivy"},
+			Keywords: map[string]any{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{
 				Name: "trivy",
@@ -188,7 +210,7 @@ func TestEnsureDefaultScanner(t *testing.T) {
 
 		mgr.On("GetDefault", mock.Anything).Return(nil, nil)
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{"name": "trivy"},
+			Keywords: map[string]any{"name": "trivy"},
 		}).Return([]*scanner.Registration{
 			{
 				Name: "trivy",
@@ -221,7 +243,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 		scannerManager = mgr
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"immutable": true,
 				"name__in":  []string{"scanner"},
 			},
@@ -249,7 +271,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 			}}
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"immutable": true,
 				"name__in": []string{
 					"scanner-1",
@@ -285,7 +307,7 @@ func TestRemoveImmutableScanners(t *testing.T) {
 			}}
 
 		mgr.On("List", mock.Anything, &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"immutable": true,
 				"name__in": []string{
 					"scanner-1",

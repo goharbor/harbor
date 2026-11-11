@@ -20,11 +20,12 @@ import (
 
 // Policy ...
 type Policy struct {
-	Trigger        *Trigger               `json:"trigger"`
-	DeleteUntagged bool                   `json:"deleteuntagged"`
-	DryRun         bool                   `json:"dryrun"`
-	Workers        int                    `json:"workers"`
-	ExtraAttrs     map[string]interface{} `json:"extra_attrs"`
+	Trigger        *Trigger       `json:"trigger"`
+	DeleteUntagged bool           `json:"deleteuntagged"`
+	DeleteTag      bool           `json:"deletetag"`
+	DryRun         bool           `json:"dryrun"`
+	Workers        int            `json:"workers"`
+	ExtraAttrs     map[string]any `json:"extra_attrs"`
 }
 
 // TriggerType represents the type of trigger.
@@ -47,7 +48,7 @@ type Execution struct {
 	Status        string
 	StatusMessage string
 	Trigger       string
-	ExtraAttrs    map[string]interface{}
+	ExtraAttrs    map[string]any
 	StartTime     time.Time
 	UpdateTime    time.Time
 }
@@ -60,6 +61,7 @@ type Task struct {
 	StatusMessage  string
 	RunCount       int32
 	DeleteUntagged bool
+	DeleteTag      bool
 	DryRun         bool
 	Workers        int
 	JobID          string

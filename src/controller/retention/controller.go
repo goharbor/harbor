@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/lib/retry"
 	"github.com/goharbor/harbor/src/pkg"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -79,6 +80,7 @@ type defaultController struct {
 	taskMgr        task.Manager
 	launcher       retention.Launcher
 	projectManager project.Manager
+	projectMetaMgr metadata.Manager
 	repositoryMgr  repository.Manager
 	scheduler      scheduler.Scheduler
 	wp             *lib.WorkerPool
@@ -116,7 +118,7 @@ func (r *defaultController) CreateRetention(ctx context.Context, p *policy.Metad
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
 		if ok && len(cron.(string)) > 0 {
-			extras := make(map[string]interface{})
+			extras := make(map[string]any)
 			if _, err = r.scheduler.Schedule(ctx, schedulerVendorType, id, "", cron.(string), SchedulerCallback, TriggerParam{
 				PolicyID: id,
 				Trigger:  retention.ExecutionTriggerSchedule,
@@ -182,7 +184,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 		}
 	}
 	if needSch {
-		extras := make(map[string]interface{})
+		extras := make(map[string]any)
 		_, err := r.scheduler.Schedule(ctx, schedulerVendorType, p.ID, "", p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  retention.ExecutionTriggerSchedule,
@@ -220,7 +222,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 // deleteExecs delete executions
 func (r *defaultController) deleteExecs(ctx context.Context, vendorID int64) error {
 	executions, err := r.execMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": job.RetentionVendorType,
 			"VendorID":   vendorID,
 		},
@@ -246,7 +248,7 @@ func (r *defaultController) TriggerRetentionExec(ctx context.Context, policyID i
 		return 0, err
 	}
 
-	extra := map[string]interface{}{
+	extra := map[string]any{
 		"dry_run":  dryRun,
 		"operator": operator.FromContext(ctx),
 	}
@@ -357,7 +359,7 @@ func convertExecution(exec *task.Execution) *retention.Execution {
 // GetTotalOfRetentionExecs Count Retention Executions
 func (r *defaultController) GetTotalOfRetentionExecs(ctx context.Context, policyID int64) (int64, error) {
 	return r.execMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType": job.RetentionVendorType,
 			"VendorID":   policyID,
 		},
@@ -398,7 +400,7 @@ func convertTask(t *task.Task) *retention.Task {
 // GetTotalOfRetentionExecTasks Count Retention Execution Histories
 func (r *defaultController) GetTotalOfRetentionExecTasks(ctx context.Context, executionID int64) (int64, error) {
 	return r.taskMgr.Count(ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"VendorType":  job.RetentionVendorType,
 			"ExecutionID": executionID,
 		},
@@ -445,7 +447,9 @@ func (r *defaultController) DeleteRetentionByProject(ctx context.Context, projec
 			return err
 		}
 	}
-	return nil
+	// the retention_id metadata references the policies just deleted. The retention DELETE
+	// API drops it in its own handler, so project deletion has to do it here.
+	return r.projectMetaMgr.Delete(ctx, projectID, "retention_id")
 }
 
 // NewController ...
@@ -458,6 +462,7 @@ func NewController() Controller {
 		taskMgr:        task.Mgr,
 		launcher:       retentionLauncher,
 		projectManager: pkg.ProjectMgr,
+		projectMetaMgr: pkg.ProjectMetaMgr,
 		repositoryMgr:  pkg.RepositoryMgr,
 		scheduler:      scheduler.Sched,
 		wp:             lib.NewWorkerPool(10),

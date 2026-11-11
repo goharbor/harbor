@@ -32,7 +32,7 @@ var _ adp.ArtifactRegistry = &adapter{}
 func New(base *base.Adapter) adp.Adapter {
 	return &adapter{
 		Adapter: base,
-		client:  &client{Client: base.Client},
+		client:  &client{Client: base.Client, pageSize: 100},
 	}
 }
 

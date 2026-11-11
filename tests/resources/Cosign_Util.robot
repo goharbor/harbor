@@ -24,12 +24,12 @@ Cosign Generate Key Pair
 
 Cosign Sign
     [Arguments]  ${artifact}
-    Wait Unitl Command Success  cosign sign -y --allow-insecure-registry --key cosign.key ${artifact}
+    Wait Unitl Command Success  cosign sign -y --allow-insecure-registry --key cosign.key --tlog-upload=false ${artifact}
 
 Cosign Verify
     [Arguments]  ${artifact}  ${signed}
-    Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub ${artifact}
-    ...  ELSE  Command Should be Failed  cosign verify --key cosign.pub ${artifact}
+    Run Keyword If  ${signed}==${true}  Wait Unitl Command Success  cosign verify --key cosign.pub --insecure-ignore-tlog=true ${artifact}
+    ...  ELSE  Command Should be Failed  cosign verify --key cosign.pub --insecure-ignore-tlog=true ${artifact}
 
 Cosign Push Sbom
     [Arguments]  ${artifact}  ${sbom_path}=${files_directory}/sbom_test.json  ${type}=spdx

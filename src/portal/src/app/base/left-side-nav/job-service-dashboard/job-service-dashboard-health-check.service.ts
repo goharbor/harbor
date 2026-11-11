@@ -1,5 +1,22 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Injectable } from '@angular/core';
 import { JobserviceService } from '../../../../../ng-swagger-gen/services/jobservice.service';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../services/skip-session-renewal.service';
 
 export const HEALTHY_TIME: number = 24; //  unit hours
 export const CHECK_HEALTH_INTERVAL: number = 15 * 60 * 1000; //15 minutes, unit ms
@@ -11,7 +28,10 @@ export class JobServiceDashboardHealthCheckService {
     private _hasUnhealthyQueue: boolean = false;
     private _hasManuallyClosed: boolean = false;
 
-    constructor(private jobServiceService: JobserviceService) {}
+    constructor(
+        private jobServiceService: JobserviceService,
+        private skipSessionRenewalService: SkipSessionRenewalService
+    ) {}
 
     hasUnhealthyQueue(): boolean {
         return this._hasUnhealthyQueue;
@@ -21,7 +41,7 @@ export class JobServiceDashboardHealthCheckService {
         return this._hasManuallyClosed;
     }
 
-    setHealthy(value: boolean): void {
+    setUnHealthy(value: boolean): void {
         this._hasUnhealthyQueue = value;
     }
     setManuallyClosed(value: boolean): void {
@@ -29,10 +49,13 @@ export class JobServiceDashboardHealthCheckService {
     }
 
     checkHealth(): void {
-        this.jobServiceService.listJobQueues().subscribe(res => {
-            this._hasUnhealthyQueue = res?.some(
-                item => item.latency >= HEALTHY_TIME * 60 * 60
-            );
-        });
+        this.jobServiceService
+            .listJobQueues()
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
+            .subscribe(res => {
+                this._hasUnhealthyQueue = res?.some(
+                    item => item.latency >= HEALTHY_TIME * 60 * 60
+                );
+            });
     }
 }

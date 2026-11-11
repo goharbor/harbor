@@ -1,0 +1,29 @@
+.artifact-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 16px 0;
+
+    .label {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--clr-color-neutral-500);
+        border-radius: 8px;
+        padding: 10px 8px;
+        background-color: var(--clr-color-action-600);
+        margin-right: 8px;
+        color: #fff;
+        font-size: 12px;
+        height: calc(4px * 6);
+
+        .capitalize-first-letter::first-letter {
+            text-transform: uppercase;
+        }
+    }
+
+    .artifact-icon {
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+    }
+}

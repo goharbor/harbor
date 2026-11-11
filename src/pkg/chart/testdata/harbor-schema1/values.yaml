@@ -371,6 +371,7 @@ proxy:
   components:
     - core
     - jobservice
+    - registry
     - trivy
 
 # Run the migration job via helm hook

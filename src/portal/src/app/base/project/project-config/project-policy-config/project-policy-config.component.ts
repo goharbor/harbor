@@ -1,9 +1,27 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { compareValue, clone } from '../../../../shared/units/utils';
-import { ProjectService } from '../../../../shared/services';
+import { validateRepositoryFilterPattern } from '../../../../shared/units/repository-filter.util';
+import {
+    ProjectCVEAllowlist,
+    ProjectService,
+} from '../../../../shared/services';
 import { ErrorHandler } from '../../../../shared/units/error-handler';
 import { State, SystemCVEAllowlist } from '../../../../shared/services';
 import {
+    BandwidthUnit,
     ConfirmationState,
     ConfirmationTargets,
 } from '../../../../shared/entities/shared.const';
@@ -15,10 +33,15 @@ import { Project } from './project';
 import { SystemInfo, SystemInfoService } from '../../../../shared/services';
 import { UserPermissionService } from '../../../../shared/services';
 import { USERSTATICPERMISSION } from '../../../../shared/services';
+import { SessionService } from '../../../../shared/services/session.service';
+import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
 import {
     EventService,
     HarborEvent,
 } from '../../../../services/event-service/event.service';
+import { forkJoin, Observable } from 'rxjs';
+import { MessageHandlerService } from 'src/app/shared/services/message-handler.service';
+import { RegistryService } from 'ng-swagger-gen/services';
 
 const ONE_THOUSAND: number = 1000;
 const LOW: string = 'low';
@@ -33,6 +56,14 @@ export class ProjectPolicy {
     PreventVulImgSeverity: string;
     ScanImgOnPush: boolean;
     GenerateSbomOnPush: boolean;
+    ProxyCacheEnabled: boolean;
+    RegistryId?: number | null;
+    ProxySpeedKb?: number | null;
+    MaxUpstreamConn?: number | null;
+    ProxyCacheLocalOnNotFound?: boolean;
+    ProxyReferrerAPI?: boolean;
+    ProxyCacheFilterPattern?: string | null;
+    ProxyCacheFilterKind?: string | null;
 
     constructor() {
         this.Public = false;
@@ -42,6 +73,14 @@ export class ProjectPolicy {
         this.PreventVulImgSeverity = LOW;
         this.ScanImgOnPush = false;
         this.GenerateSbomOnPush = false;
+        this.ProxyCacheEnabled = false;
+        this.RegistryId = null;
+        this.ProxySpeedKb = -1;
+        this.MaxUpstreamConn = -1;
+        this.ProxyCacheLocalOnNotFound = false;
+        this.ProxyReferrerAPI = false;
+        this.ProxyCacheFilterPattern = null;
+        this.ProxyCacheFilterKind = 'doublestar';
     }
 
     initByProject(pro: Project) {
@@ -55,13 +94,31 @@ export class ProjectPolicy {
         }
         this.ScanImgOnPush = pro.metadata.auto_scan === 'true';
         this.GenerateSbomOnPush = pro.metadata.auto_sbom_generation === 'true';
+        this.ProxyCacheEnabled = pro.registry_id ? true : false;
+        this.RegistryId = pro.registry_id;
+        this.ProxySpeedKb = pro.metadata.proxy_speed_kb
+            ? pro.metadata.proxy_speed_kb
+            : -1;
+        this.MaxUpstreamConn = pro.metadata.max_upstream_conn
+            ? pro.metadata.max_upstream_conn
+            : -1;
+        this.ProxyCacheLocalOnNotFound =
+            pro.metadata.proxy_cache_local_on_not_found === 'true';
+        this.ProxyReferrerAPI =
+            pro.metadata.proxy_referrer_api === 'true' ? true : false;
+        this.ProxyCacheFilterPattern =
+            pro.metadata.proxy_cache_filter_pattern || null;
+        this.ProxyCacheFilterKind =
+            pro.metadata.proxy_cache_filter_kind || 'doublestar';
     }
 }
+const PAGE_SIZE: number = 100;
 
 @Component({
     selector: 'hbr-project-policy-config',
     templateUrl: './project-policy-config.component.html',
     styleUrls: ['./project-policy-config.component.scss'],
+    standalone: false,
 })
 export class ProjectPolicyConfigComponent implements OnInit {
     onGoing = false;
@@ -81,6 +138,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     orgProjectPolicy = new ProjectPolicy();
     projectPolicy = new ProjectPolicy();
     hasChangeConfigRole: boolean;
+
     severityOptions = [
         {
             severity: 'critical',
@@ -100,8 +158,24 @@ export class ProjectPolicyConfigComponent implements OnInit {
     userProjectAllowlist = false;
     systemAllowlistOrProjectAllowlist: string;
     systemAllowlistOrProjectAllowlistOrigin: string;
-    projectAllowlist;
-    projectAllowlistOrigin;
+    projectAllowlist: ProjectCVEAllowlist;
+    projectAllowlistOrigin: ProjectCVEAllowlist;
+    speedUnit = BandwidthUnit.KB;
+    speedUnits = [
+        {
+            UNIT: BandwidthUnit.KB,
+        },
+        {
+            UNIT: BandwidthUnit.MB,
+        },
+    ];
+    // **Added property for bandwidth error message**
+    bandwidthError: string | null = null;
+    maxUpstreamConnError: string | null = null;
+    repositoryFilterError: string | null = null;
+    registries: Registry[] = [];
+    supportedRegistryTypeQueryString: string =
+        'type={docker-hub harbor azure-acr aws-ecr google-gcr quay docker-registry github-ghcr jfrog-artifactory}';
 
     constructor(
         private errorHandler: ErrorHandler,
@@ -109,6 +183,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
         private projectService: ProjectService,
         private systemInfoService: SystemInfoService,
         private userPermission: UserPermissionService,
+        private session: SessionService,
+        private messageHandlerService: MessageHandlerService,
+        private endpointService: RegistryService,
         private event: EventService
     ) {}
 
@@ -135,6 +212,108 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.retrieve();
         this.getPermission();
         this.getSystemAllowlist();
+        if (this.isSystemAdmin) {
+            this.getRegistries();
+        }
+    }
+
+    validateBandwidth(): void {
+        const value = Number(this.projectPolicy.ProxySpeedKb);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translate
+                .get('PROJECT.SPEED_LIMIT_TIP')
+                .subscribe((res: string) => {
+                    this.bandwidthError = res;
+                });
+        } else {
+            this.bandwidthError = null;
+        }
+    }
+
+    validateMaxUpstreamConnections(): void {
+        const value = Number(this.projectPolicy.MaxUpstreamConn);
+        if (
+            isNaN(value) ||
+            (!Number.isInteger(value) && value !== -1) ||
+            (value <= 0 && value !== -1)
+        ) {
+            this.translate
+                .get('PROJECT.PROXY_CACHE_MAX_UPSTREAM_CONN_INPUT_TIP')
+                .subscribe((res: string) => {
+                    this.maxUpstreamConnError = res;
+                });
+        } else {
+            this.maxUpstreamConnError = null;
+        }
+    }
+
+    validateRepositoryFilter(): void {
+        const pattern = this.projectPolicy.ProxyCacheFilterPattern;
+        const kind = this.projectPolicy.ProxyCacheFilterKind;
+        const errorKey = validateRepositoryFilterPattern(kind, pattern);
+
+        if (errorKey) {
+            this.translate.get(errorKey).subscribe((res: string) => {
+                this.repositoryFilterError = res;
+            });
+        } else {
+            this.repositoryFilterError = null;
+        }
+    }
+
+    getRegistries() {
+        this.endpointService
+            .listRegistriesResponse({
+                page: 1,
+                pageSize: PAGE_SIZE,
+                q: this.supportedRegistryTypeQueryString,
+            })
+            .subscribe(
+                result => {
+                    // Get total count
+                    if (result.headers) {
+                        const xHeader: string =
+                            result.headers.get('X-Total-Count');
+                        const totalCount = parseInt(xHeader, 0);
+                        let arr = result.body || [];
+                        if (totalCount <= PAGE_SIZE) {
+                            // already gotten all Registries
+                            this.registries = result.body || [];
+                        } else {
+                            // get all the registries in specified times
+                            const times: number = Math.ceil(
+                                totalCount / PAGE_SIZE
+                            );
+                            const observableList: Observable<Registry[]>[] = [];
+                            for (let i = 2; i <= times; i++) {
+                                observableList.push(
+                                    this.endpointService.listRegistries({
+                                        page: i,
+                                        pageSize: PAGE_SIZE,
+                                        q: this
+                                            .supportedRegistryTypeQueryString,
+                                    })
+                                );
+                            }
+                            forkJoin(observableList).subscribe(res => {
+                                if (res && res.length) {
+                                    res.forEach(item => {
+                                        arr = arr.concat(item);
+                                    });
+                                    this.registries = arr;
+                                }
+                            });
+                        }
+                    }
+                },
+                error => {
+                    this.messageHandlerService.error(error);
+                }
+            );
     }
 
     getSystemAllowlist() {
@@ -169,6 +348,11 @@ export class ProjectPolicyConfigComponent implements OnInit {
             .subscribe(permissins => {
                 this.hasChangeConfigRole = permissins as boolean;
             });
+    }
+
+    public get isSystemAdmin(): boolean {
+        let account = this.session.getCurrentUser();
+        return account != null && account.has_admin_role;
     }
 
     retrieve(state?: State): any {
@@ -214,10 +398,13 @@ export class ProjectPolicyConfigComponent implements OnInit {
     isValid() {
         let flag = false;
         if (
-            !this.projectPolicy.PreventVulImg ||
-            this.severityOptions.some(
-                x => x.severity === this.projectPolicy.PreventVulImgSeverity
-            )
+            (!this.projectPolicy.PreventVulImg ||
+                this.severityOptions.some(
+                    x => x.severity === this.projectPolicy.PreventVulImgSeverity
+                )) &&
+            !this.bandwidthError &&
+            !this.maxUpstreamConnError &&
+            !this.repositoryFilterError
         ) {
             flag = true;
         }
@@ -270,6 +457,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     reset(): void {
         this.projectPolicy = clone(this.orgProjectPolicy);
+        this.bandwidthError = null;
+        this.maxUpstreamConnError = null;
+        this.repositoryFilterError = null;
     }
 
     confirmCancel(ack: ConfirmationAcknowledgement): void {
@@ -331,7 +521,12 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.projectAllowlist.items.forEach(item => {
             map[item.cve_id] = true;
         });
-        this.cveIds.split(/[\n,]+/).forEach(id => {
+        const newCveIds = this.cveIds
+            .split(/[\n,]+/)
+            .map(id => id.trim()) // remove leading/trailing whitespace
+            .filter(id => id.length > 0); // skip empty or whitespace-only strings
+
+        newCveIds.forEach(id => {
             let cveObj: any = {};
             cveObj.cve_id = id.trim();
             if (!map[cveObj.cve_id]) {

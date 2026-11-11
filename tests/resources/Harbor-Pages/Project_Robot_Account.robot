@@ -24,17 +24,18 @@ Create A Project Robot Account
     ${permission_count}=  Create Dictionary
     ${total}=  Set Variable  0
     IF  '${first_resource}' == 'all'
-        Set To Dictionary  ${permission_count}  all=59
-        ${total}=  Set Variable  59
+        Set To Dictionary  ${permission_count}  all= 70
+        ${total}=  Set Variable  70
         Retry Element Click  //span[text()='Select all']
     ELSE
         FOR  ${item}  IN  @{resources}
-            ${elements}=  Get WebElements  //table//tr[./td[text()='${item}']]//label
+            ${elements}=  Get WebElements  //table//tr[./td[text()='${item}']]//clr-checkbox-wrapper//label
             ${elements_count}=  Get Length  ${elements}
             Set To Dictionary  ${permission_count}  ${item}=${elements_count}
             ${total}=  Evaluate  ${total} + ${elements_count}
             FOR  ${element}  IN  @{elements}
-                Retry Element Click  ${element}
+                Execute JavaScript    arguments[0].click();    ARGUMENTS    ${element}
+                Sleep    1s
             END
         END
     END

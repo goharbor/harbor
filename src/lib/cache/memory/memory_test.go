@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/lib/cache"
@@ -66,9 +67,9 @@ func (suite *CacheTestSuite) TestDelete() {
 func (suite *CacheTestSuite) TestFetch() {
 	key := "fetch"
 
-	suite.cache.Save(suite.ctx, key, map[string]interface{}{"name": "harbor", "version": "1.10"})
+	suite.cache.Save(suite.ctx, key, map[string]any{"name": "harbor", "version": "1.10"})
 
-	mp := map[string]interface{}{}
+	mp := map[string]any{}
 	suite.cache.Fetch(suite.ctx, key, &mp)
 	suite.Len(mp, 2)
 	suite.Equal("harbor", mp["name"])
@@ -112,14 +113,14 @@ func (suite *CacheTestSuite) TestPing() {
 
 func (suite *CacheTestSuite) TestScan() {
 	seed := func(n int) {
-		for i := 0; i < n; i++ {
+		for i := range n {
 			key := fmt.Sprintf("test-scan-%d", i)
 			err := suite.cache.Save(suite.ctx, key, "")
 			suite.NoError(err)
 		}
 	}
 	clean := func(n int) {
-		for i := 0; i < n; i++ {
+		for i := range n {
 			key := fmt.Sprintf("test-scan-%d", i)
 			err := suite.cache.Delete(suite.ctx, key)
 			suite.NoError(err)
@@ -162,6 +163,29 @@ func (suite *CacheTestSuite) TestScan() {
 
 func TestCacheTestSuite(t *testing.T) {
 	suite.Run(t, new(CacheTestSuite))
+}
+
+func TestExpiredPrefixedEntry(t *testing.T) {
+	for _, operation := range []string{"contains", "fetch"} {
+		t.Run(operation, func(t *testing.T) {
+			ctx := context.Background()
+			c, err := cache.New("memory", cache.Prefix("prefix:"))
+			require.NoError(t, err)
+			require.NoError(t, c.Save(ctx, "key", "expired", -time.Second))
+			require.NoError(t, c.Save(ctx, "prefix:key", "live"))
+			if operation == "contains" {
+				require.False(t, c.Contains(ctx, "key"))
+			} else {
+				var value string
+				require.ErrorIs(t, c.Fetch(ctx, "key", &value), cache.ErrNotFound)
+			}
+			var value string
+			require.NoError(t, c.Fetch(ctx, "prefix:key", &value))
+			require.Equal(t, "live", value)
+			_, exists := c.(*Cache).storage.Load("prefix:key")
+			require.False(t, exists, "the expired entry must be removed")
+		})
+	}
 }
 
 func BenchmarkCacheFetchParallel(b *testing.B) {

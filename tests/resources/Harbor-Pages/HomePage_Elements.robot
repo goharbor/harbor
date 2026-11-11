@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${sign_up_for_an_account_xpath}  /html/body/harbor-app/sign-in/clr-main-container/div/form/div[1]/a
+${sign_up_for_an_account_xpath}  //a[normalize-space()='Sign up for an account']
 ${sign_up_button_xpath}  //a[@class='signup']
 ${username_xpath}  //*[@id='username']
 ${email_xpath}  //*[@id='email']

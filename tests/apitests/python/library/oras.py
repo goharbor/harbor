@@ -14,11 +14,11 @@ def oras_push(harbor_server, user, password, project, repo, tag):
     fo = open(file_artifact, "w")
     fo.write( "hello artifact" )
     fo.close()
-    md5_artifact = base.run_command( ["md5sum", file_artifact] )
+    sha256_artifact = base.run_command( ["sha256sum", file_artifact] )
     fo = open(file_readme, "w")
     fo.write( r"Docs on this artifact" )
     fo.close()
-    md5_readme = base.run_command( [ "md5sum", file_readme] )
+    sha256_readme = base.run_command( [ "sha256sum", file_readme] )
     fo = open(file_config, "w")
     fo.write( "{\"doc\":\"readme.md\"}" )
     fo.close()
@@ -30,7 +30,7 @@ def oras_push(harbor_server, user, password, project, repo, tag):
             break
     if exception != None:
         raise exception
-    return md5_artifact.split(' ')[0], md5_readme.split(' ')[0]
+    return sha256_artifact.split()[0], sha256_readme.split()[0]
 
 def oras_push_cmd(harbor_server, project, repo, tag):
     try:
@@ -59,4 +59,4 @@ def oras_pull(harbor_server, user, password, project, repo, tag):
     ret = base.run_command([oras_cmd, "pull", harbor_server + "/" + project + "/" + repo+":"+ tag])
     assert os.path.exists(file_artifact)
     assert os.path.exists(file_readme)
-    return base.run_command( ["md5sum", file_artifact] ).split(' ')[0], base.run_command( [ "md5sum", file_readme] ).split(' ')[0]
+    return base.run_command( ["sha256sum", file_artifact] ).split()[0], base.run_command( [ "sha256sum", file_readme] ).split()[0]

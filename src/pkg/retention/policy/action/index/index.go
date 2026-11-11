@@ -40,7 +40,7 @@ func Register(action string, factory action.PerformerFactory) {
 }
 
 // Get performer with the provided action
-func Get(act string, params interface{}, isDryRun bool) (action.Performer, error) {
+func Get(act string, params any, isDryRun bool) (action.Performer, error) {
 	if len(act) == 0 {
 		return nil, errors.New("empty action")
 	}

@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"regexp"
 	"strings"
 	"time"
@@ -35,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models/policy"
 	instanceModel "github.com/goharbor/harbor/src/pkg/p2p/preheat/models/provider"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
+	pauth "github.com/goharbor/harbor/src/pkg/p2p/preheat/provider/auth"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi"
@@ -65,7 +67,7 @@ type preheatAPI struct {
 	taskCtl      taskCtl.Controller
 }
 
-func (api *preheatAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (api *preheatAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -179,6 +181,20 @@ func (api *preheatAPI) UpdateInstance(ctx context.Context, params operation.Upda
 	if err := api.RequireSystemAccess(ctx, rbac.ActionUpdate, rbac.ResourcePreatInstance); err != nil {
 		return api.SendError(ctx, err)
 	}
+
+	if params.Instance == nil {
+		return api.SendError(ctx, errors.BadRequestError(nil).WithMessage("instance body is required"))
+	}
+
+	existing, err := api.preheatCtl.GetInstanceByName(ctx, params.PreheatInstanceName)
+	if err != nil {
+		return api.SendError(ctx, err)
+	}
+	if existing == nil {
+		return api.SendError(ctx, errors.NotFoundError(nil).WithMessagef("instance %s not found", params.PreheatInstanceName))
+	}
+
+	mergePreheatInstanceAuthOnUpdate(params.Instance, existing)
 
 	instance, err := convertParamInstanceToModelInstance(params.Instance)
 	if err != nil {
@@ -332,7 +348,7 @@ func (api *preheatAPI) DeletePolicy(ctx context.Context, params operation.Delete
 		}
 		return nil
 	}
-	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]interface{}{
+	executions, err := api.executionCtl.List(ctx, &q.Query{Keywords: map[string]any{
 		"vendor_type": job.P2PPreheatVendorType,
 		"vendor_id":   policy.ID,
 	}})
@@ -404,7 +420,9 @@ func (api *preheatAPI) ListPolicies(ctx context.Context, params operation.ListPo
 
 // ManualPreheat is manual preheat
 func (api *preheatAPI) ManualPreheat(ctx context.Context, params operation.ManualPreheatParams) middleware.Responder {
-	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourcePreatPolicy); err != nil {
+	// Starting preheat creates executions and launches jobs. Require Update, as
+	// StopExecution does, so permission to inspect a policy does not also run it.
+	if err := api.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionUpdate, rbac.ResourcePreatPolicy); err != nil {
 		return api.SendError(ctx, err)
 	}
 
@@ -483,7 +501,7 @@ func convertPolicyToPayload(policy *policy.Schema) (*models.PreheatPolicy, error
 		ProjectID:    policy.ProjectID,
 		ProviderID:   policy.ProviderID,
 		Trigger:      policy.TriggerStr,
-		Scope:        policy.Scope,
+		ExtraAttrs:   policy.ExtraAttrsStr,
 		UpdateTime:   strfmt.DateTime(policy.UpdatedTime),
 	}, nil
 }
@@ -504,17 +522,17 @@ func convertParamPolicyToModelPolicy(model *models.PreheatPolicy) (*policy.Schem
 	}
 
 	return &policy.Schema{
-		ID:          model.ID,
-		Name:        model.Name,
-		Description: model.Description,
-		ProjectID:   model.ProjectID,
-		ProviderID:  model.ProviderID,
-		FiltersStr:  model.Filters,
-		TriggerStr:  model.Trigger,
-		Enabled:     model.Enabled,
-		Scope:       model.Scope,
-		CreatedAt:   time.Time(model.CreationTime),
-		UpdatedTime: time.Time(model.UpdateTime),
+		ID:            model.ID,
+		Name:          model.Name,
+		Description:   model.Description,
+		ProjectID:     model.ProjectID,
+		ProviderID:    model.ProviderID,
+		FiltersStr:    model.Filters,
+		TriggerStr:    model.Trigger,
+		Enabled:       model.Enabled,
+		ExtraAttrsStr: model.ExtraAttrs,
+		CreatedAt:     time.Time(model.CreationTime),
+		UpdatedTime:   time.Time(model.UpdateTime),
 	}, nil
 }
 
@@ -523,13 +541,7 @@ func convertInstanceToPayload(model *instanceModel.Instance) (*models.Instance, 
 		return nil, errors.New("instance can not be nil")
 	}
 
-	var authInfo = map[string]string{}
-	var err = json.Unmarshal([]byte(model.AuthData), &authInfo)
-	if err != nil {
-		return nil, err
-	}
 	return &models.Instance{
-		AuthInfo:       authInfo,
 		AuthMode:       model.AuthMode,
 		Default:        model.Default,
 		Description:    model.Description,
@@ -542,6 +554,30 @@ func convertInstanceToPayload(model *instanceModel.Instance) (*models.Instance, 
 		Status:         "Unknown",
 		Vendor:         model.Vendor,
 	}, nil
+}
+
+// mergePreheatInstanceAuthOnUpdate copies stored auth_info into the update payload when the client
+// omits auth_info or sends an empty object but the effective auth mode still requires credentials.
+// If auth_mode is NONE (explicitly), auth is not restored so credentials can be cleared with NONE.
+func mergePreheatInstanceAuthOnUpdate(incoming *models.Instance, existing *instanceModel.Instance) {
+	if incoming == nil || existing == nil {
+		return
+	}
+	if !authInfoEmpty(incoming.AuthInfo) {
+		return
+	}
+	mode := incoming.AuthMode
+	if mode == "" {
+		mode = existing.AuthMode
+	}
+	if mode == pauth.AuthModeNone {
+		return
+	}
+	incoming.AuthInfo = maps.Clone(existing.AuthInfo)
+}
+
+func authInfoEmpty(m map[string]string) bool {
+	return len(m) == 0
 }
 
 func convertParamInstanceToModelInstance(model *models.Instance) (*instanceModel.Instance, error) {
@@ -786,7 +822,7 @@ func (api *preheatAPI) GetPreheatLog(ctx context.Context, params operation.GetPr
 	return operation.NewGetPreheatLogOK().WithPayload(string(l))
 }
 
-func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID, taskID int64) error {
+func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID any, policyName string, executionID, taskID int64) error {
 	projectID, err := getProjectID(ctx, projectNameOrID)
 	notFoundErr := fmt.Errorf("project id %d, task id %d not found", projectID, taskID)
 	if err != nil {
@@ -809,7 +845,7 @@ func (api *preheatAPI) requireTaskInProject(ctx context.Context, projectNameOrID
 	return errors.NotFoundError(notFoundErr)
 }
 
-func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID interface{}, policyName string, executionID int64) error {
+func (api *preheatAPI) requireExecutionInProject(ctx context.Context, projectNameOrID any, policyName string, executionID int64) error {
 	projectID, err := getProjectID(ctx, projectNameOrID)
 	notFoundErr := fmt.Errorf("project id %d, execution id %d not found", projectID, executionID)
 	if err != nil {

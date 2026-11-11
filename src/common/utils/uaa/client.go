@@ -62,7 +62,7 @@ type ClientConfig struct {
 	ClientSecret  string
 	Endpoint      string
 	SkipTLSVerify bool
-	// Absolut path for CA root used to communicate with UAA, only effective when skipTLSVerify set to false.
+	// Absolute path for CA root used to communicate with UAA, only effective when skipTLSVerify set to false.
 	CARootPath string
 }
 
@@ -89,7 +89,7 @@ type SearchUserEntry struct {
 	ExtID    string                 `json:"externalId"`
 	UserName string                 `json:"userName"`
 	Emails   []SearchUserEmailEntry `json:"emails"`
-	Groups   []interface{}
+	Groups   []any
 }
 
 // SearchUserRes is the struct to parse the result of search user API of UAA

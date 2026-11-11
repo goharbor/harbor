@@ -17,7 +17,6 @@ package notification
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -82,7 +81,7 @@ func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init webhook job
-func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error {
+func (wj *WebhookJob) init(ctx job.Context, params map[string]any) error {
 	wj.logger = ctx.GetLogger()
 	wj.ctx = ctx
 
@@ -98,7 +97,7 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 }
 
 // execute webhook job
-func (wj *WebhookJob) execute(_ job.Context, params map[string]interface{}) error {
+func (wj *WebhookJob) execute(_ job.Context, params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 
@@ -123,13 +122,9 @@ func (wj *WebhookJob) execute(_ job.Context, params map[string]interface{}) erro
 	}
 
 	defer resp.Body.Close()
+	defer drainBody(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			wj.logger.Errorf("error to read response body, error: %s", err)
-		}
-
-		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
+		return errors.Errorf("abnormal response code: %d", resp.StatusCode)
 	}
 
 	return nil

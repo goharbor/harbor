@@ -1,6 +1,8 @@
 package volcenginecr
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +17,8 @@ func Test_getRegionRegistryNamer(t *testing.T) {
 		wantErr      bool
 	}{
 		{"registry beijing", "https://enterprise-cn-beijing.cr.volces.com", "cn-beijing", "enterprise", false},
+		{"registry beijing mixed case", "https://Enterprise-CN-Beijing.CR.Volces.com", "cn-beijing", "Enterprise", false},
+		{"registry ivolces", "https://enterprise-cn-beijing.cr.ivolces.com", "cn-beijing", "enterprise", false},
 		{"invalid url", "http://enterprise-cn-beijing.cr.volces.com", "", "", true},
 		{"invalid region", "https://enterprise-us-test.cr.volces.com", "", "", true},
 		{"invalid suffix", "https://enterprise-us-test.cr-test.volces.com", "", "", true},
@@ -33,6 +37,31 @@ func Test_getRegionRegistryNamer(t *testing.T) {
 }
 
 func Test_getRealmService(t *testing.T) {
+	// mock registry: /v2/ returns bearer challenge
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v2/" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("WWW-Authenticate",
+			`Bearer realm="https://cr-cn-beijing.volces.com/token",service="token-service"`)
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer srv.Close()
+
+	orig := resolveHost
+	resolveHost = func(host string) string {
+		switch host {
+		case "https://cr-cn-beijing.volces.com":
+			return srv.URL
+		case "https://cr-test-cn-beijing.volces.com":
+			return ""
+		default:
+			return host
+		}
+	}
+	t.Cleanup(func() { resolveHost = orig })
+
 	tests := []struct {
 		name     string
 		host     string
@@ -45,7 +74,7 @@ func Test_getRealmService(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, err := getRealmService(tt.host, tt.insecure)
+			_, _, err := getRealmService(tt.host, tt.insecure, "")
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

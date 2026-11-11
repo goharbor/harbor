@@ -41,7 +41,7 @@ func TestConfig(t *testing.T) {
 	test.InitDatabaseFromEnv()
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
-	c := map[string]interface{}{
+	c := map[string]any{
 		common.WithTrivy: false,
 	}
 	Init()
@@ -68,7 +68,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to load configurations: %v", err)
 	}
 
-	if err := Upload(map[string]interface{}{}); err != nil {
+	if err := Upload(map[string]any{}); err != nil {
 		t.Fatalf("failed to upload configurations: %v", err)
 	}
 
@@ -225,7 +225,7 @@ pkgODrJUf0p5dhcnLyA2nZolRV1rtwlgJstnEV4JpG1MwtmAZYZUilLvnfpVxTtA
 y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 -----END CERTIFICATE-----
 `
-	m := map[string]interface{}{
+	m := map[string]any{
 		common.HTTPAuthProxySkipSearch:        "true",
 		common.HTTPAuthProxyVerifyCert:        "true",
 		common.HTTPAuthProxyAdminGroups:       "group1, group2",
@@ -246,7 +246,7 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 }
 
 func TestOIDCSetting(t *testing.T) {
-	m := map[string]interface{}{
+	m := map[string]any{
 		common.OIDCName:         "test",
 		common.OIDCEndpoint:     "https://oidc.test",
 		common.OIDCVerifyCert:   "true",
@@ -257,6 +257,7 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
+		common.OIDCLogout:       "false",
 	}
 	InitWithSettings(m)
 	v, e := OIDCSetting(orm.Context())
@@ -271,6 +272,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 	assert.Equal(t, "username", v.UserClaim)
+	assert.False(t, v.Logout)
 }
 
 func TestSplitAndTrim(t *testing.T) {

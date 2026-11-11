@@ -46,7 +46,7 @@ type replicationAPI struct {
 	ctl replication.Controller
 }
 
-func (r *replicationAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (r *replicationAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -111,6 +111,14 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.CopyByChunk != nil {
 		policy.CopyByChunk = *params.Policy.CopyByChunk
+	}
+
+	if params.Policy.SingleActiveReplication != nil {
+		// Validate and assign SingleActiveReplication only for non-event_based triggers
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
+		}
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	id, err := r.ctl.CreatePolicy(ctx, policy)
@@ -179,6 +187,14 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 
 	if params.Policy.CopyByChunk != nil {
 		policy.CopyByChunk = *params.Policy.CopyByChunk
+	}
+
+	if params.Policy.SingleActiveReplication != nil {
+		// Validate and assign SingleActiveReplication only for non-event_based triggers
+		if params.Policy.Trigger != nil && params.Policy.Trigger.Type == model.TriggerTypeEventBased && *params.Policy.SingleActiveReplication {
+			return r.SendError(ctx, fmt.Errorf("single active replication is not allowed for event_based triggers"))
+		}
+		policy.SingleActiveReplication = *params.Policy.SingleActiveReplication
 	}
 
 	if err := r.ctl.UpdatePolicy(ctx, policy); err != nil {
@@ -362,14 +378,14 @@ func (r *replicationAPI) ListReplicationTasks(ctx context.Context, params operat
 	}
 	query.Keywords["ExecutionID"] = params.ID
 	if params.Status != nil {
-		var status interface{} = *params.Status
+		var status any = *params.Status
 		// as we convert the status when responding requests to keep the backward compatibility,
 		// here we need to reverse-convert the status
 		// the status "pending" and "stopped" is same with jobservice, no need to convert
 		switch status {
 		case "InProgress":
 			status = &q.OrList{
-				Values: []interface{}{
+				Values: []any{
 					job.ScheduledStatus.String(),
 					job.RunningStatus.String(),
 				},
@@ -446,6 +462,7 @@ func convertReplicationPolicy(policy *repctlmodel.Policy) *models.ReplicationPol
 		Speed:                     &policy.Speed,
 		UpdateTime:                strfmt.DateTime(policy.UpdateTime),
 		CopyByChunk:               &policy.CopyByChunk,
+		SingleActiveReplication:   &policy.SingleActiveReplication,
 	}
 	if policy.SrcRegistry != nil {
 		p.SrcRegistry = convertRegistry(policy.SrcRegistry)
@@ -498,6 +515,9 @@ func convertRegistry(registry *model.Registry) *models.Registry {
 		}
 		r.Credential = credential
 	}
+	if len(registry.CACertificate) > 0 {
+		r.CaCertificate = &registry.CACertificate
+	}
 	return r
 }
 
@@ -542,15 +562,16 @@ func convertExecution(execution *replication.Execution) *models.ReplicationExecu
 
 func convertTask(task *replication.Task) *models.ReplicationTask {
 	tk := &models.ReplicationTask{
-		ID:           task.ID,
-		ExecutionID:  task.ExecutionID,
-		JobID:        task.JobID,
-		Operation:    task.Operation,
-		ResourceType: task.ResourceType,
-		SrcResource:  task.SourceResource,
-		DstResource:  task.DestinationResource,
-		StartTime:    strfmt.DateTime(task.StartTime),
-		EndTime:      strfmt.DateTime(task.EndTime),
+		ID:            task.ID,
+		ExecutionID:   task.ExecutionID,
+		JobID:         task.JobID,
+		Operation:     task.Operation,
+		ResourceType:  task.ResourceType,
+		SrcResource:   task.SourceResource,
+		DstResource:   task.DestinationResource,
+		StatusMessage: task.StatusMessage,
+		StartTime:     strfmt.DateTime(task.StartTime),
+		EndTime:       strfmt.DateTime(task.EndTime),
 	}
 	// keep backward compatibility
 	switch task.Status {

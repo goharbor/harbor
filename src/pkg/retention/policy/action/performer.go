@@ -17,7 +17,6 @@ package action
 import (
 	"context"
 
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/selector"
 	"github.com/goharbor/harbor/src/pkg/immutable/match/rule"
@@ -43,7 +42,7 @@ type Performer interface {
 }
 
 // PerformerFactory is factory method for creating Performer
-type PerformerFactory func(params interface{}, isDryRun bool) Performer
+type PerformerFactory func(params any, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
@@ -95,10 +94,8 @@ func (ra *retainAction) Perform(ctx context.Context, candidates []*selector.Cand
 
 func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 	projectID := c.NamespaceID
-	repo := c.Repository
-	_, repoName := utils.ParseRepository(repo)
 	matched, err := rule.NewRuleMatcher().Match(ctx, projectID, selector.Candidate{
-		Repository:  repoName,
+		Repository:  c.Repository,
 		Tags:        c.Tags,
 		NamespaceID: projectID,
 	})
@@ -110,7 +107,7 @@ func isImmutable(ctx context.Context, c *selector.Candidate) bool {
 }
 
 // NewRetainAction is factory method for RetainAction
-func NewRetainAction(params interface{}, isDryRun bool) Performer {
+func NewRetainAction(params any, isDryRun bool) Performer {
 	if params != nil {
 		if all, ok := params.([]*selector.Candidate); ok {
 			return &retainAction{

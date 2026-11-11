@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log
+package log // nolint:revive
 
 import (
 	"net/http"
+	"strconv"
 
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/controller/event/metadata/commonevent"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/server/middleware"
 )
 
@@ -40,6 +47,66 @@ func Middleware() func(http.Handler) http.Handler {
 			r = r.WithContext(ctx)
 		}
 
-		next.ServeHTTP(w, r)
+		isResourceName, _ := strconv.ParseBool(r.Header.Get("X-Is-Resource-Name"))
+		e := &commonevent.Metadata{
+			Ctx:            r.Context(),
+			Username:       "unknown",
+			RequestMethod:  r.Method,
+			RequestURL:     r.URL.String(),
+			IsResourceName: isResourceName,
+		}
+		if matched, resName := e.PreCheckMetadata(); matched {
+			body, err := lib.ReadRequestBody(r, common.MaxAuditLogPayloadSize)
+			if err != nil {
+				if errors.IsErr(err, errors.RequestEntityTooLargeCode) {
+					http.Error(w, "request body too large", http.StatusRequestEntityTooLarge)
+					return
+				}
+				http.Error(w, "failed to read request body", http.StatusInternalServerError)
+				return
+			}
+			requestContent := string(body)
+			if secCtx, ok := security.FromContext(r.Context()); ok {
+				e.Username = secCtx.GetUsername()
+			}
+			rw := &ResponseWriter{
+				ResponseWriter: w,
+				statusCode:     http.StatusOK,
+			}
+			next.ServeHTTP(rw, r)
+
+			// Add information in the response
+			e.ResourceName = resName
+			e.RequestPayload = requestContent
+			e.ResponseCode = rw.statusCode
+
+			// Need to parse the Location header to get the resource ID on creating resource
+			if e.RequestMethod == http.MethodPost {
+				e.ResponseLocation = rw.header.Get("Location")
+			}
+
+			notification.AddEvent(e.Ctx, e, true)
+		} else {
+			next.ServeHTTP(w, r)
+		}
 	})
+}
+
+// ResponseWriter wrapper to HTTP response to get the statusCode and response content
+type ResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+	header     http.Header
+}
+
+// WriteHeader write header info
+func (rw *ResponseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+// Header get header info
+func (rw *ResponseWriter) Header() http.Header {
+	rw.header = rw.ResponseWriter.Header()
+	return rw.ResponseWriter.Header()
 }

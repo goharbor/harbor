@@ -62,9 +62,9 @@ func (uts *UserTestSuite) SetupSuite() {
 			},
 		},
 	}
+
 	uts.Suite.SetupSuite()
 	uts.Security.On("IsAuthenticated").Return(true)
-
 }
 
 func (uts *UserTestSuite) TestUpdateUserPassword() {
@@ -76,6 +76,7 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/2/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(false).Times(1)
+		uts.Security.On("GetUsername").Return("testuser")
 		res, err := uts.Suite.PutJSON(url, &body)
 		uts.NoError(err)
 		uts.Equal(403, res.StatusCode)
@@ -83,6 +84,7 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 	{
 		url := "/users/1/password"
 		uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Times(1)
+		uts.Security.On("GetUsername").Return("admin")
 
 		uts.uCtl.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(uts.user, nil).Times(1)
 		uts.uCtl.On("VerifyPassword", mock.Anything, "admin", "Passw0rd").Return(true, nil).Times(1)
@@ -101,6 +103,28 @@ func (uts *UserTestSuite) TestUpdateUserPassword() {
 		uts.NoError(err)
 		uts.Equal(200, res.StatusCode)
 	}
+}
+
+func (uts *UserTestSuite) TestSetUserSysAdminRequiresSysAdmin() {
+	body := map[string]bool{"sysadmin_flag": true}
+
+	uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	uts.Security.On("IsSysAdmin").Return(false).Once()
+	uts.uCtl.On("SetSysAdmin", mock.Anything, 2, true).Return(nil)
+
+	res, err := uts.Suite.PutJSON("/users/2/sysadmin", body)
+	uts.NoError(err)
+	uts.Equal(403, res.StatusCode)
+	uts.uCtl.AssertNotCalled(uts.T(), "SetSysAdmin", mock.Anything, 2, true)
+
+	uts.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true).Once()
+	uts.Security.On("IsSysAdmin").Return(true).Once()
+	uts.uCtl.On("SetSysAdmin", mock.Anything, 3, true).Return(nil).Once()
+
+	res, err = uts.Suite.PutJSON("/users/3/sysadmin", body)
+	uts.NoError(err)
+	uts.Equal(200, res.StatusCode)
+	uts.uCtl.AssertCalled(uts.T(), "SetSysAdmin", mock.Anything, 3, true)
 }
 
 func (uts *UserTestSuite) TestGetRandomSecret() {

@@ -177,7 +177,7 @@ func (suite *MiddlewareTestSuite) TestSubject() {
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"SubjectArtifactDigest": subArtDigest,
 			},
 		})
@@ -213,7 +213,7 @@ func (suite *MiddlewareTestSuite) TestSubjectAfterAcc() {
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"SubjectArtifactDigest": subArtDigest,
 				"SubjectArtifactRepo":   name,
 			},
@@ -242,7 +242,7 @@ func (suite *MiddlewareTestSuite) TestSubjectDup() {
 		suite.Equal(http.StatusCreated, res.Code)
 
 		accs, err := accessory.Mgr.List(suite.Context(), &q.Query{
-			Keywords: map[string]interface{}{
+			Keywords: map[string]any{
 				"ID": accID,
 			},
 		})

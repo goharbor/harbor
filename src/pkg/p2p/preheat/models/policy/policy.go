@@ -16,7 +16,6 @@ package policy
 
 import (
 	"encoding/json"
-	"strconv"
 	"time"
 
 	beego_orm "github.com/beego/beego/v2/client/orm"
@@ -29,9 +28,6 @@ import (
 func init() {
 	beego_orm.RegisterModel(&Schema{})
 }
-
-// ScopeType represents the preheat scope type.
-type ScopeType = string
 
 const (
 	// Filters:
@@ -58,11 +54,6 @@ const (
 	TriggerTypeScheduled TriggerType = "scheduled"
 	// TriggerTypeEventBased represents the event_based trigger type
 	TriggerTypeEventBased TriggerType = "event_based"
-
-	// ScopeTypeSinglePeer represents preheat image to single peer in p2p cluster.
-	ScopeTypeSinglePeer ScopeType = "single_peer"
-	// ScopeTypeAllPeers represents preheat image to all peers in p2p cluster.
-	ScopeTypeAllPeers ScopeType = "all_peers"
 )
 
 // Schema defines p2p preheat policy schema
@@ -80,10 +71,11 @@ type Schema struct {
 	// Use JSON data format (query by trigger type should be supported)
 	TriggerStr string `orm:"column(trigger)" json:"-"`
 	Enabled    bool   `orm:"column(enabled)" json:"enabled"`
-	// Scope decides the preheat scope.
-	Scope       string    `orm:"column(scope)" json:"scope"`
-	CreatedAt   time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdatedTime time.Time `orm:"column(update_time)" json:"update_time"`
+	// ExtraAttrs is used to store extra attributes provided by vendor.
+	ExtraAttrsStr string         `orm:"column(extra_attrs)" json:"-"`
+	ExtraAttrs    map[string]any `orm:"-" json:"extra_attrs"`
+	CreatedAt     time.Time      `orm:"column(creation_time)" json:"creation_time"`
+	UpdatedTime   time.Time      `orm:"column(update_time)" json:"update_time"`
 }
 
 // TableName specifies the policy schema table name.
@@ -109,8 +101,8 @@ type FilterType = string
 
 // Filter holds the info of the filter
 type Filter struct {
-	Type  FilterType  `json:"type"`
-	Value interface{} `json:"value"`
+	Type  FilterType `json:"type"`
+	Value any        `json:"value"`
 }
 
 // TriggerType represents the type of trigger.
@@ -136,11 +128,6 @@ func (s *Schema) ValidatePreheatPolicy() error {
 		}
 	}
 
-	// validate preheat scope
-	if s.Scope != "" && s.Scope != ScopeTypeSinglePeer && s.Scope != ScopeTypeAllPeers {
-		return errors.New(nil).WithCode(errors.BadRequestCode).WithMessagef("invalid scope for preheat policy: %s", s.Scope)
-	}
-
 	return nil
 }
 
@@ -162,6 +149,14 @@ func (s *Schema) Encode() error {
 		s.TriggerStr = string(triggerStr)
 	}
 
+	if s.ExtraAttrs != nil {
+		extraAttrsStr, err := json.Marshal(s.ExtraAttrs)
+		if err != nil {
+			return err
+		}
+		s.ExtraAttrsStr = string(extraAttrsStr)
+	}
+
 	return nil
 }
 
@@ -181,6 +176,13 @@ func (s *Schema) Decode() error {
 	}
 	s.Trigger = trigger
 
+	// parse extra attributes
+	extraAttrs, err := decodeExtraAttrs(s.ExtraAttrsStr)
+	if err != nil {
+		return err
+	}
+	s.ExtraAttrs = extraAttrs
+
 	return nil
 }
 
@@ -195,24 +197,6 @@ func decodeFilters(filterStr string) ([]*Filter, error) {
 	if err := json.Unmarshal([]byte(filterStr), &filters); err != nil {
 		return nil, err
 	}
-
-	// Convert value type
-	// TODO: remove switch after UI bug #12579 fixed
-	for _, f := range filters {
-		if f.Type == FilterTypeVulnerability {
-			switch f.Value.(type) {
-			case string:
-				sev, err := strconv.ParseInt(f.Value.(string), 10, 32)
-				if err != nil {
-					return nil, errors.Wrapf(err, "parse filters")
-				}
-				f.Value = (int)(sev)
-			case float64:
-				f.Value = (int)(f.Value.(float64))
-			}
-		}
-	}
-
 	return filters, nil
 }
 
@@ -229,4 +213,18 @@ func decodeTrigger(triggerStr string) (*Trigger, error) {
 	}
 
 	return trigger, nil
+}
+
+// decodeExtraAttrs parse extraAttrsStr to extraAttrs.
+func decodeExtraAttrs(extraAttrsStr string) (map[string]any, error) {
+	if len(extraAttrsStr) == 0 {
+		return nil, nil
+	}
+
+	extraAttrs := make(map[string]any)
+	if err := json.Unmarshal([]byte(extraAttrsStr), &extraAttrs); err != nil {
+		return nil, err
+	}
+
+	return extraAttrs, nil
 }

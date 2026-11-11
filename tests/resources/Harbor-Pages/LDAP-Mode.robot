@@ -31,7 +31,7 @@ Set LDAP Group Admin DN
     Retry Element Click  ${config_auth_save_button_xpath}
 
 Ldap User Should Not See Change Password
-    Retry Element Click  //clr-header//clr-dropdown[2]//button
+    Retry Element Click  //clr-header//clr-dropdown//button
     Sleep  2
     Page Should Not Contain  Password
 

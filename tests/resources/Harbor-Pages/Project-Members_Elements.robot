@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${project_member_tag_xpath}  //clr-main-container//project-detail/clr-tabs//a[contains(.,'Members')]
+${project_member_tag_xpath}  //project-detail//clr-tabs//*[self::a or self::button][contains(.,'Members')]
 ${project_member_add_button_xpath}  //project-detail//button[contains(.,'User')]
 ${project_member_add_username_xpath}  //*[@id='member_name']
 ${project_member_add_admin_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div[1]/label[contains(@class,'clr-control-label')]
@@ -26,5 +26,5 @@ ${project_member_search_text_xpath}  //project-detail//hbr-filter/span/input
 ${project_member_add_confirmation_ok_xpath}  //project-detail//add-member//button[2]
 ${project_member_search_button_xpath2}  //button[contains(.,'New')]
 ${project_member_add_button_xpath2}  //project-detail//add-member//button[2]
-${project_member_guest_radio_checkbox}  //project-detail//form//input[@id='checkrads_guest']
+${project_member_guest_radio_checkbox}  //add-member//div[contains(@class, 'role-radio-list')]//input[@id='add-member-role-3']
 ${project_member_delete_button_xpath}  //button[contains(.,'REMOVE')]

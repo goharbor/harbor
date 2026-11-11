@@ -59,6 +59,11 @@ import (
 // Replication implements the job interface
 type Replication struct{}
 
+// EventReplication implements the job interface for event-based replication
+type EventReplication struct {
+	Replication
+}
+
 // MaxFails returns that how many times this job can fail
 func (r *Replication) MaxFails() uint {
 	return 3
@@ -112,7 +117,7 @@ func (r *Replication) Run(ctx job.Context, params job.Parameters) error {
 	return trans.Transfer(src, dst, opts)
 }
 
-func parseParams(params map[string]interface{}) (*model.Resource, *model.Resource, *transfer.Options, error) {
+func parseParams(params map[string]any) (*model.Resource, *model.Resource, *transfer.Options, error) {
 	src := &model.Resource{}
 	if err := parseParam(params, "src_resource", src); err != nil {
 		return nil, nil, nil, err
@@ -158,7 +163,7 @@ func parseParams(params map[string]interface{}) (*model.Resource, *model.Resourc
 	return src, dst, opts, nil
 }
 
-func parseParam(params map[string]interface{}, name string, v interface{}) error {
+func parseParam(params map[string]any, name string, v any) error {
 	value, exist := params[name]
 	if !exist {
 		return fmt.Errorf("param %s not found", name)

@@ -38,9 +38,10 @@ func (g *gcCtrTestSuite) TestStart() {
 	g.taskMgr.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 	g.taskMgr.On("Stop", mock.Anything, mock.Anything).Return(nil)
 
-	dataMap := make(map[string]interface{})
+	dataMap := make(map[string]any)
 	p := Policy{
 		DeleteUntagged: true,
+		DeleteTag:      true,
 		ExtraAttrs:     dataMap,
 	}
 	id, err := g.ctl.Start(nil, p, task.ExecutionTriggerManual)
@@ -146,9 +147,10 @@ func (g *gcCtrTestSuite) TestCreateSchedule() {
 	g.scheduler.On("Schedule", mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(1), nil)
 
-	dataMap := make(map[string]interface{})
+	dataMap := make(map[string]any)
 	p := Policy{
 		DeleteUntagged: true,
+		DeleteTag:      true,
 		ExtraAttrs:     dataMap,
 		Workers:        3,
 	}

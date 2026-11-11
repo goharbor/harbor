@@ -61,7 +61,7 @@ func TestRetentionHandler_Handle(t *testing.T) {
 	}, nil)
 
 	type args struct {
-		data interface{}
+		data any
 	}
 	tests := []struct {
 		name    string

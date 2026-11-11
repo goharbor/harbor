@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/member"
 	"github.com/goharbor/harbor/src/pkg/member/models"
 	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/role"
 	"github.com/goharbor/harbor/src/pkg/user"
 	"github.com/goharbor/harbor/src/pkg/usergroup"
 )
@@ -34,17 +35,17 @@ import (
 // Controller defines the operation related to project member
 type Controller interface {
 	// Get gets the project member with ID
-	Get(ctx context.Context, projectNameOrID interface{}, memberID int) (*models.Member, error)
+	Get(ctx context.Context, projectNameOrID any, memberID int) (*models.Member, error)
 	// Create add project member to project
-	Create(ctx context.Context, projectNameOrID interface{}, req Request) (int, error)
+	Create(ctx context.Context, projectNameOrID any, req Request) (int, error)
 	// Delete member from project
-	Delete(ctx context.Context, projectNameOrID interface{}, memberID int) error
+	Delete(ctx context.Context, projectNameOrID any, memberID int) error
 	// List lists all project members with condition
-	List(ctx context.Context, projectNameOrID interface{}, entityName string, query *q.Query) ([]*models.Member, error)
+	List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error)
 	// UpdateRole update the project member role
-	UpdateRole(ctx context.Context, projectNameOrID interface{}, memberID int, role int) error
+	UpdateRole(ctx context.Context, projectNameOrID any, memberID int, role int) error
 	// Count get the total amount of project members
-	Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error)
+	Count(ctx context.Context, projectNameOrID any, query *q.Query) (int, error)
 	// IsProjectAdmin judges if the user is a project admin of any project
 	IsProjectAdmin(ctx context.Context, member commonmodels.User) (bool, error)
 }
@@ -75,21 +76,22 @@ type UserGroup struct {
 var ErrDuplicateProjectMember = errors.ConflictError(nil).WithMessage("The project member specified already exist")
 
 // ErrInvalidRole ...
-var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("Failed to update project member, role is not in 1,2,3")
+var ErrInvalidRole = errors.BadRequestError(nil).WithMessage("invalid role: must be a built-in project role (1-5) or an existing custom role")
 
 type controller struct {
 	userManager  user.Manager
 	mgr          member.Manager
 	projectMgr   project.Manager
 	groupManager usergroup.Manager
+	roleMgr      role.Manager
 }
 
 // NewController ...
 func NewController() Controller {
-	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New(), groupManager: usergroup.Mgr}
+	return &controller{mgr: member.Mgr, projectMgr: pkg.ProjectMgr, userManager: user.New(), groupManager: usergroup.Mgr, roleMgr: role.Mgr}
 }
 
-func (c *controller) Count(ctx context.Context, projectNameOrID interface{}, query *q.Query) (int, error) {
+func (c *controller) Count(ctx context.Context, projectNameOrID any, query *q.Query) (int, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return 0, err
@@ -97,7 +99,7 @@ func (c *controller) Count(ctx context.Context, projectNameOrID interface{}, que
 	return c.mgr.GetTotalOfProjectMembers(ctx, p.ProjectID, query)
 }
 
-func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}, memberID int, role int) error {
+func (c *controller) UpdateRole(ctx context.Context, projectNameOrID any, memberID int, role int) error {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return err
@@ -105,10 +107,13 @@ func (c *controller) UpdateRole(ctx context.Context, projectNameOrID interface{}
 	if p == nil {
 		return errors.BadRequestError(nil).WithMessage("project is not found")
 	}
+	if err := c.validateRole(ctx, role); err != nil {
+		return err
+	}
 	return c.mgr.UpdateRole(ctx, p.ProjectID, memberID, role)
 }
 
-func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, memberID int) (*models.Member, error) {
+func (c *controller) Get(ctx context.Context, projectNameOrID any, memberID int) (*models.Member, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return nil, err
@@ -119,7 +124,11 @@ func (c *controller) Get(ctx context.Context, projectNameOrID interface{}, membe
 	return c.mgr.Get(ctx, p.ProjectID, memberID)
 }
 
-func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, req Request) (int, error) {
+func (c *controller) Create(ctx context.Context, projectNameOrID any, req Request) (int, error) {
+	if req.MemberUser.UserID <= 0 && len(req.MemberUser.Username) == 0 &&
+		req.MemberGroup.ID <= 0 && len(req.MemberGroup.GroupName) == 0 && len(req.MemberGroup.LdapGroupDN) == 0 {
+		return 0, errors.BadRequestError(nil).WithMessage("at least one of member_user or member_group must be provided")
+	}
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return 0, err
@@ -219,27 +228,38 @@ func (c *controller) Create(ctx context.Context, projectNameOrID interface{}, re
 		return 0, ErrDuplicateProjectMember
 	}
 
-	if !isValidRole(member.Role) {
-		// Return invalid role error
-		return 0, ErrInvalidRole
+	if err := c.validateRole(ctx, member.Role); err != nil {
+		return 0, err
 	}
 	return c.mgr.AddProjectMember(ctx, member)
 }
 
-func isValidRole(role int) bool {
-	switch role {
+// validateRole ensures a member's role is real: a built-in role (1-5), or a
+// custom role that exists in the database. Unknown IDs are rejected so a member
+// can never be assigned a non-existent role.
+func (c *controller) validateRole(ctx context.Context, roleID int) error {
+	switch roleID {
 	case common.RoleProjectAdmin,
 		common.RoleMaintainer,
 		common.RoleDeveloper,
 		common.RoleGuest,
 		common.RoleLimitedGuest:
-		return true
-	default:
-		return false
+		return nil
 	}
+	// Custom role IDs are assigned by the DB sequence above the built-in range.
+	if roleID <= common.RoleLimitedGuest {
+		return ErrInvalidRole
+	}
+	if _, err := c.roleMgr.Get(ctx, int64(roleID)); err != nil {
+		if errors.IsNotFoundErr(err) {
+			return ErrInvalidRole
+		}
+		return err
+	}
+	return nil
 }
 
-func (c *controller) List(ctx context.Context, projectNameOrID interface{}, entityName string, query *q.Query) ([]*models.Member, error) {
+func (c *controller) List(ctx context.Context, projectNameOrID any, entityName string, query *q.Query) ([]*models.Member, error) {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return nil, err
@@ -254,7 +274,7 @@ func (c *controller) List(ctx context.Context, projectNameOrID interface{}, enti
 	return c.mgr.List(ctx, pm, query)
 }
 
-func (c *controller) Delete(ctx context.Context, projectNameOrID interface{}, memberID int) error {
+func (c *controller) Delete(ctx context.Context, projectNameOrID any, memberID int) error {
 	p, err := c.projectMgr.Get(ctx, projectNameOrID)
 	if err != nil {
 		return err

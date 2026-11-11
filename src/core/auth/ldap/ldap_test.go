@@ -38,7 +38,7 @@ import (
 	ugModel "github.com/goharbor/harbor/src/pkg/usergroup/model"
 )
 
-var ldapTestConfig = map[string]interface{}{
+var ldapTestConfig = map[string]any{
 	common.ExtEndpoint:        "host01.com",
 	common.AUTHMode:           "ldap_auth",
 	common.DatabaseType:       "postgresql",

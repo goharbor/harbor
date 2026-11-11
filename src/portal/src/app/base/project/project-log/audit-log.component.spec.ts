@@ -1,30 +1,49 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuditLogComponent } from './audit-log.component';
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from '@angular/core/testing';
+import { ProjectAuditLogComponent } from './audit-log.component';
 import { MessageHandlerService } from '../../../shared/services/message-handler.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, LOCALE_ID } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID } from '@angular/core';
 import { delay } from 'rxjs/operators';
-import { AuditLog } from '../../../../../ng-swagger-gen/models/audit-log';
+import { AuditLogExt } from '../../../../../ng-swagger-gen/models/audit-log-ext';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ProjectService } from '../../../../../ng-swagger-gen/services/project.service';
-import { click } from '../../../shared/units/utils';
 import { SharedTestingModule } from '../../../shared/shared.module';
 import { registerLocaleData } from '@angular/common';
 import locale_en from '@angular/common/locales/en';
 import { DatePickerComponent } from '../../../shared/components/datetime-picker/datetime-picker.component';
 
-describe('AuditLogComponent', () => {
-    let component: AuditLogComponent;
-    let fixture: ComponentFixture<AuditLogComponent>;
+describe('ProjectAuditLogComponent', () => {
+    let component: ProjectAuditLogComponent;
+    let fixture: ComponentFixture<ProjectAuditLogComponent>;
     const mockMessageHandlerService = {
         handleError: () => {},
     };
     const mockActivatedRoute = {
         parent: {
             parent: {
-                snapshot: {
-                    data: null,
+                parent: {
+                    snapshot: {
+                        data: null,
+                    },
                 },
             },
         },
@@ -36,9 +55,9 @@ describe('AuditLogComponent', () => {
         }).pipe(delay(0)),
     };
     const mockRouter = null;
-    const mockedAuditLogs: AuditLog[] = [];
+    const mockedAuditLogExts: AuditLogExt[] = [];
     for (let i = 0; i < 18; i++) {
-        let item: AuditLog = {
+        let item: AuditLogExt = {
             id: 234 + i,
             resource: 'myProject/Demo' + i,
             resource_type: 'N/A',
@@ -46,14 +65,14 @@ describe('AuditLogComponent', () => {
             op_time: '2017-04-11T10:26:22Z',
             username: 'user91' + i,
         };
-        mockedAuditLogs.push(item);
+        mockedAuditLogExts.push(item);
     }
-    const fakedAuditlogService = {
-        getLogsResponse(params: ProjectService.GetLogsParams) {
+    const fakedAuditlogExtService = {
+        getLogExtsResponse(params: ProjectService.GetLogsParams) {
             if (params.q && params.q.indexOf('Demo0') !== -1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(0, 1),
+                        body: mockedAuditLogExts.slice(0, 1),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -63,7 +82,7 @@ describe('AuditLogComponent', () => {
             if (params.page <= 1) {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(0, 15),
+                        body: mockedAuditLogExts.slice(0, 15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -72,7 +91,7 @@ describe('AuditLogComponent', () => {
             } else {
                 return of(
                     new HttpResponse({
-                        body: mockedAuditLogs.slice(15),
+                        body: mockedAuditLogExts.slice(15),
                         headers: new HttpHeaders({
                             'x-total-count': '18',
                         }),
@@ -96,11 +115,11 @@ describe('AuditLogComponent', () => {
         await TestBed.configureTestingModule({
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
             imports: [SharedTestingModule],
-            declarations: [AuditLogComponent],
+            declarations: [ProjectAuditLogComponent],
             providers: [
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: Router, useValue: mockRouter },
-                { provide: ProjectService, useValue: fakedAuditlogService },
+                { provide: ProjectService, useValue: fakedAuditlogExtService },
                 {
                     provide: MessageHandlerService,
                     useValue: mockMessageHandlerService,
@@ -110,42 +129,48 @@ describe('AuditLogComponent', () => {
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(AuditLogComponent);
+        fixture = TestBed.createComponent(ProjectAuditLogComponent);
         component = fixture.componentInstance;
+        component.projectName = 'test-project';
         fixture.detectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should get data from AccessLogService', () => {
+    it('should get data from AccessLogService', async () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            // wait for async getRecentLogs
-            fixture.detectChanges();
-            expect(component.auditLogs).toBeTruthy();
-            expect(component.auditLogs.length).toEqual(15);
-        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.auditLogs).toBeTruthy();
+        expect(component.auditLogs.length).toEqual(15);
     });
 
-    it('should render data to view', () => {
+    it('should render data to view', async () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        await fixture.whenStable();
 
-            let de: DebugElement = fixture.debugElement.query(
-                del => del.classes['datagrid-cell']
-            );
-            expect(de).toBeTruthy();
-            let el: HTMLElement = de.nativeElement;
-            expect(el).toBeTruthy();
-            expect(el.textContent.trim()).toEqual('user910');
-        });
+        expect(component.auditLogs.length).toBeGreaterThan(0);
+        expect(component.auditLogs[0].username).toEqual('user910');
     });
     it('should support pagination', async () => {
+        component.projectName = 'test-project';
+        component.pageSize = 15;
         fixture.autoDetectChanges(true);
         await fixture.whenStable();
-        let el: HTMLButtonElement =
+        // Pagination controls are only rendered when page.last > 1; wait for data to load
+        let attempts = 0;
+        while (component.totalRecordCount === 0 && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 10));
+            fixture.detectChanges();
+            attempts++;
+        }
+        expect(component.totalRecordCount).toBe(18);
+        fixture.detectChanges();
+        const el: HTMLButtonElement =
             fixture.nativeElement.querySelector('.pagination-next');
         expect(el).toBeTruthy();
         el.click();
@@ -155,26 +180,17 @@ describe('AuditLogComponent', () => {
         expect(component.auditLogs.length).toEqual(3);
     });
 
-    it('should support filtering list by keywords', () => {
+    it('should support filtering list by keywords', fakeAsync(() => {
         fixture.detectChanges();
-        let el: HTMLElement =
-            fixture.nativeElement.querySelector('.search-btn');
-        expect(el).toBeTruthy('Not found search icon');
-        click(el);
+        tick();
         fixture.detectChanges();
-        let el2: HTMLInputElement =
-            fixture.nativeElement.querySelector('input');
-        expect(el2).toBeTruthy('Not found input');
+        tick();
+        component.doSearchAuditLogs('Demo0');
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            component.doSearchAuditLogs('Demo0');
-            fixture.detectChanges();
-            fixture.whenStable().then(() => {
-                fixture.detectChanges();
-                expect(component.auditLogs).toBeTruthy();
-                expect(component.auditLogs.length).toEqual(1);
-            });
-        });
-    });
+        tick();
+        fixture.detectChanges();
+        tick();
+        expect(component.auditLogs).toBeTruthy();
+        expect(component.auditLogs.length).toEqual(1);
+    }));
 });

@@ -30,6 +30,8 @@ import (
 	tcr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tcr/v20190924"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/lib"
+	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/log"
 	adp "github.com/goharbor/harbor/src/pkg/reg/adapter"
 	"github.com/goharbor/harbor/src/pkg/reg/adapter/native"
@@ -40,13 +42,15 @@ import (
 
 var (
 	errInvalidTcrEndpoint = errors.New("[tencent-tcr.newAdapter] Invalid TCR instance endpoint")
+	rateLimiterTransport  http.RoundTripper
 )
 
 func init() {
-	var envTcrQPSLimit, _ = strconv.Atoi(os.Getenv("TCR_QPS_LIMIT"))
-	if envTcrQPSLimit > 1 && envTcrQPSLimit < tcrQPSLimit {
-		tcrQPSLimit = envTcrQPSLimit
+	var envTcrQPSLimit, _ = strconv.Atoi(os.Getenv("REG_ADAPTER_TCR_QPS_LIMIT"))
+	if envTcrQPSLimit > tcrQPSLimit || envTcrQPSLimit < 1 {
+		envTcrQPSLimit = tcrQPSLimit
 	}
+	rateLimiterTransport = lib.NewRateLimitedTransport(envTcrQPSLimit, commonhttp.NewTransport())
 
 	if err := adp.RegisterFactory(model.RegistryTypeTencentTcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeTencentTcr, err)
@@ -91,6 +95,19 @@ type adapter struct {
 **/
 var _ adp.Adapter = &adapter{}
 
+// validateEndpoint checks if the TCR endpoint is valid and returns the lowercased host.
+func validateEndpoint(rawURL string) (string, bool) {
+	registryURL, err := url.Parse(rawURL)
+	if err != nil || registryURL == nil {
+		return "", false
+	}
+	host := strings.ToLower(registryURL.Hostname())
+	if host == "" || !strings.HasSuffix(host, ".tencentcloudcr.com") || host == ".tencentcloudcr.com" {
+		return "", false
+	}
+	return host, true
+}
+
 func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	if !isSecretID(registry.Credential.AccessKey) {
 		err = errors.New("[tencent-tcr.newAdapter] Please use SecretId/SecretKey, NOT docker login Username/Password")
@@ -102,9 +119,16 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	var registryURL *url.URL
 	registryURL, _ = url.Parse(registry.URL)
 
-	// only validate registryURL.Host in non-UT scenario
+	var host string
+	if registryURL != nil {
+		host = strings.ToLower(registryURL.Hostname())
+	}
+
+	// only validate registryURL in non-UT scenario
 	if os.Getenv("UTTEST") != "true" {
-		if !strings.Contains(registryURL.Host, ".tencentcloudcr.com") {
+		var ok bool
+		host, ok = validateEndpoint(registry.URL)
+		if !ok {
 			log.Errorf("[tencent-tcr.newAdapter] errInvalidTcrEndpoint=%v", err)
 			return nil, errInvalidTcrEndpoint
 		}
@@ -132,7 +156,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	req.Filters = []*tcr.Filter{
 		{
 			Name:   common.StringPtr("RegistryName"),
-			Values: []*string{common.StringPtr(strings.ReplaceAll(registryURL.Host, ".tencentcloudcr.com", ""))},
+			Values: []*string{common.StringPtr(strings.TrimSuffix(host, ".tencentcloudcr.com"))},
 		},
 	}
 	var resp *tcr.DescribeInstancesResponse
@@ -154,13 +178,13 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 	client.Init(*instanceInfo.RegionName).
 		WithCredential(tcrCredential).
 		WithProfile(cfp).
-		WithHttpTransport(newRateLimitedTransport(tcrQPSLimit, http.DefaultTransport))
-	if err != nil {
-		return
-	}
+		WithHttpTransport(rateLimiterTransport)
 
 	var credential = NewAuth(instanceInfo.RegistryId, client)
-	var transport = commonhttp.GetHTTPTransport(commonhttp.WithInsecure(registry.Insecure))
+	var transport = commonhttp.GetHTTPTransport(
+		commonhttp.WithInsecure(registry.Insecure),
+		commonhttp.WithCACert(registry.CACertificate),
+	)
 	var authorizer = bearer.NewAuthorizer(realm, service, credential, transport)
 
 	return &adapter{
@@ -172,6 +196,7 @@ func newAdapter(registry *model.Registry) (a *adapter, err error) {
 		client: commonhttp.NewClient(
 			&http.Client{
 				Transport: transport,
+				Timeout:   config.RegistryHTTPClientTimeout(),
 			},
 			credential,
 		),

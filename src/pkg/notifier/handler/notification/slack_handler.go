@@ -85,7 +85,7 @@ func (s *SlackHandler) Name() string {
 }
 
 // Handle handles event to slack
-func (s *SlackHandler) Handle(ctx context.Context, value interface{}) error {
+func (s *SlackHandler) Handle(ctx context.Context, value any) error {
 	if value == nil {
 		return errors.New("SlackHandler cannot handle nil value")
 	}
@@ -118,7 +118,7 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 		return fmt.Errorf("convert payload to slack body failed: %v", err)
 	}
 
-	j.Parameters = map[string]interface{}{
+	j.Parameters = map[string]any{
 		"payload":          payload,
 		"address":          event.Target.Address,
 		"skip_cert_verify": event.Target.SkipCertVerify,
@@ -127,7 +127,7 @@ func (s *SlackHandler) process(ctx context.Context, event *model.HookEvent) erro
 }
 
 func (s *SlackHandler) convert(payLoad *model.Payload) (string, error) {
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	data["Type"] = payLoad.Type
 	data["OccurAt"] = payLoad.OccurAt
 	data["Operator"] = payLoad.Operator

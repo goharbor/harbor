@@ -56,7 +56,7 @@ type Controller interface {
 	Create(ctx context.Context, r *Robot) (int64, string, error)
 
 	// Delete ...
-	Delete(ctx context.Context, id int64) error
+	Delete(ctx context.Context, id int64, option ...*Option) error
 
 	// Update ...
 	Update(ctx context.Context, r *Robot, option *Option) error
@@ -149,7 +149,7 @@ func (d *controller) Create(ctx context.Context, r *Robot) (int64, string, error
 }
 
 // Delete ...
-func (d *controller) Delete(ctx context.Context, id int64) error {
+func (d *controller) Delete(ctx context.Context, id int64, option ...*Option) error {
 	rDelete, err := d.robotMgr.Get(ctx, id)
 	if err != nil {
 		return err
@@ -161,10 +161,14 @@ func (d *controller) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	// fire event
-	notification.AddEvent(ctx, &metadata.DeleteRobotEventMetadata{
+	deleteMetadata := &metadata.DeleteRobotEventMetadata{
 		Ctx:   ctx,
 		Robot: rDelete,
-	})
+	}
+	if len(option) != 0 && option[0].Operator != "" {
+		deleteMetadata.Operator = option[0].Operator
+	}
+	notification.AddEvent(ctx, deleteMetadata)
 	return nil
 }
 

@@ -54,7 +54,7 @@ func TestPolicy(t *testing.T) {
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "* 22 11 * * *",
 			},
 		},

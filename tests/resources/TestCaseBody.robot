@@ -16,10 +16,16 @@
 Documentation  This resource wrap test case body
 Library  ../apitests/python/testutils.py
 Library  ../apitests/python/library/repository.py
+Library  String
 
 *** Variables ***
 
 *** Keywords ***
+Remove Port
+    [Arguments]    ${address}
+    ${result}=    Replace String    ${address}    :9443    ${EMPTY}
+    [Return]    ${result}
+
 Body Of Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
@@ -302,11 +308,13 @@ Body Of Replication Of Push Images to Registry Triggered By Event
     Select Rule  rule${d}
     ${endpoint_body}=  Fetch From Right  ${endpoint}  //
     ${dest_namespace}=  Set Variable If  '${provider}'=='gitlab'  ${endpoint_body}/${dest_namespace}  ${dest_namespace}
-    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Be Pulled  ${dest_namespace}/${image}:${tag1}   times=3
+    Run Keyword If  '${provider}'=='gitlab'  Docker Image Can Be Pulled With Credential  registry.gitlab.com  ${username}  ${pwd}  ${dest_namespace}/${image}:${tag1}   times=3
     Executions Result Count Should Be  Succeeded  event_based  1
     Go Into Project  project${d}
     Delete Repo  project${d}  ${image}
-    Run Keyword If  '${provider}'=='docker-hub' or '${provider}'=='gitlab'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Run Keyword If  '${provider}'=='docker-hub'  Docker Image Can Not Be Pulled  ${dest_namespace}/${image}:${tag1}
+    Run Keyword If  '${provider}'=='gitlab'  Docker Image Can Not Be Pulled With Credential  registry.gitlab.com  ${username}  ${pwd}  ${dest_namespace}/${image}:${tag1}
     Switch To Replication Manage
     Filter Replication Rule  rule${d}
     Select Rule  rule${d}
@@ -390,7 +398,7 @@ Check Harbor Api Page
     Retry Link Click  //a[contains(.,'Harbor API V2.0')]
     Switch Window  locator=NEW
     Title Should Be  Harbor Swagger
-    Retry Wait Element  xpath=//h2[contains(.,"Harbor API")]
+    Retry Wait Element  xpath=//h1[contains(normalize-space(.), 'Harbor API')]
 
 Body Of Stop Scan And Stop Scan All
     Init Chrome Driver
@@ -440,18 +448,6 @@ Body Of Generate Image SBOM On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  memcached
     Go Into Repo  project${d}  memcached
     Checkout And Review SBOM Details  latest
-    Close Browser
-
-Body Of Stop SBOM Manual Generation
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-    ${repo}=    Set Variable    goharbor/harbor-e2e-engine
-    ${tag}=    Set Variable    test-ui
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project And Go Into Project  project${d}
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${repo}  ${tag}  ${tag}
-    # stop generate sbom of an artifact
-    Retry Action Keyword  Stop SBOM Generation  project${d}  ${repo}
     Close Browser
 
 Stop SBOM Generation
@@ -588,7 +584,8 @@ Verify Webhook By Tag Retention Finished Event
 Verify Webhook By Replication Status Changed Event
     [Arguments]  ${project_name}  ${webhook_name}  ${project_dest_name}  ${replication_rule_name}  ${user}  ${harbor_handle}  ${webhook_handle}  ${payload_format}=Default
     &{replication_finished_property}=  Create Dictionary
-    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${ip}
+    ${cleaned_ip}=    Remove Port    ${ip}
+    Run Keyword If  '${payload_format}' == 'Default'  Set To Dictionary  ${replication_finished_property}  type=REPLICATION  operator=${user}  registry_type=harbor  harbor_hostname=${cleaned_ip}
     ...  ELSE  Set To Dictionary  ${replication_finished_property}  specversion=1.0  type=harbor.replication.status.changed  datacontenttype=application/json  operator=${user}  trigger_type=MANUAL  namespace=${project_name}
     Switch Window  ${webhook_handle}
     Delete All Requests
@@ -669,14 +666,14 @@ Create Schedules For Job Service Dashboard Schedules
     Add A Tag Retention Rule
     Set Tag Retention Policy Schedule  ${schedule_type}  ${schedule_cron}
     # Create a preheat policy triggered by schedule
-    Create An New Distribution  Dragonfly  ${distribution_name}  ${distribution_endpoint}
+    Create An New Distribution  Dragonfly  ${distribution_name}  ${distribution_endpoint}  ${DRAGONFLY_AUTH_TOKEN}
     Go Into Project  ${project_name}
     Create An New P2P Preheat Policy  ${p2p_policy_name}  ${distribution_name}  **  **  Scheduled  ${schedule_type}  ${schedule_cron}
     # Create a replication policy triggered by schedule
     Switch to Registries
-    Create A New Endpoint  docker-hub  docker-hub${d}  ${null}  ${null}  ${null}  Y
+    Create A New Endpoint  harbor  goharbor${d}  https://${LOCAL_REGISTRY}  ${null}  ${null}  Y
     Switch To Replication Manage
-    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  goharbor/harbor-core  image  docker-hub${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
+    Create A Rule With Existing Endpoint  ${replication_policy_name}  pull  harbor-ci/goharbor/harbor-core  image  goharbor${d}  ${project_name}  filter_tag=dev  mode=Scheduled  cron=${schedule_cron}
     # Set up a schedule to scan all
     Switch To Vulnerability Page
     Set Scan Schedule  Custom  value=${schedule_cron}

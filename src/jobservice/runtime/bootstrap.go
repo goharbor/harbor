@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package runtime // nolint:revive
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -256,14 +257,11 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	// Blocking here
 	logger.Infof("API server is serving at %d with [%s] mode at node [%s]", cfg.Port, cfg.Protocol, node)
 	metric.JobserviceInfo.WithLabelValues(node.(string), workerPoolID, fmt.Sprint(cfg.PoolConfig.WorkerCount)).Set(1)
-	if er := apiServer.Start(); er != nil {
+	if er := apiServer.Start(); er != nil && !errors.Is(er, http.ErrServerClosed) {
 		if !terminated {
 			// Tell the listening goroutine
 			rootContext.ErrorChan <- er
 		}
-	} else {
-		// In case
-		sig <- os.Interrupt
 	}
 
 	// Wait everyone exits.
@@ -312,7 +310,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 
 	// Register jobs here
 	if err := redisWorker.RegisterJobs(
-		map[string]interface{}{
+		map[string]any{
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
@@ -320,6 +318,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.PurgeAuditVendorType:        (*purge.Job)(nil),
 			job.GarbageCollectionVendorType: (*gc.GarbageCollector)(nil),
 			job.ReplicationVendorType:       (*replication.Replication)(nil),
+			job.EventReplicationVendorType:  (*replication.EventReplication)(nil),
 			job.RetentionVendorType:         (*retention.Job)(nil),
 			scheduler.JobNameScheduler:      (*scheduler.PeriodicJob)(nil),
 			job.WebhookJobVendorType:        (*notification.WebhookJob)(nil),

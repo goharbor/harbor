@@ -20,12 +20,12 @@
     top: -9px;
 }
 
-.bg{
+.bg {
     position: absolute;
-    top: 60px; 
+    top: 60px;
     right: 0;
-    width: 100%; 
-    height: 100%; 
+    width: 100%;
+    height: 100%;
     background-size: cover;
 }
 
@@ -33,13 +33,27 @@
     flex-wrap: wrap;
 
     .login {
-        background:transparent;
+        background: transparent;
+
+        .login-group {
+            .clr-form-control .error {
+                display: flex;
+                border: none;
+                background: none;
+                color: var(--clr-forms-invalid-text-color);
+                padding: var(--clr-base-vertical-offset-m) 0;
+
+                &::before {
+                    content: none;
+                }
+            }
+        }
     }
 }
 
 .reset-label {
-    font-size:inherit;
-    color:inherit;
+    font-size: inherit;
+    color: inherit;
     font-family: inherit;
 }
 
@@ -89,14 +103,7 @@
 }
 
 .title {
-    position: absolute;
-    top: 10rem
-}
-
-.login-group {
-    width: 70%;
-    position: absolute;
-    top: 10rem
+    width: 100%;
 }
 
 .more-info {
@@ -106,4 +113,46 @@
 
 .oidc-login-button {
     text-transform: unset !important;
+}
+
+:host::ng-deep {
+    .login-group {
+        .clr-input {
+            width: 100% !important;
+            border: none !important;
+            border-bottom: 1px solid var(--clr-forms-border-color) !important;
+            background: none !important;
+        }
+
+        .clr-input-group {
+            display: inline-block;
+            width: 100%;
+            border: none !important;
+            background: none !important;
+        }
+
+        .clr-input:focus {
+            border-bottom-color: var(--clr-forms-focused-color) !important;
+        }
+
+        .clr-error .clr-input {
+            border-bottom-color: var(--clr-forms-invalid-color) !important;
+        }
+
+        .clr-success .clr-input {
+            border-bottom-color: var(--clr-forms-valid-color) !important;
+        }
+
+        .clr-input:-webkit-autofill,
+        .clr-input:-webkit-autofill:hover,
+        .clr-input:-webkit-autofill:focus,
+        .clr-input:-webkit-autofill:active {
+            transition: background-color 9999s ease-in-out 0s;
+            -webkit-text-fill-color: var(--clr-forms-text-color);
+        }
+
+        .clr-validate-icon {
+            display: none;
+        }
+    }
 }

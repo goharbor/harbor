@@ -27,7 +27,7 @@ type Option struct {
 }
 
 // BackendOption creates option for the specified backend.
-func BackendOption(name string, level string, settings map[string]interface{}) Option {
+func BackendOption(name string, level string, settings map[string]any) Option {
 	return Option{func(op *options) {
 		vals := make([]OptionItem, 0)
 		vals = append(vals, OptionItem{"level", level})
@@ -45,7 +45,7 @@ func BackendOption(name string, level string, settings map[string]interface{}) O
 }
 
 // SweeperOption creates option for the sweeper.
-func SweeperOption(name string, duration int, settings map[string]interface{}) Option {
+func SweeperOption(name string, duration int, settings map[string]any) Option {
 	return Option{func(op *options) {
 		vals := make([]OptionItem, 0)
 		vals = append(vals, OptionItem{"duration", duration})
@@ -63,7 +63,7 @@ func SweeperOption(name string, duration int, settings map[string]interface{}) O
 }
 
 // GetterOption creates option for the getter.
-func GetterOption(name string, settings map[string]interface{}) Option {
+func GetterOption(name string, settings map[string]any) Option {
 	return Option{func(op *options) {
 		vals := make([]OptionItem, 0)
 		// Append settings if existing
@@ -81,7 +81,7 @@ func GetterOption(name string, settings map[string]interface{}) Option {
 // OptionItem is a simple wrapper of property and value
 type OptionItem struct {
 	field string
-	val   interface{}
+	val   any
 }
 
 // Field returns name of the option
@@ -108,6 +108,6 @@ func (o *OptionItem) String() string {
 }
 
 // Raw returns the raw value
-func (o *OptionItem) Raw() interface{} {
+func (o *OptionItem) Raw() any {
 	return o.val
 }

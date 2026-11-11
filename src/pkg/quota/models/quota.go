@@ -25,14 +25,14 @@ import (
 
 // Quota quota model for manager
 type Quota struct {
-	ID           int64            `orm:"pk;auto;column(id)" json:"id"`
-	Ref          driver.RefObject `orm:"-" json:"ref"`
-	Reference    string           `orm:"column(reference)" json:"-"`
-	ReferenceID  string           `orm:"column(reference_id)" json:"-"`
-	Hard         string           `orm:"column(hard);type(jsonb)" json:"-"`
-	Used         string           `orm:"column(used);type(jsonb)" json:"-"`
-	CreationTime time.Time        `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time        `orm:"column(update_time);auto_now" json:"update_time"`
+	ID           int64                 `orm:"pk;auto;column(id)" json:"id"`
+	Ref          driver.QuotaRefObject `orm:"-" json:"ref"`
+	Reference    string                `orm:"column(reference)" json:"-"`
+	ReferenceID  string                `orm:"column(reference_id)" json:"-"`
+	Hard         string                `orm:"column(hard);type(jsonb)" json:"-"`
+	Used         string                `orm:"column(used);type(jsonb)" json:"-"`
+	CreationTime time.Time             `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time             `orm:"column(update_time);auto_now" json:"update_time"`
 
 	HardVersion int64 `orm:"column(hard_version)" json:"-"`
 	UsedVersion int64 `orm:"column(used_version)" json:"-"`

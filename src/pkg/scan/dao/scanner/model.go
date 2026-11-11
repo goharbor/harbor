@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scanner
+package scanner // nolint:revive
 
 import (
 	"encoding/json"
+	"slices"
 	"time"
 
 	"github.com/goharbor/harbor/src/lib"
@@ -46,8 +47,13 @@ type Registration struct {
 
 	// Authentication settings
 	// "","Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key" can be supported
-	Auth             string `orm:"column(auth);size(16)" json:"auth"`
-	AccessCredential string `orm:"column(access_cred);null;size(512)" json:"access_credential,omitempty"`
+	Auth string `orm:"column(auth);size(16)" json:"auth"`
+	// filter:"false" keeps access_cred out of the generic q= ORM filter builder: it holds the
+	// Authorization value Harbor presents to the scanner adapter, and a filterable secret column
+	// is a blind boolean oracle, matching reg.access_secret. New writes are "<enc-v1>" ciphertext
+	// (manager.encryptCredential), but rows saved before that and never updated stay plaintext,
+	// since there is no data migration and DecryptSecret passes unprefixed values through.
+	AccessCredential string `orm:"column(access_cred);null;size(512)" filter:"false" json:"access_credential,omitempty"`
 
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
@@ -66,9 +72,9 @@ type Registration struct {
 	Metadata *v1.ScannerAdapterMetadata `orm:"-" json:"-"`
 
 	// Timestamps
-	CreateTime   time.Time              `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
-	UpdateTime   time.Time              `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
-	Capabilities map[string]interface{} `orm:"-" json:"capabilities,omitempty"`
+	CreateTime   time.Time      `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
+	UpdateTime   time.Time      `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
+	Capabilities map[string]any `orm:"-" json:"capabilities,omitempty"`
 }
 
 // TableName for Endpoint
@@ -105,7 +111,7 @@ func (r *Registration) Validate(checkUUID bool) error {
 		return errors.New("missing registration name")
 	}
 
-	url, err := lib.ValidateHTTPURL(r.URL)
+	url, err := lib.NormalizeAndValidateHTTPURL(r.URL)
 	if err != nil {
 		return errors.Wrap(err, "scanner registration validate")
 	}
@@ -140,15 +146,9 @@ func (r *Registration) HasCapability(manifestMimeType string) bool {
 		return false
 	}
 
-	for _, capability := range r.Metadata.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == manifestMimeType {
-				return true
-			}
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(r.Metadata.Capabilities, func(c *v1.ScannerCapability) bool {
+		return slices.Contains(c.ConsumesMimeTypes, manifestMimeType)
+	})
 }
 
 // GetProducesMimeTypes returns produces mime types for the artifact
@@ -162,10 +162,8 @@ func (r *Registration) GetProducesMimeTypes(mimeType string, scanType string) []
 			capType = v1.ScanTypeVulnerability
 		}
 		if scanType == capType {
-			for _, mt := range capability.ConsumesMimeTypes {
-				if mt == mimeType {
-					return capability.ProducesMimeTypes
-				}
+			if slices.Contains(capability.ConsumesMimeTypes, mimeType) {
+				return capability.ProducesMimeTypes
 			}
 		}
 	}
@@ -180,10 +178,8 @@ func (r *Registration) GetCapability(mimeType string) *v1.ScannerCapability {
 	}
 
 	for _, capability := range r.Metadata.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == mimeType {
-				return capability
-			}
+		if slices.Contains(capability.ConsumesMimeTypes, mimeType) {
+			return capability
 		}
 	}
 

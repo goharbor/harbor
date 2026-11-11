@@ -25,13 +25,13 @@ var (
 	// ErrNotDefined ...
 	ErrNotDefined = errors.New("configure item is not defined in metadata")
 	// ErrTypeNotMatch ...
-	ErrTypeNotMatch = errors.New("the required value doesn't matched with metadata defined")
+	ErrTypeNotMatch = errors.New("The required value does not match the metadata definition")
 	// ErrInvalidData ...
 	ErrInvalidData = errors.New("the data provided is invalid")
 	// ErrValueNotSet ...
 	ErrValueNotSet = errors.New("the configure value is not set")
 	// ErrStringValueIsEmpty ...
-	ErrStringValueIsEmpty = errors.New("the configure value can not be empty")
+	ErrStringValueIsEmpty = errors.New("The configuration value cannot be empty")
 )
 
 // ConfigureValue - struct to hold a actual value, also include the name of config metadata.
@@ -169,8 +169,8 @@ func (c *ConfigureValue) GetDuration() time.Duration {
 	return 0
 }
 
-// GetAnyType get the interface{} of current value
-func (c *ConfigureValue) GetAnyType() (interface{}, error) {
+// GetAnyType get the any of current value
+func (c *ConfigureValue) GetAnyType() (any, error) {
 	if item, ok := Instance().GetByName(c.Name); ok {
 		return item.ItemType.get(c.Value)
 	}

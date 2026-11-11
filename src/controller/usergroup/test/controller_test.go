@@ -38,7 +38,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.Suite.ClearTables = []string{"user_group"}
 }
 
-var defaultConfigWithVerifyCert = map[string]interface{}{
+var defaultConfigWithVerifyCert = map[string]any{
 	common.ExtEndpoint:                "https://host01.com",
 	common.AUTHMode:                   common.LDAPAuth,
 	common.DatabaseType:               "postgresql",

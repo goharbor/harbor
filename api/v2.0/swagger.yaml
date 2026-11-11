@@ -222,7 +222,7 @@ paths:
         '403':
           description: User does not have permission of admin role.
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/500'
   /configurations:
     get:
       summary: Get system configurations.
@@ -262,12 +262,16 @@ paths:
       responses:
         '200':
           description: Modify system configurations successfully.
+        '400':
+          $ref: '#/responses/400'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/401'
         '403':
-          description: User does not have permission of admin role.
+          $ref: '#/responses/403'
+        '422':
+          $ref: '#/responses/422'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/500'
   /projects:
     get:
       summary: List projects
@@ -316,8 +320,12 @@ paths:
             Link:
               description: Link refers to the previous page and next page
               type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
     head:
@@ -336,6 +344,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '404':
           $ref: '#/responses/404'
         '500':
@@ -363,7 +373,13 @@ paths:
         '401':
           $ref: '#/responses/401'
         '409':
-          $ref: '#/responses/409'
+          description: Project name already exists.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}':
@@ -384,6 +400,16 @@ paths:
             $ref: '#/definitions/Project'
         '401':
           $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Project not found. No project exists with the specified name or ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     put:
@@ -433,9 +459,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Project not found. No project exists with the specified name or ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '412':
-          $ref: '#/responses/412'
+          description: Project cannot be deleted. The project still contains repositories or has pending tasks.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name_or_id}/_deletable:
@@ -628,6 +666,7 @@ paths:
           $ref: '#/responses/500'
     delete:
       summary: Delete project member
+      description: Remove the specified project member from the project.
       operationId: deleteProjectMember
       tags:
         - member
@@ -650,6 +689,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/metadatas/':
@@ -877,6 +918,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}:
@@ -902,7 +945,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository not found. No repository with the specified name exists in this project.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     put:
@@ -954,7 +1003,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository not found. No repository with the specified name exists in this project.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
+        '412':
+          description: Precondition failed. The repository contains images protected by an immutable tag rule and cannot be deleted.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts:
@@ -997,12 +1060,6 @@ paths:
           type: boolean
           required: false
           default: false
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_immutable_status=true"
@@ -1012,6 +1069,12 @@ paths:
         - name: with_accessory
           in: query
           description: Specify whether the accessories are included of the returning artifacts. Only works when setting "with_accessory=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
           type: boolean
           required: false
           default: false
@@ -1036,7 +1099,15 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Repository or project not found.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
     post:
@@ -1064,7 +1135,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Source artifact or target repository not found.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '405':
           $ref: '#/responses/405'
         '500':
@@ -1114,6 +1191,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
+          type: boolean
+          required: false
+          default: false
         # should be in tag level
         - name: with_signature
           in: query
@@ -1139,7 +1222,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact exists for the given reference in this project and repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     delete:
@@ -1161,7 +1250,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact with the specified reference exists in this repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
@@ -1191,9 +1286,21 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Artifact not found. No artifact with the specified reference exists in this repository.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '422':
-          $ref: '#/responses/422'  
+          description: The artifact does not support scanning (for example, it is an image index with no directly scannable layers).
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/stop:
@@ -1226,7 +1333,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '422':
-          $ref: '#/responses/422'  
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan/{report_id}/log:
@@ -1280,7 +1387,7 @@ paths:
           description: The JSON object of tag.
           required: true
           schema:
-            $ref: '#/definitions/Tag'
+            $ref: '#/definitions/NewTag'
       responses:
         '201':
           $ref: '#/responses/201'
@@ -1291,11 +1398,23 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: The artifact specified by the reference does not exist.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '405':
           $ref: '#/responses/405'
         '409':
-          $ref: '#/responses/409'
+          description: A tag with this name already exists on the artifact.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
     get:
@@ -1313,12 +1432,6 @@ paths:
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: with_signature
-          in: query
-          description: Specify whether the signature is included inside the returning tags
-          type: boolean
-          required: false
-          default: false
         - name: with_immutable_status
           in: query
           description: Specify whether the immutable status is included inside the returning tags
@@ -1347,6 +1460,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
@@ -1370,7 +1485,13 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: Tag not found. The specified tag does not exist on this artifact.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/accessories:
@@ -1461,7 +1582,14 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies, sbom]
+          enum:
+            - build_history
+            - values.yaml
+            - readme.md
+            - dependencies
+            - sbom
+            - license
+            - files
           required: true
       responses:
         '200':
@@ -1600,6 +1728,12 @@ paths:
           type: boolean
           required: false
           default: false
+        - name: with_inherited_accessory
+          in: query
+          description: Specify whether the accessories of the parent OCI index(es) referencing the artifact are included, in the separate inherited_accessories field. Off by default because it costs an extra reference lookup per artifact.
+          type: boolean
+          required: false
+          default: false
         - name: latest_in_repository
           in: query
           description: Specify whether only the latest pushed artifact of each repository is included inside the returning artifacts. Only works when either artifact_type or media_type is included in the query.
@@ -1628,6 +1762,8 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '422':
+          $ref: '#/responses/422'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/scanner':
@@ -1723,9 +1859,9 @@ paths:
           $ref: '#/responses/500'
   /audit-logs:
     get:
-      summary: Get recent logs of the projects which the user is a member of
+      summary: Get recent logs of projects which the user is a member with project admin role, or return all audit logs for system admin user (deprecated)
       description: |
-        This endpoint let user see the recent operation logs of the projects which he is member of
+        This endpoint let the user see the recent operation logs of projects which the user is a member with project admin role,, or return all audit logs for system admin user, it only query the audit log in previous version.
       tags:
         - auditlog
       operationId: listAuditLogs
@@ -1755,10 +1891,67 @@ paths:
           $ref: '#/responses/401'
         '500':
           $ref: '#/responses/500'
+  /auditlog-exts:
+    get:
+      summary: Get recent logs of the projects which the user is a member with project_admin role, or return all audit logs for system admin user
+      description: |
+        This endpoint let user see the recent operation logs of the projects which he is member with project_admin role, or return all audit logs for system admin user.
+      tags:
+        - auditlog
+      operationId: listAuditLogExts
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogExt'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /auditlog-exts/events:
+    get:
+      summary: Get all event types of audit log
+      description: |
+        Get all event types of audit log
+      tags:
+        - auditlog
+      operationId: listAuditLogEventTypes
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogEventType'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/logs:
     get:
-      summary: Get recent logs of the projects
-      description: Get recent logs of the projects
+      summary: Get recent logs of the projects (deprecated)
+      description: Get recent logs of the projects, it only query the previous version's audit log
       tags:
         - project
       operationId: getLogs
@@ -1783,6 +1976,40 @@ paths:
             type: array
             items:
               $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/auditlog-exts:
+    get:
+      summary: Get recent logs of the projects
+      description: Get recent logs of the projects
+      tags:
+        - project
+      operationId: getLogExts
+      parameters:
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLogExt'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -1955,7 +2182,13 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update the specified P2P provider instance
-      description: Update the specified P2P provider instance
+      description: |
+        Update the specified P2P provider instance.
+
+        If `auth_info` is omitted or empty in the request body and the effective `auth_mode` is not `NONE`
+        (either sent in the request or left unchanged from the stored registration), the previously stored
+        auth credentials are kept. Send a non-empty `auth_info` object to set or replace credentials.
+        Set `auth_mode` to `NONE` to disable authentication without retaining the old credentials.
       tags:
         - preheat
       operationId: UpdateInstance
@@ -2351,160 +2584,6 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_name_or_id}/robots:
-    get:
-      summary: Get all robot accounts of specified project
-      description: Get all robot accounts of specified project
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/page'
-        - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/query'
-        - $ref: '#/parameters/sort'
-      tags:
-        - robotv1
-      operationId: ListRobotV1
-      responses:
-        '200':
-          description: Success
-          headers:
-            X-Total-Count:
-              description: The total count of robot accounts
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Robot'
-        '400':
-          $ref: '#/responses/400'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    post:
-      summary: Create a robot account
-      description: Create a robot account
-      tags:
-        - robotv1
-      operationId: CreateRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - name: robot
-          in: body
-          description: The JSON object of a robot account.
-          required: true
-          schema:
-            $ref: '#/definitions/RobotCreateV1'
-      responses:
-        '201':
-          description: Created
-          headers:
-            X-Request-Id:
-              description: The ID of the corresponding request for the response
-              type: string
-            Location:
-              description: The location of the resource
-              type: string
-          schema:
-            $ref: '#/definitions/RobotCreated'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /projects/{project_name_or_id}/robots/{robot_id}:
-    get:
-      summary: Get a robot account
-      description: This endpoint returns specific robot account information by robot ID.
-      tags:
-        - robotv1
-      operationId: GetRobotByIDV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-      responses:
-        '200':
-          description: Return matched robot information.
-          schema:
-            $ref: '#/definitions/Robot'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    put:
-      summary: Update status of robot account.
-      description: Used to disable/enable a specified robot account.
-      tags:
-        - robotv1
-      operationId: UpdateRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-        - name: robot
-          in: body
-          description: The JSON object of a robot account.
-          required: true
-          schema:
-            $ref: '#/definitions/Robot'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '409':
-          $ref: '#/responses/409'
-        '500':
-          $ref: '#/responses/500'
-    delete:
-      summary: Delete a robot account
-      description: This endpoint deletes specific robot account information by robot ID.
-      tags:
-        - robotv1
-      operationId: DeleteRobotV1
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/isResourceName'
-        - $ref: '#/parameters/projectNameOrId'
-        - $ref: '#/parameters/robotId'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
   '/projects/{project_name_or_id}/immutabletagrules':
     get:
       summary: List all immutable tag rules of current project
@@ -2575,6 +2654,7 @@ paths:
   '/projects/{project_name_or_id}/immutabletagrules/{immutable_rule_id}':
     put:
       summary: Update the immutable tag rule or enable or disable the rule
+      description: Update or toggle the specified immutable tag rule within the project. Returns 404 if the project or rule is not found.
       tags:
         - immutable
       operationId: UpdateImmuRule
@@ -2597,10 +2677,13 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
     delete:
       summary: Delete the immutable tag rule.
+      description: Delete the specified immutable tag rule from the project. Returns 404 if the project or rule is not found.
       tags:
         - immutable
       operationId: DeleteImmuRule
@@ -2618,6 +2701,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
   '/projects/{project_name_or_id}/webhook/policies':
@@ -3101,6 +3186,8 @@ paths:
               type: string
         '401':
           $ref: '#/responses/401'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
   '/usergroups/{group_id}':
@@ -3278,6 +3365,162 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /roles:
+    get:
+      summary: Get roles
+      description: >-
+        List the roles (built-in and custom) with their permissions. Readable by
+        any authenticated user (e.g. to populate member-role pickers), whereas
+        creating, updating and deleting roles is restricted to system admins.
+      tags:
+        - role
+      operationId: ListRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of roles
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        '400':
+          $ref: '#/responses/400'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create a role
+      description: Create a role
+      tags:
+        - role
+      operationId: CreateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/RoleCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+            Location:
+              description: The location of the resource
+              type: string
+          schema:
+            $ref: '#/definitions/RoleCreated'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+
+  /roles/{role_id}:
+    get:
+      summary: Get a role
+      description: >-
+        Returns a role (built-in or custom) with its permissions by role ID.
+        Readable by any authenticated user; creating, updating and deleting roles
+        is restricted to system admins.
+      tags:
+        - role
+      operationId: GetRoleByID
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          description: Return matched role information.
+          schema:
+            $ref: '#/definitions/Role'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update a role account
+      description: This endpoint updates specific role information by role ID.
+      tags:
+        - role
+      operationId: UpdateRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+        - name: role
+          in: body
+          description: The JSON object of a role.
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete a role account
+      description: This endpoint deletes specific role information by role ID.
+      tags:
+        - role
+      operationId: DeleteRole
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/roleId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '412':
+          $ref: '#/responses/412'
+        '500':
+          $ref: '#/responses/500'
+
   '/quotas':
     get:
       summary: List quotas
@@ -3491,6 +3734,7 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+
   /replication/policies:
     get:
       summary: List replication policies
@@ -3632,6 +3876,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -4070,6 +4316,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -4250,6 +4498,8 @@ paths:
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
   /system/gc:
     get:
       summary: Get gc results.
@@ -4565,7 +4815,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -4595,7 +4845,7 @@ paths:
           description: |
             The purge job's schedule, it is a json object. |
             The sample format is |
-            {"parameters":{"audit_retention_hour":168,"dry_run":true, "include_operations":"create,delete,pull"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
+            {"parameters":{"audit_retention_hour":168,"dry_run":true,"include_event_types":"create_artifact,delete_artifact,pull_artifact"},"schedule":{"type":"Hourly","cron":"0 0 * * * *"}} |
             the include_operation should be a comma separated string, e.g. create,delete,pull, if it is empty, no operation will be purged.
       tags:
         - purge
@@ -4918,6 +5168,7 @@ paths:
   /schedules:
     get:
       operationId: listSchedules
+      summary: List schedules
       description: List schedules
       tags:
         - schedule
@@ -4940,6 +5191,8 @@ paths:
             Link:
               description: Link to previous page and next page
               type: string
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -4951,6 +5204,7 @@ paths:
   /schedules/{job_type}/paused:
     get:
       operationId: getSchedulePaused
+      summary: Get scheduler paused status
       description: Get scheduler paused status
       tags:
         - schedule
@@ -4966,6 +5220,8 @@ paths:
           description: Get scheduler status successfully.
           schema:
             $ref: '#/definitions/SchedulerStatus'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -5004,6 +5260,10 @@ paths:
           description: Get Retention Metadatas successfully.
           schema:
             $ref: '#/definitions/RetentionMetadata'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
 
   /retentions:
     post:
@@ -5464,6 +5724,10 @@ paths:
       summary: Update a scanner registration
       description: |
         Updates the specified scanner registration.
+
+        If `access_credential` is omitted or empty in the request body and the registration still uses
+        an authentication type that requires a credential (Basic, Bearer, or APIKey), the existing stored
+        credential is left unchanged. Send a non-empty `access_credential` to set or rotate the secret.
       tags:
         - scanner
       operationId: updateScanner
@@ -5477,7 +5741,7 @@ paths:
         - name: registration
           in: body
           required: true
-          description: A scanner registraiton to be updated.
+          description: A scanner registration to be updated.
           schema:
             $ref: '#/definitions/ScannerRegistrationReq'
       responses:
@@ -5575,6 +5839,7 @@ paths:
   /users:
     get:
       summary: List users
+      description: List users registered in Harbor. Requires system admin privileges.
       tags:
         - user
       operationId: listUsers
@@ -5626,14 +5891,27 @@ paths:
         '401':
           $ref: '#/responses/401'
         '403':
-          description: When the  self registration is disabled, non-admin does not have permission to create user.  When self registration is enabled, this API can only be called from UI portal, calling it via script will get a 403 error.
+          description: When self-registration is disabled, only admins can create users. When self-registration is enabled, user creation via API is not permitted (UI only).
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '409':
-          $ref: '#/responses/409'
+          description: Username already exists. A user with the same username already exists in Harbor.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /users/current:
     get:
       summary: Get current user info.
+      description: Get the profile of the currently authenticated user. Returns 412 if the caller is authenticated via a non-local context such as a robot account.
       tags:
         - user
       operationId: getCurrentUserInfo
@@ -5646,6 +5924,8 @@ paths:
             $ref: '#/definitions/UserResp'
         '401':
           $ref: '#/responses/401'
+        '412':
+          $ref: '#/responses/412'
         '500':
           $ref: '#/responses/500'
   /users/search:
@@ -5686,6 +5966,7 @@ paths:
   '/users/{user_id}':
     get:
       summary: Get a user's profile.
+      description: Get profile information for the specified user. System admins can access any user; regular users can only access their own profile.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: user_id
@@ -5711,6 +5992,7 @@ paths:
           $ref: '#/responses/500'
     put:
       summary: Update user's profile.
+      description: Update profile fields (email, realname, comment) of a user. Regular users can only update their own profile.
       parameters:
         - $ref: '#/parameters/requestId'
         - name: user_id
@@ -5731,6 +6013,8 @@ paths:
       responses:
         '200':
           $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -5762,12 +6046,19 @@ paths:
         '403':
           $ref: '#/responses/403'
         '404':
-          $ref: '#/responses/404'
+          description: User not found. No user exists with the specified ID.
+          headers:
+            X-Request-Id:
+              description: The ID of the corresponding request for the response
+              type: string
+          schema:
+            $ref: '#/definitions/Errors'
         '500':
           $ref: '#/responses/500'
   /users/{user_id}/sysadmin:
     put:
       summary: Update a registered user to change to be an administrator of Harbor.
+      description: Promote or demote a registered user to/from Harbor system administrator. Requires system admin privileges.
       tags:
        - user
       operationId: setUserSysAdmin
@@ -5794,7 +6085,7 @@ paths:
         '404':
           $ref: '#/responses/404'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/500'
   '/users/{user_id}/password':
     put:
       summary: Change the password on a user that already exists.
@@ -5830,6 +6121,7 @@ paths:
   /users/current/permissions:
     get:
       summary: Get current user permissions.
+      description: Get the RBAC permission list for the currently authenticated user, optionally filtered by scope.
       tags:
         - user
       operationId: getCurrentUserPermissions
@@ -5855,9 +6147,9 @@ paths:
             items:
               $ref: '#/definitions/Permission'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/401'
         '500':
-          description: Internal errors.
+          $ref: '#/responses/500'
   '/users/{user_id}/cli_secret':
     put:
       summary: Set CLI secret for a user.
@@ -6210,6 +6502,7 @@ paths:
         cve_id(exact match)
         cvss_score_v3(range condition)
         severity(exact match)
+        status(exact match)
         repository_name(exact match)
         project_id(exact match)
         package(exact match)
@@ -6405,6 +6698,13 @@ parameters:
     description: Robot ID
     required: true
     type: integer
+    format: int64
+  roleId:
+    name: role_id
+    in: path
+    description: Role ID
+    required: true
+    type: integer
   gcId:
     name: gc_id
     in: path
@@ -6483,7 +6783,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
   '400':
-    description: Bad request
+    description: Bad request. The request body or query parameters are invalid. Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6491,7 +6791,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '401':
-    description: Unauthorized
+    description: Unauthorized. Authentication is required to access this resource.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6499,7 +6799,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '403':
-    description: Forbidden
+    description: Forbidden. The caller does not have sufficient permission to perform the requested operation.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6507,7 +6807,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '404':
-    description: Not found
+    description: Not found. The requested resource does not exist.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6515,7 +6815,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '405':
-    description: Method not allowed
+    description: Method not allowed.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6523,7 +6823,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '409':
-    description: Conflict
+    description: Conflict. The resource already exists or the current state prevents the operation.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6531,7 +6831,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '412':
-    description: Precondition failed
+    description: Precondition failed. A dependency or policy check failed; inspect the `errors` array for the constraint that was violated.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6539,7 +6839,7 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '415':
-    description: Unsupported MediaType
+    description: Unsupported media type.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6547,15 +6847,15 @@ responses:
     schema:
       $ref: '#/definitions/Errors'
   '422':
-    description: Unsupported Type
+    description: Unprocessable entity. The request was well-formed but could not be processed (for example, due to validation errors). Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Errors'    
+      $ref: '#/definitions/Errors'
   '500':
-    description: Internal server error
+    description: Internal server error. Inspect the `errors` array in the response body for details.
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
@@ -6571,6 +6871,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Error'
+          x-nullable: false
   Error:
     description: a model for all the error response coming from harbor
     type: object
@@ -6581,6 +6882,9 @@ definitions:
       message:
         type: string
         description: The error message
+    example:
+      code: NOT_FOUND
+      message: artifact library/hello-world:latest not found
   Search:
     type: object
     properties:
@@ -6729,6 +7033,23 @@ definitions:
         items:
           $ref: '#/definitions/Accessory'
           description: The accessory of the artifact.
+      inherited_accessories:
+        type: array
+        # omitted rather than sent as null, so that responses which did not ask for the
+        # inherited accessories stay exactly as they are today
+        x-omitempty: true
+        description: |
+          The signatures of the parent OCI index(es) that reference this artifact, both
+          cosign and notation. A signature on an index covers the whole index, so a child
+          manifest of a signed index is covered by that signature even though it carries
+          none of its own. These entries describe the parent, not this artifact: their
+          subject_artifact_digest is the index digest, so verifying them against this
+          artifact's digest fails and they are not listed by the referrers API for this
+          digest. Only returned when the with_inherited_accessory query parameter is set
+          to true.
+        items:
+          $ref: '#/definitions/Accessory'
+          description: The accessory inherited from the parent OCI index.
   Tag:
     type: object
     properties:
@@ -6759,6 +7080,16 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+  NewTag:
+    type: object
+    description: The request body for creating a tag
+    required:
+      - name
+    properties:
+      name:
+        type: string
+        x-nullable: false
+        description: The name of the tag
   ExtraAttrs:
     type: object
     additionalProperties:
@@ -6996,6 +7327,43 @@ definitions:
         format: date-time
         example: '2006-01-02T15:04:05Z'
         description: The time when this operation is triggered.
+  AuditLogExt:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the audit log entry.
+      username:
+        type: string
+        description: The username of the operator in this log entry.
+      resource:
+        type: string
+        description: Name of the resource in this log entry.
+      resource_type:
+        type: string
+        description: Type of the resource in this log entry.
+      operation:
+        type: string
+        description: The operation against the resource in this log entry.
+      operation_description:
+        type: string
+        description: The operation's detail description
+      operation_result:
+        type: boolean
+        x-omitempty: false
+        description: the operation's result, true for success, false for fail
+      op_time:
+        type: string
+        format: date-time
+        example: '2006-01-02T15:04:05Z'
+        description: The time when this operation is triggered.
+  AuditLogEventType:
+    type: object
+    properties:
+      event_type:
+        type: string
+        description: the event type, such as create_user.
+        example: create_user
   Metadata:
     type: object
     properties:
@@ -7042,7 +7410,11 @@ definitions:
         description: The authentication way supported
       auth_info:
         type: object
-        description: The auth credential data if exists
+        description: |
+          The auth credential data if it exists.
+
+          When updating an instance (PUT `/p2p/preheat/instances/{preheat_instance_name}`), if this object
+          is omitted or empty and `auth_mode` is not `NONE`, the previously stored credentials are kept.
         additionalProperties:
           type: string
       status:
@@ -7095,9 +7467,9 @@ definitions:
         type: boolean
         description: Whether the preheat policy enabled
         x-omitempty: false
-      scope:
+      extra_attrs:
         type: string
-        description: The scope of preheat policy
+        description: The extra attributes of preheat policy
       creation_time:
         type: string
         format: date-time
@@ -7241,6 +7613,16 @@ definitions:
         format: int64
         description: The ID of referenced registry when creating the proxy cache project
         x-nullable: true
+      retention_days:
+        type: integer
+        format: int64
+        minimum: 0
+        maximum: 18250
+        description: >-
+          The number of days since the last pull for the retention policy created with a proxy cache project.
+          Omitted or null uses seven days. Zero is a valid retention threshold and does not disable retention.
+          Only supported when creating a proxy cache project; rejected for ordinary projects and project updates.
+        x-nullable: true
   Project:
     type: object
     properties:
@@ -7336,16 +7718,37 @@ definitions:
         x-nullable: true
       reuse_sys_cve_allowlist:
         type: string
-        description: 'Whether this project reuse the system level CVE allowlist as the allowlist of its own.  The valid values are "true", "false".
-        If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.'
+        description: |-
+          Whether this project reuse the system level CVE allowlist as the allowlist of its own. The valid values are "true", "false".
+          If it is set to "true" the actual allowlist associate with this project, if any, will be ignored.
         x-nullable: true
       retention_id:
         type: string
-        description: 'The ID of the tag retention policy for the project'
+        description: 'The ID of the tag retention policy for the project.'
         x-nullable: true
       proxy_speed_kb:
         type: string
         description: 'The bandwidth limit of proxy cache, in Kbps (kilobits per second). It limits the communication between Harbor and the upstream registry, not the client and the Harbor.'
+        x-nullable: true
+      max_upstream_conn:
+        type: string
+        description: 'The max connection per artifact to the upstream registry in current proxy cache project, if it is -1, no limit to upstream registry connections'
+        x-nullable: true
+      proxy_cache_local_on_not_found:
+        type: string
+        description: 'Whether to serve images from local cache when they are removed from the upstream registry. The valid values are "true", "false".'
+        x-nullable: true
+      proxy_referrer_api:
+        type: string
+        description: 'Whether the proxy cache project should proxy OCI 1.1 referrer API requests to the upstream registry. The valid values are "true", "false".'
+        x-nullable: true
+      proxy_cache_filter_pattern:
+        type: string
+        description: 'Repository filter pattern for proxy cache project. Only repositories matching the pattern will be proxied. Empty means allow all. Only has value when the current project is a proxy cache project.'
+        x-nullable: true
+      proxy_cache_filter_kind:
+        type: string
+        description: 'Matching mode for proxy_cache_filter_pattern: "doublestar" (default, glob-style with ** support) or "regex". Only has value when the current project is a proxy cache project.'
         x-nullable: true
   ProjectSummary:
     type: object
@@ -7488,6 +7891,12 @@ definitions:
         type: boolean
         description: Whether to enable copy by chunk.
         x-isnullable: true
+      single_active_replication:
+        type: boolean
+        description: |-
+          Whether to skip execution until the previous active execution finishes,
+          avoiding the execution of the same replication rules multiple times in parallel.
+        x-isnullable: true # make this field optional to keep backward compatibility
   ReplicationTrigger:
     type: object
     properties:
@@ -7509,8 +7918,7 @@ definitions:
         type: string
         description: 'The replication policy filter type.'
       value:
-        type: object
-        description: 'The value of replication policy filter.'
+        description: 'The value of replication policy filter. For name, tag, and resource filters, this should be a string. For label filters, this should be an array of strings.'
       decoration:
         type: string
         description: 'matches or excludes the result'
@@ -7548,6 +7956,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint. If provided, this CA will be used to verify the registry's certificate instead of the system CA pool.
+        x-nullable: true
       description:
         type: string
         description: Description of the registry.
@@ -7593,6 +8005,10 @@ definitions:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
         x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
+        x-nullable: true
   RegistryPing:
     type: object
     properties:
@@ -7624,6 +8040,10 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        x-nullable: true
+      ca_certificate:
+        type: string
+        description: The PEM-encoded CA certificate for this registry endpoint.
         x-nullable: true
   RegistryInfo:
     type: object
@@ -7786,6 +8206,9 @@ definitions:
       status:
         type: string
         description: The status of the task
+      status_message:
+        type: string
+        description: The status message of the task
       job_id:
         type: string
         description: The ID of the underlying job that the task related to
@@ -7854,6 +8277,7 @@ definitions:
         description: The type of the robot creator, like local(harbor_user) or robot.
       creator_ref:
         type: integer
+        format: int64
         description: The reference of the robot creator, like the id of harbor user.
       creation_time:
         type: string
@@ -7932,18 +8356,114 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Access'
+  Role:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+      is_builtin:
+        type: boolean
+        description: Whether this is a built-in role that cannot be modified or deleted
+      description:
+        type: string
+        description: Human-readable description of the role
+      modified:
+        type: boolean
+        description: Whether the role has been modified since creation
+      created_by:
+        type: string
+        description: Username of the admin who created the role
+      created_at:
+        type: string
+        format: date-time
+        description: When the role was created
+      modified_by:
+        type: string
+        description: Username of the admin who last modified the role
+      modified_at:
+        type: string
+        format: date-time
+        description: When the role was last modified
+  RoleCreate:
+    type: object
+    description: The request for role creation.
+    properties:
+      name:
+        type: string
+        description: The name of the role
+      role_mask:
+        type: integer
+        description: The mask of the role, not used
+      role_code:
+        type: string
+        description: The code of the role, not used
+      description:
+        type: string
+        description: Human-readable description of the role
+      permissions:
+        type: array
+        items:
+          $ref: '#/definitions/RolePermission'
+  RoleCreated:
+    type: object
+    description: The response for role creation.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the role
+      name:
+        type: string
+        description: The name of the role
+      secret:
+        type: string
+        description: The secret of the role
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the role.
+  RolePermission:
+    type: object
+    properties:
+      kind:
+        type: string
+        description: The kind of the permission
+      namespace:
+        type: string
+        description: The namespace of the permission
+      access:
+        type: array
+        items:
+          $ref: '#/definitions/Access'
+
   Access:
     type: object
     properties:
       resource:
         type: string
-        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go 
+        description: The resource of the access. Possible resources are listed here for system and project level https://github.com/goharbor/harbor/blob/main/src/common/rbac/const.go
       action:
         type: string
         description: The action of the access. Possible actions are *, pull, push, create, read, update, delete, list, operate, scanner-pull and stop.
       effect:
         type: string
         description: The effect of the access
+
   RobotCreateV1:
     type: object
     properties:
@@ -8580,6 +9100,11 @@ definitions:
         type: string
         description: |
           An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+
+          When updating a registration (PUT `/scanners/{registration_id}`), if this field is omitted or empty
+          and `auth` is still one of Basic, Bearer, or APIKey, the previously stored credential is kept
+          unchanged. Provide a non-empty value to set or rotate the credential. Clearing `auth` removes the
+          need for a credential; in that case an empty `access_credential` does not restore the old secret.
         example: "Bearer: JWTTOKENGOESHERE"
       skip_certVerify:
         type: boolean
@@ -9100,6 +9625,9 @@ definitions:
       oidc_extra_redirect_parms:
         $ref: '#/definitions/StringConfigItem'
         description: Extra parameters to add when redirect request to OIDC provider
+      oidc_logout:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Extra parameters to logout user session from the OIDC provider
       robot_token_duration:
         $ref: '#/definitions/IntegerConfigItem'
         description: The robot account token duration in days
@@ -9143,6 +9671,9 @@ definitions:
       banner_message:
         $ref: '#/definitions/StringConfigItem'
         description: The banner message for the UI.It is the stringified result of the banner message object
+      disabled_audit_log_event_types:
+        $ref: '#/definitions/StringConfigItem'
+        description: The audit log event types to skip to log in database
   Configurations:
     type: object
     properties:
@@ -9371,6 +9902,11 @@ definitions:
         description: Extra parameters to add when redirect request to OIDC provider
         x-omitempty: true
         x-isnullable: true
+      oidc_logout:
+        type: boolean
+        description: Logout OIDC user session
+        x-omitempty: true
+        x-isnullable: true
       robot_token_duration:
         type: integer
         description: The robot account token duration in days
@@ -9419,6 +9955,11 @@ definitions:
       banner_message:
         type: string
         description: The banner message for the UI.It is the stringified result of the banner message object
+        x-omitempty: true
+        x-isnullable: true
+      disabled_audit_log_event_types:
+        type: string
+        description: the list to disable log audit event types. 
         x-omitempty: true
         x-isnullable: true
   StringConfigItem:
@@ -9638,6 +10179,12 @@ definitions:
         description: The project level permissions
         items:
           $ref: '#/definitions/Permission'
+      role:
+        type: array
+        description: The role project level permissions
+        items:
+          $ref: '#/definitions/Permission'
+
   OIDCCliSecretReq:
     type: object
     properties:
@@ -10085,6 +10632,9 @@ definitions:
       severity:
         type: string
         description: the severity of the vulnerability
+      status:
+        type: string
+        description: the status of the vulnerability, example "fixed", "won't fix"
       cvss_v3_score:
         type: number
         format: float

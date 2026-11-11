@@ -38,17 +38,17 @@ const (
 )
 
 // ExtraParameters to keep non pagination query parameters
-type ExtraParameters map[string]interface{}
+type ExtraParameters map[string]any
 
 // Set extra parameters
-func (ep ExtraParameters) Set(key string, v interface{}) {
+func (ep ExtraParameters) Set(key string, v any) {
 	if len(key) > 0 {
 		ep[key] = v
 	}
 }
 
 // Get the extra parameter by key
-func (ep ExtraParameters) Get(key string) (interface{}, bool) {
+func (ep ExtraParameters) Get(key string) (any, bool) {
 	v, ok := ep[key]
 
 	return v, ok

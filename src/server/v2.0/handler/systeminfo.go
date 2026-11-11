@@ -85,7 +85,6 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 		AuthMode:         &d.AuthMode,
 		PrimaryAuthMode:  &d.PrimaryAuthMode,
 		SelfRegistration: &d.SelfRegistration,
-		HarborVersion:    &d.HarborVersion,
 		BannerMessage:    &d.BannerMessage,
 		OIDCProviderName: &d.OIDCProviderName,
 	}
@@ -102,6 +101,7 @@ func (s *sysInfoAPI) convertInfo(d *si.Data) *models.GeneralInfo {
 	if d.Protected != nil {
 		res.HasCaRoot = &d.Protected.HasCARoot
 		res.ProjectCreationRestriction = &d.Protected.ProjectCreationRestrict
+		res.HarborVersion = &d.Protected.HarborVersion
 		res.ExternalURL = &d.Protected.ExtURL
 		res.RegistryURL = &d.Protected.RegistryURL
 		res.ReadOnly = &d.Protected.ReadOnly

@@ -1,18 +1,50 @@
 ![Harbor UI](https://raw.githubusercontent.com/goharbor/website/master/docs/img/readme/harbor_logo.png)
 
-Harbor UI
-============
-This is the project based on Clarity and Angular to build Harbor UI.
+# Harbor UI
+
+This project is the web interface for [Harbor](https://goharbor.io), built using [Clarity Design System](https://clarity.design/) and Angular.
+
+## Getting Started
+
+### 1. Use the correct Node version
+
+To ensure compatibility with dependencies, use the Node version defined in `.nvmrc`.
+
+```
+nvm install   # Install the Node version from .nvmrc (if not already installed)
+nvm use       # Switch to the specified Node version
+```
+
+### 2. Install dependencies
+
+```
+npm install
+```
+
+> Note: `npm install` should automatically trigger the `postinstall` script.
+If `postinstall` scripts were not triggered, then run manually:  `npm run postinstall`
 
 
+### 3. Copy the template proxy file
 
-Start
-============
-1. npm install (should trigger 'npm postinstall')
-2. npm run postinstall  (if not triggered, manually run this step)
-3. copy "proxy.config.mjs.temp" file to "proxy.config.mjs"                 
-   `cp proxy.config.mjs.temp proxy.config.mjs`
-4. Modify "proxy.config.mjs" to specify a Harbor server. And you can specify the agent if you work behind a corporate proxy
-5. npm run start
-6. open your browser on https://localhost:4200
+```
+cp proxy.config.mjs.temp proxy.config.mjs
+```
+
+### 4. Configure the proxy
+
+Edit `proxy.config.mjs` to specify the Harbor server.
+You can specify the agent if you work behind a corporate proxy.
+
+### 5. Start the development server
+
+```
+npm run start
+```
+
+### 6. Open the application
+
+Open your browser at https://localhost:4200
+
+
 

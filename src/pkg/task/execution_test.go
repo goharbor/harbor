@@ -15,6 +15,8 @@
 package task
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -60,7 +62,7 @@ func (e *executionManagerTestSuite) TestCount() {
 func (e *executionManagerTestSuite) TestCreate() {
 	e.execDAO.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
 	id, err := e.execMgr.Create(nil, "vendor", 0, ExecutionTriggerManual,
-		map[string]interface{}{"k": "v"})
+		map[string]any{"k": "v"})
 	e.Require().Nil(err)
 	e.Equal(int64(1), id)
 	// sleep to make sure the function in the goroutine run
@@ -70,7 +72,7 @@ func (e *executionManagerTestSuite) TestCreate() {
 
 func (e *executionManagerTestSuite) TestUpdateExtraAttrs() {
 	e.execDAO.On("Update", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	err := e.execMgr.UpdateExtraAttrs(nil, 1, map[string]interface{}{"key": "value"})
+	err := e.execMgr.UpdateExtraAttrs(nil, 1, map[string]any{"key": "value"})
 	e.Require().Nil(err)
 	e.execDAO.AssertExpectations(e.T())
 }
@@ -227,6 +229,38 @@ func (e *executionManagerTestSuite) TestGet() {
 	e.Equal(int64(1), exec.Metrics.TaskCount)
 	e.Equal(int64(1), exec.Metrics.SuccessTaskCount)
 	e.execDAO.AssertExpectations(e.T())
+}
+
+func (e *executionManagerTestSuite) TestGet_LargeIDInExtraAttrs() {
+
+	largeID := int64(9007199254740993)
+	extraAttrsJSON := fmt.Sprintf(`{"project_ids": [%d]}`, largeID)
+	e.execDAO.On("Get", mock.Anything, mock.Anything).Return(&dao.Execution{
+		ID:         1,
+		Status:     job.SuccessStatus.String(),
+		ExtraAttrs: extraAttrsJSON,
+	}, nil)
+	e.execDAO.On("GetMetrics", mock.Anything, mock.Anything).Return(&dao.Metrics{}, nil)
+
+	exec, err := e.execMgr.Get(nil, 1)
+	e.Require().Nil(err)
+	e.Require().NotNil(exec.ExtraAttrs)
+
+	pids, ok := exec.ExtraAttrs["project_ids"]
+	e.Require().True(ok)
+	pidList, ok := pids.([]any)
+	e.Require().True(ok)
+	e.Require().Len(pidList, 1)
+
+	// verify that the ID is preserved as exact json.Number
+	num, ok := pidList[0].(json.Number)
+	e.Require().True(ok)
+	e.Equal("9007199254740993", num.String())
+
+	// verify conversion via Int64FromAny
+	id, ok := Int64FromAny(pidList[0])
+	e.Require().True(ok)
+	e.Equal(largeID, id)
 }
 
 func (e *executionManagerTestSuite) TestList() {

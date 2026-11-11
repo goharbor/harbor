@@ -144,7 +144,7 @@ func (d *daoTestSuite) TearDownTest() {
 func (d *daoTestSuite) TestCount() {
 	// query by repository ID: both tagged and untagged artifacts
 	totalOfAll, err := d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 		},
 	})
@@ -153,7 +153,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// only query tagged artifacts
 	totalOfTagged, err := d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Tags":         "*",
 		},
@@ -163,7 +163,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// only query untagged artifacts
 	totalOfUnTagged, err := d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Tags":         "nil",
 		},
@@ -173,7 +173,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// specific tag value
 	total, err := d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Tags":         "latest",
 		},
@@ -183,7 +183,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// query by repository ID and digest
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Digest":       "parent_digest",
 		},
@@ -193,7 +193,7 @@ func (d *daoTestSuite) TestCount() {
 
 	// set pagination in query
 	total, err = d.dao.Count(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 		},
 		PageNumber: 1,
@@ -206,7 +206,7 @@ func (d *daoTestSuite) TestCount() {
 func (d *daoTestSuite) TestList() {
 	// query by repository ID: both tagged and untagged artifacts
 	artifacts, err := d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 		},
 	})
@@ -235,7 +235,7 @@ func (d *daoTestSuite) TestList() {
 
 	// only query tagged artifacts
 	artifacts, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Tags":         "*",
 		},
@@ -264,7 +264,7 @@ func (d *daoTestSuite) TestList() {
 
 	// only query untagged artifacts
 	artifacts, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Tags":         "nil",
 		},
@@ -293,7 +293,7 @@ func (d *daoTestSuite) TestList() {
 
 	// query by repository ID and digest
 	artifacts, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 			"Digest":       "parent_digest",
 		},
@@ -304,7 +304,7 @@ func (d *daoTestSuite) TestList() {
 
 	// set pagination in query
 	artifacts, err = d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"RepositoryID": 1,
 		},
 		PageNumber: 1,
@@ -446,7 +446,7 @@ func (d *daoTestSuite) TestCreateReference() {
 
 func (d *daoTestSuite) TestListReferences() {
 	references, err := d.dao.ListReferences(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ParentID": d.parentArtID,
 			"ChildID":  d.childArt01ID,
 		},
@@ -489,9 +489,7 @@ func (d *daoTestSuite) TestListWithLatest() {
 	id, err := d.dao.Create(d.ctx, art)
 	d.Require().Nil(err)
 
-	time.Sleep(1 * time.Second)
-	now = time.Now()
-
+	now1 := now.Add(1 * time.Second)
 	art2 := &Artifact{
 		Type:              "IMAGE",
 		MediaType:         v1.MediaTypeImageConfig,
@@ -500,16 +498,14 @@ func (d *daoTestSuite) TestListWithLatest() {
 		RepositoryID:      1235,
 		RepositoryName:    "library2/hello-world2",
 		Digest:            "digest",
-		PushTime:          now,
-		PullTime:          now,
+		PushTime:          now1,
+		PullTime:          now1,
 		Annotations:       `{"anno1":"value1"}`,
 	}
 	id1, err := d.dao.Create(d.ctx, art2)
 	d.Require().Nil(err)
 
-	time.Sleep(1 * time.Second)
-	now = time.Now()
-
+	now2 := now.Add(2 * time.Second)
 	art3 := &Artifact{
 		Type:              "IMAGE",
 		MediaType:         v1.MediaTypeImageConfig,
@@ -518,15 +514,15 @@ func (d *daoTestSuite) TestListWithLatest() {
 		RepositoryID:      1235,
 		RepositoryName:    "library2/hello-world2",
 		Digest:            "digest2",
-		PushTime:          now,
-		PullTime:          now,
+		PushTime:          now2,
+		PullTime:          now2,
 		Annotations:       `{"anno1":"value1"}`,
 	}
 	id2, err := d.dao.Create(d.ctx, art3)
 	d.Require().Nil(err)
 
 	latest, err := d.dao.ListWithLatest(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"ProjectID":  1234,
 			"media_type": v1.MediaTypeImageConfig,
 		},

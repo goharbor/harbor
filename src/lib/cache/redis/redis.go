@@ -21,11 +21,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/errors"
-	"github.com/goharbor/harbor/src/lib/log"
 )
 
 var _ cache.Cache = (*Cache)(nil)
@@ -52,13 +51,13 @@ func (c *Cache) Delete(ctx context.Context, key string) error {
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
+func (c *Cache) Fetch(ctx context.Context, key string, value any) error {
 	data, err := c.Client.Get(ctx, c.opts.Key(key)).Bytes()
 	if err != nil {
 		// convert internal or Timeout error to be ErrNotFound
 		// so that the caller can continue working without breaking
 		// return cache.ErrNotFound
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return cache.ErrNotFound
 		}
 
@@ -78,7 +77,7 @@ func (c *Cache) Ping(ctx context.Context) error {
 }
 
 // Save cache the value by key
-func (c *Cache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(ctx context.Context, key string, value any, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return errors.Errorf("failed to encode value, key %s, error: %v", key, err)
@@ -118,17 +117,17 @@ type ScanIterator struct {
 
 // Next check whether has the next element
 func (i *ScanIterator) Next(ctx context.Context) bool {
-	hasNext := i.iter.Next(ctx)
-	if !hasNext && i.iter.Err() != nil {
-		log.Errorf("error occurred when scan redis: %v", i.iter.Err())
-	}
-
-	return hasNext
+	return i.iter.Next(ctx)
 }
 
 // Val returns the key
 func (i *ScanIterator) Val() string {
 	return strings.TrimPrefix(i.iter.Val(), i.prefix)
+}
+
+// Err returns any error encountered while scanning.
+func (i *ScanIterator) Err() error {
+	return i.iter.Err()
 }
 
 // New returns redis cache
@@ -179,14 +178,20 @@ func New(opts cache.Options) (cache.Cache, error) {
 	*/
 
 	switch u.Scheme {
-	case cache.Redis:
+	case cache.Redis, cache.RedisTLS:
+		/*
+			Harbor will only support standard TLS for server-certificate-athentication on Redis connection.
+			mTLS is not the goal
+		*/
+		// tls.Options{Servername:h} will need to be set by ParseURL
 		rdbOpts, err := redis.ParseURL(u.String())
 		if err != nil {
 			return nil, err
 		}
 
 		client = redis.NewClient(rdbOpts)
-	case cache.RedisSentinel:
+	case cache.RedisSentinel, cache.RedisSentinelTLS:
+		// TLS config will be set by ParseSentinelURL
 		failoverOpts, err := ParseSentinelURL(u.String())
 		if err != nil {
 			return nil, err
@@ -203,4 +208,6 @@ func New(opts cache.Options) (cache.Cache, error) {
 func init() {
 	cache.Register(cache.Redis, New)
 	cache.Register(cache.RedisSentinel, New)
+	cache.Register(cache.RedisTLS, New)
+	cache.Register(cache.RedisSentinelTLS, New)
 }

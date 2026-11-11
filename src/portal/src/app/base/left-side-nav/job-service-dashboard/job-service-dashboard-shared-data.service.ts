@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Injectable } from '@angular/core';
 import { JobQueue } from '../../../../../ng-swagger-gen/models/job-queue';
 import { JobserviceService } from '../../../../../ng-swagger-gen/services/jobservice.service';
@@ -5,7 +18,7 @@ import { map, Observable } from 'rxjs';
 import { All, ScheduleListResponse } from './job-service-dashboard.interface';
 import { Worker } from 'ng-swagger-gen/models';
 import { ScheduleService } from '../../../../../ng-swagger-gen/services/schedule.service';
-import { ClrDatagridStateInterface } from '@clr/angular/data/datagrid/interfaces/state.interface';
+import { ClrDatagridStateInterface } from '@clr/angular';
 import { doSorting } from '../../../shared/units/utils';
 
 @Injectable()

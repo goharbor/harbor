@@ -35,6 +35,7 @@ import { getSortingString } from '../../../shared/units/utils';
     selector: 'projects',
     templateUrl: 'projects.component.html',
     styleUrls: ['./projects.component.scss'],
+    standalone: false,
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
     projectTypes = ProjectTypes;

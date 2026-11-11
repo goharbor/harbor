@@ -387,7 +387,7 @@ func (suite *OrmSuite) TestReadOrCreateParallel() {
 	arr := make([]int, count)
 
 	var wg sync.WaitGroup
-	for i := 0; i < count; i++ {
+	for i := range count {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
@@ -418,7 +418,7 @@ func (suite *OrmSuite) TestPaginationOnRawSQL() {
 		PageSize:   10,
 	}
 	sql := "select * from harbor_user where user_id > ? order by user_name "
-	params := []interface{}{2}
+	params := []any{2}
 	sql, params = PaginationOnRawSQL(query, sql, params)
 	suite.Equal("select * from harbor_user where user_id > ? order by user_name  limit ? offset ?", sql)
 	suite.Equal(int64(10), params[1])

@@ -31,12 +31,12 @@ import (
 type Policy struct {
 	// Policy can be treated as job template of periodic job.
 	// The info of policy will be copied into the scheduled job executions for the periodic job.
-	ID            string                 `json:"id"`
-	JobName       string                 `json:"job_name"`
-	CronSpec      string                 `json:"cron_spec"`
-	JobParameters map[string]interface{} `json:"job_params,omitempty"`
-	WebHookURL    string                 `json:"web_hook_url,omitempty"`
-	NumericID     int64                  `json:"numeric_id,omitempty"`
+	ID            string         `json:"id"`
+	JobName       string         `json:"job_name"`
+	CronSpec      string         `json:"cron_spec"`
+	JobParameters map[string]any `json:"job_params,omitempty"`
+	WebHookURL    string         `json:"web_hook_url,omitempty"`
+	NumericID     int64          `json:"numeric_id,omitempty"`
 }
 
 // Serialize the policy to raw data.
@@ -65,8 +65,12 @@ func (p *Policy) Validate() error {
 		}
 	}
 
-	if _, err := comUtils.CronParser().Parse(p.CronSpec); err != nil {
+	sched, err := comUtils.CronParser().Parse(p.CronSpec)
+	if err != nil {
 		return err
+	}
+	if !comUtils.IsCronReachable(sched) {
+		return fmt.Errorf("cron expression %q can never fire: no matching date exists", p.CronSpec)
 	}
 
 	return nil

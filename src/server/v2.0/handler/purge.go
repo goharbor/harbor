@@ -73,24 +73,24 @@ func (p *purgeAPI) CreatePurgeSchedule(ctx context.Context, params purge.CreateP
 
 func verifyCreateRequest(params purge.CreatePurgeScheduleParams) error {
 	if params.Schedule == nil || params.Schedule.Schedule == nil {
-		return errors.BadRequestError(fmt.Errorf("schedule cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
-		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule parameter cannot be empty"))
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
-		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
+		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should be provided"))
 	}
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
-	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
+	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
+		return errors.BadRequestError(fmt.Errorf("include_event_types should be provided"))
 	}
 	return nil
 }
 
-func retentionHour(m map[string]interface{}) (int, error) {
+func retentionHour(m map[string]any) (int, error) {
 	if ret, ok := m[common.PurgeAuditRetentionHour]; ok {
 		if rh, ok := ret.(json.Number); ok {
 			ret, err := rh.Int64()
@@ -106,9 +106,9 @@ func retentionHour(m map[string]interface{}) (int, error) {
 	return 0, nil
 }
 
-func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string, cron string, parameters map[string]interface{}) (int64, error) {
+func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string, cron string, parameters map[string]any) (int64, error) {
 	if parameters == nil {
-		parameters = make(map[string]interface{})
+		parameters = make(map[string]any)
 	}
 	var err error
 	var id int64
@@ -119,8 +119,8 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 	if dryRun, ok := parameters[common.PurgeAuditDryRun].(bool); ok {
 		policy.DryRun = dryRun
 	}
-	if includeOperations, ok := parameters[common.PurgeAuditIncludeOperations].(string); ok {
-		policy.IncludeOperations = includeOperations
+	if includeEventTypes, ok := parameters[common.PurgeAuditIncludeEventTypes].(string); ok {
+		policy.IncludeEventTypes = includeEventTypes
 	}
 	retHour, err := retentionHour(parameters)
 	if err != nil {
@@ -140,7 +140,7 @@ func (p *purgeAPI) kick(ctx context.Context, vendorType string, scheType string,
 	return id, err
 }
 
-func (p *purgeAPI) updateSchedule(ctx context.Context, vendorType, cronType, cron string, policy pg.JobPolicy, extraParams map[string]interface{}) error {
+func (p *purgeAPI) updateSchedule(ctx context.Context, vendorType, cronType, cron string, policy pg.JobPolicy, extraParams map[string]any) error {
 	if err := utils.ValidateCronString(cron); err != nil {
 		return errors.New(nil).WithCode(errors.BadRequestCode).
 			WithMessagef("invalid cron string for scheduled log rotation purge: %s, error: %v", cron, err)
@@ -205,11 +205,11 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 	}
 
 	exec, err := p.executionCtl.Get(ctx, params.PurgeID)
-	if exec.VendorType != job.PurgeAuditVendorType {
-		return p.SendError(ctx, fmt.Errorf("purge job with id %d not found", params.PurgeID))
-	}
 	if err != nil {
 		return p.SendError(ctx, err)
+	}
+	if exec.VendorType != job.PurgeAuditVendorType {
+		return p.SendError(ctx, fmt.Errorf("purge job with id %d not found", params.PurgeID))
 	}
 
 	extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
@@ -301,24 +301,24 @@ func (p *purgeAPI) UpdatePurgeSchedule(ctx context.Context, params purge.UpdateP
 
 func verifyUpdateRequest(params purge.UpdatePurgeScheduleParams) error {
 	if params.Schedule == nil || params.Schedule.Schedule == nil {
-		return errors.BadRequestError(fmt.Errorf("schedule cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule cannot be empty"))
 	}
 	if len(params.Schedule.Parameters) == 0 {
-		return errors.BadRequestError(fmt.Errorf("schedule parameter cann't be empty"))
+		return errors.BadRequestError(fmt.Errorf("schedule parameter cannot be empty"))
 	}
 	if _, exist := params.Schedule.Parameters[common.PurgeAuditRetentionHour]; !exist {
-		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should provide"))
+		return errors.BadRequestError(fmt.Errorf("audit_retention_hour should be provided"))
 	}
 	if _, err := retentionHour(params.Schedule.Parameters); err != nil {
 		return err
 	}
-	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeOperations]; !exist {
-		return errors.BadRequestError(fmt.Errorf("include_operations should provide"))
+	if _, exist := params.Schedule.Parameters[common.PurgeAuditIncludeEventTypes]; !exist {
+		return errors.BadRequestError(fmt.Errorf("include_event_types should be provided"))
 	}
 	return nil
 }
 
-func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronType string, cron string, policy pg.JobPolicy, extraParam map[string]interface{}) error {
+func (p *purgeAPI) createSchedule(ctx context.Context, vendorType string, cronType string, cron string, policy pg.JobPolicy, extraParam map[string]any) error {
 	_, err := p.schedulerCtl.Create(ctx, vendorType, cronType, cron, pg.SchedulerCallback, policy, extraParam)
 	if err != nil {
 		return err

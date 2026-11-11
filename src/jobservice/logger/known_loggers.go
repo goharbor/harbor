@@ -16,6 +16,7 @@ package logger
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
@@ -89,13 +90,7 @@ func IsKnownLevel(level string) bool {
 		return false
 	}
 
-	for _, lvl := range debugLevels {
-		if lvl == strings.ToUpper(level) {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(debugLevels, strings.ToUpper(level))
 }
 
 // GetLoggerName return a logger name by Interface

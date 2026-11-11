@@ -1,0 +1,178 @@
+<clr-modal
+    [(clrModalOpen)]="opened"
+    [clrModalClosable]="false"
+    [clrModalStaticBackdrop]="false">
+    <h3 class="modal-title">{{ 'CHANGE_PREF.TITLE' | translate }}</h3>
+    <div class="modal-body body-format dialog-body">
+        <div class="dropdowns content-container">
+            <div class="content-area centered-content-area">
+                <div class="clr-control-label">
+                    {{ 'CHANGE_PREF.LANGUAGE' | translate }}
+                </div>
+                <clr-dropdown class="dropdown-lang dropdown bottom-left">
+                    <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                        <clr-icon shape="world" class="icon-left"></clr-icon>
+                        <span class="currentLocale">{{ currentLang }}</span>
+                        <clr-icon
+                            size="10"
+                            shape="caret"
+                            direction="down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu *clrIfOpen>
+                        @for (lang of guiLanguages; track lang) {
+                        <a
+                            href="javascript:void(0)"
+                            clrDropdownItem
+                            (click)="switchLanguage(lang[0])"
+                            [class.lang-selected]="matchLang(lang[0])"
+                            >{{ lang[1][0] }}</a
+                        >
+                        }
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
+
+            <div class="content-area centered-content-area">
+                <div class="clr-control-label">
+                    {{ 'CHANGE_PREF.DATE_TIME_FORMAT' | translate }}
+                </div>
+                <clr-dropdown class="dropdown bottom-left">
+                    <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                        <clr-icon shape="calendar" class="icon-left"></clr-icon>
+                        <span class="currentLocale">{{
+                            currentDatetimeRendering | translate
+                        }}</span>
+                        <clr-icon
+                            size="10"
+                            shape="caret"
+                            direction="down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu *clrIfOpen>
+                        @for (rendering of guiDatetimeRenderings; track
+                        rendering) {
+                        <a
+                            href="javascript:void(0)"
+                            clrDropdownItem
+                            (click)="switchDatetimeRendering(rendering[0])"
+                            [class.locale-selected]="
+                                matchDatetimeRendering(rendering[0])
+                            "
+                            >{{ rendering[1] | translate }}</a
+                        >
+                        }
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
+
+            <div class="content-area centered-content-area">
+                <div class="clr-control-label">
+                    {{ 'CHANGE_PREF.PULL_CMD_PREFIX' | translate }}
+                </div>
+                <clr-dropdown class="dropdown-lang dropdown bottom-left">
+                    <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                        <clr-icon shape="bundle" class="icon-left"></clr-icon>
+                        <span class="currentLocale">{{ currentRuntime }}</span>
+                        <clr-icon
+                            size="10"
+                            shape="caret"
+                            direction="down"></clr-icon>
+                    </button>
+                    <clr-dropdown-menu *clrIfOpen>
+                        <clr-dropdown>
+                            <button clrDropdownTrigger>custom</button>
+                            <clr-dropdown-menu *clrIfOpen>
+                                <form
+                                    #customruntimeForm="ngForm"
+                                    class="clr-form">
+                                    <div
+                                        class="clr-form-control"
+                                        cds-layout="m-t:none">
+                                        <label
+                                            for="customPrefix"
+                                            class="clr-control-label"
+                                            >Custom</label
+                                        >
+                                        <div class="clr-control-container">
+                                            <div class="clr-input-wrapper">
+                                                <input
+                                                    type="text"
+                                                    id="customPrefix"
+                                                    name="customPrefix"
+                                                    placeholder="Enter custom prefix"
+                                                    [(ngModel)]="customRuntime"
+                                                    #customPrefix="ngModel"
+                                                    [ngClass]="{
+                                                        'is-invalid':
+                                                            customPrefix.invalid &&
+                                                            customPrefix.touched
+                                                    }"
+                                                    pattern="^[a-z]+$"
+                                                    minlength="2"
+                                                    class="clr-input" />
+                                                <cds-icon
+                                                    class="clr-validate-icon"
+                                                    shape="exclamation-circle"></cds-icon>
+                                            </div>
+                                            @if ( customPrefix.invalid &&
+                                            customPrefix.touched ) {
+                                            <div>
+                                                @if
+                                                (customPrefix.errors?.['required'])
+                                                {
+                                                <div>Prefix is required</div>
+                                                } @if
+                                                (customPrefix.errors?.['minlength'])
+                                                {
+                                                <div>
+                                                    Prefix must be at least 2
+                                                    characters
+                                                </div>
+                                                } @if
+                                                (customPrefix.errors?.['pattern'])
+                                                {
+                                                <div>
+                                                    Prefix must only contain
+                                                    lowercase alphabets (a-z)
+                                                </div>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="custom-runtime-footer">
+                                        <div
+                                            clrDropdownItem
+                                            class="ok-item-wrapper">
+                                            <button
+                                                type="button"
+                                                class="btn btn-primary btn-sm"
+                                                id="ok-btn"
+                                                [disabled]="!isValid"
+                                                (click)="addCustomRuntime()">
+                                                {{ 'BUTTON.OK' | translate }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                        @for (runtime of guiRuntimes; track runtime) {
+                        <a
+                            href="javascript:void(0)"
+                            clrDropdownItem
+                            (click)="switchRuntime(runtime[0])"
+                            [class.lang-selected]="matchRuntime(runtime[0])"
+                            >{{ runtime[1] }}</a
+                        >
+                        }
+                    </clr-dropdown-menu>
+                </clr-dropdown>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer margin-left-override">
+        <button type="button" class="btn btn-primary" (click)="close()">
+            {{ 'BUTTON.CLOSE' | translate }}
+        </button>
+    </div>
+</clr-modal>

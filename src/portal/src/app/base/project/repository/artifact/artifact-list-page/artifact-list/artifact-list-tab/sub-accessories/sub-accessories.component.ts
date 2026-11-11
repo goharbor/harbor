@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -40,7 +53,8 @@ export const ACCESSORY_PAGE_SIZE: number = 5;
     selector: 'sub-accessories',
     templateUrl: 'sub-accessories.component.html',
     styleUrls: ['./sub-accessories.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush, // use OnPush Strategy to avoid ExpressionChangedAfterItHasBeenCheckedError
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
 })
 export class SubAccessoriesComponent
     implements OnInit, AfterViewInit, OnDestroy
@@ -153,9 +167,9 @@ export class SubAccessoriesComponent
             .subscribe(
                 res => {
                     this.displayedAccessories = res;
-                    this.cdf.detectChanges();
                     this.getIconFromBackend();
                     this.getAccessoriesAsync(this.displayedAccessories);
+                    this.cdf.detectChanges();
                 },
                 error => {
                     this.errorHandlerService.error(error);
@@ -196,7 +210,7 @@ export class SubAccessoriesComponent
                             }
                         }
                         item.accessories = res.body;
-                        this.cdf.detectChanges();
+                        this.cdf.markForCheck();
                     });
             });
         }

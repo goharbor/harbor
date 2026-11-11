@@ -111,7 +111,7 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
 
     def get_project_log(self, project_name, expect_status_code = 200, **kwargs):
-        body, status_code, _ = self._get_client(**kwargs).get_logs_with_http_info(project_name)
+        body, status_code, _ = self._get_client(**kwargs).get_log_exts_with_http_info(project_name)
         base._assert_status_code(expect_status_code, status_code)
         return body
 
@@ -213,3 +213,19 @@ class Project(base.Base):
         except ApiException as e:
             _assert_status_code(status_code, e.status)
             return 0
+
+    def get_member_role_id(self, role_name):
+        if not role_name:
+            return None
+        roles = {
+            "projectadmin": 1,
+            "admin": 1,
+            "developer": 2,
+            "guest": 3,
+            "maintainer": 4,
+            "master": 4,
+            "limitedguest": 5
+        }
+        normalized = role_name.lower().replace(" ", "").replace("_", "").replace("-", "")
+        return roles.get(normalized)
+

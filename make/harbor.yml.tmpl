@@ -102,6 +102,11 @@ trivy:
   # `/home/scanner/.cache/trivy/java-db/trivy-java.db` path
   skip_java_db_update: false
   #
+  # OCI repository to retrieve the trivy vulnerability database from.
+  db_repository: ghcr.io/aquasecurity/trivy-db
+  # OCI repository to retrieve the Java trivy vulnerability database from.
+  java_db_repository: ghcr.io/aquasecurity/trivy-java-db
+  #
   # The offline_scan option prevents Trivy from sending API requests to identify dependencies.
   # Scanning JAR files and pom.xml may require Internet access for better detection, but this option tries to avoid it.
   # For example, the offline mode will not try to resolve transitive dependencies in pom.xml when the dependency doesn't
@@ -135,6 +140,8 @@ trivy:
 jobservice:
   # Maximum number of job workers in job service
   max_job_workers: 10
+  # Maximum hours of task duration in job service, default 24
+  max_job_duration_hours: 24
   # The jobLoggers backend name, only support "STD_OUTPUT", "FILE" and/or "DB"
   job_loggers:
     - STD_OUTPUT
@@ -174,7 +181,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 2.12.0
+_version: 2.16.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -208,11 +215,17 @@ _version: 2.12.0
 #   host: redis:6379
 #   password: 
 #   # Redis AUTH command was extended in Redis 6, it is possible to use it in the two-arguments AUTH <username> <password> form.
-#   # there's a known issue when using external redis username ref:https://github.com/goharbor/harbor/issues/18892
-#   # if you care about the image pull/push performance, please refer to this https://github.com/goharbor/harbor/wiki/Harbor-FAQs#external-redis-username-password-usage
 #   # username:
 #   # sentinel_master_set must be set to support redis+sentinel
 #   #sentinel_master_set:
+#   # tls configuration for redis connection
+#   # only server-authentication is supported
+#   # mtls for redis connection is not supported
+#   # tls connection will be disable by default 
+#   tlsOptions:
+#     enable: false
+#   # if it is a self-signed ca, please set the ca path specifically.
+#     rootCA:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
 #   jobservice_db_index: 2
@@ -242,7 +255,21 @@ proxy:
   components:
     - core
     - jobservice
+    - registry
     - trivy
+
+# Destinations webhook and Slack notifications may reach (CWE-918).
+# webhook_egress:
+#   # allow_all: no checks
+#   # block_restricted (default): private networks allowed; loopback, link-local and cloud
+#   #   metadata blocked
+#   # public_only: public addresses only
+#   policy: block_restricted
+#   # Always allowed, whatever the policy: IPs, CIDRs, hostnames and "*.domain" suffixes.
+#   # Allowlisted hostnames are trusted wherever DNS points them.
+#   allowlist:
+#     - 10.20.0.0/16
+#     - "*.svc.cluster.local"
 
 # metric:
 #   enabled: false

@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,9 @@ export abstract class UserPermissionService {
         projectId: any,
         permissions: Array<Permission>
     ): Observable<Array<boolean>>;
+    abstract getProjectPermissions(
+        projectId: any
+    ): Observable<Array<Permission>>;
 }
 
 // @dynamic
@@ -125,6 +128,17 @@ export class UserPermissionDefaultService extends UserPermissionService {
         action: string
     ): Observable<boolean> {
         return this.hasProjectPermission(projectId, { resource, action });
+    }
+
+    /**
+     * The caller's own permissions in a project, with resource names relative to
+     * it. Shares the cache with the has*Permission calls, so a page that already
+     * asked for single permissions gets this list without another request.
+     */
+    public getProjectPermissions(
+        projectId: any
+    ): Observable<Array<Permission>> {
+        return this.getPermissions(`/project/${projectId}`, true);
     }
 
     public clearPermissionCache() {

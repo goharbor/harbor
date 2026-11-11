@@ -58,7 +58,7 @@ type scanAllAPI struct {
 	makeCtx    func() context.Context
 }
 
-func (s *scanAllAPI) Prepare(_ context.Context, _ string, _ interface{}) middleware.Responder {
+func (s *scanAllAPI) Prepare(_ context.Context, _ string, _ any) middleware.Responder {
 	return nil
 }
 
@@ -208,7 +208,7 @@ func (s *scanAllAPI) createOrUpdateScanAllSchedule(ctx context.Context, cronType
 		}
 	}
 
-	cbParams := map[string]interface{}{
+	cbParams := map[string]any{
 		// the operator of schedule job is harbor-jobservice
 		"operator": secret.JobserviceUser,
 	}
@@ -289,7 +289,7 @@ func (s *scanAllAPI) getLatestScanAllExecution(ctx context.Context, trigger ...s
 }
 
 func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
-	kws := make(map[string]interface{})
+	kws := make(map[string]any)
 	kws["is_default"] = true
 
 	query := &q.Query{
@@ -302,7 +302,7 @@ func (s *scanAllAPI) requireScanEnabled(ctx context.Context) error {
 	}
 
 	if len(l) == 0 {
-		return errors.PreconditionFailedError(nil).WithMessage("no scanner is configured, it's not possible to scan")
+		return errors.PreconditionFailedError(nil).WithMessage("No scanner is configured; scanning cannot be performed.")
 	}
 
 	return nil

@@ -83,7 +83,7 @@ func (s *GCSchedule) ToSwagger() *models.GCHistory {
 		return nil
 	}
 
-	e, err := json.Marshal(s.ExtraAttrs)
+	e, err := json.Marshal(CleanExtraAttrs(s.ExtraAttrs))
 	if err != nil {
 		log.Error(err)
 	}
@@ -108,4 +108,17 @@ func (s *GCSchedule) ToSwagger() *models.GCHistory {
 // NewGCSchedule ...
 func NewGCSchedule(s *scheduler.Schedule) *GCSchedule {
 	return &GCSchedule{Schedule: s}
+}
+
+// CleanExtraAttrs removes sensitive information (e.g. redis_url_reg) from
+// extra attributes before returning them to the client.
+func CleanExtraAttrs(attrs map[string]any) map[string]any {
+	cleaned := make(map[string]any, len(attrs))
+	for k, v := range attrs {
+		if k == "redis_url_reg" {
+			continue
+		}
+		cleaned[k] = v
+	}
+	return cleaned
 }

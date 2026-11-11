@@ -20,11 +20,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
+
+	"github.com/goharbor/harbor/src/lib/orm"
 )
 
 func init() {
@@ -123,24 +124,24 @@ func (b *Blob) IsManifest() bool {
 }
 
 // FilterByArtifactDigest returns orm.QuerySeter with artifact digest filter
-func (b *Blob) FilterByArtifactDigest(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByArtifactDigest(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	v, ok := value.(string)
 	if !ok {
 		return qs
 	}
-	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", `'`+v+`'`)
+	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", orm.QuoteLiteral(v))
 	return qs.FilterRaw("digest", sql)
 }
 
 // FilterByArtifactDigests returns orm.QuerySeter with artifact digests filter
-func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	artifactDigests, ok := value.([]string)
 	if !ok {
 		return qs
 	}
 	var afs []string
 	for _, v := range artifactDigests {
-		afs = append(afs, `'`+v+`'`)
+		afs = append(afs, orm.QuoteLiteral(v))
 	}
 
 	sql := fmt.Sprintf("IN (SELECT digest_blob FROM artifact_blob WHERE digest_af IN (%s))", strings.Join(afs, ","))
@@ -148,7 +149,7 @@ func (b *Blob) FilterByArtifactDigests(_ context.Context, qs orm.QuerySeter, _ s
 }
 
 // FilterByProjectID returns orm.QuerySeter with project id filter
-func (b *Blob) FilterByProjectID(_ context.Context, qs orm.QuerySeter, _ string, value interface{}) orm.QuerySeter {
+func (b *Blob) FilterByProjectID(_ context.Context, qs orm.QuerySeter, _ string, value any) orm.QuerySeter {
 	projectID, ok := value.(int64)
 	if !ok {
 		return qs

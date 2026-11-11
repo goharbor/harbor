@@ -24,6 +24,7 @@ import { InlineAlertComponent } from '../../../shared/components/inline-alert/in
         '../password-setting.component.scss',
         '../../../common.scss',
     ],
+    standalone: false,
 })
 export class ForgotPasswordComponent {
     opened: boolean = false;

@@ -34,7 +34,7 @@ var (
 type key struct {
 	Name       string
 	Filterable bool
-	FilterFunc func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter
+	FilterFunc func(context.Context, orm.QuerySeter, string, any) orm.QuerySeter
 	Sortable   bool
 }
 
@@ -45,7 +45,10 @@ type metadata struct {
 
 func (m *metadata) Filterable(key string) (*key, bool) {
 	k, exist := m.Keys[key]
-	return k, exist
+	if !exist {
+		return nil, false
+	}
+	return k, k.Filterable
 }
 
 func (m *metadata) Sortable(key string) bool {
@@ -57,7 +60,7 @@ func (m *metadata) Sortable(key string) bool {
 }
 
 // parse the definition of the provided model(fields/methods/annotations) and return the parsed metadata
-func parseModel(model interface{}) *metadata {
+func parseModel(model any) *metadata {
 	// pointer type
 	ptr := reflect.TypeOf(model)
 	// struct type
@@ -76,7 +79,7 @@ func parseModel(model interface{}) *metadata {
 		Keys: map[string]*key{},
 	}
 	// parse fields of the provided model
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		field := t.Field(i)
 		orm := field.Tag.Get("orm")
 		// isn't the database column, skip
@@ -104,7 +107,7 @@ func parseModel(model interface{}) *metadata {
 	}
 
 	// parse filter methods of the provided model
-	for i := 0; i < ptr.NumMethod(); i++ {
+	for i := range ptr.NumMethod() {
 		methodName := ptr.Method(i).Name
 		if !strings.HasPrefix(methodName, "FilterBy") {
 			continue
@@ -113,7 +116,7 @@ func parseModel(model interface{}) *metadata {
 		if !methodValue.IsValid() {
 			continue
 		}
-		filterFunc, ok := methodValue.Interface().(func(context.Context, orm.QuerySeter, string, interface{}) orm.QuerySeter)
+		filterFunc, ok := methodValue.Interface().(func(context.Context, orm.QuerySeter, string, any) orm.QuerySeter)
 		if !ok {
 			continue
 		}
@@ -170,7 +173,7 @@ func parseFilterable(field reflect.StructField) bool {
 //	}
 func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 	var defaultSort *q.Sort
-	for _, item := range strings.Split(field.Tag.Get("sort"), ";") {
+	for item := range strings.SplitSeq(field.Tag.Get("sort"), ";") {
 		// isn't sortable, return directly
 		if item == "false" {
 			return nil, false
@@ -199,7 +202,7 @@ func parseSortable(field reflect.StructField) (*q.Sort, bool) {
 // It returns "customized_field1" for "Field1" and returns "field2" for "Field2"
 func parseColumn(field reflect.StructField) string {
 	column := ""
-	for _, item := range strings.Split(field.Tag.Get("orm"), ";") {
+	for item := range strings.SplitSeq(field.Tag.Get("orm"), ";") {
 		if !strings.HasPrefix(item, "column") {
 			continue
 		}
@@ -221,7 +224,7 @@ func snakeCase(str string) string {
 	runes := []rune(str)
 
 	var out []rune
-	for i := 0; i < len(runes); i++ {
+	for i := range len(runes) {
 		if i > 0 &&
 			(unicode.IsUpper(runes[i])) &&
 			((i+1 < len(runes) && unicode.IsLower(runes[i+1])) || unicode.IsLower(runes[i-1])) {

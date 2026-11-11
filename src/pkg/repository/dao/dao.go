@@ -42,6 +42,8 @@ type DAO interface {
 	Update(ctx context.Context, repository *model.RepoRecord, props ...string) (err error)
 	// AddPullCount increase pull count for the specified repository
 	AddPullCount(ctx context.Context, id int64, count uint64) error
+	// Touch bumps the repository's update_time to now
+	Touch(ctx context.Context, id int64) error
 	// NonEmptyRepos returns the repositories without any artifact or all the artifacts are untagged.
 	NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error)
 }
@@ -152,6 +154,22 @@ func (d *dao) AddPullCount(ctx context.Context, id int64, count uint64) error {
 	return nil
 }
 
+func (d *dao) Touch(ctx context.Context, id int64) error {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	num, err := ormer.QueryTable(new(model.RepoRecord)).Filter("RepositoryID", id).Update(
+		o.Params{"update_time": time.Now()})
+	if err != nil {
+		return err
+	}
+	if num == 0 {
+		return errors.NotFoundError(nil).WithMessagef("repository %d not found", id)
+	}
+	return nil
+}
+
 func (d *dao) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 	var repos []*model.RepoRecord
 	ormer, err := orm.FromContext(ctx)
@@ -159,7 +177,7 @@ func (d *dao) NonEmptyRepos(ctx context.Context) ([]*model.RepoRecord, error) {
 		return nil, err
 	}
 
-	sql := `select * from repository where repository_id in (select distinct repository_id from tag)`
+	sql := `select * from repository where exists (select 1 from tag where tag.repository_id = repository.repository_id)`
 	_, err = ormer.Raw(sql).QueryRows(&repos)
 	if err != nil {
 		return repos, err

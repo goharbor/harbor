@@ -77,7 +77,7 @@ func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.U
 		return c.SendError(ctx, err)
 	}
 	if params.Configurations == nil {
-		return c.SendError(ctx, errors.BadRequestError(nil).WithMessage("Missing configure item"))
+		return c.SendError(ctx, errors.BadRequestError(nil).WithMessage("Missing configuration item"))
 	}
 	conf := params.Configurations
 	cfgMap, err := toCfgMap(conf)
@@ -91,8 +91,8 @@ func (c *configAPI) UpdateConfigurations(ctx context.Context, params configure.U
 	return configure.NewUpdateConfigurationsOK()
 }
 
-func toCfgMap(conf *models.Configurations) (map[string]interface{}, error) {
-	var cfgMap map[string]interface{}
+func toCfgMap(conf *models.Configurations) (map[string]any, error) {
+	var cfgMap map[string]any
 	buf, err := json.Marshal(conf)
 	if err != nil {
 		return cfgMap, err

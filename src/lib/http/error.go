@@ -43,6 +43,7 @@ var (
 		errors.ViolateForeignKeyConstraintCode: http.StatusPreconditionFailed,
 		errors.PROJECTPOLICYVIOLATION:          http.StatusPreconditionFailed,
 		errors.GeneralCode:                     http.StatusInternalServerError,
+		errors.RequestEntityTooLargeCode:       http.StatusRequestEntityTooLarge,
 	}
 )
 

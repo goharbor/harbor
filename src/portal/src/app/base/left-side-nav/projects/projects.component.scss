@@ -1,4 +1,4 @@
-@import "../../../shared/mixin";
+@use "../../../shared/mixin";
 
 .header-title {
     margin-bottom: -34px;
@@ -22,7 +22,7 @@
 }
 /* stylelint-disable */
 .rightPos {
-    @include grid-right-top-pos;
+    @include mixin.grid-right-top-pos;
 
     margin-top: 28px;
 }

@@ -59,7 +59,8 @@ func TestRun(t *testing.T) {
 			assert.Equal(t, string(body), `{"key": "value"}`)
 		}))
 	defer ts.Close()
-	params := map[string]interface{}{
+	useTestHTTPClient(t, ts.Client())
+	params := map[string]any{
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          ts.URL,
@@ -73,7 +74,7 @@ func TestRun(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 	defer tsWrong.Close()
-	paramsWrong := map[string]interface{}{
+	paramsWrong := map[string]any{
 		"skip_cert_verify": true,
 		"payload":          `{"key": "value"}`,
 		"address":          tsWrong.URL,

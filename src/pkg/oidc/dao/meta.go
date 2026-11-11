@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -50,7 +51,7 @@ func (md *metaDAO) DeleteByUserID(ctx context.Context, uid int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ormer.Raw(sql, uid).Exec()
+	_, err = ormer.RawWithCtx(ctx, sql, uid).Exec()
 	return err
 }
 
@@ -64,7 +65,10 @@ func (md *metaDAO) GetByUsername(ctx context.Context, username string) (*models.
 		return nil, err
 	}
 	res := &models.OIDCUser{}
-	if err := ormer.Raw(sql, username).QueryRow(res); err != nil {
+	if err := ormer.RawWithCtx(ctx, sql, username).QueryRow(res); err != nil {
+		if errors.Is(err, orm.ErrNoRows) {
+			return nil, fmt.Errorf("oidc user data with username %s not found", username)
+		}
 		return nil, err
 	}
 	return res, nil
@@ -75,7 +79,7 @@ func (md *metaDAO) Update(ctx context.Context, oidcUser *models.OIDCUser, props 
 	if err != nil {
 		return err
 	}
-	n, err := ormer.Update(oidcUser, props...)
+	n, err := ormer.UpdateWithCtx(ctx, oidcUser, props...)
 	if err != nil {
 		return err
 	}
@@ -92,7 +96,7 @@ func (md *metaDAO) List(ctx context.Context, query *q.Query) ([]*models.OIDCUser
 	}
 
 	var res []*models.OIDCUser
-	if _, err := qs.All(&res); err != nil {
+	if _, err := qs.AllWithCtx(ctx, &res); err != nil {
 		return nil, err
 	}
 
@@ -104,7 +108,7 @@ func (md *metaDAO) Create(ctx context.Context, oidcUser *models.OIDCUser) (int, 
 	if err != nil {
 		return 0, err
 	}
-	id, err := ormer.Insert(oidcUser)
+	id, err := ormer.InsertWithCtx(ctx, oidcUser)
 	if e := orm.AsConflictError(err, "The OIDC info for user %d exists, subissuer: %s", oidcUser.UserID, oidcUser.SubIss); e != nil {
 		err = e
 	}

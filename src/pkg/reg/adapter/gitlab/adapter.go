@@ -165,7 +165,7 @@ func (a *adapter) FetchArtifacts(filters []*model.Filter) ([]*model.Resource, er
 				}
 				tags = append(tags, vTag.Name)
 			}
-			info := make(map[string]interface{})
+			info := make(map[string]any)
 			info["location"] = repository.Location
 			info["path"] = repository.Path
 

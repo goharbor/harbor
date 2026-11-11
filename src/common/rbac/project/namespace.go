@@ -43,7 +43,7 @@ func (ns *projectNamespace) Resource(subresources ...types.Resource) types.Resou
 	return types.Resource(fmt.Sprintf("/project/%d", ns.projectID)).Subresource(subresources...)
 }
 
-func (ns *projectNamespace) Identity() interface{} {
+func (ns *projectNamespace) Identity() any {
 	return ns.projectID
 }
 

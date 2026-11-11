@@ -23,10 +23,12 @@ import (
 	"regexp"
 	"testing"
 
+	_ "github.com/goharbor/harbor/src/pkg/auditext/event/login"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.opentelemetry.io/otel/propagation"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/lib/log"
 	tracelib "github.com/goharbor/harbor/src/lib/trace"
 )
@@ -43,12 +45,12 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 			w.WriteHeader(http.StatusOK)
 		})
 	}
-	loc := "/server/middleware/log/log_test.go:41"
+	loc := "/server/middleware/log/log_test.go:43"
 	locPrefix := regexp.MustCompile(fmt.Sprintf(`\[([^\s]*)%s\]`, loc))
 
 	type args struct {
 		headers        map[string]string
-		fields         map[string]interface{}
+		fields         map[string]any
 		ctxTraceparent string
 	}
 	tests := []struct {
@@ -149,7 +151,6 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 	tracelib.C.Enabled = true
 
 	for _, tt := range tests {
-		tt := tt
 		s.T().Run(tt.name, func(t *testing.T) {
 			b := make([]byte, 0, 200)
 			buf := bytes.NewBuffer(b)
@@ -174,6 +175,21 @@ func (s *MiddlewareTestSuite) TestTableMiddleware() {
 			s.Equal(tt.want, line, tt.name)
 		})
 	}
+}
+
+func (s *MiddlewareTestSuite) TestRequestEntityTooLarge() {
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	largeBody := make([]byte, common.MaxAuditLogPayloadSize+1)
+	req := httptest.NewRequest("POST", "/c/login", bytes.NewReader(largeBody))
+	rr := httptest.NewRecorder()
+
+	Middleware()(next).ServeHTTP(rr, req)
+
+	s.Equal(http.StatusRequestEntityTooLarge, rr.Code)
+	s.Equal("request body too large\n", rr.Body.String())
 }
 
 func TestMiddlewareTestSuite(t *testing.T) {

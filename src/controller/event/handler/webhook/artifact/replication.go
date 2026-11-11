@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/controller/event"
 	"github.com/goharbor/harbor/src/controller/event/handler/util"
 	ctlModel "github.com/goharbor/harbor/src/controller/event/model"
@@ -45,7 +46,7 @@ func (r *ReplicationHandler) Name() string {
 }
 
 // Handle ...
-func (r *ReplicationHandler) Handle(ctx context.Context, value interface{}) error {
+func (r *ReplicationHandler) Handle(ctx context.Context, value any) error {
 	if !config.NotificationEnable(ctx) {
 		log.Debug("notification feature is not enabled")
 		return nil
@@ -163,6 +164,8 @@ func constructReplicationPayload(ctx context.Context, event *event.ReplicationEv
 				OverrideMode:       rpPolicy.Override,
 				TriggerType:        string(execution.Trigger),
 				ExecutionTimestamp: execution.StartTime.Unix(),
+				ExecutionID:        execution.ID,
+				TaskID:             task.ID,
 			},
 		},
 	}
@@ -230,7 +233,7 @@ func isLocalRegistry(registry *rpModel.Registry) bool {
 	if registry != nil {
 		return registry.Type == rpModel.RegistryTypeHarbor &&
 			registry.Name == "Local" &&
-			registry.URL == config.InternalCoreURL()
+			utils.EqualURL(registry.URL, config.InternalCoreURL())
 	}
 
 	return false

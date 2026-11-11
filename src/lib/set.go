@@ -17,23 +17,23 @@ package lib
 type void = struct{}
 
 // Set a simple set
-type Set map[interface{}]void
+type Set map[any]void
 
 // Add add item to set
-func (s Set) Add(item interface{}) {
+func (s Set) Add(item any) {
 	s[item] = void{}
 }
 
 // Exists returns true when item in the set
-func (s Set) Exists(item interface{}) bool {
+func (s Set) Exists(item any) bool {
 	_, ok := s[item]
 
 	return ok
 }
 
 // Items returns the items in the set
-func (s Set) Items() []interface{} {
-	var items []interface{}
+func (s Set) Items() []any {
+	var items []any
 	for item := range s {
 		items = append(items, item)
 	}

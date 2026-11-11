@@ -70,7 +70,7 @@ func PrepareTestForPostgresSQL() {
 		},
 	}
 
-	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d\n", dbHost, dbUser, dbPort)
 	o = initDatabaseForTest(database)
 }
 
@@ -142,7 +142,7 @@ func ArrayEqual(arrayA, arrayB []int) bool {
 		return false
 	}
 	size := len(arrayA)
-	for i := 0; i < size; i++ {
+	for i := range size {
 		if arrayA[i] != arrayB[i] {
 			return false
 		}

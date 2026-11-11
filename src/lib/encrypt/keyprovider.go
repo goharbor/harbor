@@ -20,7 +20,7 @@ import "os"
 type KeyProvider interface {
 	// Get returns the key
 	// params can be used to pass parameters in different implements
-	Get(params map[string]interface{}) (string, error)
+	Get(params map[string]any) (string, error)
 }
 
 // FileKeyProvider reads key from file
@@ -37,7 +37,7 @@ func NewFileKeyProvider(path string) KeyProvider {
 }
 
 // Get returns the key read from file
-func (f *FileKeyProvider) Get(_ map[string]interface{}) (string, error) {
+func (f *FileKeyProvider) Get(_ map[string]any) (string, error) {
 	b, err := os.ReadFile(f.path)
 	if err != nil {
 		return "", err
@@ -51,6 +51,6 @@ type PresetKeyProvider struct {
 }
 
 // Get ...
-func (p *PresetKeyProvider) Get(_ map[string]interface{}) (string, error) {
+func (p *PresetKeyProvider) Get(_ map[string]any) (string, error) {
 	return p.Key, nil
 }

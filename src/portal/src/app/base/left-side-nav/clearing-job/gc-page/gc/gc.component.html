@@ -13,31 +13,33 @@
                         'CLEARANCES.LAST_COMPLETED' | translate
                     }}</span>
                     <span class="mr-3">
+                        @if (loadingLastCompletedTime) {
+                        <span class="spinner spinner-inline"></span>
+                        } @if (!loadingLastCompletedTime) { @if
+                        (!lastCompletedTime) {
+                        <span>{{ 'SCHEDULE.NONE' | translate }}</span>
+                        } @if (lastCompletedTime) {
                         <span
-                            *ngIf="loadingLastCompletedTime"
-                            class="spinner spinner-inline"></span>
-                        <ng-container *ngIf="!loadingLastCompletedTime">
-                            <span *ngIf="!lastCompletedTime">{{
-                                'SCHEDULE.NONE' | translate
-                            }}</span>
-                            <span *ngIf="lastCompletedTime"
-                                >{{ lastCompletedTime | harborDatetime
-                                }}<span *ngIf="isDryRun"
-                                    >({{
-                                        'TAG_RETENTION.DRY_RUN' | translate
-                                    }})</span
-                                ></span
+                            >{{ lastCompletedTime | harborDatetime }}@if
+                            (isDryRun) {
+                            <span
+                                >({{
+                                    'TAG_RETENTION.DRY_RUN' | translate
+                                }})</span
                             >
-                        </ng-container>
+                            }</span
+                        >
+                        } }
                     </span>
                 </div>
                 <div class="p-06">
-                    <span class="mr-1 font-style" *ngIf="nextScheduledTime">{{
+                    @if (nextScheduledTime) {
+                    <span class="mr-1 font-style">{{
                         'CLEARANCES.NEXT_SCHEDULED_TIME' | translate
                     }}</span>
-                    <span *ngIf="nextScheduledTime">{{
-                        nextScheduledTime | harborDatetime
-                    }}</span>
+                    } @if (nextScheduledTime) {
+                    <span>{{ nextScheduledTime | harborDatetime }}</span>
+                    }
                 </div>
             </div>
         </div>
@@ -72,11 +74,11 @@
                     id="workers"
                     class="clr-select worker-select"
                     [(ngModel)]="workerNum">
-                    <option
-                        *ngFor="let item of workerOptions"
-                        value="{{ item }}">
+                    @for (item of workerOptions; track item) {
+                    <option value="{{ item }}">
                         {{ item }}
                     </option>
+                    }
                 </select>
             </div>
         </div>
@@ -108,6 +110,24 @@
                         [(ngModel)]="shouldDeleteUntagged" />
                     <label class="font-weight-400" for="delete_untagged">{{
                         'GC.DELETE_UNTAGGED' | translate
+                    }}</label>
+                </clr-toggle-wrapper>
+            </clr-toggle-container>
+        </div>
+    </div>
+    <div class="clr-row">
+        <div class="clr-col-2 flex-200"></div>
+        <div class="clr-col">
+            <clr-toggle-container class="mt-05">
+                <clr-toggle-wrapper>
+                    <input
+                        type="checkbox"
+                        clrToggle
+                        name="delete_tag"
+                        id="delete_tag"
+                        [(ngModel)]="shouldDeleteTag" />
+                    <label class="font-weight-400" for="delete_tag">{{
+                        'GC.DELETE_TAG' | translate
                     }}</label>
                 </clr-toggle-wrapper>
             </clr-toggle-container>

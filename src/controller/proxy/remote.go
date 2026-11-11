@@ -20,6 +20,7 @@ import (
 	"io"
 
 	"github.com/docker/distribution"
+	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 
 	"github.com/goharbor/harbor/src/lib"
 	"github.com/goharbor/harbor/src/pkg/reg"
@@ -33,10 +34,12 @@ type RemoteInterface interface {
 	BlobReader(repo, dig string) (int64, io.ReadCloser, error)
 	// Manifest get manifest by reference
 	Manifest(repo string, ref string) (distribution.Manifest, string, error)
-	// ManifestExist checks manifest exist, if exist, return digest
+	// ManifestExist checks manifest exist, if exist, returns digest
 	ManifestExist(repo string, ref string) (bool, *distribution.Descriptor, error)
 	// ListTags returns all tags of the repo
 	ListTags(repo string) ([]string, error)
+	// ListReferrers returns all referrers
+	ListReferrers(repo string, digest string, rawQuery string) (*ocispec.Index, map[string][]string, error)
 }
 
 // remoteHelper defines operations related to remote repository under proxy
@@ -107,4 +110,8 @@ func (r *remoteHelper) ManifestExist(repo string, ref string) (bool, *distributi
 
 func (r *remoteHelper) ListTags(repo string) ([]string, error) {
 	return r.registry.ListTags(repo)
+}
+
+func (r *remoteHelper) ListReferrers(repo string, digest string, rawQuery string) (*ocispec.Index, map[string][]string, error) {
+	return r.registry.ListReferrers(repo, digest, rawQuery)
 }

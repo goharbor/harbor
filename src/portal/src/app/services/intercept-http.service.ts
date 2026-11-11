@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Injectable } from '@angular/core';
 import {
     HttpInterceptor,
@@ -9,6 +22,10 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { errorHandler } from '../shared/units/shared.utils';
+import {
+    SkipSessionRenewalService,
+    HEADER_NO_SESSION_RENEWAL,
+} from './skip-session-renewal.service';
 
 export const SAFE_METHODS: string[] = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
 
@@ -21,7 +38,7 @@ enum INVALID_CSRF_TOKEN {
     providedIn: 'root',
 })
 export class InterceptHttpService implements HttpInterceptor {
-    constructor() {}
+    constructor(private skipSessionRenewalService: SkipSessionRenewalService) {}
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
         // Get the csrf token from localstorage
@@ -39,6 +56,17 @@ export class InterceptHttpService implements HttpInterceptor {
                 });
             }
         }
+
+        // Check if the current request should skip session renewal.
+        // The flag was set synchronously by skipSessionRenewal() operator
+        // within the same call stack.
+        if (this.skipSessionRenewalService.shouldSkip) {
+            this.skipSessionRenewalService.end();
+            request = request.clone({
+                headers: request.headers.set(HEADER_NO_SESSION_RENEWAL, 'true'),
+            });
+        }
+
         return next
             .handle(request)
             .pipe(

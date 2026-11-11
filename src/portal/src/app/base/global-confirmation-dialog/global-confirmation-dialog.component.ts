@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import { ConfirmationAcknowledgement } from './confirmation-state-message';
     selector: 'global-confirmation-dialog',
     templateUrl: 'global-confirmation-dialog.component.html',
     styleUrls: ['global-confirmation-dialog.component.scss'],
+    standalone: false,
 })
 export class GlobalConfirmationDialogComponent implements OnDestroy {
     opened: boolean = false;

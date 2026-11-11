@@ -33,7 +33,7 @@ type testCache struct {
 	iterator *testcache.Iterator
 }
 
-func (tc *testCache) Save(ctx context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (tc *testCache) Save(ctx context.Context, key string, value any, expiration ...time.Duration) error {
 	if orm.HasCommittedKey(ctx) {
 		return nil
 	}
@@ -49,6 +49,7 @@ type baseManagerTestSuite struct {
 
 func (m *baseManagerTestSuite) SetupTest() {
 	m.cache = &testCache{Cache: &testcache.Cache{}, iterator: &testcache.Iterator{}}
+	m.cache.iterator.On("Err").Return(nil).Maybe()
 	m.mgr = NewBaseManager(testResourceType).WithCacheClient(m.cache)
 }
 

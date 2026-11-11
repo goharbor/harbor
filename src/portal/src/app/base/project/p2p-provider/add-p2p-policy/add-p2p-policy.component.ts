@@ -1,4 +1,19 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
@@ -12,6 +27,7 @@ import { NgForm } from '@angular/forms';
 import { OriginCron, ProjectService } from '../../../../shared/services';
 import { CronScheduleComponent } from '../../../../shared/components/cron-schedule';
 import { PreheatService } from '../../../../../../ng-swagger-gen/services/preheat.service';
+import { ExtraAttrs } from '../../../../../../ng-swagger-gen/models/extra-attrs';
 import {
     debounceTime,
     distinctUntilChanged,
@@ -29,8 +45,8 @@ import {
     PROJECT_SEVERITY_LEVEL_MAP,
     TRIGGER,
     TRIGGER_I18N_MAP,
-    SCOPE,
-    SCOPE_I18N_MAP,
+    DRAGONFLY_SCOPE,
+    DRAGONFLY_SCOPE_I18N_MAP,
 } from '../p2p-provider.service';
 import { ProviderUnderProject } from '../../../../../../ng-swagger-gen/models/provider-under-project';
 import { AppConfigService } from '../../../../services/app-config.service';
@@ -49,6 +65,8 @@ const TRUE: string = 'true';
     selector: 'add-p2p-policy',
     templateUrl: './add-p2p-policy.component.html',
     styleUrls: ['./add-p2p-policy.component.scss'],
+    standalone: false,
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     severityOptions = [
@@ -75,7 +93,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     severity: number;
     labels: string;
     triggerType: string = TRIGGER.MANUAL;
-    scope: string = SCOPE.SINGLE_PEER;
+    scope: string = DRAGONFLY_SCOPE.SINGLE_SEED_PEER;
+    clusterIDs: string;
     cron: string;
     @ViewChild('policyForm', { static: true }) currentForm: NgForm;
     loading: boolean = false;
@@ -90,6 +109,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     originLabelsForEdit: string;
     originTriggerTypeForEdit: string;
     originCronForEdit: string;
+    originScopeForEdit: string;
+    originClusterIDsForEdit: string;
     @Input()
     providers: ProviderUnderProject[] = [];
     preventVul: boolean = false;
@@ -99,7 +120,11 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         TRIGGER.SCHEDULED,
         TRIGGER.EVENT_BASED,
     ];
-    scopes: string[] = [SCOPE.SINGLE_PEER, SCOPE.ALL_PEERS];
+    scopes: string[] = [
+        DRAGONFLY_SCOPE.SINGLE_SEED_PEER,
+        DRAGONFLY_SCOPE.ALL_SEED_PEERS,
+        DRAGONFLY_SCOPE.ALL_PEERS,
+    ];
     enableContentTrust: boolean = false;
     private _nameSubject: Subject<string> = new Subject<string>();
     private _nameSubscription: Subscription;
@@ -112,7 +137,8 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         private session: SessionService,
         private route: ActivatedRoute,
         private appConfigService: AppConfigService,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private cdr: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -165,6 +191,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     if (res && res.length > 0) {
                         this.isNameExisting = true;
                     }
+                    this.cdr.markForCheck();
                 });
         }
     }
@@ -182,6 +209,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity];
             }
             this.hasInit.emit(true);
+            this.cdr.markForCheck();
         });
     }
 
@@ -202,7 +230,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         }
         this.currentForm.reset({
             triggerType: 'manual',
-            scope: 'single_peer',
+            scope: DRAGONFLY_SCOPE.SINGLE_SEED_PEER,
             severity: PROJECT_SEVERITY_LEVEL_MAP[this.projectSeverity],
             onlySignedImages: this.enableContentTrust,
             provider: this.policy.provider_id,
@@ -308,14 +336,33 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
         policy.trigger = JSON.stringify(trigger);
         this.loading = true;
         this.buttonStatus = ClrLoadingState.LOADING;
-        policy.scope = this.scope ? this.scope : SCOPE.SINGLE_PEER;
+        // assemble extra attrs for dragonfly provider
+        let extraAttrs: ExtraAttrs = {};
+        if (this.isDragonflyProvider(policy.provider_id)) {
+            if (this.scope) {
+                extraAttrs['scope'] = this.scope;
+            }
+            if (this.clusterIDs) {
+                extraAttrs['cluster_ids'] = this.clusterIDs
+                    .split(',')
+                    .map(Number);
+            }
+        }
+        if (Object.keys(extraAttrs).length) {
+            policy.extra_attrs = JSON.stringify(extraAttrs);
+        }
         deleteEmptyKey(policy);
         if (isAdd) {
             policy.project_id = this.projectId;
             policy.enabled = true;
             this.preheatService
                 .CreatePolicy({ projectName: this.projectName, policy: policy })
-                .pipe(finalize(() => (this.loading = false)))
+                .pipe(
+                    finalize(() => {
+                        this.loading = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.buttonStatus = ClrLoadingState.SUCCESS;
@@ -335,7 +382,12 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
                     preheatPolicyName: this.originPolicyForEdit.name,
                     policy: policy,
                 })
-                .pipe(finalize(() => (this.loading = false)))
+                .pipe(
+                    finalize(() => {
+                        this.loading = false;
+                        this.cdr.markForCheck();
+                    })
+                )
                 .subscribe(
                     response => {
                         this.buttonStatus = ClrLoadingState.SUCCESS;
@@ -410,7 +462,11 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
             return true;
         }
         // eslint-disable-next-line eqeqeq
-        if (this.policy.scope != this.scope) {
+        if (this.originScopeForEdit != this.scope) {
+            return true;
+        }
+        // eslint-disable-next-line eqeqeq
+        if (this.originClusterIDsForEdit != this.clusterIDs) {
             return true;
         }
         // eslint-disable-next-line eqeqeq
@@ -430,7 +486,7 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
 
     getScopeI18n(scope): string {
         if (scope) {
-            return SCOPE_I18N_MAP[scope];
+            return DRAGONFLY_SCOPE_I18N_MAP[scope];
         }
         return '';
     }
@@ -443,5 +499,16 @@ export class AddP2pPolicyComponent implements OnInit, OnDestroy {
     }
     showExplainForEventBased(): boolean {
         return this.triggerType === TRIGGER.EVENT_BASED;
+    }
+
+    isDragonflyProvider(provider_id: number): boolean {
+        if (this.providers && this.providers.length) {
+            return this.providers.some(
+                provider =>
+                    provider_id == provider.id &&
+                    provider.provider.startsWith('dragonfly')
+            );
+        }
+        return false;
     }
 }

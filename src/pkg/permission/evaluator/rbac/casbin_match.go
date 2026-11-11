@@ -39,8 +39,8 @@ func (s *regexpStore) Get(key string, build func(string) *regexp.Regexp) *regexp
 }
 
 func (s *regexpStore) Purge() {
-	var keys []interface{}
-	s.entries.Range(func(key, _ interface{}) bool {
+	var keys []any
+	s.entries.Range(func(key, _ any) bool {
 		keys = append(keys, key)
 		return true
 	})
@@ -94,7 +94,7 @@ func keyMatch2(key1 string, key2 string) bool {
 	return store.Get(key2, keyMatch2Build).MatchString(key1)
 }
 
-func keyMatch2Func(args ...interface{}) (interface{}, error) {
+func keyMatch2Func(args ...any) (any, error) {
 	name1 := args[0].(string)
 	name2 := args[1].(string)
 

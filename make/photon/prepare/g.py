@@ -27,6 +27,7 @@ internal_tls_dir = secret_dir.joinpath('tls')
 
 storage_ca_bundle_filename = 'storage_ca_bundle.crt'
 internal_ca_filename = 'harbor_internal_ca.crt'
+redis_tls_ca_filename = 'redis_tls_ca.crt'
 
 old_private_key_pem_path = Path('/config/core/private_key.pem')
 old_crt_path = Path('/config/registry/root.crt')

@@ -40,9 +40,11 @@ clr-vertical-nav {
 }
 
 .global-msg {
-    position: absolute;
-    top: 0;
-    left: 2rem;
-    right: 2rem;
+    // position: absolute;
+    // top: 0;
+    // left: 2rem;
+    // right: 2rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
     z-index: 600;
 }

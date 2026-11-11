@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -32,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/controller/robot"
 	"github.com/goharbor/harbor/src/lib/cache"
 	"github.com/goharbor/harbor/src/lib/config"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	accessoryModel "github.com/goharbor/harbor/src/pkg/accessory/model"
@@ -224,7 +226,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 
 	rname := fmt.Sprintf("%s-%s-%s", config.ScannerRobotPrefix(context.TODO()), suite.registration.Name, "the-uuid-123")
 
-	conf := map[string]interface{}{
+	conf := map[string]any{
 		common.RobotTokenDuration: "30",
 	}
 	config.InitWithSettings(conf)
@@ -299,7 +301,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	robotJSON, err := rb.ToJSON()
 	require.NoError(suite.T(), err)
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
@@ -448,31 +450,47 @@ func (suite *ControllerTestSuite) TestScanControllerStop() {
 
 	{
 		// success
-		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{
-			{ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Running"},
+		suite.execMgr.On("List", mock.Anything, testifymock.MatchedBy(func(query *q.Query) bool {
+			return query != nil &&
+				query.Keywords["vendor_type"] == "IMAGE_SCAN" &&
+				query.Keywords["vendor_id"] == suite.artifact.ID &&
+				query.Keywords["extra_attrs.artifact.id"] == fmt.Sprintf("%d", suite.artifact.ID) &&
+				query.Keywords["extra_attrs.enabled_capabilities.type"] == "vulnerability"
+		})).Return([]*task.Execution{
+			{ID: int64(100), ExtraAttrs: suite.makeExtraAttrs(int64(1), "rp-uuid-001"), Status: "Running"},
 		}, nil).Once()
-		mock.OnAnything(suite.execMgr, "Stop").Return(nil).Once()
+		suite.execMgr.On("Stop", mock.Anything, int64(100)).Return(nil).Once()
 
-		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 
 		suite.Require().NoError(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
 	}
 
 	{
 		// failed due to no execution returned by List
-		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{}, nil).Once()
-		mock.OnAnything(suite.execMgr, "Stop").Return(nil).Once()
+		suite.execMgr.On("List", mock.Anything, testifymock.MatchedBy(func(query *q.Query) bool {
+			return query != nil &&
+				query.Keywords["vendor_type"] == "IMAGE_SCAN" &&
+				query.Keywords["vendor_id"] == suite.artifact.ID &&
+				query.Keywords["extra_attrs.artifact.id"] == fmt.Sprintf("%d", suite.artifact.ID) &&
+				query.Keywords["extra_attrs.enabled_capabilities.type"] == "vulnerability"
+		})).Return([]*task.Execution{}, nil).Once()
 
-		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 
-		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
+		err := suite.c.Stop(ctx, suite.artifact, "vulnerability")
+		suite.Require().Error(err)
+		suite.True(errors.IsErr(err, errors.BadRequestCode))
+		suite.Contains(err.Error(), fmt.Sprintf("id=%d", suite.artifact.ID))
+		suite.Contains(err.Error(), suite.artifact.RepositoryName)
+		suite.Contains(err.Error(), suite.artifact.Digest)
 	}
 
 	{
 		// failed due to execMgr.List() errored out
 		mock.OnAnything(suite.execMgr, "List").Return([]*task.Execution{}, fmt.Errorf("failed to call execMgr.List()")).Once()
 
-		ctx := orm.NewContext(nil, &ormtesting.FakeOrmer{})
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
 
 		suite.Require().Error(suite.c.Stop(ctx, suite.artifact, "vulnerability"))
 	}
@@ -672,10 +690,10 @@ func (suite *ControllerTestSuite) TestStopScanAll() {
 	suite.NoError(err)
 }
 
-func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]interface{} {
-	b, _ := json.Marshal(map[string]interface{}{reportUUIDsKey: reportUUIDs})
+func (suite *ControllerTestSuite) makeExtraAttrs(artifactID int64, reportUUIDs ...string) map[string]any {
+	b, _ := json.Marshal(map[string]any{reportUUIDsKey: reportUUIDs})
 
-	extraAttrs := map[string]interface{}{}
+	extraAttrs := map[string]any{}
 	json.Unmarshal(b, &extraAttrs)
 	extraAttrs[artifactIDKey] = float64(artifactID)
 

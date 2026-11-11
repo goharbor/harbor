@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import { dismissInterval } from '../../entities/shared.const';
     selector: 'global-message',
     templateUrl: 'message.component.html',
     styleUrls: ['message.component.scss'],
+    standalone: false,
 })
 export class MessageComponent implements OnInit, OnDestroy {
     globalMessage: Message = new Message();
@@ -95,5 +96,11 @@ export class MessageComponent implements OnInit, OnDestroy {
             clearTimeout(this.timer);
         }
         this.globalMessageOpened = false;
+    }
+
+    onAlertClosedChange(closed: boolean): void {
+        if (closed) {
+            this.onClose();
+        }
     }
 }

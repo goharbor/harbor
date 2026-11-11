@@ -1,0 +1,52 @@
+.locale-selected {
+    font-weight: bold;
+}
+
+.nav-icon-width {
+    width: auto !important;
+    padding-left: 18px !important;
+
+    .icon-left {
+        left: -8px;
+    }
+    /* stylelint-disable */
+    .currentLocale {
+        padding-right: 40px;
+        padding-left: 10px;
+    }
+}
+
+.centered-content-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 70%;
+}
+
+.dropdowns {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.custom-runtime-footer {
+    margin-top: 12px;
+    display: flex;
+
+    .ok-item-wrapper {
+        width: auto;
+        padding: 0;
+        background: var(--clr-btn-primary-bg-color);
+        color: var(--clr-btn-primary-color);
+        border: var(--clr-btn-primary-border-color);
+        border-radius: var(--clr-btn-border-radius);
+
+        > .btn.btn-primary {
+            background: var(--clr-btn-primary-bg-color);
+            color: var(--clr-btn-primary-color);
+            border: var(--clr-btn-primary-border-color);
+        }
+    }
+}

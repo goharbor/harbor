@@ -1,45 +1,45 @@
 <span class="back-icon"><</span>
-<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">{{
+@if (hasSignedIn) {
+<a (click)="backToProject()" class="backStyle">{{
     'PROJECT_DETAIL.PROJECTS' | translate
 }}</a>
-<ng-container *ngIf="hasSignedIn && isWebhookTaskListPage()">
-    <span class="back-icon"><</span>
-    <a (click)="backToWebhook()" class="backStyle">{{
-        'PROJECT_DETAIL.WEBHOOKS' | translate
-    }}</a>
-</ng-container>
-<ng-container *ngIf="hasSignedIn && isP2pPreheatTaskListPage()">
-    <span class="back-icon"><</span>
-    <a (click)="backToP2pPreheat()" class="backStyle">{{
-        'P2P_PROVIDER.P2P_PROVIDER' | translate
-    }}</a>
-</ng-container>
-
-<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']" class="backStyle">
+} @if (hasSignedIn && isWebhookTaskListPage()) {
+<span class="back-icon"><</span>
+<a (click)="backToWebhook()" class="backStyle">{{
+    'PROJECT_DETAIL.WEBHOOKS' | translate
+}}</a>
+} @if (hasSignedIn && isP2pPreheatTaskListPage()) {
+<span class="back-icon"><</span>
+<a (click)="backToP2pPreheat()" class="backStyle">{{
+    'P2P_PROVIDER.P2P_PROVIDER' | translate
+}}</a>
+} @if (!hasSignedIn) {
+<a [routerLink]="['/harbor', 'sign-in']" class="backStyle">
     {{ 'SEARCH.BACK' | translate }}</a
 >
+}
 <div class="clr-row">
     <div class="clr-col-5">
         <h1 class="custom-h2 center" sub-header-title>
-            <clr-icon
-                *ngIf="isProxyCacheProject"
-                shape="cloud-traffic"
-                size="30"></clr-icon>
-            <clr-icon
-                *ngIf="!isProxyCacheProject"
-                shape="organization"
-                size="30"></clr-icon>
+            @if (isProxyCacheProject) {
+            <clr-icon shape="cloud-traffic" size="30"></clr-icon>
+            } @if (!isProxyCacheProject) {
+            <clr-icon shape="organization" size="30"></clr-icon>
+            }
             <span class="ml-05 project-name">{{ currentProject.name }}</span>
-            <div class="divider filter-divider" *ngIf="isMember"></div>
-            <span class="role-label" *ngIf="isMember">{{
-                roleName | translate
-            }}</span>
+            @if (isMember) {
+            <div class="divider filter-divider"></div>
+            } @if (isMember) {
+            <span class="role-label">{{ roleName | translate }}</span>
+            }
         </h1>
-        <div class="clr-row mt-0 line-height-10" *ngIf="isProxyCacheProject">
+        @if (isProxyCacheProject) {
+        <div class="clr-row mt-0 line-height-10">
             <span class="proxy-cache">{{
                 'PROJECT.PROXY_CACHE' | translate
             }}</span>
         </div>
+        }
     </div>
     <div class="clr-col-7 flex-end">
         <div class="card">
@@ -59,13 +59,15 @@
                 </div>
             </div>
         </div>
-        <div class="card" *ngIf="hasQuotaReadPermission">
+        @if (hasQuotaReadPermission) {
+        <div class="card">
             <div class="card-block container">
                 <div class="head">
                     {{ 'QUOTA.QUOTA_USED' | translate }}
                 </div>
                 <div class="storage-used font-weight-700">
-                    <div *ngIf="projectQuota">
+                    @if (projectQuota) {
+                    <div>
                         <h3 class="mt-0 clr-display-inline-block">
                             <span class="size-number">{{
                                 getSizeNumber()
@@ -123,31 +125,32 @@
                             </div>
                         </div>
                     </div>
+                    }
                 </div>
             </div>
         </div>
+        }
     </div>
 </div>
 <clr-tabs
     id="project-tabs"
     class="tabs"
     [class.in-overflow]="isTabLinkInOverFlow()">
-    <ng-container *ngFor="let tab of tabLinkNavList; let i = index">
-        <ng-container *ngIf="tab.permissions()">
-            <clr-tab>
-                <button
-                    [class.clear-default-active]="isDefaultTab(tab, i)"
-                    [clrTabLinkInOverflow]="tab.tabLinkInOverflow"
-                    id="{{ 'project-' + tab.linkName }}"
-                    clrTabLink
-                    routerLink="{{ tab.linkName }}"
-                    routerLinkActive="active"
-                    type="button">
-                    <a class="nav-link">{{ tab.showTabName | translate }}</a>
-                </button>
-            </clr-tab>
-        </ng-container>
-    </ng-container>
+    @for (tab of tabLinkNavList; track tab; let i = $index) { @if
+    (tab.permissions()) {
+    <clr-tab>
+        <button
+            [class.clear-default-active]="isDefaultTab(tab, i)"
+            [clrTabLinkInOverflow]="tab.tabLinkInOverflow"
+            id="{{ 'project-' + tab.linkName }}"
+            clrTabLink
+            routerLink="{{ tab.linkName }}"
+            routerLinkActive="active"
+            type="button">
+            {{ tab.showTabName | translate }}
+        </button>
+    </clr-tab>
+    } }
 </clr-tabs>
 
 <router-outlet></router-outlet>

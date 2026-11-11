@@ -22,7 +22,11 @@ import { InterceptHttpService } from './services/intercept-http.service';
 import { HarborRoutingModule } from './harbor-routing.module';
 import { AppConfigService } from './services/app-config.service';
 import { SkinableConfig } from './services/skinable-config.service';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import {
+    HTTP_INTERCEPTORS,
+    provideHttpClient,
+    withInterceptorsFromDi,
+} from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CookieModule } from 'ngx-cookie';
 import {
@@ -40,6 +44,7 @@ import {
 import { ErrorHandler } from './shared/units/error-handler';
 import { MessageHandlerService } from './shared/services/message-handler.service';
 import { HarborTranslateLoaderService } from './services/harbor-translate-loader.service';
+import { ClrIconModule } from '@clr/angular';
 
 function initConfig(
     configService: AppConfigService,
@@ -60,6 +65,8 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
 
 @NgModule({
     declarations: [AppComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    bootstrap: [AppComponent],
     imports: [
         TranslateModule.forRoot({
             loader: {
@@ -73,9 +80,9 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
         }),
         BrowserModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         HarborRoutingModule,
         CookieModule.forRoot(),
+        ClrIconModule,
     ],
     providers: [
         AppConfigService,
@@ -97,8 +104,7 @@ class MyMissingTranslationHandler implements MissingTranslationHandler {
             provide: UserPermissionService,
             useClass: UserPermissionDefaultService,
         },
+        provideHttpClient(withInterceptorsFromDi()),
     ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    bootstrap: [AppComponent],
 })
 export class AppModule {}

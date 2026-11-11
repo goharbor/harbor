@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import { getRepoLink } from '../../../base/left-side-nav/interrogation-services/
     selector: 'list-repository-ro',
     templateUrl: 'list-repository-ro.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
 })
 export class ListRepositoryROComponent {
     @Input() repositories: Repository[];

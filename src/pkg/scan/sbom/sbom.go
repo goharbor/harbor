@@ -78,8 +78,8 @@ func (h *scanHandler) RequestProducesMineTypes() []string {
 }
 
 // RequestParameters defines the parameters for scan request
-func (h *scanHandler) RequestParameters() map[string]interface{} {
-	return map[string]interface{}{"sbom_media_types": []string{sbomMediaTypeSpdx}}
+func (h *scanHandler) RequestParameters() map[string]any {
+	return map[string]any{"sbom_media_types": []string{sbomMediaTypeSpdx}}
 }
 
 // PostScan defines task specific operations after the scan is complete
@@ -295,7 +295,7 @@ func (h *scanHandler) GetPlaceHolder(ctx context.Context, artRepo string, artDig
 	}, nil
 }
 
-func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mimeTypes []string) (map[string]interface{}, error) {
+func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mimeTypes []string) (map[string]any, error) {
 	if len(mimeTypes) == 0 {
 		return nil, errors.New("no mime types to get report summaries")
 	}
@@ -312,10 +312,10 @@ func (h *scanHandler) GetSummary(ctx context.Context, art *artifact.Artifact, mi
 		return nil, err
 	}
 	if len(reports) == 0 {
-		return map[string]interface{}{}, nil
+		return map[string]any{}, nil
 	}
 	reportContent := reports[0].ReportSummary
-	result := map[string]interface{}{}
+	result := map[string]any{}
 	if len(reportContent) == 0 {
 		status := h.TaskMgrFunc().RetrieveStatusFromTask(ctx, reports[0].UUID)
 		if len(status) > 0 {

@@ -28,7 +28,7 @@ func (s *testSuite) TestSetAndGet() {
 	s.Nil(err)
 	s.Nil(l)
 	var longList []models.CVEAllowlistItem
-	for i := 0; i < 50; i++ {
+	for range 50 {
 		longList = append(longList, models.CVEAllowlistItem{CVEID: "CVE-1999-0067"})
 	}
 

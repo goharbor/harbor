@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
@@ -16,13 +29,20 @@ import {
 } from '../../../../shared/units/utils';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { Task } from 'ng-swagger-gen/models/task';
+import { PAGE_SIZE_OPTIONS } from 'src/app/shared/entities/shared.const';
+import {
+    SkipSessionRenewalService,
+    skipSessionRenewal,
+} from '../../../../services/skip-session-renewal.service';
 
 @Component({
     selector: 'app-tasks',
     templateUrl: './tasks.component.html',
     styleUrls: ['./tasks.component.scss'],
+    standalone: false,
 })
 export class TasksComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     projectId: number;
     policyId: number;
     tasks: Task[] = [];
@@ -42,7 +62,8 @@ export class TasksComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private webhookService: WebhookService,
-        private messageHandlerService: MessageHandlerService
+        private messageHandlerService: MessageHandlerService,
+        private skipSessionRenewalService: SkipSessionRenewalService
     ) {}
     ngOnInit(): void {
         this.projectId = +this.route.snapshot.parent.parent.params['id'];
@@ -75,6 +96,7 @@ export class TasksComponent implements OnInit, OnDestroy {
                     projectNameOrId: this.projectId.toString(),
                     q: encodeURIComponent(`id=${this.executionId}`),
                 })
+                .pipe(skipSessionRenewal(this.skipSessionRenewalService))
                 .pipe(finalize(() => (this.inProgress = false)))
                 .subscribe({
                     next: res => {
@@ -148,6 +170,7 @@ export class TasksComponent implements OnInit, OnDestroy {
                 sort: sort,
                 q: q,
             })
+            .pipe(skipSessionRenewal(this.skipSessionRenewalService))
             .pipe(
                 finalize(() => {
                     this.loading = false;

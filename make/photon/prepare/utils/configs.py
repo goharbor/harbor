@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import logging
 import os
 import yaml
@@ -16,7 +17,15 @@ default_https_key_path = '/your/certificate/path'
 REGISTRY_USER_NAME = 'harbor_registry_user'
 
 
+WEBHOOK_EGRESS_POLICIES = ('allow_all', 'block_restricted', 'public_only')
+
+
 def validate(conf: dict, **kwargs):
+    # webhook egress policy validate
+    if conf.get('webhook_egress_policy') and conf['webhook_egress_policy'] not in WEBHOOK_EGRESS_POLICIES:
+        raise Exception("Error: webhook_egress.policy must be one of {}, got {!r}".format(
+            ', '.join(WEBHOOK_EGRESS_POLICIES), conf['webhook_egress_policy']))
+
     # hostname validate
     if conf.get('hostname') == '127.0.0.1':
         raise Exception("127.0.0.1 can not be the hostname")
@@ -208,11 +217,28 @@ def parse_yaml_config(config_file_path, with_trivy):
         config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
         config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
+    # Webhook and Slack notification egress; an unset policy leaves the default to Harbor
+    webhook_egress_config = configs.get('webhook_egress') or {}
+    webhook_egress_policy = webhook_egress_config.get('policy')
+    config_dict['webhook_egress_policy'] = '' if webhook_egress_policy is None else str(webhook_egress_policy).strip().lower()
+    webhook_egress_allowlist = webhook_egress_config.get('allowlist') or []
+    if isinstance(webhook_egress_allowlist, str):
+        webhook_egress_allowlist = [webhook_egress_allowlist]
+    config_dict['webhook_egress_allowlist'] = ','.join(str(entry).strip() for entry in webhook_egress_allowlist)
+    # 2.15 boolean, passed through so its meaning survives the upgrade
+    allow_private_network_access = (configs.get('network') or {}).get('allow_private_network_access')
+    config_dict['allow_private_network_access'] = ''
+    if allow_private_network_access is not None:
+        logging.warning("WARNING: network.allow_private_network_access is deprecated, use webhook_egress.policy")
+        config_dict['allow_private_network_access'] = str(allow_private_network_access).lower()
+
     # Trivy configs, optional
     trivy_configs = configs.get("trivy") or {}
     config_dict['trivy_github_token'] = trivy_configs.get("github_token") or ''
     config_dict['trivy_skip_update'] = trivy_configs.get("skip_update") or False
     config_dict['trivy_skip_java_db_update'] = trivy_configs.get("skip_java_db_update") or False
+    config_dict['trivy_db_repository'] = trivy_configs.get("db_repository") or 'ghcr.io/aquasecurity/trivy-db'
+    config_dict['trivy_java_db_repository'] = trivy_configs.get("java_db_repository") or 'ghcr.io/aquasecurity/trivy-java-db'
     config_dict['trivy_offline_scan'] = trivy_configs.get("offline_scan") or False
     config_dict['trivy_security_check'] = trivy_configs.get("security_check") or 'vuln'
     config_dict['trivy_ignore_unfixed'] = trivy_configs.get("ignore_unfixed") or False
@@ -222,6 +248,10 @@ def parse_yaml_config(config_file_path, with_trivy):
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
+    config_dict['max_job_duration_hours'] = js_config.get("max_job_duration_hours") or 24
+    value = config_dict["max_job_duration_hours"]
+    if not isinstance(value, int) or value < 24:
+        config_dict["max_job_duration_hours"] = 24
     config_dict['job_loggers'] = js_config["job_loggers"]
     config_dict['logger_sweeper_duration'] = js_config["logger_sweeper_duration"]
     config_dict['jobservice_secret'] = generate_random_string(16)
@@ -349,6 +379,11 @@ def parse_yaml_config(config_file_path, with_trivy):
 
     return config_dict
 
+def get_redis_schema(redis=None):
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        return redis.get('sentinel_master_set', None) and 'rediss+sentinel' or 'rediss'
+    else:
+        return redis.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
 
 def get_redis_url(db, redis=None):
     """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index?idle_timeout_seconds=30`
@@ -368,7 +403,7 @@ def get_redis_url(db, redis=None):
         'password': '',
     }
     kwargs.update(redis or {})
-    kwargs['scheme'] = kwargs.get('sentinel_master_set', None) and 'redis+sentinel' or 'redis'
+    kwargs['scheme'] = get_redis_schema(kwargs)
     kwargs['db_part'] = db and ("/%s" % db) or ""
     kwargs['sentinel_part'] = kwargs.get('sentinel_master_set', None) and ("/" + kwargs['sentinel_master_set']) or ''
     kwargs['password_part'] = quote(str(kwargs.get('password', None)), safe='') and (':%s@' % quote(str(kwargs['password']), safe='')) or ''
@@ -453,5 +488,8 @@ def get_redis_configs(internal_redis=None, external_redis=None, with_trivy=True)
 
     if with_trivy:
         configs['trivy_redis_url'] = get_redis_url(redis['trivy_db_index'], redis)
+    
+    if 'tlsOptions' in redis and redis['tlsOptions'].get('enable'):
+        configs['redis_custom_tls_ca_path'] = redis['tlsOptions']['rootCA']
 
     return configs

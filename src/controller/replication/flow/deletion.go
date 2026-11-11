@@ -59,10 +59,22 @@ func (d *deletionFlow) Run(ctx context.Context) error {
 		return err
 	}
 
-	return d.createTasks(ctx, srcResources, dstResources)
+	var execution *task.Execution
+	if d.executionMgr != nil {
+		execution, err = d.executionMgr.Get(ctx, d.executionID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return d.createTasks(ctx, execution, srcResources, dstResources)
 }
 
-func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResources []*model.Resource) error {
+func (d *deletionFlow) createTasks(
+	ctx context.Context, execution *task.Execution, srcResources, dstResources []*model.Resource,
+) error {
+	jobName := getReplicationJobName(execution)
+
 	for i, resource := range srcResources {
 		src, err := json.Marshal(resource)
 		if err != nil {
@@ -74,11 +86,11 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 		}
 
 		job := &task.Job{
-			Name: job.ReplicationVendorType,
+			Name: jobName,
 			Metadata: &job.Metadata{
 				JobKind: job.KindGeneric,
 			},
-			Parameters: map[string]interface{}{
+			Parameters: map[string]any{
 				"src_resource": string(src),
 				"dst_resource": string(dest),
 			},
@@ -89,7 +101,7 @@ func (d *deletionFlow) createTasks(ctx context.Context, srcResources, dstResourc
 			operation = "tag deletion"
 		}
 
-		if _, err = d.taskMgr.Create(ctx, d.executionID, job, map[string]interface{}{
+		if _, err = d.taskMgr.Create(ctx, d.executionID, job, map[string]any{
 			"operation":            operation,
 			"resource_type":        string(resource.Type),
 			"source_resource":      getResourceName(resource),

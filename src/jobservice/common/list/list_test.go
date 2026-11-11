@@ -43,7 +43,7 @@ func (suite *ListSuite) SetupSuite() {
 }
 
 func (suite *ListSuite) TestIterate() {
-	suite.l.Iterate(func(ele interface{}) bool {
+	suite.l.Iterate(func(ele any) bool {
 		if s, ok := ele.(string); ok {
 			if strings.HasPrefix(s, "b") {
 				return true
@@ -54,4 +54,10 @@ func (suite *ListSuite) TestIterate() {
 	})
 
 	suite.Equal(3, suite.l.l.Len())
+}
+
+func (suite *ListSuite) TestPushNil() {
+	initialLen := suite.l.l.Len()
+	suite.l.Push(nil)
+	suite.Equal(initialLen, suite.l.l.Len(), "pushing nil should not increase the length")
 }

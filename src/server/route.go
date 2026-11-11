@@ -40,6 +40,7 @@ func registerRoutes() {
 	web.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
 	web.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
 	web.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
+	web.Router(common.OIDCLoginoutPath, &controllers.OIDCController{}, "get:RedirectLogout")
 	web.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 	web.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
 	web.Router(common.AuthProxyRedirectPath, &controllers.AuthProxyController{}, "get:HandleRedirect")
@@ -53,7 +54,9 @@ func registerRoutes() {
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/replication/:id([0-9]+)").Handler(handler.NewJobStatusHandler())      // legacy job status hook endpoint for replication scheduler
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/replication/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler()) // legacy job status hook endpoint for replication task
 	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/jobs/retention/task/:id([0-9]+)").Handler(handler.NewJobStatusHandler())
-	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewJobStatusHandler())
+	// Only this callback route uses a persisted task ID; legacy routes above keep
+	// job-based lookup while sharing the same internal-service identity check.
+	router.NewRoute().Method(http.MethodPost).Path("/service/notifications/tasks/:id").Handler(handler.NewTaskJobStatusHandler())
 
 	web.Router("/service/token", &token.Handler{})
 

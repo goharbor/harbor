@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"sync"
 	"time"
 
@@ -206,9 +207,7 @@ func (mgr *systemArtifactManager) Cleanup(ctx context.Context) (int64, int64, er
 	// iterate through this copy to invoke the cleanup
 	registeredCriteria := make(map[string]Selector, 0)
 	mgr.lock.Lock()
-	for key, val := range mgr.cleanupCriteria {
-		registeredCriteria[key] = val
-	}
+	maps.Copy(registeredCriteria, mgr.cleanupCriteria)
 	mgr.lock.Unlock()
 
 	for key, val := range registeredCriteria {

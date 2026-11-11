@@ -15,6 +15,7 @@
 package redis
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"sort"
@@ -22,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -35,6 +36,7 @@ var (
 // ParseSentinelURL parses sentinel url to redis FailoverOptions.
 // It's a modified version of go-redis ParseURL(https://github.com/go-redis/redis/blob/997118894af9d4244d4a471f2b317eead9c9ca62/options.go#L222) because official version does
 // not support parse sentinel mode.
+// redis+sentinel://user:pass@redis_sentinel1:port1,redis_sentinel2:port2/monitor_name/db?idle_timeout_seconds=100
 func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 	u, err := url.Parse(redisURL)
 	if err != nil {
@@ -62,6 +64,13 @@ func ParseSentinelURL(redisURL string) (*redis.FailoverOptions, error) {
 		}
 	default:
 		return nil, errors.Errorf("redis: invalid redis URL path: %s", u.Path)
+	}
+
+	// set tls config for redis+sentinel client use tls connections
+	if u.Scheme == "rediss+sentinel" {
+		o.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
 	}
 
 	return setupConnParams(u, o)
@@ -178,14 +187,13 @@ func setupConnParams(u *url.URL, o *redis.FailoverOptions) (*redis.FailoverOptio
 	o.PoolFIFO = q.bool("pool_fifo")
 	o.PoolSize = q.int("pool_size")
 	o.MinIdleConns = q.int("min_idle_conns")
-	o.MaxConnAge = q.duration("max_conn_age")
+	o.ConnMaxLifetime = q.duration("max_conn_age")
 	o.PoolTimeout = q.duration("pool_timeout")
-	o.IdleTimeout = q.duration("idle_timeout")
+	o.ConnMaxIdleTime = q.duration("idle_timeout")
 	// For compatibility
 	if t := q.duration("idle_timeout_seconds"); t != 0 {
-		o.IdleTimeout = t
+		o.ConnMaxIdleTime = t
 	}
-	o.IdleCheckFrequency = q.duration("idle_check_frequency")
 	if q.err != nil {
 		return nil, q.err
 	}

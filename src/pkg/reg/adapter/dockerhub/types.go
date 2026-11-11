@@ -14,15 +14,15 @@
 
 package dockerhub
 
-// LoginCredential is request to login.
+// LoginCredential is the request body for POST /v2/auth/token.
 type LoginCredential struct {
-	User     string `json:"username"`
-	Password string `json:"password"`
+	Identifier string `json:"identifier"`
+	Secret     string `json:"secret"`
 }
 
-// TokenResp is response of login.
+// TokenResp is the response from POST /v2/auth/token.
 type TokenResp struct {
-	Token string `json:"token"`
+	AccessToken string `json:"access_token"`
 }
 
 // NamespacesResp is namespace list responsed from DockerHub.

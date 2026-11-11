@@ -20,9 +20,11 @@
                         class="spinner spinner-inline"
                         [hidden]="!checkOnGoing"></span>
                 </div>
-                <clr-control-error *ngIf="!isNameValid">
+                @if (!isNameValid) {
+                <clr-control-error>
                     <span id="name-error">{{ nameTooltip | translate }}</span>
                 </clr-control-error>
+                }
             </div>
         </div>
         <div class="clr-form-control">
@@ -64,12 +66,13 @@
                         class="spinner spinner-inline"
                         [hidden]="!checkEndpointOnGoing"></span>
                 </div>
-                <clr-control-error
-                    *ngIf="!isEndpointValid || showEndpointError">
+                @if (!isEndpointValid || showEndpointError) {
+                <clr-control-error>
                     <span id="endpoint-error">{{
                         endpointTooltip | translate
                     }}</span>
                 </clr-control-error>
+                }
             </div>
         </div>
         <div class="clr-form-control">
@@ -99,7 +102,8 @@
             </div>
         </div>
         <ng-container formGroupName="accessCredential">
-            <div class="clr-form-control" *ngIf="auth === 'Basic'">
+            @if (auth === 'Basic') {
+            <div class="clr-form-control">
                 <label class="required clr-control-label">{{
                     'SCANNER.USERNAME' | translate
                 }}</label>
@@ -117,12 +121,15 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                     </div>
-                    <clr-control-error *ngIf="!isUserNameValid">
+                    @if (!isUserNameValid) {
+                    <clr-control-error>
                         {{ 'SCANNER.USERNAME_REQUIRED' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
-            <div class="clr-form-control" *ngIf="auth === 'Basic'">
+            } @if (auth === 'Basic') {
+            <div class="clr-form-control">
                 <label class="required clr-control-label">{{
                     'SCANNER.PASSWORD' | translate
                 }}</label>
@@ -140,14 +147,17 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                     </div>
-                    <clr-control-error *ngIf="!isPasswordValid">
+                    @if (!isPasswordValid) {
+                    <clr-control-error>
                         <span id="pwd-error">{{
                             'SCANNER.PASSWORD_REQUIRED' | translate
                         }}</span>
                     </clr-control-error>
+                    }
                 </div>
             </div>
-            <div class="clr-form-control" *ngIf="auth === 'Bearer'">
+            } @if (auth === 'Bearer') {
+            <div class="clr-form-control">
                 <label class="required clr-control-label">{{
                     'SCANNER.TOKEN' | translate
                 }}</label>
@@ -165,12 +175,15 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                     </div>
-                    <clr-control-error *ngIf="!isTokenValid">
+                    @if (!isTokenValid) {
+                    <clr-control-error>
                         {{ 'SCANNER.TOKEN_REQUIRED' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
-            <div class="clr-form-control" *ngIf="auth === 'APIKey'">
+            } @if (auth === 'APIKey') {
+            <div class="clr-form-control">
                 <label class="required clr-control-label">{{
                     'SCANNER.API_KEY' | translate
                 }}</label>
@@ -188,11 +201,14 @@
                             class="clr-validate-icon"
                             shape="exclamation-circle"></clr-icon>
                     </div>
-                    <clr-control-error *ngIf="!isApiKeyValid">
+                    @if (!isApiKeyValid) {
+                    <clr-control-error>
                         {{ 'SCANNER.API_KEY_REQUIRED' | translate }}
                     </clr-control-error>
+                    }
                 </div>
             </div>
+            }
         </ng-container>
         <div class="clr-form-control">
             <label class="clr-control-label">{{

@@ -34,7 +34,7 @@ const (
 )
 
 // Summary includes the sbom summary information
-type Summary map[string]interface{}
+type Summary map[string]any
 
 // SBOMAccArt returns the repository and digest of the SBOM
 func (s Summary) SBOMAccArt() (repo, digest string) {

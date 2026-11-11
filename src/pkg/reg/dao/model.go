@@ -30,17 +30,18 @@ type Registry struct {
 	URL            string    `orm:"column(url)"`
 	Name           string    `orm:"column(name)"`
 	CredentialType string    `orm:"column(credential_type);default(basic)"`
-	AccessKey      string    `orm:"column(access_key)"`
-	AccessSecret   string    `orm:"column(access_secret)"`
+	AccessKey      string    `orm:"column(access_key)" filter:"false"`
+	AccessSecret   string    `orm:"column(access_secret)" filter:"false"`
 	Type           string    `orm:"column(type)"`
 	Insecure       bool      `orm:"column(insecure)"`
+	CACertificate  string    `orm:"column(ca_certificate);null" filter:"false"`
 	Description    string    `orm:"column(description)"`
 	Status         string    `orm:"column(health)"`
 	CreationTime   time.Time `orm:"column(creation_time);auto_now_add"`
 	UpdateTime     time.Time `orm:"column(update_time);auto_now"`
 }
 
-// TableName is required by by beego orm to map Registry to table registry
+// TableName is required by beego orm to map Registry to table registry
 func (r *Registry) TableName() string {
 	return "registry"
 }

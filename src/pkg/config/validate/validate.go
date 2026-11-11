@@ -27,5 +27,5 @@ import (
 // 3. Add the rule to validateRules in pkg/config/manager.go
 type Rule interface {
 	// Validate validates a specific group of configuration items, cfgs contains the config need to be updated, the final config should merged with the cfgMgr
-	Validate(ctx context.Context, cfgMgr config.Manager, cfgs map[string]interface{}) error
+	Validate(ctx context.Context, cfgMgr config.Manager, cfgs map[string]any) error
 }

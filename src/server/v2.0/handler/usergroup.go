@@ -17,14 +17,12 @@ package handler
 import (
 	"context"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils"
 	ugCtl "github.com/goharbor/harbor/src/controller/usergroup"
 	"github.com/goharbor/harbor/src/lib/config"
 	"github.com/goharbor/harbor/src/lib/errors"
@@ -194,7 +192,7 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 		return u.SendError(ctx, err)
 	}
 	if len(params.Groupname) == 0 {
-		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("need to provide groupname to search user group"))
+		return u.SendError(ctx, errors.BadRequestError(nil).WithMessage("A group name must be provided to search user groups"))
 	}
 	query.Keywords["GroupName"] = &q.FuzzyMatchValue{Value: params.Groupname}
 	total, err := u.ctl.Count(ctx, query)
@@ -204,14 +202,11 @@ func (u *userGroupAPI) SearchUserGroups(ctx context.Context, params operation.Se
 	if total == 0 {
 		return operation.NewSearchUserGroupsOK().WithXTotalCount(0).WithPayload([]*models.UserGroupSearchItem{})
 	}
-	ug, err := u.ctl.List(ctx, query)
+	ug, err := u.ctl.SearchByName(ctx, params.Groupname, int(*params.PageSize))
 	if err != nil {
 		return u.SendError(ctx, err)
 	}
 	result := getUserGroupSearchItem(ug)
-	sort.Slice(result, func(i, j int) bool {
-		return utils.MostMatchSorter(result[i].GroupName, result[j].GroupName, params.Groupname)
-	})
 	return operation.NewSearchUserGroupsOK().WithXTotalCount(total).
 		WithPayload(result).
 		WithLink(u.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String())

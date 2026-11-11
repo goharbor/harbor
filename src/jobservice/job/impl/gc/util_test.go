@@ -59,7 +59,7 @@ func TestDelKeys(t *testing.T) {
 	// helper function
 	// mock the data in the redis
 	mock := func(count int, prefix string) {
-		for i := 0; i < count; i++ {
+		for i := range count {
 			err = c.Save(context.TODO(), fmt.Sprintf("%s-%d", prefix, i), "", 0)
 			assert.NoError(t, err)
 		}

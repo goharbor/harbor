@@ -51,7 +51,7 @@ func (c *Cache) Contains(ctx context.Context, key string) bool {
 	}
 
 	if e.(*entry).isExpirated() {
-		err := c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, key)
 		log.Errorf("failed to delete cache in Contains() method when it's expired, error: %v", err)
 		return false
 	}
@@ -66,7 +66,7 @@ func (c *Cache) Delete(_ context.Context, key string) error {
 }
 
 // Fetch retrieve the cached key value
-func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error {
+func (c *Cache) Fetch(ctx context.Context, key string, value any) error {
 	v, ok := c.storage.Load(c.opts.Key(key))
 	if !ok {
 		return cache.ErrNotFound
@@ -74,7 +74,7 @@ func (c *Cache) Fetch(ctx context.Context, key string, value interface{}) error 
 
 	e := v.(*entry)
 	if e.isExpirated() {
-		err := c.Delete(ctx, c.opts.Key(key))
+		err := c.Delete(ctx, key)
 		if err != nil {
 			log.Errorf("failed to delete cache in Fetch() method when it's expired, error: %v", err)
 		}
@@ -94,7 +94,7 @@ func (c *Cache) Ping(_ context.Context) error {
 }
 
 // Save cache the value by key
-func (c *Cache) Save(_ context.Context, key string, value interface{}, expiration ...time.Duration) error {
+func (c *Cache) Save(_ context.Context, key string, value any, expiration ...time.Duration) error {
 	data, err := c.opts.Codec.Encode(value)
 	if err != nil {
 		return fmt.Errorf("failed to encode value, key %s, error: %v", key, err)
@@ -120,7 +120,7 @@ func (c *Cache) Save(_ context.Context, key string, value interface{}, expiratio
 // Scan scans the keys matched by match string
 func (c *Cache) Scan(_ context.Context, match string) (cache.Iterator, error) {
 	var keys []string
-	c.storage.Range(func(k, v interface{}) bool {
+	c.storage.Range(func(k, v any) bool {
 		matched := true
 		if match != "" {
 			matched = strings.Contains(k.(string), match)
@@ -166,6 +166,11 @@ func (i *ScanIterator) Val() string {
 	}
 
 	return val
+}
+
+// Err returns nil because the in-memory scan cannot fail after it starts.
+func (*ScanIterator) Err() error {
+	return nil
 }
 
 // New returns memory cache

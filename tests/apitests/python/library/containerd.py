@@ -5,7 +5,7 @@ import json
 import docker_api
 
 def ctr_images_pull(username, password, oci):
-    command = ["ctr", "images", "pull","--snapshotter", "native", "-u", username+":"+password, oci]
+    command = ["ctr", "images", "pull", "-k", "--snapshotter", "native", "-u", username+":"+password, oci]
     ret = base.run_command(command)
 
 def ctr_images_list(oci_ref = None):

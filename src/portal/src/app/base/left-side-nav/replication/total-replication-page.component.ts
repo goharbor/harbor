@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ const URL_TO_DISPLAY: string = '/harbor/replications';
     selector: 'total-replication',
     templateUrl: 'total-replication-page.component.html',
     styleUrls: ['./total-replication-page.component.scss'],
+    standalone: false,
 })
 export class TotalReplicationPageComponent implements OnInit, OnDestroy {
     routerSub: Subscription;

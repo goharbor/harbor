@@ -40,6 +40,7 @@ import { SessionService } from './shared/services/session.service';
 @Component({
     selector: 'harbor-app',
     templateUrl: 'app.component.html',
+    standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
     themeArray: ThemeInterface[] = clone(THEME_ARRAY);
@@ -88,7 +89,9 @@ export class AppComponent implements OnInit, OnDestroy {
                 if (this.sessionService.getCurrentUser()?.has_admin_role) {
                     this.jobServiceDashboardHealthCheckService.checkHealth();
                 } else {
-                    this.jobServiceDashboardHealthCheckService.setHealthy(true);
+                    this.jobServiceDashboardHealthCheckService.setUnHealthy(
+                        false
+                    );
                 }
             }, CHECK_HEALTH_INTERVAL);
         }

@@ -67,7 +67,7 @@ func TestRegexpStore(t *testing.T) {
 
 	sLen := func() int {
 		var l int
-		s.entries.Range(func(key, value interface{}) bool {
+		s.entries.Range(func(key, value any) bool {
 			l++
 
 			return true

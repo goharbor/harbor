@@ -2,12 +2,15 @@
     [(clrModalOpen)]="opened"
     [clrModalStaticBackdrop]="true"
     [clrModalClosable]="false">
-    <h3 *ngIf="!isEdit" class="modal-title">
+    @if (!isEdit) {
+    <h3 class="modal-title">
         {{ 'SCANNER.ADD_SCANNER' | translate }}
     </h3>
-    <h3 *ngIf="isEdit" class="modal-title">
+    } @if (isEdit) {
+    <h3 class="modal-title">
         {{ 'SCANNER.EDIT_SCANNER' | translate }}
     </h3>
+    }
     <div class="modal-body body-format">
         <inline-alert class="modal-title"></inline-alert>
         <new-scanner-form></new-scanner-form>
@@ -29,9 +32,9 @@
             (click)="close()">
             {{ 'BUTTON.CANCEL' | translate }}
         </button>
+        @if (!isEdit) {
         <button
             id="button-add"
-            *ngIf="!isEdit"
             type="button"
             [clrLoading]="saveBtnState"
             class="btn btn-primary"
@@ -39,9 +42,9 @@
             (click)="create()">
             {{ 'BUTTON.ADD' | translate }}
         </button>
+        } @if (isEdit) {
         <button
             id="button-save"
-            *ngIf="isEdit"
             type="button"
             [clrLoading]="saveBtnState"
             class="btn btn-primary"
@@ -49,5 +52,6 @@
             (click)="save()">
             {{ 'BUTTON.SAVE' | translate }}
         </button>
+        }
     </div>
 </clr-modal>

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package token
+package token // nolint:revive
 
 import (
 	"crypto/rsa"
@@ -39,7 +39,7 @@ type Options struct {
 }
 
 // GetKey ...
-func (o *Options) GetKey() (interface{}, error) {
+func (o *Options) GetKey() (any, error) {
 	var err error
 	var privateKey *rsa.PrivateKey
 	var publicKey *rsa.PublicKey
@@ -81,6 +81,15 @@ func DefaultTokenOptions() *Options {
 
 // NewOptions create Options based on input parms
 func NewOptions(sm, iss, keyPath string) (*Options, error) {
+	signMethod := jwt.GetSigningMethod(sm)
+	if signMethod == nil {
+		return nil, fmt.Errorf("unknown sign method: %s", sm)
+	}
+	switch signMethod.(type) {
+	case *jwt.SigningMethodRSA, *jwt.SigningMethodRSAPSS:
+	default:
+		return nil, fmt.Errorf("sign method %q is not allowed: only RSA methods are supported", sm)
+	}
 	pk, err := os.ReadFile(keyPath)
 	if err != nil {
 		log.Errorf("failed to read private key %v", err)
@@ -88,7 +97,7 @@ func NewOptions(sm, iss, keyPath string) (*Options, error) {
 	}
 	return &Options{
 		PrivateKey: pk,
-		SignMethod: jwt.GetSigningMethod(sm),
+		SignMethod: signMethod,
 		Issuer:     iss,
 	}, nil
 }

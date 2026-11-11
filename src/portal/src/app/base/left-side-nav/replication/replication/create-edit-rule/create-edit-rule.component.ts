@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import { RegistryService } from '../../../../../../../ng-swagger-gen/services/re
 import { Registry } from '../../../../../../../ng-swagger-gen/models/registry';
 import { Label } from '../../../../../../../ng-swagger-gen/models/label';
 import { LabelService } from '../../../../../../../ng-swagger-gen/services/label.service';
+import { Router } from '@angular/router';
 import {
     BandwidthUnit,
     Decoration,
@@ -64,6 +65,7 @@ export const KB_TO_MB: number = 1024;
     selector: 'hbr-create-edit-rule',
     templateUrl: './create-edit-rule.component.html',
     styleUrls: ['./create-edit-rule.component.scss'],
+    standalone: false,
 })
 export class CreateEditRuleComponent implements OnInit, OnDestroy {
     sourceList: Registry[] = [];
@@ -128,7 +130,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
         private jobServiceService: JobserviceService,
-        private labelService: LabelService
+        private labelService: LabelService,
+        private router: Router
     ) {
         this.createForm();
     }
@@ -334,6 +337,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             override: true,
             speed: -1,
             copy_by_chunk: false,
+            single_active_replication: false,
         });
     }
 
@@ -367,6 +371,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             dest_namespace_replace_count: Flatten_Level.FLATTEN_LEVEl_1,
             speed: -1,
             copy_by_chunk: false,
+            single_active_replication: false,
         });
         this.isPushMode = true;
         this.selectedUnit = BandwidthUnit.KB;
@@ -410,6 +415,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 override: rule.override,
                 speed: speed,
                 copy_by_chunk: rule.copy_by_chunk,
+                single_active_replication: rule.single_active_replication,
             });
             let filtersArray = this.getFilterArray(rule);
             this.noSelectedEndpoint = false;
@@ -510,6 +516,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
 
     onSubmit() {
+        if (this.ruleForm.value.trigger.type === 'event_based') {
+            this.ruleForm.get('single_active_replication').setValue(false);
+        }
         if (this.ruleForm.value.trigger.type !== 'scheduled') {
             this.ruleForm
                 .get('trigger')
@@ -670,6 +679,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     close(): void {
         this.createEditRuleOpened = false;
+    }
+
+    goToLabels(): void {
+        this.close();
+        this.router.navigate(['/harbor/labels']);
     }
 
     confirmCancel(confirmed: boolean) {

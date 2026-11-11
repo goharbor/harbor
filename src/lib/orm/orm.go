@@ -45,7 +45,7 @@ type ParamsList = orm.ParamsList
 type QuerySeter = orm.QuerySeter
 
 // RegisterModel ...
-func RegisterModel(models ...interface{}) {
+func RegisterModel(models ...any) {
 	orm.RegisterModel(models...)
 }
 
@@ -128,6 +128,15 @@ func GetTransactionOpNameFromContext(ctx context.Context) string {
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
+		// Collect after-commit hooks for transactions that are not started by
+		// middleware. Middleware may install its own collector so that hooks run
+		// after its outer transaction has committed.
+		_, hasCallbacks := ctx.Value(afterCommitKey{}).(*afterCommitCallbacks)
+		var runAfterCommit func() error
+		if !hasCallbacks {
+			ctx, runAfterCommit = WithAfterCommit(ctx)
+		}
+
 		cx, span := tracelib.StartTrace(ctx, tracerName, GetTransactionOpNameFromContext(ctx))
 		defer span.End()
 		o, err := FromContext(ctx)
@@ -170,13 +179,20 @@ func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context
 			log.Errorf("commit transaction failed: %v", err)
 			return err
 		}
+		if runAfterCommit != nil {
+			if hookErr := runAfterCommit(); hookErr != nil {
+				// The database transaction has committed, so hook failures cannot
+				// change the transaction result.
+				log.Errorf("run after-commit transaction hooks failed: %v", hookErr)
+			}
+		}
 
 		return nil
 	}
 }
 
 // ReadOrCreate read or create instance to database, retry to read when met a duplicate key error after the creating
-func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...string) (created bool, id int64, err error) {
+func ReadOrCreate(ctx context.Context, md any, col1 string, cols ...string) (created bool, id int64, err error) {
 	getter, ok := md.(interface {
 		GetID() int64
 	})
@@ -237,7 +253,7 @@ func ReadOrCreate(ctx context.Context, md interface{}, col1 string, cols ...stri
 // The sql should return the ID list with the specific condition(e.g. select id from table1 where column1=?)
 // The sql runs as a prepare statement with the "?" be populated rather than concat string directly
 // The returning in clause is a string like "IN (id1, id2, id3, ...)"
-func CreateInClause(ctx context.Context, sql string, args ...interface{}) (string, error) {
+func CreateInClause(ctx context.Context, sql string, args ...any) (string, error) {
 	ormer, err := FromContext(ctx)
 	if err != nil {
 		return "", err
@@ -271,7 +287,7 @@ func Escape(str string) string {
 // e.g. n=3, returns "?,?,?"
 func ParamPlaceholderForIn(n int) string {
 	placeholders := []string{}
-	for i := 0; i < n; i++ {
+	for range n {
 		placeholders = append(placeholders, "?")
 	}
 	return strings.Join(placeholders, ",")

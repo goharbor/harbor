@@ -126,6 +126,7 @@
                 type="text"
                 [(ngModel)]="currentConfig.robot_name_prefix.value"
                 required
+                pattern="\S+"
                 autocomplete="off"
                 id="robotNamePrefix"
                 size="20"
@@ -167,7 +168,8 @@
                 'ROBOT_ACCOUNT.NUMBER_REQUIRED' | translate
             }}</clr-control-error>
         </clr-input-container>
-        <div *ngIf="canDownloadCert" class="clr-form-control">
+        @if (canDownloadCert) {
+        <div class="clr-form-control">
             <label class="clr-control-label"
                 >{{ 'CONFIG.ROOT_CERT' | translate }}
                 <clr-tooltip>
@@ -194,6 +196,7 @@
                 >
             </div>
         </div>
+        }
         <clr-checkbox-container class="center">
             <label id="repo_read_only_lbl" for="repoReadOnly"
                 >{{ 'CONFIG.REPO_READ_ONLY' | translate }}
@@ -315,6 +318,52 @@
                     !currentConfig?.audit_log_forward_endpoint?.editable
                 " />
         </clr-input-container>
+        <div class="clr-form-control">
+            <label for="disableAuditLogEventList" class="clr-control-label">
+                {{ 'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE' | translate }}
+                <clr-tooltip>
+                    <clr-icon
+                        clrTooltipTrigger
+                        shape="info-circle"
+                        size="24"></clr-icon>
+                    <clr-tooltip-content
+                        clrPosition="top-right"
+                        clrSize="lg"
+                        *clrIfOpen>
+                        <span>{{
+                            'CLEARANCES.ENABLE_AUDIT_LOG_EVENT_TYPE_TOOLTIP'
+                                | translate
+                        }}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            @if (logEventTypes.length === 0) {
+            <div>
+                {{ 'CLEARANCES.AUDIT_LOG_EVENT_TYPE_EMPTY' | translate }}
+            </div>
+            }
+            <div class="clr-control-container audit-log-type">
+                @for (item of logEventTypes; track item) {
+                <div class="clr-checkbox-wrapper float-left">
+                    <input
+                        type="checkbox"
+                        id="{{ item.id }}"
+                        name="logEventTypes"
+                        value="{{ item.value }}"
+                        class="clr-checkbox"
+                        [disabled]="
+                            !currentConfig?.disabled_audit_log_event_types
+                                ?.editable
+                        "
+                        (change)="setLogEventType(item.value)"
+                        [checked]="hasLogEventType(item.value)" />
+                    <label for="{{ item.id }}" class="clr-control-label">{{
+                        item.label
+                    }}</label>
+                </div>
+                }
+            </div>
+        </div>
         <clr-checkbox-container class="center">
             <label for="skipAuditLogDatabase"
                 >{{ 'CLEARANCES.SKIP_DATABASE' | translate }}
@@ -386,11 +435,11 @@
                                 !currentConfig.banner_message.editable ||
                                 !messageText
                             ">
-                            <option
-                                *ngFor="let t of bannerMessageTypes"
-                                value="{{ t }}">
+                            @for (t of bannerMessageTypes; track t) {
+                            <option value="{{ t }}">
                                 {{ translateMessageType(t) | translate }}
                             </option>
+                            }
                         </select>
                     </div>
                 </div>

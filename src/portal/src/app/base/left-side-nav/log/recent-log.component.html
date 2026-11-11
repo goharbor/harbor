@@ -1,7 +1,4 @@
 <div>
-    <h2 class="custom-h2" sub-header-title>
-        {{ 'SIDE_NAV.LOGS' | translate }}
-    </h2>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
@@ -62,7 +59,8 @@
             <clr-dg-placeholder>{{
                 'AUDIT_LOG.NOT_FOUND' | translate
             }}</clr-dg-placeholder>
-            <clr-dg-row *ngFor="let l of recentLogs">
+            @for (l of recentLogs; track l) {
+            <clr-dg-row>
                 <clr-dg-cell>{{ l.username }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource }}</clr-dg-cell>
                 <clr-dg-cell>{{ l.resource_type }}</clr-dg-cell>
@@ -71,21 +69,27 @@
                     l.op_time | harborDatetime : 'short'
                 }}</clr-dg-cell>
             </clr-dg-row>
+            }
             <clr-dg-footer>
                 <clr-dg-pagination
                     #pagination
                     [(clrDgPage)]="currentPage"
                     [clrDgPageSize]="pageSize"
                     [clrDgTotalItems]="totalCount">
-                    <clr-dg-page-size [clrPageSizeOptions]="[15, 25, 50]">{{
-                        'PAGINATION.PAGE_SIZE' | translate
-                    }}</clr-dg-page-size>
-                    <span *ngIf="totalCount"
+                    <clr-dg-page-size
+                        [clrPageSizeOptions]="clrPageSizeOptions"
+                        >{{
+                            'PAGINATION.PAGE_SIZE' | translate
+                        }}</clr-dg-page-size
+                    >
+                    @if (totalCount) {
+                    <span
                         >{{ pagination.firstItem + 1 }} -
                         {{ pagination.lastItem + 1 }}
                         {{ 'AUDIT_LOG.OF' | translate }} {{ totalCount }}
                         {{ 'AUDIT_LOG.ITEMS' | translate }}</span
                     >
+                    }
                 </clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>

@@ -63,8 +63,8 @@ func (p *proxyCacheSecretTestSuite) TestIsSolutionUser() {
 }
 
 func (p *proxyCacheSecretTestSuite) TestCan() {
-	// the action isn't pull/push
-	action := rbac.ActionDelete
+	// the action isn't pull/push/delete
+	action := rbac.ActionUpdate
 	resource := project.NewNamespace(1).Resource(rbac.ResourceRepository)
 	p.False(p.sc.Can(context.TODO(), action, resource))
 

@@ -16,7 +16,6 @@ package notification
 
 import (
 	"bytes"
-	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -106,7 +105,7 @@ func (sj *SlackJob) Run(ctx job.Context, params job.Parameters) error {
 }
 
 // init slack job
-func (sj *SlackJob) init(ctx job.Context, params map[string]interface{}) error {
+func (sj *SlackJob) init(ctx job.Context, params map[string]any) error {
 	sj.logger = ctx.GetLogger()
 
 	// default use secure transport
@@ -121,7 +120,7 @@ func (sj *SlackJob) init(ctx job.Context, params map[string]interface{}) error {
 }
 
 // execute slack job
-func (sj *SlackJob) execute(params map[string]interface{}) error {
+func (sj *SlackJob) execute(params map[string]any) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 
@@ -139,13 +138,9 @@ func (sj *SlackJob) execute(params map[string]interface{}) error {
 	}
 
 	defer resp.Body.Close()
+	defer drainBody(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			sj.logger.Errorf("error to read response body, error: %s", err)
-		}
-
-		return errors.Errorf("abnormal response code: %d, body: %s", resp.StatusCode, string(body))
+		return errors.Errorf("abnormal response code: %d", resp.StatusCode)
 	}
 	return nil
 }

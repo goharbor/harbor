@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MessageHandlerService } from '../../../../shared/services/message-handler.service';
@@ -170,22 +183,30 @@ describe('PolicyComponent', () => {
     beforeEach(async () => {
         fixture = TestBed.createComponent(PolicyComponent);
         component = fixture.componentInstance;
-        fixture.autoDetectChanges(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
+    });
+
+    afterEach(() => {
+        fixture.destroy();
     });
 
     it('should create', async () => {
         expect(component).toBeTruthy();
     });
     it('should get policy list', async () => {
+        fixture.detectChanges();
         await fixture.whenStable();
         const rows = fixture.nativeElement.getElementsByTagName('clr-dg-row');
         expect(rows.length).toEqual(2);
     });
     it('should open modal and is add model', async () => {
+        fixture.detectChanges();
         await fixture.whenStable();
         const addButton: HTMLButtonElement =
             fixture.nativeElement.querySelector('#new-policy');
         addButton.click();
+        fixture.detectChanges();
         await fixture.whenStable();
         const modalBody: HTMLDivElement =
             fixture.nativeElement.querySelector('.modal-body');
@@ -201,15 +222,31 @@ describe('PolicyComponent', () => {
             fixture.nativeElement.querySelector('#action-policy');
         action.click();
         await fixture.whenStable();
-        const edit: HTMLSpanElement =
-            fixture.nativeElement.querySelector('#edit-policy');
+        const edit = document.querySelector<HTMLElement>('#edit-policy');
         edit.click();
+        fixture.detectChanges();
         await fixture.whenStable();
-        const modalBody: HTMLDivElement =
-            fixture.nativeElement.querySelector('.modal-body');
+        const modalBody = document.querySelector<HTMLDivElement>('.modal-body');
         expect(modalBody).toBeTruthy();
-        const nameInput: HTMLInputElement =
-            fixture.nativeElement.querySelector('#name');
+        const nameInput = document.querySelector<HTMLInputElement>('#name');
         expect(nameInput.value).toEqual('policy1');
+    });
+    it('should keep multi-value filters when editing a policy', async () => {
+        component.selectedRow = {
+            ...policy1,
+            filters:
+                '[{"type":"repository","value":"{library/a,library/b}"},{"type":"tag","value":"{v1,v2}"},{"type":"label","value":"{l1,l2}"}]',
+        };
+        component.editPolicy();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(component.addP2pPolicyComponent.repos).toEqual(
+            'library/a,library/b'
+        );
+        expect(component.addP2pPolicyComponent.tags).toEqual('v1,v2');
+        expect(component.addP2pPolicyComponent.labels).toEqual('l1,l2');
+        expect(component.addP2pPolicyComponent.originReposForEdit).toEqual(
+            'library/a,library/b'
+        );
     });
 });

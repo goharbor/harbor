@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import { Project } from '../../../../../ng-swagger-gen/models/project';
     selector: 'list-project-ro',
     templateUrl: 'list-project-ro.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false,
 })
 export class ListProjectROComponent {
     @Input() projects: Project[];

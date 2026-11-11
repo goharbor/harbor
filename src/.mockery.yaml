@@ -35,6 +35,11 @@ packages:
       Controller:
         config:
           dir: testing/controller/quota
+  github.com/goharbor/harbor/src/controller/registry:
+    interfaces:
+      Controller:
+        config:
+          dir: testing/controller/registry
   github.com/goharbor/harbor/src/controller/scan:
     interfaces:
       Controller:
@@ -462,6 +467,16 @@ packages:
       DAO:
         config:
           dir: testing/pkg/audit/dao
+  github.com/goharbor/harbor/src/pkg/auditext:
+    interfaces:
+      Manager:
+        config:
+          dir: testing/pkg/auditext
+  github.com/goharbor/harbor/src/pkg/auditext/dao:
+    interfaces:
+      DAO:
+        config:
+          dir: testing/pkg/auditext/dao
   github.com/goharbor/harbor/src/pkg/systemartifact:
     interfaces:
       Manager:

@@ -15,7 +15,7 @@
 package models
 
 // Parameters for job execution.
-type Parameters map[string]interface{}
+type Parameters map[string]any
 
 // JobRequest is the request of launching a job.
 type JobRequest struct {
@@ -96,5 +96,5 @@ type JobStatusChange struct {
 // Message is designed for sub/pub messages
 type Message struct {
 	Event string
-	Data  interface{} // generic format
+	Data  any // generic format
 }

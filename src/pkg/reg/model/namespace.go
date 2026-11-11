@@ -20,8 +20,8 @@ package model
 // if the namespace has hierarchical structure, e.g organization->team,
 // it should be converted to organization.team
 type Namespace struct {
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
+	Name     string         `json:"name"`
+	Metadata map[string]any `json:"metadata"`
 }
 
 // GetStringMetadata get a string value metadata from the namespace, if not found, return the default value.

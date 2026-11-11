@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ClrDatagridStateInterface, ClrLoadingState } from '@clr/angular';
 import {
@@ -43,6 +56,7 @@ import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets,
+    PAGE_SIZE_OPTIONS,
 } from '../../../shared/entities/shared.const';
 import { errorHandler } from '../../../shared/units/shared.utils';
 import { ConfirmationMessage } from '../../global-confirmation-dialog/confirmation-message';
@@ -50,13 +64,16 @@ import { SysteminfoService } from '../../../../../ng-swagger-gen/services/system
 import { PermissionSelectPanelModes } from '../../../shared/components/robot-permissions-panel/robot-permissions-panel.component';
 import { PermissionsService } from '../../../../../ng-swagger-gen/services/permissions.service';
 import { Permissions } from '../../../../../ng-swagger-gen/models/permissions';
+import { Permission } from '../../../../../ng-swagger-gen/models/permission';
 
 @Component({
     selector: 'app-robot-account',
     templateUrl: './robot-account.component.html',
     styleUrls: ['./robot-account.component.scss'],
+    standalone: false,
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
+    clrPageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     pageSize: number = getPageSizeFromLocalStorage(
         PageSizeMapKeys.PROJECT_ROBOT_COMPONENT
     );
@@ -85,6 +102,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
 
     loadingMetadata: boolean = false;
     robotMetadata: Permissions;
+    effectivePermissions: Permission[] = [];
     constructor(
         private robotService: RobotService,
         private msgHandler: MessageHandlerService,
@@ -177,11 +195,35 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
 
     getRobotPermissions() {
         this.loadingMetadata = true;
+        // GET /permissions is restricted to system and built-in project admins, so
+        // a custom role granting robot:create gets a 403 here. The editor then
+        // falls back to the caller's own permissions as the candidate catalog.
         this.permissionService
             .getPermissions()
             .pipe(finalize(() => (this.loadingMetadata = false)))
-            .subscribe(res => {
-                this.robotMetadata = res;
+            .subscribe({
+                next: res => {
+                    this.robotMetadata = res;
+                },
+                error: () => {
+                    this.robotMetadata = undefined;
+                },
+            });
+        // The caller's effective permissions in this project drive the
+        // anti-escalation filtering of what a robot can be granted. Load them
+        // independently of the admin-only catalog above. The dedicated
+        // /permissions/effective endpoint was removed on the backend; this reads
+        // the cached current-user permissions for the project scope instead.
+        this.userPermissionService
+            .getProjectPermissions(this.projectId)
+            .subscribe({
+                next: perms => {
+                    this.effectivePermissions = perms ?? [];
+                },
+                error: err => {
+                    this.effectivePermissions = [];
+                    this.msgHandler.error(err);
+                },
             });
     }
 
@@ -228,12 +270,17 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         forkJoin(...permissionsList).subscribe(
             Rules => {
                 this.hasRobotCreatePermission = Rules[0] as boolean;
-                if (this.hasRobotCreatePermission) {
-                    this.getRobotPermissions();
-                }
                 this.hasRobotUpdatePermission = Rules[1] as boolean;
                 this.hasRobotDeletePermission = Rules[2] as boolean;
                 this.hasRobotReadPermission = Rules[3] as boolean;
+                // A custom role can grant robot:update without robot:create, and
+                // the editor needs the permission catalog in both cases.
+                if (
+                    this.hasRobotCreatePermission ||
+                    this.hasRobotUpdatePermission
+                ) {
+                    this.getRobotPermissions();
+                }
             },
             error => this.msgHandler.error(error)
         );

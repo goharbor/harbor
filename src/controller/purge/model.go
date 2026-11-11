@@ -22,11 +22,11 @@ import (
 
 // JobPolicy defines the purge job policy
 type JobPolicy struct {
-	Trigger           *Trigger               `json:"trigger"`
-	DryRun            bool                   `json:"dryrun"`
-	RetentionHour     int                    `json:"retention_hour"`
-	IncludeOperations string                 `json:"include_operations"`
-	ExtraAttrs        map[string]interface{} `json:"extra_attrs"`
+	Trigger           *Trigger       `json:"trigger"`
+	DryRun            bool           `json:"dryrun"`
+	RetentionHour     int            `json:"retention_hour"`
+	IncludeEventTypes string         `json:"include_event_types"`
+	ExtraAttrs        map[string]any `json:"extra_attrs"`
 }
 
 // TriggerType represents the type of trigger.
@@ -44,7 +44,7 @@ type TriggerSettings struct {
 }
 
 // String convert map to json string
-func String(extras map[string]interface{}) string {
+func String(extras map[string]any) string {
 	result, err := json.Marshal(extras)
 	if err != nil {
 		log.Errorf("failed to convert to json string, value %+v", extras)

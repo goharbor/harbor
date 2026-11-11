@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, EventEmitter } from '@angular/core';
 import { ImmutableTagService } from '../immutable-tag.service';
@@ -53,7 +66,7 @@ describe('AddRuleComponent', () => {
         }).compileComponents();
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         fixture = TestBed.createComponent(AddImmutableRuleComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -71,48 +84,47 @@ describe('AddRuleComponent', () => {
         component.rules = [];
         component.isAdd = true;
         component.open();
+        fixture.detectChanges();
+        await fixture.whenStable();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
     });
-    it('should rightly display default repositories and tag', () => {
+    it('should rightly display default repositories and tag', async () => {
         fixture.detectChanges();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            let elRep: HTMLInputElement =
-                fixture.nativeElement.querySelector('#scope-input');
-            expect(elRep).toBeTruthy();
-            expect(elRep.value.trim()).toEqual('**');
-            let elTag: HTMLInputElement =
-                fixture.nativeElement.querySelector('#tag-input');
-            expect(elTag).toBeTruthy();
-            expect(elTag.value.trim()).toEqual('**');
-        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const elRep: HTMLInputElement =
+            fixture.nativeElement.querySelector('#scope-input');
+        expect(elRep).toBeTruthy();
+        expect(elRep.value.trim()).toEqual('**');
+        const elTag: HTMLInputElement =
+            fixture.nativeElement.querySelector('#tag-input');
+        expect(elTag).toBeTruthy();
+        expect(elTag.value.trim()).toEqual('**');
     });
-    it('should rightly close', () => {
+    it('should rightly close', async () => {
         fixture.detectChanges();
-        let elRep: HTMLButtonElement =
+        const elRep: HTMLButtonElement =
             fixture.nativeElement.querySelector('#close-btn');
         elRep.dispatchEvent(new Event('click'));
         elRep.click();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            expect(component.addRuleOpened).toEqual(false);
-        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+        expect(component.addRuleOpened).toEqual(false);
     });
-    it('should be validating repeat rule ', () => {
+    it('should be validating repeat rule ', async () => {
         fixture.detectChanges();
         component.rules = [mockRule];
         const elRep: HTMLButtonElement =
             fixture.nativeElement.querySelector('#add-edit-btn');
         elRep.dispatchEvent(new Event('click'));
         elRep.click();
-        fixture.whenStable().then(() => {
-            fixture.detectChanges();
-            const elRep1: HTMLSpanElement =
-                fixture.nativeElement.querySelector('.alert-text');
-            expect(elRep1).toBeTruthy();
-        });
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const elRep1: HTMLSpanElement =
+            fixture.nativeElement.querySelector('.alert-text');
+        expect(elRep1).toBeTruthy();
     });
 });

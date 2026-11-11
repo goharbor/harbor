@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 set -x
-gsutil version -l
+aws --version
 set +x
 
 docker-compose version
@@ -58,17 +58,6 @@ else
   harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
 fi
 
-# GC credentials
-keyfile="/root/harbor-ci-logs.key"
-botofile="/root/.boto"
-echo -n $GS_PRIVATE_KEY > $keyfile
-chmod 400 $keyfile
-echo "[Credentials]" >> $botofile
-echo "gs_service_key_file = $keyfile" >> $botofile
-echo "gs_service_client_id = $GS_CLIENT_EMAIL" >> $botofile
-echo "[GSUtil]" >> $botofile
-echo "content_language = en" >> $botofile
-echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
 
@@ -106,10 +95,9 @@ echo "Harbor Assets version: $Harbor_Assets_Version"
 echo "Harbor Build Base tag: $Harbor_Build_Base_Tag"
 echo "--------------------------------------------------"
 
-# GS util
+# AWS S3 util
 function uploader {
-    gsutil cp $1 gs://$2/$1
-    gsutil -D setacl public-read gs://$2/$1 &> /dev/null
+    aws s3 cp $1 s3://$2/$1
 }
 
 function package_installer {

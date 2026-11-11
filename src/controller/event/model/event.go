@@ -14,7 +14,12 @@
 
 package model
 
-import "github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+import (
+	"time"
+
+	"github.com/goharbor/harbor/src/pkg/auditext/model"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+)
 
 // Replication describes replication infos
 type Replication struct {
@@ -31,6 +36,8 @@ type Replication struct {
 	DestResource       *ReplicationResource `json:"dest_resource,omitempty"`
 	SuccessfulArtifact []*ArtifactInfo      `json:"successful_artifact,omitempty"`
 	FailedArtifact     []*ArtifactInfo      `json:"failed_artifact,omitempty"`
+	ExecutionID        int64                `json:"execution_id,omitempty"`
+	TaskID             int64                `json:"task_id,omitempty"`
 }
 
 // ArtifactInfo describe info of artifact
@@ -79,4 +86,33 @@ type RetentionRule struct {
 type Scan struct {
 	// ScanType the scan type
 	ScanType string `json:"scan_type,omitempty"`
+}
+
+// CommonEvent ...
+type CommonEvent struct {
+	Operator             string
+	ProjectID            int64
+	OcurrAt              time.Time
+	Operation            string
+	Payload              string
+	SourceIP             string
+	ResourceType         string
+	ResourceName         string
+	OperationDescription string
+	IsSuccessful         bool
+}
+
+// ResolveToAuditLog ...
+func (c *CommonEvent) ResolveToAuditLog() (*model.AuditLogExt, error) {
+	auditLog := &model.AuditLogExt{
+		ProjectID:            c.ProjectID,
+		OpTime:               c.OcurrAt,
+		Operation:            c.Operation,
+		Username:             c.Operator,
+		ResourceType:         c.ResourceType,
+		Resource:             c.ResourceName,
+		OperationDescription: c.OperationDescription,
+		IsSuccessful:         c.IsSuccessful,
+	}
+	return auditLog, nil
 }

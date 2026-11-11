@@ -17,5 +17,7 @@
         (focus)="inputFocus()"
         placeholder="{{ placeHolder }}"
         [(ngModel)]="currentValue" />
-    <span class="filter-divider" *ngIf="withDivider"></span>
+    @if (withDivider) {
+    <span class="filter-divider"></span>
+    }
 </span>

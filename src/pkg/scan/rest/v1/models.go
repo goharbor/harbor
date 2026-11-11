@@ -17,6 +17,7 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/goharbor/harbor/src/lib/errors"
 )
@@ -95,26 +96,15 @@ func (md *ScannerAdapterMetadata) Validate() error {
 
 	for _, ca := range md.Capabilities {
 		// v1.MimeTypeDockerArtifact is required now
-		found := false
-		for _, cm := range ca.ConsumesMimeTypes {
-			if cm == MimeTypeDockerArtifact {
-				found = true
-				break
-			}
-		}
+		found := slices.Contains(ca.ConsumesMimeTypes, MimeTypeDockerArtifact)
 		if !found {
 			return errors.Errorf("missing %s in consumes_mime_types", MimeTypeDockerArtifact)
 		}
 
 		// either of v1.MimeTypeNativeReport OR v1.MimeTypeGenericVulnerabilityReport is required
-		found = false
-		for _, pm := range ca.ProducesMimeTypes {
-			if isSupportedMimeType(pm) {
-				found = true
-				break
-			}
-		}
-
+		found = slices.ContainsFunc(ca.ProducesMimeTypes, func(pm string) bool {
+			return isSupportedMimeType(pm)
+		})
 		if !found {
 			return errors.Errorf("missing %s or %s in produces_mime_types", MimeTypeNativeReport, MimeTypeGenericVulnerabilityReport)
 		}
@@ -124,34 +114,21 @@ func (md *ScannerAdapterMetadata) Validate() error {
 }
 
 func isSupportedMimeType(mimeType string) bool {
-	for _, mt := range supportedMimeTypes {
-		if mt == mimeType {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(supportedMimeTypes, mimeType)
 }
 
 // HasCapability returns true when mine type of the artifact support by the scanner
 func (md *ScannerAdapterMetadata) HasCapability(mimeType string) bool {
-	for _, capability := range md.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == mimeType {
-				return true
-			}
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(md.Capabilities, func(c *ScannerCapability) bool {
+		return slices.Contains(c.ConsumesMimeTypes, mimeType)
+	})
 }
 
 // GetCapability returns capability for the mime type
 func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapability {
 	for _, capability := range md.Capabilities {
-		for _, mt := range capability.ConsumesMimeTypes {
-			if mt == mimeType {
-				return capability
-			}
+		if slices.Contains(capability.ConsumesMimeTypes, mimeType) {
+			return capability
 		}
 	}
 
@@ -159,8 +136,8 @@ func (md *ScannerAdapterMetadata) GetCapability(mimeType string) *ScannerCapabil
 }
 
 // ConvertCapability converts the capability to map, used in get scanner API
-func (md *ScannerAdapterMetadata) ConvertCapability() map[string]interface{} {
-	capabilities := make(map[string]interface{})
+func (md *ScannerAdapterMetadata) ConvertCapability() map[string]any {
+	capabilities := make(map[string]any)
 	oldScanner := true
 	for _, c := range md.Capabilities {
 		if len(c.Type) > 0 {
@@ -228,7 +205,7 @@ type ScanType struct {
 	// ProducesMimeTypes defines scanreport should be
 	ProducesMimeTypes []string `json:"produces_mime_types"`
 	// Parameters extra parameters
-	Parameters map[string]interface{} `json:"parameters"`
+	Parameters map[string]any `json:"parameters"`
 }
 
 // FromJSON parses ScanRequest from json data

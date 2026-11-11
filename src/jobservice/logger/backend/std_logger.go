@@ -48,51 +48,51 @@ func NewStdOutputLogger(level string, output string, depth int) *StdOutputLogger
 }
 
 // Debug ...
-func (sl *StdOutputLogger) Debug(v ...interface{}) {
+func (sl *StdOutputLogger) Debug(v ...any) {
 	sl.backendLogger.Debug(v...)
 }
 
 // Debugf with format
-func (sl *StdOutputLogger) Debugf(format string, v ...interface{}) {
+func (sl *StdOutputLogger) Debugf(format string, v ...any) {
 	sl.backendLogger.Debugf(format, v...)
 }
 
 // Info ...
-func (sl *StdOutputLogger) Info(v ...interface{}) {
+func (sl *StdOutputLogger) Info(v ...any) {
 	sl.backendLogger.Info(v...)
 }
 
 // Infof with format
-func (sl *StdOutputLogger) Infof(format string, v ...interface{}) {
+func (sl *StdOutputLogger) Infof(format string, v ...any) {
 	sl.backendLogger.Infof(format, v...)
 }
 
 // Warning ...
-func (sl *StdOutputLogger) Warning(v ...interface{}) {
+func (sl *StdOutputLogger) Warning(v ...any) {
 	sl.backendLogger.Warning(v...)
 }
 
 // Warningf with format
-func (sl *StdOutputLogger) Warningf(format string, v ...interface{}) {
+func (sl *StdOutputLogger) Warningf(format string, v ...any) {
 	sl.backendLogger.Warningf(format, v...)
 }
 
 // Error ...
-func (sl *StdOutputLogger) Error(v ...interface{}) {
+func (sl *StdOutputLogger) Error(v ...any) {
 	sl.backendLogger.Error(v...)
 }
 
 // Errorf with format
-func (sl *StdOutputLogger) Errorf(format string, v ...interface{}) {
+func (sl *StdOutputLogger) Errorf(format string, v ...any) {
 	sl.backendLogger.Errorf(format, v...)
 }
 
 // Fatal error
-func (sl *StdOutputLogger) Fatal(v ...interface{}) {
+func (sl *StdOutputLogger) Fatal(v ...any) {
 	sl.backendLogger.Fatal(v...)
 }
 
 // Fatalf error
-func (sl *StdOutputLogger) Fatalf(format string, v ...interface{}) {
+func (sl *StdOutputLogger) Fatalf(format string, v ...any) {
 	sl.backendLogger.Fatalf(format, v...)
 }

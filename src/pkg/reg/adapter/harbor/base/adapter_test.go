@@ -194,15 +194,15 @@ func TestPrepareForPush(t *testing.T) {
 
 func TestParsePublic(t *testing.T) {
 	cases := []struct {
-		metadata map[string]interface{}
+		metadata map[string]any
 		result   bool
 	}{
 		{nil, false},
-		{map[string]interface{}{}, false},
-		{map[string]interface{}{"public": true}, true},
-		{map[string]interface{}{"public": "not_bool"}, false},
-		{map[string]interface{}{"public": "true"}, true},
-		{map[string]interface{}{"public": struct{}{}}, false},
+		{map[string]any{}, false},
+		{map[string]any{"public": true}, true},
+		{map[string]any{"public": "not_bool"}, false},
+		{map[string]any{"public": "true"}, true},
+		{map[string]any{"public": struct{}{}}, false},
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.result, parsePublic(c.metadata))
@@ -211,33 +211,33 @@ func TestParsePublic(t *testing.T) {
 
 func TestMergeMetadata(t *testing.T) {
 	cases := []struct {
-		m1     map[string]interface{}
-		m2     map[string]interface{}
+		m1     map[string]any
+		m2     map[string]any
 		public bool
 	}{
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "true",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "true",
 			},
 			public: true,
 		},
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "false",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "true",
 			},
 			public: false,
 		},
 		{
-			m1: map[string]interface{}{
+			m1: map[string]any{
 				"public": "false",
 			},
-			m2: map[string]interface{}{
+			m2: map[string]any{
 				"public": "false",
 			},
 			public: false,
@@ -255,14 +255,14 @@ func TestAbstractPublicMetadata(t *testing.T) {
 	assert.Nil(t, meta)
 
 	// contains no public metadata
-	metadata := map[string]interface{}{
+	metadata := map[string]any{
 		"other": "test",
 	}
 	meta = abstractPublicMetadata(metadata)
 	assert.Nil(t, meta)
 
 	// contains public metadata
-	metadata = map[string]interface{}{
+	metadata = map[string]any{
 		"other":  "test",
 		"public": "true",
 	}
@@ -314,4 +314,97 @@ func TestListProjects(t *testing.T) {
 	require.Len(t, projects, 2)
 	require.Equal(t, "p1", projects[0].Name)
 	require.Equal(t, "p2", projects[1].Name)
+}
+
+func TestIsLocalHarbor(t *testing.T) {
+	tests := []struct {
+		name     string
+		coreURL  string
+		rawURL   string
+		expected bool
+	}{
+		{
+			name:     "Identical URLs",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://core:8080",
+			expected: true,
+		},
+		{
+			name:     "Case insensitive host",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://CORE:8080",
+			expected: true,
+		},
+		{
+			name:     "Case sensitive path",
+			coreURL:  "http://core:8080/api",
+			rawURL:   "http://core:8080/API",
+			expected: false,
+		},
+		{
+			name:     "Different URLs",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://other:8080",
+			expected: false,
+		},
+		{
+			name:     "Invalid raw URL",
+			coreURL:  "http://core:8080",
+			rawURL:   "http://\x7finvalid-url",
+			expected: false,
+		},
+		{
+			name:     "Invalid core URL",
+			coreURL:  "http://\x7finvalid-url",
+			rawURL:   "http://core:8080",
+			expected: false,
+		},
+		{
+			name:     "Empty core URL",
+			coreURL:  "",
+			rawURL:   "http://core:8080",
+			expected: false,
+		},
+		{
+			name:     "Empty raw URL",
+			coreURL:  "http://core:8080",
+			rawURL:   "",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("CORE_URL", tt.coreURL)
+			actual := isLocalHarbor(tt.rawURL)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestIsInCore(t *testing.T) {
+	tests := []struct {
+		name        string
+		extEndpoint string
+		expected    bool
+	}{
+		{
+			name:        "In Core with endpoint",
+			extEndpoint: "http://core:8080",
+			expected:    true,
+		},
+		{
+			name:        "Not in Core with empty endpoint",
+			extEndpoint: "",
+			expected:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("EXT_ENDPOINT", tt.extEndpoint)
+			actual := isInCore()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
 }

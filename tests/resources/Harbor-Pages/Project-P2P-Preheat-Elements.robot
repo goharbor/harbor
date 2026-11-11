@@ -16,7 +16,7 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${project_p2p_preheat_tag_xpath}  //clr-main-container//project-detail/clr-tabs//a[contains(.,'P2P Preheat')]
+${project_p2p_preheat_tag_xpath}  //*[self::button or self::a][contains(., 'P2P Preheat')]
 ${p2p_preheat_new_policy_btn_id}  //*[@id='new-policy']
 ${p2p_preheat_provider_select_id}  //*[@id='provider']
 ${p2p_preheat_name_input_id}  //*[@id='name']
@@ -30,7 +30,7 @@ ${p2p_preheat_del_btn_id}  //*[@id='delete-policy']
 ${p2p_preheat_edit_btn_id}  //*[@id='edit-policy']
 ${p2p_preheat_execute_btn_id}  //*[@id='execute-policy']
 ${p2p_execution_header}  //clr-main-container//project-detail//ng-component//h4[contains(.,'Executions')]
-${p2p_preheat_confirm_execute_btn_id}  //button[contains(.,'CONFIRM')]
+${p2p_preheat_confirm_execute_btn_id}  xpath=//div[contains(@class, 'modal-footer')]//button[normalize-space(.)='CONFIRM']
 ${p2p_preheat_latest_execute_id_xpath}  //clr-datagrid[contains(.,'ID')]//div//clr-dg-row[1]//clr-dg-cell[1]//a
 ${p2p_preheat_trigger_select}  //select[@id='trigger-type']
 ${p2p_preheat_executions_refresh_xpath}  //div[contains(@class,'col-lg-12')]//span[@class='refresh-btn']

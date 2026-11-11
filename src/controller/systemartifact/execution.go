@@ -148,7 +148,7 @@ func scheduleSystemArtifactCleanJob(ctx context.Context) error {
 }
 
 func getSystemArtifactCleanupSchedule(ctx context.Context) (*scheduler.Schedule, error) {
-	query := q.New(map[string]interface{}{"vendor_type": job.SystemArtifactCleanupVendorType})
+	query := q.New(map[string]any{"vendor_type": job.SystemArtifactCleanupVendorType})
 	schedules, err := sched.ListSchedules(ctx, query)
 	if err != nil {
 		log.Errorf("Unable to check if export data cleanup job is already scheduled : %v", err)

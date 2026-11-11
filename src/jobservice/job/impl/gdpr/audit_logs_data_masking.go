@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/pkg/audit"
+	"github.com/goharbor/harbor/src/pkg/auditext"
 	"github.com/goharbor/harbor/src/pkg/user"
 )
 
@@ -27,6 +28,7 @@ const UserNameParam = "username"
 
 type AuditLogsDataMasking struct {
 	manager     audit.Manager
+	extManager  auditext.Manager
 	userManager user.Manager
 }
 
@@ -58,6 +60,9 @@ func (a *AuditLogsDataMasking) init() {
 	if a.userManager == nil {
 		a.userManager = user.New()
 	}
+	if a.extManager == nil {
+		a.extManager = auditext.Mgr
+	}
 }
 
 func (a AuditLogsDataMasking) Run(ctx job.Context, params job.Parameters) error {
@@ -69,7 +74,11 @@ func (a AuditLogsDataMasking) Run(ctx job.Context, params job.Parameters) error 
 		return err
 	}
 	logger.Infof("Masking log entries for a user: %s", username)
-	return a.manager.UpdateUsername(ctx.SystemContext(), username, a.userManager.GenerateCheckSum(username))
+	err = a.manager.UpdateUsername(ctx.SystemContext(), username, a.userManager.GenerateCheckSum(username))
+	if err != nil {
+		return err
+	}
+	return a.extManager.UpdateUsername(ctx.SystemContext(), username, a.userManager.GenerateCheckSum(username))
 }
 
 func (a AuditLogsDataMasking) parseParams(params job.Parameters) (string, error) {

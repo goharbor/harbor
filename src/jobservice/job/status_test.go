@@ -291,14 +291,14 @@ func TestStatus_Validate(t *testing.T) {
 		{
 			name: "Error status checksum failure",
 			s:    Status("error"),
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				return false
 			},
 		},
 		{
 			name: "SuccessStatus check success",
 			s:    SuccessStatus,
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+			wantErr: func(t assert.TestingT, err error, i ...any) bool {
 				return true
 			},
 		},

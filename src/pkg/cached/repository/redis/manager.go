@@ -162,6 +162,18 @@ func (m *Manager) AddPullCount(ctx context.Context, id int64, count uint64) erro
 	return nil
 }
 
+func (m *Manager) Touch(ctx context.Context, id int64) error {
+	repo, err := m.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err = m.delegator.Touch(ctx, id); err != nil {
+		return err
+	}
+	m.cleanUp(ctx, repo)
+	return nil
+}
+
 // cleanUp cleans up data in cache.
 func (m *Manager) cleanUp(ctx context.Context, repo *model.RepoRecord) {
 	// clean index by id

@@ -30,7 +30,7 @@ const (
 )
 
 // ReferenceID returns reference id for the interface
-func ReferenceID(i interface{}) string {
+func ReferenceID(i any) string {
 	switch s := i.(type) {
 	case string:
 		return s

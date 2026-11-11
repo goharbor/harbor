@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/task"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
+	testingMeta "github.com/goharbor/harbor/src/testing/pkg/project/metadata"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	testingTask "github.com/goharbor/harbor/src/testing/pkg/task"
 )
@@ -73,21 +74,21 @@ func (s *ControllerTestSuite) TestPolicy() {
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}, nil)
 	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}}, nil)
 	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"total":    1,
 			"retained": 1,
 		},
@@ -160,7 +161,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 22 11 * * *",
 			},
 		},
@@ -196,6 +197,77 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().Nil(p1)
 }
 
+func (s *ControllerTestSuite) TestDeleteRetentionByProject() {
+	const projectID = int64(2)
+
+	projectMetaMgr := &testingMeta.Manager{}
+	execMgr := &testingTask.ExecutionManager{}
+	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{}, nil)
+	projectMetaMgr.On("Delete", mock.Anything, projectID, "retention_id").Return(nil)
+
+	c := defaultController{
+		manager:        retention.NewManager(),
+		execMgr:        execMgr,
+		taskMgr:        &testingTask.Manager{},
+		launcher:       &fakeLauncher{},
+		projectManager: &project.Manager{},
+		projectMetaMgr: projectMetaMgr,
+		repositoryMgr:  &repository.Manager{},
+		scheduler:      &fakeRetentionScheduler{},
+	}
+
+	ctx := orm.Context()
+	id, err := c.CreateRetention(ctx, &policy.Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Template: "latestPushedK",
+				Parameters: rule.Parameters{
+					"latestPushedK": 10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "**",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &policy.Trigger{
+			Kind: "Schedule",
+			Settings: map[string]any{
+				"cron": "0 22 11 * * *",
+			},
+		},
+		Scope: &policy.Scope{
+			Level:     "project",
+			Reference: projectID,
+		},
+	})
+	s.Require().Nil(err)
+	s.Require().True(id > 0)
+
+	s.Require().Nil(c.DeleteRetentionByProject(ctx, projectID))
+
+	p, err := c.GetRetention(ctx, id)
+	s.Require().NotNil(err)
+	s.Require().Nil(p)
+
+	projectMetaMgr.AssertCalled(s.T(), "Delete", mock.Anything, projectID, "retention_id")
+}
+
 func (s *ControllerTestSuite) TestExecution() {
 	projectMgr := &project.Manager{}
 	repositoryMgr := &repository.Manager{}
@@ -208,7 +280,7 @@ func (s *ControllerTestSuite) TestExecution() {
 	execMgr.On("Get", mock.Anything, mock.Anything).Return(&task.Execution{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}, nil)
@@ -216,14 +288,14 @@ func (s *ControllerTestSuite) TestExecution() {
 	execMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Execution{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"dry_run": true,
 		},
 	}}, nil)
 	taskMgr.On("List", mock.Anything, mock.Anything).Return([]*task.Task{{
 		ID:     1,
 		Status: job.RunningStatus.String(),
-		ExtraAttrs: map[string]interface{}{
+		ExtraAttrs: map[string]any{
 			"total":    1,
 			"retained": 1,
 		},
@@ -272,7 +344,7 @@ func (s *ControllerTestSuite) TestExecution() {
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",
-			Settings: map[string]interface{}{
+			Settings: map[string]any{
 				"cron": "0 22 11 * * *",
 			},
 		},
@@ -316,7 +388,7 @@ func (f *fakeRetentionScheduler) CountSchedules(ctx context.Context, query *q.Qu
 	panic("implement me")
 }
 
-func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params interface{}, extras map[string]interface{}) (int64, error) {
+func (f *fakeRetentionScheduler) Schedule(ctx context.Context, vendorType string, vendorID int64, cronType string, cron string, callbackFuncName string, params any, extras map[string]any) (int64, error) {
 	return 111, nil
 }
 

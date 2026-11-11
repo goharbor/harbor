@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import { ConfigService } from '../config.service';
     selector: 'config-auth',
     templateUrl: 'config-auth.component.html',
     styleUrls: ['./config-auth.component.scss', '../config.component.scss'],
+    standalone: false,
 })
 export class ConfigurationAuthComponent implements OnInit {
     testingOnGoing = false;

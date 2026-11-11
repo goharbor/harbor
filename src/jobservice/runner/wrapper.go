@@ -21,10 +21,10 @@ import (
 )
 
 // Wrap returns a new job.Interface based on the wrapped job handler reference.
-func Wrap(j interface{}) job.Interface {
+func Wrap(j any) job.Interface {
 	theType := reflect.TypeOf(j)
 
-	if theType.Kind() == reflect.Ptr {
+	if theType.Kind() == reflect.Pointer {
 		theType = theType.Elem()
 	}
 

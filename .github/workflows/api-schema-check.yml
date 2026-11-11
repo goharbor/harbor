@@ -1,0 +1,21 @@
+name: API Schema Check
+
+on:
+  pull_request:
+    paths:
+      - 'api/v2.0/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: cncf-ubuntu-16-64-x86
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: delimit-ai/delimit-action@671929c6218caa3f2c47476e953f9ce0f5201d0a # v1.11.7
+        with:
+          spec: api/v2.0/swagger.yaml

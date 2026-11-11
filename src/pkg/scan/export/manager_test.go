@@ -174,8 +174,8 @@ func (suite *ExportManagerSuite) generateVulnerabilityRecordsForReport(registrat
 		} else {
 			vulnV2.Severity = "Low"
 		}
-		var vendorAttributes = make(map[string]interface{})
-		vendorAttributes["CVSS"] = map[string]interface{}{"nvd": map[string]interface{}{"V2Score": "4.3"}}
+		var vendorAttributes = make(map[string]any)
+		vendorAttributes["CVSS"] = map[string]any{"nvd": map[string]any{"V2Score": "4.3"}}
 		data, _ := json.Marshal(vendorAttributes)
 		vulnV2.VendorAttributes = string(data)
 		vulns = append(vulns, vulnV2)

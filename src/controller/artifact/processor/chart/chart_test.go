@@ -89,7 +89,7 @@ func (p *processorTestSuite) TestAbstractAddition() {
 				Repository: "github.com/goharbor",
 			},
 		},
-		Values: map[string]interface{}{
+		Values: map[string]any{
 			"cluster.enable":                   true,
 			"cluster.slaveCount":               1,
 			"image.pullPolicy":                 "Always",

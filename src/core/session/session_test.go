@@ -86,6 +86,9 @@ func (s *sessionTestSuite) TestSessionRegenerate() {
 
 		err = s.provider.SessionDestroy(ctx, "session-003")
 		s.NoError(err)
+
+		err = s.provider.SessionDestroy(ctx, "session-004")
+		s.NoError(err)
 	}()
 
 	_, err = s.provider.SessionRegenerate(ctx, "session-001", "session-003")
@@ -93,6 +96,10 @@ func (s *sessionTestSuite) TestSessionRegenerate() {
 
 	s.True(s.provider.SessionExist(ctx, "session-003"))
 	s.False(s.provider.SessionExist(ctx, "session-001"))
+
+	_, err = s.provider.SessionRegenerate(ctx, "session-001", "session-004")
+	s.NoError(err, "session regenerate should not error")
+	s.True(s.provider.SessionExist(ctx, "session-004"))
 }
 
 func (s *sessionTestSuite) TestSessionDestroy() {

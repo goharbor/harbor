@@ -1,3 +1,16 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 import { Robot } from '../../../../../ng-swagger-gen/models/robot';
 import { Access } from '../../../../../ng-swagger-gen/models/access';
 import { RobotPermission } from '../../../../../ng-swagger-gen/models/robot-permission';
@@ -50,6 +63,7 @@ export const ACTION_RESOURCE_I18N_MAP = {
     update: 'ROBOT_ACCOUNT.UPDATE',
     'audit-log': 'ROBOT_ACCOUNT.AUDIT_LOG',
     'preheat-instance': 'ROBOT_ACCOUNT.PREHEAT_INSTANCE',
+    '': 'ROBOT_ACCOUNT.PROJECT',
     project: 'ROBOT_ACCOUNT.PROJECT',
     'replication-policy': 'ROBOT_ACCOUNT.REPLICATION_POLICY',
     replication: 'ROBOT_ACCOUNT.REPLICATION',
@@ -134,7 +148,8 @@ export function isCandidate(
     if (candidatePermissions?.length) {
         for (let i = 0; i < candidatePermissions.length; i++) {
             if (
-                candidatePermissions[i].resource === permission.resource &&
+                (candidatePermissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 candidatePermissions[i].action === permission.action
             ) {
                 return true;
@@ -151,7 +166,8 @@ export function hasPermission(
     if (permissions?.length) {
         for (let i = 0; i < permissions.length; i++) {
             if (
-                permissions[i].resource === permission.resource &&
+                (permissions[i].resource ?? '') ===
+                    (permission.resource ?? '') &&
                 permissions[i].action === permission.action
             ) {
                 return true;

@@ -64,7 +64,7 @@ func (suite *QuotaTestSuite) SetupSuite() {
 }
 
 func (suite *QuotaTestSuite) TestAuthorization() {
-	newBody := func(body interface{}) io.Reader {
+	newBody := func(body any) io.Reader {
 		if body == nil {
 			return nil
 		}
@@ -81,7 +81,7 @@ func (suite *QuotaTestSuite) TestAuthorization() {
 	reqs := []struct {
 		method string
 		url    string
-		body   interface{}
+		body   any
 	}{
 		{http.MethodGet, "/quotas/1", nil},
 		{http.MethodGet, "/quotas", nil},
@@ -129,7 +129,7 @@ func (suite *QuotaTestSuite) TestGetQuota() {
 		// quota not found
 		mock.OnAnything(suite.quotaCtl, "Get").Return(nil, errors.NotFoundError(nil)).Once()
 
-		var quota map[string]interface{}
+		var quota map[string]any
 		res, err := suite.GetJSON("/quotas/1", &quota)
 		suite.NoError(err)
 		suite.Equal(404, res.StatusCode)
@@ -139,7 +139,7 @@ func (suite *QuotaTestSuite) TestGetQuota() {
 		// quota found
 		mock.OnAnything(suite.quotaCtl, "Get").Return(suite.quota, nil).Once()
 
-		var quota map[string]interface{}
+		var quota map[string]any
 		res, err := suite.GetJSON("/quotas/1", &quota)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -176,7 +176,7 @@ func (suite *QuotaTestSuite) TestListQuotas() {
 		mock.OnAnything(suite.quotaCtl, "Count").Return(int64(0), nil).Once()
 		mock.OnAnything(suite.quotaCtl, "List").Return(nil, nil).Once()
 
-		var quotas []interface{}
+		var quotas []any
 		res, err := suite.GetJSON("/quotas", &quotas)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)
@@ -188,7 +188,7 @@ func (suite *QuotaTestSuite) TestListQuotas() {
 		mock.OnAnything(suite.quotaCtl, "Count").Return(int64(3), nil).Once()
 		mock.OnAnything(suite.quotaCtl, "List").Return([]*quota.Quota{suite.quota}, nil).Once()
 
-		var quotas []interface{}
+		var quotas []any
 		res, err := suite.GetJSON("/quotas?page_size=1&page=2", &quotas)
 		suite.NoError(err)
 		suite.Equal(200, res.StatusCode)

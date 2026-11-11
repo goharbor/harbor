@@ -231,7 +231,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	manifestMediaType, content, err := manifest.Payload()
 	p.Require().Nil(err)
 
-	metadata := map[string]interface{}{}
+	metadata := map[string]any{}
 	configBlob := io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
@@ -244,7 +244,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Len(art.ExtraAttrs, 12)
 	p.Equal("CNN Model", art.ExtraAttrs["description"])
 	p.Equal("TensorFlow", art.ExtraAttrs["framework"])
-	p.Equal([]interface{}{map[string]interface{}{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
+	p.Equal([]any{map[string]any{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
 	p.Equal("sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0", art.Icon)
 
 	// ormbManifestWithoutSkipList
@@ -255,7 +255,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	manifestMediaType, content, err = manifest.Payload()
 	p.Require().Nil(err)
 
-	metadata = map[string]interface{}{}
+	metadata = map[string]any{}
 	configBlob = io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
@@ -268,7 +268,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Len(art.ExtraAttrs, 13)
 	p.Equal("CNN Model", art.ExtraAttrs["description"])
 	p.Equal("TensorFlow", art.ExtraAttrs["framework"])
-	p.Equal([]interface{}{map[string]interface{}{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
+	p.Equal([]any{map[string]any{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
 	p.Equal("sha256:d923b93eadde0af5c639a972710a4d919066aba5d0dfbf4b9385099f70272da0", art.Icon)
 
 	// ormbManifestWithoutIcon
@@ -279,7 +279,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	manifestMediaType, content, err = manifest.Payload()
 	p.Require().Nil(err)
 
-	metadata = map[string]interface{}{}
+	metadata = map[string]any{}
 	configBlob = io.NopCloser(strings.NewReader(ormbConfig))
 	err = json.NewDecoder(configBlob).Decode(&metadata)
 	p.Require().Nil(err)
@@ -290,7 +290,7 @@ func (p *v1alpha1TestSuite) TestParse() {
 	p.Len(art.ExtraAttrs, 12)
 	p.Equal("CNN Model", art.ExtraAttrs["description"])
 	p.Equal("TensorFlow", art.ExtraAttrs["framework"])
-	p.Equal([]interface{}{map[string]interface{}{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
+	p.Equal([]any{map[string]any{"name": "batch_size", "value": "32"}}, art.ExtraAttrs["hyperparameters"])
 	p.Equal("", art.Icon)
 }
 

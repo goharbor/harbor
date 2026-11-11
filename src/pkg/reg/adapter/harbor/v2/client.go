@@ -30,6 +30,7 @@ import (
 
 type client struct {
 	*base.Client
+	pageSize int64
 }
 
 func (c *client) listRepositories(project *base.Project) ([]*model.Repository, error) {
@@ -51,8 +52,12 @@ func (c *client) listRepositories(project *base.Project) ([]*model.Repository, e
 func (c *client) listArtifacts(repo string) ([]*model.Artifact, error) {
 	project, repo := utils.ParseRepository(repo)
 	repo = repository.Encode(repo)
-	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?with_label=true&with_accessory=true",
-		c.BasePath(), project, repo)
+	// set the default value to equal the value specified when the UI submits the request
+	if c.pageSize == 0 {
+		c.pageSize = 15
+	}
+	url := fmt.Sprintf("%s/projects/%s/repositories/%s/artifacts?page_size=%d&with_label=true&with_accessory=true",
+		c.BasePath(), project, repo, c.pageSize)
 	artifacts := []*artifact.Artifact{}
 	if err := c.C.GetAndIteratePagination(url, &artifacts); err != nil {
 		return nil, err
@@ -112,15 +117,16 @@ func (c *client) getAccessoryArts(project, repo string, art *artifact.Artifact, 
 			accArt.Labels = append(accArt.Labels, label.Name)
 		}
 		// recursively get the accessories of the accessory
-		art, err := c.getArtifact(project, repo, acc.GetData().Digest, true)
+		subArt, err := c.getArtifact(project, repo, acc.GetData().Digest, true)
 		if err != nil {
 			return err
 		}
-		for _, tag := range art.Tags {
+		for _, tag := range subArt.Tags {
 			accArt.Tags = append(accArt.Tags, tag.Name)
 		}
 		*accArts = append(*accArts, accArt)
-		if err != c.getAccessoryArts(project, repo, art, labels, tags, accArts) {
+		subArt.Type = art.Type
+		if err := c.getAccessoryArts(project, repo, subArt, labels, tags, accArts); err != nil {
 			return err
 		}
 	}

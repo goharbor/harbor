@@ -4,7 +4,8 @@
         class="spinner spinner-inline ml-1 v-mid"
         [hidden]="!loading"></span>
 </h2>
+@if (!loading) {
 <project-quotas
-    *ngIf="!loading"
     [allConfig]="allConfig"
     (refreshAllconfig)="refreshAllconfig()"></project-quotas>
+}

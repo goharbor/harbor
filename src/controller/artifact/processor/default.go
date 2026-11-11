@@ -110,7 +110,7 @@ func (d *defaultProcessor) AbstractMetadata(ctx context.Context, artifact *artif
 		}
 		defer blob.Close()
 		// parse metadata from config layer
-		metadata := map[string]interface{}{}
+		metadata := map[string]any{}
 		if err = json.NewDecoder(blob).Decode(&metadata); err != nil {
 			return err
 		}

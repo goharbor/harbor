@@ -120,10 +120,18 @@ class HarborAPI:
                 USER_ADMIN=dict(endpoint = "https://"+args.endpoint+"/api/v2.0" , username = "admin", password = "Harbor12345")
                 repo = Repository()
                 for _repo in project["repo"]:
-                    pull_image(args.endpoint+"/"+ project["name"]+"/"+_repo["cache_image_namespace"]+"/"+_repo["cache_image"])
-                    time.sleep(180)
+                    get_image(project["name"], _repo["cache_image_namespace"], _repo["cache_image"], _repo.get("tag", "latest"))
                     repo_name = urllib.parse.quote(_repo["cache_image_namespace"]+"/"+_repo["cache_image"],'utf-8')
-                    repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                    # Retry repository lookup every minute for up to 10 minutes total
+                    deadline = time.time() + 600
+                    while True:
+                        try:
+                            repo_data = repo.get_repository(project["name"], repo_name, **USER_ADMIN)
+                            break
+                        except Exception:
+                            if time.time() >= deadline:
+                                raise
+                            time.sleep(60)
             return
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
@@ -354,8 +362,12 @@ class HarborAPI:
     def add_project_robot_account(self, project, robot_account, **kwargs):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
-
+        create_url = url
+        print("robot_account:", robot_account)
+        print("branch:", kwargs["branch"])
+        print("version:", kwargs["version"])
         if kwargs["branch"] == 1:
+            create_url = url+"projects/"+projectid+"/robots"
             if len(robot_account["access"]) == 1:
                 robot_account_ac = robot_account["access"][0]
                 payload = {
@@ -383,10 +395,34 @@ class HarborAPI:
                 }
             else:
                 raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
+        elif kwargs["branch"] == 2:
+            create_url = url+"/robots"
+            if len(robot_account["access"]) == 1:
+                robot_account_ac = robot_account["access"][0]
+                payload = {
+                        "name":robot_account["name"],
+                        "level":"project",
+                        "duration": -1,
+                        "permissions":[
+                            {"access":[{"resource":"repository","action":robot_account_ac["action"]}],
+                                        "kind":"project","namespace":project}]
+                        }
+            elif len(robot_account["access"]) == 2:
+                payload = {
+                        "name":robot_account["name"],
+                        "level":"project",
+                        "duration": -1,
+                        "permissions":[
+                            {"access":[{"resource":"repository","action":"pull"},
+                                        {"resource":"repository","action":"push"}],
+                                        "kind":"project","namespace":project}]
+                        }
+            else:
+                                raise Exception(r"Error: Robot account count {} is not legal!".format(len(robot_account["access"])))
         else:
             raise Exception(r"Error: Feature {} has no branch {}.".format(sys._getframe().f_code.co_name, branch))
         body=dict(body=payload)
-        request(url+"projects/"+projectid+"/robots", 'post', **body)
+        request(create_url, 'post', **body)
 
     @get_feature_branch
     def add_tag_retention_rule(self, project, tag_retention_rule, **kwargs):
@@ -609,6 +645,37 @@ def pull_image(*image):
     for i in image:
         print("docker pulling image: ", i)
         os.system("docker pull "+i)
+
+def get_image(project_name, cache_image_namespace, cache_image, tag, timeout=30, retry=10, interval=10):
+    manifest_url = "https://{}/v2/{}/{}/{}/manifests/{}".format(
+        args.endpoint,
+        project_name,
+        cache_image_namespace,
+        cache_image,
+        tag,
+    )
+    headers = {
+        "Accept": "application/vnd.docker.distribution.manifest.v2+json"
+    }
+    last_error = None
+    for attempt in range(retry):
+        try:
+            print("requesting image manifest: ", manifest_url)
+            resp = requests.get(
+                manifest_url,
+                verify=False,
+                auth=("admin", "Harbor12345"),
+                headers=headers,
+                timeout=timeout,
+            )
+            if resp.status_code < 400:
+                return resp
+            last_error = Exception("status code {}: {}".format(resp.status_code, resp.text))
+        except Exception as e:
+            last_error = e
+        if attempt < retry - 1:
+            time.sleep(interval)
+    raise Exception("failed to GET image manifest {} after {} attempts: {}".format(manifest_url, retry, last_error))
 
 def push_image(image, project):
     os.system("docker tag "+image+" "+args.endpoint+"/"+project+"/"+image)

@@ -76,7 +76,7 @@ func (d *daoTestSuite) TestCreate() {
 
 func (d *daoTestSuite) TestList() {
 	schedules, err := d.dao.List(d.ctx, &q.Query{
-		Keywords: map[string]interface{}{
+		Keywords: map[string]any{
 			"CallbackFuncName": "callback_func_01",
 		},
 	})

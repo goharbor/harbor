@@ -144,6 +144,6 @@ func (l *mLogger) Verbose() bool {
 }
 
 // Printf ...
-func (l *mLogger) Printf(format string, v ...interface{}) {
+func (l *mLogger) Printf(format string, v ...any) {
 	l.logger.Infof(format, v...)
 }

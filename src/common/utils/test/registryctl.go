@@ -30,7 +30,7 @@ type GCResult struct {
 }
 
 // NewRegistryCtl returns a mock registry server
-func NewRegistryCtl(_ map[string]interface{}) (*httptest.Server, error) {
+func NewRegistryCtl(_ map[string]any) (*httptest.Server, error) {
 	m := []*RequestHandlerMapping{}
 
 	gcr := GCResult{true, "hello-world", time.Now(), time.Now()}

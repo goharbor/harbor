@@ -92,7 +92,8 @@ def list_image_tags(harbor_host, repository, username, password, n = None, last 
 
 class DockerAPI(object):
     def __init__(self):
-        self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=30)
+        # The 120-second timeout is set to support robot test cases that may require extended durations.
+        self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=120)
         self.DCLIENT2 = docker.from_env()
 
     def docker_login(self, registry, username, password, expected_error_message = None):

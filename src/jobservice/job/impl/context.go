@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"math"
 	"sync"
 	"time"
@@ -44,7 +45,7 @@ type Context struct {
 	// Logger for job
 	logger logger.Interface
 	// other required information
-	properties map[string]interface{}
+	properties map[string]any
 	// admin server client
 	cfgMgr libCfg.Manager
 	// job life cycle tracker
@@ -58,7 +59,7 @@ func NewContext(sysCtx context.Context, cfgMgr libCfg.Manager) *Context {
 	return &Context{
 		sysContext: libCfg.NewContext(sysCtx, cfgMgr),
 		cfgMgr:     cfgMgr,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 	}
 }
 
@@ -110,15 +111,13 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	jContext := &Context{
 		sysContext: orm.NewContext(c.sysContext, o.NewOrm()),
 		cfgMgr:     c.cfgMgr,
-		properties: make(map[string]interface{}),
+		properties: make(map[string]any),
 		tracker:    tracker,
 	}
 
 	// Copy properties
 	if len(c.properties) > 0 {
-		for k, v := range c.properties {
-			jContext.properties[k] = v
-		}
+		maps.Copy(jContext.properties, c.properties)
 	}
 
 	// Refresh config properties
@@ -128,9 +127,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	}
 
 	props := c.cfgMgr.GetAll(c.sysContext)
-	for k, v := range props {
-		jContext.properties[k] = v
-	}
+	maps.Copy(jContext.properties, props)
 
 	// Set loggers for job
 	c.lock.Lock()
@@ -145,7 +142,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 }
 
 // Get implements the same method in env.JobContext interface
-func (c *Context) Get(prop string) (interface{}, bool) {
+func (c *Context) Get(prop string) (any, bool) {
 	v, ok := c.properties[prop]
 	return v, ok
 }
@@ -192,17 +189,14 @@ func createLoggers(jobID string) (logger.Interface, error) {
 		// For running job, the depth should be 5
 		if lc.Name == logger.NameFile || lc.Name == logger.NameStdOutput || lc.Name == logger.NameDB {
 			if lc.Settings == nil {
-				lc.Settings = map[string]interface{}{}
+				lc.Settings = map[string]any{}
 			}
 			lc.Settings["depth"] = 5
 		}
 		if lc.Name == logger.NameFile || lc.Name == logger.NameDB {
 			// Need extra param
-			fSettings := map[string]interface{}{}
-			for k, v := range lc.Settings {
-				// Copy settings
-				fSettings[k] = v
-			}
+			fSettings := map[string]any{}
+			maps.Copy(fSettings, lc.Settings)
 			if lc.Name == logger.NameFile {
 				// Append file name param
 				fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
