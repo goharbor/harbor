@@ -66,7 +66,7 @@ func (c *controller) GetHealth(_ context.Context) *OverallHealthStatus {
 
 func check(name string, checker health.Checker,
 	timeout time.Duration, c chan *ComponentHealthStatus) {
-	statusChan := make(chan *ComponentHealthStatus)
+	statusChan := make(chan *ComponentHealthStatus, 1)
 	go func() {
 		err := checker.Check()
 		var healthy healthy = err == nil
