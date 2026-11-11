@@ -53,8 +53,41 @@ func (suite *PutBlobUploadMiddlewareTestSuite) makeRequest(contentLength int) *h
 	url := "/v2/library/photon/blobs/uploads/cbabe458-28a1-4e1b-ad15-0cb0229df4e8?digest=sha256:57c2ec3bf82f09c94be2e5c5beb124b86fcbb42e76fb82c99066c054422010e4"
 	req := httptest.NewRequest(http.MethodPut, url, nil)
 	req.Header.Set("Content-Length", strconv.Itoa(contentLength))
+	req.ContentLength = int64(contentLength)
 
 	return req
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestChunkedUploadCountsAcceptedSize() {
+	// 100 bytes accepted by previous PATCH requests, the final PUT carries 50 more
+	mock.OnAnything(suite.blobController, "GetAcceptedBlobSize").Return(int64(100), nil)
+	mock.OnAnything(suite.blobController, "Exist").Return(false, nil).Once()
+	mock.OnAnything(suite.quotaController, "Request").Return(nil).Once().Run(func(args mock.Arguments) {
+		resources := args.Get(3).(types.ResourceList)
+		suite.Len(resources, 1)
+		suite.Equal(int64(150), resources[types.ResourceStorage])
+
+		f := args.Get(4).(func() error)
+		f()
+	})
+	mock.OnAnything(suite.quotaController, "GetByRef").Return(&quota.Quota{}, nil).Once()
+
+	req := suite.makeRequest(50)
+	rr := httptest.NewRecorder()
+
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusOK, rr.Code)
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestUnknownContentLength() {
+	req := suite.makeRequest(0)
+	req.Header.Del("Content-Length")
+	// e.g. Transfer-Encoding: chunked
+	req.ContentLength = -1
+	rr := httptest.NewRecorder()
+
+	suite.handler.ServeHTTP(rr, req)
+	suite.Equal(http.StatusBadRequest, rr.Code)
 }
 
 func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobSizeIsZero() {

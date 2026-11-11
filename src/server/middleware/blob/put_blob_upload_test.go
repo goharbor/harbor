@@ -43,6 +43,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestDataInBody() {
 		digest := suite.DigestString()
 		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
 		req.Header.Set("Content-Length", "512")
+		req.ContentLength = 512
 		res := httptest.NewRecorder()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
@@ -93,6 +94,56 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestWithoutBody() {
 	})
 }
 
+func (suite *PutBlobUploadMiddlewareTestSuite) TestChunkedWithFinalChunkInBody() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		sessionID := uuid.New().String()
+		digest := suite.DigestString()
+		path := fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, sessionID, digest)
+
+		{
+			req := httptest.NewRequest(http.MethodPatch, path, nil)
+			res := httptest.NewRecorder()
+
+			next := suite.NextHandler(http.StatusAccepted, map[string]string{"Range": "0-511"})
+			PatchBlobUploadMiddleware()(next).ServeHTTP(res, req)
+			suite.Equal(http.StatusAccepted, res.Code)
+		}
+
+		// The final PUT carries the last chunk, the blob size is the sum of both
+		req := suite.NewRequest(http.MethodPut, path, nil)
+		req.Header.Set("Content-Length", "256")
+		req.ContentLength = 256
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
+		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusCreated, res.Code)
+
+		blob, err := blob.Ctl.Get(suite.Context(), digest)
+		if suite.Nil(err) {
+			suite.Equal(int64(512+256), blob.Size)
+		}
+	})
+}
+
+func (suite *PutBlobUploadMiddlewareTestSuite) TestUnknownContentLength() {
+	suite.WithProject(func(projectID int64, projectName string) {
+		digest := suite.DigestString()
+		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
+		// e.g. Transfer-Encoding: chunked
+		req.ContentLength = -1
+		res := httptest.NewRecorder()
+
+		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
+		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
+		suite.Equal(http.StatusBadRequest, res.Code)
+
+		exist, err := blob.Ctl.Exist(suite.Context(), digest)
+		suite.Nil(err)
+		suite.False(exist)
+	})
+}
+
 func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobInDeleting() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		digest := suite.DigestString()
@@ -108,6 +159,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobInDeleting() {
 
 		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
 		req.Header.Set("Content-Length", "512")
+		req.ContentLength = 512
 		res := httptest.NewRecorder()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
@@ -128,6 +180,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestBlobInDelete() {
 
 		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s?digest=%s", projectName, uuid.New().String(), digest), nil)
 		req.Header.Set("Content-Length", "512")
+		req.ContentLength = 512
 		res := httptest.NewRecorder()
 
 		next := suite.NextHandler(http.StatusCreated, map[string]string{"Docker-Content-Digest": digest})
@@ -151,6 +204,7 @@ func (suite *PutBlobUploadMiddlewareTestSuite) TestRequestWithoutDigest() {
 	suite.WithProject(func(projectID int64, projectName string) {
 		req := suite.NewRequest(http.MethodPut, fmt.Sprintf("/v2/%s/photon/blobs/uploads/%s", projectName, uuid.New().String()), nil)
 		req.Header.Set("Content-Length", "512")
+		req.ContentLength = 512
 		next := suite.NextHandler(http.StatusCreated, map[string]string{})
 		res := httptest.NewRecorder()
 		PutBlobUploadMiddleware()(next).ServeHTTP(res, req)
