@@ -84,8 +84,8 @@ func (c *Client) getAndIteratePagination(endpoint string, v any) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 		data, err := io.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			return err
 		}
