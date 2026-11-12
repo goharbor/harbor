@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -158,6 +159,15 @@ func (suite *ControllerTestSuite) TestUpdateRegistration() {
 
 	err := suite.c.UpdateRegistration(context.TODO(), suite.sample)
 	require.NoError(suite.T(), err)
+}
+
+// TestUpdateDefaultRegistrationDisabled tests the default registration cannot be deactivated
+func (suite *ControllerTestSuite) TestUpdateDefaultRegistrationDisabled() {
+	r := &scanner.Registration{UUID: "uuid", Name: "default", URL: "https://sample.scanner.com", IsDefault: true, Disabled: true}
+
+	err := suite.c.UpdateRegistration(context.TODO(), r)
+	suite.True(errors.IsErr(err, errors.BadRequestCode), "got %v", err)
+	suite.mMgr.AssertNotCalled(suite.T(), "Update", mock.Anything, mock.Anything)
 }
 
 // TestDeleteRegistration tests DeleteRegistration
