@@ -67,6 +67,8 @@ export class SubAccessoriesComponent
     artifactDigest: string;
     @Input()
     accessories: Accessory[] = [];
+    @Input()
+    hasDeletePermission: boolean = false;
     currentPage: number = 1;
     @Input()
     total: number = 0;
