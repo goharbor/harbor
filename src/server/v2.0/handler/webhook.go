@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/url"
 	"strings"
 	"time"
 
@@ -427,8 +428,9 @@ func (n *webhookAPI) normalizeAndValidateTargets(ctx context.Context, policy *po
 		if err := n.validateTargetHost(validationCtx, url.Hostname(), validatedHosts); err != nil {
 			return false, errors.New(err).WithCode(errors.BadRequestCode)
 		}
-		// Prevent SSRF security issue #3755 and normalize host per RFC 1035
-		target.Address = url.Scheme + "://" + strings.ToLower(url.Host) + url.Path
+		// Prevent SSRF security issue #3755 and normalize host per RFC 1035. Write through the
+		// slice, since target is a copy.
+		policy.Targets[i].Address = normalizeTargetAddress(url)
 
 		if !isNotifyTypeSupported(target.Type) {
 			return false, errors.New(nil).WithMessagef("unsupported target type %s with policy %s", target.Type, policy.Name).WithCode(errors.BadRequestCode)
@@ -448,6 +450,15 @@ func (n *webhookAPI) normalizeAndValidateTargets(ctx context.Context, policy *po
 		}
 	}
 	return true, nil
+}
+
+// normalizeTargetAddress lowercases the host and drops userinfo, serializing through url.URL
+// so escaped path segments and the query survive untouched.
+func normalizeTargetAddress(u *url.URL) string {
+	normalized := *u
+	normalized.Host = strings.ToLower(u.Host)
+	normalized.User = nil
+	return normalized.String()
 }
 
 // validateTargetHost rejects a webhook target hostname that resolves to a blocked address.
