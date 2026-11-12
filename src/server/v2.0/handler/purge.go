@@ -209,7 +209,7 @@ func (p *purgeAPI) GetPurgeJob(ctx context.Context, params purge.GetPurgeJobPara
 		return p.SendError(ctx, err)
 	}
 	if exec.VendorType != job.PurgeAuditVendorType {
-		return p.SendError(ctx, fmt.Errorf("purge job with id %d not found", params.PurgeID))
+		return p.SendError(ctx, errors.NotFoundError(nil).WithMessagef("purge job with id %d not found", params.PurgeID))
 	}
 
 	extraAttrsString, err := json.Marshal(exec.ExtraAttrs)
