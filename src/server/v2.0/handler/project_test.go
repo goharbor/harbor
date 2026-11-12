@@ -352,6 +352,95 @@ func (suite *ProjectTestSuite) TestUpdateProjectRegistryID() {
 	}
 }
 
+func (suite *ProjectTestSuite) TestUpdateProjectMetadataValues() {
+	suite.Security.On("IsAuthenticated").Return(true)
+	suite.Security.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+
+	proxyProject := &models.Project{
+		ProjectID:  2,
+		Name:       "proxy",
+		RegistryID: 1,
+	}
+
+	{
+		// an invalid metadata.public is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"metadata": map[string]any{"public": "maybe"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// an invalid metadata.proxy_speed_kb of a proxy cache project is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxyProject, nil).Once()
+
+		res, err := suite.PutJSON("/projects/2", map[string]any{"metadata": map[string]any{"proxy_speed_kb": "fast"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// an invalid metadata.max_upstream_conn of a proxy cache project is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxyProject, nil).Once()
+
+		res, err := suite.PutJSON("/projects/2", map[string]any{"metadata": map[string]any{"max_upstream_conn": "many"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// an invalid boolean metadata value is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"metadata": map[string]any{"auto_scan": "yes"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// an invalid metadata.severity is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"metadata": map[string]any{"severity": "bogus"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// a max_upstream_conn that is neither positive nor -1 is rejected
+		mock.OnAnything(suite.projectCtl, "Get").Return(proxyProject, nil).Once()
+
+		res, err := suite.PutJSON("/projects/2", map[string]any{"metadata": map[string]any{"max_upstream_conn": "0"}})
+		suite.NoError(err)
+		suite.Equal(400, res.StatusCode)
+	}
+
+	{
+		// accepted values are stored in their canonical form
+		mock.OnAnything(suite.projectCtl, "Get").Return(&models.Project{ProjectID: 1, Name: "library"}, nil).Once()
+		mock.OnAnything(suite.projectCtl, "Update").Return(nil).Run(func(args mock.Arguments) {
+			p := args.Get(1).(*models.Project)
+			suite.Equal("true", p.Metadata["enable_content_trust"])
+			suite.Equal("none", p.Metadata["severity"])
+		}).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"metadata": map[string]any{"enable_content_trust": "t", "severity": "Negligible"}})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+
+	{
+		// a valid metadata.public is accepted
+		mock.OnAnything(suite.projectCtl, "Get").Return(suite.project, nil).Once()
+		mock.OnAnything(suite.projectCtl, "Update").Return(nil).Once()
+
+		res, err := suite.PutJSON("/projects/1", map[string]any{"metadata": map[string]any{"public": "true", "auto_scan": "false", "severity": "high"}})
+		suite.NoError(err)
+		suite.Equal(200, res.StatusCode)
+	}
+}
+
 func TestProjectTestSuite(t *testing.T) {
 	suite.Run(t, &ProjectTestSuite{})
 }
