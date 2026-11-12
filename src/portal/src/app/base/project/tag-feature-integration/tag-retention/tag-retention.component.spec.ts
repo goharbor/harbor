@@ -19,17 +19,18 @@ import {
 } from '@angular/core/testing';
 import { TagRetentionComponent } from './tag-retention.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { NEVER, Observable, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from './add-rule/add-rule.component';
 import { TagRetentionService } from './tag-retention.service';
-import { RuleMetadate, Retention, TIMEOUT } from './retention';
+import { RuleMetadate, Retention, Rule, TIMEOUT } from './retention';
 import { delay } from 'rxjs/operators';
 import { SharedTestingModule } from '../../../../shared/shared.module';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Registry } from '../../../../../../ng-swagger-gen/models/registry';
 import { RetentionService } from 'ng-swagger-gen/services/retention.service';
 import { ProjectService } from 'ng-swagger-gen/services/project.service';
+import { UserPermissionService } from '../../../../shared/services';
 
 describe('TagRetentionComponent', () => {
     const mockedRunningExecutions = [
@@ -58,6 +59,7 @@ describe('TagRetentionComponent', () => {
     let fixture: ComponentFixture<TagRetentionComponent>;
     const mockTagRetentionService = {
         seeLog: () => of(null).pipe(delay(0)),
+        getI18nKey: (key: string) => key,
     };
     const mockRetentionService = {
         createRetention: () => of(null).pipe(delay(0)),
@@ -108,8 +110,15 @@ describe('TagRetentionComponent', () => {
             },
         },
     };
+    let projectMetadata: { retention_id?: number } = { retention_id: 1 };
     const mockProjectService = {
-        getProject: () => of({ metadata: { retention_id: 1 } }),
+        getProject: () => projectResponse(),
+    };
+    let permissions = { create: true, update: true };
+    let projectResponse: () => Observable<any> = () =>
+        of({ metadata: projectMetadata });
+    const mockUserPermissionService = {
+        getPermission: (projectId, resource, action) => of(permissions[action]),
     };
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -127,11 +136,18 @@ describe('TagRetentionComponent', () => {
                 },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
                 { provide: ProjectService, useValue: mockProjectService },
+                {
+                    provide: UserPermissionService,
+                    useValue: mockUserPermissionService,
+                },
             ],
         }).compileComponents();
     });
 
     beforeEach(async () => {
+        projectMetadata = { retention_id: 1 };
+        permissions = { create: true, update: true };
+        projectResponse = () => of({ metadata: projectMetadata });
         fixture = TestBed.createComponent(TagRetentionComponent);
         component = fixture.componentInstance;
         component.loadingRule = false;
@@ -150,4 +166,71 @@ describe('TagRetentionComponent', () => {
             expect(component.executionList[0].status).toEqual('Success');
         });
     }));
+
+    async function render(): Promise<HTMLElement> {
+        fixture = TestBed.createComponent(TagRetentionComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+        return fixture.nativeElement;
+    }
+
+    async function renderWithRunningExecution(): Promise<HTMLElement> {
+        const el = await render();
+        component.retention.rules = [new Rule()];
+        component.selectedItem = mockedRunningExecutions[0];
+        fixture.detectChanges();
+        return el;
+    }
+
+    function disabled(el: HTMLElement, selector: string): boolean {
+        return el.querySelector<HTMLButtonElement>(selector).disabled;
+    }
+
+    const writeControls = [
+        '#add-rule',
+        '#run-now',
+        '#dry-run',
+        '#abort-run',
+        '.rule .dropdown-toggle',
+    ];
+
+    it('should enable write actions with the update permission', async () => {
+        const el = await renderWithRunningExecution();
+        expect(component.canEditPolicy).toBeTrue();
+        writeControls.forEach(selector =>
+            expect(disabled(el, selector)).withContext(selector).toBeFalse()
+        );
+        expect(component.cronScheduleComponent.disabled).toBeFalse();
+    });
+
+    it('should disable write actions without the update permission', async () => {
+        permissions = { create: true, update: false };
+        const el = await renderWithRunningExecution();
+        expect(component.canEditPolicy).toBeFalse();
+        writeControls.forEach(selector =>
+            expect(disabled(el, selector)).withContext(selector).toBeTrue()
+        );
+        expect(component.cronScheduleComponent.disabled).toBeTrue();
+    });
+
+    it('should need the create permission for the first rule', async () => {
+        projectMetadata = {};
+        permissions = { create: true, update: false };
+        let el = await render();
+        expect(disabled(el, '#add-rule')).toBeFalse();
+
+        permissions = { create: false, update: true };
+        el = await render();
+        expect(disabled(el, '#add-rule')).toBeTrue();
+    });
+
+    it('should disable write actions until the project is loaded', async () => {
+        permissions = { create: true, update: false };
+        projectResponse = () => NEVER;
+        const el = await render();
+        expect(component.canEditPolicy).toBeFalse();
+        expect(disabled(el, '#add-rule')).toBeTrue();
+    });
 });
