@@ -187,7 +187,8 @@ func (de *defaultEnforcer) EnforcePolicy(ctx context.Context, policyID int64) (i
 
 	// Check if policy is enabled
 	if !pl.Enabled {
-		return -1, enforceError(errors.Errorf("policy %d:%s is not enabled", pl.ID, pl.Name))
+		return -1, errors.New(nil).WithCode(errors.PreconditionCode).
+			WithMessagef("enforce policy error: policy %d:%s is not enabled", pl.ID, pl.Name)
 	}
 
 	// Get and check if the provider instance bound with the policy is healthy
