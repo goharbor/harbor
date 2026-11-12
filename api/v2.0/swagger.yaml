@@ -2756,7 +2756,7 @@ paths:
         - $ref: '#/parameters/projectNameOrId'
         - name: policy
           in: body
-          description: Properties "targets" and "event_types" needed.
+          description: Properties "name", "targets" and "event_types" needed.
           required: true
           schema:
             $ref: '#/definitions/WebhookPolicy'
@@ -9396,7 +9396,7 @@ definitions:
         description: The webhook policy ID.
       name:
         type: string
-        description: The name of webhook policy.
+        description: The name of webhook policy. It must not be empty or only whitespace.
       description:
         type: string
         description: The description of webhook policy.
