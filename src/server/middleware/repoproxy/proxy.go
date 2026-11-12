@@ -550,6 +550,10 @@ func ProxyReferrerMiddleware() func(http.Handler) http.Handler {
 		log.Debug("current project is a harbor proxy cache project, will proxy the referrer API to the upstream")
 		remote, err := proxy.NewRemoteHelper(r.Context(), p.RegistryID, proxy.WithSpeed(p.ProxyCacheSpeed()))
 		if err != nil {
+			// NewRemoteHelper rejects an unhealthy registry, serve the cached referrer index if there is one
+			if cacheErr := serveCachedReferrers(ctx, w, referrerCacheKey(r.RequestURI)); cacheErr == nil {
+				return
+			}
 			log.Errorf("failed to proxy the referrer API to upstream, error %v, fallback to local registry", err)
 			next.ServeHTTP(w, r)
 			return
