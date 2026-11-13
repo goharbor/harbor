@@ -17,12 +17,12 @@ package blob
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/pkg/distribution"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/util"
 )
 
 // PutBlobUploadMiddleware middleware is to update the blob status according to the different situation before the request passed into proxy(distribution).
@@ -32,6 +32,11 @@ import (
 // 2, It has to deal with the concurrence blob push.
 func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 	before := middleware.BeforeRequest(func(r *http.Request) error {
+		// Reject before the body reaches the registry, so a blob of unknown
+		// size is never stored without being accounted for.
+		if err := util.ValidateBlobUploadLength(r); err != nil {
+			return err
+		}
 		v := r.URL.Query()
 		digest := v.Get("digest")
 		return probeBlob(r, digest)
@@ -47,12 +52,9 @@ func PutBlobUploadMiddleware() func(http.Handler) http.Handler {
 		h := func(ctx context.Context) error {
 			logger := log.G(ctx).WithFields(log.Fields{"middleware": "blob"})
 
-			size, err := strconv.ParseInt(r.Header.Get("Content-Length"), 10, 64)
-			if err != nil || size == 0 {
-				size, err = blobController.GetAcceptedBlobSize(ctx, distribution.ParseSessionID(r.URL.Path))
-			}
+			size, err := util.PutBlobUploadSize(r.WithContext(ctx), blobController.GetAcceptedBlobSize)
 			if err != nil {
-				logger.Errorf("get blob size failed, error: %v", err)
+				logger.Errorf("get blob upload size failed, error: %v", err)
 				return err
 			}
 
