@@ -376,7 +376,7 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	{
 		// artifact not provieded
 		suite.Require().Error(suite.c.Scan(context.TODO(), nil))
-		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Times(3)
+		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Times(5)
 	}
 
 	{
@@ -438,6 +438,42 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
 		mock.OnAnything(suite.execMgr, "Create").Return(int64(0), fmt.Errorf("failed to create execution")).Once()
 		suite.Require().Error(suite.c.Scan(context.TODO(), suite.artifact))
+	}
+
+	{
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
+		// event triggered scan, failed to submit the job, the execution is marked as error
+		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+			walkFn := args.Get(2).(func(*artifact.Artifact) error)
+			walkFn(suite.artifact)
+		}).Once()
+
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
+		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed to submit job")).Once()
+		suite.execMgr.On("MarkError", mock.Anything, int64(1), mock.Anything).Return(nil).Once()
+
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+		suite.Require().NoError(suite.c.Scan(ctx, suite.artifact, WithFromEvent(true)))
+	}
+
+	{
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
+		// event triggered scan, failed to submit the job and failed to mark the execution as error
+		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {
+			walkFn := args.Get(2).(func(*artifact.Artifact) error)
+			walkFn(suite.artifact)
+		}).Once()
+
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
+		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
+		mock.OnAnything(suite.taskMgr, "Create").Return(int64(0), fmt.Errorf("failed to submit job")).Once()
+		suite.execMgr.On("MarkError", mock.Anything, int64(1), mock.Anything).Return(fmt.Errorf("failed to mark error")).Once()
+
+		ctx := orm.NewContext(context.TODO(), &ormtesting.FakeOrmer{})
+		suite.Require().Error(suite.c.Scan(ctx, suite.artifact, WithFromEvent(true)))
 	}
 }
 
