@@ -162,6 +162,9 @@ func Login(ctx context.Context, m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	err = authenticator.PostAuthenticate(ctx, user)
+	if err == nil && user != nil {
+		user.SessionAuthMode = authMode
+	}
 	return user, err
 }
 
