@@ -18,6 +18,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/runtime"
@@ -30,8 +31,10 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/lib/q"
 	labelmodel "github.com/goharbor/harbor/src/pkg/label/model"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/label"
 	testsecurity "github.com/goharbor/harbor/src/testing/common/security"
+	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
 	testlabel "github.com/goharbor/harbor/src/testing/pkg/label"
 )
 
@@ -78,6 +81,45 @@ func TestListLabelsAccess(t *testing.T) {
 			} else {
 				manager.AssertNotCalled(t, "Count", mock.Anything, mock.Anything)
 				manager.AssertNotCalled(t, "List", mock.Anything, mock.Anything)
+			}
+		})
+	}
+}
+
+func TestCreateLabelValidation(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		label *models.Label
+		code  int
+	}{
+		{"empty-name", &models.Label{Name: "", Scope: common.LabelScopeGlobal}, http.StatusBadRequest},
+		{"name-too-long", &models.Label{Name: strings.Repeat("a", 129), Scope: common.LabelScopeGlobal}, http.StatusBadRequest},
+		{"invalid-scope", &models.Label{Name: "l", Scope: "x"}, http.StatusBadRequest},
+		{"project-scope-without-project", &models.Label{Name: "l", Scope: common.LabelScopeProject}, http.StatusBadRequest},
+		{"missing-project", &models.Label{Name: "l", Scope: common.LabelScopeProject, ProjectID: 99}, http.StatusBadRequest},
+		{"project-label", &models.Label{Name: "l", Scope: common.LabelScopeProject, ProjectID: 1}, http.StatusCreated},
+		{"global-label", &models.Label{Name: "l", Scope: common.LabelScopeGlobal}, http.StatusCreated},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			secCtx := &testsecurity.Context{}
+			secCtx.On("IsAuthenticated").Return(true)
+			secCtx.On("Can", mock.Anything, mock.Anything, mock.Anything).Return(true)
+			ctx := security.NewContext(context.Background(), secCtx)
+
+			projectCtl := &projecttesting.Controller{}
+			projectCtl.On("Exists", mock.Anything, int64(1)).Return(true, nil)
+			projectCtl.On("Exists", mock.Anything, int64(99)).Return(false, nil)
+			manager := &testlabel.Manager{}
+			manager.On("Create", mock.Anything, mock.Anything).Return(int64(1), nil)
+
+			response := httptest.NewRecorder()
+			(&labelAPI{labelMgr: manager, projectCtl: projectCtl}).CreateLabel(ctx, operation.CreateLabelParams{
+				HTTPRequest: httptest.NewRequest(http.MethodPost, "/api/v2.0/labels", nil),
+				Label:       tc.label,
+			}).WriteResponse(response, runtime.JSONProducer())
+			require.Equal(t, tc.code, response.Code, response.Body.String())
+			if tc.code != http.StatusCreated {
+				manager.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 			}
 		})
 	}
