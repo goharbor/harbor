@@ -1,14 +1,18 @@
 package export
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
 
+	beego_orm "github.com/beego/beego/v2/client/orm"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/lib/orm"
 	"github.com/goharbor/harbor/src/lib/q"
 	artifactDao "github.com/goharbor/harbor/src/pkg/artifact/dao"
 	labelDao "github.com/goharbor/harbor/src/pkg/label/dao"
@@ -120,9 +124,10 @@ func (suite *ExportManagerSuite) clearTestData() {
 
 func (suite *ExportManagerSuite) TestExport() {
 	{
-		data, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
+		data, rawCount, err := suite.exportManager.Fetch(suite.Context(), Params{ArtifactIDs: []int64{1}})
 		suite.NoError(err)
 		suite.Equal(10, len(data))
+		suite.Equal(10, rawCount)
 		for _, datum := range data {
 			suite.Equal("{\"CVSS\": {\"nvd\": {\"V2Score\": \"4.3\"}}}", datum.AdditionalData)
 		}
@@ -135,9 +140,10 @@ func (suite *ExportManagerSuite) TestExportWithCVEFilter() {
 			ArtifactIDs: []int64{1},
 			CVEIds:      "CVE-ID2",
 		}
-		data, err := suite.exportManager.Fetch(suite.Context(), p)
+		data, rawCount, err := suite.exportManager.Fetch(suite.Context(), p)
 		suite.NoError(err)
 		suite.Equal(1, len(data))
+		suite.Equal(10, rawCount)
 		suite.Equal(p.CVEIds, data[0].CVEId)
 	}
 }
@@ -318,4 +324,54 @@ func (suite *ExportManagerSuite) setupTestData() {
 
 func TestExportManager(t *testing.T) {
 	suite.Run(t, &ExportManagerSuite{})
+}
+
+// Only the raw-query methods used by Fetch are implemented; unexpected ORM calls fail.
+type exportQueryExecutor struct {
+	beego_orm.QueryExecutor
+	result beego_orm.RawSeter
+}
+
+func (e *exportQueryExecutor) Raw(_ string, _ ...any) beego_orm.RawSeter {
+	return e.result
+}
+
+type exportRawResult struct {
+	beego_orm.RawSeter
+	rows []Data
+}
+
+func (r *exportRawResult) QueryRows(containers ...any) (int64, error) {
+	rows := containers[0].(*[]Data)
+	*rows = append(*rows, r.rows...)
+	return int64(len(r.rows)), nil
+}
+
+func TestFetchRawCountBeforeCVEFiltering(t *testing.T) {
+	rawRows := []Data{
+		{CVEId: "CVE-2026-0001", Package: "first"},
+		{CVEId: "CVE-2026-0002", Package: "second"},
+	}
+	tests := []struct {
+		name   string
+		filter string
+		want   []Data
+	}{
+		{name: "unfiltered", want: rawRows},
+		{name: "one match", filter: "CVE-2026-0001", want: rawRows[:1]},
+		{name: "no matches", filter: "CVE-2026-0003", want: []Data{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := orm.NewContext(context.Background(), &exportQueryExecutor{
+				result: &exportRawResult{rows: rawRows},
+			})
+			data, rawCount, err := NewManager().Fetch(ctx, Params{
+				ArtifactIDs: []int64{1}, PageNumber: 1, PageSize: 2, CVEIds: tt.filter,
+			})
+			require.NoError(t, err)
+			require.Equal(t, len(rawRows), rawCount)
+			require.Equal(t, tt.want, data)
+		})
+	}
 }

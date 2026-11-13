@@ -74,7 +74,7 @@ func (suite *ScanDataExportJobTestSuite) SetupTest() {
 func (suite *ScanDataExportJobTestSuite) TestRun() {
 
 	data := suite.createDataRecords(3)
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 	mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
 	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
@@ -116,7 +116,7 @@ func (suite *ScanDataExportJobTestSuite) TestRun() {
 
 func (suite *ScanDataExportJobTestSuite) TestRunWithEmptyData() {
 	var data []export.Data
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 
 	execAttrs := make(map[string]any)
@@ -141,7 +141,7 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithEmptyData() {
 func (suite *ScanDataExportJobTestSuite) TestRunAttributeUpdateError() {
 
 	data := suite.createDataRecords(3)
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
 	mock.OnAnything(suite.filterProcessor, "ProcessRepositoryFilter").Return([]int64{1}, nil).Once()
 	mock.OnAnything(suite.filterProcessor, "ProcessTagFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
 	mock.OnAnything(suite.filterProcessor, "ProcessLabelFilter").Return([]*artifact.Artifact{{Artifact: artpkg.Artifact{ID: 1}}}, nil).Once()
@@ -204,8 +204,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 	{
 		data := suite.createDataRecords(3)
 
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -265,11 +265,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteria() {
 	{
 		mock.OnAnything(suite.sysArtifactMgr, "Create").Return(int64(1), nil).Once()
 		data := suite.createDataRecords(3)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -328,11 +328,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 	{
 		data := suite.createDataRecords(3)
 
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -378,11 +378,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdFilte
 	{
 		data := suite.createDataRecords(3)
 
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -430,11 +430,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 	{
 		data := suite.createDataRecords(3)
 
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -480,11 +480,11 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 	{
 		data := suite.createDataRecords(3)
 
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+		mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 		mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(MockDigest), nil)
 		execAttrs := make(map[string]any)
 		execAttrs[export.JobNameAttribute] = "test-job"
@@ -530,8 +530,8 @@ func (suite *ScanDataExportJobTestSuite) TestRunWithCriteriaForRepositoryIdWithT
 
 func (suite *ScanDataExportJobTestSuite) TestExportDigestCalculationErrorsOut() {
 	data := suite.createDataRecords(3)
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, nil).Once()
-	mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(data, len(data), nil).Once()
+	mock.OnAnything(suite.exportMgr, "Fetch").Return(make([]export.Data, 0), 0, nil).Once()
 	mock.OnAnything(suite.digestCalculator, "Calculate").Return(digest.Digest(""), errors.New("test error"))
 	params := job.Parameters{}
 	params[export.JobModeKey] = export.JobModeExport
