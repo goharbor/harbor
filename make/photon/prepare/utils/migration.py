@@ -32,7 +32,10 @@ def read_conf(path):
             # but it will move to https section after migration
             https_config = d.get("https") or {}
             internal_tls = d.get('internal_tls') or {}
-            d['strong_ssl_ciphers'] = https_config.get('strong_ssl_ciphers') or internal_tls.get('strong_ssl_ciphers')
+            # Same OR precedence as utils/configs.py; bool() avoids None for Jinja.
+            d['strong_ssl_ciphers'] = bool(
+                https_config.get('strong_ssl_ciphers') or internal_tls.get('strong_ssl_ciphers')
+            )
         except Exception as e:
             click.echo("parse config file err, make sure your harbor config version is above 1.8.0", e)
             exit(-1)
