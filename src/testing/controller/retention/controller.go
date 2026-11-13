@@ -82,6 +82,34 @@ func (_m *Controller) DeleteRetentionByProject(ctx context.Context, projectID in
 	return r0
 }
 
+// FailRetentionExec provides a mock function with given fields: ctx, policyID, trigger, message
+func (_m *Controller) FailRetentionExec(ctx context.Context, policyID int64, trigger string, message string) (int64, error) {
+	ret := _m.Called(ctx, policyID, trigger, message)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FailRetentionExec")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string) (int64, error)); ok {
+		return rf(ctx, policyID, trigger, message)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string, string) int64); ok {
+		r0 = rf(ctx, policyID, trigger, message)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string, string) error); ok {
+		r1 = rf(ctx, policyID, trigger, message)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetRetention provides a mock function with given fields: ctx, id
 func (_m *Controller) GetRetention(ctx context.Context, id int64) (*policy.Metadata, error) {
 	ret := _m.Called(ctx, id)
