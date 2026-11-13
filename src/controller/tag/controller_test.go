@@ -107,15 +107,84 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 	c.repoMgr.AssertExpectations(c.T())
+}
 
-	// reset the mock
-	c.SetupTest()
+func (c *controllerTestSuite) TestEnsureTagCreateConflict() {
+	conflict := errors.ConflictError(nil)
+	lookupErr := errors.New("cannot list tags")
+	updateErr := errors.New("cannot update tag")
+	for _, tc := range []struct {
+		name       string
+		artifactID int64
+		immutable  bool
+		missing    bool
+		lookupErr  error
+		updateErr  error
+		wantErr    error
+	}{
+		{name: "same artifact", artifactID: 1},
+		{name: "different artifact", artifactID: 2},
+		{name: "same immutable artifact", artifactID: 1, immutable: true},
+		{name: "different immutable artifact", artifactID: 2, immutable: true},
+		{name: "tag removed before reread", missing: true, wantErr: conflict},
+		{name: "reread fails", lookupErr: lookupErr, wantErr: lookupErr},
+		{name: "retag fails", artifactID: 2, updateErr: updateErr, wantErr: updateErr},
+	} {
+		c.Run(tc.name, func() {
+			c.SetupTest()
+			c.tagMgr.On("List", mock.Anything, mock.Anything).Return([]*tag.Tag{}, nil).Once()
+			c.tagMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), conflict).Once()
 
-	// a concurrent create conflict means this request did not change tag state
-	c.tagMgr.On("List", mock.Anything, mock.Anything).Return([]*tag.Tag{}, nil)
-	c.tagMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), errors.ConflictError(nil))
-	_, err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
-	c.Require().Nil(err)
+			existing := &tag.Tag{ID: 42, RepositoryID: 1, ArtifactID: tc.artifactID, Name: "latest"}
+			var tags []*tag.Tag
+			if !tc.missing && tc.lookupErr == nil {
+				tags = []*tag.Tag{existing}
+				c.artMgr.On("Get", mock.Anything, tc.artifactID).Return(&pkg_artifact.Artifact{
+					ID: tc.artifactID,
+				}, nil).Once()
+				mock.OnAnything(c.immutableMtr, "Match").Return(tc.immutable, nil).Once()
+			}
+			c.tagMgr.On("List", mock.Anything, mock.Anything).Return(tags, tc.lookupErr).Once()
+			if tc.artifactID == 2 && !tc.immutable {
+				c.tagMgr.On("Update", mock.Anything, mock.Anything, "ArtifactID", "PushTime").
+					Run(func(args mock.Arguments) {
+						updated := args.Get(1).(*tag.Tag)
+						c.Equal(int64(42), updated.ID)
+						c.Equal(int64(1), updated.ArtifactID)
+						c.False(updated.PushTime.IsZero())
+					}).Return(tc.updateErr).Once()
+				if tc.updateErr == nil {
+					c.repoMgr.On("Touch", mock.Anything, int64(1)).Return(nil).Once()
+				}
+			}
+
+			id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+			if tc.wantErr != nil {
+				c.ErrorIs(err, tc.wantErr)
+				c.Zero(id)
+			} else if tc.immutable && tc.artifactID != 1 {
+				c.True(errors.IsErr(err, errors.PreconditionCode))
+				c.Zero(id)
+			} else {
+				c.NoError(err)
+				c.Equal(int64(42), id)
+			}
+			c.tagMgr.AssertExpectations(c.T())
+			c.artMgr.AssertExpectations(c.T())
+			c.immutableMtr.AssertExpectations(c.T())
+			c.repoMgr.AssertExpectations(c.T())
+		})
+	}
+}
+
+func (c *controllerTestSuite) TestEnsureTagCreateError() {
+	createErr := errors.New("cannot create tag")
+	c.tagMgr.On("List", mock.Anything, mock.Anything).Return([]*tag.Tag{}, nil).Once()
+	c.tagMgr.On("Create", mock.Anything, mock.Anything).Return(int64(0), createErr).Once()
+
+	id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
+	c.Zero(id)
+	c.ErrorIs(err, createErr)
 	c.tagMgr.AssertExpectations(c.T())
 }
 
