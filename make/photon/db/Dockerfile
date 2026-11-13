@@ -15,5 +15,6 @@ RUN chown -R postgres:postgres /docker-entrypoint.sh /initdb.sh /upgrade.sh \
 
 ENTRYPOINT ["/docker-entrypoint.sh", "15", "18"]
 HEALTHCHECK CMD ["/docker-healthcheck.sh"]
+STOPSIGNAL SIGINT
 
 USER postgres
