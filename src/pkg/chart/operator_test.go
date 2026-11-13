@@ -2,6 +2,7 @@ package chart
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"io"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 func addFileToTar(tarWriter *tar.Writer, filename string) error {
@@ -122,4 +124,29 @@ func TestGetChartDetails(t *testing.T) {
 		// the length of files should be greater than 0
 		assert.Greater(t, len(details.Files), 0)
 	}
+}
+
+// TestGetData_HelmDecompressedLimit guards that GetData relies on helm's
+// loader to bound decompression (loader.MaxDecompressedChartSize).
+func TestGetData_HelmDecompressedLimit(t *testing.T) {
+	chartOpr := NewOperator()
+
+	// Only the tar header declaring an oversized entry is needed: helm rejects
+	// it from the header before reading any data, so the test stays fast and
+	// does not allocate the declared size.
+	var buf bytes.Buffer
+	gzw := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gzw)
+	header := &tar.Header{
+		Name: "harbor/values.yaml",
+		Size: loader.MaxDecompressedChartSize + 1,
+		Mode: 0600,
+	}
+	// The entry is intentionally left incomplete, so tw is not closed.
+	assert.Nil(t, tw.WriteHeader(header))
+	assert.Nil(t, gzw.Close())
+
+	_, err := chartOpr.GetData(buf.Bytes())
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "is larger than the maximum file size")
 }
