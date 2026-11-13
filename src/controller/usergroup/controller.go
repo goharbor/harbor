@@ -54,11 +54,12 @@ type Controller interface {
 }
 
 type controller struct {
-	mgr usergroup.Manager
+	mgr         usergroup.Manager
+	searchGroup func(ctx context.Context, groupKey string) (*model.UserGroup, error)
 }
 
 func newController() Controller {
-	return &controller{mgr: usergroup.Mgr}
+	return &controller{mgr: usergroup.Mgr, searchGroup: auth.SearchGroup}
 }
 
 func (c *controller) List(ctx context.Context, query *q.Query) ([]*model.UserGroup, error) {
@@ -90,14 +91,13 @@ func (c *controller) Update(ctx context.Context, id int, groupName string) error
 
 func (c *controller) Create(ctx context.Context, group model.UserGroup) (int, error) {
 	if group.GroupType == common.LDAPGroupType {
-		ldapGroup, err := auth.SearchGroup(ctx, group.LdapGroupDN)
-		if errors.Is(err, ldap.ErrNotFound) || ldapGroup == nil {
-			return 0, errors.BadRequestError(nil).WithMessagef("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
-		}
-		if errors.Is(err, ldap.ErrDNSyntax) {
+		ldapGroup, err := c.searchGroup(ctx, group.LdapGroupDN)
+		switch {
+		case errors.Is(err, ldap.ErrDNSyntax) || errors.Is(err, auth.ErrInvalidLDAPGroupDN):
 			return 0, errors.BadRequestError(nil).WithMessagef("invalid DN syntax. DN: %v", group.LdapGroupDN)
-		}
-		if err != nil {
+		case errors.Is(err, ldap.ErrNotFound) || errors.IsNotFoundErr(err) || (err == nil && ldapGroup == nil):
+			return 0, errors.BadRequestError(nil).WithMessagef("LDAP Group DN is not found: DN:%v", group.LdapGroupDN)
+		case err != nil:
 			return 0, err
 		}
 	}
