@@ -157,6 +157,9 @@ func (n *webhookAPI) CreateWebhookPolicyOfProject(ctx context.Context, params we
 		log.Warningf("failed to call JSONCopy on notification policy when CreateWebhookPolicyOfProject, error: %v", err)
 	}
 
+	if ok, err := n.validateName(policy); !ok {
+		return n.SendError(ctx, err)
+	}
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
@@ -196,6 +199,9 @@ func (n *webhookAPI) UpdateWebhookPolicyOfProject(ctx context.Context, params we
 		log.Warningf("failed to call JSONCopy on notification policy when UpdateWebhookPolicyOfProject, error: %v", err)
 	}
 
+	if ok, err := n.validateName(policy); !ok {
+		return n.SendError(ctx, err)
+	}
 	if ok, err := n.validateEventTypes(policy); !ok {
 		return n.SendError(ctx, err)
 	}
@@ -466,6 +472,13 @@ func (n *webhookAPI) validateTargetHost(ctx context.Context, host string, valida
 	}
 	validatedHosts[host] = struct{}{}
 	return nil
+}
+
+func (n *webhookAPI) validateName(policy *policy_model.Policy) (bool, error) {
+	if len(strings.TrimSpace(policy.Name)) == 0 {
+		return false, errors.New(nil).WithMessage("empty policy name").WithCode(errors.BadRequestCode)
+	}
+	return true, nil
 }
 
 func (n *webhookAPI) validateEventTypes(policy *policy_model.Policy) (bool, error) {
