@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/lib/q"
 	"github.com/goharbor/harbor/src/pkg/usergroup/model"
 	htesting "github.com/goharbor/harbor/src/testing"
 )
@@ -94,6 +95,28 @@ func (s *DaoTestSuite) TestSearchByName() {
 	s.Equal(10, len(results2))
 	// the first one should be "group"
 	s.Equal("group", results2[0].GroupName)
+}
+
+func (s *DaoTestSuite) TestSearchByNameEscapesLikeWildcards() {
+	ctx := s.Context()
+	for _, name := range []string{"wildcard_group", "wildcardXgroup"} {
+		_, err := s.dao.Add(ctx, model.UserGroup{
+			GroupName:   name,
+			GroupType:   1,
+			LdapGroupDN: "cn=" + name + ",ou=groups,dc=example,dc=com",
+		})
+		s.Nil(err)
+	}
+
+	// the "_" must be matched literally, the same way Count() does via q.FuzzyMatchValue
+	total, err := s.dao.Count(ctx, q.New(q.KeyWords{"GroupName": &q.FuzzyMatchValue{Value: "wildcard_group"}}))
+	s.Nil(err)
+	s.Equal(int64(1), total)
+
+	results, err := s.dao.SearchByName(ctx, "wildcard_group", 10)
+	s.Nil(err)
+	s.Len(results, 1)
+	s.Equal("wildcard_group", results[0].GroupName)
 }
 
 func TestDaoTestSuite(t *testing.T) {
