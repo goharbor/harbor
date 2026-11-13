@@ -145,25 +145,28 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 	}
 	needUn := false
 	needSch := false
+	// the cron setting may be missing, an empty cron means no schedule
+	oldCron, _ := p0.Trigger.Settings[policy.TriggerSettingsCron].(string)
+	newCron, _ := p.Trigger.Settings[policy.TriggerSettingsCron].(string)
 
 	if p0.Trigger.Kind != p.Trigger.Kind {
 		if p0.Trigger.Kind == policy.TriggerKindSchedule {
 			needUn = true
 		}
 
-		if p.Trigger.Kind == policy.TriggerKindSchedule {
+		if p.Trigger.Kind == policy.TriggerKindSchedule && len(newCron) > 0 {
 			needSch = true
 		}
 	} else {
 		switch p.Trigger.Kind {
 		case policy.TriggerKindSchedule:
-			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
+			if oldCron != newCron {
 				// unschedule old
-				if len(p0.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
+				if len(oldCron) > 0 {
 					needUn = true
 				}
 				// schedule new
-				if len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
+				if len(newCron) > 0 {
 					// valid cron
 					needSch = true
 				}
@@ -185,7 +188,7 @@ func (r *defaultController) UpdateRetention(ctx context.Context, p *policy.Metad
 	}
 	if needSch {
 		extras := make(map[string]any)
-		_, err := r.scheduler.Schedule(ctx, schedulerVendorType, p.ID, "", p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
+		_, err := r.scheduler.Schedule(ctx, schedulerVendorType, p.ID, "", newCron, SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  retention.ExecutionTriggerSchedule,
 			// the operator of schedule job is harbor-jobservice
@@ -205,7 +208,7 @@ func (r *defaultController) DeleteRetention(ctx context.Context, id int64) error
 	if err != nil {
 		return err
 	}
-	if p.Trigger.Kind == policy.TriggerKindSchedule && len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
+	if cron, _ := p.Trigger.Settings[policy.TriggerSettingsCron].(string); p.Trigger.Kind == policy.TriggerKindSchedule && len(cron) > 0 {
 		err = r.scheduler.UnScheduleByVendor(ctx, schedulerVendorType, id)
 		if err != nil {
 			return err
