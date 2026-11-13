@@ -74,17 +74,12 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 	var scannable bool
 
 	walkFn := func(a *artifact.Artifact) error {
-		ok, err := c.isAccessory(ctx, a)
+		ok, runnableAccessory, err := scanAccessoryStatus(ctx, c.accMgr, a)
 		if err != nil {
 			return err
 		}
 		if ok {
 			return nil
-		}
-
-		if hasCapability(r, a) {
-			scannable = true
-			return artifact.ErrBreak
 		}
 
 		// because there are lots of in-toto sbom artifacts in dockerhub and replicated to Harbor, they are considered as image type
@@ -99,6 +94,11 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 			return nil
 		}
 
+		if hasScanCapability(r, a, runnableAccessory) {
+			scannable = true
+			return artifact.ErrBreak
+		}
+
 		return nil
 	}
 
@@ -109,15 +109,17 @@ func (c *checker) IsScannable(ctx context.Context, art *artifact.Artifact) (bool
 	return scannable, nil
 }
 
-func (c *checker) isAccessory(ctx context.Context, art *artifact.Artifact) (bool, error) {
-	ac, err := c.accMgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.Artifact.ID, "digest": art.Artifact.Digest}))
+// scanAccessoryStatus retains accessory exclusions for non-runnable artifacts while
+// ensuring that an accessory record cannot make a runnable image unscannable.
+func scanAccessoryStatus(ctx context.Context, mgr accessory.Manager, art *artifact.Artifact) (bool, bool, error) {
+	ac, err := mgr.List(ctx, q.New(q.KeyWords{"ArtifactID": art.Artifact.ID, "digest": art.Artifact.Digest}))
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
-	if len(ac) > 0 {
-		return true, nil
+	if len(ac) > 0 && art.MayBeRunnable() {
+		return false, true, nil
 	}
-	return false, nil
+	return len(ac) > 0, false, nil
 }
 
 // hasCapability returns true when scanner has capability for the artifact
@@ -131,4 +133,9 @@ func hasCapability(r *models.Registration, a *artifact.Artifact) bool {
 	}
 
 	return false
+}
+
+// hasScanCapability applies the same capability rule throughout scanning.
+func hasScanCapability(r *models.Registration, a *artifact.Artifact, runnableAccessory bool) bool {
+	return hasCapability(r, a) || (runnableAccessory && r.HasCapability(a.ManifestMediaType))
 }

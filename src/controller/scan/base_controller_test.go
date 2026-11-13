@@ -404,6 +404,25 @@ func (suite *ControllerTestSuite) TestScanControllerScan() {
 	}
 
 	{
+		// A runnable accessory with a non-IMAGE stored type must create a task.
+		runnable := *suite.artifact
+		runnable.Type = "OTHER"
+		runnable.MediaType = "application/vnd.oci.image.config.v1+json"
+		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{nil}, nil).Twice()
+		mock.OnAnything(suite.ar, "HasUnscannableLayer").Return(false, nil).Once()
+		mock.OnAnything(suite.ar, "Walk").Return(nil).Once().Run(func(args mock.Arguments) {
+			args.Get(2).(func(*artifact.Artifact) error)(&runnable)
+		})
+		mock.OnAnything(suite.scanHandler, "MakePlaceHolder").Return(rpts, nil).Once()
+		mock.OnAnything(suite.scanHandler, "RequiredPermissions").Return(requiredPermission).Once()
+		mock.OnAnything(suite.execMgr, "Create").Return(int64(1), nil).Once()
+		created := false
+		mock.OnAnything(suite.taskMgr, "Create").Return(int64(1), nil).Once().Run(func(args mock.Arguments) { created = true })
+		suite.Require().NoError(suite.c.Scan(context.TODO(), &runnable))
+		suite.True(created, "expected a scan task to be created")
+	}
+
+	{
 		mock.OnAnything(suite.accessoryMgr, "List").Return([]accessoryModel.Accessory{}, nil).Once()
 		// delete old report failed
 		mock.OnAnything(suite.ar, "Walk").Return(nil).Run(func(args mock.Arguments) {

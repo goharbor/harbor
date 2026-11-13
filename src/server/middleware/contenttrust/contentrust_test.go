@@ -21,6 +21,7 @@ import (
 	"os"
 	"testing"
 
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -304,6 +305,7 @@ func (suite *ContentTrustMiddlewareTestSuite) TestUnAuthenticatedUserPulling() {
 
 // pull cosign signature when policy checker is enabled.
 func (suite *ContentTrustMiddlewareTestSuite) TestCosignSignaturePulling() {
+	suite.artifact.Type = accessorymodel.TypeCosignSignature
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	acc := &basemodel.Default{
@@ -327,6 +329,7 @@ func (suite *ContentTrustMiddlewareTestSuite) TestCosignSignaturePulling() {
 
 // notation signature checking when policy checker is enabled.
 func (suite *ContentTrustMiddlewareTestSuite) TestNotationSignaturePulling() {
+	suite.artifact.Type = accessorymodel.TypeNotationSignature
 	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
 	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
 	acc := &basemodel.Default{
@@ -339,7 +342,6 @@ func (suite *ContentTrustMiddlewareTestSuite) TestNotationSignaturePulling() {
 	}
 	suite.project.Metadata[proModels.ProMetaEnableContentTrust] = "true"
 	suite.project.Metadata[proModels.ProMetaEnableContentTrustCosign] = "false"
-	suite.artifact.Accessories = []accessorymodel.Accessory{acc}
 	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{
 		acc,
 	}, nil)
@@ -349,6 +351,30 @@ func (suite *ContentTrustMiddlewareTestSuite) TestNotationSignaturePulling() {
 
 	ContentTrust()(suite.next).ServeHTTP(rr, req)
 	suite.Equal(rr.Code, http.StatusOK)
+}
+
+func (suite *ContentTrustMiddlewareTestSuite) TestImageWithSignatureAccessoryRecord() {
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+	mock.OnAnything(suite.accessMgr, "List").Return([]accessorymodel.Accessory{&basemodel.Default{
+		Data: accessorymodel.AccessoryData{ArtifactID: suite.artifact.ID, Type: accessorymodel.TypeCosignSignature},
+	}}, nil)
+
+	rr := httptest.NewRecorder()
+	ContentTrust()(suite.next).ServeHTTP(rr, suite.makeRequest())
+	suite.Equal(http.StatusPreconditionFailed, rr.Code)
+}
+
+// Legacy cosign signatures may use an OCI image config and are treated as images.
+func (suite *ContentTrustMiddlewareTestSuite) TestLegacyCosignSignatureWithImageConfig() {
+	suite.artifact.Type = accessorymodel.TypeCosignSignature
+	suite.artifact.MediaType = v1.MediaTypeImageConfig
+	mock.OnAnything(suite.artifactController, "GetByReference").Return(suite.artifact, nil)
+	mock.OnAnything(suite.projectController, "GetByName").Return(suite.project, nil)
+
+	rr := httptest.NewRecorder()
+	ContentTrust()(suite.next).ServeHTTP(rr, suite.makeRequest())
+	suite.Equal(http.StatusPreconditionFailed, rr.Code)
 }
 
 // notation & cosign signature when both policy checker are enabled.
