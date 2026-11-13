@@ -393,7 +393,12 @@ func proxyManifestGet(ctx context.Context, w http.ResponseWriter, ctl proxy.Cont
 	if err != nil {
 		return err
 	}
-	setHeaders(w, int64(len(payload)), ct, art.Digest)
+	dig := art.Digest
+	if len(dig) == 0 {
+		// pulled by tag, the reference carries no digest
+		dig = digest.FromBytes(payload).String()
+	}
+	setHeaders(w, int64(len(payload)), ct, dig)
 	if _, err = w.Write(payload); err != nil {
 		return err
 	}
