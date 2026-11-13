@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/log"
 	"github.com/goharbor/harbor/src/pkg/allowlist/dao"
 	"github.com/goharbor/harbor/src/pkg/allowlist/models"
@@ -58,7 +59,7 @@ func (d *defaultManager) CreateEmpty(ctx context.Context, projectID int64) error
 func (d *defaultManager) Set(ctx context.Context, projectID int64, list models.CVEAllowlist) error {
 	list.ProjectID = projectID
 	if err := Validate(list); err != nil {
-		return err
+		return errors.BadRequestError(err)
 	}
 	_, err := d.dao.Set(ctx, list)
 	return err
