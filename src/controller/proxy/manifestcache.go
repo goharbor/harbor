@@ -166,7 +166,7 @@ func (m *ManifestListCache) push(ctx context.Context, repo, reference string, ma
 	if strings.HasPrefix(reference, "sha256:") {
 		reference = string(newDig)
 	}
-	err = m.local.PushManifest(repo, reference, newMan)
+	err = pushManifestToLocal(ctx, m.local, repo, reference, newMan)
 	if err != nil {
 		log.Errorf("failed to push manifest list, error: %v", err)
 		return err
@@ -204,7 +204,7 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 		// need to push these blobs before push manifest to avoid failure
 		log.Debug("Waiting blobs not empty, push it to local repo directly")
 		for _, desc := range waitBlobs {
-			err := m.putBlobToLocal(remoteRepo, art.Repository, desc, r)
+			err := putBlobToLocal(ctx, m.local, remoteRepo, art.Repository, desc, r)
 			if err != nil {
 				log.Errorf("Failed to push blob to local repo, error: %v", err)
 				return
@@ -212,39 +212,27 @@ func (m *ManifestCache) CacheContent(ctx context.Context, remoteRepo string, man
 		}
 	}
 
-	err := m.push(art, man)
+	err := m.push(ctx, art, man)
 	if err != nil {
 		log.Errorf("error occurred on manifest push to local: %v", err)
 	}
 }
 
-func (m *ManifestCache) push(art lib.ArtifactInfo, man distribution.Manifest) error {
+func (m *ManifestCache) push(ctx context.Context, art lib.ArtifactInfo, man distribution.Manifest) error {
 	errs := []error{}
 	if len(art.Digest) > 0 {
-		err := m.local.PushManifest(art.Repository, art.Digest, man)
+		err := pushManifestToLocal(ctx, m.local, art.Repository, art.Digest, man)
 		if err != nil {
 			log.Errorf("failed to push manifest referencing digest, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
 			errs = append(errs, err)
 		}
 	}
 	if len(art.Tag) > 0 {
-		err := m.local.PushManifest(art.Repository, art.Tag, man)
+		err := pushManifestToLocal(ctx, m.local, art.Repository, art.Tag, man)
 		if err != nil {
 			log.Errorf("failed to push manifest referencing tag, tag: %v, digest: %v, error %v", art.Tag, art.Digest, err)
 			errs = append(errs, err)
 		}
 	}
 	return errors.Join(errs...)
-}
-
-func (m *ManifestCache) putBlobToLocal(remoteRepo string, localRepo string, desc distribution.Descriptor, r RemoteInterface) error {
-	log.Debugf("Put blob to local registry!, sourceRepo:%v, localRepo:%v, digest: %v", remoteRepo, localRepo, desc.Digest)
-	_, bReader, err := r.BlobReader(remoteRepo, string(desc.Digest))
-	if err != nil {
-		log.Errorf("failed to create blob reader, error %v", err)
-		return err
-	}
-	defer bReader.Close()
-	err = m.local.PushBlob(localRepo, desc, bReader)
-	return err
 }
