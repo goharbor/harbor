@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"math"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/controller/repository"
@@ -50,7 +51,7 @@ type tagHandler struct {
 //	   ]
 //	}
 func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	n, _, err := util.ParseNAndLastParameters(req)
+	n, last, err := util.ParseNAndLastParameters(req)
 	if err != nil {
 		lib_http.SendError(w, err)
 		return
@@ -65,6 +66,18 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	repository, err := t.repoCtl.GetByName(req.Context(), repositoryName)
 	if err != nil {
 		lib_http.SendError(w, err)
+		return
+	}
+
+	if n != nil && *n < math.MaxInt {
+		// Fetch one extra name so the response can distinguish a full final page
+		// from a page with a continuation. Keep the unbounded List path otherwise.
+		names, err := t.tagCtl.ListNames(req.Context(), repository.RepositoryID, last, *n+1)
+		if err != nil {
+			lib_http.SendError(w, err)
+			return
+		}
+		util.SendListTagsResponse(w, req, names)
 		return
 	}
 

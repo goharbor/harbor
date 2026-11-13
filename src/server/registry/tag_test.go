@@ -102,20 +102,7 @@ func (c *tagTestSuite) TestListTagPagination1() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.tagCtl.On("List").Return([]*tag.Tag{
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v1",
-			},
-		},
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v2",
-			},
-		},
-	}, nil)
+	mock.OnAnything(c.tagCtl, "ListNames").Return([]string{"v1", "v2"}, nil)
 	w = httptest.NewRecorder()
 	newTagHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)
@@ -138,20 +125,7 @@ func (c *tagTestSuite) TestListTagPagination2() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.tagCtl.On("List").Return([]*tag.Tag{
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v1",
-			},
-		},
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v2",
-			},
-		},
-	}, nil)
+	mock.OnAnything(c.tagCtl, "ListNames").Return([]string{"v1", "v2"}, nil)
 	w = httptest.NewRecorder()
 	newTagHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)
@@ -174,20 +148,7 @@ func (c *tagTestSuite) TestListTagPagination3() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.tagCtl.On("List").Return([]*tag.Tag{
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v1",
-			},
-		},
-		{
-			Tag: model_tag.Tag{
-				RepositoryID: 1,
-				Name:         "v2",
-			},
-		},
-	}, nil)
+	mock.OnAnything(c.tagCtl, "ListNames").Return([]string{"v2"}, nil)
 	w = httptest.NewRecorder()
 	newTagHandler().ServeHTTP(w, req)
 	c.Equal(http.StatusOK, w.Code)
