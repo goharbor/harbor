@@ -51,6 +51,12 @@ func (u *userGroupAPI) CreateUserGroup(ctx context.Context, params operation.Cre
 	if len(params.Usergroup.GroupName) == 0 {
 		return operation.NewCreateUserGroupBadRequest()
 	}
+	switch params.Usergroup.GroupType {
+	case common.LDAPGroupType, common.HTTPGroupType, common.OIDCGroupType:
+	default:
+		return u.SendError(ctx, errors.BadRequestError(nil).
+			WithMessagef("invalid group type %d, it should be 1 (LDAP), 2 (HTTP) or 3 (OIDC)", params.Usergroup.GroupType))
+	}
 	ug := model.UserGroup{
 		GroupName:   params.Usergroup.GroupName,
 		GroupType:   int(params.Usergroup.GroupType),
