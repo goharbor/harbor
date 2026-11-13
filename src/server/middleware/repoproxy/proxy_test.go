@@ -43,6 +43,7 @@ import (
 	liberrors "github.com/goharbor/harbor/src/lib/errors"
 	"github.com/goharbor/harbor/src/lib/q"
 	proModels "github.com/goharbor/harbor/src/pkg/project/models"
+	"github.com/goharbor/harbor/src/pkg/reg"
 	"github.com/goharbor/harbor/src/pkg/reg/model"
 	pkgRobot "github.com/goharbor/harbor/src/pkg/robot/model"
 	projecttesting "github.com/goharbor/harbor/src/testing/controller/project"
@@ -51,6 +52,7 @@ import (
 	robotmock "github.com/goharbor/harbor/src/testing/controller/robot"
 	testingcache "github.com/goharbor/harbor/src/testing/lib/cache"
 	testingmock "github.com/goharbor/harbor/src/testing/mock"
+	regtesting "github.com/goharbor/harbor/src/testing/pkg/reg"
 )
 
 func TestIsProxySession(t *testing.T) {
@@ -401,6 +403,37 @@ func (s *ProxyReferrerMiddlewareSuite) TestProxyReferrerAPIBlockedByFilter() {
 
 	s.False(s.nextCalled, "next handler should not be called when repository is blocked by filter")
 	s.Equal(http.StatusNotFound, w.Code)
+}
+
+func (s *ProxyReferrerMiddlewareSuite) TestUnhealthyRegistryServesCachedIndex() {
+	s.Require().NoError(libCache.Initialize(libCache.Memory, ""))
+	origRegMgr := reg.Mgr
+	regMgr := &regtesting.Manager{}
+	reg.Mgr = regMgr
+	defer func() { reg.Mgr = origRegMgr }()
+
+	proj := &proModels.Project{
+		ProjectID:  4,
+		Name:       "testproject",
+		RegistryID: 1,
+		Metadata:   map[string]string{proModels.ProMetaProxyReferrerAPI: "true"},
+	}
+	testingmock.OnAnything(s.projectCtl, "GetByName").Return(proj, nil)
+	testingmock.OnAnything(regMgr, "Get").Return(&model.Registry{ID: 1, Status: model.Unhealthy}, nil)
+
+	cached := referrerCache{
+		Content: []byte(`{"schemaVersion":2,"manifests":[{"artifactType":"application/vnd.example.sbom"}]}`),
+		Header:  map[string][]string{"Content-Type": {"application/vnd.oci.image.index.v1+json"}},
+	}
+	req := s.makeRequest()
+	s.Require().NoError(libCache.Default().Save(context.Background(), referrerCacheKey(req.RequestURI), cached))
+
+	w := httptest.NewRecorder()
+	ProxyReferrerMiddleware()(s.next).ServeHTTP(w, req)
+
+	s.False(s.nextCalled, "the cached index should be served instead of the local registry")
+	s.Equal(http.StatusOK, w.Code)
+	s.Equal(string(cached.Content), w.Body.String())
 }
 
 func TestProxyReferrerMiddlewareSuite(t *testing.T) {
