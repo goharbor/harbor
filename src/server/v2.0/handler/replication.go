@@ -85,6 +85,9 @@ func (r *replicationAPI) CreateReplicationPolicy(ctx context.Context, params ope
 	}
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
+			if filter == nil {
+				return r.SendError(ctx, errors.BadRequestError(nil).WithMessage("replication policy filter can not be null"))
+			}
 			policy.Filters = append(policy.Filters, &model.Filter{
 				Type:       filter.Type,
 				Value:      filter.Value,
@@ -161,6 +164,9 @@ func (r *replicationAPI) UpdateReplicationPolicy(ctx context.Context, params ope
 	}
 	if len(params.Policy.Filters) > 0 {
 		for _, filter := range params.Policy.Filters {
+			if filter == nil {
+				return r.SendError(ctx, errors.BadRequestError(nil).WithMessage("replication policy filter can not be null"))
+			}
 			policy.Filters = append(policy.Filters, &model.Filter{
 				Type:       filter.Type,
 				Value:      filter.Value,
